@@ -1,0 +1,681 @@
+/* ============================================================================
+ * 文档站 —— 正文样式
+ *
+ * 每个页面模块自己 <link> 这份表。
+ *
+ * 为什么不能由 index.html 统一引入：页面模块渲染在 o-page 的 shadow root 里，
+ * 而文档级 <link> 的规则**进不了 shadow root**（这是整套架构的核心约束，
+ * packages/boot/mosaic.js 处理的也是同一件事）。
+ *
+ * 令牌和工具类不用操心 —— mosaic.js 会把它们注入每个 shadow root，
+ * 页面内容里可以直接用 var(--mc-*) 和 class="flex gap-2"。
+ *
+ * 选择器统一挂在 .doc-body 下：页面 shadow root 里只有文档正文，
+ * 加一层容器免得以后往页面里放别的东西时被误伤。
+ * ========================================================================== */
+
+/* ---------- 正文 ---------- */
+
+/*
+ * 页面自己的留白。
+ *
+ * 外壳的正文带（docs/layout.html 的 `.doc-main`）**不给内边距**：带二级菜单的页面要让左栏贴到外壳边缘，
+ * 外壳再垫一层就会错位。所以留白在这一层，由页面自己决定。
+ */
+.doc-body {
+  padding: var(--mc-space-8) var(--mc-space-8) var(--mc-space-16);
+}
+
+.doc-body h1 {
+  margin: 0 0 var(--mc-space-3);
+  font-size: var(--mc-text-3xl);
+  line-height: var(--mc-text-3xl-lh);
+  font-weight: var(--mc-weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.doc-body h2 {
+  margin: var(--mc-space-12) 0 var(--mc-space-3);
+  padding-top: var(--mc-space-6);
+  border-top: 1px solid rgb(var(--mc-color-border));
+  font-size: var(--mc-text-xl);
+  line-height: var(--mc-text-xl-lh);
+  font-weight: var(--mc-weight-semibold);
+}
+
+.doc-body h2:first-of-type {
+  margin-top: var(--mc-space-8);
+}
+
+.doc-body h3 {
+  margin: var(--mc-space-8) 0 var(--mc-space-3);
+  font-size: var(--mc-text-lg);
+  font-weight: var(--mc-weight-semibold);
+}
+
+.doc-body h4 {
+  margin: 0 0 var(--mc-space-2);
+  font-size: var(--mc-text-base);
+  font-weight: var(--mc-weight-semibold);
+}
+
+.doc-lead {
+  font-size: var(--mc-text-lg);
+  line-height: var(--mc-text-lg-lh);
+  color: rgb(var(--mc-color-fg-muted));
+  max-width: 40em;
+}
+
+.doc-body p,
+.doc-body li {
+  max-width: 44em;
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+.doc-body li + li {
+  margin-top: var(--mc-space-1);
+}
+
+.doc-body a {
+  color: rgb(var(--mc-color-primary));
+  text-underline-offset: 2px;
+}
+
+.doc-hint {
+  font-size: var(--mc-text-sm);
+  margin-top: 0;
+}
+
+.doc-body code {
+  padding: 0.1em 0.35em;
+  border-radius: var(--mc-radius-sm);
+  background-color: rgb(var(--mc-color-surface-sunken));
+  color: rgb(var(--mc-color-fg));
+  font-family: var(--mc-font-mono);
+  font-size: 0.9em;
+}
+
+/* ---------- 代码块 ---------- */
+
+.doc-code {
+  margin: var(--mc-space-4) 0;
+  padding: var(--mc-space-4) var(--mc-space-5);
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface-sunken));
+  overflow-x: auto;
+}
+
+.doc-code code {
+  padding: 0;
+  background: none;
+  font-size: var(--mc-text-sm);
+  line-height: 1.7;
+  white-space: pre;
+}
+
+/* ---------- 提示条 ---------- */
+
+.doc-note {
+  margin: var(--mc-space-4) 0;
+  padding: var(--mc-space-3) var(--mc-space-4);
+  border-left: 3px solid rgb(var(--mc-color-info));
+  border-radius: var(--mc-radius-sm);
+  background-color: rgb(var(--mc-color-info-subtle));
+  font-size: var(--mc-text-sm);
+  color: rgb(var(--mc-color-fg));
+}
+
+.doc-note strong {
+  color: rgb(var(--mc-color-fg));
+}
+
+.doc-warn {
+  border-left-color: rgb(var(--mc-color-warning));
+  background-color: rgb(var(--mc-color-warning-subtle));
+}
+
+/* ---------- 演示区 ---------- */
+
+.doc-demo {
+  margin: var(--mc-space-5) 0;
+  padding: var(--mc-space-5);
+  border: 1px dashed rgb(var(--mc-color-border-strong));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+}
+
+.doc-demo h3 {
+  margin-top: 0;
+}
+
+.doc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mc-space-3);
+}
+
+.doc-row + .doc-row {
+  margin-top: var(--mc-space-3);
+}
+
+/* ---------- 卡片 ---------- */
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--mc-space-4);
+  margin: var(--mc-space-4) 0;
+}
+
+.doc-card {
+  padding: var(--mc-space-5);
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+}
+
+.doc-card p {
+  margin: 0;
+  font-size: var(--mc-text-sm);
+}
+
+/* ---------- 表格 ---------- */
+
+.doc-table {
+  width: 100%;
+  margin: var(--mc-space-4) 0;
+  border-collapse: collapse;
+  font-size: var(--mc-text-sm);
+}
+
+.doc-table th,
+.doc-table td {
+  padding: var(--mc-space-2) var(--mc-space-3);
+  border-bottom: 1px solid rgb(var(--mc-color-border));
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-table th {
+  color: rgb(var(--mc-color-fg));
+  font-weight: var(--mc-weight-semibold);
+  white-space: nowrap;
+}
+
+.doc-table td {
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+.doc-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ---------- 色板 ---------- */
+
+.doc-palette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-space-2);
+  margin: var(--mc-space-4) 0;
+}
+
+.doc-palette-row {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  align-items: center;
+  gap: var(--mc-space-3);
+}
+
+.doc-palette-name {
+  font-size: var(--mc-text-sm);
+  font-weight: var(--mc-weight-medium);
+  color: rgb(var(--mc-color-fg));
+  font-family: var(--mc-font-mono);
+}
+
+.doc-palette-strips {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  border-radius: var(--mc-radius-md);
+  overflow: hidden;
+  border: 1px solid rgb(var(--mc-color-border));
+}
+
+.doc-swatch {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.35em;
+  font-size: 0.6rem;
+  font-family: var(--mc-font-mono);
+  color: rgb(var(--mc-color-fg));
+}
+
+.doc-status {
+  margin-top: var(--mc-space-12);
+  padding-top: var(--mc-space-5);
+  border-top: 1px solid rgb(var(--mc-color-border));
+  font-size: var(--mc-text-sm);
+}
+
+/* ============================================================================
+ * 组件总览卡片（由 docs/components.js 登记表渲染）
+ * ========================================================================== */
+
+.doc-comp-group {
+  margin-top: var(--mc-space-8);
+}
+
+.doc-comp-group h3 {
+  margin-top: 0;
+  margin-bottom: var(--mc-space-1);
+}
+
+.doc-comp-group-desc {
+  margin-top: 0;
+  margin-bottom: var(--mc-space-4);
+  font-size: var(--mc-text-sm);
+  color: var(--mc-color-fg-subtle);
+}
+
+.doc-comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--mc-space-3);
+}
+
+.doc-comp-card {
+  display: block;
+  padding: var(--mc-space-4);
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+  text-decoration: none;
+  transition:
+    border-color var(--mc-duration-fast) var(--mc-ease-standard),
+    background-color var(--mc-duration-fast) var(--mc-ease-standard);
+}
+
+a.doc-comp-card:hover {
+  border-color: rgb(var(--mc-color-primary));
+  background-color: rgb(var(--mc-color-primary-subtle));
+}
+
+.doc-comp-card[data-status='planned'] {
+  opacity: 0.72;
+}
+
+.doc-comp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mc-space-2);
+  margin-bottom: var(--mc-space-1);
+}
+
+.doc-comp-card-name {
+  color: rgb(var(--mc-color-fg));
+  font-weight: var(--mc-weight-semibold);
+}
+
+.doc-comp-badge {
+  flex: none;
+  padding: 0.1em 0.5em;
+  border-radius: var(--mc-radius-full);
+  font-size: var(--mc-text-xs);
+  background-color: rgb(var(--mc-color-surface-sunken));
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+.doc-comp-badge[data-status='ready'] {
+  background-color: rgb(var(--mc-color-success-subtle));
+  color: rgb(var(--mc-color-success));
+}
+
+.doc-comp-card-tag {
+  display: inline-block;
+  margin-bottom: var(--mc-space-2);
+  padding: 0.1em 0.4em;
+  border-radius: var(--mc-radius-sm);
+  background-color: rgb(var(--mc-color-surface-sunken));
+  font-size: var(--mc-text-xs);
+}
+
+.doc-comp-card-desc {
+  margin: 0;
+  font-size: var(--mc-text-sm);
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+/* ============================================================================
+ * 组件页头部与翻页
+ * ========================================================================== */
+
+.doc-crumb {
+  margin: 0 0 var(--mc-space-2);
+  font-size: var(--mc-text-sm);
+  color: rgb(var(--mc-color-fg-subtle));
+}
+
+.doc-body h1 code {
+  font-size: 0.62em;
+  vertical-align: middle;
+  padding: 0.15em 0.5em;
+  border-radius: var(--mc-radius-md);
+  background-color: rgb(var(--mc-color-surface-sunken));
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+.doc-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mc-space-2);
+  margin: 0 0 var(--mc-space-6);
+}
+
+.doc-badge {
+  padding: 0.2em 0.6em;
+  border-radius: var(--mc-radius-full);
+  border: 1px solid rgb(var(--mc-color-border));
+  font-size: var(--mc-text-xs);
+  color: rgb(var(--mc-color-fg-muted));
+}
+
+.doc-badge[data-status='ready'] {
+  border-color: transparent;
+  background-color: rgb(var(--mc-color-success-subtle));
+  color: rgb(var(--mc-color-success));
+}
+
+.doc-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--mc-space-4);
+  margin-top: var(--mc-space-12);
+  padding-top: var(--mc-space-5);
+  border-top: 1px solid rgb(var(--mc-color-border));
+  font-size: var(--mc-text-sm);
+}
+
+.doc-pager-next {
+  margin-left: auto;
+}
+
+/* 首页的组件展示区 —— 组件是这个框架的重点，给它更醒目的一栏 */
+.doc-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--mc-space-3);
+  margin: var(--mc-space-4) 0;
+}
+
+/* ============================================================================
+ * 首页海报
+ *
+ * 首页刻意只做一张海报：马赛克图案 + 两个入口（标题是 sr-only，只给大纲和 SEO）。
+ * 详细内容都在「文档」和「组件」两个分区里，首页不重复。
+ *
+ * 选择器都带 .doc-poster 前缀，是为了压过上面 .doc-body h1 / .doc-body p 的
+ * 通用正文样式（那两条特异性是 0,1,1，这里用 0,2,0 稳定胜出）。
+ * ========================================================================== */
+
+/* 定位容器：马赛克图案铺满它，正文叠在上层 */
+.doc-poster {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*
+   * 填满内容区 —— 只声明意图，不自己算高度。
+   *
+   * 高度链条由外壳负责（shell.css 的 o-router → o-app → o-page，
+   * layout.html 的 .doc-main → slot），
+   * 这里写 flex: 1 就行。之前这里是 `min-height: calc(100vh - 顶栏 - 内边距)`，
+   * 等于让每个想撑满的页面各算一遍，改一次内边距就会冒出滚动条。
+   */
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-block: var(--mc-space-8);
+  /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
+  overflow: hidden;
+}
+
+.poster-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mc-space-5);
+  /* 入口自己限宽，把两侧的余量让给背景图案 */
+  max-width: 38rem;
+  text-align: center;
+}
+
+/* ---------- 马赛克图案 ----------
+ *
+ * 层是 .art-layer（视差位移由数据绑定到它的 transform），
+ * 块是 .art-bit —— 由 home.html 里的 <o-fill> 从数据渲染，位置/尺寸走行内样式。
+ * 颜色全走 currentColor 和语义令牌，所以深浅主题自动跟随，不需要两套图。
+ */
+
+.poster-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: rgb(var(--mc-color-fg));
+  /*
+   * 这里刻意**不加遮罩**。
+   *
+   * 之前用 radial-gradient 把中心擦空，给标题留白；现在首页只剩两个按钮，
+   * 那块留白就变成按钮底下的一片「白底」（露出了页面底色），正是要删掉的东西。
+   * 图案本身在中心很淡（远景层 16% 不透明度、且中景层本来就绕开中心），
+   * 不遮也压不住按钮。
+   */
+}
+
+/* 层：铺满容器，视差只走 transform（提到合成层，不触发重排） */
+.art-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* 一块方块：位置由数据走行内样式，这里只管长相 */
+.art-bit {
+  position: absolute;
+  display: block;
+  border: 1.5px solid currentColor;
+}
+
+/*
+ * 尺寸全部来自 home.html 广播的 --art-* 变量（方块的边长是响应式的，
+ * 随容器宽度缩放）。这里**一个像素值都不写死** —— 以前写死 22.3px / 44.6px
+ * （= 边长 × 0.36 / 0.72），边长一改它们不跟、也不报错，图案静默走形。
+ * 括号里是变量没送到时的兜底值（边长 62px 时的原样）。
+ */
+.art-far {
+  width: var(--art-grain, 22.3px);
+  height: var(--art-grain, 22.3px);
+  /* 圆角只有这里用得到，比例就留在 CSS 里（62 → 6px） */
+  border-radius: calc(var(--art-tile, 62px) * 0.097);
+}
+
+/* 中景描边块：边长每块略有出入，所以只在行内绑 width/height，这里给圆角（62 → 14px） */
+.art-mid {
+  border-radius: calc(var(--art-tile, 62px) * 0.226);
+}
+
+/* 近景色片：实心、无描边，颜色按语义色 */
+.art-chip {
+  width: var(--art-chip, 44.6px);
+  height: var(--art-chip, 44.6px);
+  border: 0;
+  border-radius: calc(var(--art-tile, 62px) * 0.226);
+}
+
+.art-chip[data-color='primary'] { background-color: rgb(var(--mc-color-primary)); }
+.art-chip[data-color='info'] { background-color: rgb(var(--mc-color-info)); }
+.art-chip[data-color='success'] { background-color: rgb(var(--mc-color-success)); }
+.art-chip[data-color='warning'] { background-color: rgb(var(--mc-color-warning)); }
+.art-chip[data-color='danger'] { background-color: rgb(var(--mc-color-danger)); }
+
+/* 减弱动效偏好下不做视差（脚本也会直接跳过，这里再兜一层鼠标悬停之类的效果） */
+@media (prefers-reduced-motion: reduce) {
+  .art-layer {
+    will-change: auto;
+  }
+}
+
+/* 两个入口（首页现在只有它们 + 图案；标题是 sr-only 的） */
+.doc-poster .poster-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mc-space-3);
+}
+
+.doc-poster .poster-link {
+  padding: var(--mc-space-4) var(--mc-space-8);
+  border: 1px solid transparent;
+  border-radius: var(--mc-radius-full);
+  background-color: rgb(var(--mc-color-primary));
+  color: rgb(var(--mc-color-primary-fg));
+  font-size: var(--mc-text-base);
+  font-weight: var(--mc-weight-medium);
+  text-decoration: none;
+  transition: background-color var(--mc-duration-fast) var(--mc-ease-standard);
+}
+
+.doc-poster .poster-link:hover {
+  background-color: rgb(var(--mc-color-primary-hover));
+  text-decoration: none;
+}
+
+.doc-poster .poster-link-ghost {
+  border-color: rgb(var(--mc-color-border-strong));
+  background-color: transparent;
+  color: rgb(var(--mc-color-fg));
+}
+
+.doc-poster .poster-link-ghost:hover {
+  background-color: rgb(var(--mc-color-surface-sunken));
+}
+
+/* ============================================================================
+ * 二级菜单与分栏（页面自己的左栏）
+ *
+ * 外壳只给一条正文带（布局页 docs/layout.html 的 .doc-main）。哪个页面需要二级菜单，就自己在
+ * 模板里放 <doc-nav>，外面套一层 .doc-split 分成左右两栏 —— 菜单项、层级、
+ * 是否分栏，全是页面自己的事，外壳不参与。
+ *
+ * 分栏后两栏各自滚，正文区（.doc-main）内容正好一屏高、于是不滚：
+ * 「不要全局滚动条」在分栏页上的落点就是这两块。
+ * ========================================================================== */
+
+.doc-split {
+  /* 填满正文区 —— 只声明意图，高度链条由外壳负责 */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  /* 左栏固定宽；右栏 minmax(0, 1fr) 而不是 1fr：长代码块不会把列撑破 */
+  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+/* 左栏：菜单自己滚。样式挂在标签上（<doc-nav> 是自定义元素，见 docs/doc-nav.js） */
+doc-nav {
+  display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain; /* 滚到底先停住；吃不下的滚轮由 doc-nav.js 转给右栏 */
+  padding: var(--mc-space-6) var(--mc-space-5);
+  border-right: 1px solid rgb(var(--mc-color-border));
+  scrollbar-width: thin;
+}
+
+/* 右栏：正文自己也滚，和左栏互不干扰 */
+.doc-split > .doc-body {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.doc-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-space-1);
+}
+
+.doc-nav-list a {
+  display: block;
+  padding: var(--mc-space-2) var(--mc-space-3);
+  border-radius: var(--mc-radius-md);
+  color: rgb(var(--mc-color-fg-muted));
+  text-decoration: none;
+  font-size: var(--mc-text-sm);
+}
+
+.doc-nav-list a:hover {
+  background-color: rgb(var(--mc-color-surface-sunken));
+  color: rgb(var(--mc-color-fg));
+}
+
+/* 当前页：实心高亮 */
+.doc-nav-list a[aria-current='page'] {
+  background-color: rgb(var(--mc-color-primary-subtle));
+  color: rgb(var(--mc-color-primary));
+  font-weight: var(--mc-weight-medium);
+}
+
+/* 分组标题（组件菜单里的「基础 / 表单 / …」） */
+.doc-nav-group {
+  margin-top: var(--mc-space-4);
+  padding: var(--mc-space-1) var(--mc-space-3);
+  color: rgb(var(--mc-color-fg-subtle));
+  font-size: var(--mc-text-xs);
+  font-weight: var(--mc-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 未实现的组件：压暗一档，和「已实现」区分开（链接指向规范文档，不是死链） */
+.doc-nav-list a[data-status='planned'] {
+  opacity: 0.72;
+}
+
+/* ============================================================================
+ * 窄屏：左右放不下，退化成「菜单在上、正文在下」，全局依然不滚。
+ * 这些规则必须排在基础规则之后，同权重下靠顺序覆盖。
+ * ========================================================================== */
+
+@media (max-width: 52rem) {
+  .doc-body {
+    padding: var(--mc-space-6) var(--mc-space-5) var(--mc-space-12);
+  }
+
+  .doc-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  doc-nav {
+    max-height: 45vh;
+    padding: var(--mc-space-4) var(--mc-space-5);
+    border-right: 0;
+    border-bottom: 1px solid rgb(var(--mc-color-border));
+  }
+}

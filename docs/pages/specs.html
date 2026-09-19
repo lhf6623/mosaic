@@ -1,0 +1,177 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>规范</h1>
+    <p class="doc-lead">
+      六份文档，各回答一个问题。都在仓库的 <code>agent/</code> 目录下，直接读 Markdown 即可。
+    </p>
+
+    <div class="doc-grid">
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/PLAN.md">规划总纲</a></h4>
+        <p>
+          定位、约束、六个关键决策（含被否决的备选及其理由）、目录结构、构建分发、里程碑、风险。
+        </p>
+      </div>
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-spec.md">设计规范</a></h4>
+        <p>
+          <strong>怎么用令牌</strong>：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案。
+        </p>
+      </div>
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">设计令牌</a></h4>
+        <p>
+          <strong>有什么值</strong>：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南。
+        </p>
+      </div>
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md">组件 API 规范</a></h4>
+        <p>
+          <strong>有哪些组件、各自什么接口</strong>：四个正交维度、值读写规则、事件 / 插槽 / part、逐组件 API 表。
+        </p>
+      </div>
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/components.md">组件编写规范</a></h4>
+        <p>
+          <strong>怎么造组件</strong>：目录约定、分层职责、<code>&lt;style&gt;</code> 五分区、交付检查清单。
+        </p>
+      </div>
+      <div class="doc-card">
+        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/ofa-pitfalls.md">ofa.js 实战踩坑清单</a></h4>
+        <p>
+          <strong>写组件前必读。</strong>30 条静默失效的坑 —— 不报错、表象像「绑定不生效」、反查成本极高。
+        </p>
+      </div>
+    </div>
+
+    <h2>三条不可谈判的约束</h2>
+    <ol>
+      <li><strong>使用者侧零工具链</strong> —— 任何「请先安装 X」的方案直接否决</li>
+      <li>
+        <strong>组件不过打包器</strong> —— <code>packages/**.html</code> 源 = 产物。
+        ofa.js 的组件就是一个可独立寻址的 <code>.html</code>，不该变成 JS bundle
+      </li>
+      <li>
+        <strong>定制点只用原生 CSS</strong> —— <code>style="…"</code> + 令牌 + <code>::part()</code>，
+        不用 JS 配置对象
+      </li>
+    </ol>
+
+    <h2>技术红线</h2>
+    <p>下面每一条都有实测依据。违反了不会报错，只会静默失效。</p>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>红线</th>
+          <th>后果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>用 <code>presetWind3</code>，不用 <code>presetWind4</code></td>
+          <td>wind4 的 theme 色不支持 <code>&lt;alpha-value&gt;</code>，会产出非法 CSS 且整条声明静默失效</td>
+        </tr>
+        <tr>
+          <td>必须开 <code>outputToCssLayers</code></td>
+          <td>
+            <code>adoptedStyleSheets</code> 在 shadow root 内的优先级<strong>高于</strong>
+            组件自身 <code>&lt;style&gt;</code>，不分层的话工具类会反过来盖住组件样式
+          </td>
+        </tr>
+        <tr>
+          <td>组件里禁止 <code>dark:</code> 变体</td>
+          <td>它生成的是后代选择器，匹配不到 shadow 树外面的 <code>&lt;html data-theme&gt;</code></td>
+        </tr>
+        <tr>
+          <td>组件只消费语义令牌，不碰原始色阶</td>
+          <td>原始色阶不随主题切换，必然在某个主题下出现可读性问题</td>
+        </tr>
+        <tr>
+          <td>构建缺输入必须大声失败</td>
+          <td>
+            实测 UnoCSS 会<strong>静默跳过</strong>缺失的输入文件，退出码 0，
+            产出没有令牌的坏 CSS
+          </td>
+        </tr>
+        <tr>
+          <td>文档里锁精确版本</td>
+          <td>
+            <code>@latest</code> / <code>@1</code> 有 7 天缓存，最长 7 天不生效；
+            精确版本是 1 年 <code>immutable</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>仓库结构</h2>
+    <pre class="doc-code"><code>packages/
+      boot/
+        mosaic.js          手写：attachShadow 补丁 + 样式 adopt（唯一必需引入的 JS）
+        mosaic.css         生成并提交：令牌 + 工具类（可 &lt;link&gt;）
+        shadow-base.css    手写：只进 shadow root 的 reset（禁止 &lt;link&gt;）
+      color/tokens.css     生成并提交：三层令牌
+      button/button.html   组件本体（源 = 产物，构建不碰它）
+    tools/
+      gen-tokens.mjs       调色板生成 + WCAG 对比度自检
+      build-css.mjs        CSS 构建入口（含「缺输入大声失败」守卫）
+    uno.config.ts          UnoCSS 配置（纯声明式）
+    index.html             本站入口：只做引入（外壳在 docs/layout.html）
+    docs/                  本站其余页面与资源
+    agent/                  规范文档（Markdown）
+    </code></pre>
+
+    <div class="doc-note">
+      <strong>没有 <code>dist/</code>。</strong>
+      分发走 jsDelivr <code>/gh/</code>，仓库即产物 ——
+      仓库里的 <code>packages/**</code> 就是 CDN 上的东西。
+    </div>
+
+    <h2>当前状态</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>部分</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>三层令牌 + WCAG 自检门禁</td>
+          <td>✅ 32 项全绿</td>
+        </tr>
+        <tr>
+          <td>UnoCSS 管线（370 个精选工具类）</td>
+          <td>✅ 34.3 KB raw / 7.1 KB gzip</td>
+        </tr>
+        <tr>
+          <td>运行时注入（<code>mosaic.js</code>）</td>
+          <td>✅ 已实现</td>
+        </tr>
+        <tr>
+          <td><code>mc-button</code> 参考实现</td>
+          <td>✅ 已实现</td>
+        </tr>
+        <tr>
+          <td>其余组件</td>
+          <td>⏳ M1–M3</td>
+        </tr>
+        <tr>
+          <td>文档站</td>
+          <td>✅ 本页</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    /*
+     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
+     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
+     * packages/<slug>/ 下是 '../../docs/layout.html'。
+     */
+    export const parent = '../layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

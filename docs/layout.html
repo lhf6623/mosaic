@@ -1,0 +1,310 @@
+<template page>
+  <!--
+    Mosaic 文档站 —— 布局页（ofa.js「嵌套页面/路由」里的父页面）。
+
+    子页面用 `export const parent = '…/layout.html'` 挂到这里，正文经下面的 <slot> 投影进来：
+
+      o-app > o-page(layout.html) > o-page(子页面)
+
+    布局页在切页时**不重建**（ofa.js 会调它的 routerChange），所以顶栏和主题按钮都不闪；
+    正文带的高度链一路传给子页面（`.doc-main` → slot → 子页面 o-page）。
+
+    ⚠️ <script> 必须放在模板最前面：ofa.js 取的是**第一个** <script> 当页面代码，
+      排在它前面的任何脚本都会抢走这个位置（agent/ofa-pitfalls.md P26）。
+  -->
+  <script>
+    const THEME_KEY = 'mosaic-doc-theme';
+    const THEMES = ['auto', 'light', 'dark'];
+    const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
+
+    /** 只切 aria-current，不重建 DOM —— 重建会让真实点击的 mousedown/click 落在两个节点上 */
+    const setCurrent = (a, on) => {
+      if (!a) return;
+      if (on && !a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
+      else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
+    };
+
+    /**
+     * 路由路径（相对仓库根），`docs/pages/guide.html` 这个样子。
+     *
+     * ⚠️ 两种形式都要吃下：
+     *   · `<a olink href>` —— ofa.js 渲染模板时会把它改写成
+     *     `…/index.html#/docs/pages/home.html`（hash 形式）
+     *   · 页面 src —— `…/mosaic/docs/pages/guide.html`（文件形式，站点可能在子路径下）
+     * 所以统一成「路径」，而不是直接比 URL 字符串。
+     */
+    const pathOf = (url) => {
+      const u = new URL(url, location.href);
+      if (u.hash) return decodeURIComponent(u.hash.replace(/^#\/?/, ''));
+
+      const root = new URL('.', document.baseURI).pathname; // GitHub Pages 下是 /mosaic/
+      const path = decodeURIComponent(u.pathname);
+      return path.startsWith(root) ? path.slice(root.length) : path.replace(/^\//, '');
+    };
+
+    export default () => ({
+      data: { themeLabel: '自动' },
+
+      ready() {
+        this.readTheme();
+        this.syncTopNav();
+
+        /*
+         * 冷启动直接带 hash 时，子页面可能比布局页晚一步挂上 —— 高亮就会空一拍。
+         * 补几拍（自限，且有子页面就停），保证首屏顶栏就亮。
+         */
+        let tries = 0;
+        const settle = () => {
+          this.syncTopNav();
+          if (++tries < 20 && !this.ele.querySelector('o-page')) setTimeout(settle, 50);
+        };
+        settle();
+      },
+
+      /**
+       * 路由变化 —— 父页面在子页面切换时不会被重建，顶栏高亮只能靠这个钩子。
+       *
+       * ⚠️ 不能只监听 hashchange：<a olink> 走的是 history.pushState，不触发 hashchange。
+       */
+      routerChange() {
+        this.syncTopNav();
+      },
+
+      proto: {
+        /**
+         * 当前子页面的路由路径。
+         *
+         * 直接读 DOM（子页面 o-page 是本布局页 o-page 的 light DOM 子节点，实测
+         * `this.ele.querySelector('o-page')` 稳）—— 比问 `this.app.current` 稳，
+         * 后者在冷启动那一刻可能还没落到位。
+         */
+        currentPath() {
+          const child = [...this.ele.querySelectorAll('o-page')].at(-1);
+          const src = child?.getAttribute('src') || this.app?.current?.src || '';
+          return src ? pathOf(new URL(src, location.href).href) : '';
+        },
+
+        /**
+         * 点亮顶栏。
+         *
+         * 先精确匹配五个入口；都不中时，`packages/<slug>/page.html` 一律算「组件」——
+         * 那是组件文档页的固定位置（见 docs/components.js 的 pageOf）。
+         * 「设计令牌」也在 packages/ 下，但它有自己的入口、精确匹配先命中，所以不会误判。
+         */
+        syncTopNav() {
+          const current = this.currentPath();
+          const links = [...this.ele.shadowRoot.querySelectorAll('.doc-top-nav a')];
+          // 相对 <a href> 要相对**本布局页**解析，不是文档根：布局页在 docs/ 下
+          const base = this.ele.getAttribute('src') || location.href;
+
+          let matched = false;
+          for (const a of links) {
+            const on = current !== '' && pathOf(new URL(a.getAttribute('href'), base).href) === current;
+            if (on) matched = true;
+            setCurrent(a, on);
+          }
+
+          if (!matched) {
+            setCurrent(
+              links.find((a) => a.dataset.section === 'components'),
+              /(^|\/)packages\/[^/]+\/page\.html$/.test(current),
+            );
+          }
+        },
+
+        /** 三态：自动 / 亮 / 暗。首帧由 docs/theme-boot.js（head 里的同步经典脚本）应用 */
+        readTheme() {
+          let mode = 'auto';
+          try {
+            const v = localStorage.getItem(THEME_KEY);
+            if (THEMES.includes(v)) mode = v;
+          } catch {
+            /* 隐私模式读不了，跟随系统 */
+          }
+          this._theme = mode;
+          this.themeLabel = THEME_LABELS[mode];
+        },
+
+        cycleTheme() {
+          const next = THEMES[(THEMES.indexOf(this._theme ?? 'auto') + 1) % THEMES.length];
+          if (next === 'auto') delete document.documentElement.dataset.theme;
+          else document.documentElement.dataset.theme = next;
+
+          this._theme = next;
+          this.themeLabel = THEME_LABELS[next];
+          try {
+            localStorage.setItem(THEME_KEY, next);
+          } catch {
+            /* 写不了就算了，本次会话仍然生效 */
+          }
+        },
+      },
+    });
+  </script>
+
+  <style>
+    /* 外壳样式住在这里 —— 布局页的 shadow root。
+       文档级 docs/shell.css 只剩「视口契约 + o-router/o-app/o-page 高度链」，
+       因为那三样在文档树里，进不了 shadow root；外壳本身则相反。 */
+
+    :host {
+      /* 高度链由文档级 shell.css 负责，这里只把外壳排成「顶栏 + 正文带」两行 */
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+
+      /*
+       * 顶栏高度。定义一次，顶栏自己用它；以后有别的规则要跟顶栏对齐也引用它。
+       * 它和 --mc-* 不同：这是**这个站点外壳自己的布局常数**，不属于设计令牌体系。
+       */
+      --doc-topbar: 3.5rem;
+    }
+
+    /* ---------- 顶栏（「上」那一块） ---------- */
+
+    .doc-top {
+      /*
+       * 外壳不整页滚动，顶栏本来就不会被滚走，所以不需要 sticky。
+       * position: relative 只是为了让 z-index 生效（浮层要压在它下面时用得上）。
+       */
+      position: relative;
+      z-index: var(--mc-z-sticky);
+      flex: none; /* 高度固定，不参与分配 */
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-5);
+      height: var(--doc-topbar);
+      padding-inline: var(--mc-space-5);
+      border-bottom: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    /* ---------- 顶部一级导航：五个页面平铺 ---------- */
+
+    .doc-top-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-1);
+      min-width: 0;
+
+      /*
+       * 一级入口会随页面增加。窄屏放不下时让**它自己横向滚**，
+       * 而不是把顶栏撑破 —— 撑破会连带整页出现横向滚动条。
+       * 滚动条藏起来：顶栏里横着一条太扎眼，鼠标 / 触摸照样能滚。
+       */
+      flex: 1 1 auto;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+
+    .doc-top-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .doc-top-nav a {
+      padding: var(--mc-space-1) var(--mc-space-3);
+      border-radius: var(--mc-radius-md);
+      color: rgb(var(--mc-color-fg-muted));
+      text-decoration: none;
+      font-size: var(--mc-text-sm);
+      white-space: nowrap;
+    }
+
+    .doc-top-nav a:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    /* 当前页：实心高亮（由 syncTopNav 切 aria-current） */
+    .doc-top-nav a[aria-current='page'] {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-medium);
+    }
+
+    .doc-brand {
+      font-weight: var(--mc-weight-semibold);
+      font-size: var(--mc-text-lg);
+      letter-spacing: -0.01em;
+      color: rgb(var(--mc-color-fg));
+      text-decoration: none;
+    }
+
+    .doc-theme {
+      margin-left: auto;
+      flex: none;
+      height: var(--mc-control-h-sm);
+      padding-inline: var(--mc-space-3);
+      border: 1px solid rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-xs);
+      cursor: pointer;
+    }
+
+    .doc-theme:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    /* ---------- 正文带（「下」那一块，内容由子页面自己排） ---------- */
+
+    .doc-main {
+      /*
+       * 吃掉顶栏之外的全部高度，并且是**子页面的滚动容器**：
+       * 子页面没带二级菜单时，内容直接在这里滚。
+       *
+       * 子页面带二级菜单时（页面自己的 .doc-split 把高度分给两栏），
+       * 这里的内容正好一屏高，于是它不滚 —— 滚动落在页面那两个栏里。
+       *
+       * ⚠️ display/方向不能少：<slot> 投影进来的子页面 o-page 要当 flex item 才能拿到高度。
+       */
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+
+      /*
+       * width: 100% 不能省。
+       *
+       * 外壳是纵向 flex，而 `margin-inline: auto` 在 flex 里属于**交叉轴上的
+       * auto margin** —— 它会吃掉全部自由空间，让元素不再拉伸到满宽，退化成
+       * 「由内容撑开的宽度」。少了 width: 100%，整条宽度链会塌（实测正文从
+       * 1040px 缩到 455px，首页背景图案也跟着缩成中间一条）。
+       */
+      width: 100%;
+      max-width: 82rem;
+      margin-inline: auto;
+    }
+  </style>
+
+  <header class="doc-top">
+    <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
+
+    <!--
+      一级菜单就是页面本身，五个平铺；组件文档页（packages/<slug>/page.html）
+      也会点亮「组件」—— 那是 syncTopNav 的兜底规则。二级菜单不在外壳里，
+      哪个页面需要左栏就自己在模板里放 <doc-nav>。
+    -->
+    <nav class="doc-top-nav">
+      <a href="./pages/home.html" olink>首页</a>
+      <a href="./pages/guide.html" olink>快速开始</a>
+      <a href="../packages/color/page.html" olink>设计令牌</a>
+      <a href="./pages/specs.html" olink>规范</a>
+      <a href="./pages/components.html" olink data-section="components">组件</a>
+    </nav>
+
+    <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
+      <span>{{themeLabel}}</span>
+    </button>
+  </header>
+
+  <main class="doc-main">
+    <slot></slot>
+  </main>
+</template>

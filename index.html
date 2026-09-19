@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Mosaic — 基于 ofa.js 的免构建 UI 框架</title>
+    <meta
+      name="description"
+      content="基于 ofa.js 的免安装、免构建 Web Components UI 框架。UnoCSS 原子化 + 三层 CSS 变量令牌。"
+    />
+
+    <!-- 首帧主题：head 里的同步经典脚本，防闪色 -->
+    <script src="./docs/theme-boot.js"></script>
+
+    <link rel="stylesheet" href="./packages/boot/mosaic.css" />
+    <link rel="stylesheet" href="./docs/shell.css" />
+
+    <!-- ofa.js 必须排在 mosaic.js 前面：模块按文档顺序执行 -->
+    <script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs" type="module"></script>
+    <script src="./packages/boot/mosaic.js" type="module"></script>
+  </head>
+
+  <body>
+    <!--
+      根目录这一层**只做引入**：路由库 + 应用挂载点。页面上看得见的东西
+      （顶栏、正文带、主题按钮）全在 docs/layout.html —— 那是嵌套路由的**布局页**，
+      子页面用 `export const parent = '…/docs/layout.html'` 挂上去，正文经它的 <slot> 投影。
+
+      于是这层不需要知道任何内容标记，也就不会出现「外壳一份、布局组件一份」的漂移。
+    -->
+    <l-m src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/libs/router/dist/router.min.mjs"></l-m>
+    <o-router>
+      <o-app src="./app-config.js"></o-app>
+    </o-router>
+
+    <!-- 站点脚本：页面占位（组件卡片 / 色板）的渲染。它是个普通 ES module，可以正常 import；
+         页面模块的脚本不行（ofa.js 的页面代码经 eval 执行，相对 import 解析不了）。 -->
+    <script type="module" src="./docs/site.js"></script>
+  </body>
+</html>

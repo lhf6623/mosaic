@@ -1,0 +1,135 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>快速开始</h1>
+    <p class="doc-lead">
+      不需要 npm，不需要打包器，不需要脚手架。把一个静态目录丢到任何 HTTP 服务上就能跑。
+    </p>
+
+    <h2>最小可运行页面</h2>
+
+    <pre class="doc-code"><code>&lt;!doctype html&gt;
+    &lt;html lang="zh-CN"&gt;
+      &lt;head&gt;
+        &lt;meta charset="utf-8" /&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;
+
+        &lt;!-- 1. 令牌 + 工具类。文档级，供你自己页面里的标记使用 --&gt;
+        &lt;link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" /&gt;
+
+        &lt;!-- 2. ofa.js。必须排在 mosaic.js 前面（模块按文档顺序执行） --&gt;
+        &lt;script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs" type="module"&gt;&lt;/script&gt;
+
+        &lt;!-- 3. 运行时：把工具类注入每个 shadow root --&gt;
+        &lt;script src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js" type="module"&gt;&lt;/script&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;!-- 4. 按需引入组件本体 --&gt;
+        &lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
+
+        &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;</code></pre>
+
+    <div class="doc-note">
+      <strong>三条引入缺一不可，顺序也不能换。</strong>
+      <ul>
+        <li><code>mosaic.css</code> 让<strong>你的页面</strong>能用工具类和令牌</li>
+        <li><code>ofa.js</code> 必须在 <code>mosaic.js</code> 之前 —— 模块按文档顺序求值</li>
+        <li><code>mosaic.js</code> 让<strong>组件内部</strong>能用工具类（shadow root 拿不到文档级样式）</li>
+      </ul>
+    </div>
+
+    <h2>为什么需要 mosaic.js</h2>
+    <p>
+      ofa.js 的组件渲染是 <code>attachShadow()</code> + <code>innerHTML</code>，
+      也就是<strong>组件必定有 shadow root</strong>，而文档级 <code>&lt;link&gt;</code>
+      里的规则进不去。所以只挂一份 CSS 的话，组件内部的
+      <code>class="flex gap-2"</code> 是不生效的。
+    </p>
+    <p>
+      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。
+      它约 40 行，没有别的副作用。
+    </p>
+
+    <div class="doc-note doc-warn">
+      <strong>令牌其实不需要它。</strong>
+      自定义属性天然跨 shadow 边界继承，所以颜色、圆角、尺寸在 <code>mosaic.js</code>
+      失效时依然正确 —— 只有工具类提供的排布会退化。
+      <strong>故障是分级的，不是全有全无。</strong>
+    </div>
+
+    <h2>本地开发</h2>
+    <pre class="doc-code"><code>git clone https://github.com/lhf6623/mosaic.git
+    cd mosaic
+    pnpm install
+    pnpm dev            # http://localhost:8642
+
+    pnpm tokens         # 重新生成令牌 + WCAG 对比度自检（不达标退出 1）
+    pnpm build          # = tokens && build:css
+    pnpm typecheck      # tsc --noEmit</code></pre>
+
+    <div class="doc-note doc-warn">
+      <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
+      它带 <code>-c-1</code> 禁缓存。换成别的静态服务器后，
+      改完 <code>page.html</code> 或 <code>mosaic.js</code> 浏览器会继续用旧模块，
+      表现为「改了没生效」，排查极耗时。
+    </div>
+
+    <h2>接入方式的几种变体</h2>
+
+    <h3>锁死版本（推荐）</h3>
+    <p>
+      文档里一律写精确版本号。jsDelivr 上 <code>@latest</code> / <code>@1</code> 这类别名
+      有 7 天缓存，最长 7 天不生效；而精确版本是 <strong>1 年 <code>immutable</code></strong>。
+    </p>
+
+    <h3>自托管 / 内网</h3>
+    <p>
+      本仓库没有构建产物 —— 仓库里的 <code>packages/**</code> 就是 CDN 上的东西。
+      所以 <code>git clone</code> 之后直接当静态目录托管即可，不需要任何构建步骤。
+      把上面代码块里的 CDN 前缀换成本地路径就行。
+    </p>
+
+    <h3>大陆访问</h3>
+    <p>
+      jsDelivr 在大陆历史上反复出现不可达。换入口域名、路径完全不变即可：
+    </p>
+    <pre class="doc-code"><code>https://fastly.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+    https://gcore.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+    https://testingcf.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...</code></pre>
+
+    <h2>常见问题</h2>
+
+    <h3>组件有颜色但排布不对</h3>
+    <p>
+      <code>mosaic.js</code> 没加载成功，或者 <code>mosaic.css</code> 与它不在同一目录。
+      打开控制台会看到一条 <code>[mosaic] 样式表加载失败…</code> 的报错。
+    </p>
+
+    <h3>工具类不生效</h3>
+    <p>
+      <code>mosaic.css</code> 自带的是一份<strong>预编译的精选子集</strong>（当前 370 个类），
+      覆盖布局 / 间距 / 排版 / 语义色。子集之外的（<code>mt-7</code>、
+      <code>bg-gradient-to-r</code>…）<strong>不存在</strong>，需要时请自己写 CSS。
+    </p>
+
+    <h3>写了 <code>dark:bg-black</code> 没反应</h3>
+    <p>
+      组件内部<strong>禁止使用 <code>dark:</code> 变体</strong>。它生成的是后代选择器，
+      而 <code>&lt;html data-theme="dark"&gt;</code> 在 shadow 树外面，匹配不到。
+      这是静默失效，没有任何报错。主题差异请走令牌。
+    </p>
+  </div>
+  <script>
+    /*
+     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
+     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
+     * packages/<slug>/ 下是 '../../docs/layout.html'。
+     */
+    export const parent = '../layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

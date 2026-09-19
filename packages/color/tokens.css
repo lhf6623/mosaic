@@ -1,0 +1,330 @@
+/* ============================================================================
+ * Mosaic Design Tokens — 由 tools/gen-tokens.mjs 生成，请勿手工编辑
+ * 品牌色相 288° (OKLCH) · 6 色族 × 11 档 · 重新生成：pnpm tokens
+ *
+ * 三层结构，组件只允许消费第 2、3 层：
+ *   L1 原始色阶  --mc-<family>-<step>   存 sRGB 通道三元组，配合 rgb(var(--x) / a) 支持透明度
+ *   L2 语义令牌  --mc-color-* / --mc-space-* / ...  主题在这里切换
+ *   L3 组件令牌  --mc-<component>-*     默认引用 L2，供使用者按实例覆盖
+ *
+ * 令牌只定义在 :root 上（不带 :host）。原因见下方 @layer 声明处的注释。
+ * ========================================================================== */
+
+/* 层顺序在这里一次性钉死。
+ *
+ * 为什么必须显式声明、且必须出现在最前面：CSS 的层顺序由「首次出现」决定，
+ * 后写的 @layer 语句无法把已声明过的层挪位。而 shadow root 里我们会 adopt 两份表
+ * （mosaic.css + shadow-base.css），如果靠它们的先后顺序来隐式排序，
+ * 一旦 adopt 顺序变了，shadow-base 里的元素级 reset 就会跑到工具类**上面**去，
+ * 把 px-4 之类的规则压掉。显式声明让顺序与 adopt 顺序解耦。
+ *
+ * 预期顺序（从低到高）：
+ *   组件自己的 <style> 是未分层的 → 永远赢过全部上面这些层
+ */
+@layer mosaic.base, mosaic.tokens, mosaic.preflights, mosaic.components, mosaic.utilities;
+
+/* 令牌只写在 :root 上，**刻意不写 :host**。
+ *
+ * 这份表在 shadow root 里也会被 adopt 一次，但里面所有令牌选择器都只在文档根上匹配：
+ *
+ *   :root              在 shadow root 内不匹配任何元素 → 不干扰
+ *   [data-theme=dark]  选的是 <html>，也在 shadow 树外 → 不干扰
+ *
+ * 组件的令牌从哪来？靠**自定义属性继承** —— :root 上的值一路继承进每个 shadow root。
+ *
+ * 如果这里写成 `:root, :host`，shadow root 里的 `:host` 会给宿主元素重新赋一遍
+ * **亮色**值，直接盖掉从文档继承下来的暗色值 —— 表现为「切主题时组件纹丝不动」。
+ * 同理，暗色规则不能写成 `:host([data-theme=dark])`，那在组件上永远不成立。
+ */
+@layer mosaic.tokens {
+  /* ---- L1 原始色阶 ------------------------------------------------ */
+  :root {
+    /* neutral */
+    --mc-neutral-50: 244 246 248; /* #f4f6f8 */
+    --mc-neutral-100: 232 235 238; /* #e8ebee */
+    --mc-neutral-200: 213 218 224; /* #d5dae0 */
+    --mc-neutral-300: 186 193 203; /* #bac1cb */
+    --mc-neutral-400: 150 160 176; /* #96a0b0 */
+    --mc-neutral-500: 124 136 154; /* #7c889a */
+    --mc-neutral-600: 101 113 131; /* #657183 */
+    --mc-neutral-700: 86 97 113; /* #566171 */
+    --mc-neutral-800: 70 79 92; /* #464f5c */
+    --mc-neutral-900: 60 67 77; /* #3c434d */
+    --mc-neutral-950: 35 39 46; /* #23272e */
+    /* primary */
+    --mc-primary-50: 245 245 255; /* #f5f5ff */
+    --mc-primary-100: 233 232 255; /* #e9e8ff */
+    --mc-primary-200: 215 212 255; /* #d7d4ff */
+    --mc-primary-300: 189 182 255; /* #bdb6ff */
+    --mc-primary-400: 156 140 255; /* #9c8cff */
+    --mc-primary-500: 134 102 255; /* #8666ff */
+    --mc-primary-600: 114 70 237; /* #7246ed */
+    --mc-primary-700: 97 58 206; /* #613ace */
+    --mc-primary-800: 79 49 166; /* #4f31a6 */
+    --mc-primary-900: 66 45 137; /* #422d89 */
+    --mc-primary-950: 39 25 85; /* #271955 */
+    /* info */
+    --mc-info-50: 239 247 255; /* #eff7ff */
+    --mc-info-100: 219 237 255; /* #dbedff */
+    --mc-info-200: 188 222 255; /* #bcdeff */
+    --mc-info-300: 139 198 255; /* #8bc6ff */
+    --mc-info-400: 66 165 250; /* #42a5fa */
+    --mc-info-500: 0 139 230; /* #008be6 */
+    --mc-info-600: 0 116 193; /* #0074c1 */
+    --mc-info-700: 0 99 166; /* #0063a6 */
+    --mc-info-800: 0 81 137; /* #005189 */
+    --mc-info-900: 0 68 117; /* #004475 */
+    --mc-info-950: 0 40 73; /* #002849 */
+    /* success */
+    --mc-success-50: 238 249 240; /* #eef9f0 */
+    --mc-success-100: 220 241 224; /* #dcf1e0 */
+    --mc-success-200: 190 229 199; /* #bee5c7 */
+    --mc-success-300: 146 210 162; /* #92d2a2 */
+    --mc-success-400: 77 185 113; /* #4db971 */
+    --mc-success-500: 0 162 82; /* #00a252 */
+    --mc-success-600: 0 135 67; /* #008743 */
+    --mc-success-700: 0 116 57; /* #007439 */
+    --mc-success-800: 0 95 45; /* #005f2d */
+    --mc-success-900: 0 80 37; /* #005025 */
+    --mc-success-950: 0 48 20; /* #003014 */
+    /* warning */
+    --mc-warning-50: 252 244 235; /* #fcf4eb */
+    --mc-warning-100: 247 232 214; /* #f7e8d6 */
+    --mc-warning-200: 239 213 181; /* #efd5b5 */
+    --mc-warning-300: 227 184 130; /* #e3b882 */
+    --mc-warning-400: 209 145 51; /* #d19133 */
+    --mc-warning-500: 184 119 0; /* #b87700 */
+    --mc-warning-600: 154 99 0; /* #9a6300 */
+    --mc-warning-700: 132 84 0; /* #845400 */
+    --mc-warning-800: 108 68 0; /* #6c4400 */
+    --mc-warning-900: 92 58 0; /* #5c3a00 */
+    --mc-warning-950: 56 33 0; /* #382100 */
+    /* danger */
+    --mc-danger-50: 255 242 241; /* #fff2f1 */
+    --mc-danger-100: 255 227 224; /* #ffe3e0 */
+    --mc-danger-200: 255 203 197; /* #ffcbc5 */
+    --mc-danger-300: 255 165 156; /* #ffa59c */
+    --mc-danger-400: 245 112 103; /* #f57067 */
+    --mc-danger-500: 232 66 64; /* #e84240 */
+    --mc-danger-600: 208 23 35; /* #d01723 */
+    --mc-danger-700: 180 12 27; /* #b40c1b */
+    --mc-danger-800: 146 20 25; /* #921419 */
+    --mc-danger-900: 121 24 25; /* #791819 */
+    --mc-danger-950: 75 12 12; /* #4b0c0c */
+  }
+
+  /* ---- L2 语义令牌 · 亮色（默认） -------------------------------- */
+  :root {
+    color-scheme: light;
+    --mc-color-bg: var(--mc-neutral-50);
+    --mc-color-surface: 255 255 255;
+    --mc-color-surface-raised: 255 255 255;
+    --mc-color-surface-sunken: var(--mc-neutral-100);
+    --mc-color-fg: var(--mc-neutral-900);
+    --mc-color-fg-muted: var(--mc-neutral-600);
+    --mc-color-fg-subtle: var(--mc-neutral-500);
+    --mc-color-fg-inverted: 255 255 255;
+    --mc-color-border: var(--mc-neutral-200);
+    --mc-color-border-strong: var(--mc-neutral-300);
+    --mc-color-ring: var(--mc-primary-500);
+    --mc-color-overlay: 15 18 30;
+    --mc-color-neutral: var(--mc-neutral-200);
+    --mc-color-neutral-fg: var(--mc-neutral-900);
+    --mc-color-overlay-alpha: 0.45;
+    --mc-color-primary: var(--mc-primary-600);
+    --mc-color-primary-hover: var(--mc-primary-700);
+    --mc-color-primary-active: var(--mc-primary-800);
+    --mc-color-primary-subtle: var(--mc-primary-50);
+    --mc-color-primary-fg: 255 255 255;
+    --mc-color-info: var(--mc-info-600);
+    --mc-color-info-hover: var(--mc-info-700);
+    --mc-color-info-active: var(--mc-info-800);
+    --mc-color-info-subtle: var(--mc-info-50);
+    --mc-color-info-fg: 255 255 255;
+    --mc-color-success: var(--mc-success-700);
+    --mc-color-success-hover: var(--mc-success-800);
+    --mc-color-success-active: var(--mc-success-900);
+    --mc-color-success-subtle: var(--mc-success-50);
+    --mc-color-success-fg: 255 255 255;
+    --mc-color-warning: var(--mc-warning-600);
+    --mc-color-warning-hover: var(--mc-warning-700);
+    --mc-color-warning-active: var(--mc-warning-800);
+    --mc-color-warning-subtle: var(--mc-warning-50);
+    --mc-color-warning-fg: 255 255 255;
+    --mc-color-danger: var(--mc-danger-600);
+    --mc-color-danger-hover: var(--mc-danger-700);
+    --mc-color-danger-active: var(--mc-danger-800);
+    --mc-color-danger-subtle: var(--mc-danger-50);
+    --mc-color-danger-fg: 255 255 255;
+  }
+
+  /* ---- L2 语义令牌 · 暗色 ---------------------------------------- */
+  /* 方式一：显式切换（推荐，可做「跟随系统 / 强制亮 / 强制暗」三态） */
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --mc-color-bg: var(--mc-neutral-950);
+    --mc-color-surface: var(--mc-neutral-900);
+    --mc-color-surface-raised: var(--mc-neutral-800);
+    --mc-color-surface-sunken: 4 6 12;
+    --mc-color-fg: var(--mc-neutral-50);
+    --mc-color-fg-muted: var(--mc-neutral-300);
+    --mc-color-fg-subtle: var(--mc-neutral-400);
+    --mc-color-fg-inverted: var(--mc-neutral-950);
+    --mc-color-border: var(--mc-neutral-800);
+    --mc-color-border-strong: var(--mc-neutral-700);
+    --mc-color-ring: var(--mc-primary-400);
+    --mc-color-overlay: 0 0 0;
+    --mc-color-neutral: var(--mc-neutral-700);
+    --mc-color-neutral-fg: var(--mc-neutral-50);
+    --mc-color-overlay-alpha: 0.65;
+    --mc-color-primary: var(--mc-primary-300);
+    --mc-color-primary-hover: var(--mc-primary-200);
+    --mc-color-primary-active: var(--mc-primary-100);
+    --mc-color-primary-subtle: var(--mc-primary-950);
+    --mc-color-primary-fg: var(--mc-neutral-950);
+    --mc-color-info: var(--mc-info-300);
+    --mc-color-info-hover: var(--mc-info-200);
+    --mc-color-info-active: var(--mc-info-100);
+    --mc-color-info-subtle: var(--mc-info-950);
+    --mc-color-info-fg: var(--mc-neutral-950);
+    --mc-color-success: var(--mc-success-300);
+    --mc-color-success-hover: var(--mc-success-200);
+    --mc-color-success-active: var(--mc-success-100);
+    --mc-color-success-subtle: var(--mc-success-950);
+    --mc-color-success-fg: var(--mc-neutral-950);
+    --mc-color-warning: var(--mc-warning-300);
+    --mc-color-warning-hover: var(--mc-warning-200);
+    --mc-color-warning-active: var(--mc-warning-100);
+    --mc-color-warning-subtle: var(--mc-warning-950);
+    --mc-color-warning-fg: var(--mc-neutral-950);
+    --mc-color-danger: var(--mc-danger-300);
+    --mc-color-danger-hover: var(--mc-danger-200);
+    --mc-color-danger-active: var(--mc-danger-100);
+    --mc-color-danger-subtle: var(--mc-danger-950);
+    --mc-color-danger-fg: var(--mc-neutral-950);
+  }
+
+  /* 方式二：未显式指定时跟随系统偏好 */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      color-scheme: dark;
+      --mc-color-bg: var(--mc-neutral-950);
+      --mc-color-surface: var(--mc-neutral-900);
+      --mc-color-surface-raised: var(--mc-neutral-800);
+      --mc-color-surface-sunken: 4 6 12;
+      --mc-color-fg: var(--mc-neutral-50);
+      --mc-color-fg-muted: var(--mc-neutral-300);
+      --mc-color-fg-subtle: var(--mc-neutral-400);
+      --mc-color-fg-inverted: var(--mc-neutral-950);
+      --mc-color-border: var(--mc-neutral-800);
+      --mc-color-border-strong: var(--mc-neutral-700);
+      --mc-color-ring: var(--mc-primary-400);
+      --mc-color-overlay: 0 0 0;
+      --mc-color-neutral: var(--mc-neutral-700);
+      --mc-color-neutral-fg: var(--mc-neutral-50);
+      --mc-color-overlay-alpha: 0.65;
+      --mc-color-primary: var(--mc-primary-300);
+      --mc-color-primary-hover: var(--mc-primary-200);
+      --mc-color-primary-active: var(--mc-primary-100);
+      --mc-color-primary-subtle: var(--mc-primary-950);
+      --mc-color-primary-fg: var(--mc-neutral-950);
+      --mc-color-info: var(--mc-info-300);
+      --mc-color-info-hover: var(--mc-info-200);
+      --mc-color-info-active: var(--mc-info-100);
+      --mc-color-info-subtle: var(--mc-info-950);
+      --mc-color-info-fg: var(--mc-neutral-950);
+      --mc-color-success: var(--mc-success-300);
+      --mc-color-success-hover: var(--mc-success-200);
+      --mc-color-success-active: var(--mc-success-100);
+      --mc-color-success-subtle: var(--mc-success-950);
+      --mc-color-success-fg: var(--mc-neutral-950);
+      --mc-color-warning: var(--mc-warning-300);
+      --mc-color-warning-hover: var(--mc-warning-200);
+      --mc-color-warning-active: var(--mc-warning-100);
+      --mc-color-warning-subtle: var(--mc-warning-950);
+      --mc-color-warning-fg: var(--mc-neutral-950);
+      --mc-color-danger: var(--mc-danger-300);
+      --mc-color-danger-hover: var(--mc-danger-200);
+      --mc-color-danger-active: var(--mc-danger-100);
+      --mc-color-danger-subtle: var(--mc-danger-950);
+      --mc-color-danger-fg: var(--mc-neutral-950);
+    }
+  }
+
+  /* ---- L2 排版 / 间距 / 圆角 / 控件 / 动效 / 层级 ------------------ */
+  :root {
+
+    --mc-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mc-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --mc-text-xs: 0.75rem;
+    --mc-text-xs-lh: 1rem;
+    --mc-text-sm: 0.875rem;
+    --mc-text-sm-lh: 1.25rem;
+    --mc-text-base: 1rem;
+    --mc-text-base-lh: 1.5rem;
+    --mc-text-lg: 1.125rem;
+    --mc-text-lg-lh: 1.75rem;
+    --mc-text-xl: 1.25rem;
+    --mc-text-xl-lh: 1.75rem;
+    --mc-text-2xl: 1.5rem;
+    --mc-text-2xl-lh: 2rem;
+    --mc-text-3xl: 1.875rem;
+    --mc-text-3xl-lh: 2.25rem;
+
+    --mc-weight-normal: 400;
+    --mc-weight-medium: 500;
+    --mc-weight-semibold: 600;
+    --mc-weight-bold: 700;
+
+    --mc-space-0: 0;
+    --mc-space-1: 0.25rem;
+    --mc-space-2: 0.5rem;
+    --mc-space-3: 0.75rem;
+    --mc-space-4: 1rem;
+    --mc-space-5: 1.25rem;
+    --mc-space-6: 1.5rem;
+    --mc-space-8: 2rem;
+    --mc-space-10: 2.5rem;
+    --mc-space-12: 3rem;
+    --mc-space-16: 4rem;
+
+    --mc-radius-none: 0;
+    --mc-radius-sm: 0.25rem;
+    --mc-radius-md: 0.375rem;
+    --mc-radius-lg: 0.5rem;
+    --mc-radius-xl: 0.75rem;
+    --mc-radius-2xl: 1rem;
+    --mc-radius-full: 9999px;
+
+    --mc-control-h-sm: 1.75rem;
+    --mc-control-h-md: 2.25rem;
+    --mc-control-h-lg: 2.75rem;
+
+    --mc-duration-fast: 120ms;
+    --mc-duration-base: 180ms;
+    --mc-duration-slow: 280ms;
+
+    --mc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --mc-ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+
+    --mc-z-dropdown: 1000;
+    --mc-z-sticky: 1100;
+    --mc-z-overlay: 1200;
+    --mc-z-modal: 1300;
+    --mc-z-popover: 1400;
+    --mc-z-toast: 1500;
+    --mc-z-tooltip: 1600;
+  }
+}
+
+/* ---- 使用示例 ------------------------------------------------------
+ * 组件内部（shadow DOM）：直接消费语义令牌即可，无需任何工具类
+ *   .mc-btn { background: rgb(var(--mc-color-primary)); color: rgb(var(--mc-color-primary-fg)); }
+ *
+ * 宿主页面覆盖（未分层 → 一定赢过 @layer）：
+ *   :root { --mc-color-primary: 16 185 129; }
+ *
+ * 单实例覆盖（组件令牌在宿主元素上重新赋值，随继承进入 shadow DOM）：
+ *   <mc-button style="--mc-color-primary: 220 38 38">删除</mc-button>
+ * ------------------------------------------------------------------ */

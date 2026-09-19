@@ -1,0 +1,107 @@
+/* ============================================================================
+ * 文档站 —— 文档级样式：视口契约 + 路由/页面的高度链
+ *
+ * 外壳（顶栏 + 正文带）**不在文档树里**：它是布局页 docs/layout.html 的 shadow 内容，
+ * 样式写在那份文件的 <style> 里。这里只留必须落在文档树上的两件事：
+ *
+ *   1. html / body 的视口契约 —— 不进 shadow root，只能写在文档里
+ *   2. o-router → o-app → o-page 的**高度链** —— 这三个元素都在文档树里
+ *      （o-page 是 o-app 的 light DOM 子节点，子页面又挂在布局页的 o-page 里），
+ *      所以能、也必须从文档级给它们定高
+ *
+ * 布局结构（ofa.js「嵌套页面/路由」）：
+ *
+ *   body              纵向 flex，height: 100% + overflow: hidden（钉死一屏）
+ *   └─ o-router       flex: 1
+ *      └─ o-app
+ *         └─ o-page    布局页 docs/layout.html
+ *            ├─ shadow  .doc-top + .doc-main>slot        ← 外壳，样式在 layout.html
+ *            └─ o-page  当前子页面（被 <slot> 投影进 .doc-main）
+ *               └─ shadow  页面正文（content.css 由页面自己 link）
+ *
+ * 这份表刻意**不放进任何 @layer**：CSS 里未分层的声明赢过所有分层声明，
+ * 所以这里不需要 !important 就能稳定覆盖 mosaic.css 里的工具类。
+ *
+ * 颜色一律消费 Mosaic 令牌，所以深浅色主题自动跟随，不需要在这里写媒体查询。
+ * ========================================================================== */
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* 整个视口就是外壳，全局不滚 —— 「不要全局滚动条」的第一半 */
+html {
+  height: 100%;
+}
+
+body {
+  /*
+   * 纵向 flex —— 顶栏 + 正文带。外壳在布局页的 shadow 里，这里负责把视口交给
+   * o-router，再用下面那条 o-page 规则把高度一路传到底。
+   *
+   * height + overflow: hidden 而不是 min-height: 100vh：
+   * 前者把外壳钉死在一屏内，溢出的内容由内部滚动区消化；后者会让整页长出去，
+   * 浏览器就给出全局滚动条（这正是要消掉的东西）。
+   */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  background-color: rgb(var(--mc-color-bg));
+  color: rgb(var(--mc-color-fg));
+  font-family: var(--mc-font-sans);
+  font-size: var(--mc-text-base);
+  line-height: var(--mc-text-base-lh);
+  -webkit-text-size-adjust: 100%;
+}
+
+/*
+ * 高度链条：o-router → o-app → o-page（布局页）→ slot → o-page（子页面）
+ *
+ * 页面内容在各自 o-page 的 shadow root 里，中间隔着 ofa.js 的几个元素。
+ * 它们本来都是块级、高度由内容决定，所以要把 flex 传下去。
+ *
+ * basis 写 auto（而不是 `flex: 1` 那种 basis 0）：让元素的内容高度参与外层容器的
+ * 固有尺寸计算，长页面更稳。这里两者实测结果相同，但 basis auto 在容器高度
+ * 不确定时行为更可预期。
+ *
+ * ⚠️ 这两条对**所有** o-page 生效（布局页 + 子页面），这是有意的：两者都在这条链上。
+ * ⚠️ min-height: 0 不能省，否则长内容会顶破某一环，滚动条就跑到 window 上去了。
+ */
+o-router {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * ⚠️ overflow: visible 不能省。ofa.js 的 o-router 自带
+   * `:host { display: block; width: 100%; height: 100%; overflow: hidden }`，
+   * 它会把超出的一截裁掉、且**不再往上传滚动溢出** —— 于是正文带的
+   * scrollHeight 永远等于 clientHeight，长页面被静默截断、还看不到滚动条。
+   * （外部文档树的普通声明赢过 :host，所以这里能覆盖掉它。）
+   */
+  overflow: visible;
+}
+
+o-app,
+o-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 正文带的内边距不在这里：页面自己带（见 docs/content.css 的 .doc-body）。
+ * 因为带二级菜单的页面要让左栏贴到外壳边缘，外壳再给一层内边距就错位了。
+ */

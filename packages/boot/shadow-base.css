@@ -1,0 +1,72 @@
+/* ============================================================================
+ * Mosaic Shadow Base —— 只注入 shadow root，绝不 <link> 到宿主页面
+ *
+ * 为什么必须单独一份：
+ *   文档级样式表的规则**不会**进入 shadow root（只有 @property / @font-face 这类
+ *   有全局语义的除外）。反过来，这份 CSS 里的 `*` / `button` 选择器如果被 <link>
+ *   到宿主页面，就会重置使用者的整页样式。所以两者的分发渠道必须分开：
+ *
+ *     dist/mosaic.css        → 可以 <link> 可以 adopt（令牌 + 工具类，纯增量）
+ *     dist/mosaic-shadow.css → 只能 adopt 进 shadow root（本文件，含元素级 reset）
+ *
+ * 内容是刻意精简的：组件不能假设宿主有任何 reset，所以每个组件都要能
+ * 在最"脏"的宿主环境下正常渲染。但也不该把 Tailwind 整页 preflight 塞进来
+ * （7499 B / 2.6 KB gz），那会把宿主的 h1/img/ul 一并重置掉。
+ * ========================================================================== */
+
+@layer mosaic.base {
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+  }
+
+  :host {
+    /* 这些属性可继承，令牌又跨 shadow 边界继承，所以使用者改 :root 就能全局生效 */
+    font-family: var(--mc-font-sans);
+    font-size: var(--mc-text-base);
+    line-height: var(--mc-text-base-lh);
+    color: rgb(var(--mc-color-fg));
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* 表单控件不会从宿主继承字体，必须显式 inherit */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  button {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  /* 尊重系统的减弱动效偏好。组件内所有过渡都用 --mc-duration-*，
+     这里统一把它们压到 1ms，而不是逐个组件写媒体查询。 */
+  @media (prefers-reduced-motion: reduce) {
+    :host {
+      --mc-duration-fast: 1ms;
+      --mc-duration-base: 1ms;
+      --mc-duration-slow: 1ms;
+    }
+  }
+}

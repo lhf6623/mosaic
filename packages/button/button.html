@@ -1,0 +1,235 @@
+<!--
+  mc-button — Mosaic 参考组件实现
+
+  这个文件是「组件规范」的活样例，写新组件请照抄它的结构与分层。
+
+  三条主线，先记住再读代码：
+
+  1. 视觉全部定义在 :host 上
+     这样外部 `style="height:32px; border-radius:8px"` 能直接覆盖（内联样式优先级最高）。
+
+  2. 属性是正交的两维，不是一维枚举
+       color   = 语义色（primary / info / success / warning / danger / neutral）
+       variant = 外观样式（filled / outline / ghost）
+     拆开的好处：`outline + danger`（次要样式的危险操作）能表达出来，
+     而且 CSS 只需要 6 条 color 规则 + 3 条 variant 规则，而不是 18 条组合规则。
+     把两维混成一维（variant="danger"）就退化成了不可组合的枚举。
+
+  3. 交互语义交给内部一个透明的原生 <button class="mc-native">
+     宿主只负责「长什么样」，原生元素负责「点击 / 键盘 / 焦点 / disabled」。
+
+  hover / active 用 state layer（currentColor + 半透明），不额外定义 hover 色令牌。
+  这样不管什么 color、什么主题，叠加层自动是对的。
+-->
+<template component>
+  <style>
+    :host {
+      /* ---------- 盒模型与尺寸：使用者最想覆盖的部分，放最前 ---------- */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      position: relative; /* .mc-layer 和 .mc-native 的包含块，不能省（见 P21） */
+      gap: 0.5em;
+      height: var(--mc-control-h-md);
+      padding-inline: var(--mc-space-4);
+      border: 1px solid transparent;
+      border-radius: var(--mc-radius-md);
+      vertical-align: middle;
+
+      /* ---------- 排版 ---------- */
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      font-weight: var(--mc-weight-medium);
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+
+      /* ---------- 色槽：只有两个 ----------
+         color 属性只负责往这两个槽里填值，variant 只管把它们贴到哪里。
+         hover/active 由 state layer 叠加，不需要额外的色槽。 */
+      --mc-btn-fill: var(--mc-color-primary);       /* filled 的底 */
+      --mc-btn-on-fill: var(--mc-color-primary-fg); /* filled 上的文字 */
+      --mc-btn-accent: var(--mc-color-primary);     /* outline / ghost 的线与文字 */
+
+      /* filled 是默认外观，直接写在 :host 上。
+         不要写 :host(:not([variant])) —— ofa.js 不支持 :host() 内嵌 :not()，会静默失效（P14）。 */
+      background-color: rgb(var(--mc-btn-fill));
+      color: rgb(var(--mc-btn-on-fill));
+    }
+
+    /* ---------- 维度一：color（语义色） ---------- */
+    :host([color="info"]) {
+      --mc-btn-fill: var(--mc-color-info);
+      --mc-btn-on-fill: var(--mc-color-info-fg);
+      --mc-btn-accent: var(--mc-color-info);
+    }
+    :host([color="success"]) {
+      --mc-btn-fill: var(--mc-color-success);
+      --mc-btn-on-fill: var(--mc-color-success-fg);
+      --mc-btn-accent: var(--mc-color-success);
+    }
+    :host([color="warning"]) {
+      --mc-btn-fill: var(--mc-color-warning);
+      --mc-btn-on-fill: var(--mc-color-warning-fg);
+      --mc-btn-accent: var(--mc-color-warning);
+    }
+    :host([color="danger"]) {
+      --mc-btn-fill: var(--mc-color-danger);
+      --mc-btn-on-fill: var(--mc-color-danger-fg);
+      --mc-btn-accent: var(--mc-color-danger);
+    }
+    /* // 中性是个特例：它需要"浅底深字"（填充）和"深字浅线"（强调），
+    // 同一个值做不到，所以三个槽分别取不同令牌。 */
+    :host([color="neutral"]) {
+      --mc-btn-fill: var(--mc-color-neutral);
+      --mc-btn-on-fill: var(--mc-color-neutral-fg);
+      --mc-btn-accent: var(--mc-color-fg-muted);
+    }
+
+    /* ---------- 维度二：variant（外观样式） ---------- */
+    :host([variant="outline"]) {
+      background-color: transparent;
+      color: rgb(var(--mc-btn-accent));
+      border-color: rgb(var(--mc-btn-accent));
+    }
+    :host([variant="ghost"]) {
+      background-color: transparent;
+      color: rgb(var(--mc-btn-accent));
+      border-color: transparent;
+    }
+
+    /* ---------- 尺寸 ---------- */
+    :host([size="sm"]) {
+      height: var(--mc-control-h-sm);
+      padding-inline: var(--mc-space-3);
+      font-size: var(--mc-text-xs);
+    }
+    :host([size="lg"]) {
+      height: var(--mc-control-h-lg);
+      padding-inline: var(--mc-space-5);
+      font-size: var(--mc-text-base);
+    }
+
+    /* ---------- 布局模式 ---------- */
+    :host([block]) {
+      display: flex;
+      width: 100%;
+    }
+
+    /* ---------- 状态 ---------- */
+    :host([disabled]),
+    :host([loading]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ---------- state layer：hover / active ----------
+       用 currentColor 而不是新令牌：不管什么 color、什么主题，叠加层自动协调。 */
+    .mc-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      background-color: currentColor;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    :host(:hover) .mc-layer {
+      opacity: 0.08;
+    }
+    :host(:active) .mc-layer {
+      opacity: 0.12;
+    }
+    /* 禁用/加载态不响应 hover。正向选择器覆盖，不用 :not() */
+    :host([disabled]) .mc-layer,
+    :host([loading]) .mc-layer {
+      opacity: 0;
+    }
+
+    /* ---------- 内部结构 ---------- */
+    /* 透明原生 button 只承载语义，不承载视觉。
+       z-index 必须高于 .mc-layer，否则点击会被叠加层拦掉（见 P21）。 */
+    .mc-native {
+      all: unset;
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      cursor: inherit;
+      border-radius: inherit;
+    }
+    /* 焦点环用 ring 令牌，不用 currentColor ——
+       filled 按钮文字是白的，白圈画在浅色页面上完全不可见（P16）。 */
+    .mc-native:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+
+    /* loading 指示器：常驻 DOM，靠属性选择器显隐。
+       不要用 o-if / x-if —— 它们不响应运行时属性变化（P10）。 */
+    .mc-loader {
+      display: none;
+      width: 1em;
+      height: 1em;
+      flex-shrink: 0;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-right-color: currentColor;
+      border-radius: 50%;
+      animation: mc-btn-spin 0.7s linear infinite;
+    }
+    :host([loading]) .mc-loader {
+      display: inline-flex;
+    }
+    @keyframes mc-btn-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    ::slotted([slot="prefix"]),
+    ::slotted([slot="suffix"]) {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <!-- 交互语义层：透明原生 button，盖满宿主 -->
+  <button
+    class="mc-native"
+    :type="type"
+    :disabled="disabled !== null || loading !== null"
+  ></button>
+
+  <span class="mc-layer" aria-hidden="true"></span>
+  <span class="mc-loader" aria-hidden="true"></span>
+  <slot name="prefix"></slot>
+  <slot></slot>
+  <slot name="suffix"></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-button',
+
+      attrs: {
+        color: 'primary',
+        variant: 'filled',
+        size: 'md',
+        type: 'button',
+        // 布尔属性默认值必须是 null，不能是 false。
+        // 用 false 会覆盖初始的裸属性，导致 <mc-button disabled> 完全失效（P1）。
+        disabled: null,
+        loading: null,
+      },
+
+      proto: {
+        // 原生 click 自带 composed: true，会穿透 shadow 边界冒泡到宿主，
+        // 所以使用者直接写 <mc-button on:click="..."> 即可，不需要自定义事件。
+        // 禁用态由 .mc-native 的 :disabled 兜住，这里不需要再拦截。
+      },
+    });
+  </script>
+</template>

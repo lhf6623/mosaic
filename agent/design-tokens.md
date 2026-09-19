@@ -1,0 +1,329 @@
+# Mosaic 设计令牌与配色规范
+
+> 本文里的**每一个色值、每一个对比度数字都是 `tools/gen-tokens.mjs` 算出来并自检过的**，
+> 不是手写的。改调色板请改那个脚本，不要改 `tokens.css`（它会被覆盖）。
+
+---
+
+## 一、为什么这样设计
+
+### 1. 调色板在 OKLCH 里生成，落到 sRGB
+
+手写色阶的典型毛病：`500 → 600` 视觉跳变比 `400 → 500` 大一截；
+浅色档发灰发脏；深色档突然发荧光。根因是 sRGB 和 HSL 的明度**不是感知均匀的**。
+
+OKLCH 的 L 通道是感知明度，所以我们可以用**等距的 L 值**定义 11 个档位
+（50→950 的 L 从 0.972 平滑降到 0.272），视觉步长自然均匀。
+
+超出 sRGB 色域时**二分降低 chroma**（保持色相和明度），而不是直接裁剪通道 ——
+直接裁剪会让色相偏移（这是很多手写色板"颜色说不清哪里不对"的原因）。
+
+> 开发过程中真的踩到了这个坑：第一版把 **XYZ→sRGB 的矩阵直接套在了 LMS 值上**，
+> 漏了中间一步，导致中性灰偏暖（`#fff0eb`）、主色从紫罗兰偏成青色（`#0090d6`）。
+> 教训是：OKLab 合成矩阵**每行系数之和必须为 1**，否则 `a=b=0` 时得不到中性灰。
+> 这是个可以在代码里一眼验证的不变量，已写进脚本注释。
+
+### 2. 三层结构，组件只准碰上面两层
+
+```
+L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
+                     ↓
+L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
+                     ↓
+L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组
+```
+
+### 全链路唯一不变量：颜色令牌存的都是「R G B」通道三元组
+
+**存的时候不要包 `rgb()`，用的时候必须包。**
+
+```css
+/* 存 */
+:root                { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
+mc-button            { --mc-btn-fill: var(--mc-color-primary); }
+
+/* 用 */
+.mc-btn              { background-color: rgb(var(--mc-btn-fill)); }
+.mc-btn--translucent { background-color: rgb(var(--mc-btn-fill) / 0.5); }
+```
+
+**为什么必须这样**：UnoCSS 的 theme 会把值拼成
+`rgb(var(--mc-color-primary) / <alpha-value>)`。如果某一层存的是**完整颜色**，
+就会拼出 `rgb(rgb(114 70 237) / 1)` 这种**非法 CSS** —— 整条声明在计算值阶段被丢弃，
+表现为「类名在、规则在、就是不生效」，控制台零报错。这类 bug 极难反查。
+
+> 这不是假设：第一版里 L1 存三元组、L2 却存了完整颜色（`rgb(var(--mc-primary-600))`），
+> 结果**所有语义色工具类静默失效**，组件颜色全部落回继承值。
+> 冒烟测试里的 `text-muted → neutral-600` 断言才把它抓出来。
+
+**代价**：暂时放弃 P3 广色域 —— 将来可以加一层 `@supports (color: oklch(0 0 0))` 覆盖，
+不影响现有 API。
+
+### 令牌只定义在 `:root` 上，**刻意不带 `:host`**
+
+```css
+:root { --mc-color-primary: ...; }              /* ✅ 文档根 */
+:root, :host { --mc-color-primary: ...; }       /* ❌ 会破坏主题切换 */
+```
+
+令牌表在 shadow root 里也会被 adopt 一次，所以选择器必须考虑到这一点：
+
+| 选择器 | 文档里 | shadow root 里 |
+|---|---|---|
+| `:root` | 匹配 `<html>`，生效 | **不匹配任何元素**，不干扰 |
+| `[data-theme="dark"]` | 匹配 `<html>`，生效 | 不匹配，不干扰 |
+| `:host` | 不匹配 | **匹配宿主元素**，会重新赋一遍值 |
+
+写成 `:root, :host` 的后果：shadow root 内的 `:host` 会给宿主元素重新赋**亮色**值，
+盖掉从文档继承下来的暗色值 —— 表现为「切主题时组件纹丝不动」，同样零报错。
+
+组件里的令牌从哪来？**靠自定义属性继承** —— `:root` 上的值一路继承进每个 shadow root。
+这正是 D3 里「共享令牌 ≠ 共享工具类」的依据。
+
+### 3. 每个状态色族只保留一个档位
+
+这是本配色方案最值得说的一条规则。
+
+直觉做法是给每个语义色配两个值：一个当填充、一个当文字（Radix 的 9/11 号色就是这么分的）。
+但那会导致 `text-primary-text` 这种读起来很别扭的类名，
+而且使用者很容易用错角色。
+
+我们改成：**每个色族只保留一个档位，并用自检脚本强制它同时满足两个约束**：
+
+- ① 作为实心填充时，`--mc-color-<f>-fg` 压在它上面 ≥ **4.5:1**
+- ② 作为文字落在中性底 `--mc-color-surface` 上时 ≥ **4.5:1**
+
+于是 `bg-primary` / `text-primary` / `border-primary` / `ring-primary`
+可以无脑用同一个令牌，不需要记"哪个是填充哪个是文字"。
+
+**这个约束是构建期的硬门禁**：不达标 `pnpm tokens` 直接退出 1。
+也就是说，将来换品牌色相时**不可能**悄悄引入一个无障碍回归。
+
+---
+
+## 二、L1 原始色阶
+
+六个色族 × 11 档。`hue` 是 OKLCH 色相角，`cmax` 是该色相在 sRGB 里的合理彩度上限。
+
+| 色族 | hue | 用途 |
+|---|---|---|
+| `neutral` | 258° | 中性灰。**刻意和 primary 同色相**，界面整体感更强 |
+| `primary` | 288° | 品牌主色（紫罗兰） |
+| `info` | 248° | 信息态（蓝） |
+| `success` | 152° | 成功态（绿） |
+| `warning` | 72° | 警告态（琥珀） |
+| `danger` | 26° | 危险态（红） |
+
+| 档位 | neutral | primary | info | success | warning | danger |
+|---|---|---|---|---|---|---|
+| 50 | `#f4f6f8` | `#f5f5ff` | `#eff7ff` | `#eef9f0` | `#fcf4eb` | `#fff2f1` |
+| 100 | `#e8ebee` | `#e9e8ff` | `#dbedff` | `#dcf1e0` | `#f7e8d6` | `#ffe3e0` |
+| 200 | `#d5dae0` | `#d7d4ff` | `#bcdeff` | `#bee5c7` | `#efd5b5` | `#ffcbc5` |
+| 300 | `#bac1cb` | `#bdb6ff` | `#8bc6ff` | `#92d2a2` | `#e3b882` | `#ffa59c` |
+| 400 | `#96a0b0` | `#9c8cff` | `#42a5fa` | `#4db971` | `#d19133` | `#f57067` |
+| 500 | `#7c889a` | `#8666ff` | `#008be6` | `#00a252` | `#b87700` | `#e84240` |
+| 600 | `#657183` | `#7246ed` | `#0074c1` | `#008743` | `#9a6300` | `#d01723` |
+| 700 | `#566171` | `#613ace` | `#0063a6` | `#007439` | `#845400` | `#b40c1b` |
+| 800 | `#464f5c` | `#4f31a6` | `#005189` | `#005f2d` | `#6c4400` | `#921419` |
+| 900 | `#3c434d` | `#422d89` | `#004475` | `#005025` | `#5c3a00` | `#791819` |
+| 950 | `#23272e` | `#271955` | `#002849` | `#003014` | `#382100` | `#4b0c0c` |
+
+> `neutral-50` 之所以不是纯白，是为了让**卡片（#fff）能从页面底色上浮起来**。
+> 页面底色用 `neutral-50`，卡片用纯白，靠明度差建立层级，而不是靠阴影。
+
+### 为什么主色是紫罗兰
+
+配色方案里最容易偷懒的就是"再做一个蓝色 UI 库"。Element Plus、Ant Design、
+Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立刻拉开辨识度，
+同时它和 `info` 的蓝（248°）差 40°，在实际界面里能清楚区分
+"这是个主按钮"和"这是个信息提示"。
+
+**要换色**：改 `tools/gen-tokens.mjs` 里 `HUES.primary.hue` 一个数字，重跑。
+整个色阶、语义映射、对比度自检会全部重算。
+
+---
+
+## 三、L2 语义令牌
+
+**组件只允许使用这一层。** 原始色阶（`--mc-primary-500`）由 `blocklist` 强制拦截。
+
+### 颜色
+
+| 令牌 | 亮色 | 暗色 | 用途 |
+|---|---|---|---|
+| `--mc-color-bg` | neutral-50 | neutral-950 | 页面底色 |
+| `--mc-color-surface` | `#fff` | neutral-900 | 卡片/面板 |
+| `--mc-color-surface-raised` | `#fff` | neutral-800 | 浮起表面（下拉、弹层） |
+| `--mc-color-surface-sunken` | neutral-100 | `#04060c` | 凹陷区（代码块、输入框底） |
+| `--mc-color-fg` | neutral-900 | neutral-50 | 正文 |
+| `--mc-color-fg-muted` | neutral-600 | neutral-300 | 次要文字 |
+| `--mc-color-fg-subtle` | neutral-500 | neutral-400 | 占位符（仅大字号 3:1） |
+| `--mc-color-fg-inverted` | `#fff` | neutral-950 | 反色文字 |
+| `--mc-color-border` | neutral-200 | neutral-800 | 常规描边 |
+| `--mc-color-border-strong` | neutral-300 | neutral-700 | 强描边（输入框、分隔） |
+| `--mc-color-ring` | primary-500 | primary-400 | 焦点环 |
+| `--mc-color-overlay` + `-alpha` | `15 18 30` / 0.45 | `0 0 0` / 0.65 | 遮罩 |
+| `--mc-color-neutral` | neutral-200 | neutral-700 | **中性表面**（次要按钮的填充底） |
+| `--mc-color-neutral-fg` | neutral-900 | neutral-50 | 中性表面上的文字 |
+| `--mc-color-overlay` | `rgb(15 18 30 / .45)` | `rgb(0 0 0 / .65)` | 遮罩 |
+
+每个状态色族 `{primary, info, success, warning, danger}` 有五件套：
+
+| 后缀 | 亮色档位 | 暗色档位 | 用途 |
+|---|---|---|---|
+| `--mc-color-{f}` | 见下表 | 见下表 | **填充色，同时也是文字色** |
+| `--mc-color-{f}-fg` | `#fff` | neutral-950 | 压在填充色上的文字 |
+| `--mc-color-{f}-hover` | +1 档 | −1 档 | hover 加深/提亮 |
+| `--mc-color-{f}-active` | +2 档 | −2 档 | active |
+| `--mc-color-{f}-subtle` | 50 | 950 | 极浅底色（标签、提示条） |
+
+各色族实际选中的档位：
+
+| 色族 | 亮色 | 暗色 | 备注 |
+|---|---|---|---|
+| primary | 600 | 300 | |
+| info | 600 | 300 | |
+| success | **700** | 300 | 600 当文字放白底上只有 3.3:1，绿色又很难再压深，整体下移一档 |
+| warning | 600 | 300 | |
+| danger | 600 | 300 | |
+
+**暗色下为什么整体用浅色填充 + 近黑文字**：
+一是满足 AA（深底上再放深色按钮，对比度必然不够）；
+二是避免"深色背景 + 深色按钮"导致层级塌陷。
+
+### 排版 / 间距 / 圆角 / 控件 / 动效 / 层级
+
+| 分组 | 令牌 | 值 |
+|---|---|---|
+| 字体 | `--mc-font-sans` / `--mc-font-mono` | 含中文回退（PingFang SC / 微软雅黑） |
+| 字号 | `--mc-text-{xs,sm,base,lg,xl,2xl,3xl}` | `.75 / .875 / 1 / 1.125 / 1.25 / 1.5 / 1.875 rem` |
+| 行高 | `--mc-text-{...}-lh` | 与字号配对，避免两处各写一遍 |
+| 字重 | `--mc-weight-{normal,medium,semibold,bold}` | `400 / 500 / 600 / 700` |
+| 间距 | `--mc-space-{0,1,2,3,4,5,6,8,10,12,16}` | `.25rem` 的倍数 |
+| 圆角 | `--mc-radius-{none,sm,md,lg,xl,2xl,full}` | `.25 / .375 / .5 / .75 / 1 rem` |
+| 控件高 | `--mc-control-h-{sm,md,lg}` | `1.75 / 2.25 / 2.75 rem` |
+| 动效 | `--mc-duration-{fast,base,slow}` | `120 / 180 / 280 ms` |
+| 缓动 | `--mc-ease-{standard,emphasized}` | `cubic-bezier(.2,0,0,1)` 等 |
+| 层级 | `--mc-z-{dropdown,sticky,overlay,modal,popover,toast,tooltip}` | `1000` 起步，每级 +100 |
+
+> **间距/圆角/字号刻意复用 UnoCSS 的默认标度**：`p-4 === --mc-space-4 === 1rem`。
+> 两边数值本来就一致，重映射成 `var()` 反而会让 `p-7`、`w-1/2` 这类非标度值消失。
+
+---
+
+## 四、对比度自检
+
+`pnpm tokens` 每次都跑，任何一项不达标就**退出 1**。当前 32 项全绿：
+
+| 检查项 | 亮色 | 暗色 | 门槛 |
+|---|---|---|---|
+| 正文 / 页面底色 | 9.27 | 13.81 | 4.5 |
+| 正文 / 卡片 | 10.05 | 9.27 | 4.5 |
+| 次要文字 / 卡片 | 4.93 | 5.53 | 4.5 |
+| 占位符 / 卡片 | 3.59 | 3.82 | 3.0 |
+| 强边框 / 卡片 | 1.82 | 1.59 | 1.4 |
+| 焦点环 / 卡片 | 3.91 | 3.63 | 3.0（WCAG 1.4.11） |
+| primary 填充上的文字 | 5.50 | 8.05 | 4.5 |
+| info 填充上的文字 | 4.92 | 8.30 | 4.5 |
+| success 填充上的文字 | 5.94 | 8.54 | 4.5 |
+| warning 填充上的文字 | 5.05 | 8.14 | 4.5 |
+| danger 填充上的文字 | 5.51 | 7.90 | 4.5 |
+| primary 作为文字 / 卡片 | 5.50 | 5.40 | 4.5 |
+| info 作为文字 / 卡片 | 4.92 | 5.57 | 4.5 |
+| success 作为文字 / 卡片 | 5.94 | 5.73 | 4.5 |
+| warning 作为文字 / 卡片 | 5.05 | 5.46 | 4.5 |
+| danger 作为文字 / 卡片 | 5.51 | 5.30 | 4.5 |
+
+暗色下"填充上的文字"能到 8:1 是因为深色主题用了浅色填充 + 近黑文字，
+这个数字偏高是正常的、也是刻意的。
+
+---
+
+## 五、主题切换
+
+令牌在 `@layer mosaic.tokens` 里（最低层），所以**宿主页面任何"未分层"的覆盖都必定生效**，
+不需要 `!important`，也不需要关心加载顺序。
+
+三种切换方式，按需求选：
+
+```html
+<!-- 1. 跟随系统（默认行为，无需配置） -->
+<html>
+  <!-- tokens.css 里有 @media (prefers-color-scheme: dark) 兜底 -->
+
+<!-- 2. 强制亮色 -->
+<html data-theme="light">
+
+<!-- 3. 强制暗色 -->
+<html data-theme="dark">
+```
+
+`color-scheme` 会跟着一起切，所以原生控件（滚动条、`<select>` 弹出层）会同步变色。
+
+⚠️ **组件里禁止使用 UnoCSS 的 `dark:` 变体。**
+它生成的是后代选择器，而 `<html data-theme="dark">` 在 shadow 树外面；
+shadow root 内的选择器匹配不到跨边界的祖先，所以 `dark:` 是**静默失效**的。
+需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`）再在 `:host([data-theme])` 里换值。
+
+⚠️ **`match-var` 是 ofa.js 提供的样式查询组件**，适合「按 CSS 变量切换组件内部非令牌样式」。
+Mosaic 的颜色主题走令牌就够了，`match-var` 留给 M3 之后的复杂场景
+（注意它的降级路径在 Firefox 上要靠轮询，需要手动 `$.checkMatch()`）。
+
+---
+
+## 六、换肤指南
+
+### 整体换品牌色
+
+改一个数字，重跑生成器：
+
+```js
+// tools/gen-tokens.mjs
+const HUES = {
+  primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
+  ...
+};
+```
+```bash
+pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
+pnpm build:css
+```
+
+### 只改某几个令牌（不动生成器）
+
+```css
+/* 使用者页面里，未分层 → 赢过 @layer mosaic.tokens */
+:root {
+  --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
+  --mc-radius-md: 2px;
+}
+```
+
+### 单个组件实例
+
+`--mc-*` 是自定义属性，会跨 shadow 边界继承。写在宿主元素上即可：
+
+```html
+<mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px">删除</mc-button>
+```
+
+### 结构化定制
+
+每个组件都暴露 `part`，可以精确命中内部元素：
+
+```css
+mc-button::part(base) { text-transform: uppercase; letter-spacing: .05em; }
+```
+
+---
+
+## 七、使用禁忌
+
+| ❌ 不要 | ✅ 应该 | 原因 |
+|---|---|---|
+| `background: var(--mc-primary-500)` | `var(--mc-color-primary)` | 原始色阶不随主题切换，暗色下必然出可读性问题。`blocklist` 会拦截 `bg-primary-500` 这类工具类 |
+| 存令牌时包 `rgb()` | 存裸三元组 `114 70 237` | 全链路统一存三元组，用的时候才包。混着来会产出 `rgb(rgb(...))` 这种非法 CSS 并**静默失效** |
+| `background: var(--mc-color-primary)` | `background: rgb(var(--mc-color-primary))` | 同上 |
+| 组件里写 `dark:bg-black` | 提升为令牌 | 见第五节，`dark:` 在 shadow DOM 里静默失效 |
+| 直接改 `packages/color/tokens.css` | 改 `tools/gen-tokens.mjs` | `tokens.css` 是生成物，且它**提交进了仓库**（分发走 `/gh/`，仓库即产物），改它会在 CI 的 drift 检查里被打回 |
+| 手写一套新色阶 | 改 `HUES` 重跑 | 手工色阶几乎不可能同时满足感知均匀和对比度达标 |

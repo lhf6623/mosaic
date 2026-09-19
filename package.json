@@ -1,0 +1,25 @@
+{
+  "name": "mosaic-ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "基于 ofa.js 的免安装、免构建 Web Components UI 框架（UnoCSS 原子化 + 三层 CSS 变量令牌）",
+  "scripts": {
+    "tokens": "node tools/gen-tokens.mjs",
+    "check:tokens": "node tools/gen-tokens.mjs --check",
+    "build:css": "node tools/build-css.mjs",
+    "build": "pnpm tokens && pnpm build:css",
+    "check:drift": "pnpm build && git diff --exit-code -- packages/color/tokens.css packages/boot/mosaic.css",
+    "dev:css": "node tools/build-css.mjs --watch",
+    "dev": "node tools/serve.mjs",
+    "test": "node tests/smoke.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "@unocss/cli": "^66.10.5",
+    "playwright-core": "^1.63.0",
+    "typescript": "^7.0.2",
+    "unocss": "^66.10.5"
+  }
+}

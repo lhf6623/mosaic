@@ -1,0 +1,133 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <!--
+    二级菜单是**这一页自己的东西**：外壳只给顶栏 + 正文带
+    （布局页 docs/layout.html），
+    谁需要左栏谁就在模板里放 <doc-nav>，外面套一层 .doc-split 分成左右两栏。
+
+    data-source="components" 表示菜单项来自组件登记表（docs/components.js）——
+    20 个组件的清单只维护一份，不抄进页面。
+  -->
+  <div class="doc-split">
+    <doc-nav data-source="components"></doc-nav>
+    <div class="doc-body">
+    <h1>组件</h1>
+    <p class="doc-lead">
+      组件本体是独立的 <code>.html</code>，源 = 产物，构建不碰它。
+      用哪个引哪个，不会把没用的组件一起下载下来。
+    </p>
+
+    <div class="doc-note">
+      <strong>加一个新组件要动的地方只有两处：</strong>
+      在 <code>docs/components.js</code> 里加一条登记，
+      再建一个 <code>packages/&lt;slug&gt;/page.html</code>（ofa.js 页面模块）。
+      本页的二级菜单、本页卡片、首页的组件区块都是从登记表渲染的；
+      新页面照抄本页的 <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code>
+      就有了同一个菜单，不用手抄 20 个组件。
+    </div>
+
+    <h2>接入方式</h2>
+    <p>用哪个引哪个，一个组件一条 <code>&lt;l-m&gt;</code>：</p>
+    <pre class="doc-code"><code>&lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
+    &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;</code></pre>
+
+    <h2>全部组件</h2>
+    <div data-component-cards="all"></div>
+
+    <h2>共用约定</h2>
+    <p>
+      所有组件的 API 都落在同一套框架里，没有"因为情况特殊"另起一套的。
+      完整定义见
+      <a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md">component-spec.md</a>。
+    </p>
+
+    <h3>四个正交维度</h3>
+    <p>
+      <strong>不要把语义色和外观样式混成一维枚举。</strong>
+      混了就没办法表达「描边样式的危险按钮」，而且 CSS 会退化成组合爆炸。
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>属性</th>
+          <th>取值</th>
+          <th>默认</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>语义色</td>
+          <td><code>color</code></td>
+          <td><code>primary</code> <code>info</code> <code>success</code> <code>warning</code> <code>danger</code>
+            <code>neutral</code>
+          </td>
+          <td><code>primary</code></td>
+        </tr>
+        <tr>
+          <td>外观样式</td>
+          <td><code>variant</code></td>
+          <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
+          <td><code>filled</code></td>
+        </tr>
+        <tr>
+          <td>尺寸</td>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+        </tr>
+        <tr>
+          <td>状态</td>
+          <td><code>disabled</code> <code>loading</code> <code>readonly</code> <code>invalid</code></td>
+          <td>布尔，存在即真</td>
+          <td>无</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>值的读写</h3>
+    <p>标签属性是<strong>初始值</strong>，DOM property 是<strong>运行时状态</strong>。</p>
+    <pre class="doc-code"><code>&lt;!-- HTML 里设初始值：用 default-* --&gt;
+    &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
+
+    // JS 里读写运行时状态：用 property
+    input.value = "李四";                    // ✅
+    input.setAttribute("value", "李四");     // ❌ 无效
+
+    // 布尔属性的 JS 修改必须走 attribute
+    btn.setAttribute("disabled", "");        // ✅
+    btn.removeAttribute("disabled");         // ✅</code></pre>
+
+    <h3>事件</h3>
+    <p>
+      <strong>不加 <code>mc-</code> 前缀</strong>，用原生语义名，使用者不需要记两套命名。
+      点击类交互<strong>不定义自定义事件</strong> —— 原生 <code>click</code>
+      自带 <code>composed: true</code>，会穿透 shadow 边界冒泡。
+    </p>
+
+    <h3>定制</h3>
+    <p>分两级，优先用第一级：</p>
+    <ul>
+      <li>
+        <strong><code>:host</code>（首选）</strong> —— 组件视觉定义在 <code>:host</code> 上，
+        外部内联样式优先级天然最高，连 <code>part</code> 都不需要：
+        <code>&lt;mc-button style="height: 32px"&gt;</code>
+      </li>
+      <li>
+        <strong><code>part</code></strong> —— 只有内部有结构性子元素、
+        且使用者确实需要定制时才暴露，配合 <code>::part()</code> 穿透。
+      </li>
+    </ul>
+  </div>
+  </div>
+  <script>
+    /*
+     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
+     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
+     * packages/<slug>/ 下是 '../../docs/layout.html'。
+     */
+    export const parent = '../layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>
