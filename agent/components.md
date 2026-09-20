@@ -65,6 +65,19 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 > （相对**本页面文件**解析；`packages/<slug>/page.html` 里是 `'../../docs/layout.html'`）。
 > 布局页切页时**不重建**，顶栏高亮靠它的 `routerChange()` 钩子。
 
+#### 顶栏与主题（都在布局页里）
+
+- 一级菜单就是布局页顶栏里的五个 `<a olink>`；**加一个入口 = 在那里加一条**。
+- 高亮只切 `aria-current`，**绝不重建 DOM**：重建会让真人点击的 mousedown / click
+  落在两个不同节点上，表现为「菜单要点好几次才跳转」（实测第 1 轮点了 6 次）。
+- 匹配路径要同时吃下两种形式：`olink` 的 href 被 ofa.js 改写成
+  `…/index.html#/docs/pages/home.html`（hash 形式），而页面 `src` 是文件形式
+  （站点还可能挂在子路径下）—— 所以统一归一成「相对仓库根的路径」再比。
+- 组件文档页（`packages/<slug>/page.html`）不在顶栏单列，统一点亮「组件」；
+  「设计令牌」自己有入口，精确匹配先命中，所以不会被那条兜底规则误伤。
+- 冷启动直接带 hash 时，子页面可能比布局页晚一拍挂上 → 高亮补几拍（自限，有子页面就停）。
+- 主题三态（自动 / 亮 / 暗）也在布局页；首帧由 `docs/theme-boot.js` 应用，防闪色。
+
 **二级菜单不在外壳里**。哪个页面需要左栏，就在自己的模板里放 `<doc-nav>`
 （站点级自定义元素，见 `docs/doc-nav.js`），外面套一层 `.doc-split`：
 
@@ -99,6 +112,22 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 > （嵌套路由下有两个 o-page），不能是「`.doc-body` 换了」——
 > o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻就成立，
 > 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。
+
+### 首页海报：数据驱动 + 响应式（`docs/pages/home.html`）
+
+- 页面里**没有一行 JS 建 DOM**：`computeTiles(宽, 高, 入口块)` 是纯函数，吐
+  `{ key, x, y, opacity, … }`；视图由 `<o-fill>` 加 `:style.*` / `attr:data-color` 渲染；
+  鼠标视差只改 `farTransform / midTransform / nearTransform` 三个字段。
+  容器尺寸变化也只是 `ResizeObserver → relayout()` 重算数据。
+- 方块是 **HTML 元素、不是 SVG**：`<o-fill>` 是自定义元素，SVG 命名空间里的元素不会被
+  `customElements` 升级，放进 `<svg>` 会让 ofa.js 在模板编译期直接抛错（[P30](./ofa-pitfalls.md)）。
+- **边长是响应式的**（容器宽度 / 16，夹在 `TILE_MIN`…`TILE_BASE`），其余参数全写成比例
+  （间距 / 抖动 / 颗粒 / 色片都按边长推）—— 只有一个数会动，比例关系不会散。
+- 尺寸经 `--art-*` 变量从 JS **广播给 CSS**：两边用同一个数，避免
+  「CSS 里写死 22.3px、边长改了它不跟」那种静默走形。
+- 色片排除区要算三样：入口块的**实际中心**（它不在容器正中）、色片自身半宽、
+  近景层的**视差位移上限**。少算一个，窄屏 + 鼠标推到极值时色片就会滑到按钮底下。
+- 格子 seed 用固定 stride（而不是 `cols`），否则窗口宽度每跨一格，整幅图案会重掷一副。
 
 ### 想让页面内容撑满可视区
 

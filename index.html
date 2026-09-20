@@ -22,20 +22,13 @@
   </head>
 
   <body>
-    <!--
-      根目录这一层**只做引入**：路由库 + 应用挂载点。页面上看得见的东西
-      （顶栏、正文带、主题按钮）全在 docs/layout.html —— 那是嵌套路由的**布局页**，
-      子页面用 `export const parent = '…/docs/layout.html'` 挂上去，正文经它的 <slot> 投影。
-
-      于是这层不需要知道任何内容标记，也就不会出现「外壳一份、布局组件一份」的漂移。
-    -->
+    <!-- 只做引入：路由库 + 应用挂载点；外壳（顶栏 / 正文带）在布局页 docs/layout.html -->
     <l-m src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/libs/router/dist/router.min.mjs"></l-m>
     <o-router>
       <o-app src="./app-config.js"></o-app>
     </o-router>
 
-    <!-- 站点脚本：页面占位（组件卡片 / 色板）的渲染。它是个普通 ES module，可以正常 import；
-         页面模块的脚本不行（ofa.js 的页面代码经 eval 执行，相对 import 解析不了）。 -->
+    <!-- 页面占位（组件卡片 / 色板）的渲染 -->
     <script type="module" src="./docs/site.js"></script>
   </body>
 </html>

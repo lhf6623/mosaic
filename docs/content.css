@@ -455,12 +455,7 @@ a.doc-comp-card:hover {
   text-align: center;
 }
 
-/* ---------- 马赛克图案 ----------
- *
- * 层是 .art-layer（视差位移由数据绑定到它的 transform），
- * 块是 .art-bit —— 由 home.html 里的 <o-fill> 从数据渲染，位置/尺寸走行内样式。
- * 颜色全走 currentColor 和语义令牌，所以深浅主题自动跟随，不需要两套图。
- */
+/* ---------- 马赛克图案：层 .art-layer，块 .art-bit（数据来自 home.html） ---------- */
 
 .poster-art {
   position: absolute;
@@ -470,49 +465,37 @@ a.doc-comp-card:hover {
   height: 100%;
   pointer-events: none;
   color: rgb(var(--mc-color-fg));
-  /*
-   * 这里刻意**不加遮罩**。
-   *
-   * 之前用 radial-gradient 把中心擦空，给标题留白；现在首页只剩两个按钮，
-   * 那块留白就变成按钮底下的一片「白底」（露出了页面底色），正是要删掉的东西。
-   * 图案本身在中心很淡（远景层 16% 不透明度、且中景层本来就绕开中心），
-   * 不遮也压不住按钮。
-   */
+  /* 刻意不加遮罩：中心那块留白会变成按钮底下的一片白底 */
 }
 
-/* 层：铺满容器，视差只走 transform（提到合成层，不触发重排） */
+/* 视差只走 transform（提到合成层，不触发重排） */
 .art-layer {
   position: absolute;
   inset: 0;
   will-change: transform;
 }
 
-/* 一块方块：位置由数据走行内样式，这里只管长相 */
+/* 一块方块：位置、尺寸由数据给，这里只管长相 */
 .art-bit {
   position: absolute;
   display: block;
   border: 1.5px solid currentColor;
 }
 
-/*
- * 尺寸全部来自 home.html 广播的 --art-* 变量（方块的边长是响应式的，
- * 随容器宽度缩放）。这里**一个像素值都不写死** —— 以前写死 22.3px / 44.6px
- * （= 边长 × 0.36 / 0.72），边长一改它们不跟、也不报错，图案静默走形。
- * 括号里是变量没送到时的兜底值（边长 62px 时的原样）。
- */
+/* 尺寸走 home.html 广播的 --art-*（两边同一个数）；括号里是兜底值 */
 .art-far {
   width: var(--art-grain, 22.3px);
   height: var(--art-grain, 22.3px);
-  /* 圆角只有这里用得到，比例就留在 CSS 里（62 → 6px） */
+  /* 圆角只有这里用得到，比例留在 CSS（62 → 6px） */
   border-radius: calc(var(--art-tile, 62px) * 0.097);
 }
 
-/* 中景描边块：边长每块略有出入，所以只在行内绑 width/height，这里给圆角（62 → 14px） */
+/* 边长每块不同，行内绑 width/height；这里只给圆角（62 → 14px） */
 .art-mid {
   border-radius: calc(var(--art-tile, 62px) * 0.226);
 }
 
-/* 近景色片：实心、无描边，颜色按语义色 */
+/* 色片：实心、无描边，颜色按语义色 */
 .art-chip {
   width: var(--art-chip, 44.6px);
   height: var(--art-chip, 44.6px);
@@ -526,7 +509,7 @@ a.doc-comp-card:hover {
 .art-chip[data-color='warning'] { background-color: rgb(var(--mc-color-warning)); }
 .art-chip[data-color='danger'] { background-color: rgb(var(--mc-color-danger)); }
 
-/* 减弱动效偏好下不做视差（脚本也会直接跳过，这里再兜一层鼠标悬停之类的效果） */
+/* 减弱动效偏好下不做视差 */
 @media (prefers-reduced-motion: reduce) {
   .art-layer {
     will-change: auto;
