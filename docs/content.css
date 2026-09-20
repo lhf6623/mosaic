@@ -516,7 +516,7 @@ a.doc-comp-card:hover {
   }
 }
 
-/* 两个入口（首页现在只有它们 + 图案；标题是 sr-only 的） */
+/* 首页两个入口：用项目自己的 mc-button，这里只管把它们排成一行 */
 .doc-poster .poster-links {
   display: flex;
   flex-wrap: wrap;
@@ -525,31 +525,9 @@ a.doc-comp-card:hover {
   gap: var(--mc-space-3);
 }
 
-.doc-poster .poster-link {
-  padding: var(--mc-space-4) var(--mc-space-8);
-  border: 1px solid transparent;
-  border-radius: var(--mc-radius-full);
-  background-color: rgb(var(--mc-color-primary));
-  color: rgb(var(--mc-color-primary-fg));
-  font-size: var(--mc-text-base);
-  font-weight: var(--mc-weight-medium);
-  text-decoration: none;
-  transition: background-color var(--mc-duration-fast) var(--mc-ease-standard);
-}
-
-.doc-poster .poster-link:hover {
-  background-color: rgb(var(--mc-color-primary-hover));
-  text-decoration: none;
-}
-
-.doc-poster .poster-link-ghost {
-  border-color: rgb(var(--mc-color-border-strong));
-  background-color: transparent;
-  color: rgb(var(--mc-color-fg));
-}
-
-.doc-poster .poster-link-ghost:hover {
-  background-color: rgb(var(--mc-color-surface-sunken));
+/* 页面 shadow 里的 <l-m> 是加载占位，不能占位（P13） */
+l-m {
+  display: none;
 }
 
 /* ============================================================================

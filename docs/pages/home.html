@@ -174,6 +174,10 @@
       },
 
       proto: {
+        openPage(path) {
+          location.hash = `#/${path}`;
+        },
+
         relayout() {
           const host = this.ele.shadowRoot?.querySelector('.doc-poster');
           if (!host) return;
@@ -249,6 +253,8 @@
   <link rel="stylesheet" href="../content.css" />
 
   <div class="doc-body doc-poster">
+    <l-m src="../../packages/button/button.html"></l-m>
+
     <div class="poster-art" aria-hidden="true">
       <div class="art-layer" data-layer="far" :style.transform="farTransform">
         <o-fill :value="farTiles" fill-key="key">
@@ -288,8 +294,15 @@
       <h1 class="sr-only">Mosaic</h1>
 
       <nav class="poster-links">
-        <a class="poster-link" href="#/docs/pages/guide.html">快速开始</a>
-        <a class="poster-link poster-link-ghost" href="#/docs/pages/components.html">浏览组件</a>
+        <mc-button
+          color="primary"
+          size="lg"
+          on:click="openPage('docs/pages/guide.html')">快速开始</mc-button>
+        <mc-button
+          variant="outline"
+          color="neutral"
+          size="lg"
+          on:click="openPage('docs/pages/components.html')">浏览组件</mc-button>
       </nav>
     </div>
   </div>

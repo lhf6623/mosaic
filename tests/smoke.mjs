@@ -322,7 +322,8 @@ const pageState = () =>
       cards: all('.doc-comp-card').length,
       paletteRows: all('.doc-palette-row').length,
       buttons: all('mc-button').length,
-      cta: all('.poster-link').map((a) => a.textContent.trim()),
+      cta: all('.poster-links > *').map((el) => el.textContent.trim()),
+      ctaTags: all('.poster-links > *').map((el) => el.tagName.toLowerCase()),
     };
   });
 
@@ -371,12 +372,13 @@ const homeVisibleText = await page.evaluate(() => {
 });
 
 check(
-  '首页是一张海报：只有两个入口 + 图案，没有别的文字',
+  '首页是一张海报：两个入口都用 mc-button，没有别的文字',
   homeState.h1 === 'Mosaic' &&
     homeVisibleText.join('/') === '快速开始/浏览组件' &&
-    homeState.buttons === 0 &&
+    homeState.ctaTags.join('/') === 'mc-button/mc-button' &&
+    homeState.buttons === 2 &&
     homeState.cards === 0,
-  `h1=${homeState.h1}（sr-only）· 可见文字 ${homeVisibleText.join(' / ')} · 组件 ${homeState.buttons} 个 · 卡片 ${homeState.cards} 处`,
+  `h1=${homeState.h1}（sr-only）· 入口 ${homeState.ctaTags.join(' / ')}（${homeState.cta.join(' / ')}）· 卡片 ${homeState.cards} 处`,
 );
 check('首页没有二级菜单', homeState.navLinks === 0 && homeState.page === '首页', `菜单项=${homeState.navLinks} 高亮=${homeState.page}`);
 
@@ -846,9 +848,9 @@ for (const [vw, vh, tag] of [
       const art = window.__deep('.poster-art');
       const links = window.__deep('.poster-links');
       if (!art || !links) return null;
-      const btns = [...links.querySelectorAll('a')].map((a) => ({
-        label: a.textContent.trim(),
-        r: a.getBoundingClientRect(),
+      const btns = [...links.children].map((b) => ({
+        label: b.textContent.trim(),
+        r: b.getBoundingClientRect(),
       }));
       let tightest = { dist: Infinity };
       for (const chip of art.querySelectorAll('.art-chip')) {
