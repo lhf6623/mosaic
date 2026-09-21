@@ -312,7 +312,11 @@ const hexToRgb = (hex) => {
 function resolveValue(expr, theme) {
   if (expr === '255 255 255') return [1, 1, 1];
   if (expr === '4 6 12') return hexToRgb('#04060c');
-  const m = /^rgb\(var\(--mc-([a-z]+)-(\d+)\)\)$/.exec(expr);
+  // L2 现在的写法是裸的 `var(--mc-<family>-<step>)`（通道三元组由消费者自己包 rgb()）。
+  // 这里必须跟着改：早期版本匹配的是 `rgb(var(…))`，L2 去掉 rgb() 包装之后
+  // 正则再也匹配不上，所有规则被下面的 `continue` 静默跳过 —— 自检变成空转。
+  // 兼容旧写法，两种都收。
+  const m = /^(?:rgb\()?var\(--mc-([a-z]+)-(\d+)\)\)?$/.exec(expr);
   if (!m) return null;
   const [, family, step] = m;
   return PALETTE[family][step].rgb;
@@ -329,8 +333,7 @@ const CONTRAST_RULES = [
   ['color-ring', 'color-surface', 3.0, '焦点环（WCAG 1.4.11 非文字对比）'],
   // 状态色：同一个令牌要同时胜任"填充"和"文字"两个角色，两条规则都得过
   ...FAMILIES.map((f) => [`color-${f}-fg`, `color-${f}`, 4.5, `${f}：填充上的文字`]),
-  ...FAMILIES.map((f) => [`color-${f}`, 'color-surface', 4.5, `${f}：中性底上的文字`]),
-];
+  ...FAMILIES.map((f) => [`color-${f}`, 'color-surface', 4.5, `${f}：中性底上的文字`]),];
 
 let failures = 0;
 const report = [];

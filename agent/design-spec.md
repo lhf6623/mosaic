@@ -272,7 +272,7 @@ M3 的做法，很值得抄：hover / active 的叠加层用**当前文字色**�
 
 ### 对比度
 
-由令牌层强制保证，32 项自检见 [design-tokens.md](./design-tokens.md#四对比度自检)。
+由令牌层强制保证，34 项自检见 [design-tokens.md](./design-tokens.md#四对比度自检)。
 **组件不得绕过令牌直接写颜色** —— 那等于放弃了这套保证。
 
 ### 键盘
