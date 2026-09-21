@@ -258,6 +258,10 @@ export default defineConfig({
         // 排除 packages/*/page.html —— 那是**文档页**（ofa.js 页面模块），不是组件模板。
         // 不排除的话，文档排版里用到的工具类（mt-3、mb-3 …）会被扫进框架产物，
         // 让「精选子集」的体积跟着文档写作风格浮动。
+        // 注意：默认提取器扫的是**整个文件**，组件 `<script>` 里的 JS 标识符
+        // （indent / px / py / m-0 实测都中过）会被当成类名白产出规则。
+        // 组件侧用 /* @unocss-skip-start */ … /* @unocss-skip-end */ 包住 script 段
+        // 即可（packages/code/code.html 是例子），不需要在这里开例外。
         patterns: ['packages/color/tokens.css', 'packages/**/*.html', '!packages/*/page.html'],
         outFile: 'packages/boot/mosaic.css',
       },

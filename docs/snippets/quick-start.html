@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- 1. 令牌 + 工具类。文档级，供你自己页面里的标记使用 -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+
+    <!-- 2. ofa.js。必须排在 mosaic.js 前面（模块按文档顺序执行） -->
+    <script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs" type="module"></script>
+
+    <!-- 3. 运行时：把工具类注入每个 shadow root -->
+    <script src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js" type="module"></script>
+  </head>
+  <body>
+    <!-- 4. 按需引入组件本体 -->
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+
+    <mc-button color="primary">提交</mc-button>
+  </body>
+</html>

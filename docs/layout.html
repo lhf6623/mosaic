@@ -103,6 +103,11 @@
   <style>
     /* 外壳样式住在这里（布局页的 shadow root）；文档级 shell.css 只管视口与高度链 */
 
+    /* <l-m> 是加载占位，不写这条它会作为 flex item 多占一个 gap（见 P13） */
+    l-m {
+      display: none;
+    }
+
     :host {
       display: flex;
       flex-direction: column;
@@ -201,6 +206,10 @@
       margin-inline: auto;
     }
   </style>
+
+  <!-- 站点级组件：文档页里的代码块都由它渲染（组件文档见 packages/code/page.html）。
+       外壳只注册一次，页面自己不用再写 <l-m>。 -->
+  <l-m src="../packages/code/code.html"></l-m>
 
   <header class="doc-top">
     <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>

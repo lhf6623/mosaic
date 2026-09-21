@@ -3,7 +3,8 @@
 > **本文讲「怎么造组件」。** 有哪些组件、各自 API 是什么，见 [`component-spec.md`](./component-spec.md)。
 > 设计规则见 [`design-spec.md`](./design-spec.md)，令牌值见 [`design-tokens.md`](./design-tokens.md)。
 >
-> 参考实现见 [`packages/button/button.html`](../packages/button/button.html)。
+> 参考实现见 [`packages/button/button.html`](../packages/button/button.html)；
+> 带**可选异步依赖 + 降级路径**的例子见 [`packages/code/code.html`](../packages/code/code.html)。
 > **动手前先读 [`ofa-pitfalls.md`](./ofa-pitfalls.md)** —— 那里的坑全是静默失效，
 > 表象是「绑定不生效 / 点了没反应」，反查成本极高。
 > 写完对照本文末尾的[交付检查清单](#九写新组件的交付检查清单)逐条过。
@@ -559,6 +560,8 @@ ofa.js 正确性  ← 逐条对照 ofa-pitfalls.md
 [ ] detached() 里清理了所有定时器和全局监听
 [ ] 含 data() 的样式单独放在一个 <style> 里
 [ ] proto 方法名避开了 $.fn 上的通用名（get/set/text/html/data/watch/on/emit/class/style/remove/refresh）
+[ ] attrs 的键也不撞保留名（已知 wrap 会让 createElement 直接坏，见 P31）
+[ ] ready() / 构造期没有往宿主元素写属性（style 也算），要写就写 shadow root 内部元素（P31）
 
 质量
 [ ] 键盘可完成全部操作，焦点环可见且用的是 ring 令牌不是 currentColor（P16）

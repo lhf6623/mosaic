@@ -1,0 +1,213 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 二级菜单跟着页面走：这一页自己带组件清单（见 docs/doc-nav.js） -->
+  <div class="doc-split">
+    <doc-nav data-source="components"></doc-nav>
+    <div class="doc-body">
+            <p class="doc-crumb"><a href="#/docs/pages/components.html">组件</a> / Code</p>
+            <h1>Code <code>mc-code</code></h1>
+            <p class="doc-lead">
+              代码展示。内容是 light DOM 里的<strong>纯文本</strong>；
+              语法配色直接来自 <strong>highlight.js 的官方主题</strong>（原样 adopt），
+              高亮库从 CDN 按需懒加载 —— 加载失败只是没有颜色，代码本身照常显示。
+            </p>
+            <p class="doc-badges">
+              <span class="doc-badge" data-status="ready">已实现</span>
+              <span class="doc-badge">M1</span>
+              <span class="doc-badge">packages/code/code.html</span>
+            </p>
+
+            <h2>mc-code</h2>
+            <p><code>packages/code/code.html</code> · 已实现</p>
+
+            <table class="doc-table">
+              <thead><tr><th>属性</th><th>值</th><th>默认</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>src</code></td><td>URL</td><td>—</td><td><strong>片段文件</strong>：长片段或需要转义的片段放独立文件，优先级最高；缺 <code>language</code> 时按后缀推断</td></tr>
+                <tr><td><code>code</code></td><td>字符串（可多行）</td><td>—</td><td>代码文本；不写则读<strong>标签里的纯文本</strong>。<code>el.code</code> 是同一份值的运行时入口</td></tr>
+                <tr><td><code>language</code></td><td>语言 id 或别名（<code>js</code> <code>ts</code> <code>html</code> <code>css</code> <code>json</code> <code>bash</code>…）</td><td>—</td><td>留空或写 <code>text</code> / <code>none</code> 表示不高亮</td></tr>
+                <tr><td><code>line-numbers</code></td><td>布尔</td><td>—</td><td>显示行号（行号不在 DOM 文本里，选中复制不会带上）</td></tr>
+                <tr><td><code>max-height</code></td><td>数字（px）或 CSS 长度</td><td>—</td><td>内容超过时内部滚动，如 <code>max-height="200"</code> / <code>"12rem"</code></td></tr>
+                <tr><td><code>soft-wrap</code></td><td>布尔</td><td>—</td><td>长行折行，而不是横向滚动</td></tr>
+                <tr><td><code>hljs-theme</code></td><td>官方主题名</td><td><code>github</code></td><td>亮色主题，取自 highlight.js 的 <code>styles/</code></td></tr>
+                <tr><td><code>hljs-theme-dark</code></td><td>官方主题名</td><td><code>github-dark</code></td><td>暗色主题</td></tr>
+                <tr><td><code>hljs-base</code></td><td>URL</td><td>内置固定版本 CDN</td><td>highlight.js 的 <code>build/</code> 目录，换自托管 / 换镜像用</td></tr>
+              </tbody>
+            </table>
+
+            <table class="doc-table">
+              <thead><tr><th>part</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>body</code></td><td>滚动容器（<code>max-height</code> 作用在它身上）</td></tr>
+                <tr><td><code>pre</code> <code>code</code></td><td>等宽排版层 / 高亮产物层</td></tr>
+                <tr><td><code>line</code></td><td>行号模式下的每一行</td></tr>
+              </tbody>
+            </table>
+
+            <p>
+              <strong>代码文本的四种传法</strong>（优先级：<code>src</code> &gt; <code>code</code> 属性 &gt; 标签内文本）：
+            </p>
+            <ul>
+              <li>标签里直接贴 —— 短片段最好读，不用转义引号</li>
+              <li><code>src="…"</code> —— <strong>长片段 / 含 <code>&lt;script&gt;</code> 或大量 <code>&lt;</code> 的片段</strong>放独立文件，页面里一行引用；文件是真 HTML，不用写 <code>&amp;lt;</code></li>
+              <li><code>code</code> 属性 —— 单行或多行都行（<code>&lt;</code> 仍需写 <code>&amp;lt;</code>）</li>
+              <li><code>:code="变量"</code> —— ofa 模板绑定，从页面数据里取（<code>:prop</code> 只对 <code>attrs</code> 里声明过的键生效）</li>
+            </ul>
+            <p>
+              <strong>运行时：</strong><code>el.code</code> 读回当前原文（已去掉公共缩进）；
+              写入走 <code>setAttribute</code>，所以 <code>el.code = …</code> 与
+              <code>el.setAttribute('code', …)</code> 等价，改完立刻重渲染 + 重新高亮。
+            </p>
+
+            <section class="doc-demo">
+              <h3>基本用法</h3>
+              <mc-code language="javascript">
+                // 内容就是标签里的纯文本，直接粘贴即可
+                const greet = (name) => `Hello, ${name}!`;
+                console.log(greet('Mosaic')); // → Hello, Mosaic!
+              </mc-code>
+              <p class="doc-hint">
+                首屏先用纯文本同步渲染，高亮到位后原地升级 —— 不会出现"先空白后出字"。
+                点右上角主题按钮：配色会跟着换成另一份官方主题。
+              </p>
+            </section>
+
+            <section class="doc-demo">
+              <h3>片段文件（src）</h3>
+              <mc-code src="../../docs/snippets/highlight-demo.js" line-numbers></mc-code>
+              <p class="doc-hint">
+                内容来自 <code>docs/snippets/highlight-demo.js</code> —— 文件是真 JS，
+                不用转义、编辑器正常高亮、diff 里能正常审；缺 <code>language</code>
+                时按后缀推断（这里是 <code>.js</code> → JavaScript）。
+                路径按<strong>页面文件</strong>解析（和 <code>&lt;link href&gt;</code> 一样）。
+              </p>
+            </section>
+
+            <section class="doc-demo">
+              <h3>用属性 / 页面数据传代码</h3>
+              <mc-code language="javascript" code="const byAttr = 'code 属性传进来的';"></mc-code>
+              <mc-code language="javascript" :code="boundSnippet"></mc-code>
+              <p class="doc-hint">
+                第一块走 <code>code</code> 属性；第二块走 ofa 的 <code>:code="boundSnippet"</code>
+                —— 文本来自页面模块自己的 <code>data</code>。
+                两块都<strong>没有子节点</strong>，所以内容完全由属性决定。
+              </p>
+            </section>
+
+            <section class="doc-demo">
+              <h3>行号</h3>
+              <mc-code language="javascript" line-numbers>
+                import { createServer } from 'node:http';
+
+                const PORT = 8642;
+                createServer((req, res) => {
+                  res.setHeader('Cache-Control', 'no-store');
+                  res.end(req.url);
+                }).listen(PORT);
+              </mc-code>
+            </section>
+
+            <section class="doc-demo">
+              <h3>标记语言（HTML / XML）</h3>
+              <mc-code language="html">
+                &lt;mc-code language="css" line-numbers&gt;
+                  :root { --mc-color-primary: 16 185 129; }
+                &lt;/mc-code&gt;
+              </mc-code>
+            </section>
+
+            <section class="doc-demo">
+              <h3>长内容滚动 / 折行</h3>
+              <mc-code language="json" max-height="120">
+                {
+                  "name": "mosaic-ui",
+                  "private": true,
+                  "scripts": {
+                    "dev": "node tools/serve.mjs",
+                    "test": "node tests/smoke.mjs"
+                  }
+                }
+              </mc-code>
+              <mc-code language="bash" soft-wrap>
+                if pnpm build &amp;&amp; pnpm check:drift; then
+                  echo "deploying to /srv/mosaic"
+                  rsync -av --delete --exclude node_modules --exclude .git ./ user@example.com:/srv/mosaic/
+                fi
+              </mc-code>
+              <p class="doc-hint">
+                第一块给了 <code>max-height="120"</code>，超出部分在组件内部滚动；
+                第二块是 <code>soft-wrap</code>，长行折行而不是横向滚动。
+              </p>
+            </section>
+
+            <section class="doc-demo">
+              <h3>换一份官方主题</h3>
+              <mc-code language="javascript" hljs-theme="atom-one-light" hljs-theme-dark="atom-one-dark">
+                // hljs-theme / hljs-theme-dark 直接写 highlight.js styles/ 下的主题名
+                const themes = ['github', 'atom-one-light', 'vs', 'xcode', 'monokai'];
+                export const pick = (i) => themes[i % themes.length];
+              </mc-code>
+              <p class="doc-hint">
+                换主题只是换一张 adopt 进 shadow root 的官方样式表，
+                组件不写一条覆盖它的规则 —— 所以同一页面上可以并存多种配色。
+              </p>
+            </section>
+
+            <section class="doc-demo">
+              <h3>定制盒模型</h3>
+              <p class="doc-hint">
+                底色、边框、圆角是组件自己的视觉，在 <code>:host</code> 与 L3 令牌上；
+                语法颜色归 highlight.js 主题，两者互不干扰。
+              </p>
+              <mc-code language="javascript" style="border-radius: 0; --mc-code-fill: var(--mc-color-surface-raised)">
+                // style="…" 覆盖盒模型；--mc-code-* 覆盖组件自己的色槽
+                const square = true;
+              </mc-code>
+            </section>
+
+            <h2>高亮从哪来</h2>
+            <ul>
+              <li><strong>代码着色</strong>：highlight.js 11.11.1 —— 先取 <code>es/core.min.js</code>，
+                再按 <code>language</code> 取 <code>es/languages/&lt;id&gt;.min.js</code>。
+                只加载真正用到的那几种语言，多实例共享，每种只取一次。</li>
+              <li><strong>配色</strong>：取官方主题 <code>styles/&lt;theme&gt;.min.css</code>，
+                原样 <code>adopt</code> 进组件自己的 shadow root，组件不写一条覆盖它的规则。
+                只消费主题里的 token 颜色，<strong>刻意不给节点加 <code>hljs</code> 类</strong>：
+                主题里 <code>.hljs</code> 的底色与 <code>pre code.hljs</code> 的内边距那套
+                "整块代码块"外观不该接管组件的盒模型。</li>
+              <li><strong>主题跟随</strong>：亮暗判定读 <code>color-scheme</code> —— 令牌层切主题就是切它，
+                而且它是继承属性，能穿进 shadow root；文档切主题时自动换成暗色那份主题表。</li>
+              <li><strong>自托管 / 换镜像</strong>：<code>hljs-base="https://fastly.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/"</code>。</li>
+            </ul>
+            <p class="doc-note">
+              离网、CDN 不可达、CSP 拦截、语言名写错 → <strong>退化为纯文本</strong>，
+              控制台一条 <code>[mosaic]</code> 警告，排版 / 行号 / 主题跟随都不受影响。
+              这是 Mosaic 唯一一个"可选运行时依赖"，取舍见
+              <a href="https://github.com/lhf6623/mosaic/blob/main/agent/PLAN.md">PLAN.md D7</a>。
+            </p>
+
+            <nav class="doc-pager">
+              <a class="doc-pager-prev" href="#/packages/button/page.html">← Button</a>
+            </nav>
+  </div>
+  </div>
+  <script>
+    /*
+     * 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot>。
+     * 相对**本页面文件**解析，packages/<slug>/ 下是 '../../docs/layout.html'。
+     */
+    export const parent = '../../docs/layout.html';
+
+    export default () => ({
+      data: {
+        /*
+         * 演示 :code 绑定。这里用模板字面量写多行代码 ——
+         * 缩进由组件自己 dedent 掉，所以可以按页面排版对齐。
+         */
+        boundSnippet: `// 由页面 data 绑定进来
+const bind = (it) => it + ' works';
+console.log(bind('mc-code :code'));`,
+      },
+    });
+  </script>
+</template>

@@ -29,6 +29,14 @@ export const GROUPS = [
         desc: '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合。',
       },
       {
+        slug: 'code',
+        name: 'Code',
+        tag: 'mc-code',
+        status: 'ready',
+        milestone: 'M1',
+        desc: '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
+      },
+      {
         slug: 'icon',
         name: 'Icon',
         tag: 'mc-icon',

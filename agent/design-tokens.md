@@ -167,6 +167,10 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 | `--mc-color-neutral-fg` | neutral-900 | neutral-50 | 中性表面上的文字 |
 | `--mc-color-overlay` | `rgb(15 18 30 / .45)` | `rgb(0 0 0 / .65)` | 遮罩 |
 
+> **语法高亮没有令牌**：`mc-code` 的 token 颜色直接来自 highlight.js 的官方主题
+> （默认 `github` / `github-dark`），原样 adopt，不经过令牌层 —— 见
+> [`component-spec.md` mc-code](./component-spec.md#mc-code) 与 [PLAN D7](./PLAN.md#d7-代码高亮可选依赖--失败即降级)。
+
 每个状态色族 `{primary, info, success, warning, danger}` 有五件套：
 
 | 后缀 | 亮色档位 | 暗色档位 | 用途 |
@@ -213,7 +217,7 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 ## 四、对比度自检
 
-`pnpm tokens` 每次都跑，任何一项不达标就**退出 1**。当前 32 项全绿：
+`pnpm tokens` 每次都跑，任何一项不达标就**退出 1**。当前 34 项全绿：
 
 | 检查项 | 亮色 | 暗色 | 门槛 |
 |---|---|---|---|

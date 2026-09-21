@@ -4,7 +4,7 @@
 CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
 
 **当前状态：骨架已跑通，组件库待建。**
-令牌生成（含 32 项 WCAG 自检）、UnoCSS 管线、参考组件、构建链都已验证；
+令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、参考组件（`mc-button` / `mc-code`）、构建链都已验证；
 运行时引导层和其余组件尚未实现 —— 见 [里程碑 M0](./agent/PLAN.md#五里程碑)。
 
 ---
@@ -20,6 +20,24 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 ```
 
 没有 npm，没有打包器，没有脚手架，没有配置文件。
+
+代码展示用 `<mc-code>`：内容是标签里的纯文本，高亮按需从 CDN 懒加载 ——
+**加载失败只是没有颜色**，代码、行号、折行、限高滚动都照常工作：
+
+```html
+<l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/code/code.html"></l-m>
+<mc-code language="javascript" line-numbers>
+  const a = 1;
+</mc-code>
+```
+
+代码文本有四种传法（优先级 `src` > `code` 属性 > 标签内文本）：贴标签里（短片段最好读）、
+`code="…"` 属性、ofa 模板绑定 `<mc-code :code="snippet">`、
+或 `src="../snippets/quick-start.html"` 指向**片段文件**（长片段 / 含 `<script>` 的片段，
+文件里不用转义）。运行时 `el.code = …` 与 `setAttribute('code', …)` 等价且立刻生效。
+
+这是唯一的"可选运行时依赖"（highlight.js，pin 版本、按需加载；配色直接用它的官方主题），
+取舍见 [PLAN.md D7](./agent/PLAN.md#d7-代码高亮可选依赖--失败即降级)。
 
 主题切换、按实例定制、结构化样式穿透，全部只用 CSS：
 
@@ -64,7 +82,7 @@ mc-button::part(base) { text-transform: uppercase; }
 | [设计令牌与配色](./agent/design-tokens.md) | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南 |
 | [**组件 API 规范**](./agent/component-spec.md) | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表 |
 | [组件编写规范](./agent/components.md) | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、交付检查清单 |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md) | **写组件前必读**。30 条静默失效的坑，附现象、原因、正确写法 |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md) | **写组件前必读**。32 条静默失效的坑，附现象、原因、正确写法 |
 | [调研：UnoCSS](./agent/research/unocss.md) | preset 选型、shadow DOM 注入、体积实测数据 |
 | [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题 |
 
@@ -86,9 +104,13 @@ packages/
   button/
     button.html        组件本体（源 = 产物，构建不碰它）
     page.html          组件文档页        ← 文档跟着组件走
+  code/
+    code.html          代码展示：语法高亮（可选 CDN 依赖，失败即降级为纯文本）
+    page.html          组件文档页
 docs/                  站点级资源
   pages/               站点级页面模块（ofa.js <template page>）
     home.html  guide.html  components.html  specs.html
+  snippets/            被 mc-code 的 src 引用的代码片段（真 HTML/JS，不用转义）
   layout.html          **布局页**（嵌套路由的父页面）：顶栏 + 正文带 + <slot>
   components.js        组件登记表：二级菜单 / 总览 / 首页卡片都由它渲染
   routes.js            路由工具（route() 归一当前路由；一级菜单在 layout.html 里）

@@ -96,6 +96,69 @@ ofa.js 版本升级时会把更多方法名收为保留（`refresh` 已被 `$.fn
 避开：`get` / `set` / `text` / `html` / `data` / `watch` / `on` / `emit` / `class` /
 `style` / `remove` / `refresh` 等。
 
+### P31 · `attrs` 的键也不能撞保留名；组件构造期不能往宿主写属性
+
+两条都是实测出来的，**共同表现是 `document.createElement('mc-code')` 拿到的元素没有
+shadow root**，控制台只有一条 `NotSupportedError: The result must not have attributes`；
+而用标记写的 `<mc-code>…</mc-code>` 完全正常 —— 所以很容易漏过去。
+
+```js
+// ❌ attrs 里出现保留名（实测 wrap）
+attrs: { wrap: null }
+
+// ✅ 换个名字，属性写成 soft-wrap
+attrs: { softWrap: null }
+```
+
+```js
+// ❌ ready() 里往宿主元素写属性（style 也算属性）
+ready() {
+  this.ele.style.setProperty('--mc-code-max-h', '120px');
+}
+
+// ✅ 写到 shadow root 内部元素上 —— 它们不受这条限制
+ready() {
+  this.ele.shadowRoot.querySelector('.mc-view').style.setProperty('--mc-code-max-h', '120px');
+}
+```
+
+**原因**：自定义元素规范要求构造期（`document.createElement` / 升级）结束时宿主元素
+**不能带属性**，否则抛 `NotSupportedError`；而 ofa.js 的 `ready()` 正是在构造期跑的。
+保留名那头同理：撞上 `$.fn` 已占用的名字，ofa.js 只打一条 warning 就跳过，行为不可预期。
+
+**已知保留名**：proto 侧 `refresh` / `sync`（配合 [P7](#p7--proto-方法名要避开-fn-上的通用名) 的清单），
+attrs 侧已知 `wrap`。**写法上的推论**：组件自己的运行时状态优先写到 shadow root 内部的
+元素上；确实要写宿主时放到 `attached()` 里。
+
+**为什么难查**：报错不指向组件文件（栈顶是调用 `createElement` 的那行），
+页面上标记写的实例照常工作，只有"动态创建组件"这条路径坏掉。
+
+### P32 · ofa.js 会把声明过的**字符串**属性以空值写到宿主上
+
+**现象**：组件声明了 `attrs: { hljsBase: '', maxHeight: '' }`，页面上写的是裸的
+`<mc-code language="js">`，但宿主元素的实际属性列表是：
+
+```html
+<mc-code language="js" hljs-base="" max-height="">
+```
+
+**后果**：`el.hasAttribute('max-height')` 对所有实例都返回 `true`（值为 `""`）。
+用它来区分"使用者显式给了这个属性"会全部误判。
+
+```js
+// ❌ 每个实例都命中
+if (el.hasAttribute('max-height')) …
+
+// ✅ 看值
+if ((el.getAttribute('max-height') || '').trim() !== '') …
+```
+
+**推论**：`attrs` 里布尔属性默认值写 `null`（[P1](#p1-布尔属性的默认值必须是-null不能是-false)）
+时不会被写成属性，所以 `:host([soft-wrap])` 这类布尔选择器是安全的；
+但**字符串**属性（哪怕默认是空串）会被反射，别把 `:host([max-height])` 当条件用。
+写完新组件，去 devtools 里看一眼宿主的属性列表最快。
+
+
 ---
 
 ## 二、模板语法
