@@ -28,8 +28,10 @@
 
     <h2>接入方式</h2>
     <p>用哪个引哪个，一个组件一条 <code>&lt;l-m&gt;</code>：</p>
-    <pre class="doc-code"><code>&lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
-    &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;</code></pre>
+    <mc-code language="html">
+      &lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
+      &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;
+    </mc-code>
 
     <h2>全部组件</h2>
     <div data-component-cards="all"></div>
@@ -87,16 +89,18 @@
 
     <h3>值的读写</h3>
     <p>标签属性是<strong>初始值</strong>，DOM property 是<strong>运行时状态</strong>。</p>
-    <pre class="doc-code"><code>&lt;!-- HTML 里设初始值：用 default-* --&gt;
-    &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
+    <mc-code language="text">
+      &lt;!-- HTML 里设初始值：用 default-* --&gt;
+      &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
 
-    // JS 里读写运行时状态：用 property
-    input.value = "李四";                    // ✅
-    input.setAttribute("value", "李四");     // ❌ 无效
+      // JS 里读写运行时状态：用 property
+      input.value = "李四";                    // ✅
+      input.setAttribute("value", "李四");     // ❌ 无效
 
-    // 布尔属性的 JS 修改必须走 attribute
-    btn.setAttribute("disabled", "");        // ✅
-    btn.removeAttribute("disabled");         // ✅</code></pre>
+      // 布尔属性的 JS 修改必须走 attribute
+      btn.setAttribute("disabled", "");        // ✅
+      btn.removeAttribute("disabled");         // ✅
+    </mc-code>
 
     <h3>事件</h3>
     <p>

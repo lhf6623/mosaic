@@ -106,21 +106,22 @@
     </table>
 
     <h2>仓库结构</h2>
-    <pre class="doc-code"><code>packages/
-      boot/
-        mosaic.js          手写：attachShadow 补丁 + 样式 adopt（唯一必需引入的 JS）
-        mosaic.css         生成并提交：令牌 + 工具类（可 &lt;link&gt;）
-        shadow-base.css    手写：只进 shadow root 的 reset（禁止 &lt;link&gt;）
-      color/tokens.css     生成并提交：三层令牌
-      button/button.html   组件本体（源 = 产物，构建不碰它）
-    tools/
-      gen-tokens.mjs       调色板生成 + WCAG 对比度自检
-      build-css.mjs        CSS 构建入口（含「缺输入大声失败」守卫）
-    uno.config.ts          UnoCSS 配置（纯声明式）
-    index.html             本站入口：只做引入（外壳在 docs/layout.html）
-    docs/                  本站其余页面与资源
-    agent/                  规范文档（Markdown）
-    </code></pre>
+    <mc-code language="text">
+      packages/
+        boot/
+          mosaic.js          手写：attachShadow 补丁 + 样式 adopt（唯一必需引入的 JS）
+          mosaic.css         生成并提交：令牌 + 工具类（可 &lt;link&gt;）
+          shadow-base.css    手写：只进 shadow root 的 reset（禁止 &lt;link&gt;）
+        color/tokens.css     生成并提交：三层令牌
+        button/button.html   组件本体（源 = 产物，构建不碰它）
+      tools/
+        gen-tokens.mjs       调色板生成 + WCAG 对比度自检
+        build-css.mjs        CSS 构建入口（含「缺输入大声失败」守卫）
+      uno.config.ts          UnoCSS 配置（纯声明式）
+      index.html             本站入口：只做引入（外壳在 docs/layout.html）
+      docs/                  本站其余页面与资源
+      agent/                  规范文档（Markdown）
+    </mc-code>
 
     <div class="doc-note">
       <strong>没有 <code>dist/</code>。</strong>
@@ -139,7 +140,7 @@
       <tbody>
         <tr>
           <td>三层令牌 + WCAG 自检门禁</td>
-          <td>✅ 32 项全绿</td>
+          <td>✅ 34 项全绿</td>
         </tr>
         <tr>
           <td>UnoCSS 管线（370 个精选工具类）</td>

@@ -95,23 +95,15 @@
   font-size: 0.9em;
 }
 
-/* ---------- 代码块 ---------- */
+/* ---------- 代码块 ----------
+ *
+ * 代码块现在是 <mc-code> 组件（packages/code/code.html）：边框、底色、行号、
+ * 复制按钮、语法高亮都在组件自己的 shadow root 里，文档这边只负责**间距**。
+ * 组件在 docs/layout.html 里统一注册，页面直接写标签即可。
+ */
 
-.doc-code {
-  margin: var(--mc-space-4) 0;
-  padding: var(--mc-space-4) var(--mc-space-5);
-  border: 1px solid rgb(var(--mc-color-border));
-  border-radius: var(--mc-radius-lg);
-  background-color: rgb(var(--mc-color-surface-sunken));
-  overflow-x: auto;
-}
-
-.doc-code code {
-  padding: 0;
-  background: none;
-  font-size: var(--mc-text-sm);
-  line-height: 1.7;
-  white-space: pre;
+mc-code {
+  margin-block: var(--mc-space-4);
 }
 
 /* ---------- 提示条 ---------- */

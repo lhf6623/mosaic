@@ -4,25 +4,29 @@
             <h1>设计令牌</h1>
             <p class="doc-lead">
               色板不是手写的，是从 OKLCH 感知均匀色空间算出来的，并且每次生成都要跑
-              <strong>32 项 WCAG 对比度自检</strong> —— 不达标直接退出 1。
+              <strong>34 项 WCAG 对比度自检</strong> —— 不达标直接退出 1。
             </p>
 
             <h2>三层结构</h2>
-            <pre class="doc-code"><code>L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
-                         ↓
-    L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
-                         ↓
-    L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组</code></pre>
+            <mc-code language="text">
+              L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
+                                   ↓
+              L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
+                                   ↓
+              L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组
+            </mc-code>
 
             <div class="doc-note doc-warn">
               <strong>全链路唯一不变量：存三元组，用的时候才包 <code>rgb()</code>。</strong>
-              <pre class="doc-code" style="margin: 0.75rem 0 0"><code>/* 存 */
-    :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
-    mc-button { --mc-btn-fill: var(--mc-color-primary); }
+              <mc-code language="css" style="margin: 0.75rem 0 0">
+                /* 存 */
+                :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
+                mc-button { --mc-btn-fill: var(--mc-color-primary); }
 
-    /* 用 */
-    .mc-btn   { background-color: rgb(var(--mc-btn-fill)); }
-    .dim      { background-color: rgb(var(--mc-btn-fill) / 0.5); }</code></pre>
+                /* 用 */
+                .mc-btn   { background-color: rgb(var(--mc-btn-fill)); }
+                .dim      { background-color: rgb(var(--mc-btn-fill) / 0.5); }
+              </mc-code>
               <p style="margin: 0.75rem 0 0">
                 混着来的话，UnoCSS 会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
                 <strong>非法 CSS</strong>，整条声明在计算值阶段被丢弃 ——
@@ -114,14 +118,16 @@
               表现为「切主题时组件纹丝不动」。<code>:root</code> 在 shadow root 内不匹配任何元素，天然无害。
             </div>
 
-            <pre class="doc-code"><code>&lt;!-- 跟随系统（默认，tokens.css 里有 prefers-color-scheme 兜底） --&gt;
-    &lt;html&gt;
+            <mc-code language="html">
+              &lt;!-- 跟随系统（默认，tokens.css 里有 prefers-color-scheme 兜底） --&gt;
+              &lt;html&gt;
 
-    &lt;!-- 强制亮色 --&gt;
-    &lt;html data-theme="light"&gt;
+              &lt;!-- 强制亮色 --&gt;
+              &lt;html data-theme="light"&gt;
 
-    &lt;!-- 强制暗色 --&gt;
-    &lt;html data-theme="dark"&gt;</code></pre>
+              &lt;!-- 强制暗色 --&gt;
+              &lt;html data-theme="dark"&gt;
+            </mc-code>
 
             <p class="doc-hint">
               右上角的按钮就是这个机制 —— 点一下，整个文档站和页面里所有组件一起变。
@@ -131,23 +137,31 @@
 
             <h3>整体换品牌色</h3>
             <p>改一个数字，重跑生成器：</p>
-            <pre class="doc-code"><code>// tools/gen-tokens.mjs
-    const HUES = {
-      primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
-      // ...
-    };</code></pre>
-            <pre class="doc-code"><code>pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
-    pnpm build</code></pre>
+            <mc-code language="javascript">
+              // tools/gen-tokens.mjs
+              const HUES = {
+                primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
+                // ...
+              };
+            </mc-code>
+            <mc-code language="bash">
+              pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
+              pnpm build
+            </mc-code>
 
             <h3>只改某几个令牌</h3>
-            <pre class="doc-code"><code>/* 未分层 → 必定赢过 @layer mosaic.tokens */
-    :root {
-      --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
-      --mc-radius-md: 2px;
-    }</code></pre>
+            <mc-code language="css">
+              /* 未分层 → 必定赢过 @layer mosaic.tokens */
+              :root {
+                --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
+                --mc-radius-md: 2px;
+              }
+            </mc-code>
 
             <h3>单个组件实例</h3>
-            <pre class="doc-code"><code>&lt;mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;</code></pre>
+            <mc-code language="html">
+              &lt;mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
+            </mc-code>
             <p class="doc-hint">组件令牌存的同样是三元组，写在宿主元素上时会随之继承进 shadow root。</p>
             <p class="doc-hint">
               <code>--mc-*</code> 是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
@@ -155,7 +169,7 @@
 
             <h2>对比度自检</h2>
             <p>
-              <code>pnpm tokens</code> 每次都会跑这 32 项，任何一项不达标就<strong>退出 1</strong>。
+              <code>pnpm tokens</code> 每次都会跑这 34 项，任何一项不达标就<strong>退出 1</strong>。
               当前全绿。完整结果见
               <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">design-tokens.md</a>。
             </p>

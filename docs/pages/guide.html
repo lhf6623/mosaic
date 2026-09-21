@@ -8,29 +8,9 @@
 
     <h2>最小可运行页面</h2>
 
-    <pre class="doc-code"><code>&lt;!doctype html&gt;
-    &lt;html lang="zh-CN"&gt;
-      &lt;head&gt;
-        &lt;meta charset="utf-8" /&gt;
-        &lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;
-
-        &lt;!-- 1. 令牌 + 工具类。文档级，供你自己页面里的标记使用 --&gt;
-        &lt;link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" /&gt;
-
-        &lt;!-- 2. ofa.js。必须排在 mosaic.js 前面（模块按文档顺序执行） --&gt;
-        &lt;script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs" type="module"&gt;&lt;/script&gt;
-
-        &lt;!-- 3. 运行时：把工具类注入每个 shadow root --&gt;
-        &lt;script src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js" type="module"&gt;&lt;/script&gt;
-      &lt;/head&gt;
-      &lt;body&gt;
-        &lt;!-- 4. 按需引入组件本体 --&gt;
-        &lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
-
-        &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;
-      &lt;/body&gt;
-    &lt;/html&gt;</code></pre>
+    <mc-code language="html" src="../snippets/quick-start.html"></mc-code>
+    <p class="doc-hint">片段放在 <code>docs/snippets/quick-start.html</code>，页面里一行引用 ——
+      文件本身是真 HTML，不用写 <code>&amp;lt;</code>，编辑器高亮、也能直接打开验证。</p>
 
     <div class="doc-note">
       <strong>三条引入缺一不可，顺序也不能换。</strong>
@@ -61,14 +41,16 @@
     </div>
 
     <h2>本地开发</h2>
-    <pre class="doc-code"><code>git clone https://github.com/lhf6623/mosaic.git
-    cd mosaic
-    pnpm install
-    pnpm dev            # http://localhost:8642
+    <mc-code language="bash">
+      git clone https://github.com/lhf6623/mosaic.git
+      cd mosaic
+      pnpm install
+      pnpm dev            # http://localhost:8642
 
-    pnpm tokens         # 重新生成令牌 + WCAG 对比度自检（不达标退出 1）
-    pnpm build          # = tokens && build:css
-    pnpm typecheck      # tsc --noEmit</code></pre>
+      pnpm tokens         # 重新生成令牌 + WCAG 对比度自检（不达标退出 1）
+      pnpm build          # = tokens && build:css
+      pnpm typecheck      # tsc --noEmit
+    </mc-code>
 
     <div class="doc-note doc-warn">
       <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
@@ -96,9 +78,11 @@
     <p>
       jsDelivr 在大陆历史上反复出现不可达。换入口域名、路径完全不变即可：
     </p>
-    <pre class="doc-code"><code>https://fastly.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
-    https://gcore.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
-    https://testingcf.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...</code></pre>
+    <mc-code language="text">
+      https://fastly.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+      https://gcore.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+      https://testingcf.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+    </mc-code>
 
     <h2>常见问题</h2>
 
