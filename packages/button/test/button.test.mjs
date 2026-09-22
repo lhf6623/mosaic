@@ -1,12 +1,4 @@
-/**
- * mc-button · 按钮组件：语义色 × 外观 × 尺寸、状态、插槽、原生点击穿透（packages/button）
- *
- * 这个套件不碰文档页里现成的演示（那些属于站点套件）：它在页面里**现搭一组探针按钮**，
- * 量的是组件契约本身 —— 色槽确实来自令牌、三个维度互相正交、状态转发给内部原生 button。
- * 探针容器放在左上角（要能真点、真 Tab），跑完删掉。
- *
- * 用法：node tests/smoke.mjs button
- */
+/** mc-button：语义色 × 外观 × 尺寸、状态、插槽、原生点击穿透；探针按钮现搭现拆，跑法 node tests/smoke.mjs button。 */
 
 export default async function run({ page, visit, check }) {
   /* 按钮文档页：组件与令牌都就位（组件本体在 docs/layout 之外的页里 <l-m> 引入） */
@@ -22,10 +14,15 @@ export default async function run({ page, visit, check }) {
     host.style.cssText =
       'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px;' +
       'display:flex;flex-direction:column;gap:6px;width:360px';
-    host.innerHTML =
-      ['row-colors', 'row-variants', 'row-sizes', 'row-states', 'row-slots']
-        .map((id) => `<div id="${id}" style="display:flex;gap:6px;align-items:center"></div>`)
-        .join('') + '<div id="row-block" style="display:block;width:300px"></div>';
+    host.innerHTML = [
+      'row-colors',
+      'row-variants',
+      'row-sizes',
+      'row-states',
+      'row-slots',
+    ]
+      .map((id) => `<div id="${id}" style="display:flex;gap:6px;align-items:center"></div>`)
+      .join('') + '<div id="row-block" style="display:block;width:300px"></div>';
     document.body.append(host);
 
     const put = (row, id, attrs = {}, text = '按钮') => {
@@ -67,17 +64,14 @@ export default async function run({ page, visit, check }) {
 
     // 原生 click 是否穿透 shadow：挂一个 document 级监听记账
     window.__btnClicks = [];
-    document.addEventListener('click', (e) =>
-      window.__btnClicks.push(e.target.id || e.target.tagName),
-    );
+    document.addEventListener('click', (e) => window.__btnClicks.push(e.target.id || e.target.tagName));
     put('row-block', 'cl-click', {}, '点我');
   });
 
   /* ---------- 语义色：色槽的值必须就是令牌的值 ---------- */
   const colors = await page.evaluate(() => {
     const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
-    const token = (name) =>
-      getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
+    const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
     return ['primary', 'info', 'success', 'warning', 'danger', 'neutral'].map((color) => ({
       color,
       actual: rgbOf(getComputedStyle(document.getElementById(`c-${color}`)).backgroundColor),
@@ -87,16 +81,13 @@ export default async function run({ page, visit, check }) {
   check(
     '六个语义色的填充色就是对应令牌（组件没写死颜色）',
     colors.length === 6 && colors.every((c) => c.actual === c.expected),
-    colors
-      .map((c) => `${c.color}:${c.actual === c.expected ? '✓' : `${c.actual}≠${c.expected}`}`)
-      .join(' '),
+    colors.map((c) => `${c.color}:${c.actual === c.expected ? '✓' : `${c.actual}≠${c.expected}`}`).join(' '),
   );
 
   /* ---------- 外观 × 颜色正交 ---------- */
   const variants = await page.evaluate(() => {
     const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
-    const token = (name) =>
-      getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
+    const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
     const cs = (id) => getComputedStyle(document.getElementById(id));
     return {
       outline: {
@@ -127,9 +118,7 @@ export default async function run({ page, visit, check }) {
   );
   check(
     'ghost：透明底、透明描边、文字取强调色',
-    variants.ghost.bg === '0,0,0' &&
-      variants.ghost.border === '0,0,0' &&
-      variants.ghost.fg === variants.ghost.info,
+    variants.ghost.bg === '0,0,0' && variants.ghost.border === '0,0,0' && variants.ghost.fg === variants.ghost.info,
     JSON.stringify(variants.ghost),
   );
 
@@ -218,8 +207,7 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ---------- 键盘焦点环用 ring 令牌 ----------
-     宿主本身不可聚焦，真正在 tab 序里的是 shadow 里的原生 button，
-     所以先把焦点放进 kb-a 的原生 button，再按 Tab 走到 kb-b */
+     宿主不可聚焦，tab 序里的是 shadow 里的原生 button —— 先把焦点放进 kb-a 的原生 button，再按 Tab 走到 kb-b */
   await page.evaluate(() => {
     document.getElementById('kb-a').shadowRoot.querySelector('.mc-native').focus();
   });

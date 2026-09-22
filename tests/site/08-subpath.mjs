@@ -1,14 +1,4 @@
-/**
- * 站点 · 子路径部署（GitHub Pages 项目页在 `/<repo>/` 下）
- *
- * 线上实测过的一类 bug：ofa 把 hash 当**相对域名根**的地址解析，于是手写的
- * `#/packages/…` 在子路径下变成了 `/packages/…`（404）；一级菜单的高亮也因为两边
- * 不在同一个坐标系而错位（打开首页空高亮、设计令牌页亮成「组件」）。
- * 开发服务器默认就在根上，这些永远看不见 —— 所以这里另起一个带 `--prefix /mosaic`
- * 的服务器，把访客走过的路径走一遍。
- *
- * 从 harness 拿 check / newPage（见 tests/lib/harness.mjs）。
- */
+/** 站点 · 子路径部署（GitHub Pages 项目页 `/<repo>/`）：ofa 把 hash 当相对域名根解析，子路径下会 404 / 高亮错位，所以另起带 --prefix /mosaic 的服务器走一遍。 */
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -33,8 +23,7 @@ export default async function run({ check, newPage }) {
 
   const active = () =>
     p.evaluate(() =>
-      window
-        .__deepAll('.doc-top-nav a')
+      window.__deepAll('.doc-top-nav a')
         .filter((a) => a.hasAttribute('aria-current'))
         .map((a) => a.textContent.trim())
         .join('/'),
@@ -43,8 +32,7 @@ export default async function run({ check, newPage }) {
   const click = (sel, text) =>
     p.evaluate(
       ([s, t]) =>
-        window
-          .__deepAll(s)
+        window.__deepAll(s)
           .find((el) => el.textContent.trim() === t)
           ?.click(),
       [sel, text],
@@ -98,8 +86,7 @@ export default async function run({ check, newPage }) {
       h1: await h1(),
       top: await active(),
       nav: await p.evaluate(() =>
-        window
-          .__deepAll('doc-nav a')
+        window.__deepAll('doc-nav a')
           .filter((a) => a.hasAttribute('aria-current'))
           .map((a) => a.textContent.trim())
           .join('/'),
@@ -116,8 +103,7 @@ export default async function run({ check, newPage }) {
     await settle();
     await p.evaluate(() => {
       // 卡片文本是「Button 已实现 mc-button 按钮。…」，按 href 找才准
-      window
-        .__deepAll('.doc-comp-card')
+      window.__deepAll('.doc-comp-card')
         .find((c) => (c.getAttribute('href') || '').includes('packages/button/page.html'))
         ?.click();
     });
@@ -155,7 +141,11 @@ export default async function run({ check, newPage }) {
     );
 
     /* ⑦ 全程没有 404 / 运行时报错 */
-    check('子路径下没有 404 / 运行时报错', failed.length === 0, failed.join(' | ') || '无');
+    check(
+      '子路径下没有 404 / 运行时报错',
+      failed.length === 0,
+      failed.join(' | ') || '无',
+    );
   } finally {
     await p.close();
     server.kill();

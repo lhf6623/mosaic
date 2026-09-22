@@ -8,6 +8,11 @@ pnpm-lock.yaml
 packages/color/tokens.css
 packages/boot/mosaic.css
 
+# 测试代码：里面大量是对齐过的期望值 / 断言数据，重排后反而更难读，
+# 而且它们只被测试运行，不影响对外风格。
+tests/
+packages/*/test/
+
 # 演示文件：里面 mc-code 的文本是**逐字展示**的样例代码，prettier 会把它的换行压掉
 # （实测：JSON 被压成两行、bash 丢了所有换行），而它本身就是要展示的内容。
 packages/*/demos/*.html
