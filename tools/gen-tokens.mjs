@@ -72,7 +72,14 @@ function oklchToSrgb(L, C, hDeg) {
 }
 
 const toHex = (rgb) =>
-  '#' + rgb.map((c) => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
+  '#' +
+  rgb
+    .map((c) =>
+      Math.round(c * 255)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('');
 
 /** 令牌里存的是 sRGB 通道三元组（"R G B"），配合 rgb(var(--x) / <alpha-value>) 支持透明度 */
 const toChannels = (rgb) => rgb.map((c) => Math.round(c * 255)).join(' ');
@@ -99,14 +106,32 @@ const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
 // 统一的明度爬升。相邻档位的 OKLab L 差控制在 0.05~0.12，视觉步长才均匀。
 const L_RAMP = {
-  50: 0.972, 100: 0.938, 200: 0.886, 300: 0.808, 400: 0.704, 500: 0.623,
-  600: 0.546, 700: 0.488, 800: 0.424, 900: 0.379, 950: 0.272,
+  50: 0.972,
+  100: 0.938,
+  200: 0.886,
+  300: 0.808,
+  400: 0.704,
+  500: 0.623,
+  600: 0.546,
+  700: 0.488,
+  800: 0.424,
+  900: 0.379,
+  950: 0.272,
 };
 
 // chroma 乘数：中间档最艳，两端收敛，避免浅色档发脏、深色档发荧光
 const C_CURVE = {
-  50: 0.09, 100: 0.17, 200: 0.31, 300: 0.51, 400: 0.78, 500: 0.96,
-  600: 1.0, 700: 0.91, 800: 0.75, 900: 0.62, 950: 0.44,
+  50: 0.09,
+  100: 0.17,
+  200: 0.31,
+  300: 0.51,
+  400: 0.78,
+  500: 0.96,
+  600: 1.0,
+  700: 0.91,
+  800: 0.75,
+  900: 0.62,
+  950: 0.44,
 };
 
 /**
@@ -270,31 +295,63 @@ const SCALARS = {
   'font-mono':
     'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
 
-  'text-xs': '0.75rem', 'text-xs-lh': '1rem',
-  'text-sm': '0.875rem', 'text-sm-lh': '1.25rem',
-  'text-base': '1rem', 'text-base-lh': '1.5rem',
-  'text-lg': '1.125rem', 'text-lg-lh': '1.75rem',
-  'text-xl': '1.25rem', 'text-xl-lh': '1.75rem',
-  'text-2xl': '1.5rem', 'text-2xl-lh': '2rem',
-  'text-3xl': '1.875rem', 'text-3xl-lh': '2.25rem',
+  'text-xs': '0.75rem',
+  'text-xs-lh': '1rem',
+  'text-sm': '0.875rem',
+  'text-sm-lh': '1.25rem',
+  'text-base': '1rem',
+  'text-base-lh': '1.5rem',
+  'text-lg': '1.125rem',
+  'text-lg-lh': '1.75rem',
+  'text-xl': '1.25rem',
+  'text-xl-lh': '1.75rem',
+  'text-2xl': '1.5rem',
+  'text-2xl-lh': '2rem',
+  'text-3xl': '1.875rem',
+  'text-3xl-lh': '2.25rem',
 
-  'weight-normal': '400', 'weight-medium': '500', 'weight-semibold': '600', 'weight-bold': '700',
+  'weight-normal': '400',
+  'weight-medium': '500',
+  'weight-semibold': '600',
+  'weight-bold': '700',
 
-  'space-0': '0', 'space-1': '0.25rem', 'space-2': '0.5rem', 'space-3': '0.75rem',
-  'space-4': '1rem', 'space-5': '1.25rem', 'space-6': '1.5rem', 'space-8': '2rem',
-  'space-10': '2.5rem', 'space-12': '3rem', 'space-16': '4rem',
+  'space-0': '0',
+  'space-1': '0.25rem',
+  'space-2': '0.5rem',
+  'space-3': '0.75rem',
+  'space-4': '1rem',
+  'space-5': '1.25rem',
+  'space-6': '1.5rem',
+  'space-8': '2rem',
+  'space-10': '2.5rem',
+  'space-12': '3rem',
+  'space-16': '4rem',
 
-  'radius-none': '0', 'radius-sm': '0.25rem', 'radius-md': '0.375rem', 'radius-lg': '0.5rem',
-  'radius-xl': '0.75rem', 'radius-2xl': '1rem', 'radius-full': '9999px',
+  'radius-none': '0',
+  'radius-sm': '0.25rem',
+  'radius-md': '0.375rem',
+  'radius-lg': '0.5rem',
+  'radius-xl': '0.75rem',
+  'radius-2xl': '1rem',
+  'radius-full': '9999px',
 
-  'control-h-sm': '1.75rem', 'control-h-md': '2.25rem', 'control-h-lg': '2.75rem',
+  'control-h-sm': '1.75rem',
+  'control-h-md': '2.25rem',
+  'control-h-lg': '2.75rem',
 
-  'duration-fast': '120ms', 'duration-base': '180ms', 'duration-slow': '280ms',
+  'duration-fast': '120ms',
+  'duration-base': '180ms',
+  'duration-slow': '280ms',
   'ease-standard': 'cubic-bezier(0.2, 0, 0, 1)',
   'ease-emphasized': 'cubic-bezier(0.2, 0, 0, 1.2)',
 
-  'z-dropdown': '1000', 'z-sticky': '1100', 'z-overlay': '1200',
-  'z-modal': '1300', 'z-popover': '1400', 'z-toast': '1500', 'z-tooltip': '1600',
+  'z-dropdown': '1000',
+  'z-sticky': '1100',
+  'z-overlay': '1200',
+  'z-modal': '1300',
+  'z-popover': '1400',
+  'z-toast': '1500',
+  'z-tooltip': '1600',
 };
 
 /* ------------------------------------------------------------------ *
@@ -333,7 +390,8 @@ const CONTRAST_RULES = [
   ['color-ring', 'color-surface', 3.0, '焦点环（WCAG 1.4.11 非文字对比）'],
   // 状态色：同一个令牌要同时胜任"填充"和"文字"两个角色，两条规则都得过
   ...FAMILIES.map((f) => [`color-${f}-fg`, `color-${f}`, 4.5, `${f}：填充上的文字`]),
-  ...FAMILIES.map((f) => [`color-${f}`, 'color-surface', 4.5, `${f}：中性底上的文字`]),];
+  ...FAMILIES.map((f) => [`color-${f}`, 'color-surface', 4.5, `${f}：中性底上的文字`]),
+];
 
 let failures = 0;
 const report = [];
@@ -493,4 +551,6 @@ if (CHECK_ONLY) {
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, css, 'utf8');
 console.log(`\x1b[32m✓\x1b[0m 对比度全部达标`);
-console.log(`\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(css.length / 1024).toFixed(1)} KB)\n`);
+console.log(
+  `\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(css.length / 1024).toFixed(1)} KB)\n`,
+);

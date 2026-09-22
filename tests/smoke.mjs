@@ -76,12 +76,18 @@ const harness = await createHarness();
 const { check, results, problems } = harness;
 
 console.log(`\n\x1b[1mMosaic 冒烟测试\x1b[0m  ${BASE}  (${CHANNEL})`);
-console.log(`\x1b[2m${suites.length} 个套件${onlySite || !includeSite ? '' : ''}${includeSite && includeComponents ? '（站点 + 组件）' : includeSite ? '（只站点）' : '（只组件）'}\x1b[0m`);
+console.log(
+  `\x1b[2m${suites.length} 个套件${onlySite || !includeSite ? '' : ''}${includeSite && includeComponents ? '（站点 + 组件）' : includeSite ? '（只站点）' : '（只组件）'}\x1b[0m`,
+);
 
 for (const [path, label] of suites) {
   const file = new URL(path, import.meta.url);
   if (!existsSync(file)) {
-    check(`${label}：套件文件存在`, false, `${path} 不存在 —— 组件登记成 ready 就该有自己的测试套件`);
+    check(
+      `${label}：套件文件存在`,
+      false,
+      `${path} 不存在 —— 组件登记成 ready 就该有自己的测试套件`,
+    );
     continue;
   }
 

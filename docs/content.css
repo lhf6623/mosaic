@@ -528,11 +528,21 @@ a.doc-comp-card:hover {
   border-radius: calc(var(--art-tile, 62px) * 0.226);
 }
 
-.art-chip[data-color='primary'] { background-color: rgb(var(--mc-color-primary)); }
-.art-chip[data-color='info'] { background-color: rgb(var(--mc-color-info)); }
-.art-chip[data-color='success'] { background-color: rgb(var(--mc-color-success)); }
-.art-chip[data-color='warning'] { background-color: rgb(var(--mc-color-warning)); }
-.art-chip[data-color='danger'] { background-color: rgb(var(--mc-color-danger)); }
+.art-chip[data-color='primary'] {
+  background-color: rgb(var(--mc-color-primary));
+}
+.art-chip[data-color='info'] {
+  background-color: rgb(var(--mc-color-info));
+}
+.art-chip[data-color='success'] {
+  background-color: rgb(var(--mc-color-success));
+}
+.art-chip[data-color='warning'] {
+  background-color: rgb(var(--mc-color-warning));
+}
+.art-chip[data-color='danger'] {
+  background-color: rgb(var(--mc-color-danger));
+}
 
 /* 减弱动效偏好下不做视差 */
 @media (prefers-reduced-motion: reduce) {

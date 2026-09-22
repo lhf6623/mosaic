@@ -12,8 +12,14 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 ## 目标 API
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css">
-<script type="module" src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css"
+/>
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js"
+></script>
 
 <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
 <mc-button color="primary">提交</mc-button>
@@ -26,9 +32,7 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 
 ```html
 <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/code/code.html"></l-m>
-<mc-code language="javascript" line-numbers>
-  const a = 1;
-</mc-code>
+<mc-code language="javascript" line-numbers> const a = 1; </mc-code>
 ```
 
 代码文本有四种传法（优先级 `src` > `code` 属性 > 标签内文本）：贴标签里（短片段最好读）、
@@ -43,14 +47,20 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 
 ```html
 <html data-theme="dark">
-<mc-button style="height: 32px; border-radius: 8px">精确覆盖</mc-button>
+  <mc-button style="height: 32px; border-radius: 8px">精确覆盖</mc-button>
+</html>
 ```
+
 ```css
 /* 换品牌色：未分层 → 必定赢过 @layer mosaic.tokens */
-:root { --mc-primary-600: 16 185 129; }
+:root {
+  --mc-primary-600: 16 185 129;
+}
 
 /* 结构化定制 */
-mc-button::part(base) { text-transform: uppercase; }
+mc-button::part(base) {
+  text-transform: uppercase;
+}
 ```
 
 > ⚠️ `mosaic.js` 尚未实现（M0）。组件本体已可独立工作。
@@ -75,16 +85,16 @@ mc-button::part(base) { text-transform: uppercase; }
 
 ## 文档
 
-| 文档 | 内容 |
-|---|---|
-| [规划总纲](./agent/PLAN.md) | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险 |
-| [**设计规范**](./agent/design-spec.md) | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案 |
-| [设计令牌与配色](./agent/design-tokens.md) | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南 |
-| [**组件 API 规范**](./agent/component-spec.md) | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表 |
-| [组件编写规范](./agent/components.md) | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、交付检查清单 |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md) | **写组件前必读**。32 条静默失效的坑，附现象、原因、正确写法 |
-| [调研：UnoCSS](./agent/research/unocss.md) | preset 选型、shadow DOM 注入、体积实测数据 |
-| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题 |
+| 文档                                                | 内容                                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险     |
+| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案 |
+| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南           |
+| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表  |
+| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、交付检查清单                     |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。32 条静默失效的坑，附现象、原因、正确写法                            |
+| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                             |
+| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                |
 
 ---
 
@@ -223,10 +233,10 @@ o-app
 **二级菜单不进外壳**：哪个页面需要左栏，就自己在模板里放 `<doc-nav>`，配一层
 `.doc-split` 分成左右两栏。于是
 
-| 页面 | 二级菜单 |
-|---|---|
-| 首页 / 快速开始 / 设计令牌 / 规范 | 没有 → 单列铺满 |
-| 组件总览 + 每个组件文档页 | `<doc-nav data-source="components">` → 总览 + 5 个分组 + 21 个组件 |
+| 页面                              | 二级菜单                                                           |
+| --------------------------------- | ------------------------------------------------------------------ |
+| 首页 / 快速开始 / 设计令牌 / 规范 | 没有 → 单列铺满                                                    |
+| 组件总览 + 每个组件文档页         | `<doc-nav data-source="components">` → 总览 + 5 个分组 + 21 个组件 |
 
 好处是外壳不必知道「分区」，也不用替每个页面维护菜单：加一个一级入口 =
 `docs/layout.html` 顶栏加一条；加一个页面的二级菜单 = 在那一页里写。
@@ -331,7 +341,9 @@ packages/color/
   <h3>语义色</h3>
   <demo-button-colors></demo-button-colors>
   <mc-collapse class="doc-demo-code">
-    <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/colors.html"></mc-code></mc-collapse-item>
+    <mc-collapse-item header="查看代码"
+      ><mc-code language="html" src="./demos/colors.html"></mc-code
+    ></mc-collapse-item>
   </mc-collapse>
   <p class="doc-hint">…</p>
 </section>
@@ -369,7 +381,17 @@ pnpm test collapse # 只跑某个组件的套件（内环快速反馈）
 pnpm test:site     # 只跑跨组件的站点套件
 pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
 pnpm check:drift   # 重新生成后比对 git diff，防止提交的产物与生成器漂移
+pnpm format        # prettier 格式化全仓（.prettierrc.json 对齐现有风格：单引号 / 分号 / 100 列）
+pnpm format:check  # 只检查不写入，适合提交前跑
 ```
+
+`pnpm format` 不会碰三类东西（见 `.prettierignore`）：**生成产物**
+（`tokens.css` / `mosaic.css`，格式化会和生成器漂移、`check:drift` 直接红）、
+**演示文件**（`packages/*/demos/*.html`，里面的 `mc-code` 文本是逐字展示的样例代码，
+prettier 会把它的换行压掉 —— 实测 JSON 被压成两行、bash 丢了所有换行）、
+以及 `agent/research/` 里抓来的外部资料。
+文档页里内联的 `<mc-code>` 块同样是逐字内容，前面要加 `<!-- prettier-ignore -->`
+（长片段改用 `src="…"` 就没这个问题）。
 
 当前实测产物：**34.3 KB raw / 7.1 KB gzip**（其中令牌 12.5 KB raw，370 个工具类）。
 

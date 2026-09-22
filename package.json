@@ -14,12 +14,15 @@
     "dev": "node tools/serve.mjs",
     "test": "node tests/smoke.mjs",
     "test:site": "node tests/smoke.mjs --site",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
     "@unocss/cli": "^66.10.5",
     "playwright-core": "^1.63.0",
+    "prettier": "^3.9.8",
     "typescript": "^7.0.2",
     "unocss": "^66.10.5"
   }

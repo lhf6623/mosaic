@@ -1,14 +1,15 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
   <div class="doc-body">
-            <h1>设计令牌</h1>
-            <p class="doc-lead">
-              色板不是手写的，是从 OKLCH 感知均匀色空间算出来的，并且每次生成都要跑
-              <strong>34 项 WCAG 对比度自检</strong> —— 不达标直接退出 1。
-            </p>
+    <h1>设计令牌</h1>
+    <p class="doc-lead">
+      色板不是手写的，是从 OKLCH 感知均匀色空间算出来的，并且每次生成都要跑
+      <strong>34 项 WCAG 对比度自检</strong> —— 不达标直接退出 1。
+    </p>
 
-            <h2>三层结构</h2>
-            <mc-code language="text">
+    <h2>三层结构</h2>
+    <!-- prettier-ignore -->
+    <mc-code language="text">
               L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
                                    ↓
               L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
@@ -16,9 +17,10 @@
               L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组
             </mc-code>
 
-            <div class="doc-note doc-warn">
-              <strong>全链路唯一不变量：存三元组，用的时候才包 <code>rgb()</code>。</strong>
-              <mc-code language="css" style="margin: 0.75rem 0 0">
+    <div class="doc-note doc-warn">
+      <strong>全链路唯一不变量：存三元组，用的时候才包 <code>rgb()</code>。</strong>
+      <!-- prettier-ignore -->
+      <mc-code language="css" style="margin: 0.75rem 0 0">
                 /* 存 */
                 :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
                 mc-button { --mc-btn-fill: var(--mc-color-primary); }
@@ -27,98 +29,176 @@
                 .mc-btn   { background-color: rgb(var(--mc-btn-fill)); }
                 .dim      { background-color: rgb(var(--mc-btn-fill) / 0.5); }
               </mc-code>
-              <p style="margin: 0.75rem 0 0">
-                混着来的话，UnoCSS 会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
-                <strong>非法 CSS</strong>，整条声明在计算值阶段被丢弃 ——
-                类名在、规则在、就是不生效，控制台零报错。
-              </p>
-            </div>
-            <p>
-              <strong>组件只允许消费 L2 和 L3，永远不碰 L1。</strong>
-              原始色阶不随主题切换，直接用它必然在某个主题下出现可读性问题。
-              这条由构建期的 <code>blocklist</code> 强制拦截。
-            </p>
+      <p style="margin: 0.75rem 0 0">
+        混着来的话，UnoCSS 会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
+        <strong>非法 CSS</strong>，整条声明在计算值阶段被丢弃 ——
+        类名在、规则在、就是不生效，控制台零报错。
+      </p>
+    </div>
+    <p>
+      <strong>组件只允许消费 L2 和 L3，永远不碰 L1。</strong>
+      原始色阶不随主题切换，直接用它必然在某个主题下出现可读性问题。 这条由构建期的
+      <code>blocklist</code> 强制拦截。
+    </p>
 
-            <div class="doc-note">
-              <strong>为什么存通道三元组而不是 hex？</strong>
-              只有这样才能写 <code>rgb(var(--mc-primary-500) / 0.5)</code>，
-              也才能接上 UnoCSS 的 <code>&lt;alpha-value&gt;</code> 占位符 ——
-              于是 <code>bg-primary/50</code> 这类透明度语法直接可用。
-            </div>
+    <div class="doc-note">
+      <strong>为什么存通道三元组而不是 hex？</strong>
+      只有这样才能写 <code>rgb(var(--mc-primary-500) / 0.5)</code>， 也才能接上 UnoCSS 的
+      <code>&lt;alpha-value&gt;</code> 占位符 —— 于是
+      <code>bg-primary/50</code> 这类透明度语法直接可用。
+    </div>
 
-            <h2>原始色阶</h2>
-            <p class="doc-hint">
-              下面这些色值<strong>实时从 <code>packages/color/tokens.css</code> 解析出来的</strong>，
-              不是抄在页面里的。改色后刷新即可，不会出现「文档写的是旧色值」。
-            </p>
-            <div class="doc-palette" data-palette></div>
+    <h2>原始色阶</h2>
+    <p class="doc-hint">
+      下面这些色值<strong>实时从 <code>packages/color/tokens.css</code> 解析出来的</strong>，
+      不是抄在页面里的。改色后刷新即可，不会出现「文档写的是旧色值」。
+    </p>
+    <div class="doc-palette" data-palette></div>
 
-            <h2>语义令牌</h2>
-            <p>
-              每个状态色族<strong>只保留一个档位</strong>，并用自检脚本强制它同时满足两件事：
-            </p>
-            <ul>
-              <li>作为实心填充时，<code>--mc-color-{色}-fg</code> 压在它上面 ≥ 4.5:1</li>
-              <li>作为文字落在中性底 <code>--mc-color-surface</code> 上时 ≥ 4.5:1</li>
-            </ul>
-            <p>
-              于是 <code>bg-primary</code> / <code>text-primary</code> / <code>border-primary</code>
-              可以无脑用同一个令牌，不需要记「哪个是填充哪个是文字」。
-              <strong>这个约束是构建期硬门禁</strong>，换品牌色时不可能悄悄引入无障碍回归。
-            </p>
+    <h2>语义令牌</h2>
+    <p>每个状态色族<strong>只保留一个档位</strong>，并用自检脚本强制它同时满足两件事：</p>
+    <ul>
+      <li>作为实心填充时，<code>--mc-color-{色}-fg</code> 压在它上面 ≥ 4.5:1</li>
+      <li>作为文字落在中性底 <code>--mc-color-surface</code> 上时 ≥ 4.5:1</li>
+    </ul>
+    <p>
+      于是 <code>bg-primary</code> / <code>text-primary</code> / <code>border-primary</code>
+      可以无脑用同一个令牌，不需要记「哪个是填充哪个是文字」。
+      <strong>这个约束是构建期硬门禁</strong>，换品牌色时不可能悄悄引入无障碍回归。
+    </p>
 
-            <table class="doc-table">
-              <thead>
-                <tr><th>令牌</th><th>亮色</th><th>暗色</th><th>用途</th></tr>
-              </thead>
-              <tbody>
-                <tr><td><code>--mc-color-bg</code></td><td>neutral-50</td><td>neutral-950</td><td>页面底色</td></tr>
-                <tr><td><code>--mc-color-surface</code></td><td>纯白</td><td>neutral-900</td><td>卡片 / 面板</td></tr>
-                <tr><td><code>--mc-color-surface-raised</code></td><td>纯白</td><td>neutral-800</td><td>浮起表面</td></tr>
-                <tr><td><code>--mc-color-surface-sunken</code></td><td>neutral-100</td><td>近黑</td><td>凹陷区 / 代码块</td></tr>
-                <tr><td><code>--mc-color-fg</code></td><td>neutral-900</td><td>neutral-50</td><td>正文</td></tr>
-                <tr><td><code>--mc-color-fg-muted</code></td><td>neutral-600</td><td>neutral-300</td><td>次要文字</td></tr>
-                <tr><td><code>--mc-color-border</code></td><td>neutral-200</td><td>neutral-800</td><td>常规描边</td></tr>
-                <tr><td><code>--mc-color-border-strong</code></td><td>neutral-300</td><td>neutral-700</td><td>强描边</td></tr>
-                <tr><td><code>--mc-color-ring</code></td><td>primary-500</td><td>primary-400</td><td>焦点环</td></tr>
-              </tbody>
-            </table>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>令牌</th>
+          <th>亮色</th>
+          <th>暗色</th>
+          <th>用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--mc-color-bg</code></td>
+          <td>neutral-50</td>
+          <td>neutral-950</td>
+          <td>页面底色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-surface</code></td>
+          <td>纯白</td>
+          <td>neutral-900</td>
+          <td>卡片 / 面板</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-surface-raised</code></td>
+          <td>纯白</td>
+          <td>neutral-800</td>
+          <td>浮起表面</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-surface-sunken</code></td>
+          <td>neutral-100</td>
+          <td>近黑</td>
+          <td>凹陷区 / 代码块</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-fg</code></td>
+          <td>neutral-900</td>
+          <td>neutral-50</td>
+          <td>正文</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-fg-muted</code></td>
+          <td>neutral-600</td>
+          <td>neutral-300</td>
+          <td>次要文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-border</code></td>
+          <td>neutral-200</td>
+          <td>neutral-800</td>
+          <td>常规描边</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-border-strong</code></td>
+          <td>neutral-300</td>
+          <td>neutral-700</td>
+          <td>强描边</td>
+        </tr>
+        <tr>
+          <td><code>--mc-color-ring</code></td>
+          <td>primary-500</td>
+          <td>primary-400</td>
+          <td>焦点环</td>
+        </tr>
+      </tbody>
+    </table>
 
-            <p>
-              状态色族 <code>{primary, info, success, warning, danger}</code>
-              各有 <code>--mc-color-{色}</code> / <code>-fg</code> / <code>-hover</code> /
-              <code>-active</code> / <code>-subtle</code> 五个。
-              注意 <code>success</code> 在亮色下整体用 <strong>700 档</strong> ——
-              600 档当文字放白底上只有 3.3:1。
-            </p>
+    <p>
+      状态色族 <code>{primary, info, success, warning, danger}</code> 各有
+      <code>--mc-color-{色}</code> / <code>-fg</code> / <code>-hover</code> / <code>-active</code> /
+      <code>-subtle</code> 五个。 注意 <code>success</code> 在亮色下整体用
+      <strong>700 档</strong> —— 600 档当文字放白底上只有 3.3:1。
+    </p>
 
-            <h2>非颜色令牌</h2>
-            <table class="doc-table">
-              <thead><tr><th>分组</th><th>令牌</th><th>值</th></tr></thead>
-              <tbody>
-                <tr><td>间距</td><td><code>--mc-space-0…16</code></td><td>0.25rem 的倍数</td></tr>
-                <tr><td>圆角</td><td><code>--mc-radius-none…full</code></td><td>0.25 / 0.375 / 0.5 / 0.75 / 1 rem</td></tr>
-                <tr><td>字号</td><td><code>--mc-text-xs…3xl</code></td><td>12 / 14 / 16 / 18 / 20 / 24 / 30 px</td></tr>
-                <tr><td>控件高</td><td><code>--mc-control-h-sm/md/lg</code></td><td>28 / 36 / 44 px</td></tr>
-                <tr><td>动效</td><td><code>--mc-duration-fast/base/slow</code></td><td>120 / 180 / 280 ms</td></tr>
-                <tr><td>层级</td><td><code>--mc-z-dropdown…tooltip</code></td><td>1000 起，每级 +100</td></tr>
-              </tbody>
-            </table>
+    <h2>非颜色令牌</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>分组</th>
+          <th>令牌</th>
+          <th>值</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>间距</td>
+          <td><code>--mc-space-0…16</code></td>
+          <td>0.25rem 的倍数</td>
+        </tr>
+        <tr>
+          <td>圆角</td>
+          <td><code>--mc-radius-none…full</code></td>
+          <td>0.25 / 0.375 / 0.5 / 0.75 / 1 rem</td>
+        </tr>
+        <tr>
+          <td>字号</td>
+          <td><code>--mc-text-xs…3xl</code></td>
+          <td>12 / 14 / 16 / 18 / 20 / 24 / 30 px</td>
+        </tr>
+        <tr>
+          <td>控件高</td>
+          <td><code>--mc-control-h-sm/md/lg</code></td>
+          <td>28 / 36 / 44 px</td>
+        </tr>
+        <tr>
+          <td>动效</td>
+          <td><code>--mc-duration-fast/base/slow</code></td>
+          <td>120 / 180 / 280 ms</td>
+        </tr>
+        <tr>
+          <td>层级</td>
+          <td><code>--mc-z-dropdown…tooltip</code></td>
+          <td>1000 起，每级 +100</td>
+        </tr>
+      </tbody>
+    </table>
 
-            <h2>主题切换</h2>
-            <p>
-              令牌写在 <code>@layer mosaic.tokens</code>（最低层），
-              所以<strong>宿主页面里任何「未分层」的覆盖都必定生效</strong>，
-              不需要 <code>!important</code>，也不用关心加载顺序。
-            </p>
-            <div class="doc-note">
-              <strong>令牌只定义在 <code>:root</code> 上，刻意不带 <code>:host</code>。</strong>
-              令牌表在 shadow root 里也会被 adopt 一次，而 <code>:host</code> 会给宿主元素
-              重新赋一遍<strong>亮色</strong>值，盖掉从文档继承下来的暗色值 ——
-              表现为「切主题时组件纹丝不动」。<code>:root</code> 在 shadow root 内不匹配任何元素，天然无害。
-            </div>
+    <h2>主题切换</h2>
+    <p>
+      令牌写在 <code>@layer mosaic.tokens</code>（最低层），
+      所以<strong>宿主页面里任何「未分层」的覆盖都必定生效</strong>， 不需要
+      <code>!important</code>，也不用关心加载顺序。
+    </p>
+    <div class="doc-note">
+      <strong>令牌只定义在 <code>:root</code> 上，刻意不带 <code>:host</code>。</strong>
+      令牌表在 shadow root 里也会被 adopt 一次，而 <code>:host</code> 会给宿主元素
+      重新赋一遍<strong>亮色</strong>值，盖掉从文档继承下来的暗色值 ——
+      表现为「切主题时组件纹丝不动」。<code>:root</code> 在 shadow root 内不匹配任何元素，天然无害。
+    </div>
 
-            <mc-code language="html">
+    <!-- prettier-ignore -->
+    <mc-code language="html">
               &lt;!-- 跟随系统（默认，tokens.css 里有 prefers-color-scheme 兜底） --&gt;
               &lt;html&gt;
 
@@ -129,28 +209,29 @@
               &lt;html data-theme="dark"&gt;
             </mc-code>
 
-            <p class="doc-hint">
-              右上角的按钮就是这个机制 —— 点一下，整个文档站和页面里所有组件一起变。
-            </p>
+    <p class="doc-hint">右上角的按钮就是这个机制 —— 点一下，整个文档站和页面里所有组件一起变。</p>
 
-            <h2>换肤</h2>
+    <h2>换肤</h2>
 
-            <h3>整体换品牌色</h3>
-            <p>改一个数字，重跑生成器：</p>
-            <mc-code language="javascript">
+    <h3>整体换品牌色</h3>
+    <p>改一个数字，重跑生成器：</p>
+    <!-- prettier-ignore -->
+    <mc-code language="javascript">
               // tools/gen-tokens.mjs
               const HUES = {
                 primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
                 // ...
               };
             </mc-code>
-            <mc-code language="bash">
+    <!-- prettier-ignore -->
+    <mc-code language="bash">
               pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
               pnpm build
             </mc-code>
 
-            <h3>只改某几个令牌</h3>
-            <mc-code language="css">
+    <h3>只改某几个令牌</h3>
+    <!-- prettier-ignore -->
+    <mc-code language="css">
               /* 未分层 → 必定赢过 @layer mosaic.tokens */
               :root {
                 --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
@@ -158,21 +239,24 @@
               }
             </mc-code>
 
-            <h3>单个组件实例</h3>
-            <mc-code language="html">
+    <h3>单个组件实例</h3>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
               &lt;mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
             </mc-code>
-            <p class="doc-hint">组件令牌存的同样是三元组，写在宿主元素上时会随之继承进 shadow root。</p>
-            <p class="doc-hint">
-              <code>--mc-*</code> 是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
-            </p>
+    <p class="doc-hint">组件令牌存的同样是三元组，写在宿主元素上时会随之继承进 shadow root。</p>
+    <p class="doc-hint">
+      <code>--mc-*</code> 是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
+    </p>
 
-            <h2>对比度自检</h2>
-            <p>
-              <code>pnpm tokens</code> 每次都会跑这 34 项，任何一项不达标就<strong>退出 1</strong>。
-              当前全绿。完整结果见
-              <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">design-tokens.md</a>。
-            </p>
+    <h2>对比度自检</h2>
+    <p>
+      <code>pnpm tokens</code> 每次都会跑这 34 项，任何一项不达标就<strong>退出 1</strong>。
+      当前全绿。完整结果见
+      <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md"
+        >design-tokens.md</a
+      >。
+    </p>
   </div>
   <script>
     /*

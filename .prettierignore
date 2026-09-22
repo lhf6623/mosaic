@@ -1,0 +1,16 @@
+# 依赖与锁文件
+node_modules/
+pnpm-lock.yaml
+
+# 生成产物：格式化它会让产物和生成器漂移（pnpm check:drift 会红）
+#   · packages/color/tokens.css  ← tools/gen-tokens.mjs
+#   · packages/boot/mosaic.css   ← tools/build-css.mjs (UnoCSS)
+packages/color/tokens.css
+packages/boot/mosaic.css
+
+# 演示文件：里面 mc-code 的文本是**逐字展示**的样例代码，prettier 会把它的换行压掉
+# （实测：JSON 被压成两行、bash 丢了所有换行），而它本身就是要展示的内容。
+packages/*/demos/*.html
+
+# 外部资料的摘录（几十 KB 的抓取原文，不是我们写的）
+agent/research/

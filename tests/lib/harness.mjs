@@ -102,7 +102,9 @@ export async function createHarness() {
    * 这里给 networkidle 加个上限，超时就继续 —— 真正该失败的地方由后面的断言负责。
    */
   async function visit(target, path) {
-    const res = await target.goto(path.startsWith('http') ? path : BASE + path, { waitUntil: 'load' });
+    const res = await target.goto(path.startsWith('http') ? path : BASE + path, {
+      waitUntil: 'load',
+    });
     await target.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     return res; // 调用方要拿 status / ok()
   }
@@ -131,7 +133,8 @@ export async function createHarness() {
   /** 用顶部一级导航切页（模拟真实点击）。顶栏在布局页的 shadow root 里 */
   async function goTop(label) {
     await page.evaluate((text) => {
-      window.__deepAll('.doc-top-nav a')
+      window
+        .__deepAll('.doc-top-nav a')
         .find((a) => a.textContent.trim() === text)
         ?.click();
     }, label);

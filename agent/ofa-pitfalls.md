@@ -15,10 +15,14 @@
 
 ```js
 // ❌ <mc-button disabled> 完全失效
-attrs: { disabled: false }
+attrs: {
+  disabled: false;
+}
 
 // ✅
-attrs: { disabled: null }
+attrs: {
+  disabled: null;
+}
 ```
 
 **原因**：ofa.js 在初始化时用声明的默认值覆盖数据。默认 `false` 会把裸属性
@@ -34,9 +38,9 @@ attrs: { disabled: null }
 ```html
 <!-- ❌ 永远处于禁用态 -->
 <button attr:disabled="disabled !== null">
-
-<!-- ✅ -->
-<button :disabled="disabled !== null">
+  <!-- ✅ -->
+  <button :disabled="disabled !== null"></button>
+</button>
 ```
 
 **原因**：`attr:` 会把 `false` 序列化成字符串 `"false"`；而对于布尔属性，
@@ -45,9 +49,9 @@ attrs: { disabled: null }
 ### P3 · 用 JS 改组件状态必须走 `setAttribute` / `removeAttribute`
 
 ```js
-el.disabled = true;                    // ❌ 不触发模板更新
-el.setAttribute("disabled", "");       // ✅
-el.removeAttribute("disabled");        // ✅
+el.disabled = true; // ❌ 不触发模板更新
+el.setAttribute('disabled', ''); // ✅
+el.removeAttribute('disabled'); // ✅
 ```
 
 **原因**：直接写 property 绕过了 ofa.js 的属性观察链路。
@@ -58,8 +62,8 @@ el.removeAttribute("disabled");        // ✅
 `setAttribute` 之后**同步**去读计算样式或 ofa data，拿到的是旧值，极易误判成"改了没生效"。
 
 ```js
-el.setAttribute("variant", "danger");
-await new Promise((r) => setTimeout(r, 100));   // 再断言
+el.setAttribute('variant', 'danger');
+await new Promise((r) => setTimeout(r, 100)); // 再断言
 ```
 
 自动化测试里尤其容易踩。
@@ -104,10 +108,14 @@ shadow root**，控制台只有一条 `NotSupportedError: The result must not ha
 
 ```js
 // ❌ attrs 里出现保留名（实测 wrap）
-attrs: { wrap: null }
+attrs: {
+  wrap: null;
+}
 
 // ✅ 换个名字，属性写成 soft-wrap
-attrs: { softWrap: null }
+attrs: {
+  softWrap: null;
+}
 ```
 
 ```js
@@ -139,7 +147,7 @@ attrs 侧已知 `wrap`。**写法上的推论**：组件自己的运行时状态
 `<mc-code language="js">`，但宿主元素的实际属性列表是：
 
 ```html
-<mc-code language="js" hljs-base="" max-height="">
+<mc-code language="js" hljs-base="" max-height=""></mc-code>
 ```
 
 **后果**：`el.hasAttribute('max-height')` 对所有实例都返回 `true`（值为 `""`）。
@@ -158,7 +166,6 @@ if ((el.getAttribute('max-height') || '').trim() !== '') …
 但**字符串**属性（哪怕默认是空串）会被反射，别把 `:host([max-height])` 当条件用。
 写完新组件，去 devtools 里看一眼宿主的属性列表最快。
 
-
 ---
 
 ## 二、模板语法
@@ -174,12 +181,12 @@ if ((el.getAttribute('max-height') || '').trim() !== '') …
 ```html
 <!-- ❌ 被当标识符求值 → ReferenceError，并且中断整个组件 render -->
 <button attr:title="点这里选择">
-
-<!-- ✅ 静态文案直接写普通属性 -->
-<button title="点这里选择">
-
-<!-- ✅ 确实要动态时再包成字符串表达式 -->
-<button attr:title="locked ? '已锁定' : ''">
+  <!-- ✅ 静态文案直接写普通属性 -->
+  <button title="点这里选择">
+    <!-- ✅ 确实要动态时再包成字符串表达式 -->
+    <button attr:title="locked ? '已锁定' : ''"></button>
+  </button>
+</button>
 ```
 
 **这条最坑的地方**：异常会**中断 render**。模板 HTML 已经挂进 shadowRoot，但
@@ -197,7 +204,8 @@ if ((el.getAttribute('max-height') || '').trim() !== '') …
 
 ```html
 <o-fill :value="items" fill-key="id">
-  <div>{{$data.name}}</div>   <!-- ✅ -->
+  <div>{{$data.name}}</div>
+  <!-- ✅ -->
 </o-fill>
 ```
 
@@ -242,7 +250,9 @@ Mosaic 首页的马赛克图案就是这么落地的：方块从「SVG `<rect>` 
 组件模板里用 `<l-m>` 引入子组件时，**必须同时写**：
 
 ```css
-l-m { display: none; }
+l-m {
+  display: none;
+}
 ```
 
 否则它会在内容一侧多占一个 gap，造成左右间距不对称。
@@ -254,8 +264,12 @@ ofa.js 的样式作用域处理不支持 `:host()` 内嵌 `:not()` —— **静�
 **写法**：反向逻辑，默认隐藏，用正向选择器启用。
 
 ```css
-.mc-panel { display: none; }
-:host([open]) .mc-panel { display: block; }
+.mc-panel {
+  display: none;
+}
+:host([open]) .mc-panel {
+  display: block;
+}
 ```
 
 ### P15 · JS 写的内联样式会压过 `:host([attr])` 的 CSS 规则
@@ -266,10 +280,14 @@ ofa.js 的样式作用域处理不支持 `:host()` 内嵌 `:not()` —— **静�
 **写法**：先读当前 variant 再分派。
 
 ```js
-if (this.variant === "outline") {
-  s.background = ""; s.color = main; s.borderColor = main;
+if (this.variant === 'outline') {
+  s.background = '';
+  s.color = main;
+  s.borderColor = main;
 } else {
-  s.background = main; s.color = on; s.borderColor = "";
+  s.background = main;
+  s.color = on;
+  s.borderColor = '';
 }
 ```
 
@@ -288,8 +306,8 @@ if (this.variant === "outline") {
 ### P17 · 向组件自身插入动态节点必须走 `shadowRoot`
 
 ```js
-this.ele.shadowRoot.appendChild(node);   // ✅
-this.ele.appendChild(node);              // ❌ 落入 light DOM，无 slot 时完全不可见
+this.ele.shadowRoot.appendChild(node); // ✅
+this.ele.appendChild(node); // ❌ 落入 light DOM，无 slot 时完全不可见
 ```
 
 ### P18 · 自定义组件的事件处理器里读 `e.target.value` 是 `undefined`
@@ -315,16 +333,16 @@ ready() {
 **写法**：组件内部转发。
 
 ```js
-innerInput.addEventListener("change", () =>
-  this.ele.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
+innerInput.addEventListener('change', () =>
+  this.ele.dispatchEvent(new Event('change', { bubbles: true, composed: true })),
 );
 ```
 
 ### P20 · 判断「点击组件外部」必须用 `composedPath()`
 
 ```js
-document.addEventListener("pointerdown", (e) => {
-  const inside = e.composedPath().includes(this.ele);   // ✅
+document.addEventListener('pointerdown', (e) => {
+  const inside = e.composedPath().includes(this.ele); // ✅
   // const inside = this.ele.contains(e.target);        // ❌ 必然误判为外部
 });
 ```
@@ -400,6 +418,7 @@ P26 于是被触发，页面空白。
 ES module 天生 defer，模块在首帧渲染之后才执行 → 页面先无色再变色。
 
 已知可行的方案（senti-ui 的 `st-boot.js` 思路）：
+
 1. 主题生成后把 CSS 文本缓存进 `localStorage`
 2. 配一个**经典同步脚本**放在 `<head>`，刷新时同步注入缓存
    （同步注入必须用经典 script，module 做不到）
@@ -427,8 +446,8 @@ ES module 天生 defer，模块在首帧渲染之后才执行 → 页面先无�
 （实测 `bubbles: true`，从 `o-app` 一路冒到 `document`）：
 
 ```js
-window.addEventListener('hashchange', sync);            // 普通 hash 链接
-document.addEventListener('router-change', sync);       // olink / 前进后退
+window.addEventListener('hashchange', sync); // 普通 hash 链接
+document.addEventListener('router-change', sync); // olink / 前进后退
 ```
 
 Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）与 `docs/doc-nav.js`（二级菜单高亮）都这么接。
@@ -438,12 +457,12 @@ Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）与 `docs/doc-nav.js`�
 **现象**：页面"掉出外壳"（没有顶栏、没有正文带，看起来像样式丢了）；或者父页面
 写好了却什么都不显示。四条都**不报错**：
 
-| 约定 | 踩错的表现 |
-|---|---|
-| 子页面必须 `export const parent = '…'` | 那一页不会被布局页包住，顶栏/正文带全没有。路径相对**子页面文件**解析：`docs/pages/x.html` 写 `'../layout.html'`，`packages/<slug>/page.html` 写 `'../../docs/layout.html'` |
-| 父页面（布局页）必须有 `<slot></slot>` | 子页面内容无处投影，页面一片空白（父页面自己正常） |
-| 顶栏高亮要用 `routerChange()`，不能只靠 `ready()` | 父页面在切页时**不重建**，`ready()` 只在首次跑一次 → 只有第一页亮，之后一直不更新 |
-| 冷启动直接带 hash 时，子页面可能比父页面晚一步挂上 | `ready()` 那一刻查不到子页面 → 首屏高亮空着。补几拍（自限）即可，Mosaic 的 `syncTopNav` 就是这么做的 |
+| 约定                                               | 踩错的表现                                                                                                                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 子页面必须 `export const parent = '…'`             | 那一页不会被布局页包住，顶栏/正文带全没有。路径相对**子页面文件**解析：`docs/pages/x.html` 写 `'../layout.html'`，`packages/<slug>/page.html` 写 `'../../docs/layout.html'` |
+| 父页面（布局页）必须有 `<slot></slot>`             | 子页面内容无处投影，页面一片空白（父页面自己正常）                                                                                                                          |
+| 顶栏高亮要用 `routerChange()`，不能只靠 `ready()`  | 父页面在切页时**不重建**，`ready()` 只在首次跑一次 → 只有第一页亮，之后一直不更新                                                                                           |
+| 冷启动直接带 hash 时，子页面可能比父页面晚一步挂上 | `ready()` 那一刻查不到子页面 → 首屏高亮空着。补几拍（自限）即可，Mosaic 的 `syncTopNav` 就是这么做的                                                                        |
 
 **样式边界值得记一笔**：父页面的 `<style>` 在**它自己的 shadow root** 里，文档级 CSS
 进不去（和普通组件一样）；但子页面的 `o-page` 在**文档树**里（它是父页面那个 `o-page`

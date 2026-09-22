@@ -264,7 +264,8 @@
             class="art-bit art-far"
             :style.left="$data.x + 'px'"
             :style.top="$data.y + 'px'"
-            :style.opacity="$data.opacity"></span>
+            :style.opacity="$data.opacity"
+          ></span>
         </o-fill>
       </div>
 
@@ -276,7 +277,8 @@
             :style.top="$data.y + 'px'"
             :style.width="$data.size + 'px'"
             :style.height="$data.size + 'px'"
-            :style.opacity="$data.opacity"></span>
+            :style.opacity="$data.opacity"
+          ></span>
         </o-fill>
       </div>
 
@@ -287,7 +289,8 @@
             :style.left="$data.x + 'px'"
             :style.top="$data.y + 'px'"
             :style.opacity="$data.opacity"
-            attr:data-color="$data.color"></span>
+            attr:data-color="$data.color"
+          ></span>
         </o-fill>
       </div>
     </div>
@@ -296,15 +299,16 @@
       <h1 class="sr-only">Mosaic</h1>
 
       <nav class="poster-links">
-        <mc-button
-          color="primary"
-          size="lg"
-          on:click="openPage('docs/pages/guide.html')">快速开始</mc-button>
+        <mc-button color="primary" size="lg" on:click="openPage('docs/pages/guide.html')"
+          >快速开始</mc-button
+        >
         <mc-button
           variant="outline"
           color="neutral"
           size="lg"
-          on:click="openPage('docs/pages/components.html')">浏览组件</mc-button>
+          on:click="openPage('docs/pages/components.html')"
+          >浏览组件</mc-button
+        >
       </nav>
     </div>
   </div>

@@ -101,8 +101,9 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 <template page>
   <link rel="stylesheet" href="../content.css" />
   <div class="doc-split">
-    <doc-nav data-source="components"></doc-nav>   <!-- 菜单项来自组件登记表 -->
-    <div class="doc-body"> … 正文 … </div>
+    <doc-nav data-source="components"></doc-nav>
+    <!-- 菜单项来自组件登记表 -->
+    <div class="doc-body">… 正文 …</div>
   </div>
   …
 </template>
@@ -135,6 +136,8 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 「为什么这么分层、底层用了什么机制」这类实现说明写在**组件文件头的注释**和 `agent/` 里，
 不要搬进文档页 —— 页面是给使用者查用法的地方，不是设计说明。
 注意事项只放使用者会踩的坑（相对路径怎么算、哪些属性有副作用、降级行为）。
+页面里**内联的 `<mc-code>` 文本是逐字展示的**，前面必须加 `<!-- prettier-ignore -->`
+（否则 `pnpm format` 会把它的换行重排掉）；长片段改用 `src="…"` 就没这个问题。
 
 组件文档页里的每个演示都是 `<section class="doc-demo">`：
 **例子是一个独立的 ofa 组件文件**（`demos/*.html`），`<mc-code src>` 引用同一份文件，
@@ -145,7 +148,9 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
   <h3>语义色</h3>
   <demo-button-colors></demo-button-colors>
   <mc-collapse class="doc-demo-code">
-    <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/colors.html"></mc-code></mc-collapse-item>
+    <mc-collapse-item header="查看代码"
+      ><mc-code language="html" src="./demos/colors.html"></mc-code
+    ></mc-collapse-item>
   </mc-collapse>
   <p class="doc-hint">…</p>
 </section>
@@ -166,6 +171,9 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 </template>
 ```
 
+- **演示文件不参与 `pnpm format`**（在 `.prettierignore` 里）：里面的 `mc-code`
+  文本是逐字展示的样例代码，prettier 会把它的换行压掉（实测 JSON 被压成两行、
+  bash 丢了所有换行）。它本身就是要展示的内容，照旧手写。
 - **一个演示文件只讲一件事。** 同一件事的多个变体可以放一起（六种颜色、三档尺寸），
   但**两个不同的 API / 特性要拆成两个文件、两节**（`max-height` 与 `soft-wrap`、
   `code` 属性与 `:code` 绑定）—— 一个文件里塞两件事，"查看代码"给出的就不是一个
@@ -260,9 +268,9 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 文档页是 ofa.js 页面模块，它的 `<script>` 会被 ofa.js **抽出来当模块代码执行**
 （`drawUrl` 里取模板内第一个 `script`）。两条约束由此而来，违反的后果是**页面直接空白**：
 
-| 约束 | 原因 |
-|---|---|
-| **`<script>` 必须放在 `<template page>` 的最前面** | ofa.js 取的是**第一个** `<script>`。任何排在它前面的脚本都会被当成页面代码 |
+| 约束                                                | 原因                                                                                                                                                                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`<script>` 必须放在 `<template page>` 的最前面**  | ofa.js 取的是**第一个** `<script>`。任何排在它前面的脚本都会被当成页面代码                                                                                                                                                                |
 | **注释里不要出现 body / svg / head 结束标签的原文** | 静态服务器（VS Code Live Server 就是）会按「第一个 body→svg→head 结束标签」往 HTML 里注入自己的脚本。注释里出现这些字符串会把注入点引到文件顶部，而注入内容自带 HTML 注释、会**把我们的注释提前闭合**，那段脚本于是变成真实元素并排到前面 |
 
 这两条合起来的效果：无论服务器往哪注入，都抢不走第一个 `<script>` 的位置。
@@ -285,11 +293,11 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 
 这是整套规范里最重要的一条分工：
 
-| 层 | 负责 | 写在哪 |
-|---|---|---|
-| **令牌** | 颜色、圆角、尺寸、动效 | `:host` / `:host([attr])` 里的 `--mc-*` 变量 |
-| **工具类** | `display` / `flex` / `gap` / 对齐 / 定位 | 模板的 `class="..."` |
-| **组件 `<style>`** | 工具类表达不了的（`height: var(--mc-control-h-md)`、过渡、伪类） | `.mc-*` 类 |
+| 层                 | 负责                                                             | 写在哪                                       |
+| ------------------ | ---------------------------------------------------------------- | -------------------------------------------- |
+| **令牌**           | 颜色、圆角、尺寸、动效                                           | `:host` / `:host([attr])` 里的 `--mc-*` 变量 |
+| **工具类**         | `display` / `flex` / `gap` / 对齐 / 定位                         | 模板的 `class="..."`                         |
+| **组件 `<style>`** | 工具类表达不了的（`height: var(--mc-control-h-md)`、过渡、伪类） | `.mc-*` 类                                   |
 
 **颜色永远不出现在工具类里。** 一个组件模板里不应该出现 `bg-primary`、`text-muted`。
 颜色一律通过令牌间接表达 —— 这样才可能做到"改 3 个变量换掉整个主题"，
@@ -298,13 +306,17 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 ```html
 <!-- ✅ 正确：颜色走令牌 -->
 <style>
-  :host { --mc-btn-fill: var(--mc-color-primary); }        /* 存：裸三元组 */
-  .mc-btn { background-color: rgb(var(--mc-btn-fill)); }   /* 用：包 rgb() */
+  :host {
+    --mc-btn-fill: var(--mc-color-primary);
+  } /* 存：裸三元组 */
+  .mc-btn {
+    background-color: rgb(var(--mc-btn-fill));
+  } /* 用：包 rgb() */
 </style>
 <button class="mc-btn inline-flex items-center gap-2">
-
-<!-- ❌ 错误：颜色写死在工具类里，使用者只能靠 !important 覆盖 -->
-<button class="mc-btn inline-flex items-center gap-2 bg-primary text-primary-fg">
+  <!-- ❌ 错误：颜色写死在工具类里，使用者只能靠 !important 覆盖 -->
+  <button class="mc-btn inline-flex items-center gap-2 bg-primary text-primary-fg"></button>
+</button>
 ```
 
 ---
@@ -321,14 +333,14 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 
 ```css
 /* color 只负责往两个色槽里填值 */
-:host([color="danger"]) {
+:host([color='danger']) {
   --mc-btn-fill: var(--mc-color-danger);
   --mc-btn-on-fill: var(--mc-color-danger-fg);
   --mc-btn-accent: var(--mc-color-danger);
 }
 
 /* variant 只负责把色槽贴到哪儿 */
-:host([variant="outline"]) {
+:host([variant='outline']) {
   background-color: transparent;
   color: rgb(var(--mc-btn-fill));
   border-color: rgb(var(--mc-btn-fill));
@@ -360,7 +372,9 @@ ofa.js 的样式作用域不支持 `:host()` 内嵌 `:not()`，会静默失效�
 
 ```html
 <template component>
-  <style>/* 见第四节 */</style>
+  <style>
+    /* 见第四节 */
+  </style>
 
   <!-- 结构：工具类只负责布局 -->
   <div part="base" class="mc-x inline-flex items-center gap-2">
@@ -395,10 +409,10 @@ ofa.js 的样式作用域不支持 `:host()` 内嵌 `:not()`，会静默失效�
           disabled(val, { watchers }) {},
         },
 
-        ready() {},     // DOM 已创建（shadow root 内），适合初始化
-        attached() {},  // 已挂载，适合定时器/全局监听
-        loaded() {},    // 子组件全部加载完成
-        detached() {},  // 清理。定时器和全局监听必须在这里移除
+        ready() {}, // DOM 已创建（shadow root 内），适合初始化
+        attached() {}, // 已挂载，适合定时器/全局监听
+        loaded() {}, // 子组件全部加载完成
+        detached() {}, // 清理。定时器和全局监听必须在这里移除
       };
     };
   </script>
@@ -407,13 +421,13 @@ ofa.js 的样式作用域不支持 `:host()` 内嵌 `:not()`，会静默失效�
 
 ### 属性命名
 
-| HTML（kebab-case） | `attrs` 里（camelCase） | 类型 |
-|---|---|---|
-| `color="danger"` | `color` | 枚举（语义色） |
-| `variant="outline"` | `variant` | 枚举（外观样式） |
-| `size="lg"` | `size` | 枚举 |
-| `disabled` | `disabled` | 布尔 |
-| `label-width="120"` | `labelWidth` | 数字/字符串 |
+| HTML（kebab-case）  | `attrs` 里（camelCase） | 类型             |
+| ------------------- | ----------------------- | ---------------- |
+| `color="danger"`    | `color`                 | 枚举（语义色）   |
+| `variant="outline"` | `variant`               | 枚举（外观样式） |
+| `size="lg"`         | `size`                  | 枚举             |
+| `disabled`          | `disabled`              | 布尔             |
+| `label-width="120"` | `labelWidth`            | 数字/字符串      |
 
 布尔属性在 HTML 里**写存在即真**（`<mc-button disabled>`），不要写 `disabled="true"`。
 
@@ -428,46 +442,61 @@ ofa.js 的样式作用域不支持 `:host()` 内嵌 `:not()`，会静默失效�
       尺寸直接写在这里（不绕一层 --mc-btn-h），使用者的 style="height:32px" 才压得住 */
 :host {
   display: inline-flex;
-  position: relative;                 /* 内部绝对定位元素的包含块，不能省（P21） */
+  position: relative; /* 内部绝对定位元素的包含块，不能省（P21） */
   height: var(--mc-control-h-md);
   border-radius: var(--mc-radius-md);
 
-  --mc-btn-fill: var(--mc-color-primary);        /* 三个色槽：填充 / 填充上的文字 / 强调色 */
+  --mc-btn-fill: var(--mc-color-primary); /* 三个色槽：填充 / 填充上的文字 / 强调色 */
   --mc-btn-on-fill: var(--mc-color-primary-fg);
   --mc-btn-accent: var(--mc-color-primary);
 
-  background-color: rgb(var(--mc-btn-fill));      /* filled 是默认外观，直接写在这 */
+  background-color: rgb(var(--mc-btn-fill)); /* filled 是默认外观，直接写在这 */
   color: rgb(var(--mc-btn-on-fill));
 }
 
 /* 2. 维度一 color：只往色槽里填值 */
-:host([color="danger"]) {
+:host([color='danger']) {
   --mc-btn-fill: var(--mc-color-danger);
   --mc-btn-on-fill: var(--mc-color-danger-fg);
   --mc-btn-accent: var(--mc-color-danger);
 }
 
 /* 3. 维度二 variant：只决定色槽贴到哪儿 */
-:host([variant="outline"]) {
+:host([variant='outline']) {
   background-color: transparent;
   color: rgb(var(--mc-btn-fill));
   border-color: rgb(var(--mc-btn-fill));
 }
 
 /* 4. 尺寸与状态 */
-:host([size="sm"])  { height: var(--mc-control-h-sm); }
-:host([disabled])   { opacity: .5; cursor: not-allowed; }
+:host([size='sm']) {
+  height: var(--mc-control-h-sm);
+}
+:host([disabled]) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* 5. 内部元素：只放工具类表达不了的 */
-.mc-layer {                          /* hover/active 的 state layer */
-  position: absolute; inset: 0; z-index: 1;
+.mc-layer {
+  /* hover/active 的 state layer */
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   border-radius: inherit;
-  background-color: currentColor;    /* 不引新令牌，自动适配任意 color 与主题 */
-  opacity: 0; pointer-events: none;
+  background-color: currentColor; /* 不引新令牌，自动适配任意 color 与主题 */
+  opacity: 0;
+  pointer-events: none;
 }
-:host(:hover)  .mc-layer { opacity: .08; }
-:host(:active) .mc-layer { opacity: .12; }
-:host([disabled]) .mc-layer { opacity: 0; }      /* 正向覆盖，不用 :not()（P14） */
+:host(:hover) .mc-layer {
+  opacity: 0.08;
+}
+:host(:active) .mc-layer {
+  opacity: 0.12;
+}
+:host([disabled]) .mc-layer {
+  opacity: 0;
+} /* 正向覆盖，不用 :not()（P14） */
 ```
 
 **第 5 区要克制**：能用工具类表达的就放模板 `class` 里，别在这里重复。
@@ -487,11 +516,11 @@ Mosaic 组件原则上**不使用 `data()`** —— 能用 CSS 变量表达的�
 
 ## 五、事件
 
-| 场景 | 做法 |
-|---|---|
-| 点击等原生交互 | **不定义自定义事件**。原生 `click` 自带 `composed: true`，会穿透 shadow 边界冒泡 |
-| 值变化（表单类） | `this.emit('change', { data: { value } })` |
-| 需要跨层级冒泡 | `this.emit('x', { data, bubbles: true, composed: true })` |
+| 场景             | 做法                                                                             |
+| ---------------- | -------------------------------------------------------------------------------- |
+| 点击等原生交互   | **不定义自定义事件**。原生 `click` 自带 `composed: true`，会穿透 shadow 边界冒泡 |
+| 值变化（表单类） | `this.emit('change', { data: { value } })`                                       |
+| 需要跨层级冒泡   | `this.emit('x', { data, bubbles: true, composed: true })`                        |
 
 ```html
 <!-- 使用者侧：直接监听原生事件即可 -->
@@ -528,15 +557,17 @@ Mosaic 组件原则上**不使用 `data()`** —— 能用 CSS 变量表达的�
 ```
 
 ```css
-mc-dialog::part(panel) { border-radius: 0; }
+mc-dialog::part(panel) {
+  border-radius: 0;
+}
 ```
 
-| 组件 | 插槽 | part |
-|---|---|---|
+| 组件        | 插槽                             | part                                                 |
+| ----------- | -------------------------------- | ---------------------------------------------------- |
 | `mc-button` | 默认（文案）、`prefix`、`suffix` | 无（全靠 `:host`，见 `packages/button/button.html`） |
-| `mc-card` | 默认、`header`、`footer` | `base`、`header`、`body`、`footer` |
-| `mc-input` | — | `base`、`input`、`prefix`、`suffix` |
-| `mc-dialog` | 默认、`header`、`footer` | `overlay`、`panel`、`header`、`body`、`footer` |
+| `mc-card`   | 默认、`header`、`footer`         | `base`、`header`、`body`、`footer`                   |
+| `mc-input`  | —                                | `base`、`input`、`prefix`、`suffix`                  |
+| `mc-dialog` | 默认、`header`、`footer`         | `overlay`、`panel`、`header`、`body`、`footer`       |
 
 ⚠️ **给插槽内容设样式，优先用 `::slotted()`**，不要用 `<inject-host>`。
 `<inject-host>` 会把样式注入到宿主元素所在的整个作用域（顶层时直接进 `document.head`），
@@ -555,11 +586,11 @@ mc-dialog::part(panel) { border-radius: 0; }
 
 里程碑分批：
 
-| 批次 | 内容 | 备注 |
-|---|---|---|
-| **M1** | `mc-button`（已实现）/ `mc-code`（已实现）/ `mc-collapse`（已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner` | 产出可发布的 0.1.0 |
-| **M2** | 表单与反馈 9 个 | 会大量撞上 [P6 / P18 / P19 / P20](./ofa-pitfalls.md) |
-| **M3** | 浮层与布局 6 个 | 开工前必须先验证图层问题（见下） |
+| 批次   | 内容                                                                                                                   | 备注                                                 |
+| ------ | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **M1** | `mc-button`（已实现）/ `mc-code`（已实现）/ `mc-collapse`（已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner` | 产出可发布的 0.1.0                                   |
+| **M2** | 表单与反馈 9 个                                                                                                        | 会大量撞上 [P6 / P18 / P19 / P20](./ofa-pitfalls.md) |
+| **M3** | 浮层与布局 6 个                                                                                                        | 开工前必须先验证图层问题（见下）                     |
 
 > ⚠️ **M3 开头必须先验证图层问题**：宿主页面上的 `transform` / `filter` / `contain`
 > 会创建新的层叠上下文，可能把 shadow root 里的 `position: fixed` 困住。
@@ -572,25 +603,25 @@ mc-dialog::part(panel) { border-radius: 0; }
 
 ### 尺寸
 
-| 尺寸 | 控件高 | 内边距 | 字号 |
-|---|---|---|---|
-| `sm` | `--mc-control-h-sm` (1.75rem) | `--mc-space-3` | `--mc-text-xs` |
-| `md`（默认） | `--mc-control-h-md` (2.25rem) | `--mc-space-4` | `--mc-text-sm` |
-| `lg` | `--mc-control-h-lg` (2.75rem) | `--mc-space-5` | `--mc-text-base` |
+| 尺寸         | 控件高                        | 内边距         | 字号             |
+| ------------ | ----------------------------- | -------------- | ---------------- |
+| `sm`         | `--mc-control-h-sm` (1.75rem) | `--mc-space-3` | `--mc-text-xs`   |
+| `md`（默认） | `--mc-control-h-md` (2.25rem) | `--mc-space-4` | `--mc-text-sm`   |
+| `lg`         | `--mc-control-h-lg` (2.75rem) | `--mc-space-5` | `--mc-text-base` |
 
 所有组件的 `size` 都必须只支持这三个值（`sm` / `md` / `lg`），
 新增尺寸要先加 `--mc-control-h-*` 令牌，**不允许在组件里写死像素值**。
 
 ### 无障碍
 
-| 要求 | 落地 |
-|---|---|
-| 键盘可达 | 可交互元素必须是原生 `<button>` / `<input>` / `<a>`，不要用 `<div on:click>` |
-| 焦点可见 | 必须有焦点样式。统一用 `focus-visible:ring-2 ring-ring` |
-| 对比度 | 令牌层已保证（见 [design-tokens.md](./design-tokens.md#四对比度自检)），组件**不得绕过令牌直接写颜色** |
-| 禁用态 | 用 `disabled` 属性而非仅 `opacity`，保证屏幕阅读器可感知 |
-| 动效 | 尊重 `prefers-reduced-motion`，已在 `shadow-base.css` 里统一把 `--mc-duration-*` 压到 1ms |
-| 图标按钮 | 必须有 `aria-label`；纯装饰 SVG 加 `aria-hidden="true"` |
+| 要求     | 落地                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------ |
+| 键盘可达 | 可交互元素必须是原生 `<button>` / `<input>` / `<a>`，不要用 `<div on:click>`                           |
+| 焦点可见 | 必须有焦点样式。统一用 `focus-visible:ring-2 ring-ring`                                                |
+| 对比度   | 令牌层已保证（见 [design-tokens.md](./design-tokens.md#四对比度自检)），组件**不得绕过令牌直接写颜色** |
+| 禁用态   | 用 `disabled` 属性而非仅 `opacity`，保证屏幕阅读器可感知                                               |
+| 动效     | 尊重 `prefers-reduced-motion`，已在 `shadow-base.css` 里统一把 `--mc-duration-*` 压到 1ms              |
+| 图标按钮 | 必须有 `aria-label`；纯装饰 SVG 加 `aria-hidden="true"`                                                |
 
 ---
 

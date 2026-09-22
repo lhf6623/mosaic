@@ -26,10 +26,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** 缺任何一个都不该继续构建 */
-const REQUIRED_INPUTS = [
-  'packages/color/tokens.css',
-  'uno.config.ts',
-];
+const REQUIRED_INPUTS = ['packages/color/tokens.css', 'uno.config.ts'];
 
 const missing = REQUIRED_INPUTS.filter((f) => !existsSync(resolve(ROOT, f)));
 

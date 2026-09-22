@@ -170,12 +170,29 @@
 
     /** 别名 → highlight.js 的语言 id。空字符串表示"不高亮"，但文字照常显示 */
     const ALIASES = {
-      js: 'javascript', mjs: 'javascript', cjs: 'javascript', jsx: 'javascript',
-      ts: 'typescript', tsx: 'typescript',
-      html: 'xml', htm: 'xml', vue: 'xml', svg: 'xml', xhtml: 'xml',
-      sh: 'bash', shell: 'bash', zsh: 'bash', console: 'bash',
-      py: 'python', md: 'markdown', yml: 'yaml',
-      txt: '', text: '', plain: '', plaintext: '', none: '',
+      js: 'javascript',
+      mjs: 'javascript',
+      cjs: 'javascript',
+      jsx: 'javascript',
+      ts: 'typescript',
+      tsx: 'typescript',
+      html: 'xml',
+      htm: 'xml',
+      vue: 'xml',
+      svg: 'xml',
+      xhtml: 'xml',
+      sh: 'bash',
+      shell: 'bash',
+      zsh: 'bash',
+      console: 'bash',
+      py: 'python',
+      md: 'markdown',
+      yml: 'yaml',
+      txt: '',
+      text: '',
+      plain: '',
+      plaintext: '',
+      none: '',
     };
 
     /** 每个 base 一份 core、每种语言一份加载 promise、每个主题一份样式表。
@@ -246,7 +263,7 @@
     }
 
     /** base 统一带尾斜杠，`hljs-base` 写不写都不会拼出坏 URL */
-    const normalizeBase = (base) => (String(base || HLJS_BASE).replace(/\/?$/, '/'));
+    const normalizeBase = (base) => String(base || HLJS_BASE).replace(/\/?$/, '/');
 
     /**
      * 往上找最近一个「纵向真的能滚」的祖先。
@@ -351,16 +368,35 @@
 
     /** 没写 language 时按 src 文件的后缀猜 */
     const EXT_LANG = {
-      html: 'xml', htm: 'xml', xhtml: 'xml', vue: 'xml', svg: 'xml',
-      js: 'javascript', mjs: 'javascript', cjs: 'javascript', jsx: 'javascript',
-      ts: 'typescript', tsx: 'typescript',
-      css: 'css', json: 'json', sh: 'bash', bash: 'bash', zsh: 'bash',
-      py: 'python', md: 'markdown', yml: 'yaml', yaml: 'yaml', xml: 'xml', txt: '',
+      html: 'xml',
+      htm: 'xml',
+      xhtml: 'xml',
+      vue: 'xml',
+      svg: 'xml',
+      js: 'javascript',
+      mjs: 'javascript',
+      cjs: 'javascript',
+      jsx: 'javascript',
+      ts: 'typescript',
+      tsx: 'typescript',
+      css: 'css',
+      json: 'json',
+      sh: 'bash',
+      bash: 'bash',
+      zsh: 'bash',
+      py: 'python',
+      md: 'markdown',
+      yml: 'yaml',
+      yaml: 'yaml',
+      xml: 'xml',
+      txt: '',
     };
 
     /** language 属性（缺省时看 src 后缀）→ highlight.js 语言 id；'' 表示纯文本 */
     function resolveLanguage(language, src) {
-      let id = String(language ?? '').trim().toLowerCase();
+      let id = String(language ?? '')
+        .trim()
+        .toLowerCase();
       if (!id && src) {
         const file = String(src).split(/[?#]/)[0];
         const ext = file.slice(file.lastIndexOf('.') + 1).toLowerCase();
@@ -410,15 +446,33 @@
       // 注意：ofa.js 初始化时会把 watch 都用默认值触发一遍（P5），
       // 所以统一走 onAttrChange 的 `_mounted` 守卫。
       watch: {
-        code() { this.onAttrChange(); },
-        src() { this.onAttrChange(); },
-        language() { this.onAttrChange(); },
-        hljsBase() { this.onAttrChange(); },
-        hljsTheme() { this.themeChanged(); },
-        hljsThemeDark() { this.themeChanged(); },
-        maxHeight() { this.onAttrChange(); },
-        lineNumbers() { this.onAttrChange(); },
-        softWrap() { this.onAttrChange(); },
+        code() {
+          this.onAttrChange();
+        },
+        src() {
+          this.onAttrChange();
+        },
+        language() {
+          this.onAttrChange();
+        },
+        hljsBase() {
+          this.onAttrChange();
+        },
+        hljsTheme() {
+          this.themeChanged();
+        },
+        hljsThemeDark() {
+          this.themeChanged();
+        },
+        maxHeight() {
+          this.onAttrChange();
+        },
+        lineNumbers() {
+          this.onAttrChange();
+        },
+        softWrap() {
+          this.onAttrChange();
+        },
       },
 
       proto: {

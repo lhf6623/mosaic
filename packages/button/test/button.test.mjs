@@ -22,15 +22,10 @@ export default async function run({ page, visit, check }) {
     host.style.cssText =
       'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px;' +
       'display:flex;flex-direction:column;gap:6px;width:360px';
-    host.innerHTML = [
-      'row-colors',
-      'row-variants',
-      'row-sizes',
-      'row-states',
-      'row-slots',
-    ]
-      .map((id) => `<div id="${id}" style="display:flex;gap:6px;align-items:center"></div>`)
-      .join('') + '<div id="row-block" style="display:block;width:300px"></div>';
+    host.innerHTML =
+      ['row-colors', 'row-variants', 'row-sizes', 'row-states', 'row-slots']
+        .map((id) => `<div id="${id}" style="display:flex;gap:6px;align-items:center"></div>`)
+        .join('') + '<div id="row-block" style="display:block;width:300px"></div>';
     document.body.append(host);
 
     const put = (row, id, attrs = {}, text = '按钮') => {
@@ -72,14 +67,17 @@ export default async function run({ page, visit, check }) {
 
     // 原生 click 是否穿透 shadow：挂一个 document 级监听记账
     window.__btnClicks = [];
-    document.addEventListener('click', (e) => window.__btnClicks.push(e.target.id || e.target.tagName));
+    document.addEventListener('click', (e) =>
+      window.__btnClicks.push(e.target.id || e.target.tagName),
+    );
     put('row-block', 'cl-click', {}, '点我');
   });
 
   /* ---------- 语义色：色槽的值必须就是令牌的值 ---------- */
   const colors = await page.evaluate(() => {
     const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
-    const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
+    const token = (name) =>
+      getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
     return ['primary', 'info', 'success', 'warning', 'danger', 'neutral'].map((color) => ({
       color,
       actual: rgbOf(getComputedStyle(document.getElementById(`c-${color}`)).backgroundColor),
@@ -89,13 +87,16 @@ export default async function run({ page, visit, check }) {
   check(
     '六个语义色的填充色就是对应令牌（组件没写死颜色）',
     colors.length === 6 && colors.every((c) => c.actual === c.expected),
-    colors.map((c) => `${c.color}:${c.actual === c.expected ? '✓' : `${c.actual}≠${c.expected}`}`).join(' '),
+    colors
+      .map((c) => `${c.color}:${c.actual === c.expected ? '✓' : `${c.actual}≠${c.expected}`}`)
+      .join(' '),
   );
 
   /* ---------- 外观 × 颜色正交 ---------- */
   const variants = await page.evaluate(() => {
     const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
-    const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
+    const token = (name) =>
+      getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace(/\s+/g, ',');
     const cs = (id) => getComputedStyle(document.getElementById(id));
     return {
       outline: {
@@ -126,7 +127,9 @@ export default async function run({ page, visit, check }) {
   );
   check(
     'ghost：透明底、透明描边、文字取强调色',
-    variants.ghost.bg === '0,0,0' && variants.ghost.border === '0,0,0' && variants.ghost.fg === variants.ghost.info,
+    variants.ghost.bg === '0,0,0' &&
+      variants.ghost.border === '0,0,0' &&
+      variants.ghost.fg === variants.ghost.info,
     JSON.stringify(variants.ghost),
   );
 

@@ -69,7 +69,8 @@
 
           let matched = false;
           for (const a of links) {
-            const on = current !== '' && pathOf(new URL(a.getAttribute('href'), base).href) === current;
+            const on =
+              current !== '' && pathOf(new URL(a.getAttribute('href'), base).href) === current;
             if (on) matched = true;
             setCurrent(a, on);
           }

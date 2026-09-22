@@ -105,7 +105,11 @@ class DocNav extends HTMLElement {
       }
     } else if (this.dataset.source === 'components') {
       for (const item of componentItems()) {
-        ul.append(item.group ? el('li', { className: 'doc-nav-group', textContent: item.group }) : this._link(item));
+        ul.append(
+          item.group
+            ? el('li', { className: 'doc-nav-group', textContent: item.group })
+            : this._link(item),
+        );
       }
     }
 

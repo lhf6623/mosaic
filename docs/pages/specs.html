@@ -14,33 +14,52 @@
         </p>
       </div>
       <div class="doc-card">
-        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-spec.md">设计规范</a></h4>
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-spec.md">设计规范</a>
+        </h4>
         <p>
-          <strong>怎么用令牌</strong>：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案。
+          <strong>怎么用令牌</strong
+          >：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案。
         </p>
       </div>
       <div class="doc-card">
-        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">设计令牌</a></h4>
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">设计令牌</a>
+        </h4>
         <p>
-          <strong>有什么值</strong>：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南。
+          <strong>有什么值</strong>：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG
+          自检、换肤指南。
         </p>
       </div>
       <div class="doc-card">
-        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md">组件 API 规范</a></h4>
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md"
+            >组件 API 规范</a
+          >
+        </h4>
         <p>
-          <strong>有哪些组件、各自什么接口</strong>：四个正交维度、值读写规则、事件 / 插槽 / part、逐组件 API 表。
+          <strong>有哪些组件、各自什么接口</strong>：四个正交维度、值读写规则、事件 / 插槽 /
+          part、逐组件 API 表。
         </p>
       </div>
       <div class="doc-card">
-        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/components.md">组件编写规范</a></h4>
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/components.md">组件编写规范</a>
+        </h4>
         <p>
-          <strong>怎么造组件</strong>：目录约定、分层职责、<code>&lt;style&gt;</code> 五分区、交付检查清单。
+          <strong>怎么造组件</strong>：目录约定、分层职责、<code>&lt;style&gt;</code>
+          五分区、交付检查清单。
         </p>
       </div>
       <div class="doc-card">
-        <h4><a href="https://github.com/lhf6623/mosaic/blob/main/agent/ofa-pitfalls.md">ofa.js 实战踩坑清单</a></h4>
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/ofa-pitfalls.md"
+            >ofa.js 实战踩坑清单</a
+          >
+        </h4>
         <p>
-          <strong>写组件前必读。</strong>30 条静默失效的坑 —— 不报错、表象像「绑定不生效」、反查成本极高。
+          <strong>写组件前必读。</strong>30 条静默失效的坑 ——
+          不报错、表象像「绑定不生效」、反查成本极高。
         </p>
       </div>
     </div>
@@ -49,12 +68,12 @@
     <ol>
       <li><strong>使用者侧零工具链</strong> —— 任何「请先安装 X」的方案直接否决</li>
       <li>
-        <strong>组件不过打包器</strong> —— <code>packages/**.html</code> 源 = 产物。
-        ofa.js 的组件就是一个可独立寻址的 <code>.html</code>，不该变成 JS bundle
+        <strong>组件不过打包器</strong> —— <code>packages/**.html</code> 源 = 产物。 ofa.js
+        的组件就是一个可独立寻址的 <code>.html</code>，不该变成 JS bundle
       </li>
       <li>
-        <strong>定制点只用原生 CSS</strong> —— <code>style="…"</code> + 令牌 + <code>::part()</code>，
-        不用 JS 配置对象
+        <strong>定制点只用原生 CSS</strong> —— <code>style="…"</code> + 令牌 +
+        <code>::part()</code>， 不用 JS 配置对象
       </li>
     </ol>
 
@@ -71,18 +90,23 @@
       <tbody>
         <tr>
           <td>用 <code>presetWind3</code>，不用 <code>presetWind4</code></td>
-          <td>wind4 的 theme 色不支持 <code>&lt;alpha-value&gt;</code>，会产出非法 CSS 且整条声明静默失效</td>
+          <td>
+            wind4 的 theme 色不支持 <code>&lt;alpha-value&gt;</code>，会产出非法 CSS
+            且整条声明静默失效
+          </td>
         </tr>
         <tr>
           <td>必须开 <code>outputToCssLayers</code></td>
           <td>
-            <code>adoptedStyleSheets</code> 在 shadow root 内的优先级<strong>高于</strong>
-            组件自身 <code>&lt;style&gt;</code>，不分层的话工具类会反过来盖住组件样式
+            <code>adoptedStyleSheets</code> 在 shadow root 内的优先级<strong>高于</strong> 组件自身
+            <code>&lt;style&gt;</code>，不分层的话工具类会反过来盖住组件样式
           </td>
         </tr>
         <tr>
           <td>组件里禁止 <code>dark:</code> 变体</td>
-          <td>它生成的是后代选择器，匹配不到 shadow 树外面的 <code>&lt;html data-theme&gt;</code></td>
+          <td>
+            它生成的是后代选择器，匹配不到 shadow 树外面的 <code>&lt;html data-theme&gt;</code>
+          </td>
         </tr>
         <tr>
           <td>组件只消费语义令牌，不碰原始色阶</td>
@@ -91,21 +115,21 @@
         <tr>
           <td>构建缺输入必须大声失败</td>
           <td>
-            实测 UnoCSS 会<strong>静默跳过</strong>缺失的输入文件，退出码 0，
-            产出没有令牌的坏 CSS
+            实测 UnoCSS 会<strong>静默跳过</strong>缺失的输入文件，退出码 0， 产出没有令牌的坏 CSS
           </td>
         </tr>
         <tr>
           <td>文档里锁精确版本</td>
           <td>
-            <code>@latest</code> / <code>@1</code> 有 7 天缓存，最长 7 天不生效；
-            精确版本是 1 年 <code>immutable</code>
+            <code>@latest</code> / <code>@1</code> 有 7 天缓存，最长 7 天不生效； 精确版本是 1 年
+            <code>immutable</code>
           </td>
         </tr>
       </tbody>
     </table>
 
     <h2>仓库结构</h2>
+    <!-- prettier-ignore -->
     <mc-code language="text">
       packages/
         boot/
@@ -125,8 +149,8 @@
 
     <div class="doc-note">
       <strong>没有 <code>dist/</code>。</strong>
-      分发走 jsDelivr <code>/gh/</code>，仓库即产物 ——
-      仓库里的 <code>packages/**</code> 就是 CDN 上的东西。
+      分发走 jsDelivr <code>/gh/</code>，仓库即产物 —— 仓库里的 <code>packages/**</code> 就是 CDN
+      上的东西。
     </div>
 
     <h2>当前状态</h2>

@@ -13,13 +13,13 @@ ofa.js 的坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md)（**写组件前必读**
 **一句话**：在 HTML 里加一个 `<link>` 和一个 `<script type="module">`，就能用 `<mc-button>`。
 不需要 npm，不需要打包器，不需要脚手架。
 
-| # | 约束 | 为什么 |
-|---|---|---|
-| C1 | 使用者侧零工具链 | 立项前提。任何"请先安装 X"的方案直接否决 |
-| C2 | 组件**不过打包器**：`packages/**.html` 源 = 产物 | ofa.js 的组件形态就是一个可独立寻址的 `.html`，被运行时 `<l-m src>` 拉取。它不应该变成 JS bundle |
-| C3 | 组件不依赖宿主页面的任何 CSS | 宿主可能没有 reset，也可能有很激进的 reset |
-| C4 | 定制点只用原生 CSS：`style="..."` + 令牌 + `::part()` | 与 C1 配套：配置对象需要写 JS，CSS 不需要 |
-| C5 | 只有一个运行时依赖 ofa.js，且 pin 在验证过的版本 | 见 [D1](#d1-分发走-gh仓库即产物) 与 [P23](./ofa-pitfalls.md)。唯一例外是代码高亮：**可选**依赖，懒加载、失败即降级（见 [D7](#d7-代码高亮可选依赖--失败即降级)） |
+| #   | 约束                                                  | 为什么                                                                                                                                                          |
+| --- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | 使用者侧零工具链                                      | 立项前提。任何"请先安装 X"的方案直接否决                                                                                                                        |
+| C2  | 组件**不过打包器**：`packages/**.html` 源 = 产物      | ofa.js 的组件形态就是一个可独立寻址的 `.html`，被运行时 `<l-m src>` 拉取。它不应该变成 JS bundle                                                                |
+| C3  | 组件不依赖宿主页面的任何 CSS                          | 宿主可能没有 reset，也可能有很激进的 reset                                                                                                                      |
+| C4  | 定制点只用原生 CSS：`style="..."` + 令牌 + `::part()` | 与 C1 配套：配置对象需要写 JS，CSS 不需要                                                                                                                       |
+| C5  | 只有一个运行时依赖 ofa.js，且 pin 在验证过的版本      | 见 [D1](#d1-分发走-gh仓库即产物) 与 [P23](./ofa-pitfalls.md)。唯一例外是代码高亮：**可选**依赖，懒加载、失败即降级（见 [D7](#d7-代码高亮可选依赖--失败即降级)） |
 
 ---
 
@@ -84,10 +84,12 @@ packages/button/
 **已核实的事实**：
 
 1. ofa.js 的组件渲染是（`packages/xhear/register.mjs:42`）：
+
    ```js
-   const root = ele.attachShadow({ mode: "open" });
+   const root = ele.attachShadow({ mode: 'open' });
    root.innerHTML = template.innerHTML;
    ```
+
    即**组件必定有 shadow root**，模板里的 `<style>` 是作用域内的。
 
 2. 文档级 `<link>` 的规则**不会**进入 shadow root。
@@ -107,11 +109,11 @@ packages/button/
 
 所以分三层，各用各的：
 
-| 层 | 内容 | 送达方式 | 依赖 |
-|---|---|---|---|
-| **令牌** | `--mc-*` 定义 | 文档级 `:root` / `[data-theme="dark"]` | **无**（靠继承） |
-| **工具类** | UnoCSS 产物 | 共享 `CSSStyleSheet` adopt 进每个 shadow root | `attachShadow` 补丁 |
-| **组件样式** | `:host` 视觉 | 组件模板自带的 `<style>` | **无** |
+| 层           | 内容          | 送达方式                                      | 依赖                |
+| ------------ | ------------- | --------------------------------------------- | ------------------- |
+| **令牌**     | `--mc-*` 定义 | 文档级 `:root` / `[data-theme="dark"]`        | **无**（靠继承）    |
+| **工具类**   | UnoCSS 产物   | 共享 `CSSStyleSheet` adopt 进每个 shadow root | `attachShadow` 补丁 |
+| **组件样式** | `:host` 视觉  | 组件模板自带的 `<style>`                      | **无**              |
 
 **由此得到一个很有用的降级性质**：补丁挂了 → 颜色、圆角、尺寸**全部正常**
 （令牌靠继承），只有工具类提供的排布失效。故障是分级的，不是全有全无。
@@ -122,9 +124,9 @@ packages/button/
 const CSS_URL = new URL('./mosaic.css', import.meta.url).href;
 const SHADOW_URL = new URL('./shadow-base.css', import.meta.url).href;
 
-let utilities = null;          // 文档级 sheet：令牌 + 工具类
-let shadowBase = null;         // 只进 shadow root 的 reset
-const pending = new Set();     // sheet 就绪前创建的 shadow root
+let utilities = null; // 文档级 sheet：令牌 + 工具类
+let shadowBase = null; // 只进 shadow root 的 reset
+const pending = new Set(); // sheet 就绪前创建的 shadow root
 
 // 必须在任何 ofa 组件实例化之前装好补丁
 const nativeAttach = Element.prototype.attachShadow;
@@ -132,7 +134,7 @@ Element.prototype.attachShadow = function (init) {
   const root = nativeAttach.call(this, init);
   if (init?.mode !== 'open') return root;
   if (utilities) root.adoptedStyleSheets = [...root.adoptedStyleSheets, utilities, shadowBase];
-  else pending.add(root);      // 竞态兜底：稍后补上
+  else pending.add(root); // 竞态兜底：稍后补上
   return root;
 };
 
@@ -167,12 +169,12 @@ Element.prototype.attachShadow = function (init) {
 
 **否决/备选的方案**：
 
-| 方案 | 结论 |
-|---|---|
-| 每组件模板里放 `<link>` | **备选**。零 JS、源=产物，但每实例多一个 `<link>` 节点，且首屏有短暂无样式窗口。若补丁方案出问题，退到这个 |
-| 构建期把工具类内联进组件 | **否决**。破坏 C2（源≠产物），代码库和产物两套 |
-| 组件内部完全不用工具类 | **否决**。那就没有理由引入 UnoCSS 了 |
-| 用 `<inject-host>` 注入 | **否决**。它注入到宿主所在作用域（顶层则进 `document.head`），**进不了 shadow root** |
+| 方案                     | 结论                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| 每组件模板里放 `<link>`  | **备选**。零 JS、源=产物，但每实例多一个 `<link>` 节点，且首屏有短暂无样式窗口。若补丁方案出问题，退到这个 |
+| 构建期把工具类内联进组件 | **否决**。破坏 C2（源≠产物），代码库和产物两套                                                             |
+| 组件内部完全不用工具类   | **否决**。那就没有理由引入 UnoCSS 了                                                                       |
+| 用 `<inject-host>` 注入  | **否决**。它注入到宿主所在作用域（顶层则进 `document.head`），**进不了 shadow root**                       |
 
 > **这是唯一一个我建议在 M0 之后复盘一次的决策。** 补丁失效的风险用冒烟测试兜底，
 > 退路是退到"每组件 `<link>`"。
@@ -282,7 +284,9 @@ UnoCSS 拼出 `rgb(rgb(114 70 237) / 1)` 这种非法 CSS，**所有语义色工
 
 ```css
 /* 使用者换肤：未分层 → 必定赢过 @layer mosaic.tokens */
-:root { --mc-primary-600: 16 185 129; }
+:root {
+  --mc-primary-600: 16 185 129;
+}
 ```
 
 ---
@@ -370,12 +374,12 @@ mosaic/
 
 **产物与手写文件的分界**：
 
-| 文件 | 手写 / 生成 | 可否 `<link>` | 可否 adopt 进 shadow |
-|---|---|---|---|
-| `boot/mosaic.js` | 手写 | —（脚本） | 它负责 adopt |
-| `boot/mosaic.css` | **生成** | ✅ | ✅ |
-| `boot/shadow-base.css` | 手写 | ❌ | ✅ |
-| `color/tokens.css` | **生成** | ✅（已被 mosaic.css 包含） | ✅ |
+| 文件                   | 手写 / 生成 | 可否 `<link>`              | 可否 adopt 进 shadow |
+| ---------------------- | ----------- | -------------------------- | -------------------- |
+| `boot/mosaic.js`       | 手写        | —（脚本）                  | 它负责 adopt         |
+| `boot/mosaic.css`      | **生成**    | ✅                         | ✅                   |
+| `boot/shadow-base.css` | 手写        | ❌                         | ✅                   |
+| `color/tokens.css`     | **生成**    | ✅（已被 mosaic.css 包含） | ✅                   |
 
 ---
 
@@ -460,16 +464,16 @@ CI 全量接入（令牌自检 + drift 检查 + 冒烟测试 + 体积上限）�
 
 ## 六、风险登记
 
-| 风险 | 影响 | 缓解 |
-|---|---|---|
-| **D3 运行时补丁失效** | 组件失去排布（颜色/尺寸仍在） | 降级是分级的（D3）；M0 端到端冒烟测试；退路是每组件 `<link>` |
-| 生成物与生成器漂移 | CDN 上的东西和源码不一致 | 生成物提交进仓库 + CI `check:drift` |
-| jsDelivr 在大陆不可达 | 使用者无法加载 | 换入口域名 + 自托管；不赌单一 CDN |
-| 预编译工具类子集不够用 | 使用者写了不存在的类名，静默无效果 | 文档首页写明边界；提供反馈入口 |
-| ofa.js 升级破坏组件 | 大量组件同时失效 | pin 验证过的版本 + `peerDependencies` 声明区间 + 升级必跑冒烟（见 P23） |
-| 体积失控 | 令牌 12.5 KB + 工具类 20 KB | CI 设体积上限；L1 色阶可拆成独立文件按需引入 |
-| 代码高亮的 CDN 不可达 | 代码块没有颜色（排版、行号、主题跟随都正常） | 失败即降级为纯文本；`hljs-base` 支持自托管 / 换镜像 |
-| 组件作者重复踩 ofa.js 的坑 | 排查极耗时（都是静默失效） | [`ofa-pitfalls.md`](./ofa-pitfalls.md) 作为写组件的必需前置阅读 |
+| 风险                       | 影响                                         | 缓解                                                                    |
+| -------------------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| **D3 运行时补丁失效**      | 组件失去排布（颜色/尺寸仍在）                | 降级是分级的（D3）；M0 端到端冒烟测试；退路是每组件 `<link>`            |
+| 生成物与生成器漂移         | CDN 上的东西和源码不一致                     | 生成物提交进仓库 + CI `check:drift`                                     |
+| jsDelivr 在大陆不可达      | 使用者无法加载                               | 换入口域名 + 自托管；不赌单一 CDN                                       |
+| 预编译工具类子集不够用     | 使用者写了不存在的类名，静默无效果           | 文档首页写明边界；提供反馈入口                                          |
+| ofa.js 升级破坏组件        | 大量组件同时失效                             | pin 验证过的版本 + `peerDependencies` 声明区间 + 升级必跑冒烟（见 P23） |
+| 体积失控                   | 令牌 12.5 KB + 工具类 20 KB                  | CI 设体积上限；L1 色阶可拆成独立文件按需引入                            |
+| 代码高亮的 CDN 不可达      | 代码块没有颜色（排版、行号、主题跟随都正常） | 失败即降级为纯文本；`hljs-base` 支持自托管 / 换镜像                     |
+| 组件作者重复踩 ofa.js 的坑 | 排查极耗时（都是静默失效）                   | [`ofa-pitfalls.md`](./ofa-pitfalls.md) 作为写组件的必需前置阅读         |
 
 ---
 

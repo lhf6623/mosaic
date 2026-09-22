@@ -33,7 +33,8 @@ export default async function run({ check, newPage }) {
 
   const active = () =>
     p.evaluate(() =>
-      window.__deepAll('.doc-top-nav a')
+      window
+        .__deepAll('.doc-top-nav a')
         .filter((a) => a.hasAttribute('aria-current'))
         .map((a) => a.textContent.trim())
         .join('/'),
@@ -42,7 +43,8 @@ export default async function run({ check, newPage }) {
   const click = (sel, text) =>
     p.evaluate(
       ([s, t]) =>
-        window.__deepAll(s)
+        window
+          .__deepAll(s)
           .find((el) => el.textContent.trim() === t)
           ?.click(),
       [sel, text],
@@ -96,7 +98,8 @@ export default async function run({ check, newPage }) {
       h1: await h1(),
       top: await active(),
       nav: await p.evaluate(() =>
-        window.__deepAll('doc-nav a')
+        window
+          .__deepAll('doc-nav a')
           .filter((a) => a.hasAttribute('aria-current'))
           .map((a) => a.textContent.trim())
           .join('/'),
@@ -113,7 +116,8 @@ export default async function run({ check, newPage }) {
     await settle();
     await p.evaluate(() => {
       // 卡片文本是「Button 已实现 mc-button 按钮。…」，按 href 找才准
-      window.__deepAll('.doc-comp-card')
+      window
+        .__deepAll('.doc-comp-card')
         .find((c) => (c.getAttribute('href') || '').includes('packages/button/page.html'))
         ?.click();
     });
@@ -151,11 +155,7 @@ export default async function run({ check, newPage }) {
     );
 
     /* ⑦ 全程没有 404 / 运行时报错 */
-    check(
-      '子路径下没有 404 / 运行时报错',
-      failed.length === 0,
-      failed.join(' | ') || '无',
-    );
+    check('子路径下没有 404 / 运行时报错', failed.length === 0, failed.join(' | ') || '无');
   } finally {
     await p.close();
     server.kill();

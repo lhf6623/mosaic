@@ -9,28 +9,34 @@
     <h2>最小可运行页面</h2>
 
     <mc-code language="html" src="../snippets/quick-start.html"></mc-code>
-    <p class="doc-hint">片段放在 <code>docs/snippets/quick-start.html</code>，页面里一行引用 ——
-      文件本身是真 HTML，不用写 <code>&amp;lt;</code>，编辑器高亮、也能直接打开验证。</p>
+    <p class="doc-hint">
+      片段放在 <code>docs/snippets/quick-start.html</code>，页面里一行引用 —— 文件本身是真
+      HTML，不用写 <code>&amp;lt;</code>，编辑器高亮、也能直接打开验证。
+    </p>
 
     <div class="doc-note">
       <strong>三条引入缺一不可，顺序也不能换。</strong>
       <ul>
         <li><code>mosaic.css</code> 让<strong>你的页面</strong>能用工具类和令牌</li>
         <li><code>ofa.js</code> 必须在 <code>mosaic.js</code> 之前 —— 模块按文档顺序求值</li>
-        <li><code>mosaic.js</code> 让<strong>组件内部</strong>能用工具类（shadow root 拿不到文档级样式）</li>
+        <li>
+          <code>mosaic.js</code> 让<strong>组件内部</strong>能用工具类（shadow root
+          拿不到文档级样式）
+        </li>
       </ul>
     </div>
 
     <h2>为什么需要 mosaic.js</h2>
     <p>
-      ofa.js 的组件渲染是 <code>attachShadow()</code> + <code>innerHTML</code>，
-      也就是<strong>组件必定有 shadow root</strong>，而文档级 <code>&lt;link&gt;</code>
+      ofa.js 的组件渲染是 <code>attachShadow()</code> + <code>innerHTML</code>， 也就是<strong
+        >组件必定有 shadow root</strong
+      >，而文档级 <code>&lt;link&gt;</code>
       里的规则进不去。所以只挂一份 CSS 的话，组件内部的
       <code>class="flex gap-2"</code> 是不生效的。
     </p>
     <p>
-      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。
-      它约 40 行，没有别的副作用。
+      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。 它约
+      40 行，没有别的副作用。
     </p>
 
     <div class="doc-note doc-warn">
@@ -41,6 +47,7 @@
     </div>
 
     <h2>本地开发</h2>
+    <!-- prettier-ignore -->
     <mc-code language="bash">
       git clone https://github.com/lhf6623/mosaic.git
       cd mosaic
@@ -54,30 +61,29 @@
 
     <div class="doc-note doc-warn">
       <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
-      它带 <code>-c-1</code> 禁缓存。换成别的静态服务器后，
-      改完 <code>page.html</code> 或 <code>mosaic.js</code> 浏览器会继续用旧模块，
-      表现为「改了没生效」，排查极耗时。
+      它带 <code>-c-1</code> 禁缓存。换成别的静态服务器后， 改完 <code>page.html</code> 或
+      <code>mosaic.js</code> 浏览器会继续用旧模块， 表现为「改了没生效」，排查极耗时。
     </div>
 
     <h2>接入方式的几种变体</h2>
 
     <h3>锁死版本（推荐）</h3>
     <p>
-      文档里一律写精确版本号。jsDelivr 上 <code>@latest</code> / <code>@1</code> 这类别名
-      有 7 天缓存，最长 7 天不生效；而精确版本是 <strong>1 年 <code>immutable</code></strong>。
+      文档里一律写精确版本号。jsDelivr 上 <code>@latest</code> / <code>@1</code> 这类别名 有 7
+      天缓存，最长 7 天不生效；而精确版本是 <strong>1 年 <code>immutable</code></strong
+      >。
     </p>
 
     <h3>自托管 / 内网</h3>
     <p>
-      本仓库没有构建产物 —— 仓库里的 <code>packages/**</code> 就是 CDN 上的东西。
-      所以 <code>git clone</code> 之后直接当静态目录托管即可，不需要任何构建步骤。
-      把上面代码块里的 CDN 前缀换成本地路径就行。
+      本仓库没有构建产物 —— 仓库里的 <code>packages/**</code> 就是 CDN 上的东西。 所以
+      <code>git clone</code> 之后直接当静态目录托管即可，不需要任何构建步骤。 把上面代码块里的 CDN
+      前缀换成本地路径就行。
     </p>
 
     <h3>大陆访问</h3>
-    <p>
-      jsDelivr 在大陆历史上反复出现不可达。换入口域名、路径完全不变即可：
-    </p>
+    <p>jsDelivr 在大陆历史上反复出现不可达。换入口域名、路径完全不变即可：</p>
+    <!-- prettier-ignore -->
     <mc-code language="text">
       https://fastly.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
       https://gcore.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
@@ -101,8 +107,8 @@
 
     <h3>写了 <code>dark:bg-black</code> 没反应</h3>
     <p>
-      组件内部<strong>禁止使用 <code>dark:</code> 变体</strong>。它生成的是后代选择器，
-      而 <code>&lt;html data-theme="dark"&gt;</code> 在 shadow 树外面，匹配不到。
+      组件内部<strong>禁止使用 <code>dark:</code> 变体</strong>。它生成的是后代选择器， 而
+      <code>&lt;html data-theme="dark"&gt;</code> 在 shadow 树外面，匹配不到。
       这是静默失效，没有任何报错。主题差异请走令牌。
     </p>
   </div>
