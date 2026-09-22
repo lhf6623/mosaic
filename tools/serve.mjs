@@ -25,6 +25,14 @@ const portArg = process.argv.indexOf('--port');
 const PORT = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT || 8642);
 
 /**
+ * 部署前缀：GitHub Pages 的项目页挂在 `/<repo>/` 下（本站是 `/mosaic/`）。
+ * `node tools/serve.mjs --prefix /mosaic` → 从 `http://127.0.0.1:8642/mosaic/` 访问。
+ * 用来在本地复现线上的子路径行为 —— 站内链接、菜单高亮在两种前缀下都必须对得上。
+ */
+const prefixArg = process.argv.indexOf('--prefix');
+const PREFIX = (prefixArg > -1 ? process.argv[prefixArg + 1] : '').replace(/\/+$/, '');
+
+/**
  * 模拟 Live Server 的注入。
  *
  * 规则照抄它的实现（live-server/index.js）：
@@ -69,6 +77,19 @@ const TYPES = {
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   let pathname = decodeURIComponent(url.pathname);
+
+  if (PREFIX && !pathname.startsWith(PREFIX)) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`404 ${pathname}`);
+    return;
+  }
+  if (PREFIX) {
+    // 不带尾斜杠的入口重定向一次 —— 和 GitHub Pages 行为一致，相对路径才有正确基准
+    if (pathname === PREFIX) {
+      res.writeHead(302, { location: `${PREFIX}/` }).end();
+      return;
+    }
+    pathname = pathname.slice(PREFIX.length) || '/';
+  }
   if (pathname.endsWith('/')) pathname += 'index.html';
 
   // 防目录穿越：解析成绝对路径后必须仍在 ROOT 之内
@@ -103,5 +124,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`\n  Mosaic docs  →  http://127.0.0.1:${PORT}/\n`);
+  console.log(`\n  Mosaic docs  →  http://127.0.0.1:${PORT}${PREFIX}/\n`);
 });

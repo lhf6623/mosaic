@@ -11,14 +11,26 @@
       else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
     };
 
-    /** 取「相对仓库根」的路由路径。hash 形式与文件形式都吃，细节见 agent/components.md */
+    /*
+     * 取「相对仓库根」的路由路径：hash 形式、文件形式都吃，并去掉部署前缀。
+     *
+     * ⚠️ ofa 的 hash 是按**相对域名根**解析的：开发时是 `#/docs/pages/home.html`，
+     * GitHub Pages 项目页是 `#/mosaic/docs/pages/home.html`；而页面 `src` 给的是
+     * pathname（`/mosaic/docs/pages/home.html`）。两边不归一成同一个坐标系，顶栏
+     * 高亮在子路径部署下就永远匹配不上（线上实测：打开首页空高亮、设计令牌页亮成
+     * 「组件」）。页面模块不能 import，这份逻辑与 docs/routes.js 的 toRepoPath 相同，
+     * 只是各写一份。
+     */
+    const SITE_ROOT = new URL('.', document.baseURI).pathname; // '/' 或 '/mosaic/'
     const pathOf = (url) => {
       const u = new URL(url, location.href);
-      if (u.hash) return decodeURIComponent(u.hash.replace(/^#\/?/, ''));
-
-      const root = new URL('.', document.baseURI).pathname;
-      const path = decodeURIComponent(u.pathname);
-      return path.startsWith(root) ? path.slice(root.length) : path.replace(/^\//, '');
+      const raw = decodeURIComponent(u.hash || u.pathname)
+        .replace(/^#\/?/, '')
+        .replace(/^\//, '');
+      const prefix = SITE_ROOT.replace(/^\/|\/$/g, '');
+      return prefix && (raw === prefix || raw.startsWith(`${prefix}/`))
+        ? raw.slice(prefix.length).replace(/^\//, '')
+        : raw;
     };
 
     export default () => ({

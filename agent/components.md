@@ -80,6 +80,15 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 - 匹配路径要同时吃下两种形式：`olink` 的 href 被 ofa.js 改写成
   `…/index.html#/docs/pages/home.html`（hash 形式），而页面 `src` 是文件形式
   （站点还可能挂在子路径下）—— 所以统一归一成「相对仓库根的路径」再比。
+- ⚠️ **站内链接必须带部署前缀，两边比较前必须先归一化。**
+  ofa 把 hash 当**相对域名根**的地址解析：线上（GitHub Pages 项目页在 `/<repo>/` 下）
+  正确的形式是 `#/mosaic/packages/…`，手写 `#/packages/…` 会去取 `/packages/…` → 404；
+  菜单高亮若两边不在同一坐标系，还会出现「打开首页空高亮、设计令牌页亮成『组件』」
+  （线上实测过）。规则：
+  · JS 里拼链接走 `docs/routes.js` 的 `hashOf()`；
+  · 页面标记里写 `<a olink href="相对本文件的路径">`，让 ofa 自己带前缀；
+  · 比较前统一用 `toRepoPath()`（布局页那份是同一逻辑的副本，页面模块不能 import）。
+  本地复现线上：`node tools/serve.mjs --prefix /mosaic`；冒烟测试里有一条专门的子路径套件。
 - 组件文档页（`packages/<slug>/page.html`）不在顶栏单列，统一点亮「组件」；
   「设计令牌」自己有入口，精确匹配先命中，所以不会被那条兜底规则误伤。
 - 冷启动直接带 hash 时，子页面可能比布局页晚一拍挂上 → 高亮补几拍（自限，有子页面就停）。

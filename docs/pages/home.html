@@ -175,7 +175,9 @@
 
       proto: {
         openPage(path) {
-          location.hash = `#/${path}`;
+          // hash 按「相对域名根」解析，所以要带上部署前缀（开发 `/`、Pages `/mosaic/`）
+          const root = new URL('.', document.baseURI).pathname.replace(/\/$/, '');
+          location.hash = `#${root}/${path.replace(/^\//, '')}`;
         },
 
         relayout() {

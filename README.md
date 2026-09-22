@@ -150,6 +150,7 @@ Pages 源设为 `main` 分支的仓库根即可，不需要 CI。
 
 ```bash
 pnpm dev           # http://localhost:8642
+node tools/serve.mjs --prefix /mosaic   # 模拟 GitHub Pages 子路径（http://localhost:8642/mosaic/）
 ```
 
 它同时是 M0 的验收载体：首页和组件页里那些 `<mc-button>` 是**真实渲染**的，
@@ -363,7 +364,7 @@ pnpm install
 pnpm tokens        # 生成令牌并自检对比度（不达标退出 1）
 pnpm build         # = tokens && build:css → packages/boot/mosaic.css
 pnpm dev           # 起本地服务器（零依赖，强制禁缓存，端口 8642）
-pnpm test          # 真浏览器冒烟测试：站点套件 + 所有已实现组件（驱动系统 Chrome，117 项断言）
+pnpm test          # 真浏览器冒烟测试：站点套件 + 所有已实现组件（驱动系统 Chrome，125 项断言）
 pnpm test collapse # 只跑某个组件的套件（内环快速反馈）
 pnpm test:site     # 只跑跨组件的站点套件
 pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
@@ -374,7 +375,7 @@ pnpm check:drift   # 重新生成后比对 git diff，防止提交的产物与�
 
 运行冒烟测试需要先起服务器（`pnpm dev`）。套件分两处：跨组件的站点不变量在
 `tests/site/`，组件自己的断言在 `packages/<slug>/test/`（登记表里 READY 的都该有一个）。
-它驱动本机 Chrome 验证 117 项断言，包括「工具类在 shadow root 内生效」
+它驱动本机 Chrome 验证 125 项断言（含一条把站点挂在 `/mosaic/` 下的子路径套件），包括「工具类在 shadow root 内生效」
 「主题切换能穿过 shadow 边界」这些只有真浏览器能回答的问题。
 
 ---

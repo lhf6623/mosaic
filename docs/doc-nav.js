@@ -13,15 +13,16 @@
  *        <doc-nav data-source="components"></doc-nav>
  *   2. 页面自己声明菜单项（谁需要谁写，外壳不再集中维护）：
  *        <doc-nav>
- *          <a href="#/docs/pages/guide.html">快速开始</a>
+ *          <a olink href="../pages/guide.html">快速开始</a>
  *        </doc-nav>
+ *      ⚠️ 相对路径 + `olink`，不要手写 `#/…` —— hash 按域名根解析，子路径部署会 404。
  *
  * 高亮由它自己盯 `hashchange` + `router-change` —— 二级菜单是页面自己的东西，
  * 不靠外壳脚本同步（顶栏的 olink 不触发 hashchange，见 connectedCallback 里的说明）。
  */
 
 import { GROUPS, pageOf, OVERVIEW } from './components.js';
-import { route } from './routes.js';
+import { route, hashOf, toRepoPath } from './routes.js';
 
 export const DOC_NAV_TAG = 'doc-nav';
 
@@ -33,8 +34,8 @@ const setCurrent = (a, on) => {
   else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
 };
 
-/** 从一个 <a> 反推它指向的路由（`#/xxx` → `xxx`） */
-const toOf = (a) => (a.getAttribute('href') ?? '').replace(/^#\/?/, '');
+/** 从一个 <a> 反推它指向的路由（归一成仓库根相对路径） */
+const toOf = (a) => toRepoPath(a.getAttribute('href'));
 
 /**
  * 登记表驱动的菜单：总览 + 分组标题 + 每个组件（带实现状态）。
@@ -75,7 +76,7 @@ class DocNav extends HTMLElement {
 
     /*
      * 两个信号都要听：
-     *   hashchange      页面内的普通 `<a href="#/…">`（比如面包屑）
+     *   hashchange      页面内的普通 hash 跳转（侧栏自己就是这么跳的）
      *   router-change   o-app 每次导航都会冒泡它 —— 顶栏的 `<a olink>` 走
      *                   history.pushState，**不触发 hashchange**，只听前一个
      *                   会漏掉「从顶栏点进来」这条路（实测高亮会空着）。
@@ -127,7 +128,7 @@ class DocNav extends HTMLElement {
       a.target = '_blank';
       a.rel = 'noreferrer';
     } else {
-      a.href = `#/${item.to}`;
+      a.href = hashOf(item.to); // 带部署前缀（开发 `/`、Pages `/mosaic/`）
     }
     return el('li', {}, [a]);
   }

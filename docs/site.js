@@ -8,7 +8,7 @@
  */
 
 import { GROUPS, ALL, pageOf } from './components.js';
-import { route } from './routes.js';
+import { route, hashOf } from './routes.js';
 import { defineDocNav } from './doc-nav.js';
 
 /* dataset / style 是只读 getter：Object.assign(node, props) 会抛，且是在渲染途中抛 */
@@ -130,7 +130,8 @@ function renderCardsInto(host) {
         className: 'doc-comp-card',
         dataset: { status: item.status },
       });
-      if (ready) card.href = `#/${pageOf(item.slug)}`;
+      // hash 是按「相对域名根」解析的，子路径部署要带上前缀（见 routes.js）
+      if (ready) card.href = hashOf(pageOf(item.slug));
 
       const badge = el('span', {
         className: 'doc-comp-badge',
