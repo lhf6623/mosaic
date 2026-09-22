@@ -1,0 +1,11 @@
+<template component>
+  <mc-collapse style="border-radius: 0; background-color: rgb(var(--mc-color-surface-sunken))">
+    <mc-collapse-item header="外框被 style 覆盖" open>
+      边框、圆角、底色都在 <code>:host</code> 上，内联样式优先级最高。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-style-override' });
+  </script>
+</template>

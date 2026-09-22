@@ -1,0 +1,12 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button>默认</mc-button>
+    <mc-button loading>正在保存…</mc-button>
+    <mc-button disabled>已禁用</mc-button>
+    <mc-button variant="outline" disabled>已禁用</mc-button>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-button-states' });
+  </script>
+</template>

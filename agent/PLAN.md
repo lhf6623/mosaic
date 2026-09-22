@@ -353,7 +353,11 @@ mosaic/
 │   ├── doc-nav.js                 # <doc-nav>：页面自己的二级菜单（站点级自定义元素）
 │   ├── shell.css  content.css     # 文档级视口/高度链 / 正文 + 分栏样式（页面自己 link 后者）
 │   └── site.js  theme-boot.js     # 页面占位渲染 / 首帧主题
-├── tests/smoke.mjs                # 真浏览器冒烟测试（同时是 M0 验收测试）
+├── tests/
+│   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件（单飞见 README）
+│   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
+│   └── site/*.mjs                 # 跨组件的站点不变量
+# 组件自己的套件跟着组件走：packages/<name>/{demos,test}/
 ├── agent/
 │   ├── PLAN.md  design-spec.md  design-tokens.md
 │   ├── component-spec.md  components.md  ofa-pitfalls.md
@@ -427,7 +431,7 @@ pnpm dev           # 本地验收（http-server -c-1 禁缓存，端口 8642）
 
 ### M1 — 令牌与基础组件
 
-- [ ] `mc-button` / `mc-code`（已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner`
+- [ ] `mc-button` / `mc-code` / `mc-collapse`（均已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner`
 - [ ] 每个组件补齐 `{name}.html` + `README.md` + `index.html` + `page.html` 四件套
 - **产出**：可发布的 0.1.0
 

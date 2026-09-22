@@ -104,6 +104,14 @@ export const GROUPS = [
     title: '布局',
     desc: '组织内容',
     items: [
+      {
+        slug: 'collapse',
+        name: 'Collapse',
+        tag: 'mc-collapse',
+        status: 'ready',
+        milestone: 'M1',
+        desc: '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与无障碍不用自己写。',
+      },
       { slug: 'tabs', name: 'Tabs', tag: 'mc-tabs', status: 'planned', milestone: 'M3', desc: '标签页。' },
       { slug: 'table', name: 'Table', tag: 'mc-table', status: 'planned', milestone: 'M3', desc: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。' },
       { slug: 'grid', name: 'Grid', tag: 'mc-grid', status: 'planned', milestone: 'M3', desc: '栅格。' },

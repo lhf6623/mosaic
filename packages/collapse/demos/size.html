@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-collapse size="sm">
+      <mc-collapse-item header="小号 · 密集界面" open>头部 28px</mc-collapse-item>
+    </mc-collapse>
+    <mc-collapse>
+      <mc-collapse-item header="中号 · 常规" open>头部 36px</mc-collapse-item>
+    </mc-collapse>
+    <mc-collapse size="lg">
+      <mc-collapse-item header="大号 · 移动端主操作" open>头部 44px</mc-collapse-item>
+    </mc-collapse>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-size' });
+  </script>
+</template>

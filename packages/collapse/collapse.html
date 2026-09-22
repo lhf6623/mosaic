@@ -1,0 +1,106 @@
+<!--
+  mc-collapse — 折叠面板容器
+
+  分工：容器只管**外框与规则**（边框、圆角、底色、子项之间的分隔线、尺寸、互斥），
+  开合本身完全是子项的事（`packages/collapse/collapse-item.html`）。
+  这样子项不管怎么插进来（标签写的、JS 建的、后来 append 的）都被同一套规则管着。
+
+  两个要点：
+
+  1. **尺寸靠 CSS 变量广播给子项**：子项在自己的 shadow root 里，容器的选择器够不到它，
+     唯一能穿过 shadow 边界的通道就是自定义属性 —— 所以尺寸只写在这一个地方，
+     子项用 `var(--mc-collapse-xxx, 兜底)` 读。
+     ⚠️ 因此子项**不能**定义这些变量的默认值，否则继承会被就地覆盖。
+
+  2. **互斥（accordion）靠子项冒泡上来的 open 事件**：不用逐个挂监听，
+     也不用管子项是什么时候插进来的（事件委托）。
+     链路要说清楚：用户点开 → 原生 `toggle`（规范规定是**异步**派的）→ 子项发 `open`
+     → 容器收它。收别人走 property 而不是 setAttribute：property 那条路是同步的，
+     不会再叠一层延迟（P4 的异步只影响 setAttribute 那条路）。
+-->
+<template component>
+  <style>
+    /* ---------- 1. 宿主 = 外框 ---------- */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+      overflow: hidden; /* 首尾子项要跟着圆角裁掉 */
+      font-family: var(--mc-font-sans);
+
+      /* ---------- 尺寸通道：子项在另一个 shadow root 里，只能靠继承拿到 ---------- */
+      --mc-collapse-header-h: var(--mc-control-h-md);
+      --mc-collapse-pad-x: var(--mc-space-4);
+      --mc-collapse-body-pad: var(--mc-space-4);
+      --mc-collapse-font: var(--mc-text-sm);
+    }
+
+    /* ---------- 2. 尺寸：和其余组件同一套三档（规范 1.3） ---------- */
+    :host([size="sm"]) {
+      --mc-collapse-header-h: var(--mc-control-h-sm);
+      --mc-collapse-pad-x: var(--mc-space-3);
+      --mc-collapse-body-pad: var(--mc-space-3);
+      --mc-collapse-font: var(--mc-text-xs);
+    }
+    :host([size="lg"]) {
+      --mc-collapse-header-h: var(--mc-control-h-lg);
+      --mc-collapse-pad-x: var(--mc-space-5);
+      --mc-collapse-body-pad: var(--mc-space-5);
+      --mc-collapse-font: var(--mc-text-base);
+    }
+
+    /* ---------- 3. 子项：只补"在容器里"才需要的东西 ----------
+       子项自己不带边框 —— 框属于容器，两边都画就是双重描边。 */
+    ::slotted(mc-collapse-item) {
+      display: block;
+      border-top: 1px solid rgb(var(--mc-color-border));
+    }
+    ::slotted(mc-collapse-item:first-of-type) {
+      border-top: 0;
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-collapse',
+
+      attrs: {
+        // 手风琴：同一时刻只允许一个子项展开
+        accordion: null,
+        size: 'md',
+      },
+
+      attached() {
+        this._onOpen = (event) => this.onItemOpen(event);
+        this.ele.addEventListener('open', this._onOpen);
+      },
+
+      detached() {
+        this.ele.removeEventListener('open', this._onOpen);
+      },
+
+      proto: {
+        /**
+         * 某个子项展开了：把同容器里其它还开着的收起来。
+         *
+         * 两层收窄，嵌套手风琴才不会互相误伤：
+         *   · 只认自己的**直接子项** —— 内层容器自己会处理内部互斥，它的事件也会冒到这里
+         *   · 扫的也是直接子项（`:scope >`），别把内层子项算成自己的
+         * `event.target` 已被重定向到子项宿主（事件是从子项的 shadow root 冒出来的）。
+         */
+        onItemOpen(event) {
+          if (this.accordion === null) return;
+          const opened = event.target;
+          if (opened.parentElement !== this.ele) return;
+          for (const item of this.ele.querySelectorAll(':scope > mc-collapse-item')) {
+            if (item !== opened && item.open) item.open = false;
+          }
+        },
+      },
+    });
+  </script>
+</template>

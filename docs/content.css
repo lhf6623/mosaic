@@ -141,6 +141,39 @@ mc-code {
   margin-top: 0;
 }
 
+/*
+ * 演示区的「查看代码」抽屉 —— 作者直接写在页面里（就是项目自己的折叠面板）：
+ *
+ *   <mc-collapse class="doc-demo-code">
+ *     <mc-collapse-item header="查看代码"><mc-code src="./demos/x.html">…</mc-collapse-item>
+ *   </mc-collapse>
+ *
+ * 容器默认是卡片外观，抽屉只要一条分隔线：外部文档树的普通声明赢过组件的 `:host`
+ * （和 mc-code 的 margin 同一条路）；头部 / 内容区是组件内部结构，只能走 `::part()`。
+ */
+.doc-demo-code {
+  margin-top: var(--mc-space-4);
+  border: 0;
+  border-top: 1px solid rgb(var(--mc-color-border));
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.doc-demo-code mc-collapse-item::part(header) {
+  color: rgb(var(--mc-color-fg-muted));
+  font-weight: var(--mc-weight-normal);
+}
+
+/* 留白交给代码块自己，免得和 mc-code 的边框内边距叠成两层 */
+.doc-demo-code mc-collapse-item::part(body) {
+  padding: 0;
+}
+
+/* 代码块贴住抽屉（上面那条 mc-code 的块级外边距在这里归零） */
+.doc-demo-code mc-code {
+  margin-block: 0;
+}
+
 .doc-row {
   display: flex;
   flex-wrap: wrap;

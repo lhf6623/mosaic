@@ -1,0 +1,11 @@
+<template component>
+  <mc-code language="javascript" hljs-theme="atom-one-light" hljs-theme-dark="atom-one-dark">
+    // hljs-theme / hljs-theme-dark 直接写 highlight.js styles/ 下的主题名
+    const themes = ['github', 'atom-one-light', 'vs', 'xcode', 'monokai'];
+    export const pick = (i) => themes[i % themes.length];
+  </mc-code>
+
+  <script>
+    export default async () => ({ tag: 'demo-code-theme' });
+  </script>
+</template>

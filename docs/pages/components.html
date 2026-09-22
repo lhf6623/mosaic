@@ -6,7 +6,7 @@
     谁需要左栏谁就在模板里放 <doc-nav>，外面套一层 .doc-split 分成左右两栏。
 
     data-source="components" 表示菜单项来自组件登记表（docs/components.js）——
-    20 个组件的清单只维护一份，不抄进页面。
+    21 个组件的清单只维护一份，不抄进页面。
   -->
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
@@ -18,12 +18,13 @@
     </p>
 
     <div class="doc-note">
-      <strong>加一个新组件要动的地方只有两处：</strong>
-      在 <code>docs/components.js</code> 里加一条登记，
-      再建一个 <code>packages/&lt;slug&gt;/page.html</code>（ofa.js 页面模块）。
+      <strong>加一个新组件要动的地方：</strong>
+      在 <code>docs/components.js</code> 里加一条登记，再建
+      <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
+      <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
       本页的二级菜单、本页卡片、首页的组件区块都是从登记表渲染的；
       新页面照抄本页的 <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code>
-      就有了同一个菜单，不用手抄 20 个组件。
+      就有了同一个菜单，不用手抄 21 个组件。
     </div>
 
     <h2>接入方式</h2>

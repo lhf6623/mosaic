@@ -15,11 +15,17 @@
 
 ```
 packages/{name}/
-  {name}.html    组件本体 —— 源 = 产物，构建不碰它
-  page.html      文档页 —— ofa.js 页面模块（<template page>），带活的可交互演示
+  {name}.html      组件本体 —— 源 = 产物，构建不碰它
+  page.html        文档页 —— ofa.js 页面模块（<template page>）
+  demos/*.html     每个演示一个 ofa 组件文件：文档页里的活样例，代码面板引用同一份
+  test/*.test.mjs  组件自己的断言（`node tests/smoke.mjs <name>` 单飞）
 
 docs/components.js
                  组件登记表 —— 加组件时在这里加一条
+tests/
+  smoke.mjs       冒烟测试入口：站点套件 + 登记表里每个 READY 组件的套件
+  lib/harness.mjs 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
+  site/*.mjs      跨组件的站点不变量（外壳、路由、D3、色板、注入免疫……）
 ```
 
 > 文档页是 **ofa.js 页面模块**，不是独立网页：它由 `o-router` 按 hash 路由加载，
@@ -27,10 +33,10 @@ docs/components.js
 > —— 因为它没有 `<html>`/`<body>`，只有一个 `<template page>`。
 > 冒烟测试里那条「文档跟着组件走」就是经由路由打开它来验证的。
 
-**文档跟着组件走**：组件在 `packages/{name}/`，它的文档页就是同目录下的 `index.html`。
+**文档跟着组件走**：组件在 `packages/{name}/`，它的文档页就是同目录下的 `page.html`。
 找组件时不用去别处翻文档。
 
-**加一个组件要动两处**：`packages/{name}/` 下的组件本体与文档页，
+**加一个组件要动四处**：`packages/{name}/` 下的组件本体、文档页、`demos/`、`test/`，
 再加一条 `docs/components.js` 登记。页面自带的二级菜单、组件总览、首页的组件区块
 都从登记表渲染，不用手工维护。
 
@@ -113,6 +119,66 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 > （嵌套路由下有两个 o-page），不能是「`.doc-body` 换了」——
 > o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻就成立，
 > 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。
+
+#### 演示区：活样例 + 「查看代码」抽屉
+
+**文档页只写用法。** 一页就三块：`<h2>` 的 API 表、演示区、`<h2>注意事项</h2>`。
+「为什么这么分层、底层用了什么机制」这类实现说明写在**组件文件头的注释**和 `agent/` 里，
+不要搬进文档页 —— 页面是给使用者查用法的地方，不是设计说明。
+注意事项只放使用者会踩的坑（相对路径怎么算、哪些属性有副作用、降级行为）。
+
+组件文档页里的每个演示都是 `<section class="doc-demo">`：
+**例子是一个独立的 ofa 组件文件**（`demos/*.html`），`<mc-code src>` 引用同一份文件，
+抽屉用作者写的一行 `<mc-collapse>`。标题与 `.doc-hint` 留在外面：
+
+```html
+<section class="doc-demo">
+  <h3>语义色</h3>
+  <demo-button-colors></demo-button-colors>
+  <mc-collapse class="doc-demo-code">
+    <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/colors.html"></mc-code></mc-collapse-item>
+  </mc-collapse>
+  <p class="doc-hint">…</p>
+</section>
+```
+
+**例子住在 `packages/{name}/demos/*.html`，一个演示一个文件**，文件本身就是
+ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引进来再写标签：
+
+```html
+<!-- demos/colors.html -->
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button color="primary">主要</mc-button>
+  </div>
+  <script>
+    export default async () => ({ tag: 'demo-button-colors' });
+  </script>
+</template>
+```
+
+- **一个演示文件只讲一件事。** 同一件事的多个变体可以放一起（六种颜色、三档尺寸），
+  但**两个不同的 API / 特性要拆成两个文件、两节**（`max-height` 与 `soft-wrap`、
+  `code` 属性与 `:code` 绑定）—— 一个文件里塞两件事，"查看代码"给出的就不是一个
+  能直接抄的例子了。
+- **代码面板与活样例引用同一个文件**：`<mc-code src="./demos/colors.html">` 读的就是
+  上面那份文件（`mc-code` 的 `src` 早就有这能力）。所以"演示的代码"只有一份，
+  改例子 = 改代码面板，**没有第二处会漂移**。
+- **例子是组件，不是片段**，所以它里面的 ofa 绑定照常编译（`:code="boundSnippet"`、
+  `on:open="…"`），而且**可以单独打开、单独测**。
+  ⚠️ 反过来不成立：ofa.js **不编译运行时注入的 HTML**（`innerHTML` 塞进去的
+  `{{ }}` / `:prop` 全是死的），所以"纯片段 + 注入"那条路会让演示里的绑定静默失效。
+- 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** ——
+  例子内部一律用工具类（`flex flex-wrap items-center gap-3`，精选子集里有）。
+- 抽屉就是**项目自己的折叠面板**，作者直接写在页面里（`content.css` 里那几条把容器
+  的卡片外观压成一条分隔线，头部/内容区走 `::part()`）。它是站点级依赖，
+  和 `mc-code` / `mc-collapse` 一起在 `docs/layout.html` 注册一次。
+- **代码的路径按写它的那个文件解析**（和 `<link href>` 一样），所以例子里的相对
+  `src` 要从 `demos/` 往上数；`<mc-code src="./demos/x.html">` 则相对文档页。
+- 冒烟测试逐页守这条约定：每个 `.doc-demo` 都有一个 `demo-*` 例子组件 + 一个抽屉、
+  代码面板里的文本**逐字等于**它 `src` 指向的文件、每块代码都提到它在演示的标签
+  （Button 页全是 `<mc-button>`、Code 页全是 `<mc-code>`、Collapse 页全是 `<mc-collapse>`），
+  且文件里是作者写的原样标记（没有 ofa 反射出来的默认属性）。
 
 ### 首页海报：数据驱动 + 响应式（`docs/pages/home.html`）
 
@@ -482,7 +548,7 @@ mc-dialog::part(panel) { border-radius: 0; }
 
 | 批次 | 内容 | 备注 |
 |---|---|---|
-| **M1** | `mc-button`（已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner` | 产出可发布的 0.1.0 |
+| **M1** | `mc-button`（已实现）/ `mc-code`（已实现）/ `mc-collapse`（已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner` | 产出可发布的 0.1.0 |
 | **M2** | 表单与反馈 9 个 | 会大量撞上 [P6 / P18 / P19 / P20](./ofa-pitfalls.md) |
 | **M3** | 浮层与布局 6 个 | 开工前必须先验证图层问题（见下） |
 
@@ -528,6 +594,9 @@ mc-dialog::part(panel) { border-radius: 0; }
 目录与命名
 [ ] packages/{name}/{name}.html 组件本体 + page.html 文档页
 [ ] 文档页以 <template page> 开头，并 <link> 了 ../../docs/content.css
+[ ] 每个演示一个 demos/*.html（ofa 组件），页面里是标签 + 一行 mc-collapse 抽屉
+[ ] 组件自己的断言在 test/*.test.mjs，`node tests/smoke.mjs <name>` 能单飞
+[ ] 文档页只写用法（API 表 / 演示 / 注意事项），实现说明留在组件文件头与 agent/
 [ ] 文档页里的站点资产相对路径正确（../boot/...、../../docs/...）
 [ ] 已在 docs/components.js 登记（二级菜单 / 总览 / 首页都会自动带上）
 [ ] 标签名 = mc- + 目录名，三方一致

@@ -1,0 +1,19 @@
+<template component>
+  <mc-collapse>
+    <mc-collapse-item>
+      <span slot="header">🔐 账号与安全</span>
+      两步验证、登录设备管理、密码修改都在这里。
+    </mc-collapse-item>
+    <mc-collapse-item>
+      <span slot="header">🔔 通知偏好</span>
+      邮件摘要每周一发，站内信实时推送。
+    </mc-collapse-item>
+    <mc-collapse-item header="纯文本的标题也照常能用">
+      写法最短，适合标题就是一句话的场景。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-rich-header' });
+  </script>
+</template>

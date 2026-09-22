@@ -1,0 +1,15 @@
+<template component>
+  <mc-code language="javascript" line-numbers>
+    import { createServer } from 'node:http';
+
+    const PORT = 8642;
+    createServer((req, res) => {
+      res.setHeader('Cache-Control', 'no-store');
+      res.end(req.url);
+    }).listen(PORT);
+  </mc-code>
+
+  <script>
+    export default async () => ({ tag: 'demo-code-line-numbers' });
+  </script>
+</template>

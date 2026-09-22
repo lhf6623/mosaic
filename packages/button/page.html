@@ -4,23 +4,30 @@
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
     <div class="doc-body">
+            <!-- 每个例子的唯一真相是 demos/*.html（ofa 组件，可单独打开、单独测）；
+                 下面代码面板里的 mc-code 直接引用同一个文件，不抄第二份。 -->
             <l-m src="./button.html"></l-m>
+            <l-m src="./demos/colors.html"></l-m>
+            <l-m src="./demos/variants.html"></l-m>
+            <l-m src="./demos/sizes.html"></l-m>
+            <l-m src="./demos/states.html"></l-m>
+            <l-m src="./demos/slots.html"></l-m>
+            <l-m src="./demos/block.html"></l-m>
+            <l-m src="./demos/override.html"></l-m>
 
             <p class="doc-crumb"><a href="#/docs/pages/components.html">组件</a> / Button</p>
             <h1>Button <code>mc-button</code></h1>
             <p class="doc-lead">
-              按钮。语义色 × 外观样式是<strong>两个正交维度</strong>，
-              所以「描边样式的危险按钮」这种组合能自然表达出来。
+              按钮。语义色 × 外观样式是两个正交维度，
+              「描边样式的危险按钮」这种组合能直接写出来。
             </p>
             <p class="doc-badges">
               <span class="doc-badge" data-status="ready">已实现</span>
               <span class="doc-badge">M1</span>
-              <span class="doc-badge">packages/button/button.html</span>
+              <span class="doc-badge">packages/button/</span>
             </p>
 
-            <h2>mc-button</h2>
-            <p><code>packages/button/button.html</code> · 已实现</p>
-
+            <h2>属性</h2>
             <table class="doc-table">
               <thead><tr><th>属性</th><th>值</th><th>默认</th><th>说明</th></tr></thead>
               <tbody>
@@ -34,6 +41,7 @@
               </tbody>
             </table>
 
+            <h2>插槽</h2>
             <table class="doc-table">
               <thead><tr><th>插槽</th><th>说明</th></tr></thead>
               <tbody>
@@ -42,105 +50,73 @@
               </tbody>
             </table>
 
-            <p>
-              <strong>事件：</strong>原生 <code>click</code> 自带 <code>composed: true</code>，
-              会穿透 shadow 边界冒泡到宿主，所以直接写 <code>on:click</code> 即可，没有自定义事件。
-            </p>
-
             <section class="doc-demo">
               <h3>语义色</h3>
-              <div class="doc-row">
-                <mc-button color="primary">主要</mc-button>
-                <mc-button color="info">信息</mc-button>
-                <mc-button color="success">成功</mc-button>
-                <mc-button color="warning">警告</mc-button>
-                <mc-button color="danger">危险</mc-button>
-                <mc-button color="neutral">中性</mc-button>
-              </div>
+              <demo-button-colors></demo-button-colors>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/colors.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
             </section>
 
             <section class="doc-demo">
               <h3>外观 × 颜色（正交组合）</h3>
-              <div class="doc-row">
-                <mc-button variant="outline" color="primary">主要</mc-button>
-                <mc-button variant="outline" color="danger">危险</mc-button>
-                <mc-button variant="ghost" color="info">信息</mc-button>
-                <mc-button variant="ghost" color="neutral">中性</mc-button>
-              </div>
+              <demo-button-variants></demo-button-variants>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/variants.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
             </section>
 
             <section class="doc-demo">
               <h3>尺寸</h3>
-              <div class="doc-row">
-                <mc-button size="sm">小号 28px</mc-button>
-                <mc-button size="md">中号 36px</mc-button>
-                <mc-button size="lg">大号 44px</mc-button>
-              </div>
+              <demo-button-sizes></demo-button-sizes>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/sizes.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
             </section>
 
             <section class="doc-demo">
               <h3>状态</h3>
-              <div class="doc-row">
-                <mc-button>默认</mc-button>
-                <mc-button loading>正在保存…</mc-button>
-                <mc-button disabled>已禁用</mc-button>
-                <mc-button variant="outline" disabled>已禁用</mc-button>
-              </div>
-              <p class="doc-hint">
-                用 <kbd>Tab</kbd> 键走一遍，可以看到焦点环；hover / active 用的是
-                state layer（<code>currentColor</code> + 8% / 12% 透明度），
-                不额外定义 hover 色令牌，所以任意颜色和主题下都自动协调。
-              </p>
+              <demo-button-states></demo-button-states>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/states.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
+              <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
             </section>
 
             <section class="doc-demo">
-              <h3>插槽与 block</h3>
-              <div class="doc-row">
-                <mc-button><span slot="prefix">🔍</span>搜索</mc-button>
-                <mc-button color="danger" variant="outline"><span slot="prefix">🗑</span>删除</mc-button>
-                <mc-button><span slot="suffix">→</span>下一步</mc-button>
-              </div>
-              <div class="mt-3">
-                <mc-button block color="primary">撑满宽度</mc-button>
-              </div>
+              <h3>插槽（prefix / suffix）</h3>
+              <demo-button-slots></demo-button-slots>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/slots.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
+            </section>
+
+            <section class="doc-demo">
+              <h3>撑满宽度（block）</h3>
+              <demo-button-block></demo-button-block>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/block.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
             </section>
 
             <section class="doc-demo">
               <h3>原生 CSS 精确覆盖</h3>
+              <demo-button-override></demo-button-override>
+              <mc-collapse class="doc-demo-code">
+                <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/override.html"></mc-code></mc-collapse-item>
+              </mc-collapse>
               <p class="doc-hint">
-                组件视觉全部在 <code>:host</code> 上，外部内联样式的优先级天然最高。
+                用原生 <code>style="…"</code> 覆盖；<code>--mc-btn-fill</code> /
+                <code>--mc-btn-accent</code> 是组件的色槽。
               </p>
-              <div class="doc-row">
-                <mc-button style="height: 48px; border-radius: 9999px; padding-inline: 2rem">
-                  胶囊大按钮
-                </mc-button>
-                <mc-button style="border-radius: 4px" size="sm">直角</mc-button>
-                <mc-button style="--mc-btn-fill: 16 185 129; --mc-btn-accent: 16 185 129">换色槽</mc-button>
-              </div>
             </section>
 
-            <h2>其余组件</h2>
-            <p>
-              下面的组件接口已定，实现待做。完整 API 表见
-              <a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md">component-spec.md</a>。
-            </p>
-
-            <table class="doc-table">
-              <thead><tr><th>组件</th><th>标签</th><th>里程碑</th></tr></thead>
-              <tbody>
-                <tr><td>Button</td><td><code>mc-button</code></td><td>已实现</td></tr>
-                <tr><td>Code</td><td><code>mc-code</code></td><td>已实现</td></tr>
-                <tr><td>Icon</td><td><code>mc-icon</code></td><td>M1</td></tr>
-                <tr><td>Card</td><td><code>mc-card</code></td><td>M1</td></tr>
-                <tr><td>Badge</td><td><code>mc-badge</code></td><td>M1</td></tr>
-                <tr><td>Spinner</td><td><code>mc-spinner</code></td><td>M1</td></tr>
-                <tr><td>Input / Textarea</td><td><code>mc-input</code> <code>mc-textarea</code></td><td>M2</td></tr>
-                <tr><td>Checkbox / Radio / Switch</td><td><code>mc-checkbox</code> <code>mc-radio</code> <code>mc-switch</code></td><td>M2</td></tr>
-                <tr><td>Select</td><td><code>mc-select</code> <code>mc-option</code></td><td>M2</td></tr>
-                <tr><td>Alert / Progress / Toast</td><td><code>mc-alert</code> <code>mc-progress</code></td><td>M2</td></tr>
-                <tr><td>Dialog / Dropdown / Tooltip</td><td><code>mc-dialog</code> <code>mc-dropdown</code> <code>mc-tooltip</code></td><td>M3</td></tr>
-                <tr><td>Tabs / Table / Grid</td><td><code>mc-tabs</code> <code>mc-table</code> <code>mc-grid</code></td><td>M3</td></tr>
-              </tbody>
+            <h2>注意事项</h2>
+            <ul>
+              <li>点击就是原生 <code>click</code>（自带 <code>composed</code>，会穿过 shadow 边界冒泡），
+                直接写 <code>on:click</code>，没有自定义事件。</li>
+              <li><code>disabled</code> / <code>loading</code> 时点不动；<code>loading</code> 会显示 spinner 并保留原宽度。</li>
+            </ul>
 
             <nav class="doc-pager">
               <a class="doc-pager-prev" href="#/docs/pages/components.html">← 组件总览</a>

@@ -1,0 +1,27 @@
+<template component>
+  <mc-collapse on:open="onItemOpen($event)" on:close="onItemClose($event)">
+    <mc-collapse-item name="账号" header="账号" open>改邮箱、换手机号。</mc-collapse-item>
+    <mc-collapse-item name="安全" header="安全">两步验证与登录保护。</mc-collapse-item>
+    <mc-collapse-item name="订阅" header="订阅">续费与发票。</mc-collapse-item>
+  </mc-collapse>
+  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{lastAction}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-collapse-events',
+
+      data: {
+        lastAction: '（还没交互）',
+      },
+
+      proto: {
+        onItemOpen(event) {
+          this.lastAction = `${event.data.name} 展开`;
+        },
+        onItemClose(event) {
+          this.lastAction = `${event.data.name} 收起`;
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,17 @@
+<template component>
+  <mc-collapse>
+    <mc-collapse-item header="配送与退换">
+      下单后 48 小时内发货；未拆封的商品 7 天内可退。
+    </mc-collapse-item>
+    <mc-collapse-item header="发票说明" open>
+      电子发票会在发货后发到下单邮箱，需要纸质发票请在下单时备注。
+    </mc-collapse-item>
+    <mc-collapse-item header="保修政策">
+      整机保修 12 个月，人为损坏不在保修范围内。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-basic' });
+  </script>
+</template>

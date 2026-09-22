@@ -207,9 +207,12 @@
     }
   </style>
 
-  <!-- 站点级组件：文档页里的代码块都由它渲染（组件文档见 packages/code/page.html）。
-       外壳只注册一次，页面自己不用再写 <l-m>。 -->
+  <!-- 站点级组件：外壳只注册一次，页面自己不用写 <l-m>。
+       · mc-code     文档页里的代码块（组件文档见 packages/code/page.html）
+       · mc-collapse 演示区的「查看代码」抽屉就是它（作者写在页面里，见 content.css） -->
   <l-m src="../packages/code/code.html"></l-m>
+  <l-m src="../packages/collapse/collapse.html"></l-m>
+  <l-m src="../packages/collapse/collapse-item.html"></l-m>
 
   <header class="doc-top">
     <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>

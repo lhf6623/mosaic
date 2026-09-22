@@ -2,7 +2,8 @@
  * 文档站的站点脚本：把页面里的占位（组件卡片 / 色板 / 计数）渲染出来。
  *
  * 这些渲染留在模块里是有原因的：页面模块的脚本不能相对 import（经 eval 执行），
- * 而这里要读组件登记表。外壳与顶栏在 docs/layout.html，二级菜单在 docs/doc-nav.js。
+ * 而这里要读组件登记表。外壳与顶栏在 docs/layout.html，二级菜单在 docs/doc-nav.js，
+ * 演示区的「查看代码」抽屉是作者写在页面里的 mc-collapse（见 agent/components.md）。
  * 更细的取舍见 agent/components.md。
  */
 

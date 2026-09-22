@@ -1,0 +1,19 @@
+<template component>
+  <mc-code language="javascript" :code="boundSnippet"></mc-code>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-code-binding',
+
+      data: {
+        /*
+         * 例子组件自己的 data。`<mc-code :code="…">` 直接绑它 ——
+         * `:prop` 只对 mc-code 在 attrs 里声明过的键生效（它声明了 code）。
+         */
+        boundSnippet: `// 由例子组件自己的 data 绑定进来
+const bind = (it) => it + ' works';
+console.log(bind('mc-code :code'));`,
+      },
+    });
+  </script>
+</template>

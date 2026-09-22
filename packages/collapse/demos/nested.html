@@ -1,0 +1,15 @@
+<template component>
+  <mc-collapse>
+    <mc-collapse-item header="组件库" open>
+      <mc-collapse>
+        <mc-collapse-item header="基础">Button / Code</mc-collapse-item>
+        <mc-collapse-item header="布局">Collapse / Grid</mc-collapse-item>
+      </mc-collapse>
+    </mc-collapse-item>
+    <mc-collapse-item header="工具链">令牌生成、CSS 构建、本地服务器。</mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-nested' });
+  </script>
+</template>

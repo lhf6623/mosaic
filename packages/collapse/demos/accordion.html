@@ -1,0 +1,17 @@
+<template component>
+  <mc-collapse accordion>
+    <mc-collapse-item header="第一步 · 建令牌" open>
+      先跑 <code>pnpm tokens</code>，生成三层令牌并自检对比度。
+    </mc-collapse-item>
+    <mc-collapse-item header="第二步 · 引运行时">
+      页面里引 <code>mosaic.js</code>，工具类会被注入每个 shadow root。
+    </mc-collapse-item>
+    <mc-collapse-item header="第三步 · 按需引组件">
+      一个组件一条 <code>&lt;l-m&gt;</code>，用到哪个引哪个。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-accordion' });
+  </script>
+</template>

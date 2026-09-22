@@ -4,7 +4,7 @@
 CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
 
 **当前状态：骨架已跑通，组件库待建。**
-令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、参考组件（`mc-button` / `mc-code`）、构建链都已验证；
+令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、参考组件（`mc-button` / `mc-code` / `mc-collapse`）、构建链都已验证；
 运行时引导层和其余组件尚未实现 —— 见 [里程碑 M0](./agent/PLAN.md#五里程碑)。
 
 ---
@@ -104,9 +104,17 @@ packages/
   button/
     button.html        组件本体（源 = 产物，构建不碰它）
     page.html          组件文档页        ← 文档跟着组件走
+    demos/*.html       每个演示一个 ofa 组件文件（活样例与代码面板同一份）
+    test/*.test.mjs    组件自己的冒烟断言
   code/
     code.html          代码展示：语法高亮（可选 CDN 依赖，失败即降级为纯文本）
     page.html          组件文档页
+    demos/ test/
+  collapse/
+    collapse.html      折叠面板容器：外框 / 尺寸 / 互斥
+    collapse-item.html 折叠面板子项：开合骑在原生 details/summary 上
+    page.html          组件文档页
+    demos/ test/
 docs/                  站点级资源
   pages/               站点级页面模块（ofa.js <template page>）
     home.html  guide.html  components.html  specs.html
@@ -123,7 +131,10 @@ tools/
   gen-tokens.mjs       调色板生成 + WCAG 对比度自检
   build-css.mjs        CSS 构建入口（含「缺输入大声失败」守卫）
   serve.mjs            本地静态服务器（零依赖，强制禁缓存）
-tests/smoke.mjs        真浏览器冒烟测试（同时是 M0 验收测试）
+tests/
+  smoke.mjs            冒烟测试入口：站点套件 + 登记表里每个 READY 组件的套件
+  lib/harness.mjs      公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
+  site/*.mjs           跨组件的站点不变量
 uno.config.ts          UnoCSS 配置（纯声明式，含精选工具类子集）
 tsconfig.json          只覆盖 uno.config.ts
 agent/                  规范文档（Markdown）
@@ -214,7 +225,7 @@ o-app
 | 页面 | 二级菜单 |
 |---|---|
 | 首页 / 快速开始 / 设计令牌 / 规范 | 没有 → 单列铺满 |
-| 组件总览 + 每个组件文档页 | `<doc-nav data-source="components">` → 总览 + 5 个分组 + 20 个组件 |
+| 组件总览 + 每个组件文档页 | `<doc-nav data-source="components">` → 总览 + 5 个分组 + 21 个组件 |
 
 好处是外壳不必知道「分区」，也不用替每个页面维护菜单：加一个一级入口 =
 `docs/layout.html` 顶栏加一条；加一个页面的二级菜单 = 在那一页里写。
@@ -293,15 +304,57 @@ packages/color/
 站点级的东西（首页、快速开始、组件总览、规范索引）放在 `docs/`，
 跨所有组件、不属于任何单个 package。
 
-**加一个组件要动两处**：`packages/<name>/` 下的组件本体和文档页，
-再加一条 `docs/components.js` 登记。页面自带的二级菜单、总览卡片、首页的组件区块
-都从登记表渲染，不用手工维护。
+**文档页只写用法**：一页就三块 —— API 表、演示区、注意事项。
+「为什么这么分层、底层用了什么机制」这类说明写在组件文件头的注释和 `agent/` 里，
+不搬进文档页。
+
+**加一个组件要动四处**：`packages/<name>/` 下的组件本体、文档页、`demos/`（每个演示一个
+组件文件）、`test/`（组件自己的断言），再加一条 `docs/components.js` 登记。
+页面自带的二级菜单、总览卡片、首页的组件区块都从登记表渲染，不用手工维护。
 
 未实现的组件也会出现在菜单里（空心圆点，`M2`/`M3` 标记），
 但**不给死链**，点击直接跳到接口规范 —— 这样菜单同时是一份可见的路线图。
 
 > 冒烟测试里有一条断言专门守这个约定：每个已实现组件的
-> `packages/<slug>/index.html` 必须存在、能打开、且引用的站点资产路径没写错。
+> `packages/<slug>/page.html` 必须存在、能打开、且引用的站点资产路径没写错；
+> 每个 READY 组件在 `packages/<slug>/test/` 下还得有自己的套件。
+
+### 演示区：一个例子一个文件
+
+组件文档页里每个演示都是「活样例 + 一份能点开的代码」，而**例子就是 `demos/` 下的一个
+组件文件**：页面写它的标签，`<mc-code src>` 引用同一份文件，抽屉就是作者写的一行
+`<mc-collapse>`。
+
+```html
+<section class="doc-demo">
+  <h3>语义色</h3>
+  <demo-button-colors></demo-button-colors>
+  <mc-collapse class="doc-demo-code">
+    <mc-collapse-item header="查看代码"><mc-code language="html" src="./demos/colors.html"></mc-code></mc-collapse-item>
+  </mc-collapse>
+  <p class="doc-hint">…</p>
+</section>
+```
+
+```html
+<!-- packages/button/demos/colors.html：例子本体，可单独打开、单独测 -->
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button color="primary">主要</mc-button>
+  </div>
+  <script>
+    export default async () => ({ tag: 'demo-button-colors' });
+  </script>
+</template>
+```
+
+- **代码面板和活样例引用同一个文件**：改例子就是改代码面板，没有第二处会漂移；
+  冒烟测试会拉取那个文件，断言**逐字相同**。
+- **例子是组件而不是片段**：里面的 ofa 绑定（`:code="…"`、`on:open="…"`）照常编译。
+  ⚠️ ofa.js 不编译运行时注入的 HTML，所以"片段 + 注入"那条路会让绑定静默失效。
+- 例子的 DOM 在自己的 shadow root 里，页面级的 `.doc-row` 够不着 —— 例子内部用工具类。
+- 抽屉用的是项目自己的折叠面板；相关样式（一条分隔线、muted 标题、`::part`）在
+  `content.css` 的 `.doc-demo-code` 里。
 
 ## 开发
 
@@ -310,15 +363,19 @@ pnpm install
 pnpm tokens        # 生成令牌并自检对比度（不达标退出 1）
 pnpm build         # = tokens && build:css → packages/boot/mosaic.css
 pnpm dev           # 起本地服务器（零依赖，强制禁缓存，端口 8642）
-pnpm test          # 真浏览器冒烟测试（驱动系统 Chrome，61 项断言）
+pnpm test          # 真浏览器冒烟测试：站点套件 + 所有已实现组件（驱动系统 Chrome，117 项断言）
+pnpm test collapse # 只跑某个组件的套件（内环快速反馈）
+pnpm test:site     # 只跑跨组件的站点套件
 pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
 pnpm check:drift   # 重新生成后比对 git diff，防止提交的产物与生成器漂移
 ```
 
 当前实测产物：**34.3 KB raw / 7.1 KB gzip**（其中令牌 12.5 KB raw，370 个工具类）。
 
-运行冒烟测试需要先起服务器（`pnpm dev`），它会驱动本机 Chrome 验证 61 项断言，
-包括「工具类在 shadow root 内生效」「主题切换能穿过 shadow 边界」这些只有真浏览器能回答的问题。
+运行冒烟测试需要先起服务器（`pnpm dev`）。套件分两处：跨组件的站点不变量在
+`tests/site/`，组件自己的断言在 `packages/<slug>/test/`（登记表里 READY 的都该有一个）。
+它驱动本机 Chrome 验证 117 项断言，包括「工具类在 shadow root 内生效」
+「主题切换能穿过 shadow 边界」这些只有真浏览器能回答的问题。
 
 ---
 

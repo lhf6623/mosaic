@@ -1,0 +1,12 @@
+<template component>
+  <mc-collapse>
+    <mc-collapse-item header="可用的那一项">正常开合。</mc-collapse-item>
+    <mc-collapse-item header="已停用的那一项" disabled>
+      这段内容能读，但头部点不动、<kbd>Tab</kbd> 也跳不过来。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-disabled' });
+  </script>
+</template>

@@ -13,6 +13,7 @@
     "dev:css": "node tools/build-css.mjs --watch",
     "dev": "node tools/serve.mjs",
     "test": "node tests/smoke.mjs",
+    "test:site": "node tests/smoke.mjs --site",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
