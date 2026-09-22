@@ -1,18 +1,7 @@
 #!/usr/bin/env node
-/**
- * mosaic — 本地静态服务器（零依赖）
- *
- * 替代 `npx http-server -c-1`：少一个依赖，而且缓存策略由我们完全控制。
- *
- * ⚠️ 为什么必须禁缓存：改完 page.html 或 mosaic.js 之后，如果浏览器继续用旧模块，
- * 表象是「改了没生效」或诡异报错，排查极耗时。这是 ofa.js 社区记录在案的坑。
- *
- * 用法：node tools/serve.mjs [--port 8642] [--inject]
- *
- *   --inject  模拟 VS Code Live Server 的 HTML 注入（见下方）。给冒烟测试用：
- *             页面模块一旦被注入的脚本抢走「第一个 <script>」就会加载失败，
- *             这条路径必须被测到，否则很容易在改动注释或模板结构时静默回归。
- */
+/* mosaic — 本地静态服务器（零依赖）。必须禁缓存：浏览器用旧模块时表象是「改了没生效」，极难排查。
+ * 用法：node tools/serve.mjs [--port 8642] [--prefix /mosaic] [--inject]
+ * --prefix 复现 GitHub Pages 子路径；--inject 模拟 Live Server 注入（见下），给冒烟测试用。 */
 
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -24,23 +13,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const portArg = process.argv.indexOf('--port');
 const PORT = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT || 8642);
 
-/**
- * 部署前缀：GitHub Pages 的项目页挂在 `/<repo>/` 下（本站是 `/mosaic/`）。
- * `node tools/serve.mjs --prefix /mosaic` → 从 `http://127.0.0.1:8642/mosaic/` 访问。
- * 用来在本地复现线上的子路径行为 —— 站内链接、菜单高亮在两种前缀下都必须对得上。
- */
+/* 部署前缀：GitHub Pages 项目页挂在 `/<repo>/` 下。`--prefix /mosaic` 用来在本地复现
+ * 线上子路径行为 —— 站内链接、菜单高亮在两种前缀下都必须对得上。 */
 const prefixArg = process.argv.indexOf('--prefix');
 const PREFIX = (prefixArg > -1 ? process.argv[prefixArg + 1] : '').replace(/\/+$/, '');
 
-/**
- * 模拟 Live Server 的注入。
- *
- * 规则照抄它的实现（live-server/index.js）：
- *   注入点依次找 </body> → </svg> → </head>，取响应里第一个命中的位置。
- *
- * 注意注入内容**自带一个 HTML 注释** —— 这不是凑数，正是它把目标文件的注释
- * 提前闭合、让注入的 script 变成真实元素的。漏掉这个细节就复现不出那个 bug。
- */
+/* 模拟 Live Server 注入（规则照抄 live-server/index.js）：注入点依次找 </body> → </svg> → </head>，
+ * 取第一个命中处。注入内容自带 HTML 注释，会把目标文件的注释提前闭合 —— 少了它，注入的 script
+ * 就会抢走页面模块的「第一个 <script>」而加载失败，正是冒烟测试要覆盖的那条路径。 */
 const INJECT = process.argv.includes('--inject');
 const INJECTED =
   '<!-- Code injected by live-server -->\n' +

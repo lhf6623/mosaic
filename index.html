@@ -10,13 +10,13 @@
       content="基于 ofa.js 的免安装、免构建 Web Components UI 框架。UnoCSS 原子化 + 三层 CSS 变量令牌。"
     />
 
-    <!-- 首帧主题：head 里的同步经典脚本，防闪色 -->
+    <!-- 首帧主题（head 里的同步脚本，防闪色） -->
     <script src="./docs/theme-boot.js"></script>
 
     <link rel="stylesheet" href="./packages/boot/mosaic.css" />
     <link rel="stylesheet" href="./docs/shell.css" />
 
-    <!-- ofa.js 必须排在 mosaic.js 前面：模块按文档顺序执行 -->
+    <!-- ofa.js 必须在 mosaic.js 之前：模块按文档顺序执行 -->
     <script
       src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
       type="module"

@@ -11,16 +11,8 @@
       else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
     };
 
-    /*
-     * 取「相对仓库根」的路由路径：hash 形式、文件形式都吃，并去掉部署前缀。
-     *
-     * ⚠️ ofa 的 hash 是按**相对域名根**解析的：开发时是 `#/docs/pages/home.html`，
-     * GitHub Pages 项目页是 `#/mosaic/docs/pages/home.html`；而页面 `src` 给的是
-     * pathname（`/mosaic/docs/pages/home.html`）。两边不归一成同一个坐标系，顶栏
-     * 高亮在子路径部署下就永远匹配不上（线上实测：打开首页空高亮、设计令牌页亮成
-     * 「组件」）。页面模块不能 import，这份逻辑与 docs/routes.js 的 toRepoPath 相同，
-     * 只是各写一份。
-     */
+    /* hash / pathname → 仓库根相对路径（同 routes.js 的 toRepoPath，页面模块不能 import）。
+     * ⚠️ 不归一到同一坐标系，子路径部署下顶栏高亮永远匹配不上（ofa 的 hash 按域名根解析）。 */
     const SITE_ROOT = new URL('.', document.baseURI).pathname; // '/' 或 '/mosaic/'
     const pathOf = (url) => {
       const u = new URL(url, location.href);
@@ -141,7 +133,6 @@
       background-color: rgb(var(--mc-color-surface));
     }
 
-    /* 窄屏放不下时自己横滚，不把顶栏撑破 */
     .doc-top-nav {
       display: flex;
       align-items: center;
@@ -220,9 +211,7 @@
     }
   </style>
 
-  <!-- 站点级组件：外壳只注册一次，页面自己不用写 <l-m>。
-       · mc-code     文档页里的代码块（组件文档见 packages/code/page.html）
-       · mc-collapse 演示区的「查看代码」抽屉就是它（作者写在页面里，见 content.css） -->
+  <!-- 站点级组件：外壳只注册一次，页面不用自己写 <l-m>；mc-collapse 就是演示区的「查看代码」抽屉 -->
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>

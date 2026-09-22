@@ -4,9 +4,7 @@
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
     <div class="doc-body">
-      <!-- 每个例子的唯一真相是 demos/*.html（ofa 组件，可单独打开、单独测）；
-                 下面代码面板里的 mc-code 直接引用同一个文件，不抄第二份。
-                 mc-collapse / mc-collapse-item / mc-code 是站点级依赖（docs/layout.html 注册）。 -->
+      <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
       <l-m src="./demos/basic.html"></l-m>
       <l-m src="./demos/accordion.html"></l-m>
       <l-m src="./demos/size.html"></l-m>
@@ -265,11 +263,7 @@
     </div>
   </div>
   <script>
-    /*
-     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
-     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
-     * packages/<slug>/ 下是 '../../docs/layout.html'。
-     */
+    // 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>；相对本页面文件解析
     export const parent = '../../docs/layout.html';
 
     export default () => ({ data: {} });

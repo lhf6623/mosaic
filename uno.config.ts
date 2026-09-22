@@ -1,40 +1,13 @@
 import { defineConfig, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss';
 
-/**
- * Mosaic — UnoCSS 配置
- *
- * 三条硬性约束，改动前请先读 agent/PLAN.md 的「D3 / D4」：
- *
- *  1. 用 presetWind3，不用 presetWind4。
- *     - wind3 的 theme 色支持 `<alpha-value>` 占位符，wind4 不支持，
- *       写了会产出 `rgb(var(--x) / <alpha-value>)` 这种非法 CSS 而静默失效。
- *     - wind4 自带 Tailwind4 整页 reset，`<link>` 出去会重置宿主页面。
- *
- *  2. 必须开启 outputToCssLayers。
- *     MDN 明确：adoptedStyleSheets 在 shadow root 内排在组件自身 `<style>` **之后**，
- *     也就是优先级更高。只有把工具类放进 @layer，组件自己的样式才能稳定覆盖它。
- *
- *  3. 颜色只能走语义令牌。
- *     组件里禁止出现 `bg-primary-500` 这类原始色阶，由下面的 blocklist 拦截。
- *
- * 本文件保持**纯声明式**：不引任何 node: 内置模块、不做文件系统 I/O、不调 process.exit。
- * 构建输入的校验放在 tools/build-css.mjs —— 顺带避开给一个纯 JS 项目强加 @types/node 依赖。
+/*
+ * Mosaic — UnoCSS 配置。三条硬约束（改动前先读 agent/PLAN.md 的 D3 / D4）：用 presetWind3 而非
+ * wind4（wind4 的 theme 色不支持 <alpha-value>，会产出非法 CSS 且静默失效，还自带整页 reset）、
+ * 必须开 outputToCssLayers（②）、颜色只走语义令牌。本文件纯声明式，输入校验收在 tools/build-css.mjs。
  */
 
-/* ------------------------------------------------------------------ *
- * 精选工具类子集
- *
- * 这是「预编译原子 CSS」这个模式的核心矛盾：我们能编译的只有已知的类名，
- * 而使用者在自己的页面里会写什么是未知的。
- *
- * 三条出路，我们选了第 1 条：
- *   1. 预编译一份「精选子集」——覆盖布局/间距/排版/语义色，体积可控
- *   2. 全量输出 presetWind3 —— 1 MB 级别的产物，不可接受
- *   3. 让使用者自己跑 UnoCSS —— 那就违背了"免构建"的立项前提
- *
- * 代价必须说清楚：这份子集之外的类名（例如 mt-7、bg-gradient-to-r）不会存在，
- * 使用者需要时得自己写 CSS。所以子集要覆盖"搭界面时 90% 会用到的东西"。
- * ------------------------------------------------------------------ */
+/* ---------- 精选工具类子集：只能预编译已知类名，故取覆盖布局/间距/排版/语义色的子集。
+ * 代价说清楚：子集之外的类名（mt-7、bg-gradient-to-r）不存在，使用者需要时得自己写 CSS。 ---------- */
 
 const SPACING = ['0', '1', '2', '3', '4', '5', '6', '8', '10', '12'];
 const SIDES = ['', 'x', 'y', 't', 'r', 'b', 'l'];
@@ -192,16 +165,8 @@ const LAYOUT = [
   'ring-4',
 ];
 
-/**
- * 响应式变体：只放"做页面骨架"真正会用到的十几个。
- *
- * 为什么不全放：`{断点} × {工具类}` 是组合爆炸（5 个断点 × 350 个类 = 1750 条），
- * 而实际布局里 90% 的响应式需求就是「窄屏堆叠 / 宽屏并列」和「窄屏隐藏」。
- * 这几条覆盖了它们。
- *
- * 组件内部**不要**用这些断点类：组件不知道自己会被放进多宽的容器里，
- * 应该用容器查询（@container），见 agent/design-spec.md「四、响应式」。
- */
+/** 响应式变体只放骨架会用到的十几个：{断点}×{工具类} 组合爆炸，而 90% 需求就是窄屏堆叠 / 隐藏。
+ *  组件内部不要用断点类（不知道自己会被放进多宽的容器），用容器查询，见 agent/design-spec.md。 */
 const RESPONSIVE = ['md', 'lg'].flatMap((bp) =>
   [
     'block',
@@ -266,26 +231,19 @@ const status = (family: string): Record<string, string> => ({
 export default defineConfig({
   presets: [
     presetWind3({
-      // 'on-demand'：只输出真正用到的 --un-* 变量，不往宿主页面每个元素上挂 50 个属性。
-      // wind3 的 preflight 本来就不含元素级 reset，对组件库是安全的。
+      // 'on-demand' 只输出用到的 --un-* 变量；wind3 preflight 本来就不含元素级 reset，对组件库安全
       preflight: 'on-demand',
-      // 组件在 shadow DOM 里，`dark:` 变体（依赖祖先类）永远不命中；
-      // media 至少是可用的。Mosaic 自己的主题切换一律走令牌，不用 dark:。
+      // 组件在 shadow DOM 里，`dark:`（依赖祖先类）永远不命中，只能设 media；主题切换一律走令牌
       dark: 'media',
     }),
   ],
 
-  // @apply / @screen 只在 .css 文件里生效（UnoCSS 的 idFilter 只认 css 类扩展名），
-  // 写在 .html 的 <style> 里会被原样留下 —— 这是实测结论，别踩。
+  // @apply / @screen 只在 .css 文件里生效（UnoCSS 的 idFilter 只认 css 扩展名），写在 .html 的 <style> 里会被原样留下
   transformers: [transformerDirectives(), transformerVariantGroup()],
 
   theme: {
-    /**
-     * 只覆盖颜色和字体。间距 / 圆角 / 字号刻意复用 UnoCSS 默认标度，
-     * 因为 tokens.css 里的 --mc-space-* / --mc-radius-* / --mc-text-*
-     * 就是按同一套数值生成的（p-4 === --mc-space-4 === 1rem），两边天然对齐。
-     * 重映射成 var() 反而会让 p-7、w-1/2 这类非标度值消失，得不偿失。
-     */
+    /** 只覆盖颜色和字体。间距/圆角/字号复用 UnoCSS 默认标度 —— tokens.css 的 --mc-space-* 等本就按
+     *  同一套数值生成（p-4 === --mc-space-4 === 1rem）；重映射成 var() 反而会让 p-7 这类值消失。 */
     colors: {
       inherit: 'inherit',
       current: 'currentColor',
@@ -324,8 +282,7 @@ export default defineConfig({
   },
 
   shortcuts: [
-    // 组件内部只把「布局」原子化，「颜色」全部走令牌 —— 见 agent/components.md。
-    // 变体由 :host([variant=...]) 选择器驱动，不拼类名。
+    // 组件内部只把「布局」原子化，「颜色」全走令牌；变体由 :host([variant=...]) 选择器驱动，不拼类名
     [
       'mc-focus-ring',
       'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
@@ -334,12 +291,8 @@ export default defineConfig({
     ['mc-center', 'flex items-center justify-center'],
   ],
 
-  /**
-   * 组件模板里的工具类是字面量（变体由 :host([attr]) 驱动，不拼类名），
-   * 所以能静态扫到，本来不需要 safelist。
-   * 这里存在的唯一理由是：把「使用者会写、但我们组件里没用到」的原子类补进来。
-   * 详见文件顶部「精选工具类子集」。
-   */
+  /** 组件模板里的工具类是字面量，本不需要 safelist；这里只把「使用者会写、组件里没用到」的类补进来。
+   *  见文件顶部「精选工具类子集」。 */
   safelist: [
     ...CURATED_SAFELIST,
     // 兜底表达式形式的类
@@ -348,11 +301,7 @@ export default defineConfig({
     'mc-center',
   ],
 
-  /**
-   * 禁止在组件里直接引用原始色阶。
-   * 目的不是洁癖：原始色阶不随主题切换（暗色下 bg-primary-600 在深底上对比度不够），
-   * 用了就一定会在某个主题下出可读性问题。
-   */
+  /** 禁止组件直接引用原始色阶：它不随主题切换（暗色下 bg-primary-600 对比度不够），必然在某个主题出问题 */
   blocklist: [
     [
       /-(neutral|primary|info|success|warning|danger)-\d+/,
@@ -367,12 +316,8 @@ export default defineConfig({
     default: 1,
   },
 
-  /**
-   * 产出原生 @layer。tokens.css 自己声明了 @layer mosaic.tokens，
-   * 由于它被 CLI 拼在产物最前面，层顺序天然是：
-   *   mosaic.tokens  <  mosaic.preflights  <  mosaic.utilities  <  mosaic.components
-   * 于是「宿主页面未分层的覆盖」和「组件自身的 <style>」都必定赢过工具类。
-   */
+  /** 必须开（见文件头 ②）：产出原生 @layer，tokens.css 声明在前，层顺序天然是
+   *  mosaic.tokens < preflights < utilities < components，于是宿主未分层覆盖和组件 <style> 都赢过工具类。 */
   outputToCssLayers: {
     cssLayerName: (layer) => {
       if (layer === 'default') return 'mosaic.utilities';
@@ -385,16 +330,10 @@ export default defineConfig({
   cli: {
     entry: [
       {
-        // tokens.css 在前、组件模板在后 → 令牌铺底，工具类随后。
-        // 刻意不包含 shadow-base.css：那份 reset 只能注入 shadow root，
-        // 绝不能 <link> 到宿主页面，所以它不进这个产物，由 mosaic.js 在运行时单独取用。
-        // 排除 packages/*/page.html —— 那是**文档页**（ofa.js 页面模块），不是组件模板。
-        // 不排除的话，文档排版里用到的工具类（mt-3、mb-3 …）会被扫进框架产物，
-        // 让「精选子集」的体积跟着文档写作风格浮动。
-        // 注意：默认提取器扫的是**整个文件**，组件 `<script>` 里的 JS 标识符
-        // （indent / px / py / m-0 实测都中过）会被当成类名白产出规则。
-        // 组件侧用 /* @unocss-skip-start */ … /* @unocss-skip-end */ 包住 script 段
-        // 即可（packages/code/code.html 是例子），不需要在这里开例外。
+        // tokens.css 在前、组件模板在后 → 令牌铺底、工具类随后。刻意不含 shadow-base.css（那份 reset 只能
+        // 进 shadow root，由 mosaic.js 运行时取用）；排除 packages/*/page.html（那是文档页，不是组件模板，
+        // 否则文档排版用的工具类会被扫进框架产物）。默认提取器扫整个文件，组件 <script> 里的 JS 标识符会被
+        // 当类名，用 /* @unocss-skip-start */ … /* @unocss-skip-end */ 包住 script 段即可。
         patterns: ['packages/color/tokens.css', 'packages/**/*.html', '!packages/*/page.html'],
         outFile: 'packages/boot/mosaic.css',
       },

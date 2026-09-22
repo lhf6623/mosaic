@@ -1,20 +1,8 @@
 #!/usr/bin/env node
-/**
- * Mosaic 设计令牌生成器
- *
- * 为什么要有这个脚本：调色板不是手写的，而是从 OKLCH 感知均匀色空间算出来的。
- * 手写 hex 色阶的常见问题是「500→600 视觉跳变不均匀」「深色档位发灰发脏」，
- * 而且换品牌色时要重新手调 60 个值。这里只改 HUES / RAMPS，其余全部推导。
- *
- * 产出：
- *   packages/color/tokens.css —— 三层令牌（原始色阶 / 语义 / 组件）
- *   终端报告                  —— WCAG 对比度自检，不达标直接 exit 1
- *
- * 分发走 jsDelivr /gh/，仓库即产物，所以这份生成物是**提交进仓库**的（见 agent/PLAN.md D1）。
- * CI 用 --check 重新生成后比对 git diff，防止提交的令牌与生成器漂移。
- *
- * 用法：node tools/gen-tokens.mjs [--check]
- *   --check  只校验对比度，不写文件（给 CI 用）
+/*
+ * Mosaic 设计令牌生成器：调色板由 OKLCH 算出，只改 HUES / RAMPS，其余全部推导。
+ * 产出 packages/color/tokens.css（生成物提交进仓库，分发走 jsDelivr /gh/）并做 WCAG 对比度自检，不达标 exit 1。
+ * 用法：node tools/gen-tokens.mjs [--check]（--check 只自检不写文件，给 CI 用）
  */
 
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -25,15 +13,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'packages/color/tokens.css');
 const CHECK_ONLY = process.argv.includes('--check');
 
-/* ------------------------------------------------------------------ *
- * 1. 色空间：OKLCH -> 线性 sRGB -> sRGB
- *    OKLab 是感知均匀的，用它生成色阶可以保证「相邻档位的视觉步长一致」。
- * ------------------------------------------------------------------ */
+/* ---------- 1. 色空间：OKLCH -> 线性 sRGB -> sRGB（OKLab 感知均匀，相邻档视觉步长一致） ---------- */
 
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
-// Ottosson 的 OKLab -> 线性 sRGB 合成矩阵。每行系数之和必须为 1
-// （a=b=0 时必须得到中性灰）。漏掉中间 XYZ 那一步会让整条色阶偏色。
+// Ottosson 的 OKLab -> 线性 sRGB 合成矩阵，每行系数和为 1（a=b=0 得中性灰），漏掉中间 XYZ 会让整条色阶偏色
 function oklabToLinearSrgb(L, a, b) {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
@@ -84,9 +68,7 @@ const toHex = (rgb) =>
 /** 令牌里存的是 sRGB 通道三元组（"R G B"），配合 rgb(var(--x) / <alpha-value>) 支持透明度 */
 const toChannels = (rgb) => rgb.map((c) => Math.round(c * 255)).join(' ');
 
-/* ------------------------------------------------------------------ *
- * 2. WCAG 对比度
- * ------------------------------------------------------------------ */
+/* ---------- 2. WCAG 对比度 ---------- */
 
 function relativeLuminance(rgb) {
   const [r, g, b] = rgb.map(srgbToLinear);
@@ -98,9 +80,7 @@ function contrast(rgb1, rgb2) {
   return (a + 0.05) / (b + 0.05);
 }
 
-/* ------------------------------------------------------------------ *
- * 3. 色阶参数
- * ------------------------------------------------------------------ */
+/* ---------- 3. 色阶参数 ---------- */
 
 const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
@@ -134,12 +114,9 @@ const C_CURVE = {
   950: 0.44,
 };
 
-/**
- * 六个色族。hue 用 OKLCH 色相角，cmax 是该色相在 sRGB 里能达到的合理彩度上限。
- * 想换品牌色：只改 primary.hue，重跑即可。
- */
+/** 六个色族：hue 是 OKLCH 色相角，cmax 是该色相在 sRGB 里的彩度上限。换品牌色只改 primary.hue 重跑 */
 const HUES = {
-  neutral: { hue: 258, cmax: 0.032 }, // 微冷灰，和 primary 同色相 → 界面更"整"
+  neutral: { hue: 258, cmax: 0.032 }, // 微冷灰，与 primary 同色相 → 界面更"整"
   primary: { hue: 288, cmax: 0.235 }, // Mosaic 品牌色：紫罗兰，避开满地蓝
   info: { hue: 248, cmax: 0.198 },
   success: { hue: 152, cmax: 0.185 },
@@ -156,31 +133,16 @@ for (const [name, { hue, cmax }] of Object.entries(HUES)) {
   }
 }
 
-/* ------------------------------------------------------------------ *
- * 4. 语义层：组件只能引用这一层
- * ------------------------------------------------------------------ */
+/* ---------- 4. 语义层：组件只能引用这一层 ---------- */
 
-/**
- * 语义令牌引用原始色阶。
- *
- * 注意这里**不加 rgb() 包装** —— 整条链上的颜色令牌（L1 和 L2）存的都是
- * 「R G B 通道三元组」这样一个不变量。消费者负责包：
- *
- *     color:  rgb(var(--mc-color-fg-muted));
- *     color:  rgb(var(--mc-color-fg-muted) / 0.5);
- *
- * 为什么必须这样：UnoCSS 的 theme 会把值拼成 `rgb(var(--x) / <alpha-value>)`。
- * 如果这里存的是完整颜色，就会拼出 `rgb(rgb(101 113 131) / 1)` 这种非法 CSS，
- * 整条声明在计算值阶段被丢弃 —— 表现为"类名在、规则在、就是不生效"，极难排查。
- */
+/* 语义令牌引用原始色阶。颜色令牌一律存「R G B 通道三元组」、不加 rgb() 包装：UnoCSS 会拼成
+ * `rgb(var(--x) / <alpha-value>)`，存完整颜色就拼出 `rgb(rgb(...) / 1)` 非法 CSS，整条声明被
+ * 计算阶段丢弃 —— 表现为"类名在、规则在、就是不生效"，极难排查。 */
 const ref = (family, step) => `var(--mc-${family}-${step})`;
 
 const THEMES = {
-  // 每个色族只保留一个档位，且必须同时满足两件事：
-  //   ① 作为实心填充时，--mc-color-<family>-fg 落在它上面 ≥ 4.5:1
-  //   ② 作为文字落在中性底（surface）上时 ≥ 4.5:1
-  // 因此 bg-primary / text-primary / border-primary 可以无脑使用同一个令牌。
-  // 档位由下面的对比度自检强制保证，改色相后如果不再达标会直接构建失败。
+  // 每个色族只留一个档位，且必须同时满足：① 实心填充上的 -fg ≥ 4.5:1；② 作为文字落在 surface 上 ≥ 4.5:1。
+  // 所以 bg/text/border-<family> 可以无脑用同一个令牌；下面的自检强制保证，改色相不达标会构建失败。
   light: {
     'color-bg': ref('neutral', 50),
     'color-surface': '255 255 255',
@@ -195,9 +157,7 @@ const THEMES = {
     'color-ring': ref('primary', 500),
     'color-overlay': '15 18 30',
 
-    // 中性表面：只用作「次要按钮的填充底色」，不是强调色。
-    // 它不可能同时胜任填充和文字两个角色（填充要浅、文字要深），
-    // 所以单独给它一套，文字用 --mc-color-neutral-fg，强调色用 --mc-color-fg-muted。
+    // 中性表面只作「次要按钮的填充底色」：它无法同时胜任填充和文字两个角色（填充要浅、文字要深），所以单独一套
     'color-neutral': ref('neutral', 200),
     'color-neutral-fg': ref('neutral', 900),
     'color-overlay-alpha': '0.45',
@@ -214,8 +174,7 @@ const THEMES = {
     'color-info-subtle': ref('info', 50),
     'color-info-fg': '255 255 255',
 
-    // success 是个特例：600 档当文字放白底上只有 3.3:1，作为绿色又很难再压深，
-    // 所以整体下移一档到 700，填充和文字两个角色就都达标了。
+    // success 特例：600 当文字放白底只有 3.3:1，绿色又难再压深，整体下移一档到 700 两个角色才都达标
     'color-success': ref('success', 700),
     'color-success-hover': ref('success', 800),
     'color-success-active': ref('success', 900),
@@ -251,8 +210,7 @@ const THEMES = {
     'color-neutral-fg': ref('neutral', 50),
     'color-overlay-alpha': '0.65',
 
-    // 深色主题下统一改用浅色填充 + 近黑文字：既满足 AA，
-    // 也避免"深底上再放一个深色按钮"导致层级塌陷。
+    // 深色主题统一浅色填充 + 近黑文字：满足 AA，也避免「深底上再放深色按钮」导致层级塌陷
     'color-primary': ref('primary', 300),
     'color-primary-hover': ref('primary', 200),
     'color-primary-active': ref('primary', 100),
@@ -354,9 +312,7 @@ const SCALARS = {
   'z-tooltip': '1600',
 };
 
-/* ------------------------------------------------------------------ *
- * 5. 自检：对比度
- * ------------------------------------------------------------------ */
+/* ---------- 5. 自检：对比度 ---------- */
 
 const hexOf = (family, step) => PALETTE[family][step].rgb;
 
@@ -369,10 +325,9 @@ const hexToRgb = (hex) => {
 function resolveValue(expr, theme) {
   if (expr === '255 255 255') return [1, 1, 1];
   if (expr === '4 6 12') return hexToRgb('#04060c');
-  // L2 现在的写法是裸的 `var(--mc-<family>-<step>)`（通道三元组由消费者自己包 rgb()）。
-  // 这里必须跟着改：早期版本匹配的是 `rgb(var(…))`，L2 去掉 rgb() 包装之后
-  // 正则再也匹配不上，所有规则被下面的 `continue` 静默跳过 —— 自检变成空转。
-  // 兼容旧写法，两种都收。
+  /* 把语义令牌的表达式解析回 rgb 算对比度。L2 现在写裸的 `var(--mc-<family>-<step>)`（通道三元组
+   * 由消费者包 rgb()），必须跟着改：早期匹配 `rgb(var(…))`，去掉包装后正则再也匹配不上，所有
+   * 规则被下面的 continue 静默跳过 —— 自检变空转。这里两种写法都收。 */
   const m = /^(?:rgb\()?var\(--mc-([a-z]+)-(\d+)\)\)?$/.exec(expr);
   if (!m) return null;
   const [, family, step] = m;
@@ -407,9 +362,7 @@ for (const [themeName, tokens] of Object.entries(THEMES)) {
   }
 }
 
-/* ------------------------------------------------------------------ *
- * 6. 生成 CSS
- * ------------------------------------------------------------------ */
+/* ---------- 6. 生成 CSS ---------- */
 
 const lines = [];
 const push = (...s) => lines.push(...s);
@@ -515,9 +468,7 @@ push(
 
 const css = lines.join('\n');
 
-/* ------------------------------------------------------------------ *
- * 7. 报告
- * ------------------------------------------------------------------ */
+/* ---------- 7. 报告 ---------- */
 
 const pad = (s, n) => String(s).padEnd(n, ' ');
 console.log('\n\x1b[1mMosaic 调色板\x1b[0m  (OKLCH hue 生成 → sRGB 通道)\n');

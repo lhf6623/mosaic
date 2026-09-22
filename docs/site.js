@@ -1,11 +1,5 @@
-/**
- * 文档站的站点脚本：把页面里的占位（组件卡片 / 色板 / 计数）渲染出来。
- *
- * 这些渲染留在模块里是有原因的：页面模块的脚本不能相对 import（经 eval 执行），
- * 而这里要读组件登记表。外壳与顶栏在 docs/layout.html，二级菜单在 docs/doc-nav.js，
- * 演示区的「查看代码」抽屉是作者写在页面里的 mc-collapse（见 agent/components.md）。
- * 更细的取舍见 agent/components.md。
- */
+/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数）。
+ * 页面模块的脚本不能相对 import，所以读登记表的渲染留在这里（详见 agent/components.md）。 */
 
 import { GROUPS, ALL, pageOf } from './components.js';
 import { route, hashOf } from './routes.js';
@@ -35,9 +29,7 @@ function deepQuery(selector) {
   return hits;
 }
 
-/* ------------------------------------------------------------------ *
- * 色板：直接解析 packages/color/tokens.css，色值不抄第二份
- * ------------------------------------------------------------------ */
+/* ---------- 色板：直接解析 packages/color/tokens.css，色值不抄第二份 ---------- */
 
 const LAYOUT_ORDER = ['neutral', 'primary', 'info', 'success', 'warning', 'danger'];
 
@@ -103,12 +95,10 @@ async function renderPaletteInto(host) {
   }
 }
 
-/* ------------------------------------------------------------------ *
- * 组件卡片（总览页与首页里的 [data-component-cards]）
- * ------------------------------------------------------------------ */
+/* ---------- 组件卡片（总览页与首页里的 [data-component-cards]） ---------- */
 
 function renderCardsInto(host) {
-  const only = host.dataset.componentCards; // 'ready' | 'planned' | 'all'
+  const only = host.dataset.componentCards;
   const groups =
     only && only !== 'all'
       ? GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.status === only) })).filter(
@@ -176,9 +166,7 @@ function renderPagePlaceholders() {
   }
 }
 
-/* ------------------------------------------------------------------ *
- * 路由变化：页面异步挂上，用有上限的轮询等它到齐
- * ------------------------------------------------------------------ */
+/* ---------- 路由变化：页面异步挂上，用有上限的轮询等它到齐 ---------- */
 
 const RENDER_POLL_MS = 100;
 const RENDER_POLL_TRIES = 50; // 约 5 秒，足够覆盖慢速 CDN
@@ -215,9 +203,7 @@ function scheduleRender() {
   pollTimer = setInterval(tick, RENDER_POLL_MS);
 }
 
-/* ------------------------------------------------------------------ *
- * 启动
- * ------------------------------------------------------------------ */
+/* ---------- 启动 ---------- */
 
 defineDocNav();
 scheduleRender();

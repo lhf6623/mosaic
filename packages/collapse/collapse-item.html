@@ -1,36 +1,21 @@
 <!--
   mc-collapse-item — 折叠面板的子项（配合 mc-collapse 使用）
 
-  直接骑在原生 <details>/<summary> 上 —— 和文档站那个「查看代码」抽屉是同一个机制：
-  开合、键盘（Enter / Space）、焦点、以及"收起时内容对读屏和 Tab 都不可达"全是浏览器给的。
-  也正因为它不做高度过渡（原生就是瞬时开合），天然满足 design-spec 第六节那条
-  「高度过渡类组件默认 transition-duration 必须 0s」—— 这里只让 chevron 转一下。
-
-  三条主线，先记住再读代码：
-
-  1. **状态只有一个：宿主上的 `open` 属性**（存在即展开）。
-     它既是初始值也是运行时状态 —— 用户按下去、JS 赋值、容器做互斥，最后都落在同一个
-     属性上，所以 `el.open` / `[open]` 选择器 / open-close 事件三者永远说的是同一件事。
-
-  2. **`<details>.open` 是内部实现细节**，跟着宿主属性走（模板里的 `:open="open !== null"`）；
-     原生的 toggle 再把结果反射回宿主属性，形成闭环。
-
-  3. **disabled 没有原生对应物**（`<details>` 不能禁用），用三件套堵住两条路：
-     `aria-disabled`（读屏）+ `tabindex="-1"`（键盘进不来）+ 头部 `pointer-events: none`（鼠标点不动）。
+  骑在原生 <details>/<summary> 上：开合、键盘、焦点、收起时内容不可达都是浏览器给的。
+  三条约定：状态只有宿主上的 open 属性；<details>.open 是内部实现，跟着属性走；
+  disabled 用 aria-disabled + tabindex=-1 + 头部 pointer-events:none 三件套堵住两条路。
 -->
 <template component>
   <style>
-    /* ---------- 1. 宿主盒模型 ----------
-       尺寸由容器通过 --mc-collapse-* 广播下来（见 collapse.html）。
-       ⚠️ 这些变量**不能**在这里写默认值 —— 在 :host 上定义会盖掉从容器继承来的值，
-       于是容器上的 size 永远不生效（这就是两个 shadow root 之间唯一的尺寸通道）。 */
+    /* 1. 宿主盒模型。尺寸由容器通过 --mc-collapse-* 继承下来 —— */
+    /* ⚠️ 这些变量不能在这里写默认值，否则会盖掉容器继承来的值，size 永远不生效。 */
     :host {
       display: block;
       font-family: var(--mc-font-sans);
       color: rgb(var(--mc-color-fg));
     }
 
-    /* ---------- 2. 头部 = 原生 <summary> ---------- */
+    /* 2. 头部 = 原生 <summary> */
     .mc-header {
       box-sizing: border-box;
       height: var(--mc-collapse-header-h, var(--mc-control-h-md));
@@ -39,8 +24,7 @@
       font-weight: var(--mc-weight-medium);
       cursor: pointer;
       user-select: none;
-      /* 去掉原生三角，用自己的 chevron（下面那条是给老 Safari 的） */
-      list-style: none;
+      list-style: none; /* 用自己的 chevron；下面那条给老 Safari */
     }
     .mc-header::-webkit-details-marker {
       display: none;
@@ -48,13 +32,12 @@
     .mc-header:hover {
       background-color: rgb(var(--mc-color-surface-sunken));
     }
-    /* 焦点环画在内部元素上，用 ring 令牌而不是 currentColor（P16） */
     .mc-header:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring)); /* ring 令牌，不用 currentColor（P16） */
       outline-offset: -2px;
     }
 
-    /* ---------- 3. 内容 ---------- */
+    /* 3. 内容 */
     .mc-body {
       padding: 0 var(--mc-collapse-pad-x, var(--mc-space-4))
         var(--mc-collapse-body-pad, var(--mc-space-4));
@@ -62,18 +45,16 @@
       color: rgb(var(--mc-color-fg-muted));
     }
 
-    /* ---------- 4. 状态 ---------- */
-    /* 光标留在宿主上：宿主写 pointer-events: none 会连 cursor 一起失效（见 components.md 第四节） */
+    /* 4. 状态。光标留在宿主上（宿主写 pointer-events:none 会连 cursor 一起失效） */
     :host([disabled]) {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    /* 不吃指针事件 —— 鼠标这条路堵死；键盘那条由 JS 的 tabindex / click 拦截兜住 */
     :host([disabled]) .mc-header {
-      pointer-events: none;
+      pointer-events: none; /* 鼠标堵死；键盘由 tabindex / click 拦截兜住 */
     }
 
-    /* ---------- 5. chevron：只动 transform ---------- */
+    /* 5. chevron：只动 transform */
     .mc-chevron {
       flex: none;
       box-sizing: border-box;
@@ -82,11 +63,11 @@
       border-right: 2px solid currentColor;
       border-bottom: 2px solid currentColor;
       color: rgb(var(--mc-color-fg-subtle));
-      transform: rotate(-45deg); /* 收起：▸ */
+      transform: rotate(-45deg); /* 收起 ▸ */
       transition: transform var(--mc-duration-base) var(--mc-ease-standard);
     }
     :host([open]) .mc-chevron {
-      transform: rotate(45deg); /* 展开：▾ */
+      transform: rotate(45deg); /* 展开 ▾ */
     }
   </style>
 
@@ -103,29 +84,20 @@
       tag: 'mc-collapse-item',
 
       attrs: {
-        /*
-         * 头部文案。叫 header 而不是 title：`title` 是全局 HTML 属性，
-         * 写在宿主上浏览器会在悬停时弹一个原生 tooltip（P32 还会把它反射出来）。
-         * 富内容走同名插槽 `<span slot="header">`，用法见 collapse/page.html。
-         */
+        // 头部文案，富内容走同名插槽。叫 header 不叫 title —— title 会弹原生 tooltip（P32）
         header: '',
-        // 事件的 $event.data.name 用它；容器按名字找子项时也用它
+        // 事件 $event.data.name 用它
         name: '',
-        // 布尔属性默认值必须是 null，不能是 false（P1）。open 既是初始值也是运行时状态
+        // 布尔默认值必须是 null（P1）；open 既是初始值也是运行时状态
         open: null,
         disabled: null,
       },
 
       ready() {
-        // 组件自己的运行时状态优先写 shadow root 内部元素（P31）
         this._details = this.ele.shadowRoot.querySelector('.mc-details');
         this._header = this.ele.shadowRoot.querySelector('.mc-header');
 
-        /*
-         * 规范 1.4：运行时状态用 DOM property 读写。`open` 在 HTMLElement 上不存在，
-         * 所以这里自己补一个（mc-code 的 `code` 同款）。setter 除了写属性，还立刻
-         * 同步内部 details —— 不等 ofa 那一拍（P4），否则容器做互斥时会有一帧两个都开着。
-         */
+        // 运行时状态走 property（规范 1.4）；setter 立刻同步 details，不等 ofa 那一拍（P4）
         Object.defineProperty(this.ele, 'open', {
           configurable: true,
           get: () => this.ele.hasAttribute('open'),
@@ -144,11 +116,10 @@
         this._onToggle = () => this.onToggle();
         this._onHeaderClick = (event) => this.onHeaderClick(event);
         this._details.addEventListener('toggle', this._onToggle);
-        // 捕获阶段拦：键盘激活（Enter / Space）也是派发到 summary 上的一次可取消 click
+        // 捕获阶段：键盘激活（Enter / Space）也是一次可取消 click
         this._header.addEventListener('click', this._onHeaderClick, true);
 
-        // 初始状态不算事件：原生在挂载补那次 toggle 时不发 open/close（P5 的同类问题）
-        this._lastOpen = this._details.open;
+        this._lastOpen = this._details.open; // 初始那次 toggle 不算事件（P5）
       },
 
       watch: {
@@ -166,17 +137,18 @@
       },
 
       proto: {
-        /** 宿主属性是唯一真相；setAttribute 过来的是异步的（P4），所以这里读属性本身 */
+        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
         applyOpen() {
           if (!this._details) return;
           const want = this.ele.hasAttribute('open');
           if (this._details.open !== want) this._details.open = want;
         },
 
+        /** 读屏 + 键盘：aria-disabled，并把 summary 移出焦点顺序 */
         applyDisabled() {
           const off = this.ele.hasAttribute('disabled');
           if (off) {
-            this._header.tabIndex = -1; // 键盘进不来（Tab 直接跳过）
+            this._header.tabIndex = -1;
             this._header.setAttribute('aria-disabled', 'true');
           } else {
             this._header.removeAttribute('tabindex');
@@ -185,15 +157,11 @@
         },
 
         /**
-         * 头部点击：禁用时拦掉，否则由**我们**同步完成这次开合。
+         * 头部点击：禁用时拦掉，否则**我们自己**同步完成开合。
          *
-         * 为什么不让浏览器自己切：浏览器对 summary 的激活行为不一定发生在同一个任务里
-         * （Chrome 实测晚一个任务），于是「点完立刻读 el.open」会读到旧值 ——
-         * 面板已经开了、属性还说没开，「属性是唯一真相」这条就破了。
-         * 这里 preventDefault 掉默认动作、自己切 `details.open`：切换是同步的，
-         * 属性在同一次点击里就是真的；原生 `toggle` 事件照旧会来（我们改的就是它的
-         * open 属性），所以事件与容器的互斥逻辑一行都不用动。
-         * 键盘（Enter / 空格）在 summary 上最终也是一次可取消 click，走同一条路径。
+         * 浏览器的 summary 激活不一定在同一个任务里（Chrome 实测晚一拍），点完立刻读
+         * `el.open` 会是旧值。这里 preventDefault 后自己切 `details.open`，属性当次点击
+         * 就位；原生 toggle 照旧会来，容器互斥逻辑不受影响。
          */
         onHeaderClick(event) {
           if (this.ele.hasAttribute('disabled')) {
@@ -202,7 +170,7 @@
             return;
           }
 
-          // 头部里使用者自己放的控件（链接 / 按钮）自己处理，不抢它的点击
+          // 头部里的控件（链接 / 按钮）自己处理，不抢
           const inside = event.target?.closest?.('a, button, input, select, textarea, [tabindex]');
           if (inside && inside !== this._header) return;
 
@@ -211,12 +179,7 @@
           this.reflectOpen();
         },
 
-        /**
-         * 原生 toggle → 反射回宿主属性 + 发 open/close。
-         *
-         * 反射方向很重要：属性是唯一真相，所以用户点开之后 `el.hasAttribute('open')`
-         * 必须立刻为真（容器做互斥时读的就是它）。
-         */
+        /** 原生 toggle → 反射回宿主属性，并发出 open / close */
         onToggle() {
           this.reflectOpen();
 
@@ -228,7 +191,7 @@
           if (this._lastOpen === isOpen) return;
           this._lastOpen = isOpen;
 
-          // 要穿出 shadow 边界冒到容器（P22）；事件名不加 mc- 前缀（规范 1.5）
+          // 冒到容器要 composed（P22）；事件名不加 mc- 前缀（规范 1.5）
           this.emit(isOpen ? 'open' : 'close', {
             data: { name: this.name },
             bubbles: true,
@@ -236,7 +199,7 @@
           });
         },
 
-        /** 内部 details 的当前状态 → 宿主 open 属性（属性是唯一真相） */
+        /** 内部 details 的当前状态 → 宿主 open 属性 */
         reflectOpen() {
           if (this._details.open) this.ele.setAttribute('open', '');
           else this.ele.removeAttribute('open');

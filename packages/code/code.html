@@ -1,40 +1,15 @@
 <!--
-  mc-code — 代码展示组件
-
-  和 mc-button 一样，这个文件也遵循 agent/components.md 的分层：
-  视觉（底色 / 边框 / 圆角 / 字号）写在 :host 与 L3 组件令牌上，使用者用原生
-  `style="…"` 或 `--mc-code-*` 就能按实例覆盖。
-
-  三条主线，先记住再读代码：
-
-  1. 代码文本有三个来源：`src`（片段文件）> `code` 属性 / `el.code` property >
-     **标签里的纯文本**（读 textContent、去掉公共缩进）。
-     标签内文本是贴代码最顺手的写法；`code` 属性则给 ofa 模板绑定留了口子
-     （`<mc-code :code="snippet">`，`:prop` 只对 attrs 里声明过的键生效）。
-
-  2. 语法配色**来自 highlight.js 自己的主题样式表**，组件不写一条覆盖它的规则
-     官方主题（默认 `github` / `github-dark`）是从 CDN 取回来**原样 adopt** 进
-     shadow root 的，token 颜色就是主题里声明的值。
-     所以这里**刻意不给渲染出来的节点加 `hljs` 类**：主题里的
-     `.hljs{background:…}` 与 `pre code.hljs{padding:1em}` 会盖掉组件的底色和内边距
-     （adopted 表优先级高于组件自己的 <style>），那是主题的"整块代码块"外观，
-     不是我们要接管的两个 token 颜色。
-
-  3. 高亮本身是**可选的运行时增量**，不是必需品
-     highlight.js 从 CDN 按需懒加载（只加载用到的语言）。它挂了、被 CSP 挡了、
-     或者语言名写错了，组件**保持纯文本**继续工作，只是没有颜色 —— 和
-     mosaic.js 失效时"有颜色无排布"是同一套降级思路。
-     首屏渲染是同步的纯文本，高亮到位后再原地升级，不会出现空白代码块。
-
-  行号建立在「行」这个模型上：高亮产物里的 `<span>` 可以跨行（多行字符串、
-  块注释），直接按 \n 切会把标签切坏。所以 splitLines() 做的是**标签配平**的
-  切分：行边界处闭合已开标签，下一行再重新打开。
+  mc-code — 代码展示组件。三条主线：
+  1. 文本来源优先级 `src` > `code` 属性/property > 标签内纯文本（读 textContent 并去公共缩进）。
+  2. 配色原样 adopt highlight.js 官方主题（默认 github / github-dark），刻意不给渲染节点加 `hljs` 类，
+     否则主题的 .hljs 背景与内边距会盖掉组件底色（adopted 表优先于组件自己的 <style>）。
+  3. 高亮是可选的运行时增量：CDN 懒加载，失败即保持纯文本，同步先出文本、到位后再原地升级。
+  行号建在「行」模型上：高亮产物里的 <span> 可跨行，splitLines() 负责标签配平切分。
 -->
 <template component>
   <style>
     /* ---------- 1. 宿主盒模型 + 色槽默认值 ----------
-       尺寸与圆角直接写在这里（不绕一层变量），使用者 `style="border-radius:0"`
-       才压得住：外部内联样式优先级高于 shadow root 里的任何规则。 */
+       尺寸/圆角直接写在这里，使用者 `style="border-radius:0"` 才压得住（外部内联优先于 shadow root 规则）。 */
     :host {
       display: block;
       box-sizing: border-box;
@@ -50,8 +25,7 @@
       line-height: var(--mc-code-line-height);
       tab-size: 2;
 
-      /* ---------- 色槽：L3 组件令牌，默认引用 L2 语义令牌 ----------
-         语法色不在这里 —— 那是 highlight.js 主题的事（见文件头第 2 条）。 */
+      /* ---------- 色槽：L3 组件令牌，默认引用 L2 语义令牌（语法色归 highlight.js 主题管） ---------- */
       --mc-code-fill: var(--mc-color-surface-sunken);
       --mc-code-border: var(--mc-color-border);
       --mc-code-fg: var(--mc-color-fg);
@@ -67,15 +41,8 @@
     .mc-body {
       max-height: var(--mc-code-max-h);
       overflow: auto;
-      /*
-       * ⚠️ 这里**不要**写 `overscroll-behavior: contain`。
-       *
-       * `overflow: auto` 让这个元素在规范上就是个滚动容器，contain 会把滚动链
-       * 直接掐断 —— 连"内容根本不超高、没得滚"的情况也拦。实测表现就是用户说的
-       * "鼠标在 code 里面滚动会锁住"：指针停在代码块上时页面完全不动
-       * （无 max-height 的块 Δ0，max-height 的块滚到底之后也 Δ0）。
-       * 用默认的 `auto`，块内滚不动时自然继续滚页面，这才是文档里该有的行为。
-       */
+      /* ⚠️ 不要写 `overscroll-behavior: contain`：overflow:auto 已是滚动容器，contain 会连「内容根本
+         没超高」的情况也把滚动链掐断，表现就是「鼠标停在代码上页面完全不动」。默认 auto 才能续滚页面。 */
     }
     .mc-body:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring));
@@ -89,8 +56,7 @@
     }
     .mc-block {
       display: block;
-      /* 让 `<code>` 自己就有长行的宽度：横向溢出由它贡献给 .mc-body 的滚动区域，
-         行号 sticky 也才有可滚动的空间。min-width:100% 保证短行也有整行底色/选区。 */
+      /* width:max-content 让长行溢出交给 .mc-body 滚动、sticky 行号才有可滚空间；min-width 保短行满底色 */
       width: max-content;
       min-width: 100%;
       font: inherit;
@@ -98,8 +64,7 @@
     }
 
     /* ---------- 3. 行号：`position: sticky` 的独立列 ----------
-       横向滚动时它停在滚动容器左缘，所以行号不会跟着代码跑掉；
-       底色用代码底色盖住从下面滑过的代码。 */
+       横向滚动时停在滚动容器左缘，底色盖住从下面滑过的代码。 */
     .mc-line {
       display: flex;
       align-items: flex-start;
@@ -146,25 +111,15 @@
 
   <script>
     /* @unocss-skip-start */
-    /*
-     * 这一整段 JS 不是样式，但 UnoCSS 的默认提取器是按「候选字符串」扫整个文件的，
-     * 于是 indent / px / py / m-0 这些 JS 标识符和模板字符串片段会被当成类名，
-     * 白产出四条工具类规则（写着 class="indent" 的使用者还会莫名拿到 text-indent）。
-     * 官方 skip 标记把这段排除在提取之外（注释必须是完整闭合的块注释形式）；
-     * <style> 与模板本身照常扫描。标记之间不要再出现这套标记字符串。
-     */
+    /* 这段 JS 里的 indent / px / py / m-0 等标识符和模板字符串片段会被 UnoCSS 的候选字符串提取器
+       当成类名，白产出工具类规则（写着 class="indent" 的使用者还会莫名拿到 text-indent）。
+       官方 skip 标记把整段排除在提取之外（标记之间不得再出现这组标记字符串）；<style> 与模板照常扫描。 */
 
-    /**
-     * highlight.js 的来源，结尾是它分发结构里的 `build/` 目录：
-     *
-     *   es/core.min.js · es/languages/<id>.min.js · styles/<theme>.min.css
-     *
-     * 锁精确版本（jsDelivr 的版本别名有 7 天缓存，见 PLAN D1）。
-     * 换自托管 / 换镜像：`hljs-base="https://fastly.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/"`
-     */
+    /** highlight.js 来源，结尾是 build/ 目录（es/core.min.js · es/languages/<id>.min.js · styles/<theme>.min.css）。
+        锁精确版本（jsDelivr 的版本别名有 7 天缓存，见 PLAN D1）；换镜像 / 自托管改 `hljs-base` 即可。 */
     const HLJS_BASE = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/';
 
-    /** 默认主题，两份都取自 highlight.js 官方 styles/：亮色 / 暗色各一 */
+    /** 默认主题名，取自官方 styles/：亮 / 暗各一 */
     const THEME_LIGHT = 'github';
     const THEME_DARK = 'github-dark';
 
@@ -195,8 +150,7 @@
       none: '',
     };
 
-    /** 每个 base 一份 core、每种语言一份加载 promise、每个主题一份样式表。
-        所有实例共享，加载只发生一次。失败不缓存，否则一次网络抖动就永久退化。 */
+    /** 每个 base 的 core、每种语言/主题的 promise 全局共享，只加载一次；失败不缓存，避免一次抖动永久退化。 */
     const coreByBase = new Map();
     const langByKey = new Map();
     const sheetByUrl = new Map();
@@ -265,13 +219,8 @@
     /** base 统一带尾斜杠，`hljs-base` 写不写都不会拼出坏 URL */
     const normalizeBase = (base) => String(base || HLJS_BASE).replace(/\/?$/, '/');
 
-    /**
-     * 往上找最近一个「纵向真的能滚」的祖先。
-     *
-     * 必须跨 shadow 边界：组件自己的 shadow root 是 `.mc-body` 的父节点，
-     * 而宿主的滚动容器（文档页是 `.doc-body` / `.doc-main`）在页面那层的 shadow 树里。
-     * 找不到就退回文档滚动元素。
-     */
+    /** 往上找最近一个「纵向真的能滚」的祖先，必须跨 shadow 边界（组件 shadow root 是 .mc-body 的父节点，
+        宿主的滚动容器在页面那层 shadow 树里）。找不到退回 document.scrollingElement。 */
     function scrollableAncestor(node) {
       let el = node.parentNode;
       while (el) {
@@ -296,11 +245,7 @@
       return event.deltaY;
     }
 
-    /**
-     * 亮暗判定。优先看 `color-scheme`：令牌层切主题就是切它，而且它是继承属性，
-     * 所以能穿进 shadow root（不用去猜 `<html>` 上有没有 data-theme）。
-     * 宿主没引令牌时退到系统偏好。
-     */
+    /** 亮暗判定优先看 `color-scheme`：令牌层切主题就是切它，且它继承、能穿进 shadow root；没引令牌时退到系统偏好。 */
     function prefersDark(el) {
       const scheme = (getComputedStyle(el).colorScheme || '').toLowerCase();
       if (scheme.includes('dark')) return true;
@@ -327,13 +272,8 @@
       return lines.join('\n');
     }
 
-    /**
-     * 把高亮 HTML 按换行切成行，并**配平跨行的标签**。
-     *
-     * highlight.js 的产物只有 `<span class="…">` 和转义后的文本，所以一个正则
-     * 扫标签就够了；遇到换行时先闭合当前所有未闭合的 span，下一行重新打开。
-     * 不这么做的话，多行字符串 / 块注释会把标签切断，后面的代码整段串色。
-     */
+    /** 把高亮 HTML 按换行切成行并配平跨行标签：hljs 产物只有 span + 转义文本，换行处先闭合所有未闭合 span、
+        下一行重新打开，否则多行字符串 / 块注释会把标签切断，后面的代码整段串色。 */
     function splitLines(html) {
       const lines = [];
       const stack = [];
@@ -412,23 +352,11 @@
       tag: 'mc-code',
 
       attrs: {
-        /*
-         * 代码文本。三种传法都支持，取值优先级：
-         *   code 属性 / property  >  标签里的纯文本
-         *
-         * 声明在 attrs 里是必须的：ofa 的 `:code="expr"` 只对**已声明**的键生效（P6），
-         * 所以页面模块里 `<mc-code :code="snippet">` 能直接绑一段数据。
-         * 标签内文本那条路保留，是因为它不用转义引号、多行也好读 —— 就是
-         * 普通 HTML 里贴代码的样子。注意两条路的 `<` 都得写 `&lt;`。
-         */
+        /* 代码文本。声明在 attrs 里 `:code="expr"` 才对它生效（P6），非空时优先于标签内纯文本；
+           两条路的 `<` 都必须写 `&lt;`。 */
         code: '',
-        /*
-         * 片段文件：给长片段 / 需要转义的片段用。
-         * `<mc-code language="html" src="./docs/snippets/quick-start.html">` ——
-         * 文件就是真 HTML/JS/CSS，不用写 `&lt;`，编辑器也能正常高亮。
-         * 路径按**文档地址**（document.baseURI）解析，写站点根或页面相对路径都行。
-         * 优先级：src > code 属性 > 标签内文本。
-         */
+        /* 片段文件：长片段 / 免转义用，文件就是真 HTML/JS/CSS；路径按 document.baseURI 解析。
+           优先级 src > code 属性 > 标签内文本。 */
         src: '',
         language: '',
         // 换自托管 / 换镜像：指向 highlight.js 的 build/ 目录
@@ -443,8 +371,7 @@
         softWrap: null,
       },
 
-      // 注意：ofa.js 初始化时会把 watch 都用默认值触发一遍（P5），
-      // 所以统一走 onAttrChange 的 `_mounted` 守卫。
+      // ofa.js 初始化会把 watch 都用默认值触发一遍（P5），所以统一走 onAttrChange 的 `_mounted` 守卫。
       watch: {
         code() {
           this.onAttrChange();
@@ -476,15 +403,8 @@
       },
 
       proto: {
-        /**
-         * watch 的入口：挂载前的那些触发（ofa.js 初始化时会把每个 watch 用默认值
-         * 触发一遍，P5）直接丢掉 —— 那时 this._bodyEl 还没查出来。
-         *
-         * 名字避开 `$.fn` 上的保留字（P7）：第一版叫 `refresh()` + `sync()`，
-         * 两个都被 ofa.js 拒收（只在控制台留一条 warning），watch 里调到的是框架
-         * 自己的 `refresh` —— 它会把模板重渲染一遍，于是 this._bodyEl 这些缓存
-         * 全部指向被替换掉的旧节点。
-         */
+        /** watch 入口：挂载前的触发（P5）直接丢。名字避开 `$.fn` 保留字（P7）：第一版 refresh/sync 都被
+            ofa.js 拒收，watch 调到框架自己的 refresh 会重渲染模板，缓存节点全指向旧节点。 */
         onAttrChange() {
           if (!this._mounted) return;
           this.applyAttrs();
@@ -502,11 +422,8 @@
           const mh = String(this.maxHeight ?? '').trim();
           const mhCss = /^\d+(\.\d+)?$/.test(mh) ? `${mh}px` : mh;
 
-          // 高度变量写在**内部容器**上，绝不写宿主元素 ——
-          // 自定义元素构造期往宿主加属性，浏览器会抛
-          // `NotSupportedError: The result must not have attributes`，
-          // 于是 document.createElement('mc-code') 直接出不来（见 P31）。
-          // 内部容器是 innerHTML 的产物，写它不受这条限制。
+          // 高度变量写在**内部容器**，绝不写宿主 —— 自定义元素构造期往宿主加属性会抛 NotSupportedError，
+          // document.createElement('mc-code') 直接出不来（P31）。
           this._bodyEl.style.removeProperty('--mc-code-max-h');
           if (mhCss) this._bodyEl.style.setProperty('--mc-code-max-h', mhCss);
 
@@ -520,12 +437,7 @@
           return this.highlight();
         },
 
-        /**
-         * 拉取片段文件并渲染。
-         *
-         * 同一份片段多处引用只发一次请求（按 URL 缓存）；等待期间 src 又变了、
-         * 或组件已卸载，就丢弃这次结果。
-         */
+        /** 拉片段文件并渲染：按 URL 缓存（多处引用只请求一次）；等待期间 src 变了或组件已卸载就丢弃结果。 */
         async loadSource(src) {
           let url;
           try {
@@ -556,13 +468,8 @@
           }
         },
 
-        /**
-         * 把「挂载前赋的 el.code」反射成属性。
-         *
-         * 不能直接在 ready() 里写：ofa 的 ready() 是构造期跑的，那时往宿主加属性会抛
-         * `NotSupportedError: The result must not have attributes`（P31）。
-         * 推到微任务里，构造已经结束，写属性就安全了（内容此前已经渲染过）。
-         */
+        /** 把挂载前赋的 el.code 反射成属性。不能在 ready() 里写：那是构造期，写宿主属性会抛 NotSupportedError
+            （P31）；推到微任务就安全，内容此前已经渲染过。 */
         reflectPreset() {
           if (!this._presetCode) return;
           const text = this._presetCode;
@@ -570,15 +477,10 @@
           this.ele.code = text;
         },
 
-        /**
-         * 决定这次渲染用哪份文本，并同步到内部状态。
-         *
-         * 优先级：`code` 属性（非空）> 标签里的纯文本。
-         * 内容真的变了才清掉高亮产物 —— 否则属性变一下会把已经渲染好的高亮丢掉。
-         */
+        /** 决定本次用哪份文本并同步内部状态：`code` 属性（非空）> 标签内纯文本；内容真变了才清 `_hlHtml`，
+            否则属性一变就把已渲染好的高亮丢掉。 */
         applySource() {
-          // `_pendingCode`：property 写入时先记下来，这次渲染就用它 ——
-          // ofa 把 setAttribute 同步到 data 是异步的（P4），不等它才不会闪一下旧内容。
+          // `_pendingCode`：property 写入时先记下来，本次渲染就用它 —— setAttribute 同步到 data 是异步的（P4），等它会闪旧内容。
           const attr =
             this._pendingCode != null
               ? this._pendingCode
@@ -595,10 +497,7 @@
           }
         },
 
-        /**
-         * 渲染代码。同步、无依赖：先出纯文本，高亮是之后的增量升级。
-         * 未开行号时整段塞进 `<code>`；开了行号就按行产出 span 结构。
-         */
+        /** 渲染代码：同步、无依赖，先出纯文本；未开行号整段塞进 `<code>`，开了行号按行产出 span 结构。 */
         renderCode() {
           const code = this._codeEl;
           const html = this._hlHtml;
@@ -640,15 +539,9 @@
           code.append(frag);
         },
 
-        /**
-         * 块内滚到边界时，把这次滚轮**手动**交给外层滚动容器。
-         *
-         * 为什么需要它：`.mc-body` 在 `max-height` 下是个纵向滚动容器，浏览器会把
-         * 一次滚轮手势锁在它身上（scroll latching）。实测：块内滚到底后，同一手势里
-         * **后面几次滚轮全被吞掉**（第 3 次不动、第 4 次才开始滚页面），用户手感就是
-         * "鼠标停在代码上页面就锁住了"。这里只在边界那一下接管，块内还能滚时一律
-         * 不干预（不 preventDefault）。
-         */
+        /** 块内滚到边界时手动把滚轮交给外层。`max-height` 下 .mc-body 是纵向滚动容器，浏览器会把一次手势
+            锁在它身上（scroll latching）：块内滚到底后，同一手势后面几次滚轮全被吞掉，手感就像页面锁住。
+            这里只在边界那一下接管，块内还能滚时一律不干预。 */
         handleWheel(event) {
           const body = this._bodyEl;
           // 没有内部滚动（绝大多数块）→ 完全不插手，交给浏览器链到页面
@@ -668,10 +561,7 @@
           target.scrollTop += wheelPixels(event, lineHeight);
         },
 
-        /**
-         * 懒加载 highlight.js 并把渲染结果升级。
-         * 任何一步失败都只是"没有颜色"：保持纯文本，不抛错、不阻塞别的实例。
-         */
+        /** 懒加载 highlight.js 并把渲染升级；任何一步失败都只是「没有颜色」：不抛错、不阻塞别的实例。 */
         async highlight() {
           const raw = this._raw;
           const lang = this._language;
@@ -701,12 +591,8 @@
           }
         },
 
-        /**
-         * 把 highlight.js 的官方主题**原样** adopt 进来：只加一张表，
-         * 不写任何覆盖它规则的东西 —— 所以 token 颜色就是主题里声明的值。
-         *
-         * 只在 shadow root 内生效，不会影响宿主页面上别人用同一份主题的地方。
-         */
+        /** 把官方主题**原样** adopt 进来，不写任何覆盖规则，token 颜色就是主题声明的值；
+            只在 shadow root 内生效，不影响页面上别人用同一份主题的地方。 */
         async applyTheme(base = normalizeBase(this.hljsBase)) {
           const dark = prefersDark(this.ele);
           const name =
@@ -753,15 +639,9 @@
 
         this.applyAttrs();
 
-        /*
-         * 宿主 DOM property `code`。
-         *
-         * 写入走 setAttribute：ofa 只观察属性，直接改 property 不触发更新（P3）。
-         * 同时立刻用新值渲染一次，不等 ofa 那一拍（P4），所以 el.code = … 是即时生效的；
-         * watch 里那次重复调用会被 applySource 的"内容没变就不动"挡掉。
-         *
-         * 读取返回当前渲染用的原文（去掉了公共缩进）。
-         */
+        /* 宿主 DOM property `code`。写入走 setAttribute（ofa 只观察属性，直接改 property 不触发更新，P3），
+           并立刻用新值渲染一次、不等 ofa 那一拍（P4），所以 el.code = … 是即时生效的；
+           读取返回当前渲染用的原文（已去掉公共缩进）。 */
         const preset = Object.prototype.hasOwnProperty.call(this.ele, 'code')
           ? this.ele.code
           : undefined;
@@ -778,16 +658,11 @@
             this.highlight();
           },
         });
-        // createElement 之后、挂载之前就赋过值：内容已经渲染（走 `_presetCode`），
-        // 属性反射推到微任务（构造期写宿主属性会抛 NotSupportedError，见 P31）。
+        // createElement 后、挂载前赋的值已渲染（走 `_presetCode`），属性反射推到微任务（构造期写宿主属性会抛 NotSupportedError，见 P31）。
         if (this._presetCode) queueMicrotask(() => this.reflectPreset());
 
-        /*
-         * 主题信号有两个，都听：
-         *   · 文档根上的 data-theme（令牌用它换色，同时也换了 color-scheme）
-         *   · 系统偏好变化（没显式设主题时的兜底）
-         * 换主题就等于换一张官方主题表，不做逐条颜色覆盖。
-         */
+        /* 主题信号两个都听：文档根上的 data-theme（令牌换色时一并换 color-scheme）与系统偏好变化；
+           换主题 = 换一张官方主题表，不做逐条颜色覆盖。 */
         this._onThemeChange = () => this.applyTheme();
         const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
         mq?.addEventListener?.('change', this._onThemeChange);
@@ -798,15 +673,13 @@
           attributeFilter: ['data-theme', 'class', 'style'],
         });
 
-        // 块内滚到边界时手动把滚动交给外层（见 handleWheel 的注释）。
-        // 必须 passive: false —— 边界那一下要 preventDefault。
+        // 块内滚到边界时手动转交滚动（见 handleWheel）；必须 passive:false —— 边界那一下要 preventDefault。
         this._onWheel = (event) => this.handleWheel(event);
         this._bodyEl.addEventListener('wheel', this._onWheel, { passive: false });
 
         this._mounted = true;
 
-        // 极端情况下（自定义元素在 HTML 解析中途就被升级）ready() 可能读到空内容，
-        // 补几拍再读一次，自限；定时器句柄留着给 detached() 清。
+        // 极端情况下 ready() 在读 HTML 解析中途升级的元素时会读到空内容，补几拍再读、自限；句柄留给 detached() 清。
         if (!this._raw && !String(this.code || '').trim()) {
           let tries = 0;
           const settle = () => {

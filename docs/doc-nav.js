@@ -1,25 +1,6 @@
-/**
- * `<doc-nav>` —— 文档站的二级菜单（左栏），站点级自定义元素。
- *
- * 为什么是普通自定义元素，而不是 ofa.js 组件：
- *   · 它要直接 `import` 组件登记表（docs/components.js）。ofa.js 的页面/组件代码
- *     是经 eval 执行的，相对 import 解析不了（页面模块那侧已知的坑，见
- *     docs/site.js 顶部注释），拿不到登记表就只能把 20 个组件的清单抄一遍。
- *   · 它渲染在**页面自己的 shadow root** 里，正文样式 content.css 已经在那儿了，
- *     不需要 shadow DOM，也就用不着 mosaic.js 再给它 adopt 一份样式。
- *
- * 两种用法：
- *   1. 菜单来自登记表（组件总览页 + 每个组件文档页）：
- *        <doc-nav data-source="components"></doc-nav>
- *   2. 页面自己声明菜单项（谁需要谁写，外壳不再集中维护）：
- *        <doc-nav>
- *          <a olink href="../pages/guide.html">快速开始</a>
- *        </doc-nav>
- *      ⚠️ 相对路径 + `olink`，不要手写 `#/…` —— hash 按域名根解析，子路径部署会 404。
- *
- * 高亮由它自己盯 `hashchange` + `router-change` —— 二级菜单是页面自己的东西，
- * 不靠外壳脚本同步（顶栏的 olink 不触发 hashchange，见 connectedCallback 里的说明）。
- */
+/* `<doc-nav>` —— 文档站二级菜单，站点级自定义元素。
+ * 用普通自定义元素而非 ofa 组件：要直接 import 登记表（ofa 页面/组件经 eval，相对 import 解析不了），
+ * 且它渲染在页面自己的 shadow root 里，正文样式已在，不需要 shadow DOM。 */
 
 import { GROUPS, pageOf, OVERVIEW } from './components.js';
 import { route, hashOf, toRepoPath } from './routes.js';
@@ -34,15 +15,9 @@ const setCurrent = (a, on) => {
   else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
 };
 
-/** 从一个 <a> 反推它指向的路由（归一成仓库根相对路径） */
 const toOf = (a) => toRepoPath(a.getAttribute('href'));
 
-/**
- * 登记表驱动的菜单：总览 + 分组标题 + 每个组件（带实现状态）。
- *
- * 每一项都是个纯数据描述，渲染时再变成 DOM —— 数据和结构分开，
- * 以后要换渲染方式（比如折叠分组）不用动这一层。
- */
+/** 登记表 → 纯数据项（总览 + 分组标题 + 每个组件），渲染时才变成 DOM */
 function componentItems() {
   const items = [{ to: OVERVIEW, label: '总览' }];
 
@@ -65,22 +40,14 @@ function componentItems() {
 }
 
 class DocNav extends HTMLElement {
-  /**
-   * 箭头函数字段：add 和 remove 必须是**同一个引用**，
-   * 普通方法每次取到的都是新的函数对象，摘不掉监听。
-   */
+  /** 箭头函数字段：add 和 remove 必须是**同一个引用**，普通方法每次取到的是新函数对象，摘不掉监听 */
   _onRouteChange = () => this.syncActive();
 
   connectedCallback() {
     this.render();
 
-    /*
-     * 两个信号都要听：
-     *   hashchange      页面内的普通 hash 跳转（侧栏自己就是这么跳的）
-     *   router-change   o-app 每次导航都会冒泡它 —— 顶栏的 `<a olink>` 走
-     *                   history.pushState，**不触发 hashchange**，只听前一个
-     *                   会漏掉「从顶栏点进来」这条路（实测高亮会空着）。
-     */
+    /* hashchange 管页内跳转；router-change 管 o-app 导航 —— 顶栏 <a olink> 走 pushState，
+       不触发 hashchange，只听前者会漏掉「从顶栏点进来」（实测高亮空着）。 */
     window.addEventListener('hashchange', this._onRouteChange);
     document.addEventListener('router-change', this._onRouteChange);
     bridgeWheel(this);
@@ -117,7 +84,6 @@ class DocNav extends HTMLElement {
     this.syncActive();
   }
 
-  /** 登记表里的一条 → <li><a> */
   _link(item) {
     const a = el('a', {});
     a.textContent = item.label;
@@ -132,7 +98,7 @@ class DocNav extends HTMLElement {
       a.target = '_blank';
       a.rel = 'noreferrer';
     } else {
-      a.href = hashOf(item.to); // 带部署前缀（开发 `/`、Pages `/mosaic/`）
+      a.href = hashOf(item.to);
     }
     return el('li', {}, [a]);
   }
@@ -146,12 +112,7 @@ class DocNav extends HTMLElement {
   }
 }
 
-/**
- * 建 DOM 的小工具。
- *
- * ⚠️ 不能直接 `Object.assign(node, props)`：`dataset` / `style` 这类是**只读 getter**，
- * 赋值会抛 TypeError，而且是在渲染途中抛出，表现为「整块内容空白」。
- */
+/** 建 DOM 小工具。⚠️ 不能 Object.assign(node, props)：dataset/style 是只读 getter，赋值抛错且整块渲染空白 */
 function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(props)) {
@@ -162,25 +123,18 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
-/**
- * 侧栏吃不下的滚轮，转交给同一栏里的正文。
- *
- * 两栏各自滚，于是指针停在侧栏上滚动时，浏览器只滚最近的滚动容器（侧栏）。
- * 侧栏内容少的时候滚轮就彻底没反应 —— 用户以为页面卡住了。所以它到顶/到底
- * （或压根不可滚）时，把这次滚动转给兄弟节点里的内容栏。
- *
- * 纯 CSS 做不到：外壳本身固定一屏、不可滚，链上去也是死路。
- */
+/* 侧栏吃不下的滚轮转交给同栏正文：两栏各自滚时，指针停在侧栏上就只滚侧栏，内容少时滚轮
+ * 彻底没反应（像卡住）。纯 CSS 做不到 —— 外壳固定一屏、不可滚，链上去也是死路。 */
 function bridgeWheel(nav) {
   nav.addEventListener(
     'wheel',
     (e) => {
-      if (e.ctrlKey || e.defaultPrevented) return; // 缩放 / 别处已处理
+      if (e.ctrlKey || e.defaultPrevented) return;
       if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // 横向留给代码块
 
       const max = nav.scrollHeight - nav.clientHeight;
       const canScroll = e.deltaY > 0 ? nav.scrollTop < max - 1 : nav.scrollTop > 1;
-      if (canScroll) return; // 自己还滚得动，先让它滚
+      if (canScroll) return;
 
       const content = nav.parentElement?.querySelector(':scope > .doc-body');
       if (!content) return;

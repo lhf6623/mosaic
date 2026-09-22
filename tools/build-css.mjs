@@ -1,22 +1,8 @@
 #!/usr/bin/env node
-/**
- * mosaic — CSS 构建入口
- *
- * 为什么需要这个脚本，而不直接在 package.json 里调 unocss：
- *
- *   tokens.css 是 gen-tokens.mjs 的产物、同时又是 UnoCSS 的输入。实测过：文件缺失时
- *   UnoCSS 会**静默跳过**它，退出码 0，产出一份只有工具类、没有任何令牌定义的坏 CSS
- *   （32660 B → 19487 B），所有 `var(--mc-color-*)` 变成悬空引用 ——
- *   构建成功、CI 全绿、颜色全失效。
- *
- *   守卫必须放在 UnoCSS 之外，原因是：
- *     1. 放在 uno.config.ts 里要引 node:fs，会给一个纯 JS 项目强加 @types/node 依赖；
- *     2. 而且 init 阶段抛出的异常会被配置加载器（unconfig）吞掉，
- *        只剩一个没有任何信息的退出码 1 —— 等于静默失败了一半。
- *   放在这里，两个问题都不存在。
- *
- * 用法：node tools/build-css.mjs   （通常经由 `pnpm build:css` 调用）
- */
+/* mosaic — CSS 构建入口。守卫必须放在 UnoCSS 之外：tokens.css 缺失时 UnoCSS 会**静默跳过**它，
+ * 退出码 0，产出一份没有令牌定义的坏 CSS（所有 var(--mc-color-*) 变成悬空引用）—— 构建成功、颜色全失效。
+ * 放 uno.config.ts 里则要引 node:fs，且 init 阶段异常会被配置加载器吞掉，只剩一个无信息的退出码 1。
+ * 用法：node tools/build-css.mjs（通常经 `pnpm build:css` 调用） */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -47,8 +33,7 @@ if (!existsSync(bin)) {
   process.exit(1);
 }
 
-// Windows 下 node_modules/.bin 里是 .cmd，需要走 shell
-// 透传额外参数（如 --watch），这样 dev:css 也能复用同一个守卫
+// Windows 下 .bin 里是 .cmd 要走 shell；透传额外参数（如 --watch）好让 dev:css 复用同一个守卫
 const result = spawnSync(bin, ['-c', 'uno.config.ts', ...process.argv.slice(2)], {
   cwd: ROOT,
   stdio: 'inherit',

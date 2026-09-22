@@ -113,11 +113,8 @@
     </p>
   </div>
   <script>
-    /*
-     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
-     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
-     * packages/<slug>/ 下是 '../../docs/layout.html'。
-     */
+    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，
+     * docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'。 */
     export const parent = '../layout.html';
 
     export default () => ({ data: {} });

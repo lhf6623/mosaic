@@ -1,13 +1,6 @@
 <template page>
   <link rel="stylesheet" href="../content.css" />
-  <!--
-    二级菜单是**这一页自己的东西**：外壳只给顶栏 + 正文带
-    （布局页 docs/layout.html），
-    谁需要左栏谁就在模板里放 <doc-nav>，外面套一层 .doc-split 分成左右两栏。
-
-    data-source="components" 表示菜单项来自组件登记表（docs/components.js）——
-    21 个组件的清单只维护一份，不抄进页面。
-  -->
+  <!-- 二级菜单是本页自己的：data-source="components" 让菜单来自登记表 docs/components.js，不抄 22 个组件 -->
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
     <div class="doc-body">
@@ -24,7 +17,7 @@
         <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
         本页的二级菜单、本页卡片、首页的组件区块都是从登记表渲染的； 新页面照抄本页的
         <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code>
-        就有了同一个菜单，不用手抄 21 个组件。
+        就有了同一个菜单，不用手抄 22 个组件。
       </div>
 
       <h2>接入方式</h2>
@@ -133,11 +126,8 @@
     </div>
   </div>
   <script>
-    /*
-     * 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>。
-     * ⚠️ 相对**本页面文件**解析，所以 docs/pages/ 下是 '../layout.html'，
-     * packages/<slug>/ 下是 '../../docs/layout.html'。
-     */
+    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，
+     * docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'。 */
     export const parent = '../layout.html';
 
     export default () => ({ data: {} });
