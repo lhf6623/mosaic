@@ -1,4 +1,6 @@
-/* `<doc-toc>` —— 组件文档页右栏的「本页目录」，站点级自定义元素。
+/* `<doc-toc>` —— 组件文档页右栏的「本页目录」，站点级自定义元素
+ * （和 <doc-nav> 一样不进 packages/：它读的是页面结构、知道外壳的滚动容器，
+ *   且要渲染进页面自己的 shadow root，见 docs/doc-nav.js 头部那段）。
  *
  * 与 <doc-nav>（左栏、来自登记表）成对：这一栏扫**页面自己的标题**生成，所以：
  *   · 它必须和正文住在同一个 shadow root 里（页面模板里放一个 <doc-toc> 就行），
@@ -14,6 +16,8 @@
  * 免得把正在点的节点换掉 —— 同 doc-nav.js 里那条「不重建 DOM」的教训）。
  */
 
+import { el, attr, setCurrent } from './dom.js';
+
 export const DOC_TOC_TAG = 'doc-toc';
 
 /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录 */
@@ -27,23 +31,6 @@ const ACTIVE_BAND_MAX = 240;
 
 /** 页面内容变动后重建目录的防抖时间 */
 const REBUILD_DEBOUNCE = 150;
-
-const el = (tag, props = {}, children = []) => {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(props)) {
-    if (key === 'dataset' || key === 'style') Object.assign(node[key], value);
-    else node[key] = value;
-  }
-  node.append(...children);
-  return node;
-};
-
-const setCurrent = (a, on) => {
-  if (!a) return;
-  if (on && a.getAttribute('aria-current') !== 'location')
-    a.setAttribute('aria-current', 'location');
-  else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
-};
 
 /** 标题文案 → id（CJK 原样保留；去空白与标点，重复的加序号） */
 function slugify(text, taken) {
@@ -127,13 +114,9 @@ class DocToc extends HTMLElement {
   }
 
   _buildMenu() {
-    // ⚠️ 自定义属性（size / group）得 setAttribute：el() 只赋 property，size = 'sm' 是 expando
-    const menu = el('mc-menu');
-    menu.setAttribute('size', 'sm');
-
-    const title = el('mc-menu-item', { textContent: '本页目录' });
-    title.setAttribute('group', '');
-    menu.append(title);
+    // ⚠️ 自定义属性（size / group）走 attr()：el() 只赋 property，`size = 'sm'` 是 expando
+    const menu = attr(el('mc-menu'), { size: 'sm' });
+    menu.append(attr(el('mc-menu-item', { textContent: '本页目录' }), { group: '' }));
 
     for (const entry of this._entries) {
       const a = el('a', { href: `#${entry.id}`, textContent: entry.heading.textContent.trim() });
@@ -187,7 +170,7 @@ class DocToc extends HTMLElement {
     }
 
     for (const link of this._menu.querySelectorAll('a')) {
-      setCurrent(link, link.dataset.tocId === active?.id);
+      setCurrent(link, link.dataset.tocId === active?.id, 'location');
     }
   }
 }

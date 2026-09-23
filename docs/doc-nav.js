@@ -1,6 +1,10 @@
 /* `<doc-nav>` —— 文档站左栏二级菜单，站点级自定义元素。
- * 用普通自定义元素而非 ofa 组件：要直接 import 登记表（ofa 页面/组件经 eval，相对 import 解析不了），
- * 且它渲染在页面自己的 shadow root 里，正文样式已在，不需要 shadow DOM。
+ *
+ * 为什么是普通自定义元素、不是 ofa 组件（import 不是理由：静态相对 import 能用的）：
+ *   · 它要把内容**渲染进页面自己的 shadow root**：站点 CSS（content.css）与几条站点断言
+ *     都按 light DOM 查它（`doc-nav a`），套一层 shadow root 只会让这些钩子失效；
+ *   · 它本来就是站点外壳的一部分（知道登记表、知道分栏），不进 packages/，也就用不上
+ *     ofa 组件那套 attrs / watch / part。
  *
  * 菜单的「长相」交给 mc-menu，本文件只管两件事：谁是当前页、哪些组件还没实现；
  * 滚轮也不用再手工接力 —— 整页现在只有外壳的 .doc-main 一个滚动容器，
@@ -8,16 +12,12 @@
 
 import { GROUPS, pageOf, OVERVIEW } from './components.js';
 import { route, hashOf, toRepoPath } from './routes.js';
+import { el, attr, setCurrent } from './dom.js';
 
 export const DOC_NAV_TAG = 'doc-nav';
 
 /** 未实现的组件不给死链，指到规范里的接口定义（外链，不走 hash 路由） */
 const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md';
-
-const setCurrent = (a, on) => {
-  if (on && !a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
-  else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
-};
 
 const toOf = (a) => toRepoPath(a.getAttribute('href'));
 
@@ -81,11 +81,9 @@ class DocNav extends HTMLElement {
     this.syncActive();
   }
 
-  /** 分组标题行。⚠️ 属性得 setAttribute：el() 只赋 property，node.group = '' 是 expando，不是属性 */
+  /** 分组标题行。⚠️ 自定义属性走 attr()：el() 只赋 property，`node.group = ''` 写不成属性 */
   _group(text) {
-    const item = el('mc-menu-item', { textContent: text });
-    item.setAttribute('group', '');
-    return item;
+    return attr(el('mc-menu-item', { textContent: text }), { group: '' });
   }
 
   _link(item) {
@@ -115,17 +113,6 @@ class DocNav extends HTMLElement {
       setCurrent(a, a.dataset.to === path || toOf(a) === path);
     }
   }
-}
-
-/** 建 DOM 小工具。⚠️ 不能 Object.assign(node, props)：dataset/style 是只读 getter，赋值抛错且整块渲染空白 */
-function el(tag, props = {}, children = []) {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(props)) {
-    if (key === 'dataset' || key === 'style') Object.assign(node[key], value);
-    else node[key] = value;
-  }
-  node.append(...children);
-  return node;
 }
 
 /** 注册元素。重复注册会抛，所以先查一遍 */

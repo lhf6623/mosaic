@@ -1,21 +1,13 @@
-/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数）。
- * 页面模块的脚本不能相对 import，所以读登记表的渲染留在这里（详见 agent/components.md）。 */
+/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数），并注册两个站点级元素
+ * （<doc-nav> 左栏菜单、<doc-toc> 右栏本页目录，各自的实现见同名文件）。
+ * 页面模板其实也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
+ * 但占位渲染要跨页共用、还得跟着路由轮询，所以统一留在这里。 */
 
 import { GROUPS, ALL, pageOf } from './components.js';
 import { route, hashOf } from './routes.js';
+import { el } from './dom.js';
 import { defineDocNav } from './doc-nav.js';
 import { defineDocToc } from './doc-toc.js';
-
-/* dataset / style 是只读 getter：Object.assign(node, props) 会抛，且是在渲染途中抛 */
-const el = (tag, props = {}, children = []) => {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(props)) {
-    if (key === 'dataset' || key === 'style') Object.assign(node[key], value);
-    else node[key] = value;
-  }
-  node.append(...children);
-  return node;
-};
 
 /** 穿透 shadow root 的查询（正文在 o-page 的 shadow root 里，document.querySelector 看不到） */
 function deepQuery(selector) {

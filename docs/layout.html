@@ -1,29 +1,14 @@
 <template page>
   <!-- 文档站外壳（嵌套路由的布局页）：子页面用 export const parent 挂上来，正文走 <slot> -->
   <script>
+    /* 页面模块也能静态 import：ofa 编译期会把相对说明符改写成绝对 URL（实测），
+       所以高亮比较与 aria-current 这两件工具都直接用站点共用模块，不再各抄一份 */
+    import { repoPathOf } from './routes.js';
+    import { setCurrent } from './dom.js';
+
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
     const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
-
-    const setCurrent = (a, on) => {
-      if (!a) return;
-      if (on && !a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
-      else if (!on && a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
-    };
-
-    /* hash / pathname → 仓库根相对路径（同 routes.js 的 toRepoPath，页面模块不能 import）。
-     * ⚠️ 不归一到同一坐标系，子路径部署下顶栏高亮永远匹配不上（ofa 的 hash 按域名根解析）。 */
-    const SITE_ROOT = new URL('.', document.baseURI).pathname; // '/' 或 '/mosaic/'
-    const pathOf = (url) => {
-      const u = new URL(url, location.href);
-      const raw = decodeURIComponent(u.hash || u.pathname)
-        .replace(/^#\/?/, '')
-        .replace(/^\//, '');
-      const prefix = SITE_ROOT.replace(/^\/|\/$/g, '');
-      return prefix && (raw === prefix || raw.startsWith(`${prefix}/`))
-        ? raw.slice(prefix.length).replace(/^\//, '')
-        : raw;
-    };
 
     export default () => ({
       data: { themeLabel: '自动' },
@@ -50,7 +35,7 @@
         currentPath() {
           const child = [...this.ele.querySelectorAll('o-page')].at(-1);
           const src = child?.getAttribute('src') || this.app?.current?.src || '';
-          return src ? pathOf(new URL(src, location.href).href) : '';
+          return src ? repoPathOf(src) : '';
         },
 
         // 先精确匹配五个入口；都不中时 packages/<slug>/page.html 一律算「组件」
@@ -62,7 +47,7 @@
           let matched = false;
           for (const a of links) {
             const on =
-              current !== '' && pathOf(new URL(a.getAttribute('href'), base).href) === current;
+              current !== '' && repoPathOf(new URL(a.getAttribute('href'), base).href) === current;
             if (on) matched = true;
             setCurrent(a, on);
           }
