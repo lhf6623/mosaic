@@ -1,6 +1,6 @@
 <template page>
   <link rel="stylesheet" href="../content.css" />
-  <!-- 二级菜单是本页自己的：data-source="components" 让菜单来自登记表 docs/components.js，不抄 22 个组件 -->
+  <!-- 二级菜单是本页自己的：data-source="components" 让菜单来自登记表 docs/components.js，不抄组件清单 -->
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
     <div class="doc-body">
@@ -17,7 +17,7 @@
         <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
         本页的二级菜单、本页卡片、首页的组件区块都是从登记表渲染的； 新页面照抄本页的
         <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code>
-        就有了同一个菜单，不用手抄 22 个组件。
+        就有了同一个菜单，不用手抄整份组件清单。
       </div>
 
       <h2>接入方式</h2>

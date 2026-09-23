@@ -1,0 +1,12 @@
+<template component>
+  <mc-menu style="width: 13rem">
+    <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">当前项</a></mc-menu-item>
+    <mc-menu-item><a href="#/packages/button/page.html">普通项</a></mc-menu-item>
+    <mc-menu-item><button type="button" disabled>禁用的按钮项</button></mc-menu-item>
+    <mc-menu-item><a aria-disabled="true">禁用且不可聚焦的链接项</a></mc-menu-item>
+  </mc-menu>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-states' });
+  </script>
+</template>

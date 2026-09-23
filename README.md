@@ -3,7 +3,7 @@
 基于 [ofa.js](https://ofajs.com) 的 **免安装、免构建** Web Components UI 框架。
 CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
 
-**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` 已实现，各自带文档页、
+**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` 已实现，各自带文档页、
 可交互演示和冒烟测试；令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、运行时引导层都已验证。
 其余组件的接口已经定稿，进度见 [PLAN.md 的里程碑](./agent/PLAN.md#五里程碑)。
 
@@ -33,6 +33,7 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 | Button                         | `mc-button`                        | ✅ 已实现 |
 | Code                           | `mc-code`                          | ✅ 已实现 |
 | Collapse                       | `mc-collapse` / `mc-collapse-item` | ✅ 已实现 |
+| Menu                           | `mc-menu` / `mc-menu-item`         | ✅ 已实现 |
 | Icon / Card / Badge / Spinner  | —                                  | M1 待建   |
 | 表单、反馈、浮层、布局共 15 个 | —                                  | M2 / M3   |
 
@@ -75,7 +76,7 @@ mc-button::part(base) {
 | [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南           |
 | [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表  |
 | [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单         |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。32 条静默失效的坑，附现象、原因、正确写法                            |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。33 条静默失效的坑，附现象、原因、正确写法                            |
 | [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                             |
 | [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                |
 

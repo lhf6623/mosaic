@@ -1,0 +1,219 @@
+<!--
+  mc-menu-item — 菜单项（配合 mc-menu 使用）
+
+  插槽里放一个原生 <a> 或 <button>，它承载全部语义与交互：href、键盘、焦点环、
+  aria-current、disabled / aria-disabled 都是浏览器给的，组件只读它、不改它。
+  链接为什么必须由使用者写：站内链接要经 ofa 的 olink 补部署前缀，而 olink 只作用于
+  页面模板里的元素 —— 组件在 shadow root 里造的 <a> 用不上（docs/routes.js）。
+
+  ⚠️ 行的视觉全在**宿主**上，插槽元素只铺满整行（position:absolute; inset:0）。
+  原因是一条实测出来的层叠规则：插槽元素同时是**祖先 shadow 树**里的普通元素，而
+  mosaic.js 把 shadow-base.css adopt 进了每一层 shadow root —— 那里面对 button 的
+  `padding: 0 / background: none / cursor: pointer` 是「直接命中」，优先级压过本组件
+  shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面）。
+  所以 padding / 底色 / 颜色一律写在宿主上，靠继承 + 「插槽元素铺满整行」来实现：
+
+    · 左右缩进  → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）
+    · 文字缩进  → 宿主 text-indent（继承属性，能穿 shadow 边界；写在插槽元素上会被 reset 吃掉）
+    · 垂直居中  → 宿主 line-height = 行高（同上）
+    · 底色      → 宿主 :host(:hover) / :host([data-current])
+
+  状态同样从插槽元素读，但镜像到宿主上的 data-current / data-disabled —— 宿主没法用
+  `:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类，同 P14）。
+-->
+<template component>
+  <style>
+    /* 1. 宿主 = 整行。⚠️ --mc-menu-* 不能在这里写默认值，会盖掉容器继承来的通道，
+       消费一律带兜底值（同 mc-collapse-item 的坑） */
+    :host {
+      position: relative;
+      display: block;
+      box-sizing: border-box;
+      min-width: 0;
+      height: var(--mc-menu-item-h, var(--mc-control-h-md));
+      padding-inline: var(--mc-menu-pad-x, var(--mc-space-4));
+      border-radius: var(--mc-menu-radius, var(--mc-radius-md));
+      text-indent: var(--mc-menu-pad-x, var(--mc-space-4));
+      line-height: var(--mc-menu-item-h, var(--mc-control-h-md));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-menu-font, var(--mc-text-sm));
+      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted)));
+      transition: background-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+
+    /* 2. 悬停整行：画在宿主上，<a> 与 <button> 才一致 */
+    :host(:hover) {
+      background-color: rgb(var(--mc-menu-item-bg-hover, var(--mc-color-surface-sunken)));
+      color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg)));
+    }
+
+    /* 3. 状态。§5 的脚本把插槽元素上的 aria-current / disabled 读出来镜像到这里 ——
+       ::slotted() 拿不到足够优先级，宿主才是唯一能稳定着色的地方 */
+    :host([data-current]) {
+      background-color: rgb(var(--mc-menu-item-bg-current, var(--mc-color-primary-subtle)));
+      color: rgb(var(--mc-menu-item-color-current, var(--mc-color-primary)));
+      font-weight: var(--mc-weight-medium);
+    }
+    :host([data-disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    /* 正向覆盖，不用 :host(:not(...))（P14 静默失效） */
+    :host([data-disabled]:hover) {
+      background-color: transparent;
+      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted)));
+    }
+
+    /* 4. 分组标题：不可交互的纯文字行。pointer-events 顺带堵掉误放进来的链接 */
+    :host([group]) {
+      height: auto;
+      padding: var(--mc-space-4) var(--mc-menu-pad-x, var(--mc-space-4)) var(--mc-space-1);
+      text-indent: 0;
+      line-height: inherit;
+      color: rgb(var(--mc-menu-group-color, var(--mc-color-fg-subtle)));
+      font-size: var(--mc-text-xs);
+      font-weight: var(--mc-weight-semibold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* 5. 插槽元素 = 铺满整行的交互层。这里只写祖先 shadow 树里没声明过的属性
+       （position / inset / display / overflow / white-space / border-radius / outline）；
+       凡是 shadow-base 的 button reset 声明过的（padding、background、cursor、font…），
+       写在插槽元素上对 <button> 一律不生效 —— 那些挪到上面的宿主上了 */
+    ::slotted(a),
+    ::slotted(button) {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      /* ⚠️ 不能只靠宿主继承：UA 样式表给 <button> / <input> 写死了 text-indent:0（只有作者声明压得住），
+         而 <a> 会正常继承宿主的值 —— 两种元素必须显式写一遍，否则 <button> 行的文字贴边 */
+      text-indent: var(--mc-menu-pad-x, var(--mc-space-4));
+      /* ⚠️ 不能省：<button> 的 UA 默认是 text-align:center，靠 text-indent 缩进的文字会被居中 */
+      text-align: start;
+      border-radius: inherit;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* 焦点环用 ring 令牌，不用 currentColor（P16）；画在铺满整行的交互层上 */
+    ::slotted(a:focus-visible),
+    ::slotted(button:focus-visible) {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: -2px;
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-menu-item',
+
+      attrs: {
+        // 分组标题行。布尔默认值必须是 null（P1）
+        group: null,
+      },
+
+      ready() {
+        // 这时 shadow 已建好（同 mc-collapse-item）；宿主属性留到 attached 才写（P31）
+        this._slot = this.ele.shadowRoot.querySelector('slot');
+      },
+
+      attached() {
+        this._onSlotChange = () => this.bindChild();
+        this._onChildChange = () => this.applyState();
+        this._slot.addEventListener('slotchange', this._onSlotChange);
+        // aria-current 是运行时切来切去的（文档站切页就是这么做的），属性一变就得重新镜像
+        this._observer = new MutationObserver(this._onChildChange);
+
+        this.bindChild();
+        this.applyRole();
+      },
+
+      detached() {
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this._observer?.disconnect();
+      },
+
+      watch: {
+        /**
+         * ⚠️ 首次触发必须跳过（P5）：ofa 初始化时会把每个 watch 空跑一遍，而那次 init 落在
+         * **构造期**，此时往宿主写属性会抛 NotSupportedError —— 症状是 createElement 出来的
+         * 组件没有 shadow root，只有标记写的实例正常（P31，实测踩过一回）。守卫之后这里就是
+         * 纯粹的「group 变了 → role 跟着变」。
+         */
+        group() {
+          if (this._groupWatchInit === undefined) {
+            this._groupWatchInit = true;
+            return;
+          }
+          this.applyRole();
+        },
+      },
+
+      proto: {
+        /**
+         * 列表语义：容器是 role=list（mc-menu 的 .mc-list），条目就得是 listitem。
+         * 子项在 light DOM，浏览器看不到 slot 那层包裹，只能由条目自己声明；
+         * 使用者自己写了 role 就不覆盖。
+         */
+        applyRole() {
+          const own = this.ele.getAttribute('role');
+          if (this.ele.hasAttribute('group')) {
+            if (own === 'listitem') this.ele.removeAttribute('role');
+            return;
+          }
+          if (!own) this.ele.setAttribute('role', 'listitem');
+        },
+
+        /** 插槽里那个原生交互元素（一行只放一个）；没有 a/button 就退化成第一个元素 */
+        interactive() {
+          const items = this._slot?.assignedElements() ?? [];
+          return items.find((el) => el.matches('a, button')) ?? items[0] ?? null;
+        },
+
+        /** 盯住当前那个交互元素的属性，并立刻重新镜像一次状态 */
+        bindChild() {
+          this._observer?.disconnect();
+          const el = this.interactive();
+          if (el) {
+            this._observer.observe(el, {
+              attributes: true,
+              attributeFilter: ['aria-current', 'aria-disabled', 'disabled'],
+            });
+          }
+          this.applyState();
+        },
+
+        /**
+         * 读插槽元素的状态 → 写成宿主上的 data-* 钩子（CSS 只能从宿主上选它）。
+         * aria-current="false" 等于没写；<a> 没有 disabled，禁用看 aria-disabled。
+         */
+        applyState() {
+          const el = this.interactive();
+          const value = (name) => (el?.getAttribute(name) ?? '').toLowerCase();
+          const current =
+            !!el && el.hasAttribute('aria-current') && value('aria-current') !== 'false';
+          const disabled =
+            !!el && (el.hasAttribute('disabled') || value('aria-disabled') === 'true');
+
+          this.mirror('data-current', current);
+          this.mirror('data-disabled', disabled);
+        },
+
+        /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>

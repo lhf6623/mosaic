@@ -1,0 +1,22 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-4">
+    <mc-menu size="sm" style="width: 9rem">
+      <mc-menu-item><a href="#/packages/menu/page.html">sm</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/button/page.html" aria-current="page">当前项</a></mc-menu-item>
+    </mc-menu>
+
+    <mc-menu size="md" style="width: 9rem">
+      <mc-menu-item><a href="#/packages/menu/page.html">md</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/button/page.html" aria-current="page">当前项</a></mc-menu-item>
+    </mc-menu>
+
+    <mc-menu size="lg" style="width: 9rem">
+      <mc-menu-item><a href="#/packages/menu/page.html">lg</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/button/page.html" aria-current="page">当前项</a></mc-menu-item>
+    </mc-menu>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-size' });
+  </script>
+</template>

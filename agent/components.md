@@ -573,6 +573,11 @@ mc-dialog::part(panel) {
 有明确的样式污染风险，而且会触发宿主样式重注入导致重排（见 [P13/P14](./ofa-pitfalls.md)）。
 只在 `::slotted()` 无法满足时使用。
 
+⚠️ **但 `::slotted()` 只压得住「同一个封装上下文」里的规则**：插槽元素同时是外层 shadow 树里的
+普通元素，`shadow-base.css` 对 `button` 的 reset（`padding` / `background` / `cursor`）会压过组件的
+`::slotted(button)`。所以**行盒子级别的视觉一律写在宿主上**，插槽元素只当「铺满整行的交互层」
+（完整的推演与两种写法对比见 [P33](./ofa-pitfalls.md)）。
+
 ⚠️ **模板里用了 `<l-m>` 就必须同时写 `l-m { display: none }`**，
 否则它会作为 flex item 参与 `gap` 布局，造成间距不对称（[P13](./ofa-pitfalls.md)）。
 
@@ -649,6 +654,8 @@ mc-dialog::part(panel) {
 [ ] 变体全部用 :host([attr]) 驱动，没有拼接类名
 [ ] 每个组件至少暴露一个 part，或用 :host 直接可定制
 [ ] 使用 ::slotted() 而不是 <inject-host>
+[ ] P33 有插槽交互元素时，行盒子（尺寸/内边距/底色/颜色）写在宿主上，
+      ::slotted() 只放祖先 shadow 树里没声明过的属性；插槽里 <a> 与 <button> 外观一致
 
 ofa.js 正确性  ← 逐条对照 ofa-pitfalls.md
 [ ] P1  布尔属性默认值写成 null，不是 false

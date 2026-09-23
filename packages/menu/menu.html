@@ -1,0 +1,85 @@
+<!--
+  mc-menu — 垂直菜单容器
+
+  只做三件事：尺寸通道、外框（variant）、列表语义。菜单项是 mc-menu-item。
+
+  **交互元素由使用者写在插槽里**（原生 <a> / <button>），组件既不造链接也不碰使用者的 DOM：
+  站内链接要靠 ofa 的 olink 指令补部署前缀，而 olink 只作用于页面模板（light DOM）里的元素，
+  组件在 shadow root 里造出来的 <a> 用不上（见 docs/routes.js 与 ofa-pitfalls.md 的 P28）。
+
+  尺寸/颜色走 CSS 变量继承：子项在另一个 shadow root 里，容器选择器够不到它，
+  只能像 mc-collapse 那样在 :host 上开一条通道，子项用 var() 带兜底值消费。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值 */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans);
+
+      /* 尺寸通道（三档，规范 1.3） */
+      --mc-menu-item-h: var(--mc-control-h-md);
+      --mc-menu-pad-x: var(--mc-space-4);
+      --mc-menu-font: var(--mc-text-sm);
+      --mc-menu-gap: var(--mc-space-1);
+      --mc-menu-radius: var(--mc-radius-md);
+
+      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
+         <mc-menu style="--mc-menu-item-bg-current: var(--mc-color-info-subtle)"> */
+      --mc-menu-item-color: var(--mc-color-fg-muted);
+      --mc-menu-item-color-hover: var(--mc-color-fg);
+      --mc-menu-item-color-current: var(--mc-color-primary);
+      --mc-menu-item-bg-hover: var(--mc-color-surface-sunken);
+      --mc-menu-item-bg-current: var(--mc-color-primary-subtle);
+      --mc-menu-group-color: var(--mc-color-fg-subtle);
+    }
+
+    /* 2. 维度 variant：plain 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+    :host([variant='surface']) {
+      padding: var(--mc-space-2);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    /* 3. 尺寸 */
+    :host([size='sm']) {
+      --mc-menu-item-h: var(--mc-control-h-sm);
+      --mc-menu-pad-x: var(--mc-space-3);
+      --mc-menu-font: var(--mc-text-xs);
+    }
+    :host([size='lg']) {
+      --mc-menu-item-h: var(--mc-control-h-lg);
+      --mc-menu-pad-x: var(--mc-space-5);
+      --mc-menu-font: var(--mc-text-base);
+    }
+
+    /* 4. 状态：容器自己一个都没有 —— 当前项 / 禁用都读插槽里原生元素自己的属性，
+       见 mc-menu-item。组件不替使用者改 DOM，也就不需要在这里镜像状态 */
+
+    /* 5. 内部结构：列表语义挂在真正包住子项的那层。
+       role=list 不能写宿主上指望 slot 投影出子项 —— 子项在 light DOM，两者的
+       listitem 由 mc-menu-item 自己声明，两边对不上时读屏看不到列表结构（实测过）。 */
+    .mc-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-menu-gap);
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+
+  <div class="mc-list" part="list" role="list"><slot></slot></div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-menu',
+
+      attrs: {
+        size: 'md',
+        variant: 'plain',
+      },
+    });
+  </script>
+</template>

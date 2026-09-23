@@ -1,0 +1,342 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 二级菜单跟着页面走：这一页自己带组件清单（见 docs/doc-nav.js） -->
+  <div class="doc-split">
+    <doc-nav data-source="components"></doc-nav>
+    <div class="doc-body">
+      <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+      <l-m src="./menu.html"></l-m>
+      <l-m src="./menu-item.html"></l-m>
+      <l-m src="./demos/basic.html"></l-m>
+      <l-m src="./demos/groups.html"></l-m>
+      <l-m src="./demos/size.html"></l-m>
+      <l-m src="./demos/surface.html"></l-m>
+      <l-m src="./demos/states.html"></l-m>
+      <l-m src="./demos/customize.html"></l-m>
+
+      <p class="doc-crumb"><a olink href="../../docs/pages/components.html">组件</a> / Menu</p>
+      <h1>Menu <code>mc-menu</code></h1>
+      <p class="doc-lead">
+        垂直菜单。容器 + 菜单项两个标签；交互元素（原生 <code>&lt;a&gt;</code> /
+        <code>&lt;button&gt;</code>）由使用者写在菜单项里，组件不造链接、也不改使用者的 DOM。
+      </p>
+      <p class="doc-badges">
+        <span class="doc-badge" data-status="ready">已实现</span>
+        <span class="doc-badge">M1</span>
+        <span class="doc-badge">packages/menu/</span>
+      </p>
+
+      <h2>mc-menu</h2>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>属性</th>
+            <th>值</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>size</code></td>
+            <td><code>sm</code> <code>md</code> <code>lg</code></td>
+            <td><code>md</code></td>
+            <td>菜单项高度 / 内边距 / 字号</td>
+          </tr>
+          <tr>
+            <td><code>variant</code></td>
+            <td><code>plain</code> <code>surface</code></td>
+            <td><code>plain</code></td>
+            <td><code>surface</code> 加一圈边框底色，当卡片用</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>插槽 / part</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>插槽（默认）</td>
+            <td>菜单项 <code>mc-menu-item</code></td>
+          </tr>
+          <tr>
+            <td><code>part="list"</code></td>
+            <td>内层列表容器（项间距 / 布局）</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        列表语义挂在容器上：<code>mc-menu</code> 的列表是 <code>role="list"</code>， 菜单项的
+        <code>role="listitem"</code> 由组件自己补，不用手写。
+      </p>
+
+      <h2>mc-menu-item</h2>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>属性</th>
+            <th>值</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>group</code></td>
+            <td>布尔</td>
+            <td>—</td>
+            <td>分组标题行：纯文字、不可交互，不进列表项语义</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>状态不写在菜单项上，写在插槽里的原生元素上</strong> —— 这样键盘、焦点、
+        读屏语义全是浏览器给的，组件只按属性给出外观：
+      </p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>状态</th>
+            <th>怎么写</th>
+            <th>组件做什么</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>当前项</td>
+            <td><code>&lt;a aria-current="page"&gt;</code></td>
+            <td>换底色与字色，字重加粗</td>
+          </tr>
+          <tr>
+            <td>悬停</td>
+            <td>不用写</td>
+            <td>整行浅底</td>
+          </tr>
+          <tr>
+            <td>禁用</td>
+            <td>
+              <code>&lt;button disabled&gt;</code>；<br />
+              链接要 <code>aria-disabled="true"</code> 并去掉 <code>href</code>
+            </td>
+            <td>压暗到 50%，光标 <code>not-allowed</code>，悬停不亮</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        两个状态由组件从插槽元素读出来、写到菜单项自己的宿主属性上：
+        <code>data-current</code> / <code>data-disabled</code>。想在外层 CSS 里按状态写样式，
+        直接选它们就行。另外<strong>行的盒子在 <code>&lt;mc-menu-item&gt;</code> 上</strong>
+        （高度、内边距、底色、文字缩进都在宿主，插槽元素只是一层铺满整行的交互层），
+        所以定宽、限高、改底色都写在这个标签上。
+      </p>
+
+      <h2>定制：L3 令牌</h2>
+      <p>
+        菜单项的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
+        <code>mc-menu</code> 的 <code>style</code> 上（令牌随继承进子项的 shadow root）：
+      </p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>令牌</th>
+            <th>默认</th>
+            <th>作用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--mc-menu-item-h</code></td>
+            <td><code>--mc-control-h-md</code></td>
+            <td>菜单项行高（<code>size</code> 会改它）</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-pad-x</code></td>
+            <td><code>--mc-space-4</code></td>
+            <td>行的左右内边距</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-font</code></td>
+            <td><code>--mc-text-sm</code></td>
+            <td>字号</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-gap</code></td>
+            <td><code>--mc-space-1</code></td>
+            <td>项与项之间的间距</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-radius</code></td>
+            <td><code>--mc-radius-md</code></td>
+            <td>行的圆角</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-item-color</code></td>
+            <td><code>--mc-color-fg-muted</code></td>
+            <td>普通项文字</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-item-color-hover</code></td>
+            <td><code>--mc-color-fg</code></td>
+            <td>悬停文字</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-item-color-current</code></td>
+            <td><code>--mc-color-primary</code></td>
+            <td>当前项文字</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-item-bg-hover</code></td>
+            <td><code>--mc-color-surface-sunken</code></td>
+            <td>悬停底色</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-item-bg-current</code></td>
+            <td><code>--mc-color-primary-subtle</code></td>
+            <td>当前项底色</td>
+          </tr>
+          <tr>
+            <td><code>--mc-menu-group-color</code></td>
+            <td><code>--mc-color-fg-subtle</code></td>
+            <td>分组标题文字</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <demo-menu-basic></demo-menu-basic>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/basic.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          一个菜单项里放一个原生 <code>&lt;a&gt;</code>，它自己就是整行；当前项在
+          <code>&lt;a&gt;</code> 上写 <code>aria-current="page"</code>。
+        </p>
+      </section>
+
+      <section class="doc-demo">
+        <h3>分组标题</h3>
+        <demo-menu-groups></demo-menu-groups>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/groups.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          <code>&lt;mc-menu-item group&gt;</code> 是不可交互的纯文字行：鼠标穿透，
+          读屏也不会把它当成列表项。
+        </p>
+      </section>
+
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <demo-menu-size></demo-menu-size>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/size.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          尺寸写在容器上（<code>sm</code> / <code>md</code> / <code>lg</code> = <code>28</code> /
+          <code>36</code> / <code>44px</code>），菜单项跟着变。
+        </p>
+      </section>
+
+      <section class="doc-demo">
+        <h3>卡片外观（<code>variant="surface"</code>）</h3>
+        <demo-menu-surface></demo-menu-surface>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/surface.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          默认的 <code>plain</code> 没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
+          <code>surface</code>。
+        </p>
+      </section>
+
+      <section class="doc-demo">
+        <h3>当前项与禁用</h3>
+        <demo-menu-states></demo-menu-states>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/states.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          前两项可用（<kbd>Tab</kbd> 能进、<kbd>Enter</kbd> 能激活）；后两项压暗： 一个是原生
+          <code>&lt;button disabled&gt;</code>，一个是去掉 <code>href</code> 的
+          <code>&lt;a&gt;</code>，两者都进不了焦点顺序。
+        </p>
+      </section>
+
+      <section class="doc-demo">
+        <h3>定制（令牌 + <code>::part()</code>）</h3>
+        <demo-menu-customize></demo-menu-customize>
+        <mc-collapse class="doc-demo-code">
+          <mc-collapse-item header="查看代码"
+            ><mc-code language="html" src="./demos/customize.html"></mc-code
+          ></mc-collapse-item>
+        </mc-collapse>
+        <p class="doc-hint">
+          颜色与尺寸按实例覆盖 L3 令牌；项间距这种内部容器上的样式走
+          <code>mc-menu::part(list)</code>。
+        </p>
+      </section>
+
+      <h2>注意事项</h2>
+      <ul>
+        <li>
+          <strong>交互元素必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code> /
+          <code>&lt;button&gt;</code>）。组件不造链接：站内链接要经 ofa 的
+          <code>olink</code> 带部署前缀，而 <code>olink</code> 只作用于页面模板里的元素。
+        </li>
+        <li>
+          组件不改使用者的 DOM，所以 <code>href</code> / <code>aria-current</code> /
+          <code>disabled</code> / <code>aria-disabled</code> 都写在原生元素上， 别写在
+          <code>&lt;mc-menu-item&gt;</code> 上（组件会把它们镜像成 <code>data-current</code> /
+          <code>data-disabled</code>）。<code>aria-current="false"</code>
+          等于没写，不会点亮。
+        </li>
+        <li>
+          菜单与每个菜单项都撑满父容器。要限宽就写在菜单自己的 <code>style</code> 上，
+          或者套一层定宽容器。
+        </li>
+        <li>
+          别给插槽里的 <code>&lt;a&gt;</code> / <code>&lt;button&gt;</code> 写
+          <code>padding</code> 来改缩进：行盒子在 <code>&lt;mc-menu-item&gt;</code> 上， 对
+          <code>&lt;button&gt;</code> 写的 padding 还会被页面的 reset 吃掉。 改缩进用
+          <code>--mc-menu-pad-x</code>，改行高用 <code>--mc-menu-item-h</code>。
+        </li>
+        <li>
+          禁用项如果用的是 <code>&lt;button&gt;</code>，光标可能仍是手型 —— 页面 reset 对
+          <code>&lt;button&gt;</code> 的 <code>cursor</code> 优先级高于组件内部样式；
+          <code>&lt;a&gt;</code> 没有这个问题。
+        </li>
+        <li>分组标题行不可交互，里面只放文字，别塞链接。</li>
+        <li>
+          自己给 <code>&lt;mc-menu-item&gt;</code> 写了 <code>role</code> 时组件不会覆盖； 默认只在
+          <code>role="list"</code> 里补 <code>role="listitem"</code>。
+        </li>
+      </ul>
+
+      <nav class="doc-pager">
+        <a class="doc-pager-prev" olink href="../code/page.html">← Code</a>
+        <a class="doc-pager-next" olink href="../collapse/page.html">Collapse →</a>
+      </nav>
+    </div>
+  </div>
+  <script>
+    // 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>；相对本页面文件解析
+    export const parent = '../../docs/layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

@@ -68,6 +68,14 @@ export const GROUPS = [
         milestone: 'M1',
         desc: '加载指示。跟随当前文字色与字号。',
       },
+      {
+        slug: 'menu',
+        name: 'Menu',
+        tag: 'mc-menu',
+        status: 'ready',
+        milestone: 'M1',
+        desc: '垂直菜单。容器 + 菜单项两个标签，交互元素由使用者写在插槽里 —— 组件不造链接、也不改使用者的 DOM。',
+      },
     ],
   },
   {

@@ -1,0 +1,24 @@
+<template component>
+  <style>
+    /* 内部容器用 ::part() 穿透；颜色/尺寸走 L3 令牌（写在宿主 style 上按实例覆盖） */
+    mc-menu::part(list) {
+      gap: var(--mc-space-3);
+    }
+  </style>
+
+  <mc-menu
+    style="
+      width: 14rem;
+      --mc-menu-item-bg-current: var(--mc-color-info-subtle);
+      --mc-menu-item-color-current: var(--mc-color-info);
+      --mc-menu-pad-x: var(--mc-space-5);
+    "
+  >
+    <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">当前项换成信息色</a></mc-menu-item>
+    <mc-menu-item><a href="#/packages/button/page.html">行距和内边距也换了</a></mc-menu-item>
+  </mc-menu>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-customize' });
+  </script>
+</template>

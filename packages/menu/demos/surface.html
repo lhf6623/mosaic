@@ -1,0 +1,19 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-4">
+    <mc-menu variant="surface" style="width: 10rem">
+      <mc-menu-item group>surface</mc-menu-item>
+      <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">当前项</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/button/page.html">普通项</a></mc-menu-item>
+    </mc-menu>
+
+    <mc-menu style="width: 10rem">
+      <mc-menu-item group>plain（默认）</mc-menu-item>
+      <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">当前项</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/button/page.html">普通项</a></mc-menu-item>
+    </mc-menu>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-surface' });
+  </script>
+</template>
