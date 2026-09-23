@@ -524,101 +524,101 @@ l-m {
   display: none;
 }
 
-/* ---------- 二级菜单与分栏（页面自己的左栏） ----------
+/* ---------- 二级菜单、本页目录与分栏（页面自己的左右两栏） ----------
  *
- * 外壳只给一条正文带（.doc-main）。谁需要二级菜单就自己放 <doc-nav> + .doc-split 分两栏。
- * 分栏后两栏各自滚，正文区正好一屏高、于是不滚。 */
+ * 滚动只有一处：外壳的 .doc-main（见 docs/layout.html）。整页靠它滚，所以：
+ *   · .doc-split 自己**不滚**，也不按一屏定高 —— 定高会让 grid 行塌回一屏，左右两栏的
+ *     sticky 就没有可滑动的区间，表现是「一滚就跟着走」（实测出来的，别再改回去）
+ *   · 左右两栏 position: sticky + max-height 一屏，内容超出时各自内部滚
+ *   · 滚轮在侧栏滚到底会自然接力给 .doc-main（浏览器行为），不需要 JS 桥接
+ * 谁需要左栏 / 右栏，就在自己的模板里放 <doc-nav> / <doc-toc>。 */
 
 .doc-split {
-  /* 填满正文区 —— 只声明意图，高度链条由外壳负责 */
-  flex: 1 1 auto;
-  min-height: 0;
   display: grid;
-  /* 左栏固定宽；右栏 minmax(0, 1fr) 而不是 1fr：长代码块不会把列撑破 */
+  /* 中栏 minmax(0, 1fr) 而不是 1fr：长代码块不会把列撑破 */
   grid-template-columns: 15rem minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  overflow: hidden;
+  grid-template-rows: auto;
+  align-items: start;
+  /* 内容能撑多高就多高：sticky 的滑动区间 = 所在 grid 行的高度 */
+  height: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: visible;
 }
 
-/* 左栏：菜单自己滚。样式挂在标签上（<doc-nav> 是自定义元素，见 docs/doc-nav.js） */
-doc-nav {
+/* 放不放 <doc-toc> 由页面标记决定：有右栏才开第三列 */
+.doc-split:has(> doc-toc) {
+  grid-template-columns: 15rem minmax(0, 1fr) 14rem;
+}
+
+/* 左右两栏：钉在顶栏下方，内容超一屏时自己滚。样式挂在标签上（都是自定义元素） */
+doc-nav,
+doc-toc {
   display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
-  min-height: 0;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: calc(100vh - var(--doc-topbar, 3.5rem));
   overflow-y: auto;
-  overscroll-behavior: contain; /* 滚到底先停住；吃不下的滚轮由 doc-nav.js 转给右栏 */
+  scrollbar-width: thin;
+}
+
+doc-nav {
   padding: var(--mc-space-6) var(--mc-space-5);
   border-right: 1px solid rgb(var(--mc-color-border));
-  scrollbar-width: thin;
 }
 
-/* 右栏：正文自己也滚，和左栏互不干扰 */
+/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/doc-toc.js） */
+doc-toc {
+  padding: var(--mc-space-6) var(--mc-space-5);
+  border-left: 1px solid rgb(var(--mc-color-border));
+}
+
+/* 中栏：正文自己不再滚（滚的是 .doc-main），所以不能再写 overflow-y: auto */
 .doc-split > .doc-body {
   min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
+  overflow: visible;
 }
 
-.doc-nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--mc-space-1);
+/* 标题要避开顶栏：目录项点击走 scrollIntoView，锚点位置就靠这条 */
+.doc-body h2,
+.doc-body h3 {
+  scroll-margin-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-4));
 }
 
-.doc-nav-list a {
-  display: block;
-  padding: var(--mc-space-2) var(--mc-space-3);
-  border-radius: var(--mc-radius-md);
-  color: rgb(var(--mc-color-fg-muted));
-  text-decoration: none;
-  font-size: var(--mc-text-sm);
-}
-
-.doc-nav-list a:hover {
-  background-color: rgb(var(--mc-color-surface-sunken));
-  color: rgb(var(--mc-color-fg));
-}
-
-/* 当前页：实心高亮 */
-.doc-nav-list a[aria-current='page'] {
-  background-color: rgb(var(--mc-color-primary-subtle));
-  color: rgb(var(--mc-color-primary));
-  font-weight: var(--mc-weight-medium);
-}
-
-/* 分组标题（组件菜单里的「基础 / 表单 / …」） */
-.doc-nav-group {
-  margin-top: var(--mc-space-4);
-  padding: var(--mc-space-1) var(--mc-space-3);
-  color: rgb(var(--mc-color-fg-subtle));
-  font-size: var(--mc-text-xs);
-  font-weight: var(--mc-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* 未实现的组件：压暗一档，和「已实现」区分开（链接指向规范文档，不是死链） */
-.doc-nav-list a[data-status='planned'] {
+/* 未实现的组件压暗一档，和「已实现」区分开（链接指向规范文档，不是死链）。
+   当前项高亮由 mc-menu 负责：插槽元素的 aria-current → 宿主的 data-current */
+doc-nav a[data-status='planned'] {
   opacity: 0.72;
 }
 
-/* ---------- 窄屏：退化成「菜单在上、正文在下」，全局依然不滚（必须排在基础规则之后） ---------- */
+/* ---------- 窄屏：先收右栏，再退化成「菜单在上、正文在下」（必须排在基础规则之后） ---------- */
+
+/* 中档宽度放不下三栏 */
+@media (max-width: 78rem) {
+  .doc-split:has(> doc-toc) {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+
+  doc-toc {
+    display: none;
+  }
+}
 
 @media (max-width: 52rem) {
   .doc-body {
     padding: var(--mc-space-6) var(--mc-space-5) var(--mc-space-12);
   }
 
-  .doc-split {
+  .doc-split,
+  /* :has() 那条特异性更高（0,2,0），窄屏这里必须带上它，否则被上面的宽屏规则压住 */
+  .doc-split:has(> doc-toc) {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
   }
 
+  /* 退成上下两段后菜单不再钉住（钉住会吃掉半屏） */
   doc-nav {
+    position: static;
     max-height: 45vh;
     padding: var(--mc-space-4) var(--mc-space-5);
     border-right: 0;

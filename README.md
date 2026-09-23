@@ -38,7 +38,7 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 | 表单、反馈、浮层、布局共 15 个 | —                                  | M2 / M3   |
 
 完整清单与逐组件 API 见 [component-spec.md](./agent/component-spec.md) —— 那是唯一真相源，
-文档站的二级菜单、总览卡片都由 `docs/components.js` 登记表渲染，不用手工维护。
+文档站的左栏二级菜单、右栏本页目录、总览卡片都由登记表 / 页面标题渲染，不用手工维护。
 
 ## 用法要点
 
@@ -76,7 +76,7 @@ mc-button::part(base) {
 | [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南           |
 | [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表  |
 | [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单         |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。33 条静默失效的坑，附现象、原因、正确写法                            |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。34 条静默失效的坑，附现象、原因、正确写法                            |
 | [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                             |
 | [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                |
 

@@ -194,7 +194,9 @@
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 正文带：子页面的滚动容器（带二级菜单的页面在这里正好一屏，滚动落在页面内部） */
+    /* 正文带：整页唯一的滚动容器（页面自己的左右栏都 sticky 在它里面）。
+       ⚠️ 这里是**全宽**的：滚动条因此贴窗口右缘；82rem 的内容带移到下面 slotted 的子页面上 ——
+       把 max-width 留在容器上会让滚动条跟着内缩，那正是之前「滚动条在中间」的来源。 */
     .doc-main {
       flex: 1;
       min-height: 0;
@@ -203,8 +205,12 @@
       min-width: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
+      width: 100%;
+    }
 
-      /* width 不能省：flex 交叉轴上的 auto margin 会让它缩成内容宽 */
+    /* 内容带：只约束子页面，不约束承载它的滚动容器。
+       ::slotted 的实参只能是复合选择器，所以不能写成 .doc-main ::slotted(o-page) */
+    ::slotted(o-page) {
       width: 100%;
       max-width: 82rem;
       margin-inline: auto;
@@ -215,6 +221,9 @@
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
+  <!-- 左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染 -->
+  <l-m src="../packages/menu/menu.html"></l-m>
+  <l-m src="../packages/menu/menu-item.html"></l-m>
 
   <header class="doc-top">
     <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>

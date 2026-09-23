@@ -16,8 +16,9 @@
         <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
         <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
         本页的二级菜单、本页卡片、首页的组件区块都是从登记表渲染的； 新页面照抄本页的
-        <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code>
-        就有了同一个菜单，不用手抄整份组件清单。
+        <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code> +
+        <code>&lt;doc-toc&gt;</code>（右栏本页目录），
+        就有了同一个左栏菜单和自动生成的右栏目录，不用手抄整份组件清单。
       </div>
 
       <h2>接入方式</h2>
@@ -124,6 +125,7 @@
         </li>
       </ul>
     </div>
+    <doc-toc></doc-toc>
   </div>
   <script>
     /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，

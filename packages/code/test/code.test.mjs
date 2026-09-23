@@ -173,7 +173,8 @@ check(
 
 /* 滚轮不该被代码块「锁住」：① `.mc-body` 上的 overscroll-behavior: contain 会让「没得滚」的块也变滚动陷阱；
    ② 限高块在 scroll latching 下块内滚到底后，同一次手势的后续滚轮会被吞（实测第 3 次不动、第 4 次才动）。
-   现在的实现：不写 contain + 边界那一下手动把位移转给最近的可滚动祖先。 */
+   现在的实现：不写 contain + 边界那一下手动把位移转给最近的可滚动祖先。
+   「外层」= 外壳的 .doc-main：三栏布局之后整页只有它一个滚动容器（见 docs/content.css 的分栏注释）。 */
 const wheelChain = await (async () => {
   /* 只看演示里的块：抽屉里那块在收起的折叠面板里（尺寸 0），当滚轮落点永远滚不动页面 */
   const snapshot = () =>
@@ -185,7 +186,7 @@ const wheelChain = await (async () => {
         (el) => (el.getAttribute('max-height') || '').trim() !== '',
       );
       const inner = codes[limited].shadowRoot.querySelector('.mc-body');
-      const outer = window.__deepAll('.doc-body')[0];
+      const outer = window.__deepAll('.doc-main')[0];
       return {
         limited,
         inner: Math.round(inner.scrollTop),
@@ -203,7 +204,7 @@ const wheelChain = await (async () => {
     }, index);
   const resetOuter = () =>
     codePage.evaluate(() => {
-      window.__deepAll('.doc-body')[0].scrollTop = 0;
+      window.__deepAll('.doc-main')[0].scrollTop = 0;
     });
 
   // ① 内容不超高的块：滚轮直接带动页面
@@ -235,14 +236,14 @@ const wheelChain = await (async () => {
 check(
   '滚轮在代码块上不会被"锁住"（不超高、没得滚的块要直接滚页面）',
   wheelChain.afterPlain - wheelChain.beforePlain >= 200,
-  `.doc-body ${wheelChain.beforePlain} → ${wheelChain.afterPlain}（可滚范围 ${wheelChain.outerMax}）`,
+  `.doc-main ${wheelChain.beforePlain} → ${wheelChain.afterPlain}（可滚范围 ${wheelChain.outerMax}）`,
 );
 check(
   '限高块滚到底后，紧接着那一次滚轮就带动页面（不是被吞掉）',
   wheelChain.atEnd.innerMax > 0 && // 先确认选中的块真的有内部滚动，否则是假通过
     wheelChain.atEnd.inner === wheelChain.atEnd.innerMax &&
     wheelChain.afterEnd.outer - wheelChain.atEnd.outer >= 40,
-  `块内 ${wheelChain.atEnd.inner}/${wheelChain.atEnd.innerMax} · .doc-body ${wheelChain.atEnd.outer} → ${wheelChain.afterEnd.outer}`,
+  `块内 ${wheelChain.atEnd.inner}/${wheelChain.atEnd.innerMax} · .doc-main ${wheelChain.atEnd.outer} → ${wheelChain.afterEnd.outer}`,
 );
 
 const readKeywordColor = () =>

@@ -221,8 +221,13 @@
 
     /** 往上找最近一个「纵向真的能滚」的祖先，必须跨 shadow 边界（组件 shadow root 是 .mc-body 的父节点，
         宿主的滚动容器在页面那层 shadow 树里）。找不到退回 document.scrollingElement。 */
+    /**
+     * 最近的**可滚动祖先**。⚠️ 要走扁平树（先看 assignedSlot）：
+     * 三栏布局之后整页只有外壳的 .doc-main 一个滚动容器，它住在布局页的 shadow root 里；
+     * 顺着 parentNode 爬会从文档树绕过去、永远碰不到它（实测：块内到底后滚轮被吞掉）。
+     */
     function scrollableAncestor(node) {
-      let el = node.parentNode;
+      let el = node.assignedSlot ?? node.parentNode ?? node.getRootNode()?.host ?? null;
       while (el) {
         if (el instanceof ShadowRoot) {
           el = el.host;
@@ -233,7 +238,7 @@
           const scrolls = cs.overflowY === 'auto' || cs.overflowY === 'scroll';
           if (scrolls && el.scrollHeight > el.clientHeight + 1) return el;
         }
-        el = el.parentNode;
+        el = el.assignedSlot ?? el.parentNode ?? el.getRootNode()?.host ?? null;
       }
       return document.scrollingElement;
     }

@@ -390,6 +390,30 @@ positioned 祖先为基准，铺满整个祖先。
 监听在宿主上的处理器收不到，会误判为组件不工作。
 真实用户点击天然是 composed，无此问题。
 
+### P34 · 跨 shadow 树往上找祖先，要走**扁平树**（`assignedSlot`）
+
+**现象**：`mc-code` 的滚轮接力在块内滚到底后什么都没发生（滚轮像被吞了）；
+`doc-toc` 的滚动高亮永远不亮。两处都在「往上找滚动祖先」，两处都找不到。
+
+**原因**：`parentNode` 走的是**节点树**。子页面是被外壳的 `<slot>` 投影进 `.doc-main` 的，
+顺着 `parentNode` 爬是：`.doc-body → 页面 shadow root → host(o-page) → 布局页 o-page →
+o-app → …` —— **直接跳过了布局页的 shadow root**，而滚动容器 `.doc-main` 正住在那里。
+
+**正确写法**：每一步先看 `assignedSlot`（被投影的节点，扁平树里的父是那个 slot）：
+
+```js
+el = el.assignedSlot ?? el.parentNode ?? el.getRootNode()?.host ?? null;
+```
+
+`docs/doc-toc.js` 的 `scroller()` 与 `packages/code/code.html` 的 `scrollableAncestor()`
+都是按这条改的；同一条推论也适用于「找最近的宿主 / 找最近的容器」这类往上爬的代码。
+
+**同一族的另一条**：`position: sticky` 的滑动区间 = **它所在 grid 行的高度**。
+把分栏容器按一屏定高（`flex: 1 1 auto` + `grid-template-rows: minmax(0, 1fr)`），
+行就塌成一屏，sticky 的侧栏一滚动就跟着走（看起来跟没写 sticky 一样）。
+让容器按内容长高（`height: auto` + `flex: 0 0 auto` + `align-items: start`）即可 ——
+详见 [`components.md` 的外壳布局一节](./components.md#外壳布局与滚动上--正文带整页只有一条滚动条)。
+
 ---
 
 ## 五、页面模块与静态服务器

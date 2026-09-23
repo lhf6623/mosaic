@@ -1,6 +1,10 @@
-/* `<doc-nav>` —— 文档站二级菜单，站点级自定义元素。
+/* `<doc-nav>` —— 文档站左栏二级菜单，站点级自定义元素。
  * 用普通自定义元素而非 ofa 组件：要直接 import 登记表（ofa 页面/组件经 eval，相对 import 解析不了），
- * 且它渲染在页面自己的 shadow root 里，正文样式已在，不需要 shadow DOM。 */
+ * 且它渲染在页面自己的 shadow root 里，正文样式已在，不需要 shadow DOM。
+ *
+ * 菜单的「长相」交给 mc-menu，本文件只管两件事：谁是当前页、哪些组件还没实现；
+ * 滚轮也不用再手工接力 —— 整页现在只有外壳的 .doc-main 一个滚动容器，
+ * 侧栏滚到底由浏览器自然接力过去（见 content.css 的分栏注释）。 */
 
 import { GROUPS, pageOf, OVERVIEW } from './components.js';
 import { route, hashOf, toRepoPath } from './routes.js';
@@ -50,7 +54,6 @@ class DocNav extends HTMLElement {
        不触发 hashchange，只听前者会漏掉「从顶栏点进来」（实测高亮空着）。 */
     window.addEventListener('hashchange', this._onRouteChange);
     document.addEventListener('router-change', this._onRouteChange);
-    bridgeWheel(this);
   }
 
   disconnectedCallback() {
@@ -59,29 +62,30 @@ class DocNav extends HTMLElement {
   }
 
   render() {
-    // 页面自己声明的项优先：原节点直接搬进 <li>，不重建（保住 <a> 上的属性）
+    // 页面自己声明的项优先：原节点直接搬进 <mc-menu-item>，不重建（保住 <a> 上的属性）
     const declared = [...this.children].filter((node) => node.matches('a, li'));
-
-    const ul = document.createElement('ul');
-    ul.className = 'doc-nav-list';
+    const menu = el('mc-menu');
 
     if (declared.length) {
       for (const node of declared) {
         const inner = node.matches('a') ? [node] : [...node.childNodes];
-        ul.append(el('li', {}, inner));
+        menu.append(el('mc-menu-item', {}, inner));
       }
     } else if (this.dataset.source === 'components') {
       for (const item of componentItems()) {
-        ul.append(
-          item.group
-            ? el('li', { className: 'doc-nav-group', textContent: item.group })
-            : this._link(item),
-        );
+        menu.append(item.group ? this._group(item.group) : this._link(item));
       }
     }
 
-    this.replaceChildren(ul);
+    this.replaceChildren(menu);
     this.syncActive();
+  }
+
+  /** 分组标题行。⚠️ 属性得 setAttribute：el() 只赋 property，node.group = '' 是 expando，不是属性 */
+  _group(text) {
+    const item = el('mc-menu-item', { textContent: text });
+    item.setAttribute('group', '');
+    return item;
   }
 
   _link(item) {
@@ -100,10 +104,11 @@ class DocNav extends HTMLElement {
     } else {
       a.href = hashOf(item.to);
     }
-    return el('li', {}, [a]);
+    return el('mc-menu-item', {}, [a]);
   }
 
-  /** 只切 aria-current，不重建 DOM —— 重建会让真实点击的 mousedown/click 落在两个节点上 */
+  /** 只切 aria-current，不重建 DOM —— 重建会让真实点击的 mousedown/click 落在两个节点上。
+      当前项的高亮由 mc-menu 负责：它把 <a> 上的 aria-current 镜像成宿主的 data-current */
   syncActive() {
     const path = route();
     for (const a of this.querySelectorAll('a')) {
@@ -121,29 +126,6 @@ function el(tag, props = {}, children = []) {
   }
   node.append(...children);
   return node;
-}
-
-/* 侧栏吃不下的滚轮转交给同栏正文：两栏各自滚时，指针停在侧栏上就只滚侧栏，内容少时滚轮
- * 彻底没反应（像卡住）。纯 CSS 做不到 —— 外壳固定一屏、不可滚，链上去也是死路。 */
-function bridgeWheel(nav) {
-  nav.addEventListener(
-    'wheel',
-    (e) => {
-      if (e.ctrlKey || e.defaultPrevented) return;
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // 横向留给代码块
-
-      const max = nav.scrollHeight - nav.clientHeight;
-      const canScroll = e.deltaY > 0 ? nav.scrollTop < max - 1 : nav.scrollTop > 1;
-      if (canScroll) return;
-
-      const content = nav.parentElement?.querySelector(':scope > .doc-body');
-      if (!content) return;
-
-      content.scrollTop += e.deltaY;
-      e.preventDefault();
-    },
-    { passive: false }, // 要能 preventDefault，不能是 passive
-  );
 }
 
 /** 注册元素。重复注册会抛，所以先查一遍 */

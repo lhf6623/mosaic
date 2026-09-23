@@ -48,11 +48,11 @@ tests/
 
 一个目录可以放多个同族组件（`packages/button/` 下可再有 `icon-button.html`）。
 
-### 外壳布局与滚动：上 + 正文带，没有全局滚动条
+### 外壳布局与滚动：上 + 正文带，整页只有一条滚动条
 
 外壳是一个 **ofa.js 布局页**（`docs/layout.html`，「嵌套页面/路由」里的父页面）：
 只有两块，并且**固定一屏** —— `html` / `body` 吃满视口且 `overflow: hidden`，
-所以**全局不出滚动条**，滚动一律收敛在内部区域。
+所以**全局不出滚动条**；页面内部也只留**一条**滚动条，就在 `.doc-main` 上。
 
 ```
 body               纵向 flex，height: 100% + overflow: hidden（钉死一屏）
@@ -60,10 +60,30 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
    └─ o-app        flex: 1 1 auto + min-height: 0
       └─ o-page    布局页 docs/layout.html
          ├─ shadow  .doc-top  顶栏（「上」）+ 五个一级菜单
-         │          .doc-main 正文带，flex: 1 + min-height: 0 + overflow-y: auto
+         │          .doc-main 正文带 = **唯一的滚动容器**，flex: 1 + min-height: 0 + overflow-y: auto
+         │                    全宽，82rem 内容带上限挂在 ::slotted(o-page) 上
          └─ o-page  当前子页面（被 <slot> 投影进 .doc-main）
+            └─ shadow  .doc-split（页面自己的分栏，**自己不滚**）
+                       ├─ <doc-nav>  左栏二级菜单：sticky，内容超一屏时自己滚
+                       ├─ .doc-body  中栏正文：跟着 .doc-main 整页滚
+                       └─ <doc-toc>  右栏本页目录：sticky，同上
 ```
 
+> ⚠️ **内容带上限不能写在滚动容器上**：`.doc-main` 若是 `max-width: 82rem` 居中，
+> 它的滚动条也跟着内缩（宽屏下离窗口右缘几百像素），看起来「滚动条跑到中间」。
+> 现在 `.doc-main` 全宽、`::slotted(o-page)` 限宽并居中，滚动条就贴窗口右缘。
+
+> ⚠️ **`.doc-split` 千万不能按一屏定高**（早期的 `flex: 1 1 auto` + `grid-template-rows: minmax(0, 1fr)`）。
+> sticky 的滑动区间 = 它所在 grid 行的高度；行被压成一屏之后，一滚动左右两栏就跟着走
+> （实测：滚 900px 后左栏 top 从 56 变成 −844）。正确的写法是 `height: auto` + `flex: 0 0 auto`
+>
+> - `align-items: start`，让行跟着内容长高。
+
+> ⚠️ **跨 shadow 树找滚动祖先要走扁平树**（先看 `assignedSlot`）。
+> 子页面是被外壳的 `<slot>` 投影进去的，顺 `parentNode` 爬会从文档树绕过去，
+> 永远碰不到住在布局页 shadow root 里的 `.doc-main`。（`docs/doc-toc.js` 的 `scroller()`、
+> `packages/code/code.html` 的 `scrollableAncestor()` 都按这条写。）
+>
 > 样式分两处是 shadow DOM 的硬边界，不是选择：外壳在布局页的 shadow root 里，
 > 所以它的规则写在 `docs/layout.html` 的 `<style>`；`html`/`body` 和
 > `o-router → o-app → o-page` 的高度链在文档树里，所以写在 `docs/shell.css`。
@@ -94,28 +114,32 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 - 冷启动直接带 hash 时，子页面可能比布局页晚一拍挂上 → 高亮补几拍（自限，有子页面就停）。
 - 主题三态（自动 / 亮 / 暗）也在布局页；首帧由 `docs/theme-boot.js` 应用，防闪色。
 
-**二级菜单不在外壳里**。哪个页面需要左栏，就在自己的模板里放 `<doc-nav>`
-（站点级自定义元素，见 `docs/doc-nav.js`），外面套一层 `.doc-split`：
+**三栏都不在外壳里**。页面需要左右栏，就在自己的模板里放 `<doc-nav>` / `<doc-toc>`，
+外面套一层 `.doc-split`：
 
 ```html
 <template page>
   <link rel="stylesheet" href="../content.css" />
   <div class="doc-split">
     <doc-nav data-source="components"></doc-nav>
-    <!-- 菜单项来自组件登记表 -->
+    <!-- 左栏菜单项来自组件登记表 -->
     <div class="doc-body">… 正文 …</div>
+    <doc-toc></doc-toc>
+    <!-- 右栏目录由页面自己的 h2/h3 生成（可以不放，那就是两栏） -->
   </div>
   …
 </template>
 ```
 
-- `.doc-split` 给两栏定高：`<doc-nav>` 和右栏 `.doc-body` 各自 `overflow-y: auto`。
-  于是分栏页里正文带内容正好一屏高、不滚，滚动落在两栏内部。
-- 页面**不想要**左栏就不写 `.doc-split`，正文直接在外壳正文带里滚（`.doc-main`）。
+- **滚动只有 `.doc-main` 一条**：`.doc-split` 不滚（`overflow: visible`），
+  左右两栏 `position: sticky` + `max-height: calc(100vh - 顶栏)`，内容超一屏时各自内部滚。
+- 页面**不想要**侧栏就不写 `.doc-split`，正文直接在外壳正文带里滚（`.doc-main`）。
 - 菜单项也可以由页面自己写：
   `<doc-nav><a href="#/docs/pages/guide.html">快速开始</a></doc-nav>`。
-- 窄屏（≤ 52rem）左右放不下，退化成「菜单在上（封顶 45vh，自己滚）、正文在下」，
-  全局依然不滚。
+- 右栏目录（`docs/doc-toc.js`）扫页面自己的 `h2/h3` 生成，用 `mc-menu` 渲染；
+  **点击是程序化滚动，不是 `#id` 锚点** —— 地址栏 hash 归 ofa 路由器所有，
+  页面正文又在 shadow root 里、URL fragment 也进不去。
+- 窄屏：≤ 78rem 收起右栏（退回两栏）；≤ 52rem 退化成「菜单在上（封顶 45vh）、正文在下」。
 
 因此换页复位要打在布局页的 `.doc-main` 上（`docs/site.js` 里做，且 `.doc-main`
 在 shadow root 里，要穿透查），`window.scrollTo` 在这个外壳里是空操作。
@@ -128,7 +152,8 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 > 轮询渲染。收工条件必须是「**某个** `<o-page src>` 已经是 hash 指向的页面」
 > （嵌套路由下有两个 o-page），不能是「`.doc-body` 换了」——
 > o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻就成立，
-> 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。
+> 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。右栏目录也吃这条：
+> 标题晚到就靠 `MutationObserver` 重扫（`docs/doc-toc.js`）。
 
 #### 演示区：活样例 + 「查看代码」抽屉
 

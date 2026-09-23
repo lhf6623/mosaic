@@ -4,6 +4,7 @@
 import { GROUPS, ALL, pageOf } from './components.js';
 import { route, hashOf } from './routes.js';
 import { defineDocNav } from './doc-nav.js';
+import { defineDocToc } from './doc-toc.js';
 
 /* dataset / style 是只读 getter：Object.assign(node, props) 会抛，且是在渲染途中抛 */
 const el = (tag, props = {}, children = []) => {
@@ -206,6 +207,7 @@ function scheduleRender() {
 /* ---------- 启动 ---------- */
 
 defineDocNav();
+defineDocToc();
 scheduleRender();
 
 /** 换页复位 + 重渲染。滚的是外壳的 .doc-main（在 shadow root 里，window 不可滚） */

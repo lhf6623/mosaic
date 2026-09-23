@@ -56,33 +56,46 @@ check(
 await goTop('组件');
 await page.waitForTimeout(1500);
 
-/* ---- 二级菜单在页面里：外壳只有顶栏 + 正文带，页面自己分左右两栏 ---- */
+/* ---- 三栏：左菜单（doc-nav）+ 正文 + 本页目录（doc-toc），整页只有一条滚动条 ---- */
 
 const shellBox = await page.evaluate(() => {
   const top = window.__deep('.doc-top').getBoundingClientRect();
   const main = window.__deep('.doc-main');
-  const mr = main.getBoundingClientRect();
+  const split = window.__deep('.doc-split');
   const nav = window.__deep('doc-nav');
   const content = window.__deep('.doc-split > .doc-body');
+  const toc = window.__deep('doc-toc');
+  const mr = main.getBoundingClientRect();
+  const sr = split.getBoundingClientRect();
   const nr = nav.getBoundingClientRect();
   const cr = content.getBoundingClientRect();
+  const tr = toc.getBoundingClientRect();
   const r = (n) => Math.round(n);
   return {
     topW: r(top.width),
     viewW: window.innerWidth,
     topBottom: r(top.bottom),
     viewH: window.innerHeight,
+    mainLeft: r(mr.left),
+    mainRight: r(mr.right),
     mainTop: r(mr.top),
     mainBottom: r(mr.bottom),
+    bandLeft: r(sr.left),
+    bandRight: r(sr.right),
     navRight: r(nr.right),
-    contentLeft: r(cr.left),
     navTop: r(nr.top),
-    contentTop: r(cr.top),
     navBottom: r(nr.bottom),
-    contentBottom: r(cr.bottom),
+    navPosition: getComputedStyle(nav).position,
     navOverflowY: getComputedStyle(nav).overflowY,
+    contentLeft: r(cr.left),
+    contentRight: r(cr.right),
     contentOverflowY: getComputedStyle(content).overflowY,
-    // 二级菜单在**子页面**的 shadow 里，不该出现在外壳正文带的 light DOM 里
+    splitOverflowY: getComputedStyle(split).overflowY,
+    tocLeft: r(tr.left),
+    tocTop: r(tr.top),
+    tocRight: r(tr.right),
+    tocPosition: getComputedStyle(toc).position,
+    // 二级菜单 / 目录都在**子页面**的 shadow 里，不该出现在外壳正文带的 light DOM 里
     shellHasNav: !!main.querySelector('doc-nav'),
   };
 });
@@ -99,60 +112,93 @@ check(
   `.doc-main 里出现 <doc-nav>=${shellBox.shellHasNav}`,
 );
 check(
-  '带二级菜单的页面自己分成左右两栏，两栏都占满顶栏以下',
+  '三栏各就各位：左菜单 / 正文 / 本页目录，依次排开',
   shellBox.navRight <= shellBox.contentLeft + 1 &&
-    shellBox.contentLeft > 0 &&
-    shellBox.navTop === shellBox.contentTop &&
-    shellBox.navBottom === shellBox.viewH &&
-    shellBox.contentBottom === shellBox.viewH,
-  `菜单 ${shellBox.navTop}–${shellBox.navBottom}px（右边界 ${shellBox.navRight}px）/ 正文 ${shellBox.contentTop}–${shellBox.contentBottom}px（左边界 ${shellBox.contentLeft}px）`,
+    shellBox.contentRight <= shellBox.tocLeft + 1 &&
+    shellBox.tocRight <= shellBox.bandRight + 1,
+  `菜单→${shellBox.navRight} · 正文 ${shellBox.contentLeft}–${shellBox.contentRight} · 目录 ${shellBox.tocLeft}–${shellBox.tocRight} · 内容带 ${shellBox.bandLeft}–${shellBox.bandRight}`,
 );
 check(
-  '两栏各自滚',
-  shellBox.navOverflowY === 'auto' && shellBox.contentOverflowY === 'auto',
-  `overflow-y 菜单=${shellBox.navOverflowY} 正文=${shellBox.contentOverflowY}`,
+  '内容带居中：82rem 上限算在子页面上，不算在滚动容器上',
+  Math.abs(shellBox.bandLeft - (shellBox.viewW - (shellBox.bandRight - shellBox.bandLeft)) / 2) <= 2,
+  `内容带 ${shellBox.bandLeft}–${shellBox.bandRight}px · 视口 ${shellBox.viewW}px`,
+);
+check(
+  '滚动条只有一条，且贴窗口右缘（.doc-main 全宽，页面自身不滚）',
+  shellBox.mainLeft === 0 &&
+    shellBox.mainRight === shellBox.viewW &&
+    shellBox.contentOverflowY === 'visible' &&
+    shellBox.splitOverflowY === 'visible',
+  `正文带 ${shellBox.mainLeft}–${shellBox.mainRight}px · 中栏 overflow-y=${shellBox.contentOverflowY} · 分栏 overflow-y=${shellBox.splitOverflowY}`,
+);
+check(
+  '左右两栏 sticky 钉在顶栏下方',
+  shellBox.navPosition === 'sticky' &&
+    shellBox.tocPosition === 'sticky' &&
+    shellBox.navTop === shellBox.topBottom &&
+    shellBox.tocTop === shellBox.topBottom,
+  `菜单 position=${shellBox.navPosition} top=${shellBox.navTop} · 目录 position=${shellBox.tocPosition} top=${shellBox.tocTop} · 顶栏底 ${shellBox.topBottom}`,
+);
+
+/** 滚下去：两栏必须还钉在原处（sticky 的滑动区间 = 所在 grid 行的高度，行塌成一屏就会跟着走） */
+const sticky = await page.evaluate(() => {
+  const main = window.__deep('.doc-main');
+  const top = Math.round(window.__deep('.doc-top').getBoundingClientRect().bottom);
+  main.scrollTop = 900;
+  const nav = window.__deep('doc-nav').getBoundingClientRect();
+  const toc = window.__deep('doc-toc').getBoundingClientRect();
+  const body = window.__deep('.doc-split > .doc-body').getBoundingClientRect();
+  return {
+    top,
+    scrolled: Math.round(main.scrollTop),
+    navTop: Math.round(nav.top),
+    tocTop: Math.round(toc.top),
+    bodyTop: Math.round(body.top),
+  };
+});
+check(
+  '滚下去之后左右两栏仍钉在顶栏下方，中栏跟着滚',
+  sticky.scrolled > 100 &&
+    sticky.navTop === sticky.top &&
+    sticky.tocTop === sticky.top &&
+    sticky.bodyTop < sticky.top - 100,
+  `滚 ${sticky.scrolled}px 后：菜单 top=${sticky.navTop} · 目录 top=${sticky.tocTop} · 中栏 top=${sticky.bodyTop} · 顶栏底 ${sticky.top}`,
 );
 
 const longPage = await page.evaluate(() => {
   const main = window.__deep('.doc-main');
   const content = window.__deep('.doc-split > .doc-body');
   const last = content?.lastElementChild;
-  content.scrollTop = content.scrollHeight; // 滚到底，最后一块内容必须够得着
-  const cr = content.getBoundingClientRect();
+  main.scrollTop = main.scrollHeight; // 滚到底，最后一块内容必须够得着
   const lr = last?.getBoundingClientRect();
   return {
+    overflowY: getComputedStyle(main).overflowY,
     mainOver: main.scrollHeight - main.clientHeight,
-    overflowY: getComputedStyle(content).overflowY,
     globalOver: document.documentElement.scrollHeight - window.innerHeight,
-    clientH: content.clientHeight,
-    scrollH: content.scrollHeight,
-    contentTop: cr.top,
-    contentBottom: cr.bottom,
-    lastTop: lr ? lr.top : null,
-    lastBottom: lr ? lr.bottom : null,
+    viewH: window.innerHeight,
+    topBottom: Math.round(window.__deep('.doc-top').getBoundingClientRect().bottom),
+    lastTop: lr ? Math.round(lr.top) : null,
+    lastBottom: lr ? Math.round(lr.bottom) : null,
   };
 });
 check(
-  '长页面在页面自己的正文栏里滚（外壳和 window 都不滚）',
+  '长页面在外壳正文带里滚（页面自己与 window 都不滚）',
   longPage.overflowY === 'auto' &&
     longPage.globalOver <= 1 &&
-    longPage.mainOver <= 1 &&
-    longPage.scrollH > longPage.clientH,
-  `正文栏 ${longPage.clientH}/${longPage.scrollH}px · 外壳正文带溢出 ${longPage.mainOver}px · 全局溢出 ${longPage.globalOver}px`,
+    longPage.mainOver > 100 &&
+    longPage.lastTop !== null,
+  `正文带溢出 ${longPage.mainOver}px · 全局溢出 ${longPage.globalOver}px · overflow-y=${longPage.overflowY}`,
 );
 check(
-  '滚到底后长页面的最后一块内容在正文栏里可见（没被裁掉）',
-  longPage.lastTop !== null &&
-    longPage.lastBottom !== null &&
-    longPage.lastTop >= longPage.contentTop - 1 &&
-    longPage.lastBottom <= longPage.contentBottom + 1,
-  `最后元素 ${Math.round(longPage.lastTop)}–${Math.round(longPage.lastBottom)}px · 正文栏 ${Math.round(longPage.contentTop)}–${Math.round(longPage.contentBottom)}px`,
+  '滚到底后长页面的最后一块内容可见（没被裁掉）',
+  longPage.lastTop >= longPage.topBottom - 1 && longPage.lastBottom <= longPage.viewH + 1,
+  `最后元素 ${longPage.lastTop}–${longPage.lastBottom}px · 可视区 ${longPage.topBottom}–${longPage.viewH}px`,
 );
 
 /*
  * 换页复位：全局不滚之后 window.scrollTo 成了空操作，复位必须打在外壳正文带上
  * （site.js 的 route-change 里做；顶栏 olink 不触发 hashchange，那里同时听 router-change）。
- * 用「设计令牌」这种单列长页面测 —— 它滚的就是外壳正文带。
+ * 用「设计令牌」这种单列长页面测 —— 它滚的也是外壳正文带。
  */
 await goHash('packages/color/page.html');
 await page.evaluate(() => {
@@ -167,18 +213,18 @@ check(
   `切页前 scrollTop=${scrolledBefore}px → 切页后 ${resetTop}px`,
 );
 
-/* 滚轮接力：菜单滚到底后继续滚要转给同一页的正文栏（两栏各自滚，纯 CSS 做不到） */
+/* 滚轮接力：整页只有一条滚动条之后，侧栏滚到底由浏览器自然接力给正文带（不再有 JS 桥接） */
 await goTop('组件');
 await page.waitForTimeout(1200);
 const bridge = await page.evaluate(() => {
+  const main = window.__deep('.doc-main');
   const nav = window.__deep('doc-nav');
-  const content = window.__deep('.doc-split > .doc-body');
+  main.scrollTop = 0;
   nav.scrollTop = nav.scrollHeight; // 先把菜单滚到底
-  content.scrollTop = 0;
   const box = nav.getBoundingClientRect();
   return {
     navMax: nav.scrollHeight - nav.clientHeight,
-    contentMax: content.scrollHeight - content.clientHeight,
+    mainMax: main.scrollHeight - main.clientHeight,
     x: Math.round(box.x + box.width / 2),
     y: Math.round(box.y + box.height / 2),
   };
@@ -188,16 +234,16 @@ await page.mouse.wheel(0, 400);
 await page.waitForTimeout(400);
 const afterWheel = await page.evaluate(() => ({
   navTop: Math.round(window.__deep('doc-nav').scrollTop),
-  contentTop: Math.round(window.__deep('.doc-split > .doc-body').scrollTop),
+  contentTop: Math.round(window.__deep('.doc-main').scrollTop),
   winY: window.scrollY,
 }));
 check(
-  '菜单滚到底后滚轮转给正文栏，window 始终不滚',
+  '菜单滚到底后滚轮自然接力给正文带，window 始终不滚',
   bridge.navMax > 0 &&
-    bridge.contentMax > 400 &&
+    bridge.mainMax > 400 &&
     afterWheel.contentTop > 0 &&
     afterWheel.winY === 0,
-  `菜单可滚 ${bridge.navMax}px / 正文可滚 ${bridge.contentMax}px · 滚轮后正文栏 scrollTop ${afterWheel.contentTop} · window.scrollY ${afterWheel.winY}`,
+  `菜单可滚 ${bridge.navMax}px / 正文带可滚 ${bridge.mainMax}px · 滚轮后正文带 scrollTop ${afterWheel.contentTop} · window.scrollY ${afterWheel.winY}`,
 );
 
 /* 窄屏：375px 放不下五个中文入口，只能让顶栏自己横滚，不能撑出全局横向滚动条 */
