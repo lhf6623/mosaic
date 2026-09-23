@@ -23,7 +23,9 @@ export default async function run({ page, goTop, goHash, check }) {
     const el = window.__deep('doc-toc');
     const main = window.__deep('.doc-main');
     const links = el ? [...el.querySelectorAll('a')] : [];
-    const headings = el ? [...el.getRootNode().querySelectorAll('h2, h3')] : [];
+    // 标题在子页面（被 slot 投影进来的那一页）的 shadow root 里，不在目录元素自己的 root 里
+    const page = [...window.__deepAll('o-page')].at(-1);
+    const headings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
     const levels = links.map((a) => a.dataset.tocId);
     return {
       exists: !!el,
@@ -143,6 +145,40 @@ export default async function run({ page, goTop, goHash, check }) {
   );
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.waitForTimeout(300);
+
+  /* ------------------------------------------------------------------ *
+   * 换页：目录住在分区布局页里、跨页存活，内容换成新页的标题
+   * ------------------------------------------------------------------ */
+
+  await goHash('packages/button/page.html');
+  await page.waitForTimeout(1200);
+  const onButton = await page.evaluate(() => {
+    const el = window.__deep('doc-toc');
+    el.__probeId = 'toc-1';
+    return {
+      first: el.querySelector('a')?.textContent?.trim() ?? null,
+      count: el.querySelectorAll('a').length,
+      current: el.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+    };
+  });
+
+  await goHash('packages/menu/page.html');
+  await page.waitForTimeout(1200);
+  const onMenu = await page.evaluate(() => {
+    const el = window.__deep('doc-toc');
+    return {
+      same: el?.__probeId === 'toc-1',
+      first: el?.querySelector('a')?.textContent?.trim() ?? null,
+      count: el?.querySelectorAll('a').length ?? 0,
+      current: el?.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+    };
+  });
+
+  check(
+    '换页后目录跟着换：元素跨页存活，内容扫的是新页的标题',
+    onMenu.same && onButton.count > 4 && onMenu.count > 4 && onMenu.first !== onButton.first && onMenu.current !== null,
+    `同元素=${onMenu.same} · 首项 ${onButton.first}(${onButton.count}) → ${onMenu.first}(${onMenu.count})`,
+  );
 
   /* ------------------------------------------------------------------ *
    * 单列页面（没有分栏、也就没放 <doc-toc>）：不该凭空长出右栏

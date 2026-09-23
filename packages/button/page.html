@@ -1,200 +1,196 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
-  <!-- 左栏菜单由 <doc-nav> 从 docs/nav.js 渲染（组件清单仍是登记表派生的），面包屑/翻页同理 -->
-  <div class="doc-split">
-    <doc-nav></doc-nav>
-    <div class="doc-body">
-      <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-      <l-m src="./button.html"></l-m>
-      <l-m src="./demos/colors.html"></l-m>
-      <l-m src="./demos/variants.html"></l-m>
-      <l-m src="./demos/sizes.html"></l-m>
-      <l-m src="./demos/states.html"></l-m>
-      <l-m src="./demos/slots.html"></l-m>
-      <l-m src="./demos/block.html"></l-m>
-      <l-m src="./demos/override.html"></l-m>
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./button.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/variants.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/states.html"></l-m>
+    <l-m src="./demos/slots.html"></l-m>
+    <l-m src="./demos/block.html"></l-m>
+    <l-m src="./demos/override.html"></l-m>
 
-      <doc-crumb></doc-crumb>
-      <h1>Button <code>mc-button</code></h1>
-      <p class="doc-lead">
-        按钮。语义色 × 外观样式是两个正交维度， 「描边样式的危险按钮」这种组合能直接写出来。
+    <doc-crumb></doc-crumb>
+    <h1>Button <code>mc-button</code></h1>
+    <p class="doc-lead">
+      按钮。语义色 × 外观样式是两个正交维度， 「描边样式的危险按钮」这种组合能直接写出来。
+    </p>
+    <p class="doc-badges">
+      <span class="doc-badge" data-status="ready">已实现</span>
+      <span class="doc-badge">M1</span>
+      <span class="doc-badge">packages/button/</span>
+    </p>
+
+    <h2>属性</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>color</code></td>
+          <td>六个语义色</td>
+          <td><code>primary</code></td>
+          <td>语义色</td>
+        </tr>
+        <tr>
+          <td><code>variant</code></td>
+          <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
+          <td><code>filled</code></td>
+          <td>外观样式</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>尺寸</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td><code>button</code> <code>submit</code> <code>reset</code></td>
+          <td><code>button</code></td>
+          <td>转发给内部原生 button</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>禁用</td>
+        </tr>
+        <tr>
+          <td><code>loading</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>加载中，显示 spinner 且不可点</td>
+        </tr>
+        <tr>
+          <td><code>block</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>撑满父容器宽度</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>（默认）</td>
+          <td>按钮文案</td>
+        </tr>
+        <tr>
+          <td><code>prefix</code> / <code>suffix</code></td>
+          <td>前置 / 后置图标</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <section class="doc-demo">
+      <h3>语义色</h3>
+      <demo-button-colors></demo-button-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外观 × 颜色（正交组合）</h3>
+      <demo-button-variants></demo-button-variants>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/variants.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-button-sizes></demo-button-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>状态</h3>
+      <demo-button-states></demo-button-states>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>插槽（prefix / suffix）</h3>
+      <demo-button-slots></demo-button-slots>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/slots.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>撑满宽度（block）</h3>
+      <demo-button-block></demo-button-block>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/block.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>原生 CSS 精确覆盖</h3>
+      <demo-button-override></demo-button-override>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/override.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        用原生 <code>style="…"</code> 覆盖；<code>--mc-btn-fill</code> /
+        <code>--mc-btn-accent</code> 是组件的色槽。
       </p>
-      <p class="doc-badges">
-        <span class="doc-badge" data-status="ready">已实现</span>
-        <span class="doc-badge">M1</span>
-        <span class="doc-badge">packages/button/</span>
-      </p>
+    </section>
 
-      <h2>属性</h2>
-      <table class="doc-table">
-        <thead>
-          <tr>
-            <th>属性</th>
-            <th>值</th>
-            <th>默认</th>
-            <th>说明</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>color</code></td>
-            <td>六个语义色</td>
-            <td><code>primary</code></td>
-            <td>语义色</td>
-          </tr>
-          <tr>
-            <td><code>variant</code></td>
-            <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
-            <td><code>filled</code></td>
-            <td>外观样式</td>
-          </tr>
-          <tr>
-            <td><code>size</code></td>
-            <td><code>sm</code> <code>md</code> <code>lg</code></td>
-            <td><code>md</code></td>
-            <td>尺寸</td>
-          </tr>
-          <tr>
-            <td><code>type</code></td>
-            <td><code>button</code> <code>submit</code> <code>reset</code></td>
-            <td><code>button</code></td>
-            <td>转发给内部原生 button</td>
-          </tr>
-          <tr>
-            <td><code>disabled</code></td>
-            <td>布尔</td>
-            <td>—</td>
-            <td>禁用</td>
-          </tr>
-          <tr>
-            <td><code>loading</code></td>
-            <td>布尔</td>
-            <td>—</td>
-            <td>加载中，显示 spinner 且不可点</td>
-          </tr>
-          <tr>
-            <td><code>block</code></td>
-            <td>布尔</td>
-            <td>—</td>
-            <td>撑满父容器宽度</td>
-          </tr>
-        </tbody>
-      </table>
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        点击就是原生 <code>click</code>（自带 <code>composed</code>，会穿过 shadow 边界冒泡），
+        直接写 <code>on:click</code>，没有自定义事件。
+      </li>
+      <li>
+        <code>disabled</code> / <code>loading</code> 时点不动；<code>loading</code> 会显示 spinner
+        并保留原宽度。
+      </li>
+    </ul>
 
-      <h2>插槽</h2>
-      <table class="doc-table">
-        <thead>
-          <tr>
-            <th>插槽</th>
-            <th>说明</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>（默认）</td>
-            <td>按钮文案</td>
-          </tr>
-          <tr>
-            <td><code>prefix</code> / <code>suffix</code></td>
-            <td>前置 / 后置图标</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <section class="doc-demo">
-        <h3>语义色</h3>
-        <demo-button-colors></demo-button-colors>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/colors.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-      </section>
-
-      <section class="doc-demo">
-        <h3>外观 × 颜色（正交组合）</h3>
-        <demo-button-variants></demo-button-variants>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/variants.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-      </section>
-
-      <section class="doc-demo">
-        <h3>尺寸</h3>
-        <demo-button-sizes></demo-button-sizes>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/sizes.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-      </section>
-
-      <section class="doc-demo">
-        <h3>状态</h3>
-        <demo-button-states></demo-button-states>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/states.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-        <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
-      </section>
-
-      <section class="doc-demo">
-        <h3>插槽（prefix / suffix）</h3>
-        <demo-button-slots></demo-button-slots>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/slots.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-      </section>
-
-      <section class="doc-demo">
-        <h3>撑满宽度（block）</h3>
-        <demo-button-block></demo-button-block>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/block.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-      </section>
-
-      <section class="doc-demo">
-        <h3>原生 CSS 精确覆盖</h3>
-        <demo-button-override></demo-button-override>
-        <mc-collapse class="doc-demo-code">
-          <mc-collapse-item header="查看代码"
-            ><mc-code language="html" src="./demos/override.html"></mc-code
-          ></mc-collapse-item>
-        </mc-collapse>
-        <p class="doc-hint">
-          用原生 <code>style="…"</code> 覆盖；<code>--mc-btn-fill</code> /
-          <code>--mc-btn-accent</code> 是组件的色槽。
-        </p>
-      </section>
-
-      <h2>注意事项</h2>
-      <ul>
-        <li>
-          点击就是原生 <code>click</code>（自带 <code>composed</code>，会穿过 shadow 边界冒泡），
-          直接写 <code>on:click</code>，没有自定义事件。
-        </li>
-        <li>
-          <code>disabled</code> / <code>loading</code> 时点不动；<code>loading</code> 会显示 spinner
-          并保留原宽度。
-        </li>
-      </ul>
-
-      <doc-pager></doc-pager>
-    </div>
-    <doc-toc></doc-toc>
+    <doc-pager></doc-pager>
   </div>
   <script>
-    // 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>；相对本页面文件解析
-    export const parent = '../../docs/layout.html';
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
 
     export default () => ({ data: {} });
   </script>

@@ -75,4 +75,67 @@ const menuScroll = await page.evaluate(() => {
 });
 check('页面自带的二级菜单内容超高时自己滚动（overflow-y: auto）', menuScroll.overflowY === 'auto', `overflow-y=${menuScroll.overflowY} scrollH=${menuScroll.scrollH} clientH=${menuScroll.clientH}`);
 check('滚到底后最后一个组件在视口内可见', menuScroll.lastVisibleInViewport, `最后一项是「${menuScroll.lastLabel}」`);
+
+/* ------------------------------------------------------------------ *
+ * 分区布局页（docs/doc-layout.html）：切页时左栏与右栏目录**跨页存活**，
+ * 菜单的滚动位置也留着 —— 三栏住的地方从「每个页面各写一遍」搬到了布局页里。
+ * 以前每切一次页，菜单都被重建、滚动位置弹回顶部（实测 scrollTop 400 → 0）。
+ * ------------------------------------------------------------------ */
+
+await goTop('组件');
+await page.waitForTimeout(900);
+
+const beforeSwitch = await page.evaluate(() => {
+  const nav = window.__deep('doc-nav');
+  const toc = window.__deep('doc-toc');
+  nav.__probeId = 'nav-1';
+  toc.__probeId = 'toc-1';
+  nav.scrollTop = nav.scrollHeight; // 菜单滚到底
+  return {
+    navMax: nav.scrollHeight - nav.clientHeight,
+    navScrollTop: Math.round(nav.scrollTop),
+    tocFirst: toc.querySelector('a')?.textContent?.trim() ?? null,
+  };
+});
+
+// 从左栏真实点进组件页
+await page.evaluate(() => {
+  [...window.__deepAll('doc-nav a')].find((a) => a.textContent.trim() === 'Code')?.click();
+});
+await page
+  .waitForFunction(() => (window.__deepAll('h1')[0]?.textContent ?? '').includes('Code'), {
+    timeout: 8000,
+  })
+  .catch(() => {});
+await page.waitForTimeout(600);
+
+const afterSwitch = await page.evaluate(() => {
+  const nav = window.__deep('doc-nav');
+  const toc = window.__deep('doc-toc');
+  return {
+    h1: window.__deepAll('h1')[0]?.textContent?.trim() ?? null,
+    navSame: nav?.__probeId === 'nav-1',
+    tocSame: toc?.__probeId === 'toc-1',
+    navScrollTop: Math.round(nav?.scrollTop ?? -1),
+    navCurrent: nav?.querySelector('a[aria-current]')?.textContent?.trim() ?? null,
+    tocFirst: toc?.querySelector('a')?.textContent?.trim() ?? null,
+  };
+});
+
+check(
+  '切页时左栏与右栏目录不重建，菜单滚动位置也留着',
+  afterSwitch.navSame &&
+    afterSwitch.tocSame &&
+    beforeSwitch.navMax > 0 &&
+    beforeSwitch.navScrollTop > 0 &&
+    afterSwitch.navScrollTop === beforeSwitch.navScrollTop,
+  `菜单 ${beforeSwitch.navScrollTop} → ${afterSwitch.navScrollTop}（可滚 ${beforeSwitch.navMax}）· 左栏同元素=${afterSwitch.navSame} · 目录同元素=${afterSwitch.tocSame}`,
+);
+check(
+  '切页后左栏高亮与右栏目录都跟着换了页',
+  afterSwitch.navCurrent === 'Code' &&
+    afterSwitch.tocFirst !== null &&
+    afterSwitch.tocFirst !== beforeSwitch.tocFirst,
+  `当前项=${afterSwitch.navCurrent} · 目录首项 ${beforeSwitch.tocFirst} → ${afterSwitch.tocFirst}`,
+);
 }

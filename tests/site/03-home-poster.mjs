@@ -63,7 +63,7 @@ const shellBox = await page.evaluate(() => {
   const main = window.__deep('.doc-main');
   const split = window.__deep('.doc-split');
   const nav = window.__deep('doc-nav');
-  const content = window.__deep('.doc-split > .doc-body');
+  const content = window.__deep('.doc-split > .doc-content');
   const toc = window.__deep('doc-toc');
   const mr = main.getBoundingClientRect();
   const sr = split.getBoundingClientRect();
@@ -147,7 +147,7 @@ const sticky = await page.evaluate(() => {
   main.scrollTop = 900;
   const nav = window.__deep('doc-nav').getBoundingClientRect();
   const toc = window.__deep('doc-toc').getBoundingClientRect();
-  const body = window.__deep('.doc-split > .doc-body').getBoundingClientRect();
+  const body = window.__deep('.doc-split > .doc-content').getBoundingClientRect();
   return {
     top,
     scrolled: Math.round(main.scrollTop),
@@ -167,7 +167,7 @@ check(
 
 const longPage = await page.evaluate(() => {
   const main = window.__deep('.doc-main');
-  const content = window.__deep('.doc-split > .doc-body');
+  const content = window.__deep('.doc-body'); // 子页面自己的正文容器（样式与内容都在它里面）
   const last = content?.lastElementChild;
   main.scrollTop = main.scrollHeight; // 滚到底，最后一块内容必须够得着
   const lr = last?.getBoundingClientRect();

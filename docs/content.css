@@ -578,8 +578,9 @@ doc-toc {
   border-left: 1px solid rgb(var(--mc-color-border));
 }
 
-/* 中栏：正文自己不再滚（滚的是 .doc-main），所以不能再写 overflow-y: auto */
-.doc-split > .doc-body {
+/* 中栏 = 分区布局页里包住 <slot> 的那一栏。它自己不滚（滚的是 .doc-main），
+   也不管内边距 —— 正文的实际内边距在子页面自己的 .doc-body 上（样式得在同一棵 shadow 树里） */
+.doc-split > .doc-content {
   min-width: 0;
   overflow: visible;
 }

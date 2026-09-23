@@ -58,15 +58,18 @@ tests/
 body               纵向 flex，height: 100% + overflow: hidden（钉死一屏）
 └─ o-router        flex: 1（overflow: visible，见下面那条 ⚠️）
    └─ o-app        flex: 1 1 auto + min-height: 0
-      └─ o-page    布局页 docs/layout.html
-         ├─ shadow  .doc-top  顶栏（「上」）+ 五个一级菜单
+      └─ o-page    **外壳** docs/layout.html
+         ├─ shadow  .doc-top  顶栏（「上」）+ 一级入口（来自 docs/nav.js）
          │          .doc-main 正文带 = **唯一的滚动容器**，flex: 1 + min-height: 0 + overflow-y: auto
          │                    全宽，82rem 内容带上限挂在 ::slotted(o-page) 上
-         └─ o-page  当前子页面（被 <slot> 投影进 .doc-main）
-            └─ shadow  .doc-split（页面自己的分栏，**自己不滚**）
-                       ├─ <doc-nav>  左栏二级菜单：sticky，内容超一屏时自己滚
-                       ├─ .doc-body  中栏正文：跟着 .doc-main 整页滚
-                       └─ <doc-toc>  右栏本页目录：sticky，同上
+         └─ o-page  **分区布局页** docs/doc-layout.html（组件文档页都挂在它下面）
+            └─ shadow  .doc-split（三栏，**自己不滚**）
+                       ├─ <doc-nav>     左栏二级菜单：sticky，内容超一屏时自己滚
+                       ├─ .doc-content  中栏：里面是 <slot>
+                       └─ <doc-toc>     右栏本页目录：sticky，同上
+               └─ o-page  **页面** packages/<slug>/page.html（被 slot 投影进中栏）
+                  └─ shadow  .doc-body  正文（内边距 + 排版样式都在这层）
+                             <doc-crumb> 面包屑 / <doc-pager> 翻页
 ```
 
 > ⚠️ **内容带上限不能写在滚动容器上**：`.doc-main` 若是 `max-width: 82rem` 居中，
@@ -88,18 +91,21 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 > 所以它的规则写在 `docs/layout.html` 的 `<style>`；`html`/`body` 和
 > `o-router → o-app → o-page` 的高度链在文档树里，所以写在 `docs/shell.css`。
 >
-> 子页面挂上外壳只写一行：`export const parent = '../layout.html';`
-> （相对**本页面文件**解析；`packages/<slug>/page.html` 里是 `'../../docs/layout.html'`）。
-> 布局页切页时**不重建**，顶栏高亮靠它的 `routerChange()` 钩子。
+> 页面靠 `export const parent` 挂到上一层（相对**本页面文件**解析）：
+> 组件文档页写 `'../../docs/doc-layout.html'`（挂分区布局页），
+> 单列页面（首页/快速开始/规范/设计令牌）写 `'../layout.html'` 或 `'../../docs/layout.html'`（直接挂外壳）。
+> **两层布局页切页时都不重建**：顶栏高亮靠外壳的 `routerChange()` 钩子，左栏菜单与右栏目录则跨页存活
+> （菜单滚动位置不再被切页清掉；实测切页后导航与目录是同一个元素）。
+> 忘了写 `parent`，那一页就掉出外壳（没顶栏、没正文带）；`tests/site/10-nav-data.mjs` 会抓到。
 
 #### 顶栏与主题（都在布局页里）
 
-- 一级菜单就是布局页顶栏里的五个 `<a olink>`；**加一个入口 = 在那里加一条**。
+- 一级入口来自 `docs/nav.js`（**加一个入口 = NAV 加一行**），由布局页渲染；
+  链接用 `hashOf()` 生成 —— `olink` 是编译期指令，运行时造的 `<a olink>` 不会被处理。
 - 高亮只切 `aria-current`，**绝不重建 DOM**：重建会让真人点击的 mousedown / click
   落在两个不同节点上，表现为「菜单要点好几次才跳转」（实测第 1 轮点了 6 次）。
-- 匹配路径要同时吃下两种形式：`olink` 的 href 被 ofa.js 改写成
-  `…/index.html#/docs/pages/home.html`（hash 形式），而页面 `src` 是文件形式
-  （站点还可能挂在子路径下）—— 所以统一归一成「相对仓库根的路径」再比。
+- 高亮 = 当前路由在 `NAV` 里命中哪一支（`locate(route())`）：
+  组件文档页靠「是「组件」的孩子」天然归属，不需要那条 `packages/<slug>/page.html` 的正则兜底。
 - ⚠️ **站内链接必须带部署前缀，两边比较前必须先归一化。**
   ofa 把 hash 当**相对域名根**的地址解析：线上（GitHub Pages 项目页在 `/<repo>/` 下）
   正确的形式是 `#/mosaic/packages/…`，手写 `#/packages/…` 会去取 `/packages/…` → 404；
@@ -107,7 +113,7 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
   （线上实测过）。规则：
   · JS 里拼链接走 `docs/routes.js` 的 `hashOf()`；
   · 页面标记里写 `<a olink href="相对本文件的路径">`，让 ofa 自己带前缀；
-  · 比较前统一用 `toRepoPath()`（布局页那份是同一逻辑的副本，页面模块不能 import）。
+  · 比较前统一用 `toRepoPath()` / `repoPathOf()`（`docs/routes.js`，页面模块也能静态 import）。
   本地复现线上：`node tools/serve.mjs --prefix /mosaic`；冒烟测试里有一条专门的子路径套件。
 - 组件文档页（`packages/<slug>/page.html`）不在顶栏单列，统一点亮「组件」；
   「设计令牌」自己有入口，精确匹配先命中，所以不会被那条兜底规则误伤。

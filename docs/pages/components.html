@@ -1,97 +1,94 @@
 <template page>
   <link rel="stylesheet" href="../content.css" />
-  <!-- 左栏菜单来自 docs/nav.js（「组件」那一支的 menu 由登记表 docs/components.js 派生），本页不用写菜单项 -->
-  <div class="doc-split">
-    <doc-nav></doc-nav>
-    <div class="doc-body">
-      <h1>组件</h1>
-      <p class="doc-lead">
-        组件本体是独立的 <code>.html</code>，源 = 产物，构建不碰它。
-        用哪个引哪个，不会把没用的组件一起下载下来。
-      </p>
+  <!-- 本页只写正文：三栏与左栏菜单在 docs/doc-layout.html，右栏目录由标题生成 -->
+  <div class="doc-body">
+    <h1>组件</h1>
+    <p class="doc-lead">
+      组件本体是独立的 <code>.html</code>，源 = 产物，构建不碰它。
+      用哪个引哪个，不会把没用的组件一起下载下来。
+    </p>
 
-      <div class="doc-note">
-        <strong>加一个新组件要动的地方：</strong>
-        在 <code>docs/components.js</code> 里加一条登记，再建
-        <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
-        <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
-        本页的左栏菜单、本页卡片、首页的组件区块都从登记表派生； 新页面照抄本页的
-        <code>.doc-split</code> + <code>&lt;doc-nav data-source="components"&gt;</code> +
-        <code>&lt;doc-toc&gt;</code>（右栏本页目录），
-        就有了同一个左栏菜单和自动生成的右栏目录，不用手抄整份组件清单。
-      </div>
+    <div class="doc-note">
+      <strong>加一个新组件要动的地方：</strong>
+      在 <code>docs/components.js</code> 里加一条登记，再建
+      <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
+      <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
+      页面只写正文：<code>&lt;div class="doc-body"&gt;</code> 里放内容，
+      <code>export const parent = '../../docs/doc-layout.html'</code> 挂上分区布局页，
+      三栏、左栏菜单、右栏目录、面包屑和翻页就都有了 —— 都不用自己写。
+    </div>
 
-      <h2>接入方式</h2>
-      <p>用哪个引哪个，一个组件一条 <code>&lt;l-m&gt;</code>：</p>
-      <!-- prettier-ignore -->
-      <mc-code language="html">
+    <h2>接入方式</h2>
+    <p>用哪个引哪个，一个组件一条 <code>&lt;l-m&gt;</code>：</p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
       &lt;l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"&gt;&lt;/l-m&gt;
       &lt;mc-button color="primary"&gt;提交&lt;/mc-button&gt;
     </mc-code>
 
-      <h2>全部组件</h2>
-      <div data-component-cards="all"></div>
+    <h2>全部组件</h2>
+    <div data-component-cards="all"></div>
 
-      <h2>共用约定</h2>
-      <p>
-        所有组件的 API 都落在同一套框架里，没有"因为情况特殊"另起一套的。 完整定义见
-        <a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md"
-          >component-spec.md</a
-        >。
-      </p>
+    <h2>共用约定</h2>
+    <p>
+      所有组件的 API 都落在同一套框架里，没有"因为情况特殊"另起一套的。 完整定义见
+      <a href="https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md"
+        >component-spec.md</a
+      >。
+    </p>
 
-      <h3>四个正交维度</h3>
-      <p>
-        <strong>不要把语义色和外观样式混成一维枚举。</strong>
-        混了就没办法表达「描边样式的危险按钮」，而且 CSS 会退化成组合爆炸。
-      </p>
-      <table class="doc-table">
-        <thead>
-          <tr>
-            <th>维度</th>
-            <th>属性</th>
-            <th>取值</th>
-            <th>默认</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>语义色</td>
-            <td><code>color</code></td>
-            <td>
-              <code>primary</code> <code>info</code> <code>success</code> <code>warning</code>
-              <code>danger</code>
-              <code>neutral</code>
-            </td>
-            <td><code>primary</code></td>
-          </tr>
-          <tr>
-            <td>外观样式</td>
-            <td><code>variant</code></td>
-            <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
-            <td><code>filled</code></td>
-          </tr>
-          <tr>
-            <td>尺寸</td>
-            <td><code>size</code></td>
-            <td><code>sm</code> <code>md</code> <code>lg</code></td>
-            <td><code>md</code></td>
-          </tr>
-          <tr>
-            <td>状态</td>
-            <td>
-              <code>disabled</code> <code>loading</code> <code>readonly</code> <code>invalid</code>
-            </td>
-            <td>布尔，存在即真</td>
-            <td>无</td>
-          </tr>
-        </tbody>
-      </table>
+    <h3>四个正交维度</h3>
+    <p>
+      <strong>不要把语义色和外观样式混成一维枚举。</strong>
+      混了就没办法表达「描边样式的危险按钮」，而且 CSS 会退化成组合爆炸。
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>属性</th>
+          <th>取值</th>
+          <th>默认</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>语义色</td>
+          <td><code>color</code></td>
+          <td>
+            <code>primary</code> <code>info</code> <code>success</code> <code>warning</code>
+            <code>danger</code>
+            <code>neutral</code>
+          </td>
+          <td><code>primary</code></td>
+        </tr>
+        <tr>
+          <td>外观样式</td>
+          <td><code>variant</code></td>
+          <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
+          <td><code>filled</code></td>
+        </tr>
+        <tr>
+          <td>尺寸</td>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+        </tr>
+        <tr>
+          <td>状态</td>
+          <td>
+            <code>disabled</code> <code>loading</code> <code>readonly</code> <code>invalid</code>
+          </td>
+          <td>布尔，存在即真</td>
+          <td>无</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <h3>值的读写</h3>
-      <p>标签属性是<strong>初始值</strong>，DOM property 是<strong>运行时状态</strong>。</p>
-      <!-- prettier-ignore -->
-      <mc-code language="text">
+    <h3>值的读写</h3>
+    <p>标签属性是<strong>初始值</strong>，DOM property 是<strong>运行时状态</strong>。</p>
+    <!-- prettier-ignore -->
+    <mc-code language="text">
       &lt;!-- HTML 里设初始值：用 default-* --&gt;
       &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
 
@@ -104,33 +101,31 @@
       btn.removeAttribute("disabled");         // ✅
     </mc-code>
 
-      <h3>事件</h3>
-      <p>
-        <strong>不加 <code>mc-</code> 前缀</strong>，用原生语义名，使用者不需要记两套命名。
-        点击类交互<strong>不定义自定义事件</strong> —— 原生 <code>click</code> 自带
-        <code>composed: true</code>，会穿透 shadow 边界冒泡。
-      </p>
+    <h3>事件</h3>
+    <p>
+      <strong>不加 <code>mc-</code> 前缀</strong>，用原生语义名，使用者不需要记两套命名。
+      点击类交互<strong>不定义自定义事件</strong> —— 原生 <code>click</code> 自带
+      <code>composed: true</code>，会穿透 shadow 边界冒泡。
+    </p>
 
-      <h3>定制</h3>
-      <p>分两级，优先用第一级：</p>
-      <ul>
-        <li>
-          <strong><code>:host</code>（首选）</strong> —— 组件视觉定义在 <code>:host</code> 上，
-          外部内联样式优先级天然最高，连 <code>part</code> 都不需要：
-          <code>&lt;mc-button style="height: 32px"&gt;</code>
-        </li>
-        <li>
-          <strong><code>part</code></strong> —— 只有内部有结构性子元素、
-          且使用者确实需要定制时才暴露，配合 <code>::part()</code> 穿透。
-        </li>
-      </ul>
-    </div>
-    <doc-toc></doc-toc>
+    <h3>定制</h3>
+    <p>分两级，优先用第一级：</p>
+    <ul>
+      <li>
+        <strong><code>:host</code>（首选）</strong> —— 组件视觉定义在 <code>:host</code> 上，
+        外部内联样式优先级天然最高，连 <code>part</code> 都不需要：
+        <code>&lt;mc-button style="height: 32px"&gt;</code>
+      </li>
+      <li>
+        <strong><code>part</code></strong> —— 只有内部有结构性子元素、
+        且使用者确实需要定制时才暴露，配合 <code>::part()</code> 穿透。
+      </li>
+    </ul>
   </div>
   <script>
-    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，
-     * docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'。 */
-    export const parent = '../layout.html';
+    /* 挂到**分区布局页**（三栏 + 左栏菜单 + 右栏目录都在它那里）：相对**本页面文件**解析，
+     * docs/pages/ 下是 '../doc-layout.html'，packages/<slug>/ 下是 '../../docs/doc-layout.html'。 */
+    export const parent = '../doc-layout.html';
 
     export default () => ({ data: {} });
   </script>

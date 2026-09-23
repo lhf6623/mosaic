@@ -12,10 +12,14 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NAV, isGroup } from '../../docs/nav.js';
+import { NAV, isGroup, pagesOf } from '../../docs/nav.js';
 
 /** 仓库根（本文件在 tests/site/ 下） */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+
+/** 外壳页（顶栏 + 正文带）与组件分区的布局页（三栏 + 左栏菜单 + 右栏目录） */
+const SHELL = 'docs/layout.html';
+const SECTION_LAYOUT = 'docs/doc-layout.html';
 
 /** 站点里所有「页面」文件：docs/pages/*.html + packages/<slug>/page.html */
 function pageFiles() {
@@ -34,21 +38,28 @@ function pageFiles() {
 export default async function run({ check }) {
   const pages = pageFiles().map((path) => ({ path, text: readFileSync(`${ROOT}${path}`, 'utf8') }));
 
-  /* ① 每页都挂上了外壳：必须 export const parent，且**相对本文件解析后**落到 docs/layout.html
-        （页面写的是 '../layout.html' 或 '../../docs/layout.html'，两种都对） */
+  /* ① 每页都挂在正确的层上：组件分区里的页面挂分区布局页（doc-layout.html），
+        其余挂在总外壳（layout.html）。页面写的是相对路径（'../doc-layout.html' 等），
+        所以必须**相对本文件解析**后再比 —— 写错或漏写，那一页就掉出外壳（没顶栏、没正文带） */
+  const sectionRoutes = new Set([
+    ...NAV.filter((entry) => entry.menu).map((entry) => entry.to),
+    ...NAV.flatMap((entry) => (entry.menu ? pagesOf(entry) : []).map((page) => page.to)),
+  ]);
   const detached = pages
     .map((page) => {
       const parent = /export const parent\s*=\s*'([^']+)'/.exec(page.text)?.[1];
       const resolved = parent ? posix.normalize(posix.join(posix.dirname(page.path), parent)) : null;
-      return { path: page.path, parent, resolved };
+      const want = sectionRoutes.has(page.path) ? SECTION_LAYOUT : SHELL;
+      return { path: page.path, parent, resolved, want, ok: resolved === want };
     })
-    .filter((page) => page.resolved !== 'docs/layout.html');
+    .filter((page) => !page.ok);
 
   check(
-    `每个页面都写了 export const parent 且指向外壳（${pages.length} 个页面）`,
+    `每个页面都挂在正确的布局页上（${pages.length} 个页面）`,
     detached.length === 0,
-    detached.map((p) => `${p.path} → ${p.parent ?? '(没写)'}（解析成 ${p.resolved ?? '—'}）`).join('\n        ') ||
-      '全部解析到 docs/layout.html',
+    detached
+      .map((p) => `${p.path} → ${p.parent ?? '(没写)'}（解析成 ${p.resolved ?? '—'}，应为 ${p.want}）`)
+      .join('\n        ') || `分区页 → ${SECTION_LAYOUT} · 其余 → ${SHELL}`,
   );
 
   /* ② 每个页面都在 NAV 里（NAV 的入口 to + 各分区叶子 to） */

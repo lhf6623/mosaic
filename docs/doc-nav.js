@@ -22,7 +22,10 @@ const toOf = (a) => toRepoPath(a.getAttribute('href'));
 
 class DocNav extends HTMLElement {
   /** 箭头函数字段：add 和 remove 必须是**同一个引用**，普通方法每次取到的是新函数对象，摘不掉监听 */
-  _onRouteChange = () => this.syncActive();
+  _onRouteChange = () => {
+    this.syncSection();
+    this.syncActive();
+  };
 
   connectedCallback() {
     this.render();
@@ -38,10 +41,22 @@ class DocNav extends HTMLElement {
     document.removeEventListener('router-change', this._onRouteChange);
   }
 
+  /**
+   * 菜单内容 = 当前路由命中那一支的 menu。**只有分区变了才重建**：
+   * 重建会让真人点击的 mousedown / click 落在两个节点上（实测「菜单要点好几次才跳转」），
+   * 同分区内切页只切高亮。
+   */
+  syncSection() {
+    const entry = locate(route())?.entry ?? null;
+    if (entry === this._entry) return;
+    this.render();
+  }
+
   render() {
     // 页面自己声明的项优先：原节点直接搬进 <mc-menu-item>，不重建（保住 <a> 上的属性）
     const declared = [...this.children].filter((node) => node.matches('a, li'));
     const menu = el('mc-menu');
+    this._entry = locate(route())?.entry ?? null;
 
     if (declared.length) {
       for (const node of declared) {
@@ -49,7 +64,7 @@ class DocNav extends HTMLElement {
         menu.append(el('mc-menu-item', {}, inner));
       }
     } else {
-      for (const node of locate(route())?.entry?.menu ?? []) {
+      for (const node of this._entry?.menu ?? []) {
         menu.append(isGroup(node) ? this._group(node.group) : this._link(node));
       }
     }

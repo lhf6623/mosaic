@@ -1,0 +1,26 @@
+<template page>
+  <link rel="stylesheet" href="./content.css" />
+  <!--
+    组件文档页的**分区布局页**：左栏菜单 + 正文槽 + 右栏本页目录。
+
+    packages/<slug>/page.html 与 docs/pages/components.html 用 `export const parent` 挂上来，
+    自己只写正文 —— 三栏、菜单、目录都在这里，页面不用各写一遍（也就不会漏、不会各写各的）。
+    上面还有一层外壳 docs/layout.html（顶栏 + 主题 + 整页滚动带），形成三级嵌套。
+  -->
+  <div class="doc-split">
+    <doc-nav></doc-nav>
+
+    <div class="doc-content">
+      <slot></slot>
+    </div>
+
+    <doc-toc></doc-toc>
+  </div>
+
+  <script>
+    // 挂在文档站外壳下面（相对本文件解析）
+    export const parent = './layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

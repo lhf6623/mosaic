@@ -2,9 +2,9 @@
  * （和 <doc-nav> 一样不进 packages/：它读的是页面结构、知道外壳的滚动容器，
  *   且要渲染进页面自己的 shadow root，见 docs/doc-nav.js 头部那段）。
  *
- * 与 <doc-nav>（左栏、来自登记表）成对：这一栏扫**页面自己的标题**生成，所以：
- *   · 它必须和正文住在同一个 shadow root 里（页面模板里放一个 <doc-toc> 就行），
- *     这样才能 h2/h3 一把捞出来；
+ * 它住在**分区布局页** docs/doc-layout.html 里，正文在**子页面**的 shadow root 里 —— 跨一层
+ * 边界，所以扫标题前要先顺着 <slot> 找到当前那一页（contentRoot()）。换页时 slotchange 会响，
+ * 页内后续渲染（示例、异步卡片）由 MutationObserver 兜。
  *   · 目录项不能用 `#id` 锚点：地址栏 hash 归 ofa 路由器所有（#/packages/…），
  *     而且页面正文在 shadow root 里、URL fragment 也进不去 —— 所以点击一律
  *     preventDefault + 程序化滚动（见 agent/ofa-pitfalls.md 的 P28/P29 一带）；
@@ -59,8 +59,9 @@ class DocToc extends HTMLElement {
 
   connectedCallback() {
     this._observer = new MutationObserver(this._onMutate);
+    this._onSlotChange = () => this.scheduleRender();
 
-    /* 页面模板是整块挂上来的，但异步内容（示例、总览卡片）会晚到 —— 先补几拍，之后交给 observer */
+    /* 内容（子页面、异步示例）会晚到 —— 先补几拍，之后交给 slotchange + observer */
     let tries = 0;
     const settle = () => {
       if (this.render() || ++tries >= 10) return;
@@ -74,6 +75,7 @@ class DocToc extends HTMLElement {
   disconnectedCallback() {
     clearTimeout(this._rebuildTimer);
     this._observer?.disconnect();
+    this._slot?.removeEventListener('slotchange', this._onSlotChange);
     this._scroller?.removeEventListener('scroll', this._onScroll);
     window.removeEventListener('resize', this._onResize);
   }
@@ -83,9 +85,32 @@ class DocToc extends HTMLElement {
     this._rebuildTimer = setTimeout(() => this.render(), REBUILD_DEBOUNCE);
   }
 
+  /** 当前展示中的子页面（被 <slot> 投影进来的那个 o-page）—— 正文与标题都在它自己的 shadow root 里 */
+  contentRoot() {
+    const slot = this.getRootNode()?.querySelector('slot');
+    return slot?.assignedElements().find((el) => el.tagName === 'O-PAGE')?.shadowRoot ?? null;
+  }
+
+  /** 盯住当前那一页：换页靠 slotchange，页内后续渲染靠 observer */
+  bindContent(root) {
+    const slot = this.getRootNode()?.querySelector('slot');
+    if (slot && slot !== this._slot) {
+      this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      slot.addEventListener('slotchange', this._onSlotChange);
+      this._slot = slot;
+    }
+    if (root !== this._observedRoot) {
+      this._observer.disconnect();
+      this._observer.observe(root, { childList: true, subtree: true });
+      this._observedRoot = root;
+    }
+  }
+
   /** 扫标题 → 建目录。返回是否建成了（没标题时由 settle 再试） */
   render() {
-    const root = this.getRootNode();
+    const root = this.contentRoot();
+    if (!root) return false;
+
     const headings = [...root.querySelectorAll(HEADINGS)].filter((h) => h.textContent.trim());
     if (!headings.length) return false;
 
@@ -104,8 +129,8 @@ class DocToc extends HTMLElement {
     this.replaceChildren(this._buildMenu());
     this._menu.addEventListener('click', (event) => this.onItemClick(event));
 
-    // 一次性动作：盯页面内容变化、找到滚动容器并挂上 scroll-spy
-    this._observer.observe(root, { childList: true, subtree: true });
+    // 一次性动作：盯住当前这一页、找到滚动容器并挂上 scroll-spy
+    this.bindContent(root);
     this._scroller ??= this.scroller();
     this._scroller?.addEventListener('scroll', this._onScroll, { passive: true });
 

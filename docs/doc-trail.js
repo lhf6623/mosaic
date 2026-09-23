@@ -36,12 +36,20 @@ class DocPager extends HTMLElement {
     // 标签直接用目标页面的名字，不再手抄一遍
     if (prev) {
       links.push(
-        el('a', { className: 'doc-pager-prev', href: hashOf(prev.to), textContent: `← ${prev.label}` }),
+        el('a', {
+          className: 'doc-pager-prev',
+          href: hashOf(prev.to),
+          textContent: `← ${prev.label}`,
+        }),
       );
     }
     if (next) {
       links.push(
-        el('a', { className: 'doc-pager-next', href: hashOf(next.to), textContent: `${next.label} →` }),
+        el('a', {
+          className: 'doc-pager-next',
+          href: hashOf(next.to),
+          textContent: `${next.label} →`,
+        }),
       );
     }
 
