@@ -1,8 +1,8 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
-  <!-- 二级菜单跟着页面走：这一页自己带组件清单（见 docs/doc-nav.js） -->
+  <!-- 左栏菜单由 <doc-nav> 从 docs/nav.js 渲染（组件清单仍是登记表派生的），面包屑/翻页同理 -->
   <div class="doc-split">
-    <doc-nav data-source="components"></doc-nav>
+    <doc-nav></doc-nav>
     <div class="doc-body">
       <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
       <l-m src="./menu.html"></l-m>
@@ -14,7 +14,7 @@
       <l-m src="./demos/states.html"></l-m>
       <l-m src="./demos/customize.html"></l-m>
 
-      <p class="doc-crumb"><a olink href="../../docs/pages/components.html">组件</a> / Menu</p>
+      <doc-crumb></doc-crumb>
       <h1>Menu <code>mc-menu</code></h1>
       <p class="doc-lead">
         垂直菜单。容器 + 菜单项两个标签；交互元素（原生 <code>&lt;a&gt;</code> /
@@ -327,10 +327,7 @@
         </li>
       </ul>
 
-      <nav class="doc-pager">
-        <a class="doc-pager-prev" olink href="../code/page.html">← Code</a>
-        <a class="doc-pager-next" olink href="../collapse/page.html">Collapse →</a>
-      </nav>
+      <doc-pager></doc-pager>
     </div>
     <doc-toc></doc-toc>
   </div>

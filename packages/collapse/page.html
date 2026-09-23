@@ -1,8 +1,8 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
-  <!-- 二级菜单跟着页面走：这一页自己带组件清单（见 docs/doc-nav.js） -->
+  <!-- 左栏菜单由 <doc-nav> 从 docs/nav.js 渲染（组件清单仍是登记表派生的），面包屑/翻页同理 -->
   <div class="doc-split">
-    <doc-nav data-source="components"></doc-nav>
+    <doc-nav></doc-nav>
     <div class="doc-body">
       <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
       <l-m src="./demos/basic.html"></l-m>
@@ -14,7 +14,7 @@
       <l-m src="./demos/nested.html"></l-m>
       <l-m src="./demos/style-override.html"></l-m>
 
-      <p class="doc-crumb"><a olink href="../../docs/pages/components.html">组件</a> / Collapse</p>
+      <doc-crumb></doc-crumb>
       <h1>Collapse <code>mc-collapse</code></h1>
       <p class="doc-lead">
         折叠面板。容器 + 子项两个标签：容器管外框、尺寸和互斥，子项管自己那格的开合。
@@ -257,9 +257,7 @@
         <li>组件不做高度过渡；要动画自己加在 <code>::part(body)</code> 上。</li>
       </ul>
 
-      <nav class="doc-pager">
-        <a class="doc-pager-prev" olink href="../menu/page.html">← Menu</a>
-      </nav>
+      <doc-pager></doc-pager>
     </div>
     <doc-toc></doc-toc>
   </div>

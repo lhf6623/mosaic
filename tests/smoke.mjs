@@ -21,6 +21,7 @@ const SITE_SUITES = [
   ['./site/07-inject-server.mjs', '站点 · HTML 注入免疫'],
   ['./site/08-subpath.mjs', '站点 · 子路径部署（Pages 项目页）'],
   ['./site/09-doc-toc.mjs', '站点 · 右栏本页目录'],
+  ['./site/10-nav-data.mjs', '站点 · 导航数据对账'],
 ];
 
 const args = process.argv.slice(2);

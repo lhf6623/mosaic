@@ -116,12 +116,12 @@ export default async function run({ check, newPage }) {
     );
 
     /* ⑤ 面包屑与分页链接 */
-    await click('.doc-pager-prev', '← 组件总览');
+    await click('.doc-pager-prev', '← 总览');
     await settle();
     const crumbBack = await h1();
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });
     await settle();
-    await click('.doc-crumb a', '组件');
+    await click('doc-crumb a', '组件');
     await settle();
     const crumb = await h1();
     check(

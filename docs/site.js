@@ -1,5 +1,6 @@
-/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数），并注册两个站点级元素
- * （<doc-nav> 左栏菜单、<doc-toc> 右栏本页目录，各自的实现见同名文件）。
+/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数），并注册站点级元素
+ * （<doc-nav> 左栏菜单、<doc-toc> 右栏本页目录、<doc-crumb>/<doc-pager> 面包屑与翻页，
+ *   实现见同名文件）。
  * 页面模板其实也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
  * 但占位渲染要跨页共用、还得跟着路由轮询，所以统一留在这里。 */
 
@@ -8,6 +9,7 @@ import { route, hashOf } from './routes.js';
 import { el } from './dom.js';
 import { defineDocNav } from './doc-nav.js';
 import { defineDocToc } from './doc-toc.js';
+import { defineDocTrail } from './doc-trail.js';
 
 /** 穿透 shadow root 的查询（正文在 o-page 的 shadow root 里，document.querySelector 看不到） */
 function deepQuery(selector) {
@@ -200,6 +202,7 @@ function scheduleRender() {
 
 defineDocNav();
 defineDocToc();
+defineDocTrail();
 scheduleRender();
 
 /** 换页复位 + 重渲染。滚的是外壳的 .doc-main（在 shadow root 里，window 不可滚） */

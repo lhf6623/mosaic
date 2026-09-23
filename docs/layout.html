@@ -2,9 +2,10 @@
   <!-- 文档站外壳（嵌套路由的布局页）：子页面用 export const parent 挂上来，正文走 <slot> -->
   <script>
     /* 页面模块也能静态 import：ofa 编译期会把相对说明符改写成绝对 URL（实测），
-       所以高亮比较与 aria-current 这两件工具都直接用站点共用模块，不再各抄一份 */
-    import { repoPathOf } from './routes.js';
-    import { setCurrent } from './dom.js';
+       所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
+    import { hashOf, repoPathOf } from './routes.js';
+    import { el, setCurrent } from './dom.js';
+    import { NAV, locate } from './nav.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
@@ -15,6 +16,7 @@
 
       ready() {
         this.readTheme();
+        this.renderTopNav();
         this.syncTopNav();
 
         // 冷启动带 hash 时子页面可能晚一拍挂上，补几拍（自限）
@@ -38,26 +40,23 @@
           return src ? repoPathOf(src) : '';
         },
 
-        // 先精确匹配五个入口；都不中时 packages/<slug>/page.html 一律算「组件」
+        /* 顶栏入口来自 docs/nav.js（加一个入口 = 那里加一行）。
+           ⚠️ 链接用 hashOf() 生成，不用 olink：olink 是编译期指令，运行时造的 <a olink> 不会被处理 */
+        renderTopNav() {
+          const links = NAV.map((entry) =>
+            el('a', { href: hashOf(entry.to), textContent: entry.label }),
+          );
+          this.ele.shadowRoot.querySelector('.doc-top-nav').replaceChildren(...links);
+        },
+
+        /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
+           不再需要那条 packages/<slug>/page.html 的兜底正则 */
         syncTopNav() {
           const current = this.currentPath();
+          const entry = current ? (locate(current)?.entry ?? null) : null;
           const links = [...this.ele.shadowRoot.querySelectorAll('.doc-top-nav a')];
-          const base = this.ele.getAttribute('src') || location.href;
 
-          let matched = false;
-          for (const a of links) {
-            const on =
-              current !== '' && repoPathOf(new URL(a.getAttribute('href'), base).href) === current;
-            if (on) matched = true;
-            setCurrent(a, on);
-          }
-
-          if (!matched) {
-            setCurrent(
-              links.find((a) => a.dataset.section === 'components'),
-              /(^|\/)packages\/[^/]+\/page\.html$/.test(current),
-            );
-          }
+          links.forEach((a, i) => setCurrent(a, entry === NAV[i]));
         },
 
         // 三态主题。首帧由 docs/theme-boot.js（head 里的同步经典脚本）应用
@@ -214,13 +213,8 @@
     <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
     <!-- 一级菜单就是页面本身；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
-    <nav class="doc-top-nav">
-      <a href="./pages/home.html" olink>首页</a>
-      <a href="./pages/guide.html" olink>快速开始</a>
-      <a href="../packages/color/page.html" olink>设计令牌</a>
-      <a href="./pages/specs.html" olink>规范</a>
-      <a href="./pages/components.html" olink data-section="components">组件</a>
-    </nav>
+    <!-- 入口来自 docs/nav.js，由 renderTopNav() 渲染（加一个入口 = NAV 加一行） -->
+    <nav class="doc-top-nav"></nav>
 
     <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
       <span>{{themeLabel}}</span>

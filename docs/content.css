@@ -346,9 +346,12 @@ a.doc-comp-card:hover {
   color: rgb(var(--mc-color-fg-muted));
 }
 
-/* ---------- 组件页头部与翻页 ---------- */
+/* ---------- 组件页头部与翻页 ----------
+ * 面包屑与翻页现在是 <doc-crumb> / <doc-pager> 两个元素（docs/doc-trail.js）从导航数据派生，
+ * 页面里不再手写链接；样式挂在标签上，和 doc-nav / doc-toc 一个套路 */
 
-.doc-crumb {
+doc-crumb {
+  display: block;
   margin: 0 0 var(--mc-space-2);
   font-size: var(--mc-text-sm);
   color: rgb(var(--mc-color-fg-subtle));
@@ -384,7 +387,8 @@ a.doc-comp-card:hover {
   color: rgb(var(--mc-color-success));
 }
 
-.doc-pager {
+/* 翻页（<doc-pager> 渲染出 .doc-pager-prev / .doc-pager-next 两个链接） */
+doc-pager {
   display: flex;
   justify-content: space-between;
   gap: var(--mc-space-4);
