@@ -67,8 +67,9 @@ export default async function run({ page, goTop, goHash, check }) {
 
   const spy = await page.evaluate(async () => {
     const el = window.__deep('doc-toc');
-    const main = window.__deep('.doc-main');
     const before = el.querySelector('a[aria-current]')?.dataset.tocId ?? null;
+    // 滚动在顶栏下面的正文带里（window 不可滚）
+    const main = window.__deep('.doc-main');
     main.scrollTop = Math.round(main.scrollHeight * 0.5);
     await new Promise((r) => setTimeout(r, 250));
     const after = el.querySelector('a[aria-current]')?.dataset.tocId ?? null;
@@ -100,11 +101,12 @@ export default async function run({ page, goTop, goHash, check }) {
 
   const jumped = await page.evaluate((id) => {
     const heading = window.__deepAll(`#${id}`)[0];
-    const main = window.__deep('.doc-main');
+    const topbar = window.__deep('.doc-top');
     const el = window.__deep('doc-toc');
     return {
       hash: location.hash,
-      mainTop: Math.round(main.getBoundingClientRect().top),
+      // 顶栏是 sticky，标题要落在它下面（scroll-margin-top 那条）
+      topbarBottom: Math.round(topbar.getBoundingClientRect().bottom),
       headingTop: heading ? Math.round(heading.getBoundingClientRect().top) : null,
       current: el.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
@@ -113,10 +115,10 @@ export default async function run({ page, goTop, goHash, check }) {
   check(
     '点目录项：内容滚到那个标题（落在顶栏下方、不被压住）',
     jumped.headingTop !== null &&
-      jumped.headingTop > jumped.mainTop &&
-      jumped.headingTop < jumped.mainTop + 120 &&
+      jumped.headingTop >= jumped.topbarBottom - 1 &&
+      jumped.headingTop < jumped.topbarBottom + 120 &&
       jumped.current === target.id,
-    `「${target.text}」标题 top=${jumped.headingTop}px · 正文带顶 ${jumped.mainTop}px · 当前项=${jumped.current}`,
+    `「${target.text}」标题 top=${jumped.headingTop}px · 顶栏底 ${jumped.topbarBottom}px · 当前项=${jumped.current}`,
   );
   check(
     '点目录项不改地址栏 hash（路由仍归路由器管）',
@@ -132,16 +134,23 @@ export default async function run({ page, goTop, goHash, check }) {
   await page.waitForTimeout(400);
   const narrow = await page.evaluate(() => {
     const el = window.__deep('doc-toc');
-    const split = window.__deep('.doc-split');
+    const content = window.__deep('.doc-split > .doc-content');
+    const cs = getComputedStyle(content);
     return {
       display: getComputedStyle(el).display,
-      columns: getComputedStyle(split).gridTemplateColumns.split(' ').length,
+      // 右栏收掉后，正文右侧给它的占位也要跟着去掉；左栏还在，左侧占位要留着
+      paddingRight: cs.paddingRight,
+      paddingLeft: cs.paddingLeft,
+      navFixed: getComputedStyle(window.__deep('doc-nav')).position,
     };
   });
   check(
-    '中档宽度收起右栏，退回两栏',
-    narrow.display === 'none' && narrow.columns === 2,
-    `目录 display=${narrow.display} · 分栏数=${narrow.columns}`,
+    '中档宽度收起右栏，正文右侧的占位也去掉',
+    narrow.display === 'none' &&
+      narrow.paddingRight === '0px' &&
+      narrow.paddingLeft !== '0px' &&
+      narrow.navFixed === 'fixed',
+    `目录 display=${narrow.display} · 中栏 padding ${narrow.paddingLeft}/${narrow.paddingRight} · 左栏 position=${narrow.navFixed}`,
   );
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.waitForTimeout(300);
@@ -186,15 +195,19 @@ export default async function run({ page, goTop, goHash, check }) {
 
   await goHash('docs/pages/guide.html');
   await page.waitForTimeout(900);
-  const single = await page.evaluate(() => ({
-    toc: window.__deepAll('doc-toc').length,
-    split: window.__deepAll('.doc-split').length,
-    mainOver: window.__deep('.doc-main').scrollHeight - window.__deep('.doc-main').clientHeight,
-  }));
+  const single = await page.evaluate(() => {
+    const main = window.__deep('.doc-main');
+    return {
+      toc: window.__deepAll('doc-toc').length,
+      split: window.__deepAll('.doc-split').length,
+      mainOver: main.scrollHeight - main.clientHeight,
+      leftPad: getComputedStyle(window.__deep('.doc-body')).paddingLeft,
+    };
+  });
   check(
-    '单列页面没有分栏也没有目录，正文照旧在外壳正文带里滚',
-    single.toc === 0 && single.split === 0 && single.mainOver > 0,
-    `doc-toc=${single.toc} · doc-split=${single.split} · 正文带溢出 ${single.mainOver}px`,
+    '单列页面没有分栏也没有目录，正文照旧在正文带里滚',
+    single.toc === 0 && single.split === 0 && single.mainOver > 0 && single.leftPad !== '0px',
+    `doc-toc=${single.toc} · doc-split=${single.split} · 正文带可滚 ${single.mainOver}px`,
   );
 
   page.off('response', onResponse);

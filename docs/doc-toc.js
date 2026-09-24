@@ -8,7 +8,7 @@
  *   · 目录项不能用 `#id` 锚点：地址栏 hash 归 ofa 路由器所有（#/packages/…），
  *     而且页面正文在 shadow root 里、URL fragment 也进不去 —— 所以点击一律
  *     preventDefault + 程序化滚动（见 agent/ofa-pitfalls.md 的 P28/P29 一带）；
- *   · 滚动容器只有外壳的 .doc-main（见 content.css 的分栏注释），scroll-spy 盯它；
+ *   · 滚动容器是外壳的 `.doc-main`（顶栏下面那一带，见 layout.html 的注释），scroll-spy 盯它；
  *     高亮仍旧走 mc-menu 那条路：给 <a> 写 aria-current，组件镜像成宿主的 data-current。
  *
  * ⚠️ 标题不是一开始就齐的：组件总览页的卡片由 docs/site.js 异步渲染，才长出分组 h3。
@@ -157,8 +157,10 @@ class DocToc extends HTMLElement {
   }
 
   /**
-   * 最近的滚动祖先。⚠️ 必须走**扁平树**：子页面是被外壳的 <slot> 投影进去的，
-   * 只看 parentElement / getRootNode().host 会从文档树绕过去，永远走不到 .doc-main。
+   * 滚动容器：外壳的 `.doc-main`（顶栏下面那一带，也是页面上唯一的滚动容器）。
+   * ⚠️ 必须走扁平树（先看 `assignedSlot`）：子页面是被外壳的 `<slot>` 投影进去的，
+   * 只看 parentElement / getRootNode().host 会从文档树绕过去，永远碰不到它。
+   * 找不到元素级滚动祖先时退回 window（窗口不在扁平树遍历里）。
    */
   scroller() {
     let node = this.assignedSlot ?? this.parentElement ?? this.getRootNode()?.host ?? null;
@@ -169,7 +171,7 @@ class DocToc extends HTMLElement {
       }
       node = node.assignedSlot ?? node.parentElement ?? node.getRootNode()?.host ?? null;
     }
-    return null;
+    return window;
   }
 
   /** 地址栏 hash 不归我们管，所以只滚不跳 */
@@ -186,7 +188,11 @@ class DocToc extends HTMLElement {
   /** 滚动位置 → 当前项。位置每次现量，演示区抽屉开合后不用额外通知 */
   syncActive() {
     if (!this._entries || !this._scroller) return;
-    const box = this._scroller.getBoundingClientRect();
+    // 窗口滚动时视口就是滚动区（window 没有 getBoundingClientRect）
+    const box =
+      this._scroller === window
+        ? { top: 0, height: window.innerHeight }
+        : this._scroller.getBoundingClientRect();
     const line = box.top + Math.min(box.height * ACTIVE_BAND_RATIO, ACTIVE_BAND_MAX);
 
     let active = this._entries[0];

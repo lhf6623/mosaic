@@ -1,6 +1,9 @@
 /* ============================================================================
- * 文档站 —— 文档级样式：视口契约 + 路由/页面的高度链（外壳在 layout.html 的 shadow root 里）。
+ * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。
  * 刻意不分层：未分层声明赢过分层声明，不用 !important 就能压过 mosaic.css 的工具类。
+ *
+ * 滚动模型：**整页由窗口滚**，左右两栏是 position: fixed（见 content.css 的分栏注释），
+ * 不参与文档流 —— 页面高度怎么变都带不走它们，也没有 sticky 的滑动区间问题。
  * ========================================================================== */
 
 *,
@@ -15,14 +18,14 @@ body {
   padding: 0;
 }
 
+/* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此**从顶栏下面开始**，不会伸进头部）。
+   滚动只有一处，就在 .doc-main（见 docs/layout.html）。 */
 html {
   height: 100%;
 }
 
-/* 外壳固定一屏：height + overflow: hidden，滚动只发生在内部区域 */
 body {
-  display: flex;
-  flex-direction: column;
+  display: block;
   height: 100%;
   overflow: hidden;
 
@@ -34,21 +37,11 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-o-router {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-
-  /* 覆盖 o-router 自带的 :host{overflow:hidden}，否则长页面被静默截断（见 agent/components.md） */
-  overflow: visible;
-}
-
-/* 布局页与子页面都在这条链上：谁都不能按内容撑高，min-height: 0 不能省 */
+/* ⚠️ o-router 自带 :host{overflow:hidden}：长页面会被它静默截断（滚动不再上传）。
+   这里退回 visible；o-app / o-page 同理，一律不当滚动容器。 */
+o-router,
 o-app,
 o-page {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  display: block;
+  overflow: visible;
 }

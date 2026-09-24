@@ -5,7 +5,9 @@
 
 /* ---------- 正文 ---------- */
 
-/* 外壳的 .doc-main 刻意不给内边距（分栏页要让左栏贴到外壳边缘），留白由页面自己加 */
+/* 正文宽度**不设上限**（视口多宽就多宽），内边距留给页面自己。
+   宽度下限由承载它的那一层负责：组件页在中栏（.doc-content 的 min-width），
+   单列页面直接由窗口决定。 */
 .doc-body {
   padding: var(--mc-space-8) var(--mc-space-8) var(--mc-space-16);
 }
@@ -423,9 +425,9 @@ doc-pager {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 填满内容区：只声明意图，高度链由外壳负责（shell.css + layout.html 的 .doc-main）。 */
-  flex: 1 1 auto;
-  min-height: 0;
+  /* 正好一屏（顶栏以下）—— 滚动模型换成窗口滚之后，原来靠外壳 flex 撑高的那条不再有效，
+     这里得自己声明高度，海报的方块网格才是按「一屏」算出来的 */
+  min-height: calc(100vh - var(--doc-topbar, 3.5rem));
   padding-block: var(--mc-space-8);
   /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
   overflow: hidden;
@@ -528,61 +530,63 @@ l-m {
   display: none;
 }
 
-/* ---------- 二级菜单、本页目录与分栏（页面自己的左右两栏） ----------
+/* ---------- 浮动侧栏 + 正文留位（页面自己的左右两栏） ----------
  *
- * 滚动只有一处：外壳的 .doc-main（见 docs/layout.html）。整页靠它滚，所以：
- *   · .doc-split 自己**不滚**，也不按一屏定高 —— 定高会让 grid 行塌回一屏，左右两栏的
- *     sticky 就没有可滑动的区间，表现是「一滚就跟着走」（实测出来的，别再改回去）
- *   · 左右两栏 position: sticky + max-height 一屏，内容超出时各自内部滚
- *   · 滚轮在侧栏滚到底会自然接力给 .doc-main（浏览器行为），不需要 JS 桥接
+ * 左右两栏 position: fixed、**不在文档流里**：
+ *   · 高度固定 100%（= 视口高），内部超出时自己滚；顶部用 padding 让开顶栏
+ *     （顶栏 z-index 高一档，会盖住两栏顶部那一条）
+ *   · 于是**不存在 sticky 的滑动区间问题** —— 内容怎么高怎么矮、切到哪一页，两栏都不动；
+ *     页面高度变化也不再带动它们（这正是之前「换页时整页塌一下」的根源）
+ *   · 正文用 padding 把两栏的位置留出来；中栏宽度**不设上限**（视口多宽就多宽），
+ *     只留一条兜底下限 —— 两栏是 fixed、不占宽度，所以「正文多宽」与「两栏多宽」互不牵连
+ *   · 滚动在顶栏下面的正文带（docs/layout.html 的 .doc-main）里发生，不影响两栏；
+ *     滚动条因此从顶栏下方开始，不会像窗口滚动条那样伸进头部
+ *   · ⚠️ fixed 的包含块是视口，前提是祖先链上没有 transform / filter / perspective /
+ *     contain:paint / will-change —— 谁给外壳或布局页加了这些，两栏就会退化成跟着内容滚
+ *   · 滚轮在两栏里滚到底后不再接力给正文（两栏不在正文的滚动链上）—— 取舍见 agent/components.md
  * 谁需要左栏 / 右栏，就在自己的模板里放 <doc-nav> / <doc-toc>。 */
 
 .doc-split {
-  display: grid;
-  /* 中栏 minmax(0, 1fr) 而不是 1fr：长代码块不会把列撑破 */
-  grid-template-columns: 15rem minmax(0, 1fr);
-  grid-template-rows: auto;
-  align-items: start;
-  /* 内容能撑多高就多高：sticky 的滑动区间 = 所在 grid 行的高度 */
-  height: auto;
-  flex: 0 0 auto;
+  display: block;
   min-width: 0;
-  overflow: visible;
 }
 
-/* 放不放 <doc-toc> 由页面标记决定：有右栏才开第三列 */
-.doc-split:has(> doc-toc) {
-  grid-template-columns: 15rem minmax(0, 1fr) 14rem;
-}
-
-/* 左右两栏：钉在顶栏下方，内容超一屏时自己滚。样式挂在标签上（都是自定义元素） */
+/* 左右两栏：浮在窗口两侧，整屏高，自己滚。样式挂在标签上（都是自定义元素） */
 doc-nav,
 doc-toc {
   display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
-  position: sticky;
+  position: fixed;
   top: 0;
-  align-self: start;
-  max-height: calc(100vh - var(--doc-topbar, 3.5rem));
+  height: 100%;
+  z-index: var(--mc-z-sticky); /* 顶栏比它高一档，见 layout.html */
+  padding-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-6));
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
 doc-nav {
-  padding: var(--mc-space-6) var(--mc-space-5);
+  left: 0;
+  width: 15rem;
+  padding-inline: var(--mc-space-5);
   border-right: 1px solid rgb(var(--mc-color-border));
 }
 
 /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/doc-toc.js） */
 doc-toc {
-  padding: var(--mc-space-6) var(--mc-space-5);
+  right: 0;
+  width: 14rem;
+  padding-inline: var(--mc-space-5);
   border-left: 1px solid rgb(var(--mc-color-border));
 }
 
-/* 中栏 = 分区布局页里包住 <slot> 的那一栏。它自己不滚（滚的是 .doc-main），
-   也不管内边距 —— 正文的实际内边距在子页面自己的 .doc-body 上（样式得在同一棵 shadow 树里） */
+/* 中栏 = 分区布局页里包住 <slot> 的那一栏。左右 padding 就是两栏的占位，
+   宽度**不设上限**：视口多宽正文就用多宽（两栏是 fixed，不占它的宽度）。
+   只留一条下限兜底（20rem = 320px）：再窄就让窗口横向滚，不硬挤成一列字。
+   窄屏真正的处理在两条断点上（≤78rem 收右栏、≤52rem 左栏不再浮动、占位归零）。
+   它自己不滚（滚的是窗口）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
 .doc-split > .doc-content {
-  min-width: 0;
-  overflow: visible;
+  min-width: 20rem;
+  padding-inline: 15rem 14rem;
 }
 
 /* 标题要避开顶栏：目录项点击走 scrollIntoView，锚点位置就靠这条 */
@@ -596,14 +600,14 @@ doc-toc {
 
 /* ---------- 窄屏：先收右栏，再退化成「菜单在上、正文在下」（必须排在基础规则之后） ---------- */
 
-/* 中档宽度放不下三栏 */
+/* 中档宽度放不下右栏：收掉它，右侧的占位也跟着去掉 */
 @media (max-width: 78rem) {
-  .doc-split:has(> doc-toc) {
-    grid-template-columns: 15rem minmax(0, 1fr);
-  }
-
   doc-toc {
     display: none;
+  }
+
+  .doc-split > .doc-content {
+    padding-right: 0;
   }
 }
 
@@ -612,18 +616,18 @@ doc-toc {
     padding: var(--mc-space-6) var(--mc-space-5) var(--mc-space-12);
   }
 
-  .doc-split,
-  /* :has() 那条特异性更高（0,2,0），窄屏这里必须带上它，否则被上面的宽屏规则压住 */
-  .doc-split:has(> doc-toc) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  /* 退成上下两段后菜单不再钉住（钉住会吃掉半屏） */
+  /* 窄屏放不下浮动侧栏：左栏回到文档流顶部（浮动会盖住半屏正文） */
   doc-nav {
     position: static;
+    width: auto;
+    height: auto;
     max-height: 45vh;
     padding: var(--mc-space-4) var(--mc-space-5);
     border-right: 0;
     border-bottom: 1px solid rgb(var(--mc-color-border));
+  }
+
+  .doc-split > .doc-content {
+    padding-inline: 0;
   }
 }

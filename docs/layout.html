@@ -98,16 +98,16 @@
     }
 
     :host {
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+      display: block;
       --doc-topbar: 3.5rem;
     }
 
+    /* 顶栏是固定的一行（外壳锁一屏，正文带在它下面自己滚）。
+       z-index 要比浮动侧栏高一档：侧栏是 fixed，而且是被 <slot> 投影进来的
+       （在绘制顺序里靠后），同层会盖住顶栏 */
     .doc-top {
       position: relative;
-      z-index: var(--mc-z-sticky);
-      flex: none;
+      z-index: calc(var(--mc-z-sticky) + 1);
       display: flex;
       align-items: center;
       gap: var(--mc-space-5);
@@ -178,26 +178,33 @@
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 正文带：整页唯一的滚动容器（页面自己的左右栏都 sticky 在它里面）。
-       ⚠️ 这里是**全宽**的：滚动条因此贴窗口右缘；82rem 的内容带移到下面 slotted 的子页面上 ——
-       把 max-width 留在容器上会让滚动条跟着内缩，那正是之前「滚动条在中间」的来源。 */
-    .doc-main {
-      flex: 1;
-      min-height: 0;
+    /* 外壳 = 一屏高的纵向 flex：顶栏定高（flex: none），正文带吃掉剩下的（flex: 1 + min-height: 0）。
+       不需要把高度一层层从 body 传下来 —— 这一层自己声明 height: 100vh。
+       正文带因此正好从顶栏下面开始：它的滚动条不会像窗口滚动条那样伸进头部里去。 */
+    .doc-shell {
+      height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    /* 正文带：**唯一的滚动容器**。全宽 → 滚动条贴窗口右缘；
+       左右两栏是 position: fixed（见 docs/content.css 的分栏注释），不占这里的布局。 */
+    .doc-main {
+      flex: 1;
+      min-height: 0; /* 不写这一条，flex 子项会被内容撑高、滚不起来 */
+      display: block;
+      width: 100%;
       min-width: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      width: 100%;
     }
 
-    /* 内容带：只约束子页面，不约束承载它的滚动容器。
+    /* 子页面只负责铺满宽度；正文多宽由页面自己决定（组件页还要先给浮动侧栏留出位置，
+       见 docs/content.css 的分栏注释 —— 宽度不设上限，只留下限）。
        ::slotted 的实参只能是复合选择器，所以不能写成 .doc-main ::slotted(o-page) */
     ::slotted(o-page) {
+      display: block;
       width: 100%;
-      max-width: 82rem;
-      margin-inline: auto;
     }
   </style>
 
@@ -211,19 +218,22 @@
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
 
-  <header class="doc-top">
-    <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
+  <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->
+  <div class="doc-shell">
+    <header class="doc-top">
+      <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
-    <!-- 一级菜单就是页面本身；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
-    <!-- 入口来自 docs/site-map.js 的 TOPBAR，由 renderTopNav() 渲染（加一个入口 = 那里加一行） -->
-    <nav class="doc-top-nav"></nav>
+      <!-- 一级菜单就是页面本身；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
+      <!-- 入口来自 docs/site-map.js 的 TOPBAR，由 renderTopNav() 渲染（加一个入口 = 那里加一行） -->
+      <nav class="doc-top-nav"></nav>
 
-    <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
-      <span>{{themeLabel}}</span>
-    </button>
-  </header>
+      <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
+        <span>{{themeLabel}}</span>
+      </button>
+    </header>
 
-  <main class="doc-main">
-    <slot></slot>
-  </main>
+    <main class="doc-main">
+      <slot></slot>
+    </main>
+  </div>
 </template>

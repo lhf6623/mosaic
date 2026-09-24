@@ -180,6 +180,10 @@ function isRoutedPageMounted() {
   });
 }
 
+/* 以前这里有一段「换页时把旧页高度垫在中间栏上」的兜底：那时整页高度跟着内容走，
+   演示组件异步升级会让页面先矮后高地闪一下。现在两栏浮动 + 窗口滚动（见 content.css 的分栏注释），
+   页面高度变化不再带动任何固定元素，这段就不需要了。 */
+
 function scheduleRender() {
   clearInterval(pollTimer);
 
@@ -199,6 +203,47 @@ function scheduleRender() {
   tick();
   pollTimer = setInterval(tick, RENDER_POLL_MS);
 }
+
+/* ---------- 侧栏滚到底后，滚轮接力给正文带 ----------
+ *
+ * 两栏是 position: fixed（见 content.css 的分栏注释）：fixed 元素的滚轮链终点是**视口**，
+ * 而视口不滚（外壳锁一屏，滚的是 .doc-main）—— 于是滚轮在栏内到底后会被吞掉。
+ * 这里只在边界那一下接管、转发给正文带，栏内还能滚时一律不插手
+ * （同 packages/code/code.html 里限高代码块的处理）。
+ */
+const WHEEL_LINE = 16;
+
+function wheelPixels(event) {
+  if (event.deltaMode === 1) return event.deltaY * WHEEL_LINE;
+  if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
+  return event.deltaY;
+}
+
+// ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主（实测是 o-page），
+// 只能用 composedPath() 在事件路径里认出 <doc-nav> / <doc-toc>
+document.addEventListener(
+  'wheel',
+  (event) => {
+    if (!event.deltaY || event.ctrlKey || event.metaKey) return;
+
+    const host = event
+      .composedPath()
+      .find((node) => node instanceof Element && node.matches?.('doc-nav, doc-toc'));
+    if (!host) return;
+
+    const down = event.deltaY > 0;
+    const atTop = host.scrollTop <= 0;
+    const atBottom = host.scrollTop + host.clientHeight >= host.scrollHeight - 1;
+    if ((down && !atBottom) || (!down && !atTop)) return;
+
+    const scroller = deepQuery('.doc-main')[0];
+    if (!scroller) return;
+
+    event.preventDefault(); // 拦掉「被吞掉的那一次」，改由我们转发
+    scroller.scrollTop += wheelPixels(event);
+  },
+  { passive: false },
+);
 
 /* ---------- 启动 ---------- */
 

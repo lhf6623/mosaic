@@ -142,4 +142,45 @@ check(
     afterSwitch.tocFirst !== beforeSwitch.tocFirst,
   `当前项=${afterSwitch.navCurrent} · 目录首项 ${beforeSwitch.tocFirst} → ${afterSwitch.tocFirst}`,
 );
+
+/* ------------------------------------------------------------------ *
+ * 10.6 【回归】换页时两侧浮动栏一动不动
+ * 两栏是 position: fixed、不在文档流里（见 content.css 的分栏注释）：新页的演示组件是异步
+ * 升级的，内容高度会在几百毫秒里从 5057 变到 2631 再长回来 —— 但页面高度怎么变都带不走它们。
+ * （旧模型里两栏靠 sticky 挂在网格行上，内容一矮整页就跟着塌一下，那条现在结构上不可能了。）
+ * ------------------------------------------------------------------ */
+
+await goTop('组件');
+await page.waitForTimeout(1200);
+
+await page.evaluate(() => {
+  window.__navFrames = [];
+  const t0 = performance.now();
+  const tick = () => {
+    const nav = window.__deep('doc-nav');
+    const toc = window.__deep('doc-toc');
+    window.__navFrames.push([
+      Math.round(nav.getBoundingClientRect().top),
+      Math.round(toc.getBoundingClientRect().top),
+      Math.round(window.scrollY),
+    ]);
+    if (performance.now() - t0 < 1500) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+await page.evaluate(() => {
+  window.__inside('doc-nav', 'a')
+    .find((a) => a.textContent.trim() === 'Button')
+    ?.click();
+});
+await page.waitForTimeout(1800);
+
+const navFrames = await page.evaluate(() => window.__navFrames);
+const moved = navFrames.filter(([navTop, tocTop, y]) => navTop !== 0 || tocTop !== 0 || y !== 0);
+
+check(
+  '换页时两侧浮动栏一动不动（内容高矮与它们无关）',
+  navFrames.length > 30 && moved.length === 0,
+  `${navFrames.length} 帧里移动 ${moved.length} 帧 · 末帧 nav.top=${navFrames.at(-1)?.[0]} toc.top=${navFrames.at(-1)?.[1]} scrollY=${navFrames.at(-1)?.[2]}`,
+);
 }
