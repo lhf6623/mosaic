@@ -317,13 +317,15 @@ check(
 /* 运行时改属性：language 换语言、line-numbers 换行号模式 */
 const codeRuntime = await codePage.evaluate(async () => {
   const el = window.__deepAll('mc-code').find((c) => c.getAttribute('language') === 'html');
-  const before = el.shadowRoot.querySelector('.mc-block').querySelectorAll('span[class*="hljs-"]').length;
+  const block = () => el.shadowRoot.querySelector('.mc-block');
+  const tokens = () => block().querySelectorAll('span[class*="hljs-"]').length;
+  const before = tokens();
   el.setAttribute('language', 'css');
-  await new Promise((r) => setTimeout(r, 500)); // P4：setAttribute 异步生效
-  const after = {
-    tokens: el.shadowRoot.querySelector('.mc-block').querySelectorAll('span[class*="hljs-"]').length,
-    hasCssToken: !!el.shadowRoot.querySelector('.mc-block span[class*="hljs-"]'),
-  };
+  /* 语言包是**按需从 CDN 取**的：睡固定一拍会在网慢时假红（实测同一份代码有一次 165/166）。
+     这里等条件、不等时间。 */
+  const deadline = Date.now() + 8000;
+  while (Date.now() < deadline && tokens() === 0) await new Promise((r) => setTimeout(r, 100));
+  const after = { tokens: tokens(), hasCssToken: tokens() > 0 };
   const sourceLines = el.code.split('\n').length;
   el.setAttribute('line-numbers', '');
   await new Promise((r) => setTimeout(r, 400));
@@ -333,7 +335,7 @@ const codeRuntime = await codePage.evaluate(async () => {
   return { before, after, sourceLines, lines, back: el.shadowRoot.querySelectorAll('.mc-line').length };
 });
 check(
-  '改 language 会重新高亮（P4：等一拍再断言）',
+  '改 language 会重新高亮（语言包从 CDN 取，等的是条件不是固定一拍）',
   codeRuntime.after.hasCssToken && codeRuntime.after.tokens > 0,
   `切换前 token ${codeRuntime.before} → 切换后 ${codeRuntime.after.tokens}`,
 );
