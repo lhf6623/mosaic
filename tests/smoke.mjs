@@ -2,8 +2,16 @@
 /**
  * Mosaic 端到端冒烟测试入口（playwright-core + 系统 Chrome）。
  *
- * 用法：node tests/smoke.mjs [slug] [--site]（先起 `pnpm dev`）；
- * 环境变量 BASE_URL / CHANNEL。
+ * 用法（先起 `pnpm dev`）：
+ *   node tests/smoke.mjs                 全量：10 个站点套件 + 每个 READY 组件的套件
+ *   node tests/smoke.mjs --site          只跑站点套件
+ *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（02 / 04 / 10）——
+ *                                        位置参数同时按「套件文件 / 标签是否包含它」过滤；
+ *                                        一个站点套件都没匹配上时退回「站点全部 + 该组件」，保住
+ *                                        `--site button` 这种老用法
+ *   node tests/smoke.mjs menu            只跑 menu 组件套件；`menu --site` 就是它还加站点套件
+ *
+ * 环境变量 BASE_URL / CHANNEL / BROWSER_NO_PROXY=1（本机代理挂掉时直连）。
  */
 
 import { existsSync } from 'node:fs';
@@ -31,7 +39,13 @@ const onlySite = args.includes('--site') && wanted.length === 0;
 const includeSite = args.includes('--site') || wanted.length === 0;
 const includeComponents = !onlySite;
 
-const suites = includeSite ? [...SITE_SUITES] : [];
+/* 位置参数先当站点套件过滤（套件文件或标签包含它就留下）。一个都没命中时说明给的是组件 slug，
+   按老规矩跑全部站点 —— 于是 `--site button` 仍是「站点全部 + button 组件套件」。 */
+const pickedSite = wanted.length
+  ? SITE_SUITES.filter((suite) => wanted.some((w) => suite[0].includes(w) || suite[1].includes(w)))
+  : SITE_SUITES;
+
+const suites = includeSite ? [...(pickedSite.length ? pickedSite : SITE_SUITES)] : [];
 if (includeComponents) {
   for (const c of READY) {
     const slug = slugOf(c);
@@ -43,7 +57,9 @@ if (includeComponents) {
 if (!suites.length) {
   console.error(
     `\n没有匹配的套件：${args.join(' ') || '(空)'}\n` +
-      `  可用：${READY.map((c) => c.slug).join(' / ')} · 或者 --site\n`,
+      `  站点套件：${SITE_SUITES.map(([path]) => path.replace('./site/', '').replace('.mjs', '')).join(' / ')}\n` +
+      `  组件套件：${READY.map(slugOf).join(' / ')}\n` +
+      `  例：--site nav · --site 10 · menu\n`,
   );
   process.exit(1);
 }

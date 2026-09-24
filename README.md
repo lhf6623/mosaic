@@ -104,8 +104,9 @@ pnpm install
 pnpm tokens        # 生成令牌并自检对比度（不达标退出 1）
 pnpm build         # = tokens && build:css → packages/boot/mosaic.css
 pnpm dev           # 本地服务器：http://localhost:8642（零依赖，强制禁缓存）
-pnpm test          # 真浏览器冒烟测试（驱动本机 Chrome，125 项断言）
-pnpm test <slug>   # 只跑某个组件的套件；pnpm test:site 只跑站点套件
+pnpm test          # 真浏览器冒烟测试（驱动本机 Chrome）：10 个站点套件 + 每个已实现组件的套件
+pnpm test <slug>   # 只跑某个组件的套件（如 pnpm test menu）
+pnpm test:site     # 只跑站点套件；pnpm test:site nav 只跑名字/标签里匹配 nav 的那几条
 pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
 pnpm check:drift   # 重新生成后比对 git diff，防止产物与生成器漂移
 pnpm format        # prettier 格式化（pnpm format:check 只检查）

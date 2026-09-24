@@ -78,6 +78,12 @@ export async function createHarness() {
 
   const page = await newPage();
 
+  /* 主 page 先落到站点：站点套件里有几条（03 / 04 / 06 / 09）开头直接 goTop / goHash，
+     默认跑全量时是前面的套件把它带上去的。现在可以筛着单跑（`--site nav`），
+     停在 about:blank 时 helpers 没注入、也没有 origin —— 先落一次地，套件才互不依赖。
+     放在挂监听之前：这次加载不该算进 problems（01 号断言 problems.length === 0）。 */
+  await page.goto(`${BASE}/index.html`, { waitUntil: 'load' }).catch(() => {});
+
   page.on('console', (m) => {
     if (m.type() === 'error') problems.push(`console: ${m.text()}`);
   });
@@ -117,20 +123,47 @@ export async function createHarness() {
       };
     });
 
+  /* 路由就绪 = 顶栏入口已经渲染出来（layout 的 ready 跑完）。冷启动时 ofa.js 还在从 CDN 下来，
+     这之前点顶栏、改 hash 都是空操作 —— 筛着单跑某条站点套件就会踩到（没有前面的套件把它带热）。 */
+  const routerReady = () =>
+    page
+      .waitForFunction(() => window.__deepAll('.doc-top-nav a').length >= 5, { timeout: 10000 })
+      .catch(() => {});
+
   /** 用顶部一级导航切页（真实点击）；顶栏在布局页的 shadow root 里 */
   async function goTop(label) {
+    await routerReady();
     await page.evaluate((text) => {
       window.__deepAll('.doc-top-nav a')
         .find((a) => a.textContent.trim() === text)
         ?.click();
     }, label);
+    // 高亮落上 = 路由真的换了（点早了会什么都没发生）
+    await page
+      .waitForFunction(
+        (text) =>
+          window.__deepAll('.doc-top-nav a')
+            .find((a) => a.textContent.trim() === text)
+            ?.hasAttribute('aria-current'),
+        label,
+        { timeout: 10000 },
+      )
+      .catch(() => {});
     await page.waitForTimeout(1500);
   }
 
   async function goHash(to) {
+    await routerReady();
     await page.evaluate((h) => {
       location.hash = `#/${h}`;
     }, to);
+    await page
+      .waitForFunction(
+        (h) => decodeURIComponent(location.hash).replace(/^#\//, '') === h,
+        to,
+        { timeout: 10000 },
+      )
+      .catch(() => {});
     await page.waitForTimeout(1500);
   }
 
