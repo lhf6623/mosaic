@@ -352,7 +352,7 @@ mosaic/
 ├── docs/                          # 站点级资源（跨组件的东西）
 │   ├── pages/                     # 站点级页面模块：home / guide / components / specs
 │   ├── layout.html                # 布局页（嵌套路由的父页面）：顶栏 + 正文带 + <slot>
-│   ├── components.js              # 组件登记表：二级菜单 / 总览 / 首页卡片都由它驱动
+│   ├── site-map.js                # 站点唯一数据源：页面 / 组件 / 分组 / 顺序 + 导航树
 │   ├── routes.js                  # 路由工具：route() 归一当前路由
 │   ├── doc-nav.js                 # <doc-nav>：页面自己的二级菜单（站点级自定义元素）
 │   ├── shell.css  content.css     # 文档级视口/高度链 / 正文 + 分栏样式（页面自己 link 后者）

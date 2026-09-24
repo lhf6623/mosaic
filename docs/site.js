@@ -4,7 +4,7 @@
  * 页面模板其实也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
  * 但占位渲染要跨页共用、还得跟着路由轮询，所以统一留在这里。 */
 
-import { GROUPS, ALL, pageOf } from './components.js';
+import { GROUPS, ALL, pageOf } from './site-map.js';
 import { route, hashOf } from './routes.js';
 import { el } from './dom.js';
 import { defineDocNav } from './doc-nav.js';

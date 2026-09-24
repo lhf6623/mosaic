@@ -5,7 +5,7 @@
        所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
     import { hashOf, repoPathOf } from './routes.js';
     import { el, setCurrent } from './dom.js';
-    import { NAV, locate } from './nav.js';
+    import { NAV, locate } from './site-map.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];

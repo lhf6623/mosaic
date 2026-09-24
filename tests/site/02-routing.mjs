@@ -1,7 +1,7 @@
 /**
  * 站点 · 客户端路由与导航（第 8–9 节）：切页不整页刷新、顶栏点一次就跳
  */
-import { READY, ALL } from '../../docs/components.js';
+import { READY, ALL } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, goTop, goHash, pageState, check }) {
 /* ------------------------------------------------------------------ *

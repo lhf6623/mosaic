@@ -12,7 +12,7 @@
  * 菜单的「长相」交给 mc-menu，本文件只管两件事：渲染哪一支、谁是当前页。
  * 滚轮不用手工接力 —— 整页只有外壳的 .doc-main 一个滚动容器，侧栏滚到底由浏览器接力过去。 */
 
-import { locate, isGroup } from './nav.js';
+import { locate, isGroup } from './site-map.js';
 import { route, hashOf, toRepoPath } from './routes.js';
 import { el, attr, setCurrent } from './dom.js';
 
@@ -83,7 +83,8 @@ class DocNav extends HTMLElement {
     a.textContent = item.label;
     a.dataset.to = item.to;
     if (item.title) a.title = item.title;
-    if (item.status) {
+    // 只有组件条目带 slug：总览这类页面条目不进「组件」那套钩子（测试与压暗样式都按它选）
+    if (item.slug) {
       a.className = 'doc-nav-comp';
       a.dataset.status = item.status;
     }

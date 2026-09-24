@@ -1,7 +1,7 @@
 /**
  * 站点 · 组件文档页（第 11 / 11.3 节）：文档跟着组件走、每个演示都能点开看代码
  */
-import { READY } from '../../docs/components.js';
+import { READY } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, check, newPage }) {
 /* ------------------------------------------------------------------ *

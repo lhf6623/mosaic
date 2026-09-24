@@ -12,7 +12,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NAV, isGroup, pagesOf } from '../../docs/nav.js';
+import { ALL, GROUPS, NAV, isGroup, pagesOf } from '../../docs/site-map.js';
 
 /** 仓库根（本文件在 tests/site/ 下） */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -70,7 +70,7 @@ export default async function run({ check }) {
   const orphans = pages.map((page) => page.path).filter((path) => !registered.has(path));
 
   check(
-    '没有游离页面：每个 page.html 都在 docs/nav.js 的 NAV 里',
+    '没有游离页面：每个 page.html 都在 docs/site-map.js 的 NAV 里',
     orphans.length === 0,
     orphans.join('\n        ') || `NAV 覆盖了全部 ${pages.length} 个页面`,
   );
@@ -101,4 +101,45 @@ export default async function run({ check }) {
   const dupes = routes.filter((route, i) => routes.indexOf(route) !== i);
 
   check('NAV 里没有重复路由', dupes.length === 0, [...new Set(dupes)].join(' / ') || '无重复');
+
+  /* ⑤ 组件条目自身的账（数据源：docs/site-map.js 的 ALL / GROUPS）：分组必须存在、同组 order 不重复、没有游离条目
+        （分组写错时排序会把它们沉到最底，肉眼不一定看得出，所以这里显式对账） */
+  const groupTitles = new Set(GROUPS.map((group) => group.title));
+  const badGroup = ALL.filter((item) => !groupTitles.has(item.group)).map(
+    (item) => `${item.name} → group「${item.group}」不在分组表里`,
+  );
+
+  const orderSeen = new Map();
+  const dupOrder = [];
+  for (const item of ALL) {
+    const key = `${item.group}#${item.order}`;
+    if (orderSeen.has(key)) dupOrder.push(`${key}（${orderSeen.get(key)} 与 ${item.name}）`);
+    orderSeen.set(key, item.name);
+  }
+
+  const grouped = GROUPS.reduce((n, group) => n + group.items.length, 0);
+
+  check(
+    `组件条目的分组 / 顺序 / 归属都对得上（${ALL.length} 条）`,
+    badGroup.length === 0 && dupOrder.length === 0 && grouped === ALL.length,
+    [
+      ...badGroup,
+      ...dupOrder.map((d) => `同组 order 重复：${d}`),
+      grouped !== ALL.length ? `分组展开后 ${grouped} 条 ≠ ALL ${ALL.length} 条` : '',
+    ]
+      .filter(Boolean)
+      .join('\n        ') || `分组 ${GROUPS.length} 个 · 条目 ${ALL.length} 条 · order 无重复`,
+  );
+
+  /* ⑥ 菜单叶子必须显式带 status：hasPage() 是严格判断（status === 'ready'），
+        漏写会被当成"没有页面"—— 上一页 / 下一页就静默少一条（实测踩过） */
+  const leavesWithoutStatus = NAV.flatMap((entry) => entry.menu ?? [])
+    .filter((node) => !isGroup(node) && node.status !== 'ready' && node.status !== 'planned')
+    .map((node) => `${node.label} → status=${String(node.status)}`);
+
+  check(
+    '菜单叶子都显式写了 status（ready / planned）',
+    leavesWithoutStatus.length === 0,
+    leavesWithoutStatus.join('\n        ') || '全部齐全',
+  );
 }

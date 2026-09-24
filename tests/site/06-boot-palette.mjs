@@ -1,7 +1,7 @@
 /**
  * 站点 · 启动与色板（第 12.x 节）：色板回读 tokens.css、冷启动占位、入口与布局页
  */
-import { ALL, READY } from '../../docs/components.js';
+import { ALL, READY } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, goHash, pageState, check, BASE, newPage }) {
 /* ------------------------------------------------------------------ *

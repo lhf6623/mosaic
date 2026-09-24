@@ -20,8 +20,8 @@ packages/{name}/
   demos/*.html     每个演示一个 ofa 组件文件：文档页里的活样例，代码面板引用同一份
   test/*.test.mjs  组件自己的断言（`node tests/smoke.mjs <name>` 单飞）
 
-docs/components.js
-                 组件登记表 —— 加组件时在这里加一条
+docs/site-map.js
+                 站点唯一数据源 —— 有哪些页面 / 组件、分组与顺序、导航树；加组件时在这里加一条
 tests/
   smoke.mjs       冒烟测试入口：站点套件 + 登记表里每个 READY 组件的套件
   lib/harness.mjs 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
@@ -37,8 +37,9 @@ tests/
 找组件时不用去别处翻文档。
 
 **加一个组件要动四处**：`packages/{name}/` 下的组件本体、文档页、`demos/`、`test/`，
-再加一条 `docs/components.js` 登记。页面自带的二级菜单、组件总览、首页的组件区块
-都从登记表渲染，不用手工维护。
+再加一条 `docs/site-map.js` 的 `COMPONENTS` 登记（`group` 填分组标题、`order` 决定组内先后、
+`status: 'planned'` 表示还没建页）。左栏菜单、组件总览、首页卡片、面包屑与翻页都从这份数据派生，
+不用手工维护 —— 顺序靠 `order`，不靠数组位置。
 
 站点级页面（首页 / 快速开始 / 组件总览 / 规范索引）放在 `docs/` ——
 它们跨所有组件、不属于任何单个 package。
@@ -675,7 +676,8 @@ mc-dialog::part(panel) {
 [ ] 注释只写「为什么」：不显然的取舍、坑的编号（P1…）、必须知道的前提；
       成段的原理 / 历史 / 与 agent/ 重复的长篇不抄进代码，需要就指一句过去
 [ ] 文档页里的站点资产相对路径正确（../boot/...、../../docs/...）
-[ ] 已在 docs/components.js 登记（二级菜单 / 总览 / 首页都会自动带上）
+[ ] 已在 docs/site-map.js 的 COMPONENTS 登记（group / order / status），
+      左栏菜单 / 总览 / 首页 / 面包屑翻页都会自动带上
 [ ] 标签名 = mc- + 目录名，三方一致
 
 结构

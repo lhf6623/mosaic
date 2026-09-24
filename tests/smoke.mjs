@@ -8,7 +8,7 @@
 
 import { existsSync } from 'node:fs';
 import { createHarness, BASE, CHANNEL } from './lib/harness.mjs';
-import { READY } from '../docs/components.js';
+import { READY } from '../docs/site-map.js';
 
 /* 站点套件：顺序就是执行顺序 —— 有些断言看的是"主 page 现在停在哪一页" */
 const SITE_SUITES = [

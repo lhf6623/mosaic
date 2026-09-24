@@ -10,7 +10,8 @@
 
     <div class="doc-note">
       <strong>加一个新组件要动的地方：</strong>
-      在 <code>docs/components.js</code> 里加一条登记，再建
+      在 <code>docs/site-map.js</code> 的 <code>COMPONENTS</code> 里加一条 （<code>group</code>
+      填分组、<code>order</code> 定组内先后），再建
       <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
       <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
       页面只写正文：<code>&lt;div class="doc-body"&gt;</code> 里放内容，

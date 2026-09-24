@@ -38,7 +38,7 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 | 表单、反馈、浮层、布局共 15 个 | —                                  | M2 / M3   |
 
 完整清单与逐组件 API 见 [component-spec.md](./agent/component-spec.md) —— 那是唯一真相源，
-文档站的左栏二级菜单、右栏本页目录、总览卡片都由登记表 / 页面标题渲染，不用手工维护。
+文档站的左栏菜单、右栏目录、总览卡片、面包屑与翻页都由 `docs/site-map.js` 与页面标题派生，不用手工维护。
 
 ## 用法要点
 
@@ -89,7 +89,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html content.css components.js routes.js doc-nav.js shell.css site.js
+docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js doc-nav.js doc-toc.js doc-trail.js dom.js shell.css site.js
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）
