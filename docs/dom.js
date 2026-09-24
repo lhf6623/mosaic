@@ -1,5 +1,6 @@
-/* 文档站共用的 DOM 小工具：site.js / doc-nav.js / doc-toc.js 三处都要建 DOM，
- * 抽一份免得各抄一遍（抄三份的下场是每次修坑都得改三处）。 */
+/* 文档站共用的 DOM 小工具：site.js / doc-trail.js / doc-toc.js 都要建 DOM，
+ * 抽一份免得各抄一遍（抄三份的下场是每次修坑都得改三处）。
+ * <doc-nav> 不走这里 —— 它是 ofa 组件模板，结构由 o-fill 铺出来。 */
 
 /**
  * 建 DOM。⚠️ props 只赋 **property**：

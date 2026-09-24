@@ -1,7 +1,7 @@
 /**
  * 站点 · 组件文档页（第 11 / 11.3 节）：文档跟着组件走、每个演示都能点开看代码
  */
-import { READY } from '../../docs/site-map.js';
+import { READY, slugOf } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, check, newPage }) {
 /* ------------------------------------------------------------------ *
@@ -14,7 +14,7 @@ const colocated = await (async () => {
   for (const c of READY) {
     // 必须经由路由打开（page.html 是 <template page>，当独立网页打开会渲染成空白）；
     // query 也必须有 —— 同文档 hash 跳转时 goto() 返回 null（不是 Response），断言会假失败
-    const url = `/index.html?c=${c.slug}#/packages/${c.slug}/page.html`;
+    const url = `/index.html?c=${slugOf(c)}#/${c.path}`;
     const failed = [];
     p.removeAllListeners('response');
     p.on('response', (r) => {
@@ -23,12 +23,12 @@ const colocated = await (async () => {
     p.removeAllListeners('pageerror');
     p.on('pageerror', (e) => failed.push(String(e)));
     const res = await visit(p, url);
-    // 页面自己的二级菜单渲染出来 = 站点共享脚本（含 doc-nav.js）也跑起来了
+    // 页面自己的二级菜单渲染出来 = 站点共享脚本与 <doc-nav> 组件都跑起来了（条目在组件 shadow 里）
     const navOk = await p.evaluate(() => {
-      return window.__deep('doc-nav')?.querySelectorAll('a').length > 3;
+      return window.__inside('doc-nav', 'a').length > 3;
     });
     if (!res?.ok() || failed.length || !navOk) {
-      bad.push(`packages/${c.slug}/page.html — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${navOk ? '' : ' · 二级菜单未渲染'}`);
+      bad.push(`${c.path} — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${navOk ? '' : ' · 二级菜单未渲染'}`);
     }
   }
   await p.close();
@@ -95,7 +95,8 @@ const demoDrawer = await (async () => {
 
   const pages = {};
   for (const c of READY) {
-    await visitDemoPage(c.slug);
+    const slug = slugOf(c);
+    await visitDemoPage(slug);
 
     const demos = await readDemos();
 
@@ -128,7 +129,7 @@ const demoDrawer = await (async () => {
     });
 
     const opened = await readDemos();
-    pages[c.slug] = { demos, opened, fileMatch };
+    pages[slug] = { demos, opened, fileMatch };
   }
 
   page.off('response', onResponse);
@@ -190,7 +191,7 @@ check(
 
 /* 演示的代码里必须出现它在演示的标签 —— 期望值从登记表来，加组件不用改这里 */
 const tagHits = Object.entries(demoDrawer.pages).map(([slug, x]) => {
-  const tag = READY.find((c) => c.slug === slug)?.tag ?? '';
+  const tag = READY.find((c) => slugOf(c) === slug)?.tagName ?? '';
   return {
     slug,
     tag,

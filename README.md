@@ -89,7 +89,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js doc-nav.js doc-toc.js doc-trail.js dom.js shell.css site.js
+docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js doc-nav.html doc-toc.js doc-trail.js dom.js shell.css site.js
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）
@@ -112,7 +112,7 @@ pnpm format        # prettier 格式化（pnpm format:check 只检查）
 ```
 
 冒烟测试需要先起服务器；套件分两处：跨组件的站点不变量在 `tests/site/`，组件自己的断言在
-`packages/<slug>/test/`（登记表里 READY 的都该有一个）。`pnpm format` 不碰测试代码、
+`packages/<slug>/test/`（数据里 READY 的都该有一个）。`pnpm format` 不碰测试代码、
 生成产物、`packages/*/demos/*.html`（逐字展示的例子）与 `agent/research/`；文档页里内联的
 `<mc-code>` 要加 `<!-- prettier-ignore -->`，详见 [.prettierignore](./.prettierignore)。
 

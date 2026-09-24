@@ -21,9 +21,10 @@ packages/{name}/
   test/*.test.mjs  组件自己的断言（`node tests/smoke.mjs <name>` 单飞）
 
 docs/site-map.js
-                 站点唯一数据源 —— 有哪些页面 / 组件、分组与顺序、导航树；加组件时在这里加一条
+                 站点唯一数据源（**结构即菜单**）—— 有哪些页面 / 组件、它们的层级与顺序；
+                 加组件 / 加页面都在这里加一个节点
 tests/
-  smoke.mjs       冒烟测试入口：站点套件 + 登记表里每个 READY 组件的套件
+  smoke.mjs       冒烟测试入口：站点套件 + 数据里每个 READY 组件的套件
   lib/harness.mjs 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
   site/*.mjs      跨组件的站点不变量（外壳、路由、D3、色板、注入免疫……）
 ```
@@ -37,9 +38,12 @@ tests/
 找组件时不用去别处翻文档。
 
 **加一个组件要动四处**：`packages/{name}/` 下的组件本体、文档页、`demos/`、`test/`，
-再加一条 `docs/site-map.js` 的 `COMPONENTS` 登记（`group` 填分组标题、`order` 决定组内先后、
-`status: 'planned'` 表示还没建页）。左栏菜单、组件总览、首页卡片、面包屑与翻页都从这份数据派生，
-不用手工维护 —— 顺序靠 `order`，不靠数组位置。
+再在 `docs/site-map.js` 那棵树里加一个节点：先找到它所属的分组（`基础` / `表单`…），
+在 `children` 里按 `order` 的位置插一条 —— `label` 显示名、`path` 文档页路由、
+`tagName` 元素标签、`stage` 里程碑、`summary` 一句话说明。左栏菜单、组件总览、首页卡片、
+面包屑与翻页都从这棵树派生，不用手工维护 —— 显示顺序靠 `order`，不靠数组位置
+（数组也按 `order` 写，测试会对账）。还没建页的组件**不写 `path`**：左栏指向规范文档、
+卡片显示 `stage` 徽标，不会被当成死链。
 
 站点级页面（首页 / 快速开始 / 组件总览 / 规范索引）放在 `docs/` ——
 它们跨所有组件、不属于任何单个 package。
@@ -60,7 +64,7 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 └─ o-router        flex: 1（overflow: visible，见下面那条 ⚠️）
    └─ o-app        flex: 1 1 auto + min-height: 0
       └─ o-page    **外壳** docs/layout.html
-         ├─ shadow  .doc-top  顶栏（「上」）+ 一级入口（来自 docs/nav.js）
+         ├─ shadow  .doc-top  顶栏（「上」）+ 一级入口（来自 docs/site-map.js 的 TOPBAR）
          │          .doc-main 正文带 = **唯一的滚动容器**，flex: 1 + min-height: 0 + overflow-y: auto
          │                    全宽，82rem 内容带上限挂在 ::slotted(o-page) 上
          └─ o-page  **分区布局页** docs/doc-layout.html（组件文档页都挂在它下面）
@@ -101,7 +105,7 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 
 #### 顶栏与主题（都在布局页里）
 
-- 一级入口来自 `docs/nav.js`（**加一个入口 = NAV 加一行**），由布局页渲染；
+- 一级入口来自 `docs/site-map.js` 的 `TOPBAR`（**加一个入口 = 树里加一行**），由布局页渲染；
   链接用 `hashOf()` 生成 —— `olink` 是编译期指令，运行时造的 `<a olink>` 不会被处理。
 - 高亮只切 `aria-current`，**绝不重建 DOM**：重建会让真人点击的 mousedown / click
   落在两个不同节点上，表现为「菜单要点好几次才跳转」（实测第 1 轮点了 6 次）。
@@ -128,8 +132,8 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 <template page>
   <link rel="stylesheet" href="../content.css" />
   <div class="doc-split">
-    <doc-nav data-source="components"></doc-nav>
-    <!-- 左栏菜单项来自组件登记表 -->
+    <doc-nav></doc-nav>
+    <!-- 左栏菜单由 <doc-nav>（ofa 组件模板）按站点数据里这一支的 children 铺出来 -->
     <div class="doc-body">… 正文 …</div>
     <doc-toc></doc-toc>
     <!-- 右栏目录由页面自己的 h2/h3 生成（可以不放，那就是两栏） -->
@@ -141,8 +145,9 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 - **滚动只有 `.doc-main` 一条**：`.doc-split` 不滚（`overflow: visible`），
   左右两栏 `position: sticky` + `max-height: calc(100vh - 顶栏)`，内容超一屏时各自内部滚。
 - 页面**不想要**侧栏就不写 `.doc-split`，正文直接在外壳正文带里滚（`.doc-main`）。
-- 菜单项也可以由页面自己写：
-  `<doc-nav><a href="#/docs/pages/guide.html">快速开始</a></doc-nav>`。
+- 左栏菜单（`docs/doc-nav.html`）是**站点级 ofa 组件模板**：结构 = `docs/site-map.js` 的树，
+  由 `o-fill` 逐条铺出来，自己只管「渲染哪一支 + 谁是当前页」。条目样式写在它自己的
+  `<style>` 里（组件自带 shadow root，`content.css` 够不到内部节点）。
 - 右栏目录（`docs/doc-toc.js`）扫页面自己的 `h2/h3` 生成，用 `mc-menu` 渲染；
   **点击是程序化滚动，不是 `#id` 锚点** —— 地址栏 hash 归 ofa 路由器所有，
   页面正文又在 shadow root 里、URL fragment 也进不去。
@@ -153,7 +158,7 @@ body               纵向 flex，height: 100% + overflow: hidden（钉死一屏�
 
 > ⚠️ 顶栏的 `<a olink>` 走 `history.pushState`，**不触发 `hashchange`**。
 > 凡是要「跟着路由走」的脚本都得同时听 o-app 冒泡的 `router-change` 事件
-> （`docs/site.js` 的换页处理、`docs/doc-nav.js` 的高亮都是这么接的）。
+> （`docs/site.js` 的换页处理、`docs/doc-nav.html` 的高亮都是这么接的）。
 
 > ⚠️ 页面里的占位（`[data-component-cards]` / `[data-palette]`）由 `site.js`
 > 轮询渲染。收工条件必须是「**某个** `<o-page src>` 已经是 hash 指向的页面」
@@ -676,7 +681,7 @@ mc-dialog::part(panel) {
 [ ] 注释只写「为什么」：不显然的取舍、坑的编号（P1…）、必须知道的前提；
       成段的原理 / 历史 / 与 agent/ 重复的长篇不抄进代码，需要就指一句过去
 [ ] 文档页里的站点资产相对路径正确（../boot/...、../../docs/...）
-[ ] 已在 docs/site-map.js 的 COMPONENTS 登记（group / order / status），
+[ ] 已在 docs/site-map.js 的树里加了一个节点（label / order / path / tagName / stage / summary），
       左栏菜单 / 总览 / 首页 / 面包屑翻页都会自动带上
 [ ] 标签名 = mc- + 目录名，三方一致
 

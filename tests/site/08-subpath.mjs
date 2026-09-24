@@ -80,13 +80,19 @@ export default async function run({ check, newPage }) {
     /* ③ 二级菜单（侧栏）能进组件页，且两级菜单同时高亮 */
     await click('.doc-top-nav a', '组件');
     await settle();
-    await click('doc-nav a', 'Collapse');
+    await p.evaluate(() =>
+      window
+        .__inside('doc-nav', 'a')
+        .find((a) => a.textContent.trim() === 'Collapse')
+        ?.click(),
+    );
     await settle();
     const side = {
       h1: await h1(),
       top: await active(),
       nav: await p.evaluate(() =>
-        window.__deepAll('doc-nav a')
+        window
+          .__inside('doc-nav', 'a')
           .filter((a) => a.hasAttribute('aria-current'))
           .map((a) => a.textContent.trim())
           .join('/'),

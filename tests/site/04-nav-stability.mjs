@@ -13,13 +13,16 @@ await page.waitForTimeout(600);
 const navChurn = await page.evaluate(
   () =>
     new Promise((resolve) => {
-      // 二级菜单现在由页面自己带（<doc-nav>），照样盯住它的 DOM 会不会被反复重建
+      // 二级菜单现在由页面自己带（<doc-nav>，ofa 组件模板），条目住在它的 shadow root 里 ——
+      // 宿主与 shadow 都要盯，只盯宿主会漏掉组件内部的反复重建
       const nav = window.__deep('doc-nav');
       let n = 0;
       const obs = new MutationObserver((list) => {
         n += list.length;
       });
-      obs.observe(nav, { childList: true, subtree: true });
+      for (const root of [nav, nav.shadowRoot]) {
+        obs.observe(root, { childList: true, subtree: true });
+      }
       setTimeout(() => {
         obs.disconnect();
         resolve(n);
@@ -59,7 +62,7 @@ await page.waitForTimeout(600);
 const menuScroll = await page.evaluate(() => {
   const nav = window.__deep('doc-nav');
   const headerH = window.__deep('.doc-top').getBoundingClientRect().height;
-  const links = [...nav.querySelectorAll('a')];
+  const links = window.__inside('doc-nav', 'a');
   const last = links[links.length - 1];
   nav.scrollTop = nav.scrollHeight;
   const lr = last.getBoundingClientRect();
@@ -100,7 +103,7 @@ const beforeSwitch = await page.evaluate(() => {
 
 // 从左栏真实点进组件页
 await page.evaluate(() => {
-  [...window.__deepAll('doc-nav a')].find((a) => a.textContent.trim() === 'Code')?.click();
+  [...window.__inside('doc-nav', 'a')].find((a) => a.textContent.trim() === 'Code')?.click();
 });
 await page
   .waitForFunction(() => (window.__deepAll('h1')[0]?.textContent ?? '').includes('Code'), {
@@ -117,7 +120,8 @@ const afterSwitch = await page.evaluate(() => {
     navSame: nav?.__probeId === 'nav-1',
     tocSame: toc?.__probeId === 'toc-1',
     navScrollTop: Math.round(nav?.scrollTop ?? -1),
-    navCurrent: nav?.querySelector('a[aria-current]')?.textContent?.trim() ?? null,
+    navCurrent:
+      window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim() ?? null,
     tocFirst: toc?.querySelector('a')?.textContent?.trim() ?? null,
   };
 });

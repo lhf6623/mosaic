@@ -1,13 +1,12 @@
 /* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数），并注册站点级元素
- * （<doc-nav> 左栏菜单、<doc-toc> 右栏本页目录、<doc-crumb>/<doc-pager> 面包屑与翻页，
- *   实现见同名文件）。
+ * （<doc-toc> 右栏本页目录、<doc-crumb>/<doc-pager> 面包屑与翻页，实现见同名文件；
+ *   <doc-nav> 左栏菜单是 ofa 组件模板，由 docs/layout.html 的 <l-m> 注册，见 docs/doc-nav.html）。
  * 页面模板其实也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
  * 但占位渲染要跨页共用、还得跟着路由轮询，所以统一留在这里。 */
 
-import { GROUPS, ALL, pageOf } from './site-map.js';
+import { GROUPS, ALL, hasPage } from './site-map.js';
 import { route, hashOf } from './routes.js';
 import { el } from './dom.js';
-import { defineDocNav } from './doc-nav.js';
 import { defineDocToc } from './doc-toc.js';
 import { defineDocTrail } from './doc-trail.js';
 
@@ -96,41 +95,42 @@ function renderCardsInto(host) {
   const only = host.dataset.componentCards;
   const groups =
     only && only !== 'all'
-      ? GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.status === only) })).filter(
-          (g) => g.items.length,
-        )
+      ? GROUPS.map((g) => ({
+          ...g,
+          items: g.items.filter((item) => hasPage(item) === (only === 'ready')),
+        })).filter((g) => g.items.length)
       : GROUPS;
 
   for (const group of groups) {
     const section = el('section', { className: 'doc-comp-group' });
-    section.append(el('h3', { textContent: group.title }));
-    if (group.desc) {
-      section.append(el('p', { className: 'doc-comp-group-desc', textContent: group.desc }));
+    section.append(el('h3', { textContent: group.label }));
+    if (group.summary) {
+      section.append(el('p', { className: 'doc-comp-group-desc', textContent: group.summary }));
     }
 
     const grid = el('div', { className: 'doc-comp-grid' });
     for (const item of group.items) {
-      const ready = item.status === 'ready';
+      const ready = hasPage(item);
       const card = el(ready ? 'a' : 'div', {
         className: 'doc-comp-card',
-        dataset: { status: item.status },
+        dataset: { status: ready ? 'ready' : 'planned' },
       });
       // hash 是按「相对域名根」解析的，子路径部署要带上前缀（见 routes.js）
-      if (ready) card.href = hashOf(pageOf(item.slug));
+      if (ready) card.href = hashOf(item.path);
 
       const badge = el('span', {
         className: 'doc-comp-badge',
-        textContent: ready ? '已实现' : item.milestone,
+        textContent: ready ? '已实现' : item.stage,
       });
-      badge.dataset.status = item.status;
+      badge.dataset.status = ready ? 'ready' : 'planned';
 
       card.append(
         el('div', { className: 'doc-comp-card-top' }, [
-          el('span', { className: 'doc-comp-card-name', textContent: item.name }),
+          el('span', { className: 'doc-comp-card-name', textContent: item.label }),
           badge,
         ]),
-        el('code', { className: 'doc-comp-card-tag', textContent: item.tag }),
-        el('p', { className: 'doc-comp-card-desc', textContent: item.desc }),
+        el('code', { className: 'doc-comp-card-tag', textContent: item.tagName }),
+        el('p', { className: 'doc-comp-card-desc', textContent: item.summary }),
       );
       grid.append(card);
     }
@@ -156,7 +156,9 @@ function renderPagePlaceholders() {
 
   for (const node of deepQuery('[data-component-count]')) {
     const wanted = node.dataset.componentCount;
-    const n = ALL.filter((i) => (wanted === 'all' ? true : i.status === wanted)).length;
+    const n = ALL.filter(
+      (item) => wanted === 'all' || hasPage(item) === (wanted === 'ready'),
+    ).length;
     node.textContent = String(n);
   }
 }
@@ -200,7 +202,6 @@ function scheduleRender() {
 
 /* ---------- 启动 ---------- */
 
-defineDocNav();
 defineDocToc();
 defineDocTrail();
 scheduleRender();

@@ -1,0 +1,131 @@
+<!--
+  <doc-nav> —— 文档站左栏二级菜单，站点级 ofa 组件。
+
+  菜单结构 = docs/site-map.js 的树 = 这份模板：o-fill 逐条铺 children（分组再嵌一层）。
+  本文件只管两件事 —— 该渲染哪一支（locate + menuOf）、谁是当前页（aria-current）；
+  其余（分组标题行、待建外链、压暗）都是模板里一句绑定。
+
+  为什么从普通自定义元素改成组件模板：以前得手写 _append 递归、_link 建 DOM、syncActive 切高亮，
+  菜单一变就得跟着改三层；现在结构与数据同形，改菜单只改数据。
+
+  ⚠️ 组件模板必然带 shadow root：content.css 只能落在宿主标签本身（sticky / padding / border
+     那几条照旧生效），够不到这里渲染出来的 <a>，所以条目自己的样式写在下面 <style> 里。
+  ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区内切页不重建列表 ——
+     真人点击的 mousedown→click 必须落在同一个节点上（tests/site/04-nav-stability.mjs 盯着这条）。
+  ⚠️ mc-menu / mc-menu-item 由外壳 docs/layout.html 统一 <l-m> 进来，这里不再引一遍。
+-->
+<template component>
+  <style>
+    /* 未实现的组件压暗一档，和「已实现」区分开（链接指向规范文档，不是死链）。
+       当前项高亮由 mc-menu 负责：插槽元素的 aria-current → 宿主的 data-current */
+    a[data-status='planned'] {
+      opacity: 0.72;
+    }
+  </style>
+
+  <mc-menu>
+    <o-fill :value="rows" fill-key="key">
+      <o-if :value="$data.pages">
+        <mc-menu-item group>{{$data.label}}</mc-menu-item>
+        <o-fill :value="$data.pages" fill-key="key">
+          <mc-menu-item>
+            <a
+              attr:class="$data.className"
+              attr:href="$data.href"
+              attr:target="$data.target"
+              attr:rel="$data.rel"
+              attr:title="$data.title"
+              attr:data-status="$data.status"
+              attr:aria-current="$data.aria"
+              >{{$data.label}}</a
+            >
+          </mc-menu-item>
+        </o-fill>
+      </o-if>
+      <o-else>
+        <mc-menu-item>
+          <a
+            attr:class="$data.className"
+            attr:href="$data.href"
+            attr:target="$data.target"
+            attr:rel="$data.rel"
+            attr:title="$data.title"
+            attr:data-status="$data.status"
+            attr:aria-current="$data.aria"
+            >{{$data.label}}</a
+          >
+        </mc-menu-item>
+      </o-else>
+    </o-fill>
+  </mc-menu>
+
+  <script>
+    import { locate, menuOf, hasPage, SPEC_URL } from './site-map.js';
+    import { route, hashOf } from './routes.js';
+
+    /**
+     * 一个节点 → 模板要的字段。展示策略都收在这里：
+     * 待建的不给死链（外链规范 + `stage · 待建` 的 tooltip），压暗靠 data-status。
+     * ⚠️ 链接一律 `attr:href`：`:` 只写 property，`getAttribute('href')` 会是 null。
+     */
+    const linkOf = (page, current) => {
+      const ready = hasPage(page);
+      return {
+        // 待建的没有 path，用 tagName 当 key（数据对账保证每个无 path 的叶子都是组件）
+        key: page.path ?? page.tagName,
+        label: page.label,
+        className: page.tagName ? 'doc-nav-comp' : '',
+        href: ready ? hashOf(page.path) : SPEC_URL,
+        target: ready ? null : '_blank',
+        rel: ready ? null : 'noreferrer',
+        title: page.summary
+          ? ready
+            ? page.summary
+            : `${page.stage} · 待建 —— ${page.summary}`
+          : null,
+        status: page.tagName ? (ready ? 'ready' : 'planned') : null,
+        aria: ready && page.path === current ? 'page' : null,
+      };
+    };
+
+    /** 左栏的行：分组节点 → 标题行 + 组内页面；其余就是一条链接 */
+    const rowsOf = (entry, current) =>
+      menuOf(entry).map((node) =>
+        node.children
+          ? {
+              key: `group:${node.label}`,
+              label: node.label,
+              pages: node.children.map((page) => linkOf(page, current)),
+            }
+          : linkOf(node, current),
+      );
+
+    export default () => ({
+      data: { rows: [] },
+
+      ready() {
+        /* hashchange 管页内跳转；router-change 管 o-app 导航 —— 顶栏链接走 pushState 时不触发
+           hashchange，只听前者会漏掉「从顶栏点进来」（实测高亮空着）。 */
+        this._onRoute = () => this.renderRows();
+        window.addEventListener('hashchange', this._onRoute);
+        document.addEventListener('router-change', this._onRoute);
+        this.renderRows();
+      },
+
+      // 全局监听必须在这里摘掉，否则切页后旧实例还在改新菜单
+      detached() {
+        window.removeEventListener('hashchange', this._onRoute);
+        document.removeEventListener('router-change', this._onRoute);
+      },
+
+      proto: {
+        /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
+        renderRows() {
+          const current = route();
+          const entry = locate(current)?.entry ?? null;
+          this.rows = entry ? rowsOf(entry, current) : [];
+        },
+      },
+    });
+  </script>
+</template>

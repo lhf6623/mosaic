@@ -1,7 +1,7 @@
 /**
  * 站点 · 客户端路由与导航（第 8–9 节）：切页不整页刷新、顶栏点一次就跳
  */
-import { READY, ALL } from '../../docs/site-map.js';
+import { ALL } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, goTop, goHash, pageState, check }) {
 /* ------------------------------------------------------------------ *
@@ -107,24 +107,24 @@ check(
 check(
   '二级菜单里当前页高亮（总览）',
   await page.evaluate(() =>
-    window.__deep('doc-nav a[aria-current]')?.textContent?.trim() === '总览',
+    window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim() === '总览',
   ),
 );
 
 await page.evaluate(() => {
-  window.__deep('doc-nav a.doc-nav-comp[data-status="ready"]')?.click();
+  window.__inside('doc-nav', 'a.doc-nav-comp[data-status="ready"]')[0]?.click();
 });
 await page.waitForTimeout(1500);
 const onButton = await pageState();
 check(
   '从页面自带的二级菜单点进组件文档页',
-  onButton.h1?.startsWith('Button') && onButton.hash === `packages/${READY[0].slug}/page.html`,
+  onButton.h1?.startsWith('Button') && onButton.hash === ALL[0].path,
   `hash=${onButton.hash} · h1=${onButton.h1}`,
 );
 check(
   '未实现的组件不给死链（指向规范文档）',
   await page.evaluate(() => {
-    const a = window.__deep('doc-nav a.doc-nav-comp[data-status="planned"]');
+    const a = window.__inside('doc-nav', 'a.doc-nav-comp[data-status="planned"]')[0];
     return a?.href.includes('component-spec.md') && a?.target === '_blank';
   }),
 );

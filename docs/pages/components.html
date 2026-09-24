@@ -10,12 +10,15 @@
 
     <div class="doc-note">
       <strong>加一个新组件要动的地方：</strong>
-      在 <code>docs/site-map.js</code> 的 <code>COMPONENTS</code> 里加一条 （<code>group</code>
-      填分组、<code>order</code> 定组内先后），再建
+      在 <code>docs/site-map.js</code> 那棵树里加一个节点（<code>label</code> 显示名、
+      <code>order</code> 定同层先后、<code>path</code> 文档页路由、<code>tagName</code> 元素标签、
+      <code>stage</code> 里程碑、<code>summary</code> 一句话说明），再建
       <code>packages/&lt;slug&gt;/</code>：组件本体、<code>page.html</code> 文档页、
       <code>demos/*.html</code>（每个演示一个组件文件）、<code>test/*.test.mjs</code>。
-      页面只写正文：<code>&lt;div class="doc-body"&gt;</code> 里放内容，
-      <code>export const parent = '../../docs/doc-layout.html'</code> 挂上分区布局页，
+      还没建页就不写 <code>path</code>：左栏会指向规范文档，卡片显示里程碑徽标。 页面只写正文：<code
+        >&lt;div class="doc-body"&gt;</code
+      >
+      里放内容， <code>export const parent = '../../docs/doc-layout.html'</code> 挂上分区布局页，
       三栏、左栏菜单、右栏目录、面包屑和翻页就都有了 —— 都不用自己写。
     </div>
 

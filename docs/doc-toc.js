@@ -1,6 +1,6 @@
 /* `<doc-toc>` —— 组件文档页右栏的「本页目录」，站点级自定义元素
- * （和 <doc-nav> 一样不进 packages/：它读的是页面结构、知道外壳的滚动容器，
- *   且要渲染进页面自己的 shadow root，见 docs/doc-nav.js 头部那段）。
+ * （和 <doc-nav> 不同：它是站点级普通自定义元素，读的是页面结构、知道外壳的滚动容器，
+ *   且要渲染进页面自己的 shadow root，见 docs/doc-nav.html 头部那段）。
  *
  * 它住在**分区布局页** docs/doc-layout.html 里，正文在**子页面**的 shadow root 里 —— 跨一层
  * 边界，所以扫标题前要先顺着 <slot> 找到当前那一页（contentRoot()）。换页时 slotchange 会响，
@@ -13,7 +13,7 @@
  *
  * ⚠️ 标题不是一开始就齐的：组件总览页的卡片由 docs/site.js 异步渲染，才长出分组 h3。
  * 所以这里挂一个 MutationObserver，标题签名变了就重建目录（签名没变不碰 DOM，
- * 免得把正在点的节点换掉 —— 同 doc-nav.js 里那条「不重建 DOM」的教训）。
+ * 免得把正在点的节点换掉 —— 同 doc-nav.html 里那条「不重建 DOM」的教训）。
  */
 
 import { el, attr, setCurrent } from './dom.js';
@@ -48,7 +48,7 @@ function slugify(text, taken) {
 }
 
 class DocToc extends HTMLElement {
-  /** 箭头函数字段：add 和 remove 必须是同一个引用（同 doc-nav.js 的理由） */
+  /** 箭头函数字段：add 和 remove 必须是同一个引用（同 doc-nav.html 的理由） */
   _onScroll = () => this.syncActive();
   _onResize = () => this.syncActive();
   _onMutate = (records) => {

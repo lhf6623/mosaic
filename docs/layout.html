@@ -5,7 +5,7 @@
        所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
     import { hashOf, repoPathOf } from './routes.js';
     import { el, setCurrent } from './dom.js';
-    import { NAV, locate } from './site-map.js';
+    import { TOPBAR, locate } from './site-map.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
@@ -40,11 +40,11 @@
           return src ? repoPathOf(src) : '';
         },
 
-        /* 顶栏入口来自 docs/nav.js（加一个入口 = 那里加一行）。
+        /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
            ⚠️ 链接用 hashOf() 生成，不用 olink：olink 是编译期指令，运行时造的 <a olink> 不会被处理 */
         renderTopNav() {
-          const links = NAV.map((entry) =>
-            el('a', { href: hashOf(entry.to), textContent: entry.label }),
+          const links = TOPBAR.map((entry) =>
+            el('a', { href: hashOf(entry.path), textContent: entry.label }),
           );
           this.ele.shadowRoot.querySelector('.doc-top-nav').replaceChildren(...links);
         },
@@ -56,7 +56,7 @@
           const entry = current ? (locate(current)?.entry ?? null) : null;
           const links = [...this.ele.shadowRoot.querySelectorAll('.doc-top-nav a')];
 
-          links.forEach((a, i) => setCurrent(a, entry === NAV[i]));
+          links.forEach((a, i) => setCurrent(a, entry === TOPBAR[i]));
         },
 
         // 三态主题。首帧由 docs/theme-boot.js（head 里的同步经典脚本）应用
@@ -205,7 +205,9 @@
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
-  <!-- 左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染 -->
+  <!-- 左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染：前者是 ofa 组件模板，
+       后者是站点级普通自定义元素（它扫页面自己的 h2/h3，见 docs/doc-toc.js） -->
+  <l-m src="./doc-nav.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
 
@@ -213,7 +215,7 @@
     <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
     <!-- 一级菜单就是页面本身；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
-    <!-- 入口来自 docs/nav.js，由 renderTopNav() 渲染（加一个入口 = NAV 加一行） -->
+    <!-- 入口来自 docs/site-map.js 的 TOPBAR，由 renderTopNav() 渲染（加一个入口 = 那里加一行） -->
     <nav class="doc-top-nav"></nav>
 
     <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">

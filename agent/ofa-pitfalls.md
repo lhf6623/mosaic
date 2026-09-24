@@ -500,7 +500,8 @@ window.addEventListener('hashchange', sync); // 普通 hash 链接
 document.addEventListener('router-change', sync); // olink / 前进后退
 ```
 
-Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）与 `docs/doc-nav.js`（二级菜单高亮）都这么接。
+Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）、`docs/doc-nav.html`（二级菜单高亮，
+`ready()` 里挂、`detached()` 里摘）与 `docs/doc-toc.js` 都这么接。
 
 ### P29 · 嵌套路由（布局页）的四条约定
 

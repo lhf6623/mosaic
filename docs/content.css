@@ -591,11 +591,8 @@ doc-toc {
   scroll-margin-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-4));
 }
 
-/* 未实现的组件压暗一档，和「已实现」区分开（链接指向规范文档，不是死链）。
-   当前项高亮由 mc-menu 负责：插槽元素的 aria-current → 宿主的 data-current */
-doc-nav a[data-status='planned'] {
-  opacity: 0.72;
-}
+/* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
+   这里只能作用到宿主标签本身；那些规则写在 docs/doc-nav.html 的 <style> 里。 */
 
 /* ---------- 窄屏：先收右栏，再退化成「菜单在上、正文在下」（必须排在基础规则之后） ---------- */
 

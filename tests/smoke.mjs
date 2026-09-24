@@ -8,7 +8,7 @@
 
 import { existsSync } from 'node:fs';
 import { createHarness, BASE, CHANNEL } from './lib/harness.mjs';
-import { READY } from '../docs/site-map.js';
+import { READY, slugOf } from '../docs/site-map.js';
 
 /* 站点套件：顺序就是执行顺序 —— 有些断言看的是"主 page 现在停在哪一页" */
 const SITE_SUITES = [
@@ -34,8 +34,9 @@ const includeComponents = !onlySite;
 const suites = includeSite ? [...SITE_SUITES] : [];
 if (includeComponents) {
   for (const c of READY) {
-    if (wanted.length && !wanted.includes(c.slug)) continue;
-    suites.push([`../packages/${c.slug}/test/${c.slug}.test.mjs`, `${c.name} · 组件套件`]);
+    const slug = slugOf(c);
+    if (wanted.length && !wanted.includes(slug)) continue;
+    suites.push([`../packages/${slug}/test/${slug}.test.mjs`, `${c.label} · 组件套件`]);
   }
 }
 

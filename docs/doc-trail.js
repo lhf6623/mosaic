@@ -1,8 +1,10 @@
-/* `<doc-crumb>` / `<doc-pager>` —— 从当前路由在 docs/nav.js 那棵树里的位置派生的两小块：
+/* `<doc-crumb>` / `<doc-pager>` —— 从当前路由在 docs/site-map.js 那棵树里的位置派生的两小块：
  * 面包屑（组件 / Button）与上一页 / 下一页。
  *
  * 以前这两块是每个组件页手写的：4 份面包屑 + 5 条翻页链接，加一个组件、调一次顺序都要
  * 手工跟着改（而且当时已经不一致：Button 与 Collapse 只有 prev、没有 next）。现在一处都不用手写。
+ *
+ * 隐藏页（hidden）直链打开时：顶栏仍点亮所属分区，但面包屑与翻页都不渲染 —— 它不在导航里。
  *
  * 与 <doc-nav> 同一个套路：站点级普通自定义元素，渲染进**页面自己的** shadow root，
  * 样式在 content.css（`doc-crumb` / `doc-pager` 两个标签选择器）。
@@ -39,12 +41,12 @@ class DocCrumb extends HTMLElement {
     this._route = current;
 
     const hit = locate(current);
-    // 顶层入口自己那一页没有「在哪里面」这回事，不渲染
-    if (!hit?.leaf) return;
+    // 顶层入口自己那一页没有「在哪里面」这回事；隐藏页不在导航里，也不渲染
+    if (!hit?.node || hit.node === hit.entry || hit.hidden) return;
 
     this.replaceChildren(
-      el('a', { href: hashOf(hit.entry.to), textContent: hit.entry.label }),
-      document.createTextNode(` / ${hit.leaf.label}`),
+      el('a', { href: hashOf(hit.entry.path), textContent: hit.entry.label }),
+      document.createTextNode(` / ${hit.node.label}`),
     );
   }
 }
@@ -76,7 +78,7 @@ class DocPager extends HTMLElement {
       links.push(
         el('a', {
           className: 'doc-pager-prev',
-          href: hashOf(prev.to),
+          href: hashOf(prev.path),
           textContent: `← ${prev.label}`,
         }),
       );
@@ -85,7 +87,7 @@ class DocPager extends HTMLElement {
       links.push(
         el('a', {
           className: 'doc-pager-next',
-          href: hashOf(next.to),
+          href: hashOf(next.path),
           textContent: `${next.label} →`,
         }),
       );

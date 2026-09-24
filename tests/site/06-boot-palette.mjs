@@ -126,7 +126,7 @@ const parentRefs = await (async () => {
     'docs/pages/specs.html',
     'docs/pages/components.html',
     'packages/color/page.html', // 令牌文档页不是组件，但它同样是页面模块
-    ...READY.map((c) => `packages/${c.slug}/page.html`),
+    ...READY.map((c) => c.path),
   ];
   const missing = [];
   for (const url of urls) {
