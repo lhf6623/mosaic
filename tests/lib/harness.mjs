@@ -53,7 +53,11 @@ export async function createHarness() {
     );
   };
 
-  const browser = await chromium.launch({ channel: CHANNEL });
+  /* 浏览器取 CDN 走的是**系统代理**（curl 不走），本机代理挂掉时页面永远到不了 load，
+     表象是「套件第一条就 30s 超时」。测试只连 localhost + jsDelivr，所以给一个直连开关：
+     BROWSER_NO_PROXY=1 pnpm test。默认不变，免得挡掉真需要代理的环境。 */
+  const args = process.env.BROWSER_NO_PROXY === '1' ? ['--no-proxy-server'] : [];
+  const browser = await chromium.launch({ channel: CHANNEL, args });
 
   /** 新开一页（可带 context 选项）：穿透查询一起注入，套件里不手抄 __deepAll */
   const newPage = async (options) => {
