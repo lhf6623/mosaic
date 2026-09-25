@@ -15,7 +15,10 @@
  * 页面文件、组件套件、文档页检查照旧（藏起来 ≠ 不维护），直链仍然能访问。
  *
  * 字段约定：
- *   label     显示名（顶栏入口 / 分组标题 / 页面名）
+ *   label     显示名（顶栏入口 / 分组标题 / 页面名）。**单语言**，各消费方（顶栏 / 面包屑 /
+ *             翻页 / 总览卡片）都用它
+ *   zh        中文名 —— **只有组件**需要补（组件的 label 是它的 API 名）：左栏菜单把组件渲染成
+ *             「中文（英文）」，其余节点（站点页 / 分组 / 总览）照旧只显示 label
  *   order     同层显示顺序（10 / 20 / 30…，留出插队空间）
  *   path      站内路由（仓库相对路径）。**有 path 才算已实现**，所以没有 status 之类的兼职字段
  *   children  子节点
@@ -47,6 +50,7 @@ export const SITE = [
           {
             order: 10,
             label: 'Button',
+            zh: '按钮',
             path: 'packages/button/page.html',
             tagName: 'mc-button',
             stage: 'M1',
@@ -55,6 +59,7 @@ export const SITE = [
           {
             order: 20,
             label: 'Code',
+            zh: '代码',
             path: 'packages/code/page.html',
             tagName: 'mc-code',
             stage: 'M1',
@@ -64,6 +69,7 @@ export const SITE = [
           {
             order: 30,
             label: 'Icon',
+            zh: '图标',
             tagName: 'mc-icon',
             stage: 'M1',
             summary:
@@ -72,6 +78,7 @@ export const SITE = [
           {
             order: 40,
             label: 'Card',
+            zh: '卡片',
             path: 'packages/card/page.html',
             tagName: 'mc-card',
             stage: 'M1',
@@ -81,6 +88,7 @@ export const SITE = [
           {
             order: 45,
             label: 'Tag',
+            zh: '标签',
             path: 'packages/tag/page.html',
             tagName: 'mc-tag',
             stage: 'M1',
@@ -90,6 +98,7 @@ export const SITE = [
           {
             order: 50,
             label: 'Badge',
+            zh: '徽标',
             tagName: 'mc-badge',
             stage: 'M1',
             summary: '徽标。默认浅底，比实心更不抢视线；支持纯圆点与数值上限。',
@@ -97,6 +106,7 @@ export const SITE = [
           {
             order: 60,
             label: 'Spinner',
+            zh: '加载指示',
             tagName: 'mc-spinner',
             stage: 'M1',
             summary: '加载指示。跟随当前文字色与字号。',
@@ -104,6 +114,7 @@ export const SITE = [
           {
             order: 70,
             label: 'Menu',
+            zh: '菜单',
             path: 'packages/menu/page.html',
             tagName: 'mc-menu',
             stage: 'M1',
@@ -113,6 +124,7 @@ export const SITE = [
           {
             order: 80,
             label: 'Breadcrumb',
+            zh: '面包屑',
             path: 'packages/breadcrumb/page.html',
             tagName: 'mc-breadcrumb',
             stage: 'M1',
@@ -129,6 +141,7 @@ export const SITE = [
           {
             order: 10,
             label: 'Input',
+            zh: '输入框',
             tagName: 'mc-input',
             stage: 'M2',
             summary: '单行输入框。可清除、前后缀插槽。',
@@ -136,6 +149,7 @@ export const SITE = [
           {
             order: 20,
             label: 'Textarea',
+            zh: '多行输入',
             tagName: 'mc-textarea',
             stage: 'M2',
             summary: '多行输入框。支持自动增高与字数统计。',
@@ -143,6 +157,7 @@ export const SITE = [
           {
             order: 30,
             label: 'Checkbox',
+            zh: '复选框',
             tagName: 'mc-checkbox',
             stage: 'M2',
             summary: '复选框。支持半选态。',
@@ -150,6 +165,7 @@ export const SITE = [
           {
             order: 40,
             label: 'Radio',
+            zh: '单选按钮',
             tagName: 'mc-radio',
             stage: 'M2',
             summary: '单选按钮组。',
@@ -157,6 +173,7 @@ export const SITE = [
           {
             order: 50,
             label: 'Switch',
+            zh: '开关',
             tagName: 'mc-switch',
             stage: 'M2',
             summary: '开关。',
@@ -164,6 +181,7 @@ export const SITE = [
           {
             order: 60,
             label: 'Select',
+            zh: '下拉选择',
             tagName: 'mc-select',
             stage: 'M2',
             summary: '下拉选择。M2 里最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
@@ -178,6 +196,7 @@ export const SITE = [
           {
             order: 10,
             label: 'Alert',
+            zh: '提示条',
             tagName: 'mc-alert',
             stage: 'M2',
             summary: '页内提示条。可关闭，带标题与描述。',
@@ -185,6 +204,7 @@ export const SITE = [
           {
             order: 20,
             label: 'Progress',
+            zh: '进度条',
             tagName: 'mc-progress',
             stage: 'M2',
             summary: '进度条。支持不确定态。',
@@ -192,6 +212,7 @@ export const SITE = [
           {
             order: 30,
             label: 'Toast',
+            zh: '消息条',
             tagName: 'toast()',
             stage: 'M2',
             summary: '命令式消息条，返回 Promise 与 close 句柄。',
@@ -207,6 +228,7 @@ export const SITE = [
           {
             order: 10,
             label: 'Dialog',
+            zh: '对话框',
             tagName: 'mc-dialog',
             stage: 'M3',
             summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',
@@ -214,6 +236,7 @@ export const SITE = [
           {
             order: 20,
             label: 'Dropdown',
+            zh: '下拉菜单',
             tagName: 'mc-dropdown',
             stage: 'M3',
             summary: '下拉菜单。',
@@ -221,6 +244,7 @@ export const SITE = [
           {
             order: 30,
             label: 'Tooltip',
+            zh: '提示气泡',
             tagName: 'mc-tooltip',
             stage: 'M3',
             summary: '提示气泡。',
@@ -235,6 +259,7 @@ export const SITE = [
           {
             order: 10,
             label: 'Collapse',
+            zh: '折叠面板',
             path: 'packages/collapse/page.html',
             tagName: 'mc-collapse',
             stage: 'M1',
@@ -244,6 +269,7 @@ export const SITE = [
           {
             order: 20,
             label: 'Tabs',
+            zh: '标签页',
             tagName: 'mc-tabs',
             stage: 'M3',
             summary: '标签页。',
@@ -251,6 +277,7 @@ export const SITE = [
           {
             order: 30,
             label: 'Table',
+            zh: '表格',
             tagName: 'mc-table',
             stage: 'M3',
             summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
@@ -258,6 +285,7 @@ export const SITE = [
           {
             order: 40,
             label: 'Grid',
+            zh: '栅格',
             tagName: 'mc-grid',
             stage: 'M3',
             summary: '栅格。',

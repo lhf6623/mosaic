@@ -83,7 +83,7 @@ export default async function run({ check, newPage }) {
     await p.evaluate(() =>
       window
         .__inside('doc-nav', 'a')
-        .find((a) => a.textContent.trim() === 'Collapse')
+        .find((a) => a.textContent.includes('Collapse'))
         ?.click(),
     );
     await settle();
@@ -100,7 +100,7 @@ export default async function run({ check, newPage }) {
     };
     check(
       '子路径：侧栏能进组件页（不是 404），顶栏亮「组件」、侧栏亮「Collapse」',
-      side.h1?.startsWith('Collapse') && side.top === '组件' && side.nav === 'Collapse',
+      side.h1?.startsWith('Collapse') && side.top === '组件' && side.nav?.includes('Collapse'),
       JSON.stringify(side),
     );
 

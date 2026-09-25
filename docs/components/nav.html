@@ -26,7 +26,7 @@
   <mc-menu>
     <o-fill :value="rows" fill-key="key">
       <o-if :value="$data.pages">
-        <mc-menu-item group>{{$data.label}}</mc-menu-item>
+        <mc-menu-item group>{{$data.name}}</mc-menu-item>
         <o-fill :value="$data.pages" fill-key="key">
           <mc-menu-item>
             <a
@@ -37,7 +37,7 @@
               attr:title="$data.title"
               attr:data-status="$data.status"
               attr:aria-current="$data.aria"
-              >{{$data.label}}</a
+              >{{$data.name}}</a
             >
           </mc-menu-item>
         </o-fill>
@@ -52,7 +52,7 @@
             attr:title="$data.title"
             attr:data-status="$data.status"
             attr:aria-current="$data.aria"
-            >{{$data.label}}</a
+            >{{$data.name}}</a
           >
         </mc-menu-item>
       </o-else>
@@ -65,16 +65,28 @@
     import { onRouteChange, routeState } from '../state/route.js';
 
     /**
+     * 左栏显示名，三种节点三种写法：
+     *   · 分组 → `基础（9）`：括号里是**这一组渲染出来的子项数**（隐藏项已在 menuOf 里剔除）
+     *   · 组件 → `按钮（Button）`：中文 + 括号里的 API 名（英文名 = label，中文名 = zh）
+     *   · 其余 → 原样的 label（站点页 / 总览不做中英对照）
+     */
+    const displayName = (node) => {
+      if (node.children) return `${node.label}（${node.children.length}）`;
+      return node.zh ? `${node.zh}（${node.label}）` : node.label;
+    };
+
+    /**
      * 一个节点 → 模板要的字段。展示策略都收在这里：
      * 待建的不给死链（外链规范 + `stage · 待建` 的 tooltip），压暗靠 data-status。
      * ⚠️ 链接一律 `attr:href`：`:` 只写 property，`getAttribute('href')` 会是 null。
+     * ⚠️ 显示名与 tooltip 是两个字段：tooltip 用 title（summary），别混。
      */
     const linkOf = (page, current) => {
       const ready = hasPage(page);
       return {
         // 待建的没有 path，用 tagName 当 key（数据对账保证每个无 path 的叶子都是组件）
         key: page.path ?? page.tagName,
-        label: page.label,
+        name: displayName(page),
         className: page.tagName ? 'doc-nav-comp' : '',
         href: ready ? hashOf(page.path) : SPEC_URL,
         target: ready ? null : '_blank',
@@ -95,7 +107,7 @@
         node.children
           ? {
               key: `group:${node.label}`,
-              label: node.label,
+              name: displayName(node),
               pages: node.children.map((page) => linkOf(page, current)),
             }
           : linkOf(node, current),

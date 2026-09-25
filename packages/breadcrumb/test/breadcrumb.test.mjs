@@ -257,7 +257,7 @@ const crumb = await (async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     window
       .__inside('doc-nav', 'a')
-      .find((a) => a.textContent.trim() === 'Button')
+      .find((a) => a.textContent.includes('Button'))
       ?.click();
     await wait(1200);
     const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
@@ -469,7 +469,9 @@ check(
   '客户端切页后三个消费方一起更新（route store 是同一份实例）',
   JSON.stringify(crumb.afterNav.crumb) === JSON.stringify(['组件', 'Button']) &&
     crumb.afterNav.top === '组件' &&
-    crumb.afterNav.nav === 'Button',
+    /* 左栏是「中文（英文）」对照（按钮（Button）），面包屑 / 顶栏仍用单语言 label ——
+       这里是两套显示名的交界处，所以左栏按 includes 判 */
+    crumb.afterNav.nav?.includes('Button'),
   JSON.stringify(crumb.afterNav),
 );
 

@@ -103,7 +103,7 @@ const beforeSwitch = await page.evaluate(() => {
 
 // 从左栏真实点进组件页
 await page.evaluate(() => {
-  [...window.__inside('doc-nav', 'a')].find((a) => a.textContent.trim() === 'Code')?.click();
+  [...window.__inside('doc-nav', 'a')].find((a) => a.textContent.includes('Code'))?.click();
 });
 await page
   .waitForFunction(() => (window.__deepAll('h1')[0]?.textContent ?? '').includes('Code'), {
@@ -137,7 +137,7 @@ check(
 );
 check(
   '切页后左栏高亮与右栏目录都跟着换了页',
-  afterSwitch.navCurrent === 'Code' &&
+  afterSwitch.navCurrent?.includes('Code') &&
     afterSwitch.tocFirst !== null &&
     afterSwitch.tocFirst !== beforeSwitch.tocFirst,
   `当前项=${afterSwitch.navCurrent} · 目录首项 ${beforeSwitch.tocFirst} → ${afterSwitch.tocFirst}`,
@@ -170,7 +170,7 @@ await page.evaluate(() => {
 });
 await page.evaluate(() => {
   window.__inside('doc-nav', 'a')
-    .find((a) => a.textContent.trim() === 'Button')
+    .find((a) => a.textContent.includes('Button'))
     ?.click();
 });
 await page.waitForTimeout(1800);

@@ -73,8 +73,9 @@
       color: rgb(var(--mc-menu-group-color, var(--mc-color-fg-subtle)));
       font-size: var(--mc-text-xs);
       font-weight: var(--mc-weight-semibold);
+      /* 字距保留、**不做 uppercase**：分组名可能是中英混排（左栏就是「基础（Basics）」），
+         uppercase 只作用在拉丁字母上，会把括号里的英文变成 BASIC —— 和同一栏其它行不一致 */
       letter-spacing: 0.06em;
-      text-transform: uppercase;
       pointer-events: none;
       user-select: none;
     }

@@ -31,8 +31,8 @@
     }
   </style>
 
+  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录） -->
   <mc-menu size="sm">
-    <mc-menu-item group>本页目录</mc-menu-item>
     <o-fill :value="rows" fill-key="id">
       <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
         <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
