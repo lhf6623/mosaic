@@ -19,7 +19,7 @@
 <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
 ```
 
-标签名 = `mc-` + 目录名。同族组件共用一个目录（`packages/button/` 下还有 `icon-button.html`）。
+标签名 = `mc-` + 目录名。同一个族的组件共用一个目录（目录名 = 主标签去掉 `mc-` 前缀）。
 
 ### 1.2 属性：四个正交维度
 
@@ -29,16 +29,20 @@
 | 维度         | 属性                                                         | 取值                                                              | 默认      |
 | ------------ | ------------------------------------------------------------ | ----------------------------------------------------------------- | --------- |
 | **语义色**   | `color`                                                      | `primary` / `info` / `success` / `warning` / `danger` / `neutral` | `primary` |
-| **外观样式** | `variant`                                                    | `filled` / `outline` / `ghost`（部分组件另有 `subtle`）           | `filled`  |
+| **外观样式** | `variant`                                                    | 约定：`filled` / `outline` / `ghost`（部分组件另有 `subtle`）     | `filled`  |
 | **尺寸**     | `size`                                                       | `sm` / `md` / `lg`                                                | `md`      |
 | **状态**     | `disabled` / `loading` / `readonly` / `invalid` / `selected` | 布尔，存在即真                                                    | 无        |
 
 组件**只声明它真正支持的维度**（`mc-card` 没有 `color`，`mc-spinner` 没有 `variant`）。
 不支持的属性不要写进 `attrs` —— 写了就是承诺。
 
-**实现方式**：`color` 只往 `--mc-<comp>-color` / `--mc-<comp>-on-color` 两个色槽里填值，
-`variant` 只管把这两个槽贴到 `background` / `color` / `border-color` 上。
-于是 6 种颜色 + 3 种外观 = **9 条 CSS 规则**，而不是 18 条组合规则。
+`variant` 的取值是**约定**而不是全局枚举：每个组件只声明自己实际支持的取值，
+上表列出的是各组件通用的一套（`mc-menu` 用的是 `plain`（默认）/ `surface`）。
+
+**实现方式**：`color` 只往组件自己的色槽（`--mc-<comp>-*`）里填值，`variant` 只决定这些槽
+贴到 `background` / `color` / `border-color` 上，两者不直接相乘。槽的个数按需要定：
+`mc-button` 用三个 —— `--mc-button-fill` / `--mc-button-on-fill` / `--mc-button-accent`，
+因为中性色需要一个单独的强调色。规则数量级因此是「颜色数 + 外观数」，不是两者相乘。
 
 ### 1.3 尺寸：只有三档
 
@@ -68,11 +72,16 @@ input.setAttribute('value', '李四'); // ❌ 无效
 dialog.open = true; // ✅
 ```
 
-**布尔属性的 JS 修改必须走 `setAttribute` / `removeAttribute`**（直接改 property 不触发更新，[P3](./ofa-pitfalls.md)）：
+**布尔属性推荐走 `setAttribute` / `removeAttribute`** —— 属性是 ofa 观察的通道
+（少数直接改不触发更新的 property 见 [P3](./ofa-pitfalls.md)）。
+组件**可以**为布尔属性提供一个立即同步的 property 访问器 —— `mc-collapse-item` 的 `open` 就是
+（`el.open = true` 写完立刻生效，不必等属性反射那一拍）。
 
 ```js
 btn.setAttribute('disabled', '');
 btn.removeAttribute('disabled');
+
+item.open = true; // 组件提供了访问器时同样可以
 ```
 
 **值的反射**：`value` / `checked` / `open` 等会反射到宿主元素的原生 DOM property，
@@ -112,7 +121,9 @@ btn.removeAttribute('disabled');
 只在**内部有结构性子元素**且使用者确实需要定制时才暴露 `part`。
 视觉在 `:host` 上的组件（如 `mc-button`）不需要 —— 外部 `style="…"` 已经够用。
 
-固定词汇表：`base` / `panel` / `overlay` / `header` / `body` / `footer` / `label` / `input` / `error`。
+通用词汇：`base` / `panel` / `overlay` / `header` / `body` / `footer` / `label` / `input` / `error`。
+已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb`）、
+`pre` / `code` / `line`（`mc-code`）。
 
 ### 1.8 无障碍基线（每个组件都要满足）
 
@@ -201,16 +212,16 @@ btn.removeAttribute('disabled');
 <mc-code language="javascript" line-numbers> const a = 1; </mc-code>
 ```
 
-| 属性                             | 值                                                              | 默认                     | 说明                                                                                |
-| -------------------------------- | --------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
-| `src`                            | URL                                                             | —                        | **片段文件**：优先级最高；缺 `language` 时按文件后缀推断。同一 URL 多处引用只取一次 |
-| `code`                           | 字符串（可多行）                                                | —                        | 代码文本；不写则读**标签里的纯文本**。`<` 都要写 `&lt;`                             |
-| `language`                       | 语言 id 或别名：`js` `ts` `html` `css` `json` `bash` `py` `md`… | —                        | 空 / `text` / `none` 表示不高亮                                                     |
-| `line-numbers`                   | 布尔                                                            | —                        | 行号列（`position: sticky`，不在 DOM 文本里，不参与复制）                           |
-| `max-height`                     | 数字（px）或 CSS 长度                                           | —                        | 超出时在组件内部滚动；块内滚到底后滚轮会继续滚页面（不会把滚动锁在组件里）          |
-| `soft-wrap`                      | 布尔                                                            | —                        | 长行折行，而不是横向滚动                                                            |
-| `hljs-theme` / `hljs-theme-dark` | highlight.js 官方主题名                                         | `github` / `github-dark` | 亮色 / 暗色主题                                                                     |
-| `hljs-base`                      | URL                                                             | 内置固定版本 CDN         | highlight.js 的 `build/` 目录（自托管 / 换镜像）                                    |
+| 属性                             | 值                                                              | 默认                     | 说明                                                                                                             |
+| -------------------------------- | --------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `src`                            | URL                                                             | —                        | **片段文件**：优先级最高；缺 `language` 时按文件后缀推断。同一 URL 多处引用只取一次                              |
+| `code`                           | 字符串（可多行）                                                | —                        | 代码文本；不写则读**标签里的纯文本**。`<` 都要写 `&lt;`                                                          |
+| `language`                       | 语言 id 或别名：`js` `ts` `html` `css` `json` `bash` `py` `md`… | —                        | 空 / `text` / `none` 表示不高亮                                                                                  |
+| `line-numbers`                   | 布尔                                                            | —                        | 行号列（`position: sticky`）。行号是真实的 DOM 文本（`<span part="line">`），只靠 `user-select: none` 不参与复制 |
+| `max-height`                     | 数字（px）或 CSS 长度                                           | —                        | 超出时在组件内部滚动；块内滚到底后滚轮会继续滚页面（不会把滚动锁在组件里）                                       |
+| `soft-wrap`                      | 布尔                                                            | —                        | 长行折行，而不是横向滚动                                                                                         |
+| `hljs-theme` / `hljs-theme-dark` | highlight.js 官方主题名                                         | `github` / `github-dark` | 亮色 / 暗色主题                                                                                                  |
+| `hljs-base`                      | URL                                                             | 内置固定版本 CDN         | highlight.js 的 `build/` 目录（自托管 / 换镜像）                                                                 |
 
 > ⚠️ 折行属性叫 **`soft-wrap`** 而不是 `wrap`：`wrap` 是 ofa.js 的保留名，
 > 声明进 `attrs` 之后 `document.createElement('mc-code')` 会直接抛

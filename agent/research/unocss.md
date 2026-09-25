@@ -1,5 +1,8 @@
 # UnoCSS 用于「无构建 UI 组件库（ofa.js + jsDelivr CDN）」的技术结论
 
+> ⚠️ 本文是 **M0 时期的调研记录**，部分「推荐落地方式」已被后续实现取代 ——
+> 最终落地见 `packages/boot/mosaic.js` / `packages/boot/shadow-base.css` 与 `agent/PLAN.md` 的 D3/D5。
+
 > 验证环境：`unocss@66.10.5`（CLI 由 `@unocss/cli` 提供）、Node v24.20.0、pnpm/npm。
 > 文中所有体积数字与 CSS 产物均为**本机实跑结果**（`@unocss/core` `createGenerator()` + 真实 CLI），
 > 不是估算；文档链接为 unocss.dev 官方页面。
@@ -60,7 +63,7 @@ export default defineConfig({
     cssLayerName: (layer) => {
       if (layer === 'default') return 'mosaic.utilities'
       if (layer === 'shortcuts') return 'mosaic.components'
-      if (layer === 'preflights') return 'mosaic.base'
+      if (layer === 'preflights') return 'mosaic.preflights'
       return `mosaic.${layer}`
     },
   },
@@ -748,18 +751,27 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
 
 ```
 dist/
-├── mosaic.css        # ① 文档级：tokens(:root,:host) + 工具类 + 组件 shortcuts
+├── mosaic.css        # ① 文档级：tokens(:root) + 工具类 + 组件 shortcuts
 │                     #    <link rel="stylesheet"> 给宿主页面的 light DOM 用
 │                     #    同时也被 JS adopt 进每个 shadow root
 └── mosaic-base.css   # ② 仅组件内部：:host 作用域的最小 base/reset（自写，~1KB）
                       #    只 adopt 进 shadow root，绝不 <link> 到文档
 ```
 
+> `tokens(:root)` 刻意不带 `:host` —— 原因见 `packages/color/tokens.css` 顶部注释：
+> 这份表在 shadow root 里也会被 adopt，写成 `:host` 会给宿主元素重新赋一遍亮色值，
+> 盖掉从文档继承下来的暗色值（表现是切主题时组件纹丝不动）。
+
 CLI：
 ```bash
 unocss "src/components/**/*.{js,ts,html}" -o dist/mosaic.css --no-preflights -m
 unocss "src/styles/base.css" -o dist/mosaic-base.css   # 纯 CSS 直通，无需预处理
 ```
+
+> **落地差异（实际交付）**：文件名不是 `mosaic-base.css`，而是 `packages/boot/shadow-base.css`；
+> 注入也不是下面的 `src/styles/adopt.js` / `attachStyles`，而是 `packages/boot/mosaic.js`
+> 给全局 `Element.prototype.attachShadow` 打补丁，统一 adopt `mosaic.css` + `shadow-base.css`。
+> 下面这段只作原理解释。
 
 ### 8.2 Shadow DOM 的样式注入（关键 10 行）
 
@@ -823,6 +835,9 @@ export async function attachStyles(shadowRoot, ...urls) {
 ---
 
 ## 附：可直接复制的最终配置
+
+> ⚠️ 下面 `dark: { dark: ':host(.dark)' }` 的暗色方案最终**没有采用** —— 仓库落地的是
+> `dark: 'media'` + token 驱动换肤（见 `packages/color/tokens.css` 与 `packages/boot/`）。
 
 ```ts
 // uno.config.ts

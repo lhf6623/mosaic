@@ -254,8 +254,8 @@
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
-  <!-- 文档站自己的组件都在 docs/components/ 下，文件名带 doc- 前缀就是标签名（nav.html → doc-nav）。
-       三栏里的两块：左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染 -->
+  <!-- 文档站自己的组件在 docs/components/ 下：标签名由组件里显式声明的 tag 决定，约定 doc- + 文件名
+       （nav.html → tag: 'doc-nav'；不写 tag 会按文件名推断出非法元素名，见 ofa-pitfalls P40）。左栏 <doc-nav>、右栏 <doc-toc> 都用 mc-menu 渲染 -->
   <l-m src="./components/nav.html"></l-m>
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>

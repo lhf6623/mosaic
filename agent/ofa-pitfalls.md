@@ -96,9 +96,9 @@ watch: {
 
 ### P7 · proto 方法名要避开 `$.fn` 上的通用名
 
-ofa.js 版本升级时会把更多方法名收为保留（`refresh` 已被 `$.fn` 占用）。
+ofa.js 版本升级时会把更多方法名收为保留（`refresh` / `sync` 已被 `$.fn` 占用）。
 避开：`get` / `set` / `text` / `html` / `data` / `watch` / `on` / `emit` / `class` /
-`style` / `remove` / `refresh` 等。
+`style` / `remove` / `refresh` / `sync` 等。
 
 ### P31 · `attrs` 的键也不能撞保留名；组件构造期不能往宿主写属性
 
@@ -431,7 +431,7 @@ positioned 祖先为基准，铺满整个祖先。
 顺着 `parentNode` 爬是：`.doc-body → 页面 shadow root → host(o-page) → 布局页 o-page →
 o-app → …` —— **直接跳过了布局页的 shadow root**，而当时的滚动容器 `.doc-main` 正住在那里。
 
-> 现在两栏浮动、正文带 `.doc-main` 在外壳里滚（见 `docs/doc-layout.html` 的 `<style>` 注释），
+> 现在两栏浮动、正文带 `.doc-main` 在外壳里滚（见 `docs/layout.html` 的 `<style>` 注释），
 > 但这条规则对**任何**跨 shadow 往上找祖先的场景都成立，别删。
 
 **正确写法**：每一步先看 `assignedSlot`（被投影的节点，扁平树里的父是那个 slot）：
@@ -447,7 +447,7 @@ el = el.assignedSlot ?? el.parentNode ?? el.getRootNode()?.host ?? null;
 把分栏容器按一屏定高（`flex: 1 1 auto` + `grid-template-rows: minmax(0, 1fr)`），
 行就塌成一屏，sticky 的侧栏一滚动就跟着走（看起来跟没写 sticky 一样）。
 让容器按内容长高（`height: auto` + `flex: 0 0 auto` + `align-items: start`）即可 ——
-详见 [`components.md` 的外壳布局一节](./components.md#外壳布局与滚动上--正文带整页只有一条滚动条)。
+详见 [`components.md` 的「外壳布局与滚动」一节](./components.md)。
 
 ---
 
@@ -481,30 +481,31 @@ P26 于是被触发，页面空白。
 ### P40 · 组件文件**不写 `tag`** 时按文件名推断 —— 改名 / 挪目录就换标签或直接注册失败
 
 ```html
-<!-- ❌ docs/components/nav.html：没写 tag，ofa 按文件名推断出 'nav' -->
+<!-- ❌ 假设某个组件文件没写 tag：ofa 按文件名推断出 'example'（无连字符 → 非法） -->
 <template component>
   <script>
     export default () => ({ data: {} });
   </script>
 </template>
 <!--
-  控制台：Error loading component module, wrong module address: …/components/nav.html
+  控制台：Error loading component module, wrong module address: …/components/example.html
   真正的 cause（只有监听 unhandledrejection 才看得到）：
-          Error in registering the 'nav' component
+          Error in registering the 'example' component
 -->
 
 <!-- ✅ 显式写 tag：与文件名、目录名彻底解耦 -->
-export default () => ({ tag: 'doc-nav', data: {} });
+export default () => ({ tag: 'doc-example', data: {} });
 ```
 
-**为什么难查**：`nav` 不是合法的自定义元素名（自定义元素名必须带连字符），注册当场失败；
+**为什么难查**：推断出来的标签名往往不带连字符（本例是 `example`）—— 不是合法的自定义元素名，
+注册当场失败；
 而 ofa 的组件加载管线会**把内层错误再包一层** —— `<l-m>` 拿到含 `<template component>` 的
 文件后，会抽出模板、按 `${模板} .mjs --real:${url}` 合成模块再 import，内层错误丢在那一步，
 外层只留一句 `load_comp_module: wrong module address`，看起来像 URL 写错了。
 
-**写法**：每个组件都**显式写 `tag`**，别依赖文件名推断。Mosaic 的组件本来都写了；
-`docs/doc-nav.html` 是唯一的例外（文件名恰好等于标签，歪打正着），
-2026-09 把它挪进 `docs/components/` 并改名 `nav.html` 时立刻炸了 —— 六个组件只坏了它一个。
+**写法**：每个组件都**显式写 `tag`**，别依赖文件名推断。Mosaic 的组件都写了；
+`docs/doc-nav.html` 曾是唯一的例外（文件名恰好等于标签，歪打正着），
+后来挪进 `docs/components/` 并改名 `nav.html` 时立刻炸了 —— 现已显式声明 `tag: 'doc-nav'`。
 
 **怎么定位**：组件不渲染、控制台只给「wrong module address」时，先
 `customElements.get('标签名')` 看注册上没上，再监听 `unhandledrejection` 读 `reason.cause`。
@@ -519,14 +520,15 @@ export default () => ({ tag: 'doc-nav', data: {} });
 会自动升级，历史上从 4.5 漂到 4.7+，并曾因新版把 `refresh` 收进 `$.fn` 而破坏组件。
 但**锁死旧版本同样有风险**（锁 4.5.0 时 `o-fill` 的内嵌 `$data` 模板直接不可用）。
 
-**Mosaic 的立场**：自己 pin 一个**验证过的** ofa.js 版本并写进文档，
-同时用 `peerDependencies: "ofa.js": ">=4.7 <5"` 声明兼容区间；
-每次升 ofa.js 必须跑一遍冒烟测试。
+**Mosaic 的立场**：pin 一个**验证过的** ofa.js 版本（当前 `4.7.5`），兼容区间是
+**`>=4.7 <5`**，每次升 ofa.js 必须跑一遍冒烟测试。这份契约写在文档里，**不写 `peerDependencies`**：
+本库 `private: true` 永不发 npm，使用者走 CDN，ofa.js 也是运行时从 jsDelivr `import` 的 ——
+没有 npm 解析器会读那个字段，写了只是惰性声明。将来真要发 npm / 给打包器用户用时再补。
 
 ### P24 · 本地验证必须禁缓存
 
-用 `pnpm dev`（`http-server -c-1`）。
-用默认缓存的静态服务器会导致「改完 `page.html` / `m3-theme.js` 浏览器继续用旧模块」，
+用 `pnpm dev`（仓库自带 `tools/serve.mjs`，零依赖、`cache-control: no-store`）。
+用默认缓存的静态服务器会导致「改完 `page.html` / `mosaic.js` 浏览器继续用旧模块」，
 表现为"改了没生效"或诡异报错，排查极耗时。
 
 ### P25 · 动态生成主题必然有 FOUC，治理 = 同步引导 + 双兜底
@@ -570,22 +572,20 @@ Mosaic 里这件事现在收在一处：`docs/state/route.js` 同时挂 `hashcha
 消费方（顶栏 / 左栏 / 面包屑 / 翻页 / 站点脚本）只订阅它。
 
 > 顺带一条同类坑：`parentNode` / `getRootNode().host` 走的是**节点树**，而滚动与投影按
-> **扁平树**。现在两栏浮动、滚的是外壳的正文带（见 `docs/doc-layout.html` 的 `<style>` 注释），
-> 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/components/toc.html` 的 `scroller()` 与
-> `packages/code/code.html` 的 `scrollableAncestor()` 仍然按扁平树走 —— 页面将来若重新引入
-> 内部滚动区，只有扁平树能找到它。
+> **扁平树**。两栏浮动，滚的是外壳的正文带 `.doc-main`（页面上唯一的滚动容器，见
+> `docs/layout.html` 的 `<style>` 注释），扁平树仍能找到它 —— 完整推演与写法见 P34。
 
 ### P29 · 嵌套路由（布局页）的四条约定
 
 **现象**：页面"掉出外壳"（没有顶栏、没有正文带，看起来像样式丢了）；或者父页面
 写好了却什么都不显示。四条都**不报错**：
 
-| 约定                                               | 踩错的表现                                                                                                                                                                  |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 子页面必须 `export const parent = '…'`             | 那一页不会被布局页包住，顶栏/正文带全没有。路径相对**子页面文件**解析：`docs/pages/x.html` 写 `'../layout.html'`，`packages/<slug>/page.html` 写 `'../../docs/layout.html'` |
-| 父页面（布局页）必须有 `<slot></slot>`             | 子页面内容无处投影，页面一片空白（父页面自己正常）                                                                                                                          |
-| 顶栏高亮要用 `routerChange()`，不能只靠 `ready()`  | 父页面在切页时**不重建**，`ready()` 只在首次跑一次 → 只有第一页亮，之后一直不更新                                                                                           |
-| 冷启动直接带 hash 时，子页面可能比父页面晚一步挂上 | `ready()` 那一刻查不到子页面 → 首屏高亮空着。补几拍（自限）即可，Mosaic 的 `syncTopNav` 就是这么做的                                                                        |
+| 约定                                                              | 踩错的表现                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 子页面必须 `export const parent = '…'`                            | 那一页不会被布局页包住，顶栏/正文带全没有。路径相对**子页面文件**解析；`docs/pages/x.html` → `'../layout.html'`（分区布局页在 `docs/pages/` 下则写 `'../doc-layout.html'`）；`packages/<slug>/page.html` → `'../../docs/doc-layout.html'`（单列页如 `packages/color/page.html` → `'../../docs/layout.html'`） |
+| 父页面（布局页）必须有 `<slot></slot>`                            | 子页面内容无处投影，页面一片空白（父页面自己正常）                                                                                                                                                                                                                                                            |
+| 顶栏高亮要订阅 `docs/state/route.js`，不能只在 `ready()` 里算一次 | 父页面在切页时**不重建**，`ready()` 只在首次跑一次 → 只有第一页亮，之后一直不更新                                                                                                                                                                                                                             |
+| 冷启动直接带 hash 时，子页面可能比父页面晚一步挂上                | 路由状态直接读 `location.hash`，因此顶栏高亮不依赖子页面挂载时机（无需轮询重试）                                                                                                                                                                                                                              |
 
 **样式边界值得记一笔**：父页面的 `<style>` 在**它自己的 shadow root** 里，文档级 CSS
 进不去（和普通组件一样）；但子页面的 `o-page` 在**文档树**里（它是父页面那个 `o-page`
@@ -703,6 +703,6 @@ detached() { this.store = {}; }, // 文档推荐的清理，照写
 
 ## 附：Mosaic 参考组件曾踩中的条目
 
-`packages/button/button.html` 的第一版（照文档写的）踩了 **P1 / P2 / P10** 三条：
-`disabled` 默认值写成 `false` 且没进 `attrs`、转发用了 `attr:disabled`、
-loading 指示器用了 `<o-if>`。三条已修。这份清单的存在意义就是别再犯第二次。
+`packages/button/button.html` 第一版（照文档写的）一次踩中 **P1 / P2 / P10**：`disabled` 默认
+`false` 且没进 `attrs`、转发用 `attr:disabled`、loading 用 `<o-if>`。三条已修 —— 这份清单的
+存在意义就是别再犯第二次。

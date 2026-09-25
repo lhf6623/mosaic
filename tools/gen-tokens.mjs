@@ -84,7 +84,7 @@ function contrast(rgb1, rgb2) {
 
 const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-// 统一的明度爬升。相邻档位的 OKLab L 差控制在 0.05~0.12，视觉步长才均匀。
+// 统一的明度爬升。相邻档位的 OKLab L 差在 0.034~0.107，视觉步长才均匀。
 const L_RAMP = {
   50: 0.972,
   100: 0.938,
@@ -174,7 +174,7 @@ const THEMES = {
     'color-info-subtle': ref('info', 50),
     'color-info-fg': '255 255 255',
 
-    // success 特例：600 当文字放白底只有 3.3:1，绿色又难再压深，整体下移一档到 700 两个角色才都达标
+    // success 特例：600 当文字放白底只有 4.62:1，刚过 AA 线；整体下移一档到 700，填充/文字两个角色才都留有余量
     'color-success': ref('success', 700),
     'color-success-hover': ref('success', 800),
     'color-success-active': ref('success', 900),
@@ -503,5 +503,5 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, css, 'utf8');
 console.log(`\x1b[32m✓\x1b[0m 对比度全部达标`);
 console.log(
-  `\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(css.length / 1024).toFixed(1)} KB)\n`,
+  `\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(Buffer.byteLength(css, 'utf8') / 1024).toFixed(1)} KB)\n`,
 );

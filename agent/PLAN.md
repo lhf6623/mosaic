@@ -27,7 +27,8 @@ ofa.js 的坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md)（**写组件前必读**
 
 ### D1. 分发走 `/gh/`，仓库即产物
 
-**结论**：`https://cdn.jsdelivr.net/gh/lhf6623/mosaic@1.0.0/...`，不发布 npm。
+**结论**：`https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...`，不发布 npm。
+示例里的 `0.1.0` 是计划中的 M1 版本；仓库当前还没有 tag，所以这些 URL 在首次发布前会 404。
 
 我原本认定 `/gh/` 会把 `.html` 301 甩到 `raw.githubusercontent.com`，据此决定改走 npm。
 **那条结论是错的**，实测：
@@ -62,11 +63,13 @@ ofa.js 的坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md)（**写组件前必读**
 
 ```
 packages/button/
-  button.html    ← 组件本体，源 = 产物，构建不碰它
-  README.md      ← 自包含文档
-  index.html     ← 验收页加载器
-  page.html      ← 验收页内容
+  button.html          ← 组件本体，源 = 产物，构建不碰它
+  page.html            ← 文档页，注册在 docs/site-map.js，路由 #/packages/button/page.html
+  demos/*.html         ← 可交互演示，一个例子一个文件，可单独打开
+  test/button.test.mjs ← 组件自己的冒烟套件
 ```
+
+没有 per-component 的 `README.md` / `index.html`：文档页就是 `page.html`。
 
 标签名 = `mc-` + 目录名（目录 `button` → 标签 `mc-button`）。
 **目录/文件用语义名，标签用带前缀的语义名** —— 一条规则同时消掉了"目录名 vs 标签名"的歧义。
@@ -118,54 +121,36 @@ packages/button/
 **由此得到一个很有用的降级性质**：补丁挂了 → 颜色、圆角、尺寸**全部正常**
 （令牌靠继承），只有工具类提供的排布失效。故障是分级的，不是全有全无。
 
-**运行时**（`packages/boot/mosaic.js`，约 40 行，手写）：
+**运行时**（`packages/boot/mosaic.js`，83 行，手写）就做三件事：
+
+1. **补 `Element.prototype.attachShadow`**：新建 shadow root 立刻 adopt 两份 sheet；
+   sheet 未就绪先收进 `pending`，稍后补上。
+2. **加载两份 sheet**：`mosaic.css`（令牌 + 工具类）与 `shadow-base.css`（元素级 reset，
+   只能 adopt）；失败只 `console.error`，退化成"有颜色无排布"。
+3. **补扫 `walk(document.documentElement)`**：给补丁装上之前已存在的 shadow root 递归补
+   adopt（`querySelectorAll` 不跨边界，只能递归）。
+
+节选（`packages/boot/mosaic.js:29-37`）：
 
 ```js
-const CSS_URL = new URL('./mosaic.css', import.meta.url).href;
-const SHADOW_URL = new URL('./shadow-base.css', import.meta.url).href;
-
-let utilities = null; // 文档级 sheet：令牌 + 工具类
-let shadowBase = null; // 只进 shadow root 的 reset
-const pending = new Set(); // sheet 就绪前创建的 shadow root
-
-// 必须在任何 ofa 组件实例化之前装好补丁
-const nativeAttach = Element.prototype.attachShadow;
 Element.prototype.attachShadow = function (init) {
   const root = nativeAttach.call(this, init);
-  if (init?.mode !== 'open') return root;
-  if (utilities) root.adoptedStyleSheets = [...root.adoptedStyleSheets, utilities, shadowBase];
-  else pending.add(root); // 竞态兜底：稍后补上
+  if (!init || init.mode !== 'open') return root;
+  if (loaded) adopt(root);
+  else pending.add(root);
   return root;
 };
-
-(async () => {
-  const load = async (url) => {
-    const sheet = new CSSStyleSheet();
-    await sheet.replace(await (await fetch(url)).text());
-    return sheet;
-  };
-  [utilities, shadowBase] = await Promise.all([load(CSS_URL), load(SHADOW_URL)]);
-  for (const root of pending) {
-    root.adoptedStyleSheets = [...root.adoptedStyleSheets, utilities, shadowBase];
-  }
-  pending.clear();
-})();
 ```
 
 几个要点：
 
-- **`fetch(CSS_URL)` 不会产生第二次下载**：页面上已经有 `<link href="mosaic.css">`，
-  fetch 命中同一个 HTTP 缓存条目。
-- **竞态窗口是安全的**：`<link>` 已经让令牌生效（自定义属性继承），
-  sheet 就绪前创建的 shadow root 被 `pending` 收着，稍后补 adopt。
+- **`fetch` 不会产生第二次下载**：页面上已有 `<link href="mosaic.css">`，fetch 命中同一个 HTTP 缓存条目。
 - **`mosaic.css`（可 link、可 adopt）与 `shadow-base.css`（只能 adopt）必须物理分开**：
   后者含 `*{box-sizing}` / `button{cursor}` 这类元素级 reset，
   一旦被 `<link>` 到宿主页面就会重置使用者的整页样式。
-- **`@layer` 是硬性要求**，理由见事实 4。层顺序：
-  ```
-  mosaic.tokens < mosaic.preflights < mosaic.components < mosaic.utilities
-                                                          ↑ 组件自己的 <style> 未分层，赢过全部
-  ```
+- **`@layer` 是硬性要求**，理由见事实 4。层顺序在 `packages/color/tokens.css` 里一次性声明：
+  `mosaic.base < mosaic.tokens < mosaic.preflights < mosaic.components < mosaic.utilities`；
+  组件自己的 `<style>` 未分层，赢过全部。
 
 **否决/备选的方案**：
 
@@ -187,14 +172,14 @@ Element.prototype.attachShadow = function (init) {
 
 **依据**：
 
-- `dark:` 变体生成的是 `.dark .dark\:bg-x` 这类**后代选择器**。
-  `<html class="dark">` 在 shadow 树外面，shadow root 内的选择器**匹配不到跨边界的祖先**。
-  在组件里写 `dark:` 是**静默失效**，没有任何报错。
+- `uno.config.ts` 设的是 `dark: 'media'`，`dark:bg-black` 编译出来是
+  `@media (prefers-color-scheme: dark){…}`，在 shadow root 里其实**生效** ——
+  但它跟的是操作系统偏好，跟不了 `<html data-theme>` 这套三态切换。
+  所以组件里**禁止** `dark:`：需要暗色差异就提升为令牌。
 - `:host-context()` 已被 CSSWG 从规范移除（MDN 标 Deprecated），不能作为主路径。
 - 自定义属性跨 shadow 继承（D3 事实 3），所以"换令牌"在天性上就是对的方案。
 
-`uno.config.ts` 里 `dark: 'media'` 只是为了有人误写 `dark:` 时行为可预期（媒体查询在 shadow 内有效），
-并与令牌里的 `prefers-color-scheme` 兜底保持一致。
+`dark: 'media'` 只是让误写的 `dark:` 行为可预期（跟 OS，而非页面主题）。
 
 **组件变体一律用属性**（`:host([color="danger"])`、`:host([variant="outline"])`），理由三条：
 HTML 干净、UnoCSS 不需要 safelist（没有拼接类名）、CSS 体积不随变体数膨胀。
@@ -243,7 +228,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
   解法是官方 skip 标记（注释必须是完整闭合的块注释）把 script 段包起来：
   `/* @unocss-skip-start */ … /* @unocss-skip-end */`。约束是标记之间不能再出现这套字符串。
 - **缺输入必须大声失败**。已实测：`tokens.css` 缺失时 UnoCSS 静默跳过，
-  退出码 0，产出一份没有任何令牌定义的坏 CSS（32660 B → 19487 B）。
+  退出码 0，产出一份没有任何令牌定义的坏 CSS（当时的实测：32660 B → 19487 B）。
   守卫在 `tools/build-css.mjs` 里（`process.exit(1)` + 明确文案）。
   两个位置上的讲究：
   - **不能放在 `uno.config.ts` 里**：那要引 `node:fs`，会给一个纯 JS 项目强加
@@ -254,7 +239,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
 **预编译原子 CSS 的根本矛盾**：我们能编译的只有已知类名，而使用者会写什么是未知的。
 所以 `mosaic.css` 是一份**精选子集**（当前 370 个工具类）。
 子集之外的（`mt-7`、`bg-gradient-to-r`…）不存在，需要时得自己写 CSS。
-**这个边界要写在文档首页**，而不是等人踩坑。
+这个边界已写在 `docs/pages/guide.html`（常见问题）与 [README](../README.md)，而不是等人踩坑。
 
 ---
 
@@ -263,7 +248,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
 ```
 L1 原始色阶   --mc-primary-500: 134 102 255;      ← 存 sRGB 通道三元组
 L2 语义令牌   --mc-color-primary: rgb(var(--mc-primary-600));
-L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);
+L3 组件令牌   --mc-button-fill: var(--mc-color-primary);
 ```
 
 **组件只允许消费 L2 和 L3**，永远不碰 L1。由 `blocklist` 强制拦截
@@ -332,14 +317,13 @@ mosaic/
 │   │   ├── mosaic.css             # 生成并提交：令牌 + 工具类（可 <link>）
 │   │   └── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
 │   ├── color/
-│   │   ├── tokens.css             # 生成并提交：三层令牌
-│   │   └── page.html              # 令牌文档页（ofa.js 页面模块）
-│   ├── button/
-│   │   ├── button.html            # 组件本体（源 = 产物，构建不碰它）
-│   │   └── page.html              # 组件文档页 ← 文档跟着组件走
-│   ├── code/
-│   │   ├── code.html              # 代码展示（高亮可选依赖 + 降级路径）
-│   │   └── page.html
+│   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
+│   │   └── page.html              # 令牌文档页
+│   ├── button/ code/ collapse/ menu/ breadcrumb/
+│   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）
+│   │   ├── page.html              # 文档页，注册在 docs/site-map.js
+│   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
+│   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
 │   └── {next}/{next}.html ...
 ├── tools/
 │   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
@@ -351,21 +335,23 @@ mosaic/
 ├── app-config.js                  # ofa.js 应用配置（首页地址、加载态、错误兜底）
 ├── docs/                          # 站点级资源（跨组件的东西）
 │   ├── pages/                     # 站点级页面模块：home / guide / components / specs
-│   ├── layout.html                # 布局页（嵌套路由的父页面）：顶栏 + 正文带 + <slot>
-│   ├── site-map.js                # 站点唯一数据源（结构即菜单）：页面 / 组件 / 层级 / order / hidden
-│   ├── routes.js                  # 路由工具：route() 归一当前路由
+│   ├── layout.html                # 外壳布局页：顶栏 + 正文带 + <slot>
+│   ├── doc-layout.html            # 组件页分区布局（API + 演示 + 目录）
+│   ├── snippets/                  # 文档页引用的代码片段
+│   ├── state/route.js             # 抽出的路由状态（$.stanz）
 │   ├── components/                # 文档站自己的组件（nav/toc/crumb/pager/cards/palette.html：文件名 + doc- 前缀 = 标签名）
-│   ├── shell.css  content.css     # 文档级视口/高度链 / 页面**共用**的正文样式（页面自己 link 后者）
-│   └── layout.html theme-boot.js  # 外壳（顶栏 + 正文带 + 换页复位 + 滚轮接力）/ 首帧主题
+│   ├── site-map.js                # 站点唯一数据源（结构即菜单）
+│   ├── routes.js                  # 路由工具：route() 归一当前路由
+│   ├── theme-boot.js              # 首帧主题（防闪白）
+│   └── shell.css  content.css     # 文档级视口/高度链 / 页面共用的正文样式
 ├── tests/
-│   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件（单飞见 README）
+│   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件
 │   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
 │   └── site/*.mjs                 # 跨组件的站点不变量
-# 组件自己的套件跟着组件走：packages/<name>/{demos,test}/
 ├── agent/
 │   ├── PLAN.md  design-spec.md  design-tokens.md
 │   ├── component-spec.md  components.md  ofa-pitfalls.md
-│   └── research/{unocss,jsdelivr}.md
+│   └── research/{unocss,jsdelivr,state}.md
 ├── package.json                   # private: true（永不 publish）
 └── README.md
 ```
@@ -387,17 +373,20 @@ mosaic/
 
 ```bash
 pnpm tokens        # tools/gen-tokens.mjs → packages/color/tokens.css（含 WCAG 自检，不达标退出 1）
+pnpm check:tokens  # 只自检，不写文件
 pnpm build:css     # unocss -c uno.config.ts → packages/boot/mosaic.css
+pnpm dev:css       # 同上，watch 模式
 pnpm build         # = tokens && build:css
 pnpm check:drift   # CI：重新生成后 git diff --exit-code，防止产物与生成器漂移
-pnpm dev           # 本地验收（http-server -c-1 禁缓存，端口 8642）
+pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
+pnpm format:check  # prettier 只检查
 ```
 
 **发布流程**：
 
 1. 改代码 → `pnpm build` → 提交（**生成物一起提交**）
-2. 打 tag `v1.0.0` → 推送 → jsDelivr 自动可用
-3. 文档里的引入地址锁精确版本：`.../gh/lhf6623/mosaic@1.0.0/packages/boot/mosaic.js`
+2. 打 tag `v0.1.0` → 推送 → jsDelivr 自动可用
+3. 文档里的引入地址锁精确版本：`.../gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js`
 4. 发布后**逐文件比对内容哈希**：jsDelivr 有 version fallback，
    新版本缺文件时会静默回退旧版本，只看 HTTP 200 会被骗过去
 
@@ -407,11 +396,12 @@ pnpm dev           # 本地验收（http-server -c-1 禁缓存，端口 8642）
 
 ### M0 — 打通骨架 ✅ **D3 已验证成立**
 
-冒烟测试在 `tests/smoke.mjs`（真浏览器，22 项断言，`pnpm test`）。
+冒烟测试在 `tests/smoke.mjs`（真浏览器；M0 当时 22 项断言，现为 194 项
+= 11 站点套件 + 5 组件套件，`pnpm test`）。
 
 - [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
 - [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
-- [x] 工具类产物注入 shadow root（387 条规则）
+- [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 370 条）
 - [x] 主题切换能穿过 shadow 边界（`rgb(114 70 237)` → `rgb(189 182 255)`）
 - [x] 令牌靠自定义属性继承进 shadow root
 - [x] 文档站五个页面可访问、无 404、色板实时渲染
@@ -431,12 +421,15 @@ pnpm dev           # 本地验收（http-server -c-1 禁缓存，端口 8642）
 
 这两条都是「D3 是否成立」的一部分，结论是：**D3 成立**，但前提是上面两条守住。
 
-- **产出**：可运行的文档站（`pnpm dev`）+ 22 项真浏览器断言全绿
+- **产出**：可运行的文档站（`pnpm dev`）+ 当时 22 项真浏览器断言全绿
 
 ### M1 — 令牌与基础组件
 
-- [ ] `mc-button` / `mc-code` / `mc-collapse`（均已实现）/ `mc-icon` / `mc-card` / `mc-badge` / `mc-spinner`
-- [ ] 每个组件补齐 `{name}.html` + `README.md` + `index.html` + `page.html` 四件套
+- [x] 已实现：`mc-button` / `mc-code` / `mc-collapse`（含 item）/ `mc-menu`（含 item）/
+      `mc-breadcrumb`（含 item）
+- [ ] 待建：`mc-icon` / `mc-card` / `mc-badge` / `mc-spinner`
+- [ ] 每个组件补齐 `{name}.html` + `page.html` + `demos/*.html` + `test/{slug}.test.mjs`
+      （**没有** per-component 的 `README.md` / `index.html`）
 - **产出**：可发布的 0.1.0
 
 ### M2 — 表单与反馈
@@ -464,16 +457,16 @@ CI 全量接入（令牌自检 + drift 检查 + 冒烟测试 + 体积上限）�
 
 ## 六、风险登记
 
-| 风险                       | 影响                                         | 缓解                                                                    |
-| -------------------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
-| **D3 运行时补丁失效**      | 组件失去排布（颜色/尺寸仍在）                | 降级是分级的（D3）；M0 端到端冒烟测试；退路是每组件 `<link>`            |
-| 生成物与生成器漂移         | CDN 上的东西和源码不一致                     | 生成物提交进仓库 + CI `check:drift`                                     |
-| jsDelivr 在大陆不可达      | 使用者无法加载                               | 换入口域名 + 自托管；不赌单一 CDN                                       |
-| 预编译工具类子集不够用     | 使用者写了不存在的类名，静默无效果           | 文档首页写明边界；提供反馈入口                                          |
-| ofa.js 升级破坏组件        | 大量组件同时失效                             | pin 验证过的版本 + `peerDependencies` 声明区间 + 升级必跑冒烟（见 P23） |
-| 体积失控                   | 令牌 12.5 KB + 工具类 20 KB                  | CI 设体积上限；L1 色阶可拆成独立文件按需引入                            |
-| 代码高亮的 CDN 不可达      | 代码块没有颜色（排版、行号、主题跟随都正常） | 失败即降级为纯文本；`hljs-base` 支持自托管 / 换镜像                     |
-| 组件作者重复踩 ofa.js 的坑 | 排查极耗时（都是静默失效）                   | [`ofa-pitfalls.md`](./ofa-pitfalls.md) 作为写组件的必需前置阅读         |
+| 风险                       | 影响                                         | 缓解                                                            |
+| -------------------------- | -------------------------------------------- | --------------------------------------------------------------- |
+| **D3 运行时补丁失效**      | 组件失去排布（颜色/尺寸仍在）                | 降级是分级的（D3）；M0 端到端冒烟测试；退路是每组件 `<link>`    |
+| 生成物与生成器漂移         | CDN 上的东西和源码不一致                     | 生成物提交进仓库 + CI `check:drift`                             |
+| jsDelivr 在大陆不可达      | 使用者无法加载                               | 换入口域名 + 自托管；不赌单一 CDN                               |
+| 预编译工具类子集不够用     | 使用者写了不存在的类名，静默无效果           | 文档首页写明边界；提供反馈入口                                  |
+| ofa.js 升级破坏组件        | 大量组件同时失效                             | pin 验证过的版本（兼容区间 `>=4.7 <5`）+ 升级必跑冒烟（见 P23） |
+| 体积失控                   | 令牌 ≈14.1 KB + 工具类 ≈21 KB                | CI 设体积上限；L1 色阶可拆成独立文件按需引入                    |
+| 代码高亮的 CDN 不可达      | 代码块没有颜色（排版、行号、主题跟随都正常） | 失败即降级为纯文本；`hljs-base` 支持自托管 / 换镜像             |
+| 组件作者重复踩 ofa.js 的坑 | 排查极耗时（都是静默失效）                   | [`ofa-pitfalls.md`](./ofa-pitfalls.md) 作为写组件的必需前置阅读 |
 
 ---
 

@@ -3,7 +3,7 @@
   <div class="doc-body">
     <h1>规范</h1>
     <p class="doc-lead">
-      六份文档，各回答一个问题。都在仓库的 <code>agent/</code> 目录下，直接读 Markdown 即可。
+      七份文档，各回答一个问题。都在仓库的 <code>agent/</code> 目录下，直接读 Markdown 即可。
     </p>
 
     <div class="doc-grid">
@@ -62,18 +62,30 @@
           不报错、表象像「绑定不生效」、反查成本极高。
         </p>
       </div>
+      <div class="doc-card">
+        <h4>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/docs-refactor.md"
+            >文档站重构设计</a
+          >
+        </h4>
+        <p>class 组件改 ofa 组件模板 + <code>$.stanz</code> 路由状态。</p>
+      </div>
     </div>
 
-    <h2>三条不可谈判的约束</h2>
+    <h2>五条不可谈判的约束</h2>
     <ol>
       <li><strong>使用者侧零工具链</strong> —— 任何「请先安装 X」的方案直接否决</li>
       <li>
         <strong>组件不过打包器</strong> —— <code>packages/**.html</code> 源 = 产物。 ofa.js
         的组件就是一个可独立寻址的 <code>.html</code>，不该变成 JS bundle
       </li>
+      <li><strong>组件不依赖宿主页面任何 CSS</strong> —— 样式自带，宿主的全局选择器影响不到它</li>
       <li>
         <strong>定制点只用原生 CSS</strong> —— <code>style="…"</code> + 令牌 +
         <code>::part()</code>， 不用 JS 配置对象
+      </li>
+      <li>
+        <strong>只有一个运行时依赖 ofa.js</strong> —— pin 在验证过的版本；代码高亮是可选懒加载依赖
       </li>
     </ol>
 
@@ -105,7 +117,8 @@
         <tr>
           <td>组件里禁止 <code>dark:</code> 变体</td>
           <td>
-            它生成的是后代选择器，匹配不到 shadow 树外面的 <code>&lt;html data-theme&gt;</code>
+            <code>dark:</code> 编译成 <code>@media (prefers-color-scheme: dark)</code>， 在 shadow
+            树里能生效，但只跟随系统偏好，跟不了 <code>&lt;html data-theme&gt;</code> 的三态切换
           </td>
         </tr>
         <tr>
@@ -168,14 +181,17 @@
         </tr>
         <tr>
           <td>UnoCSS 管线（370 个精选工具类）</td>
-          <td>✅ 34.3 KB raw / 7.1 KB gzip</td>
+          <td>✅ 34.8 KB raw / 7.7 KB gzip</td>
         </tr>
         <tr>
           <td>运行时注入（<code>mosaic.js</code>）</td>
           <td>✅ 已实现</td>
         </tr>
         <tr>
-          <td><code>mc-button</code> 参考实现</td>
+          <td>
+            <code>mc-button</code> / <code>mc-code</code> / <code>mc-collapse</code> /
+            <code>mc-menu</code> / <code>mc-breadcrumb</code>
+          </td>
           <td>✅ 已实现</td>
         </tr>
         <tr>
@@ -190,8 +206,9 @@
     </table>
   </div>
   <script>
-    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，
-     * docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'。 */
+    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot>，相对**本页面文件**解析。
+     * 单栏页面挂外壳：docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'；
+     * 分区布局页（三栏 + 目录）是 packages/<slug>/page.html 用的 '../../docs/doc-layout.html'。 */
     export const parent = '../layout.html';
 
     export default () => ({ data: {} });

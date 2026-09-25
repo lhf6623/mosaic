@@ -34,52 +34,52 @@
       cursor: pointer;
 
       /* ---------- 色槽：color 只往这三个槽填值，variant 只管把它们贴到哪儿 ---------- */
-      --mc-btn-fill: var(--mc-color-primary); /* filled 的底 */
-      --mc-btn-on-fill: var(--mc-color-primary-fg); /* filled 上的文字 */
-      --mc-btn-accent: var(--mc-color-primary); /* outline / ghost 的线与文字 */
+      --mc-button-fill: var(--mc-color-primary); /* filled 的底 */
+      --mc-button-on-fill: var(--mc-color-primary-fg); /* filled 上的文字 */
+      --mc-button-accent: var(--mc-color-primary); /* outline / ghost 的线与文字 */
 
       /* filled 是默认外观，直接写在 :host 上；写 :host(:not([variant])) 会静默失效（P14） */
-      background-color: rgb(var(--mc-btn-fill));
-      color: rgb(var(--mc-btn-on-fill));
+      background-color: rgb(var(--mc-button-fill));
+      color: rgb(var(--mc-button-on-fill));
     }
 
     /* ---------- 维度一：color（语义色） ---------- */
     :host([color='info']) {
-      --mc-btn-fill: var(--mc-color-info);
-      --mc-btn-on-fill: var(--mc-color-info-fg);
-      --mc-btn-accent: var(--mc-color-info);
+      --mc-button-fill: var(--mc-color-info);
+      --mc-button-on-fill: var(--mc-color-info-fg);
+      --mc-button-accent: var(--mc-color-info);
     }
     :host([color='success']) {
-      --mc-btn-fill: var(--mc-color-success);
-      --mc-btn-on-fill: var(--mc-color-success-fg);
-      --mc-btn-accent: var(--mc-color-success);
+      --mc-button-fill: var(--mc-color-success);
+      --mc-button-on-fill: var(--mc-color-success-fg);
+      --mc-button-accent: var(--mc-color-success);
     }
     :host([color='warning']) {
-      --mc-btn-fill: var(--mc-color-warning);
-      --mc-btn-on-fill: var(--mc-color-warning-fg);
-      --mc-btn-accent: var(--mc-color-warning);
+      --mc-button-fill: var(--mc-color-warning);
+      --mc-button-on-fill: var(--mc-color-warning-fg);
+      --mc-button-accent: var(--mc-color-warning);
     }
     :host([color='danger']) {
-      --mc-btn-fill: var(--mc-color-danger);
-      --mc-btn-on-fill: var(--mc-color-danger-fg);
-      --mc-btn-accent: var(--mc-color-danger);
+      --mc-button-fill: var(--mc-color-danger);
+      --mc-button-on-fill: var(--mc-color-danger-fg);
+      --mc-button-accent: var(--mc-color-danger);
     }
     /* 中性是特例：浅底深字 + 深字浅线，同一个值做不到，三个槽分别取令牌 */
     :host([color='neutral']) {
-      --mc-btn-fill: var(--mc-color-neutral);
-      --mc-btn-on-fill: var(--mc-color-neutral-fg);
-      --mc-btn-accent: var(--mc-color-fg-muted);
+      --mc-button-fill: var(--mc-color-neutral);
+      --mc-button-on-fill: var(--mc-color-neutral-fg);
+      --mc-button-accent: var(--mc-color-fg-muted);
     }
 
     /* ---------- 维度二：variant（外观样式） ---------- */
     :host([variant='outline']) {
       background-color: transparent;
-      color: rgb(var(--mc-btn-accent));
-      border-color: rgb(var(--mc-btn-accent));
+      color: rgb(var(--mc-button-accent));
+      border-color: rgb(var(--mc-button-accent));
     }
     :host([variant='ghost']) {
       background-color: transparent;
-      color: rgb(var(--mc-btn-accent));
+      color: rgb(var(--mc-button-accent));
       border-color: transparent;
     }
 
@@ -196,6 +196,8 @@
         // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-button disabled> 失效
         disabled: null,
         loading: null,
+        // 撑满父容器。声明进 attrs 才能让 :block 绑定与 el.block 生效（样式见 :host([block])）
+        block: null,
       },
 
       proto: {

@@ -222,8 +222,8 @@
     /**
      * 最近的**可滚动祖先**（块内到底后把滚轮接力给它）。⚠️ 要走扁平树（先看 assignedSlot）：
      * 组件自己的 shadow root 与页面不在同一棵树里，顺着 parentNode 爬会从文档树绕过去。
-     * 整页现在是**窗口滚**（两栏浮动，见 docs/content.css 的分栏注释），所以一般找不到
-     * 元素级滚动祖先 —— 退回 document.scrollingElement，也就是窗口。
+     * 现在通常能找到外壳的正文带 `.doc-main`（页面上唯一的滚动容器，见 docs/layout.html）；
+     * 找不到元素级滚动祖先时才退回 document.scrollingElement（窗口）。
      */
     function scrollableAncestor(node) {
       let el = node.assignedSlot ?? node.parentNode ?? node.getRootNode()?.host ?? null;

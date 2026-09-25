@@ -1,5 +1,9 @@
 # 通过 jsDelivr 分发「无构建」Web Components UI 框架：工程与分发实践
 
+> ⚠️ **本文结论已被推翻，仅作当时的调研记录保留**：`agent/PLAN.md` D1 的实测表明，`/gh/` 下的
+> `.html` 正常以 200 服务；Mosaic 最终走 `/gh/` 分发，且 `private: true` 永不 publish。
+> 下面「发布到 npm，用 `/npm/`」及其相关推论请勿再照做。
+
 > 研究对象：基于 ofa.js 的 Web Components UI 框架，使用者只用两个标签（`<script type="module">` + `<link rel="stylesheet">`）即可接入，不用 npm、不用打包器。
 > 本文所有关键结论均基于 **jsDelivr 官方 README/文档 + 对 `cdn.jsdelivr.net` 的实测 HTTP 响应头**，并标注了可复核的命令。
 
@@ -9,14 +13,14 @@
 
 | 问题 | 结论 |
 |---|---|
-| `gh` 还是 `npm`？ | **发布到 npm，用 `/npm/pkg@x.y.z/`。** GitHub tag 只作为备份/预览。理由见 §1。 |
+| `gh` 还是 `npm`？ | **发布到 npm，用 `/npm/pkg@x.y.z/`。** GitHub tag 只作为备份/预览。理由见 §1。⚠️ 已被推翻（见文首）。 |
 | 缓存 | 精确版本 = 1 年 + `immutable`；版本范围/`latest` = 浏览器 7 天、边缘 12 小时（实测）。 |
 | 版本锁定 | 文档只教 `@1.2.3` 精确版本；`@latest`/`@1`/`@1.2` 仅用于 demo。 |
 | SRI | 支持，**必须**用「精确版本 + 显式文件路径 + 包内已存在的文件」。可从 `data.jsdelivr.com` 的 `hash` 字段直接得到 `sha256-...`（实测等于 SRI）。 |
 | `+esm` | **`/npm/` 才有，`/gh/.../+esm` 实测 404。** 本框架自带原生 ESM，**不要用 `+esm`**。 |
 | 重复加载同一模块 | ESM 按 **解析后的绝对 URL** 去重。必须用 **import map + peer dependency + 双入口** 约定把 ofa.js 收敛到唯一 URL。 |
 | import map 兼容性 | Baseline *Widely available*（Chrome 89 / Firefox 108 / Safari 16.4；2025-09-27 起进入 widely available）。 |
-| `.html` 组件文件 | **`/gh/` 下 `.html` 会 301 跳到 `raw.githubusercontent.com`**（实测），脱离 jsDelivr 缓存且在中国大陆不可靠；**`/npm/` 下直接以 `text/plain` 由 jsDelivr 缓存返回**。→ 模板优先内联进 `.mjs`；若要发 `.html`，必须走 npm。 |
+| `.html` 组件文件 | **`/gh/` 下 `.html` 会 301 跳到 `raw.githubusercontent.com`**（实测），脱离 jsDelivr 缓存且在中国大陆不可靠；**`/npm/` 下直接以 `text/plain` 由 jsDelivr 缓存返回**。→ 模板优先内联进 `.mjs`；若要发 `.html`，必须走 npm。⚠️ 已被推翻（见文首）。 |
 | 发新版不生效 | 锁版本的用户不受影响；用 `@latest`/`@1` 的用户最长等 7 天。用 `https://purge.jsdelivr.net/...` 主动 purge（只对别名 URL 有效）。 |
 | 冗余 | jsDelivr 有多入口域名（`fastly.` / `gcore.` / `testingcf.jsdelivr.net`，实测同路径均 200）；再叠加 unpkg；**大陆生产建议自托管**。 |
 | TS 类型 | `types` + 手写 `.d.ts` 可行，但 **TS 不会自动抓取远程 URL 的类型**；无构建用户需要 import map 裸标识符 + 本地 `d.ts` shim，或走 esm.sh 的 `x-typescript-types`。 |
@@ -135,12 +139,14 @@ gOH+VSPUwfC7gl6KaniM81b423sNf78K0y+sjbEUkAY=   # 完全一致
 
 ### 1.7 明确推荐
 
+> ⚠️ **以下推荐已被推翻**（见文首说明）：Mosaic 最终走 `/gh/`。
+
 > **主分发：npm。** `https://cdn.jsdelivr.net/npm/<pkg>@<exact-version>/...`
 > **备份：同名 GitHub tag + `/gh/<user>/<repo>@v<version>/...`**（内容需与 npm 完全一致）。
 
 理由（按重要性排序）：
 
-1. **`.html` 行为差异是决定性的**（实测）：`/gh/` 下 `.html` 返回 `301 → raw.githubusercontent.com`，脱离 jsDelivr 的 S3 永久存储与边缘缓存，且 `raw.githubusercontent.com` 在中国大陆长期不稳定；`/npm/` 下 `.html` 由 jsDelivr 直接以 `text/plain` 返回并缓存 1 年。基于 ofa.js 的组件库**大量依赖运行时 fetch `.html` 模板**，这一条几乎一票否决 `/gh/`。
+1. **`.html` 行为差异是决定性的**（实测）：**⚠️ 此条已被推翻（见文首说明）**。原文理由是：`/gh/` 下 `.html` 返回 `301 → raw.githubusercontent.com`，脱离 jsDelivr 的 S3 永久存储与边缘缓存，且 `raw.githubusercontent.com` 在中国大陆长期不稳定；`/npm/` 下 `.html` 由 jsDelivr 直接以 `text/plain` 返回并缓存 1 年。基于 ofa.js 的组件库**大量依赖运行时 fetch `.html` 模板**，这一条几乎一票否决 `/gh/`。
 2. **`+esm` 只有 npm 有**（实测 `/gh/.../+esm` 对 jquery、shoelace、ofa.js 全部 404）。将来若要给 CJS 生态或懒人用户提供单文件入口，只有 npm 这条路。
 3. **版本语义更稳**：npm 强制 semver，`@1`/`@1.2`/tag 永远可解析；gh 的范围别名要求合法 semver tag，`@latest` 无 tag 时还会回退到可变的默认分支。
 4. **官方推荐 npm**，且有可搜索的包页、README 展示、下载统计、entrypoints 分析。

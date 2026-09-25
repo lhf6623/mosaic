@@ -35,8 +35,8 @@
       <code>class="flex gap-2"</code> 是不生效的。
     </p>
     <p>
-      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。 它约
-      40 行，没有别的副作用。
+      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。 它是
+      83 行（含补扫已存在 shadow root 的 <code>walk()</code>），没有别的副作用。
     </p>
 
     <div class="doc-note doc-warn">
@@ -61,8 +61,10 @@
 
     <div class="doc-note doc-warn">
       <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
-      它带 <code>-c-1</code> 禁缓存。换成别的静态服务器后， 改完 <code>page.html</code> 或
-      <code>mosaic.js</code> 浏览器会继续用旧模块， 表现为「改了没生效」，排查极耗时。
+      它跑的是仓库自带的零依赖 <code>tools/serve.mjs</code>，响应头带
+      <code>cache-control: no-store</code>。换成带缓存的静态服务器后， 改完
+      <code>page.html</code> 或 <code>mosaic.js</code> 浏览器会继续用旧模块，
+      表现为「改了没生效」，排查极耗时。
     </div>
 
     <h2>接入方式的几种变体</h2>
@@ -105,16 +107,17 @@
       <code>bg-gradient-to-r</code>…）<strong>不存在</strong>，需要时请自己写 CSS。
     </p>
 
-    <h3>写了 <code>dark:bg-black</code> 没反应</h3>
+    <h3>组件里为什么禁止 <code>dark:</code></h3>
     <p>
-      组件内部<strong>禁止使用 <code>dark:</code> 变体</strong>。它生成的是后代选择器， 而
-      <code>&lt;html data-theme="dark"&gt;</code> 在 shadow 树外面，匹配不到。
-      这是静默失效，没有任何报错。主题差异请走令牌。
+      <code>dark:</code> 编译出来是 <code>@media (prefers-color-scheme: dark)</code>， 在 shadow
+      树里<strong>能生效，但只跟随系统偏好</strong>，跟不了站点的
+      <code>&lt;html data-theme&gt;</code> 切换。所以组件里一律不用，暗色差异提升为令牌。
     </p>
   </div>
   <script>
-    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot> —— 相对**本页面文件**解析，
-     * docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'。 */
+    /* 挂到布局页（ofa.js 嵌套路由父页面）：顶栏 + 正文带 + <slot>，相对**本页面文件**解析。
+     * 单栏页面挂外壳：docs/pages/ 下是 '../layout.html'，packages/<slug>/ 下是 '../../docs/layout.html'；
+     * 分区布局页（三栏 + 目录）是 packages/<slug>/page.html 用的 '../../docs/doc-layout.html'。 */
     export const parent = '../layout.html';
 
     export default () => ({ data: {} });

@@ -5,7 +5,7 @@
  * 用法（先起 `pnpm dev`）：
  *   node tests/smoke.mjs                 全量：11 个站点套件 + 每个 READY 组件的套件
  *   node tests/smoke.mjs --site          只跑站点套件
- *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（02 / 04 / 10）——
+ *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（04 / 10）——
  *                                        位置参数同时按「套件文件 / 标签是否包含它」过滤；
  *                                        一个站点套件都没匹配上时退回「站点全部 + 该组件」，保住
  *                                        `--site button` 这种老用法

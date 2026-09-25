@@ -51,7 +51,7 @@ tests/
 **目录名 / 文件名用语义名（`button`），标签名 = `mc-` + 语义名（`mc-button`）。**
 一条规则，避免出现「目录叫 A、文件叫 B、标签叫 C」的三方不一致。
 
-一个目录可以放多个同族组件（`packages/button/` 下可再有 `icon-button.html`）。
+一个目录可以放多个同族组件（主标签去掉 `mc-` 前缀就是目录名，同族的其余标签也放这里）。
 
 ### 外壳布局与滚动：一屏外壳 + 固定顶栏 + 两侧浮动栏
 
@@ -107,7 +107,8 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 > 页面靠 `export const parent` 挂到上一层（相对**本页面文件**解析）：
 > 组件文档页写 `'../../docs/doc-layout.html'`（挂分区布局页），
 > 单列页面（首页/快速开始/规范/设计令牌）写 `'../layout.html'` 或 `'../../docs/layout.html'`（直接挂外壳）。
-> **两层布局页切页时都不重建**：顶栏高亮靠外壳的 `routerChange()` 钩子，左栏菜单与右栏目录则跨页存活
+> **两层布局页切页时都不重建**：顶栏高亮订阅 `docs/state/route.js`（唯一挂 `hashchange` + `router-change` 的地方），
+> 左栏菜单与右栏目录则跨页存活
 > （菜单滚动位置不再被切页清掉；实测切页后导航与目录是同一个元素）。
 > 忘了写 `parent`，那一页就掉出外壳（没顶栏、没正文带）；`tests/site/10-nav-data.mjs` 会抓到。
 
@@ -130,25 +131,25 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
   本地复现线上：`node tools/serve.mjs --prefix /mosaic`；冒烟测试里有一条专门的子路径套件。
 - 组件文档页（`packages/<slug>/page.html`）不在顶栏单列，统一点亮「组件」；
   「设计令牌」自己有入口，精确匹配先命中，所以不会被那条兜底规则误伤。
-- 冷启动直接带 hash 时，子页面可能比布局页晚一拍挂上 → 高亮补几拍（自限，有子页面就停）。
+- 路由状态由 `docs/state/route.js` 直接读 `location.hash` 算出，高亮不依赖子页面何时挂载。
 - 主题三态（自动 / 亮 / 暗）也在布局页；首帧由 `docs/theme-boot.js` 应用，防闪色。
 
-**三栏都不在外壳里**。页面需要左右栏，就在自己的模板里放 `<doc-nav>` / `<doc-toc>`，
-外面套一层 `.doc-split`：
+**三栏由分区布局页 `docs/doc-layout.html` 提供**（它拥有 `.doc-split` / `<doc-nav>` / `<doc-toc>`）。
+页面只写正文，并声明挂到它下面：
 
 ```html
 <template page>
-  <link rel="stylesheet" href="../content.css" />
-  <div class="doc-split">
-    <doc-nav></doc-nav>
-    <!-- 左栏菜单由 <doc-nav>（ofa 组件模板）按站点数据里这一支的 children 铺出来 -->
-    <div class="doc-body">… 正文 …</div>
-    <doc-toc></doc-toc>
-    <!-- 右栏目录由页面自己的 h2/h3 生成（可以不放，那就是两栏） -->
-  </div>
-  …
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <div class="doc-body">… 正文 …</div>
+  <script>
+    // 相对**本页面文件**解析
+    export const parent = '../../docs/doc-layout.html';
+  </script>
 </template>
 ```
+
+`docs/pages/` 下的页面写 `'../doc-layout.html'`；单列页面（首页 / 快速开始 / 规范索引、
+`packages/color/page.html`）直接挂外壳 `docs/layout.html`，正文同样只写 `.doc-body`。
 
 - **样式的归属**：只有一个使用者的样式写进**那个**页面 / 组件的 `<style>` ——
   首页海报在 `docs/pages/home.html`、两栏与中栏留位在 `docs/doc-layout.html`、
@@ -157,7 +158,7 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
   同处一个 shadow root，作用域一样，搬过去不损失什么，但改一处只需看一个文件。
 - **滚动只有 `.doc-main` 一条**（顶栏下面那一带）：`.doc-split`、`.doc-content` 都不滚，
   左右两栏是 `position: fixed; height: 100%`，内容超一屏时各自内部滚。
-- 页面**不想要**侧栏就不写 `.doc-split`，正文直接在外壳正文带里滚（`.doc-main`）。
+- 页面**不想要**侧栏就挂外壳 `docs/layout.html`（不挂分区布局页），正文直接在外壳正文带里滚（`.doc-main`）。
 - 左栏菜单（`docs/components/nav.html`）是**站点级 ofa 组件模板**：结构 = `docs/site-map.js` 的树，
   由 `o-fill` 逐条铺出来，自己只管「渲染哪一支 + 谁是当前页」。条目样式写在它自己的
   `<style>` 里（组件自带 shadow root，`content.css` 够不到内部节点）。
@@ -307,9 +308,9 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 冒烟测试里有一条 `--inject` 服务器专门跑这条路径（照抄 live-server 的注入规则），
 改模板结构或注释时如果破坏了它，测试会直接变红。
 
-> ⚠️ **还有一条关于「挂到外壳」的**：页面模块必须在脚本里声明父页面 ——
-> `export const parent = '../layout.html';`（相对**本页面文件**解析，
-> `packages/<slug>/page.html` 里是 `'../../docs/layout.html'`）。
+> ⚠️ **还有一条关于「挂到布局页」的**：页面模块必须在脚本里声明父页面
+> （`export const parent = …`，相对**本页面文件**解析）—— 组件文档页写
+> `'../../docs/doc-layout.html'`（挂分区布局页），单列页面写 `'../../docs/layout.html'`（直接挂外壳）。
 > 漏了它，那一页就掉出布局页：顶栏、正文带、主题按钮全没有，看起来像"样式丢了"。
 > 冒烟测试里有一条断言逐个页面模块检查这条声明。
 
@@ -337,10 +338,10 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 <!-- ✅ 正确：颜色走令牌 -->
 <style>
   :host {
-    --mc-btn-fill: var(--mc-color-primary);
+    --mc-button-fill: var(--mc-color-primary);
   } /* 存：裸三元组 */
   .mc-btn {
-    background-color: rgb(var(--mc-btn-fill));
+    background-color: rgb(var(--mc-button-fill));
   } /* 用：包 rgb() */
 </style>
 <button class="mc-btn inline-flex items-center gap-2">
@@ -362,18 +363,18 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 而且 CSS 会退化成组合爆炸。正确做法是让两者只通过色槽交汇：
 
 ```css
-/* color 只负责往两个色槽里填值 */
+/* color 只负责往色槽里填值（这里是三个） */
 :host([color='danger']) {
-  --mc-btn-fill: var(--mc-color-danger);
-  --mc-btn-on-fill: var(--mc-color-danger-fg);
-  --mc-btn-accent: var(--mc-color-danger);
+  --mc-button-fill: var(--mc-color-danger);
+  --mc-button-on-fill: var(--mc-color-danger-fg);
+  --mc-button-accent: var(--mc-color-danger);
 }
 
 /* variant 只负责把色槽贴到哪儿 */
 :host([variant='outline']) {
   background-color: transparent;
-  color: rgb(var(--mc-btn-fill));
-  border-color: rgb(var(--mc-btn-fill));
+  color: rgb(var(--mc-button-fill));
+  border-color: rgb(var(--mc-button-fill));
 }
 ```
 
@@ -515,33 +516,33 @@ framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` �
 
 ```css
 /* 1. 宿主盒模型 + 色槽默认值
-      尺寸直接写在这里（不绕一层 --mc-btn-h），使用者的 style="height:32px" 才压得住 */
+      尺寸直接写在这里（不绕一层 --mc-button-h），使用者的 style="height:32px" 才压得住 */
 :host {
   display: inline-flex;
   position: relative; /* 内部绝对定位元素的包含块，不能省（P21） */
   height: var(--mc-control-h-md);
   border-radius: var(--mc-radius-md);
 
-  --mc-btn-fill: var(--mc-color-primary); /* 三个色槽：填充 / 填充上的文字 / 强调色 */
-  --mc-btn-on-fill: var(--mc-color-primary-fg);
-  --mc-btn-accent: var(--mc-color-primary);
+  --mc-button-fill: var(--mc-color-primary); /* 三个色槽：填充 / 填充上的文字 / 强调色 */
+  --mc-button-on-fill: var(--mc-color-primary-fg);
+  --mc-button-accent: var(--mc-color-primary);
 
-  background-color: rgb(var(--mc-btn-fill)); /* filled 是默认外观，直接写在这 */
-  color: rgb(var(--mc-btn-on-fill));
+  background-color: rgb(var(--mc-button-fill)); /* filled 是默认外观，直接写在这 */
+  color: rgb(var(--mc-button-on-fill));
 }
 
 /* 2. 维度一 color：只往色槽里填值 */
 :host([color='danger']) {
-  --mc-btn-fill: var(--mc-color-danger);
-  --mc-btn-on-fill: var(--mc-color-danger-fg);
-  --mc-btn-accent: var(--mc-color-danger);
+  --mc-button-fill: var(--mc-color-danger);
+  --mc-button-on-fill: var(--mc-color-danger-fg);
+  --mc-button-accent: var(--mc-color-danger);
 }
 
 /* 3. 维度二 variant：只决定色槽贴到哪儿 */
 :host([variant='outline']) {
   background-color: transparent;
-  color: rgb(var(--mc-btn-fill));
-  border-color: rgb(var(--mc-btn-fill));
+  color: rgb(var(--mc-button-fill));
+  border-color: rgb(var(--mc-button-fill));
 }
 
 /* 4. 尺寸与状态 */
@@ -756,7 +757,7 @@ ofa.js 正确性  ← 逐条对照 ofa-pitfalls.md
 [ ] P21 内部透明交互层有 z-index，且宿主是 position: relative
 [ ] detached() 里清理了所有定时器和全局监听
 [ ] 含 data() 的样式单独放在一个 <style> 里
-[ ] proto 方法名避开了 $.fn 上的通用名（get/set/text/html/data/watch/on/emit/class/style/remove/refresh）
+[ ] proto 方法名避开了 $.fn 上的通用名（get/set/text/html/data/watch/on/emit/class/style/remove/refresh/sync）
 [ ] attrs 的键也不撞保留名（已知 wrap 会让 createElement 直接坏，见 P31）
 [ ] ready() / 构造期没有往宿主元素写属性（style 也算），要写就写 shadow root 内部元素（P31）
 
@@ -771,7 +772,7 @@ ofa.js 正确性  ← 逐条对照 ofa-pitfalls.md
 [ ] pnpm build 通过，产物体积没有异常增长
 [ ] 新增的令牌已加进 tools/gen-tokens.mjs（如果涉及色板）
 [ ] 新增的公共工具类已加进 uno.config.ts 的精选子集（如果使用者会用到）
-[ ] pnpm dev 验收页确认无误（禁缓存的 http-server，不要用别的静态服务器，见 P24）
+[ ] pnpm dev 验收页确认无误（`tools/serve.mjs`，零依赖、`no-store`；不要用别的静态服务器，见 P24）
 [ ] 测试只跑本次改动命中的范围（node tests/smoke.mjs <slug> / --site <关键词>）；全量只在收尾验收跑一次
       —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
 ```

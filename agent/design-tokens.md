@@ -12,8 +12,8 @@
 手写色阶的典型毛病：`500 → 600` 视觉跳变比 `400 → 500` 大一截；
 浅色档发灰发脏；深色档突然发荧光。根因是 sRGB 和 HSL 的明度**不是感知均匀的**。
 
-OKLCH 的 L 通道是感知明度，所以我们可以用**等距的 L 值**定义 11 个档位
-（50→950 的 L 从 0.972 平滑降到 0.272），视觉步长自然均匀。
+OKLCH 的 L 通道是感知明度，所以我们可以用**平滑下降的 L 值**定义 11 个档位
+（50→950 的 L 从 0.972 降到 0.272，相邻档的 OKLab L 差约 0.03–0.11），视觉步长基本均匀。
 
 超出 sRGB 色域时**二分降低 chroma**（保持色相和明度），而不是直接裁剪通道 ——
 直接裁剪会让色相偏移（这是很多手写色板"颜色说不清哪里不对"的原因）。
@@ -30,7 +30,7 @@ L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道
                      ↓
 L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
                      ↓
-L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组
+L3 组件令牌   --mc-button-fill: var(--mc-color-primary);     ← 同样只是三元组
 ```
 
 ### 全链路唯一不变量：颜色令牌存的都是「R G B」通道三元组
@@ -43,15 +43,15 @@ L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是�
   --mc-color-primary: var(--mc-primary-600);
 } /* 114 70 237 */
 mc-button {
-  --mc-btn-fill: var(--mc-color-primary);
+  --mc-button-fill: var(--mc-color-primary);
 }
 
 /* 用 */
 .mc-btn {
-  background-color: rgb(var(--mc-btn-fill));
+  background-color: rgb(var(--mc-button-fill));
 }
 .mc-btn--translucent {
-  background-color: rgb(var(--mc-btn-fill) / 0.5);
+  background-color: rgb(var(--mc-button-fill) / 0.5);
 }
 ```
 
@@ -158,27 +158,27 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 ## 三、L2 语义令牌
 
-**组件只允许使用这一层。** 原始色阶（`--mc-primary-500`）由 `blocklist` 强制拦截。
+**组件消费 L2 与 L3，永远不碰 L1。** L3 组件令牌（`--mc-button-fill` 等）定义在组件自己内部；
+原始色阶（`--mc-primary-500`）由 `blocklist` 强制拦截。
 
 ### 颜色
 
-| 令牌                            | 亮色                  | 暗色               | 用途                             |
-| ------------------------------- | --------------------- | ------------------ | -------------------------------- |
-| `--mc-color-bg`                 | neutral-50            | neutral-950        | 页面底色                         |
-| `--mc-color-surface`            | `#fff`                | neutral-900        | 卡片/面板                        |
-| `--mc-color-surface-raised`     | `#fff`                | neutral-800        | 浮起表面（下拉、弹层）           |
-| `--mc-color-surface-sunken`     | neutral-100           | `#04060c`          | 凹陷区（代码块、输入框底）       |
-| `--mc-color-fg`                 | neutral-900           | neutral-50         | 正文                             |
-| `--mc-color-fg-muted`           | neutral-600           | neutral-300        | 次要文字                         |
-| `--mc-color-fg-subtle`          | neutral-500           | neutral-400        | 占位符（仅大字号 3:1）           |
-| `--mc-color-fg-inverted`        | `#fff`                | neutral-950        | 反色文字                         |
-| `--mc-color-border`             | neutral-200           | neutral-800        | 常规描边                         |
-| `--mc-color-border-strong`      | neutral-300           | neutral-700        | 强描边（输入框、分隔）           |
-| `--mc-color-ring`               | primary-500           | primary-400        | 焦点环                           |
-| `--mc-color-overlay` + `-alpha` | `15 18 30` / 0.45     | `0 0 0` / 0.65     | 遮罩                             |
-| `--mc-color-neutral`            | neutral-200           | neutral-700        | **中性表面**（次要按钮的填充底） |
-| `--mc-color-neutral-fg`         | neutral-900           | neutral-50         | 中性表面上的文字                 |
-| `--mc-color-overlay`            | `rgb(15 18 30 / .45)` | `rgb(0 0 0 / .65)` | 遮罩                             |
+| 令牌                            | 亮色              | 暗色           | 用途                             |
+| ------------------------------- | ----------------- | -------------- | -------------------------------- |
+| `--mc-color-bg`                 | neutral-50        | neutral-950    | 页面底色                         |
+| `--mc-color-surface`            | `#fff`            | neutral-900    | 卡片/面板                        |
+| `--mc-color-surface-raised`     | `#fff`            | neutral-800    | 浮起表面（下拉、弹层）           |
+| `--mc-color-surface-sunken`     | neutral-100       | `#04060c`      | 凹陷区（代码块、输入框底）       |
+| `--mc-color-fg`                 | neutral-900       | neutral-50     | 正文                             |
+| `--mc-color-fg-muted`           | neutral-600       | neutral-300    | 次要文字                         |
+| `--mc-color-fg-subtle`          | neutral-500       | neutral-400    | 占位符（仅大字号 3:1）           |
+| `--mc-color-fg-inverted`        | `#fff`            | neutral-950    | 反色文字                         |
+| `--mc-color-border`             | neutral-200       | neutral-800    | 常规描边                         |
+| `--mc-color-border-strong`      | neutral-300       | neutral-700    | 强描边（输入框、分隔）           |
+| `--mc-color-ring`               | primary-500       | primary-400    | 焦点环                           |
+| `--mc-color-overlay` + `-alpha` | `15 18 30` / 0.45 | `0 0 0` / 0.65 | 遮罩                             |
+| `--mc-color-neutral`            | neutral-200       | neutral-700    | **中性表面**（次要按钮的填充底） |
+| `--mc-color-neutral-fg`         | neutral-900       | neutral-50     | 中性表面上的文字                 |
 
 > **语法高亮没有令牌**：`mc-code` 的 token 颜色直接来自 highlight.js 的官方主题
 > （默认 `github` / `github-dark`），原样 adopt，不经过令牌层 —— 见
@@ -196,13 +196,13 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 各色族实际选中的档位：
 
-| 色族    | 亮色    | 暗色 | 备注                                                         |
-| ------- | ------- | ---- | ------------------------------------------------------------ |
-| primary | 600     | 300  |                                                              |
-| info    | 600     | 300  |                                                              |
-| success | **700** | 300  | 600 当文字放白底上只有 3.3:1，绿色又很难再压深，整体下移一档 |
-| warning | 600     | 300  |                                                              |
-| danger  | 600     | 300  |                                                              |
+| 色族    | 亮色    | 暗色 | 备注                                                                                            |
+| ------- | ------- | ---- | ----------------------------------------------------------------------------------------------- |
+| primary | 600     | 300  |                                                                                                 |
+| info    | 600     | 300  |                                                                                                 |
+| success | **700** | 300  | 500 档放白底只有 3.34:1，600 档是 4.62:1（刚过 AA）；整体下移到 700，填充与文字两个角色都留余量 |
+| warning | 600     | 300  |                                                                                                 |
+| danger  | 600     | 300  |                                                                                                 |
 
 **暗色下为什么整体用浅色填充 + 近黑文字**：
 一是满足 AA（深底上再放深色按钮，对比度必然不够）；
@@ -217,7 +217,7 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 | 行高   | `--mc-text-{...}-lh`                                           | 与字号配对，避免两处各写一遍                      |
 | 字重   | `--mc-weight-{normal,medium,semibold,bold}`                    | `400 / 500 / 600 / 700`                           |
 | 间距   | `--mc-space-{0,1,2,3,4,5,6,8,10,12,16}`                        | `.25rem` 的倍数                                   |
-| 圆角   | `--mc-radius-{none,sm,md,lg,xl,2xl,full}`                      | `.25 / .375 / .5 / .75 / 1 rem`                   |
+| 圆角   | `--mc-radius-{none,sm,md,lg,xl,2xl,full}`                      | `0 / .25 / .375 / .5 / .75 / 1 rem / 9999px`      |
 | 控件高 | `--mc-control-h-{sm,md,lg}`                                    | `1.75 / 2.25 / 2.75 rem`                          |
 | 动效   | `--mc-duration-{fast,base,slow}`                               | `120 / 180 / 280 ms`                              |
 | 缓动   | `--mc-ease-{standard,emphasized}`                              | `cubic-bezier(.2,0,0,1)` 等                       |
@@ -238,6 +238,7 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 | 正文 / 卡片             | 10.05 | 9.27  | 4.5                |
 | 次要文字 / 卡片         | 4.93  | 5.53  | 4.5                |
 | 占位符 / 卡片           | 3.59  | 3.82  | 3.0                |
+| 中性填充上的文字        | 7.14  | 5.82  | 4.5                |
 | 强边框 / 卡片           | 1.82  | 1.59  | 1.4                |
 | 焦点环 / 卡片           | 3.91  | 3.63  | 3.0（WCAG 1.4.11） |
 | primary 填充上的文字    | 5.50  | 8.05  | 4.5                |
@@ -258,7 +259,8 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 ## 五、主题切换
 
-令牌在 `@layer mosaic.tokens` 里（最低层），所以**宿主页面任何"未分层"的覆盖都必定生效**，
+令牌在 `@layer mosaic.tokens` 里（只高于 `mosaic.base`；层序 base < tokens < preflights < components < utilities，
+见 `tokens.css` 顶部的 `@layer` 声明），所以**宿主页面任何"未分层"的覆盖都必定生效**，
 不需要 `!important`，也不需要关心加载顺序。
 
 三种切换方式，按需求选：
@@ -279,9 +281,9 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 `color-scheme` 会跟着一起切，所以原生控件（滚动条、`<select>` 弹出层）会同步变色。
 
 ⚠️ **组件里禁止使用 UnoCSS 的 `dark:` 变体。**
-它生成的是后代选择器，而 `<html data-theme="dark">` 在 shadow 树外面；
-shadow root 内的选择器匹配不到跨边界的祖先，所以 `dark:` 是**静默失效**的。
-需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`）再在 `:host([data-theme])` 里换值。
+`dark: 'media'` 让它编译成 `@media (prefers-color-scheme: dark)`，在 shadow DOM 里确实生效，
+但它只跟系统偏好，跟不上站点 `<html data-theme>` 的三态切换。
+需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`），在文档根（`:root` / `[data-theme]`）上换值。
 
 ⚠️ **`match-var` 是 ofa.js 提供的样式查询组件**，适合「按 CSS 变量切换组件内部非令牌样式」。
 Mosaic 的颜色主题走令牌就够了，`match-var` 留给 M3 之后的复杂场景
@@ -323,7 +325,7 @@ pnpm build:css
 `--mc-*` 是自定义属性，会跨 shadow 边界继承。写在宿主元素上即可：
 
 ```html
-<mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px">删除</mc-button>
+<mc-button style="--mc-button-fill: 220 38 38; border-radius: 9999px">删除</mc-button>
 ```
 
 ### 结构化定制
@@ -346,6 +348,6 @@ mc-button::part(base) {
 | `background: var(--mc-primary-500)`   | `var(--mc-color-primary)`                  | 原始色阶不随主题切换，暗色下必然出可读性问题。`blocklist` 会拦截 `bg-primary-500` 这类工具类                |
 | 存令牌时包 `rgb()`                    | 存裸三元组 `114 70 237`                    | 全链路统一存三元组，用的时候才包。混着来会产出 `rgb(rgb(...))` 这种非法 CSS 并**静默失效**                  |
 | `background: var(--mc-color-primary)` | `background: rgb(var(--mc-color-primary))` | 同上                                                                                                        |
-| 组件里写 `dark:bg-black`              | 提升为令牌                                 | 见第五节，`dark:` 在 shadow DOM 里静默失效                                                                  |
+| 组件里写 `dark:bg-black`              | 提升为令牌                                 | 见第五节，`dark:` 跟系统偏好，跟不上 `<html data-theme>` 切换                                               |
 | 直接改 `packages/color/tokens.css`    | 改 `tools/gen-tokens.mjs`                  | `tokens.css` 是生成物，且它**提交进了仓库**（分发走 `/gh/`，仓库即产物），改它会在 CI 的 drift 检查里被打回 |
 | 手写一套新色阶                        | 改 `HUES` 重跑                             | 手工色阶几乎不可能同时满足感知均匀和对比度达标                                                              |

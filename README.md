@@ -26,6 +26,8 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 三条引入缺一不可：`mosaic.css` 给**你的页面**工具类与令牌，`mosaic.js` 把工具类注入每个
 shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架、配置文件。
 
+> 示例里的 `0.1.0` 是计划中的 M1 版本；仓库当前还没有 tag，首次发布前这些 URL 会 404。
+
 ## 组件
 
 | 组件                           | 标签                                   | 状态      |
@@ -92,7 +94,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js components/（nav / toc / crumb / pager / cards / palette.html，标签名 = doc- + 文件名）shell.css
+docs/                 站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js theme-boot.js state/route.js snippets/ components/（nav / toc / crumb / pager / cards / palette.html，标签名 = doc- + 文件名）shell.css
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）
@@ -127,8 +129,9 @@ pnpm format        # prettier 格式化（pnpm format:check 只检查）
 ## 文档站
 
 仓库自带一个可运行的文档站，**它自己就是一个 ofa.js 应用**（`o-router` + `o-app` +
-`<template page>` 页面模块 + 一个布局页），用 GitHub Pages 直接托管 —— Pages 源设为 `main`
-分支的仓库根即可，不需要 CI。它同时是 M0 的验收载体：页面里那些 `<mc-button>` 是真实渲染的。
+`<template page>` 页面模块 + 两层布局页：`docs/layout.html` 外壳、`docs/doc-layout.html`
+组件页分区布局），用 GitHub Pages 直接托管 —— Pages 源设为 `main` 分支的仓库根即可，不需要 CI。
+它同时是 M0 的验收载体：页面里那些 `<mc-button>` 是真实渲染的。
 
 ```bash
 pnpm dev                                 # http://localhost:8642
@@ -154,7 +157,8 @@ node tools/serve.mjs --prefix /mosaic    # 模拟 Pages 子路径（/mosaic/）
 
 - 用 **`presetWind3`**，不用 `presetWind4` —— 后者的 theme 色不支持 `<alpha-value>`，会产出非法 CSS 且静默失效
 - **必须开 `outputToCssLayers`** —— `adoptedStyleSheets` 在 shadow root 内的优先级**高于**组件自身 `<style>`
-- **组件里禁止 `dark:` 变体** —— shadow root 内的选择器匹配不到 `<html data-theme>` 这个跨边界祖先，是静默失效
+- **组件里禁止 `dark:` 变体** —— `dark: 'media'` 跟的是操作系统偏好，跟不了
+  `<html data-theme>` 三态切换（机制见 [PLAN.md D4](./agent/PLAN.md#d4-主题只走-css-变量禁用-dark-变体)）
 - **组件只消费语义令牌**，不碰原始色阶 —— 原始色阶不随主题切换
 - **构建缺输入必须大声失败** —— 实测 UnoCSS 会静默跳过缺失文件，退出码 0，产出没有令牌的坏 CSS
 - **颜色令牌全链路存通道三元组**（`114 70 237`），存不包 `rgb()`、用必须包 —— 混着来会产出 `rgb(rgb(...))` 非法 CSS 并静默失效

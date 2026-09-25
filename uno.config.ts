@@ -3,7 +3,7 @@ import { defineConfig, presetWind3, transformerDirectives, transformerVariantGro
 /*
  * Mosaic — UnoCSS 配置。三条硬约束（改动前先读 agent/PLAN.md 的 D3 / D4）：用 presetWind3 而非
  * wind4（wind4 的 theme 色不支持 <alpha-value>，会产出非法 CSS 且静默失效，还自带整页 reset）、
- * 必须开 outputToCssLayers（②）、颜色只走语义令牌。本文件纯声明式，输入校验收在 tools/build-css.mjs。
+ * 必须开 outputToCssLayers、颜色只走语义令牌。本文件纯声明式，输入校验收在 tools/build-css.mjs。
  */
 
 /* ---------- 精选工具类子集：只能预编译已知类名，故取覆盖布局/间距/排版/语义色的子集。
@@ -166,7 +166,7 @@ const LAYOUT = [
 ];
 
 /** 响应式变体只放骨架会用到的十几个：{断点}×{工具类} 组合爆炸，而 90% 需求就是窄屏堆叠 / 隐藏。
- *  组件内部不要用断点类（不知道自己会被放进多宽的容器），用容器查询，见 agent/design-spec.md。 */
+ *  组件内部的响应式规则见 agent/design-spec.md：媒体查询可用（按视口判断），容器查询是目标方向、尚未落地。 */
 const RESPONSIVE = ['md', 'lg'].flatMap((bp) =>
   [
     'block',
@@ -233,7 +233,8 @@ export default defineConfig({
     presetWind3({
       // 'on-demand' 只输出用到的 --un-* 变量；wind3 preflight 本来就不含元素级 reset，对组件库安全
       preflight: 'on-demand',
-      // 组件在 shadow DOM 里，`dark:`（依赖祖先类）永远不命中，只能设 media；主题切换一律走令牌
+      // `dark:` 编译成 @media (prefers-color-scheme: dark)：在 shadow DOM 里会生效，但只跟随系统
+      // 偏好、跟不了 <html data-theme>（详见 agent/PLAN.md 的 D4）。显式写成 media 让误用可预期。
       dark: 'media',
     }),
   ],
@@ -316,8 +317,9 @@ export default defineConfig({
     default: 1,
   },
 
-  /** 必须开（见文件头 ②）：产出原生 @layer，tokens.css 声明在前，层顺序天然是
-   *  mosaic.tokens < preflights < utilities < components，于是宿主未分层覆盖和组件 <style> 都赢过工具类。 */
+  /** 必须开：产出原生 @layer，tokens.css 声明在前，层顺序是
+   *  mosaic.base < mosaic.tokens < mosaic.preflights < mosaic.components < mosaic.utilities；
+   *  宿主未分层的覆盖、以及组件自己的未分层 <style>，仍然赢过全部这些层。 */
   outputToCssLayers: {
     cssLayerName: (layer) => {
       if (layer === 'default') return 'mosaic.utilities';

@@ -19,7 +19,7 @@
 | 裸元素 `p.customColor = x` / `setAttribute` | **静默无效**（属性写上了，consumer 不动）【实测】                                              |
 | `$.stanz` 是否深响应 / 跨实例共享          | 是。嵌套对象、数组 `push` / 索引写都跟；同模块的两个实例共享一份【实测】                        |
 | `$.stanz` 的返回形状                      | **数组内核代理**：`Array.isArray(store) === true`、`[object Array]`（对象 store 也是）【实测】  |
-| Mosaic 现在需要它吗                       | 不需要 —— 仓库里此前 0 处使用；先当「可用且有坑」记着【推论】                                   |
+| Mosaic 现在需要它吗                       | 文档站**已经在用**（`docs/state/route.js`，全站唯一的导航信号源）；组件库本身暂时不需要【实测】 |
 
 与此对应的坑已收进 [`../ofa-pitfalls.md`](../ofa-pitfalls.md) 的 **P35 / P36 / P37**。
 
@@ -168,8 +168,8 @@ $.getRootProvider('ctx').customColor = 'blue'; // ✅
 
 **阶段 2 另一个实现细节**：模板渲染是异步的，`syncActive()` 必须在条目出现后才能切高亮。
 起手用 `$.nextTick()` 没用（首次 `rebuild()` 时 `mc-menu` 还没升级完），最后改成
-**给组件自己的 shadow root 挂一个 `childList` 观察者**，锚点一出现就补一次高亮 ——
-与「标题签名没变就提前返回」的 settle 重试解耦。
+**给子页面的 shadow root（`contentRoot()` 的返回值）挂一个 `childList` 观察者**，
+锚点一出现就补一次高亮 —— 与「标题签名没变就提前返回」的 settle 重试解耦。
 
 **订阅为什么不用 `$.stanz` 的 `watch`**：它的返回值能不能退订没有官方说明，
 而组件会随切页反复建毁、退订必须可靠，所以 `docs/state/route.js` 自己维护一张订阅表

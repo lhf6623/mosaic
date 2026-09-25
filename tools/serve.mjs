@@ -37,7 +37,7 @@ function injectLikeLiveServer(html) {
   return html; // 三个都没命中就不注入 —— 和 live-server 行为一致
 }
 
-/** 和 jsDelivr 的实际行为对齐：.html 以 text/plain 提供（ofa.js 用 fetch + 文本解析） */
+/** 本地开发：.html 按 text/html 提供（ofa.js 用 fetch + 文本解析，不看 content-type）。jsDelivr 的 content-type 讨论见文档 */
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',

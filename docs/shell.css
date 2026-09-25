@@ -2,8 +2,8 @@
  * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。
  * 刻意不分层：未分层声明赢过分层声明，不用 !important 就能压过 mosaic.css 的工具类。
  *
- * 滚动模型：**整页由窗口滚**，左右两栏是 position: fixed（见 content.css 的分栏注释），
- * 不参与文档流 —— 页面高度怎么变都带不走它们，也没有 sticky 的滑动区间问题。
+ * 滚动模型：**只有外壳的正文带 `.doc-main` 在滚**（`body{height:100%;overflow:hidden}`，见
+ * `docs/layout.html` 的 `.doc-shell` / `.doc-main`）；左右两栏是 `position: fixed`，不参与文档流。
  * ========================================================================== */
 
 *,

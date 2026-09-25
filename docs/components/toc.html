@@ -191,8 +191,8 @@
           this._scroller ??= this.scroller();
           this._scroller?.addEventListener('scroll', this._onScroll, { passive: true });
 
-          /* 高亮：模板把条目渲染出来是异步的，这里先同步切一次（已渲染时立刻生效），
-             剩下的交给 ready() 里那个盯自己 shadow root 的 childList 观察者 */
+          /* 高亮：条目是异步渲染出来的，这里先同步切一次（已渲染时立刻生效），
+             剩下的交给 ready() 里那个盯子页面 shadow root（contentRoot()）的 childList 观察者 */
           this.syncActive();
           return true;
         },

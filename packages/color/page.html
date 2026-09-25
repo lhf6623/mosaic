@@ -14,7 +14,7 @@
                                    ↓
               L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
                                    ↓
-              L3 组件令牌   --mc-btn-fill: var(--mc-color-primary);     ← 同样只是三元组
+              L3 组件令牌   --mc-button-fill: var(--mc-color-primary);     ← 同样只是三元组
             </mc-code>
 
     <div class="doc-note doc-warn">
@@ -23,11 +23,11 @@
       <mc-code language="css" style="margin: 0.75rem 0 0">
                 /* 存 */
                 :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
-                mc-button { --mc-btn-fill: var(--mc-color-primary); }
+                mc-button { --mc-button-fill: var(--mc-color-primary); }
 
                 /* 用 */
-                .mc-btn   { background-color: rgb(var(--mc-btn-fill)); }
-                .dim      { background-color: rgb(var(--mc-btn-fill) / 0.5); }
+                .mc-btn   { background-color: rgb(var(--mc-button-fill)); }
+                .dim      { background-color: rgb(var(--mc-button-fill) / 0.5); }
               </mc-code>
       <p style="margin: 0.75rem 0 0">
         混着来的话，UnoCSS 会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
@@ -138,7 +138,8 @@
       状态色族 <code>{primary, info, success, warning, danger}</code> 各有
       <code>--mc-color-{色}</code> / <code>-fg</code> / <code>-hover</code> / <code>-active</code> /
       <code>-subtle</code> 五个。 注意 <code>success</code> 在亮色下整体用
-      <strong>700 档</strong> —— 600 档当文字放白底上只有 3.3:1。
+      <strong>700 档</strong> —— 500 档当文字放白底上只有 3.34:1，600 档 4.62:1 刚过线，
+      整体下移一档给填充 / 文字两个角色留余量。
     </p>
 
     <h2>非颜色令牌</h2>
@@ -186,7 +187,9 @@
 
     <h2>主题切换</h2>
     <p>
-      令牌写在 <code>@layer mosaic.tokens</code>（最低层），
+      令牌在 <code>@layer mosaic.tokens</code>（只高于 <code>mosaic.base</code>；层序
+      <code>base</code> &lt; <code>tokens</code> &lt; <code>preflights</code> &lt;
+      <code>components</code> &lt; <code>utilities</code>），
       所以<strong>宿主页面里任何「未分层」的覆盖都必定生效</strong>， 不需要
       <code>!important</code>，也不用关心加载顺序。
     </p>
@@ -242,7 +245,7 @@
     <h3>单个组件实例</h3>
     <!-- prettier-ignore -->
     <mc-code language="html">
-              &lt;mc-button style="--mc-btn-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
+              &lt;mc-button style="--mc-button-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
             </mc-code>
     <p class="doc-hint">组件令牌存的同样是三元组，写在宿主元素上时会随之继承进 shadow root。</p>
     <p class="doc-hint">
