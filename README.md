@@ -3,9 +3,12 @@
 基于 [ofa.js](https://ofajs.com) 的 **免安装、免构建** Web Components UI 框架。
 CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
 
-**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` / `mc-breadcrumb` /
-`mc-card` / `mc-tag` 已实现，各自带文档页、可交互演示和冒烟测试；令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、
-运行时引导层都已验证。其余组件的接口已经定稿，进度见 [PLAN.md 的里程碑](./agent/PLAN.md#五里程碑)。
+在 HTML 里加一个 `<link>` 和一个 `<script type="module">`，就能用 `<mc-button>` ——
+没有 npm、没有打包器、没有脚手架、没有配置文件。
+
+**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` /
+`mc-breadcrumb` / `mc-card` / `mc-tag` 已实现；Icon / Badge / Spinner 与 M2、M3 的组件接口
+已经定稿，进度见[里程碑](./agent/PLAN.md#五里程碑)。
 
 ## 快速开始
 
@@ -23,8 +26,13 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 <mc-button color="primary">提交</mc-button>
 ```
 
-三条引入缺一不可：`mosaic.css` 给**你的页面**工具类与令牌，`mosaic.js` 把工具类注入每个
-shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架、配置文件。
+三条引入各管一段，缺一不可：
+
+| 引入         | 作用                                                       |
+| ------------ | ---------------------------------------------------------- |
+| `mosaic.css` | 令牌（颜色 / 间距 / 字号）与工具类，给**你的页面**用       |
+| `mosaic.js`  | 把工具类注入每个 shadow root（组件的样式靠它，令牌靠继承） |
+| `<l-m src>`  | 按需拉取并注册组件本体，一个组件一条                       |
 
 > 示例里的 `0.1.0` 是计划中的 M1 版本；仓库当前还没有 tag，首次发布前这些 URL 会 404。
 
@@ -42,18 +50,16 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 | Icon / Badge / Spinner         | —                                      | M1 待建   |
 | 表单、反馈、浮层、布局共 15 个 | —                                      | M2 / M3   |
 
-完整清单与逐组件 API 见 [component-spec.md](./agent/component-spec.md) —— 那是唯一真相源，
-文档站的左栏菜单、右栏目录、总览卡片、面包屑与翻页都由 `docs/site-map.js` 与页面标题派生，不用手工维护。
+逐组件的属性 / 事件 / 插槽 / `part` / 令牌见 [组件 API 规范](./agent/component-spec.md)。
+每个组件的用法示例在它自己的文档页里（`packages/<名字>/page.html`）。
 
 ## 用法要点
 
-**代码展示**：`<mc-code>` 的内容就是标签里的纯文本，高亮按需从 CDN 懒加载 —— 加载失败
-只是没有颜色，代码、行号、折行、限高滚动照常。文本有四种传法（优先级 `src` > `code` 属性 >
-标签内文本）：贴在标签里、`code="…"`、ofa 绑定 `<mc-code :code="snippet">`、
-或 `src="…"` 指向片段文件（长片段 / 含 `<script>` 的，文件里不用转义）。
+**按需引入**：一个组件一条 `<l-m>`（见上面的快速开始），同族组件共用一个目录
+—— 目录 `tag/` 对应标签 `mc-tag`。
 
 **定制只用 CSS**：主题切换是 `<html data-theme="dark">`，按实例精确覆盖用内联样式，
-结构化定制用 `::part()`：
+结构化定制用 `::part()` —— 不需要记任何 JS 配置对象：
 
 ```html
 <mc-button style="height: 32px; border-radius: 8px">精确覆盖</mc-button>
@@ -61,31 +67,35 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 
 ```css
 :root {
-  --mc-primary-600: 16 185 129; /* 未分层 → 必定赢过 @layer mosaic.tokens */
+  --mc-primary-600: 16 185 129; /* 换主色：改一个通道三元组 */
 }
 mc-button::part(base) {
   text-transform: uppercase;
 }
 ```
 
-**原子类是一份预编译的精选子集**（当前 370 个），覆盖布局 / 间距 / 排版 / 语义色，在你自己
-的页面与组件里都能直接写。子集之外的类名（`mt-7`、`bg-gradient-to-r` 之类）**不存在**，
-需要时自己写 CSS —— 原因见 [PLAN.md D5](./agent/PLAN.md#d5-unocss-的三层用法)。
+**工具类是一份预编译的精选子集**（当前 370 个），覆盖布局 / 间距 / 排版 / 语义色，
+在你自己页面的 HTML 里可以直接写。子集之外的类名（`mt-7`、`bg-gradient-to-r` 之类）
+**不存在**，需要时自己写 CSS。
 
-## 文档
+**代码展示**：`<mc-code>` 的内容就是标签里的纯文本，高亮按需从 CDN 懒加载 —— 加载失败
+只是没有颜色，代码、行号、折行、限高滚动照常：
 
-| 文档                                                | 内容                                                                                      |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险        |
-| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案    |
-| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南              |
-| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表     |
-| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单            |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。40 条静默失效的坑，附现象、原因、正确写法                               |
-| [文档站重构设计](./agent/docs-refactor.md)          | 已完成：class 组件改 ofa 组件模板 + `$.stanz` 抽路由状态 + `dom.js` 删除（含阶段 0 实测） |
-| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                                |
-| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                   |
-| [调研：ofa 状态管理](./agent/research/state.md)     | `$.stanz` / `o-provider` 在 shadow DOM 下的实测记录（P35–P37 的来源）                     |
+```html
+<mc-code language="javascript"> const a = 1; </mc-code>
+```
+
+## 本地运行
+
+```bash
+pnpm install
+pnpm build   # 生成令牌与工具类 CSS（产物提交进仓库）
+pnpm dev     # 打开文档站：http://localhost:8642
+pnpm test    # 浏览器冒烟测试（另开一个终端先 pnpm dev）
+```
+
+组件本体**不需要构建**：`packages/**` 源即产物，`pnpm build` 只产出共享 CSS
+（`packages/color/tokens.css` 与 `packages/boot/mosaic.css`）。
 
 ## 仓库结构
 
@@ -96,84 +106,51 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js theme-boot.js state/route.js snippets/ components/（nav / toc / crumb / pager / cards / palette.html，标签名 = doc- + 文件名）shell.css
-tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
-tests/                smoke.mjs 入口（并行跑 + --changed / --record）、lib/harness.mjs、lib/suites.mjs（套件清单）、select.mjs（选测中间层）、suite-map.json（生成：套件碰过的文件）、site/*.mjs
-agent/                规范文档（见上表）
+docs/                 文档站：pages/、两层布局页、site-map.js（菜单与页面的唯一数据源）、components/（站点自己的 doc-* 组件）
+tools/                gen-tokens.mjs（调色板生成 + 对比度自检）、build-css.mjs、serve.mjs
+tests/                浏览器冒烟测试：站点不变量 + 每个组件的套件
+agent/                规范与设计文档（见下表）
 ```
 
 **没有 `dist/`。** `packages/**` 就是 CDN 上的东西 —— 仓库即产物。
 
-## 开发
+## 文档
 
-```bash
-pnpm install
-pnpm tokens        # 生成令牌并自检对比度（不达标退出 1）
-pnpm build         # = tokens && build:css → packages/boot/mosaic.css
-pnpm dev           # 本地服务器：http://localhost:8642（零依赖，强制禁缓存）
-pnpm test          # 真浏览器冒烟测试（驱动本机 Chrome）：12 个站点套件 + 每个已实现组件的套件，默认并行 4
-pnpm test:changed  # 只跑工作区改动命中的套件（选测中间层；指定基线用 node tests/smoke.mjs --changed main）
-pnpm test <slug>   # 只跑某个组件的套件（如 pnpm test menu）
-pnpm test:site     # 只跑站点套件；pnpm test:site nav 只跑名字/标签里匹配 nav 的那几条
-pnpm test:record   # 跑全量并重录依赖地图（加了 / 删了 / 挪了套件，或套件开始加载新文件时跑）
-pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
-pnpm check:drift   # 重新生成后比对 git diff，防止产物与生成器漂移
-pnpm format        # prettier 格式化（pnpm format:check 只检查）
-```
-
-冒烟测试需要先起服务器；套件分两处：跨组件的站点不变量在 `tests/site/`，组件自己的断言在
-`packages/<slug>/test/`（数据里 READY 的都该有一个）。`pnpm format` 不碰测试代码、
-生成产物、`packages/*/demos/*.html`（逐字展示的例子）与 `agent/research/`；文档页里内联的
-`<mc-code>` 要加 `<!-- prettier-ignore -->`，详见 [.prettierignore](./.prettierignore)。
-
-**选测中间层**：`pnpm test:changed` 拿 git 改动去查 `tests/suite-map.json` —— 那是
-`pnpm test:record` 录下来的「每个套件实际请求过哪些仓库文件」，所以「改 `docs/layout.html`
-会影响谁」由数据回答，不靠人维护清单。地图没覆盖到的部分走兜底策略：测试基座 / 构建配置 /
-文档站外壳 → 全部，组件目录下的新文件 → 该组件 + 碰过这个目录的套件，纯文档 → 不跑
-（`11-no-class-components` 这种扫全仓的 node-only 守卫除外：它 import 不到、也录不进地图，
-代价趋近 0，所以任何改动都带上它），**未知路径 → 保守全量**；地图缺失或套件不在图里也一律跑该套件（宁可多跑不可漏跑）。
-一条命令看它怎么判：`node tests/select.mjs packages/tag/tag.html`。
-
-**全量为什么快**：一个套件 = 一个独立 page，都挂在同一个 browser context 上（CDN 只下一次），
-先预热一次公共资产再并行开工，所以墙上时间 ≈ 最慢那条套件；`--jobs N` 可调并行度，
-`--jobs 1` 退回串行排查时序问题。全量跑完会打印每个套件的用时，谁在拖后腿一眼可见。
-
-当前实测产物：**34.8 KB raw / 7.7 KB gzip**（其中令牌 14.0 KB raw，370 个工具类）。
+| 文档                                               | 内容                                                                                   |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [规划总纲](./agent/PLAN.md)                        | 定位与约束、关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险         |
+| [**设计规范**](./agent/design-spec.md)             | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案 |
+| [设计令牌与配色](./agent/design-tokens.md)         | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南           |
+| [**组件 API 规范**](./agent/component-spec.md)     | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件 / 插槽 / part、逐组件 API |
+| [组件编写规范](./agent/components.md)              | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单         |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md) | **写组件前必读**。40 条静默失效的坑，附现象、原因、正确写法                            |
 
 ## 文档站
 
 仓库自带一个可运行的文档站，**它自己就是一个 ofa.js 应用**（`o-router` + `o-app` +
-`<template page>` 页面模块 + 两层布局页：`docs/layout.html` 外壳、`docs/doc-layout.html`
-组件页分区布局），用 GitHub Pages 直接托管 —— Pages 源设为 `main` 分支的仓库根即可，不需要 CI。
-它同时是 M0 的验收载体：页面里那些 `<mc-button>` 是真实渲染的。
+`<template page>` 页面模块 + 两层布局页），可直接用 GitHub Pages 托管 ——
+Pages 源设为 `main` 分支的仓库根即可，不需要 CI。
 
 ```bash
 pnpm dev                                 # http://localhost:8642
 node tools/serve.mjs --prefix /mosaic    # 模拟 Pages 子路径（/mosaic/）
 ```
 
-两条站内约定（实现细节见 [components.md](./agent/components.md)）：
+两条站内约定：
 
-- **文档跟着组件走**：组件在 `packages/<slug>/`，文档页就是同目录的 `page.html`（API 表 +
-  演示 + 注意事项），路由地址 `#/packages/<slug>/page.html`。
-- **演示区一个例子一个文件**：例子是 `demos/*.html`（ofa 组件，可单独打开、单独测），
-  页面里写它的标签 + 一行 `mc-collapse` 抽屉，代码面板 `<mc-code src>` 引用同一份文件。
+- **文档跟着组件走**：组件在 `packages/<名字>/`，文档页就是同目录的 `page.html`
+  （例子 + API + 插槽 + 定制 + 注意事项），路由地址 `#/packages/<名字>/page.html`。
+- **演示区一个例子一个文件**：例子是 `demos/*.html`（ofa 组件，可单独打开），
+  页面里写它的标签 + 一行折叠抽屉，代码面板 `<mc-code src>` 引用同一份文件。
 
 ## 五条不可谈判的约束
 
-1. **使用者侧零工具链** —— 任何"请先安装 X"的方案直接否决
-2. **组件不过打包器** —— `packages/**.html` 源 = 产物。ofa.js 的组件就是一个 `.html`，不该变成 JS bundle
+1. **使用者侧零工具链** —— 任何「请先安装 X」的方案直接否决
+2. **组件不过打包器** —— `packages/**.html` 源 = 产物，ofa.js 的组件就是一个 `.html`
 3. **组件不依赖宿主页面的任何 CSS** —— 宿主可能没有 reset，也可能有很激进的 reset
 4. **定制点只用原生 CSS** —— `style="..."` + 令牌 + `::part()`，不用 JS 配置对象
 5. **只有一个运行时依赖 ofa.js**，且 pin 在验证过的版本
 
-技术选型上的硬性红线（都有实测依据，理由见 [PLAN.md](./agent/PLAN.md)）：
-
-- 用 **`presetWind3`**，不用 `presetWind4` —— 后者的 theme 色不支持 `<alpha-value>`，会产出非法 CSS 且静默失效
-- **必须开 `outputToCssLayers`** —— `adoptedStyleSheets` 在 shadow root 内的优先级**高于**组件自身 `<style>`
-- **组件里禁止 `dark:` 变体** —— `dark: 'media'` 跟的是操作系统偏好，跟不了
-  `<html data-theme>` 三态切换（机制见 [PLAN.md D4](./agent/PLAN.md#d4-主题只走-css-变量禁用-dark-变体)）
-- **组件只消费语义令牌**，不碰原始色阶 —— 原始色阶不随主题切换
-- **构建缺输入必须大声失败** —— 实测 UnoCSS 会静默跳过缺失文件，退出码 0，产出没有令牌的坏 CSS
-- **颜色令牌全链路存通道三元组**（`114 70 237`），存不包 `rgb()`、用必须包 —— 混着来会产出 `rgb(rgb(...))` 非法 CSS 并静默失效
-- **令牌只定义在 `:root`，刻意不带 `:host`** —— 写了 `:host` 会让 shadow root 内的宿主元素重新赋亮色值，盖掉继承来的暗色值，切主题时组件纹丝不动
+技术选型上的硬性红线（`presetWind3`、必须开 `outputToCssLayers`、组件里禁止 `dark:`、
+只消费语义令牌、颜色令牌存通道三元组……）都有实测依据，理由见
+[PLAN.md](./agent/PLAN.md) 的「关键决策」一节。
