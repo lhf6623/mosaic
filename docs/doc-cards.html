@@ -92,6 +92,9 @@
       border-radius: var(--mc-radius-sm);
       background-color: rgb(var(--mc-color-surface-sunken));
       font-size: var(--mc-text-xs);
+      /* 原来这个位置是 <code>（自带等宽）；<code> 里的 {{ }} 不会被 ofa 编译（P8），
+         所以换成 <span>，等宽字体在这里补回来 */
+      font-family: var(--mc-font-mono);
     }
 
     .doc-comp-card-desc {
@@ -115,7 +118,7 @@
                 <span class="doc-comp-card-name">{{$data.label}}</span>
                 <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
               </div>
-              <code class="doc-comp-card-tag">{{$data.tagName}}</code>
+              <span class="doc-comp-card-tag">{{$data.tagName}}</span>
               <p class="doc-comp-card-desc">{{$data.summary}}</p>
             </a>
           </o-if>
@@ -125,7 +128,7 @@
                 <span class="doc-comp-card-name">{{$data.label}}</span>
                 <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
               </div>
-              <code class="doc-comp-card-tag">{{$data.tagName}}</code>
+              <span class="doc-comp-card-tag">{{$data.tagName}}</span>
               <p class="doc-comp-card-desc">{{$data.summary}}</p>
             </div>
           </o-else>

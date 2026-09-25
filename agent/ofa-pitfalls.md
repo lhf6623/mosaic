@@ -202,6 +202,12 @@ ofa 的数据层/实例占了 `entries` 这个名字，声明它会让整棵组�
 另外 **`<code>` 标签内的 `{{...}}` 不会被编译**（静默跳过，字面显示）——
 需要等宽样式时用 `<span class="code">` + `font-family: ui-monospace` 模拟。
 
+> ⚠️ **把运行时建 DOM 改成模板时最容易踩这条**：`el('code', { textContent: x })` 没问题
+> （赋值走的是 DOM API），改成 `<code>{{x}}</code>` 就变成页面上显示字面量 `{{x}}` ——
+> 不报错、只是"没渲染"。Mosaic 的 `docs/doc-cards.html` 就这么中过一次
+> （`<code class="doc-comp-card-tag">{{$data.tagName}}</code>`，24 张卡片全显示字面量）。
+> 改法：换成 `<span class="…">`，等宽字体在组件 `<style>` 里补 `font-family: var(--mc-font-mono)`。
+
 ### P9 · `attr:` 的值是 JS 表达式，不是字符串字面量
 
 ```html

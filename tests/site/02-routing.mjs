@@ -99,6 +99,23 @@ await goTop('组件');
 const compState = await pageState();
 check('点「组件」切到组件总览', compState.h1 === '组件');
 check(`组件总览渲染出全部 ${ALL.length} 张卡片`, compState.cards === ALL.length, `实际 ${compState.cards} 张`);
+
+/* 卡片是 <doc-cards> 模板渲染的：标签名走 {{$data.tagName}}。
+   ⚠️ 曾经写在 <code> 里 —— ofa 不编译 <code> 的内容（P8），页面直接显示字面量 {{$data.tagName}} */
+const cardTags = await page.evaluate(() => {
+  const all = (query, root = document, acc = []) => {
+    for (const el of root.querySelectorAll(query)) acc.push(el);
+    for (const el of root.querySelectorAll('*')) if (el.shadowRoot) all(query, el.shadowRoot, acc);
+    return acc;
+  };
+  return all('.doc-comp-card-tag').map((el) => el.textContent.trim());
+});
+check(
+  '卡片里的标签名真的渲染了（不是字面量 {{…}}）',
+  // 形状：mc-xxx，或 toast() 这种命令式组件的写法（登记表里就是这么写的）
+  cardTags.length === ALL.length && cardTags.every((t) => /^[a-z][a-z0-9-]*(\(\))?$/.test(t)),
+  `首张=${cardTags[0]} · 末张=${cardTags.at(-1)} · 含字面量=${cardTags.filter((t) => t.includes('{{')).length} 张`,
+);
 check(
   '组件页自带二级菜单：总览 + 全部组件',
   compState.split === true && compState.navLinks === ALL.length + 1,
