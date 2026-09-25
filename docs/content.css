@@ -1,6 +1,11 @@
 /* ============================================================================
- * 文档站 —— 正文样式；每个页面模块自己 <link>（文档级 <link> 进不了 shadow root）。
- * 选择器统一挂 .doc-body 下：页面 shadow root 里只有正文，免得以后误伤别的内容。
+ * 文档站 —— 页面级样式；每个页面模块自己 <link>（文档级 <link> 进不了 shadow root）。
+ * 两块内容：
+ *   · 正文排版：一切 .doc-body 下的东西；
+ *   · 不在组件里的页面结构：首页海报（.doc-poster / .art-*）、左右两栏的宿主（doc-nav / doc-toc）、
+ *     中栏留位（.doc-split > .doc-content）、<l-m> 加载占位。
+ * ⚠️ 组件**内部**的样式不在这里 —— 模板必然带 shadow root、外部 CSS 够不到，
+ *    那些规则住在各自组件的 <style> 里（nav / toc / crumb / pager / cards / palette）。
  * ========================================================================== */
 
 /* ---------- 正文 ---------- */
@@ -149,17 +154,6 @@ mc-code {
   margin-block: 0;
 }
 
-.doc-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--mc-space-3);
-}
-
-.doc-row + .doc-row {
-  margin-top: var(--mc-space-3);
-}
-
 /* ---------- 卡片 ---------- */
 
 .doc-grid {
@@ -212,17 +206,11 @@ mc-code {
   border-bottom: 0;
 }
 
-/* ---------- 色板与组件卡片 ----------
- * 两块都是组件了（docs/components/palette.html / docs/components/cards.html），自带 shadow root ——
- * 色板与卡片样式都住在各自的 <style> 里，这里只留这个指路牌，别再往回加。
- * 页面里写的是 <doc-palette> / <doc-cards> 标签。 */
-
-.doc-status {
-  margin-top: var(--mc-space-12);
-  padding-top: var(--mc-space-5);
-  border-top: 1px solid rgb(var(--mc-color-border));
-  font-size: var(--mc-text-sm);
-}
+/* ---------- 组件里的东西：样式不在这里 ----------
+ * 色板 / 组件卡片 / 翻页（docs/components/ 下的 palette / cards / pager.html）都是组件，
+ * 自带 shadow root —— 内部样式住在各自的 <style> 里，这里只留指路牌，别再往回加：
+ *   · 页面里写的是 <doc-palette> / <doc-cards> / <doc-pager> 标签；
+ *   · 左栏（nav）与面包屑（crumb）只暴露宿主，宿主级的定位 / 间距仍留在本文件。 */
 
 /* ---------- 组件页头部与翻页 ----------
  * 面包屑本身是项目自己的 <mc-breadcrumb>（packages/breadcrumb/），<doc-crumb> 只负责
@@ -264,18 +252,6 @@ doc-crumb {
   color: rgb(var(--mc-color-success));
 }
 
-/* 翻页（<doc-pager>）的样式搬进了 docs/components/pager.html 的 <style>：
-   它现在是 ofa 组件模板、自带 shadow root，这里的作用域够不到里面的链接
-   （`.doc-body a` 的链接色同理）。这一段只留个指路牌，别再往回加。 */
-
-/* 首页的组件展示区 —— 组件是这个框架的重点，给它更醒目的一栏 */
-.doc-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: var(--mc-space-3);
-  margin: var(--mc-space-4) 0;
-}
-
 /* ============================================================================
  * 首页海报
  *
@@ -289,8 +265,8 @@ doc-crumb {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 正好一屏（顶栏以下）—— 滚动模型换成窗口滚之后，原来靠外壳 flex 撑高的那条不再有效，
-     这里得自己声明高度，海报的方块网格才是按「一屏」算出来的 */
+  /* 正好一屏（顶栏以下）：外壳把一屏锁给 body，滚的是正文带 .doc-main，
+     所以这里得自己声明高度，海报的方块网格才是按「一屏」算出来的 */
   min-height: calc(100vh - var(--doc-topbar, 3.5rem));
   padding-block: var(--mc-space-8);
   /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
@@ -407,7 +383,8 @@ l-m {
  *     滚动条因此从顶栏下方开始，不会像窗口滚动条那样伸进头部
  *   · ⚠️ fixed 的包含块是视口，前提是祖先链上没有 transform / filter / perspective /
  *     contain:paint / will-change —— 谁给外壳或布局页加了这些，两栏就会退化成跟着内容滚
- *   · 滚轮在两栏里滚到底后不再接力给正文（两栏不在正文的滚动链上）—— 取舍见 agent/components.md
+ *   · 两栏不在正文的滚动链上，滚轮在栏内到底后会被吞掉 —— 外壳 docs/layout.html 里有一段
+ *     只在边界接管的转发（用 composedPath() 认 <doc-nav>/<doc-toc>，见那里的注释）
  * 谁需要左栏 / 右栏，就在自己的模板里放 <doc-nav> / <doc-toc>。 */
 
 .doc-split {
@@ -447,7 +424,7 @@ doc-toc {
    宽度**不设上限**：视口多宽正文就用多宽（两栏是 fixed，不占它的宽度）。
    只留一条下限兜底（20rem = 320px）：再窄就让窗口横向滚，不硬挤成一列字。
    窄屏真正的处理在两条断点上（≤78rem 收右栏、≤52rem 左栏不再浮动、占位归零）。
-   它自己不滚（滚的是窗口）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
+   它自己不滚（滚的是外壳的 .doc-main）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
 .doc-split > .doc-content {
   min-width: 20rem;
   padding-inline: 15rem 14rem;
