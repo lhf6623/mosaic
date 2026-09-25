@@ -72,9 +72,11 @@ export const SITE = [
           {
             order: 40,
             label: 'Card',
+            path: 'packages/card/page.html',
             tagName: 'mc-card',
             stage: 'M1',
-            summary: '卡片容器。有底色 / 只有描边两种，可选可交互抬升。',
+            summary:
+              '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
           {
             order: 50,

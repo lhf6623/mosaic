@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-4">
+    <mc-card style="width: 14rem">
+      <span slot="header" class="font-semibold">surface（默认）</span>
+      有底色，靠明度差从页面底色上浮起来。
+    </mc-card>
+
+    <mc-card variant="outline" style="width: 14rem">
+      <span slot="header" class="font-semibold">outline</span>
+      透明底，只有一圈描边。
+    </mc-card>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-card-variants' });
+  </script>
+</template>

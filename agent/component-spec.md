@@ -107,12 +107,12 @@ item.open = true; // 组件提供了访问器时同样可以
 
 ### 1.6 插槽命名
 
-| 名字                    | 用途                         |
-| ----------------------- | ---------------------------- |
-| （无 `name`）           | 主内容                       |
-| `prefix` / `suffix`     | 输入框、按钮内部的前后附加物 |
-| `header` / `footer`     | 容器类组件的头尾             |
-| `title` / `description` | 有明确语义的标题与描述       |
+| 名字                    | 用途                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| （无 `name`）           | 主内容                                                                           |
+| `prefix` / `suffix`     | 输入框、按钮内部的前后附加物；容器类组件的「头部行尾」也用 `suffix`（`mc-card`） |
+| `header` / `footer`     | 容器类组件的头尾                                                                 |
+| `title` / `description` | 有明确语义的标题与描述                                                           |
 
 **用 `prefix` / `suffix`，不用 `leading` / `trailing`** —— 和 CSS 逻辑属性（`padding-inline-start`）对齐。
 
@@ -145,7 +145,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | Menu            | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
 | Breadcrumb      | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
 | Icon            | `mc-icon`                              | `icon/`       | M1     | 待建      |
-| Card            | `mc-card`                              | `card/`       | M1     | 待建      |
+| Card            | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
 | Badge           | `mc-badge`                             | `badge/`      | M1     | 待建      |
 | Spinner         | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
 | Input           | `mc-input`                             | `input/`      | M2     | 待建      |
@@ -342,30 +342,50 @@ sprite 方案下一个图标约 200 B，且能按需加载。
 
 ### mc-card
 
-`packages/card/card.html` · M1
+`packages/card/card.html` · **已实现**
 
-| 属性          | 值                    | 默认      | 说明                            |
-| ------------- | --------------------- | --------- | ------------------------------- |
-| `variant`     | `surface` `outline`   | `surface` | 有底色 / 只有描边               |
-| `padding`     | `none` `sm` `md` `lg` | `md`      | 内边距，映射 `--mc-space-3/4/6` |
-| `interactive` | 布尔                  | —         | 可点击，加 hover 抬升与焦点环   |
+| 属性      | 值                    | 默认      | 说明                                          |
+| --------- | --------------------- | --------- | --------------------------------------------- |
+| `variant` | `surface` `outline`   | `surface` | 有底色 / 只有描边（两者都有 1px 描边）        |
+| `padding` | `none` `sm` `md` `lg` | `md`      | 内边距，映射 `--mc-space-3/4/6`               |
+| `divider` | `line` `none`         | `line`    | 头尾分隔线；`none` 只改颜色不改宽度，高度不抖 |
 
-| 插槽                | 说明                 |
-| ------------------- | -------------------- |
-| （默认）            | 主体内容             |
-| `header` / `footer` | 头尾，会自动加分隔线 |
+| 插槽                | 说明                                                           |
+| ------------------- | -------------------------------------------------------------- |
+| （默认）            | 主体内容                                                       |
+| `header` / `footer` | 头尾，会自动加分隔线（`divider="none"` 可关）；没内容不占位    |
+| `suffix`            | 头部那一行贴右边的附加物（徽标 / 状态 / 小按钮）；有它也算有头 |
 
 | part                            | 说明 |
 | ------------------------------- | ---- |
 | `base` `header` `body` `footer` |      |
 
 ```html
-<mc-card variant="outline">
+<mc-card variant="outline" divider="none">
   <span slot="header">项目设置</span>
+  <span slot="suffix">草稿</span>
   主体内容
   <div slot="footer"><mc-button size="sm">保存</mc-button></div>
 </mc-card>
 ```
+
+**卡片不做交互。** 组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则：
+
+- 操作元素（原生 `<a>` / `<button>`）由使用者写在插槽里，站内链接照旧走 `olink`；
+- 「整卡可点」如果真需要，是使用者在页面 CSS 里给那个元素铺一条 `::after`。**宿主固定是
+  `position: relative`（对外契约）**，就是给那条伪元素当包含块的；配方与三条坑（`inset`
+  要按 `--mc-card-border-w` 取负值盖住边框那圈、`cursor` 必须显式写、悬停别给卡片加位移）
+  见 `packages/card/page.html` 的「注意事项」。
+
+理由（都实测过）：可点区域等于卡片的盒模型边界，铺满要处理边框那一圈的死区、伪元素上的
+`cursor`（WebKit 里 `<a>` 的 cursor 是 `auto`，落在伪元素上解析成箭头）、以及悬停位移带来的
+抖动（命中判定走**变换后**的盒子，指针会在边缘反复进出）；这些都是**行为**不是面。
+而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，组件替它挑必然出错。
+
+**明确不加的维度与能力**：`color`（容器不是强调元素，要强调用 L3 令牌）、`size`（高度由内容撑，
+密疏用 `padding`）、`media` / `cover` 插槽（图像排版变体太多，插槽自己搭更自由）、
+阴影 / elevation（令牌层没有阴影标度，层级靠底色明度差）、`href` 与 `interactive`
+（组件造链接与 `olink` 冲突；整卡可点按上面那条交给使用者，组件只保证包含块）。
 
 ---
 

@@ -1,0 +1,26 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-4">
+    <mc-card style="width: 18rem">
+      <span slot="header" class="font-semibold">默认：头尾各一条分隔线</span>
+      <span slot="suffix" style="font-size: var(--mc-text-xs); color: rgb(var(--mc-color-success))"
+        >已实现</span
+      >
+      头部是一行：左边 <code>slot="header"</code>，右边 <code>slot="suffix"</code>，
+      下面一条通长分隔线。
+      <span slot="footer">页脚上方也有一条</span>
+    </mc-card>
+
+    <mc-card divider="none" style="width: 18rem">
+      <span slot="header" class="font-semibold">divider="none"：不画线</span>
+      <span slot="suffix" style="font-size: var(--mc-text-xs); color: rgb(var(--mc-color-fg-muted))"
+        >M1</span
+      >
+      尾部附加位照旧，只是头尾不再画线 —— 头尾想当纯标题行 / 纯页脚用时选它。
+      <span slot="footer">页脚同样不画</span>
+    </mc-card>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-card-sections' });
+  </script>
+</template>

@@ -1,0 +1,184 @@
+<!--
+  mc-card — 内容承载面
+
+  只做三件事：一块面（variant）、内边距通道（padding）、头尾结构（header / footer /
+  suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义（没有 color 维度）。
+
+  **不做交互。** 组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则：
+  · 卡内要放什么操作元素（原生 <a> / <button>）由使用者写，链接照旧走 olink；
+  · 「整卡可点」如果真需要，是使用者自己在页面 CSS 里铺一条 ::after —— 宿主保持
+    position: relative 就是给那条伪元素当包含块的（对外契约，别删）；配方与坑见文档页。
+  为什么不做进组件：可点区域要处理边框那一圈死区、伪元素的 cursor（WebKit 里 a 的
+  cursor 是 auto，落在伪元素上会变箭头）、悬停位移带来的抖动（命中判定走变换后的盒子）——
+  这些都是**行为**不是面；而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，
+  组件替它挑必然出错。职责边界见 agent/component-spec.md 的 mc-card 一节。
+
+  头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线，
+  `divider="none"` 关掉（保留 1px 透明边框，避免关线时整张卡高度抖一下）。
+  显隐只从宿主上选（P10 / P14）：data-has-header / data-has-footer —— 不用 o-if 跟随属性。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
+    :host {
+      display: block;
+      position: relative; /* 使用者自己铺「整卡可点」那条 ::after 的包含块 —— 对外契约，别删 */
+      box-sizing: border-box;
+      border: var(--mc-card-border-w) solid rgb(var(--mc-card-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-card-bg));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-base);
+      line-height: var(--mc-text-base-lh);
+      color: rgb(var(--mc-color-fg));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
+      --mc-card-bg: var(--mc-color-surface);
+      --mc-card-border: var(--mc-color-border);
+      --mc-card-pad: var(--mc-space-4);
+      /* 边框宽度单独成变量：使用者的「铺满」伪元素要按它把边框那圈也算进去
+         （绝对定位的包含块是宿主的内边距盒，inset:0 会漏掉边框） */
+      --mc-card-border-w: 1px;
+    }
+
+    /* 2. 维度 variant：surface 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+    :host([variant='outline']) {
+      background-color: transparent;
+    }
+
+    /* 3. 维度 padding：内边距只有一条通道（none / sm / md / lg → 0 / 12 / 16 / 24） */
+    :host([padding='none']) {
+      --mc-card-pad: 0px;
+    }
+    :host([padding='sm']) {
+      --mc-card-pad: var(--mc-space-3);
+    }
+    :host([padding='lg']) {
+      --mc-card-pad: var(--mc-space-6);
+    }
+
+    /* 4. 状态：一个都没有。可点 / 悬停 / 光标都由使用者写在页面 CSS 里 ——
+       组件一旦接管，就得替使用者判断「哪个元素算整卡动作」，还要处理边框死区、伪元素
+       的 cursor、位移抖动（命中判定走变换后的盒子），那些是行为不是面 */
+
+    /* 5. 内部结构。内边距只在 .mc-base 上声明一次：头尾用负外边距贴到卡片边缘、各自带
+       自己的内边距，分隔线因此是通长的，而头尾与正文之间只隔一个 pad */
+    .mc-base {
+      display: block;
+      padding: var(--mc-card-pad);
+      border-radius: inherit;
+    }
+    .mc-header,
+    .mc-footer {
+      display: none; /* 常驻 DOM，有没有内容由宿主属性说话（P10） */
+      padding: var(--mc-card-pad);
+      margin-inline: calc(var(--mc-card-pad) * -1);
+      /* 头尾是通长的整条，底色会一直铺到卡片边缘 —— 圆角必须跟着宿主走，
+         否则卡片是圆角、头尾是直角，两个直角会从圆角里露出来。
+         inherit 拿的是 .mc-base 的圆角（它又是 inherit 宿主的），所以使用者
+         用 style="border-radius: …" 覆盖宿主时这里自动跟随 */
+      border-radius: inherit;
+    }
+    :host([data-has-header]) .mc-header {
+      /* 头部是一行：正文插槽占满左边，slot="suffix" 贴右边（徽标 / 状态 / 小按钮） */
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      margin-block: calc(var(--mc-card-pad) * -1) var(--mc-card-pad);
+      border-bottom: 1px solid rgb(var(--mc-card-border));
+      /* 朝向正文的两个角必须是直角（那里贴着正文，圆了会露出卡片底色） */
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+    :host([data-has-footer]) .mc-footer {
+      display: block;
+      margin-block: var(--mc-card-pad) calc(var(--mc-card-pad) * -1);
+      border-top: 1px solid rgb(var(--mc-card-border));
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+    /* 关分隔线只改颜色、不改宽度：否则关线时整张卡的高度会抖 1px */
+    :host([divider='none']) .mc-header {
+      border-bottom-color: transparent;
+    }
+    :host([divider='none']) .mc-footer {
+      border-top-color: transparent;
+    }
+    .mc-header-main {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .mc-header-suffix {
+      display: block;
+      flex: none;
+    }
+  </style>
+
+  <div class="mc-base" part="base">
+    <div class="mc-header" part="header">
+      <span class="mc-header-main"><slot name="header"></slot></span>
+      <span class="mc-header-suffix"><slot name="suffix"></slot></span>
+    </div>
+    <div class="mc-body" part="body"><slot></slot></div>
+    <div class="mc-footer" part="footer"><slot name="footer"></slot></div>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-card',
+
+      attrs: {
+        variant: 'surface',
+        padding: 'md',
+        // 头尾分隔线：枚举而不是布尔 —— 默认是「有线」，而 :host(:not([divider])) 会静默失效（P14），
+        // 所以只能把「非默认」那一档写成属性值
+        divider: 'line',
+      },
+
+      ready() {
+        // 这时 shadow 已建好（同 mc-collapse-item）；宿主属性留到 attached 才写（P31）
+        this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+      },
+
+      attached() {
+        /* 头尾有没有内容只靠 slotchange 判定：插槽的分到节点一变就会响
+           （往头尾元素**内部**加东西不影响「有没有内容」，不需要再盯子树） */
+        this._onSlotChange = () => this.applyState();
+        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+        this.applyState();
+      },
+
+      detached() {
+        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      proto: {
+        /** 头尾有没有内容 → 宿主上的 data-has-header / data-has-footer（CSS 只能从宿主上选） */
+        applyState() {
+          // suffix 也是头部那一行的内容，只写 header 就不算「有头」会让徽标孤零零地悬着
+          this.mirror(
+            'data-has-header',
+            this.slotHasContent('header') || this.slotHasContent('suffix'),
+          );
+          this.mirror('data-has-footer', this.slotHasContent('footer'));
+        },
+
+        /** 具名插槽有没有分到东西：**元素即内容**；纯文本/注释节点要非空白才算 */
+        slotHasContent(name) {
+          const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
+          return (slot?.assignedNodes() ?? []).some(
+            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+          );
+        },
+
+        /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>

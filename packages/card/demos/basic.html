@@ -1,0 +1,14 @@
+<template component>
+  <mc-card style="width: 24rem">
+    <span slot="header" class="font-semibold">项目设置</span>
+    正文放什么由你决定：说明文字、表单、列表都可以。
+    <div slot="footer" class="flex justify-end gap-2">
+      <mc-button size="sm" variant="ghost">取消</mc-button>
+      <mc-button size="sm">保存</mc-button>
+    </div>
+  </mc-card>
+
+  <script>
+    export default async () => ({ tag: 'demo-card-basic' });
+  </script>
+</template>
