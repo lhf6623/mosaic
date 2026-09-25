@@ -254,6 +254,124 @@
   </script>
   <link rel="stylesheet" href="../content.css" />
 
+  <!-- 首页专属样式（海报 + 马赛克图案）：只这一页用，所以住这儿而不是 content.css。
+       页面模块的 <style> 与它上面的 <link> 同处本页 shadow root，作用域一致；
+       放在 <link> 之后，特异性打平时本页规则赢。 -->
+  <style>
+    /* ============================================================================
+     * 首页海报
+     *
+     * 首页只做一张海报：马赛克图案 + 两个入口（标题 sr-only）。选择器都带 .doc-poster
+     * 前缀，是为了用 0,2,0 的特异性稳定压过上面 .doc-body h1 / p 的 0,1,1。
+     * ========================================================================== */
+
+    /* 定位容器：马赛克图案铺满它，正文叠在上层 */
+    .doc-poster {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* 正好一屏（顶栏以下）：外壳把一屏锁给 body，滚的是正文带 .doc-main，
+         所以这里得自己声明高度，海报的方块网格才是按「一屏」算出来的 */
+      min-height: calc(100vh - var(--doc-topbar, 3.5rem));
+      padding-block: var(--mc-space-8);
+      /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
+      overflow: hidden;
+    }
+
+    .poster-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--mc-space-5);
+      /* 入口自己限宽，把两侧的余量让给背景图案 */
+      max-width: 38rem;
+      text-align: center;
+    }
+
+    /* ---------- 马赛克图案：层 .art-layer，块 .art-bit（数据来自 home.html） ---------- */
+
+    .poster-art {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      color: rgb(var(--mc-color-fg));
+      /* 刻意不加遮罩：中心那块留白会变成按钮底下的一片白底 */
+    }
+
+    /* 视差只走 transform（提到合成层，不触发重排） */
+    .art-layer {
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+    }
+
+    /* 一块方块：位置、尺寸由数据给，这里只管长相 */
+    .art-bit {
+      position: absolute;
+      display: block;
+      border: 1.5px solid currentColor;
+    }
+
+    /* 尺寸走 home.html 广播的 --art-*（两边同一个数）；括号里是兜底值 */
+    .art-far {
+      width: var(--art-grain, 22.3px);
+      height: var(--art-grain, 22.3px);
+      /* 圆角只有这里用得到，比例留在 CSS（62 → 6px） */
+      border-radius: calc(var(--art-tile, 62px) * 0.097);
+    }
+
+    /* 边长每块不同，行内绑 width/height；这里只给圆角（62 → 14px） */
+    .art-mid {
+      border-radius: calc(var(--art-tile, 62px) * 0.226);
+    }
+
+    /* 色片：实心、无描边，颜色按语义色 */
+    .art-chip {
+      width: var(--art-chip, 44.6px);
+      height: var(--art-chip, 44.6px);
+      border: 0;
+      border-radius: calc(var(--art-tile, 62px) * 0.226);
+    }
+
+    .art-chip[data-color='primary'] {
+      background-color: rgb(var(--mc-color-primary));
+    }
+    .art-chip[data-color='info'] {
+      background-color: rgb(var(--mc-color-info));
+    }
+    .art-chip[data-color='success'] {
+      background-color: rgb(var(--mc-color-success));
+    }
+    .art-chip[data-color='warning'] {
+      background-color: rgb(var(--mc-color-warning));
+    }
+    .art-chip[data-color='danger'] {
+      background-color: rgb(var(--mc-color-danger));
+    }
+
+    /* 减弱动效偏好下不做视差 */
+    @media (prefers-reduced-motion: reduce) {
+      .art-layer {
+        will-change: auto;
+      }
+    }
+
+    /* 首页两个入口：用项目自己的 mc-button，这里只管把它们排成一行 */
+    .doc-poster .poster-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: var(--mc-space-3);
+    }
+  </style>
+
   <div class="doc-body doc-poster">
     <l-m src="../../packages/button/button.html"></l-m>
 

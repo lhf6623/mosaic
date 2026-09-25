@@ -431,7 +431,7 @@ positioned 祖先为基准，铺满整个祖先。
 顺着 `parentNode` 爬是：`.doc-body → 页面 shadow root → host(o-page) → 布局页 o-page →
 o-app → …` —— **直接跳过了布局页的 shadow root**，而当时的滚动容器 `.doc-main` 正住在那里。
 
-> 现在两栏浮动 + 窗口滚，页面上暂时没有「跨 shadow 的滚动容器」了（见 `docs/content.css` 的分栏注释），
+> 现在两栏浮动、正文带 `.doc-main` 在外壳里滚（见 `docs/doc-layout.html` 的 `<style>` 注释），
 > 但这条规则对**任何**跨 shadow 往上找祖先的场景都成立，别删。
 
 **正确写法**：每一步先看 `assignedSlot`（被投影的节点，扁平树里的父是那个 slot）：
@@ -570,7 +570,7 @@ Mosaic 里这件事现在收在一处：`docs/state/route.js` 同时挂 `hashcha
 消费方（顶栏 / 左栏 / 面包屑 / 翻页 / 站点脚本）只订阅它。
 
 > 顺带一条同类坑：`parentNode` / `getRootNode().host` 走的是**节点树**，而滚动与投影按
-> **扁平树**。现在两栏浮动 + 窗口滚（见 `docs/content.css` 的分栏注释），
+> **扁平树**。现在两栏浮动、滚的是外壳的正文带（见 `docs/doc-layout.html` 的 `<style>` 注释），
 > 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/components/toc.html` 的 `scroller()` 与
 > `packages/code/code.html` 的 `scrollableAncestor()` 仍然按扁平树走 —— 页面将来若重新引入
 > 内部滚动区，只有扁平树能找到它。

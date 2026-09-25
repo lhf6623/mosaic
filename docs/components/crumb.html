@@ -13,6 +13,13 @@
 -->
 <template component>
   <style>
+    /* 宿主：自定义元素默认 inline，不写会塌；下边距是「与页面 h1 的距离」，
+       属于本组件的默认外观（外部 style="margin:…" 照样能覆盖） */
+    :host {
+      display: block;
+      margin: 0 0 var(--mc-space-2);
+    }
+
     /* 整块收掉用属性钩子，不用 o-if（理由见文件头） */
     mc-breadcrumb[data-hidden] {
       display: none;

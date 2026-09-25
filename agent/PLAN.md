@@ -355,7 +355,7 @@ mosaic/
 │   ├── site-map.js                # 站点唯一数据源（结构即菜单）：页面 / 组件 / 层级 / order / hidden
 │   ├── routes.js                  # 路由工具：route() 归一当前路由
 │   ├── components/                # 文档站自己的组件（nav/toc/crumb/pager/cards/palette.html：文件名 + doc- 前缀 = 标签名）
-│   ├── shell.css  content.css     # 文档级视口/高度链 / 正文 + 分栏样式（页面自己 link 后者）
+│   ├── shell.css  content.css     # 文档级视口/高度链 / 页面**共用**的正文样式（页面自己 link 后者）
 │   └── layout.html theme-boot.js  # 外壳（顶栏 + 正文带 + 换页复位 + 滚轮接力）/ 首帧主题
 ├── tests/
 │   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件（单飞见 README）

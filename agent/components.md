@@ -88,7 +88,7 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 
 > ⚠️ **浮动两栏的前提是祖先链上没有 `transform` / `filter` / `perspective` /
 > `contain: paint` / `will-change`** —— 有的话 fixed 的包含块就变成那个祖先，两栏会跟着内容滚
-> （`content.css` 的分栏注释里记了这条）。
+> （`docs/doc-layout.html` 的 `<style>` 里记了这条）。
 
 > ⚠️ **两栏位置是正文的 padding**：`.doc-content` 用 `padding-inline: 15rem 14rem` 留位，
 > 宽度**不设上限**（视口多宽正文就多宽），只有一条 `min-width` 兜底；
@@ -150,6 +150,11 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 </template>
 ```
 
+- **样式的归属**：只有一个使用者的样式写进**那个**页面 / 组件的 `<style>` ——
+  首页海报在 `docs/pages/home.html`、两栏与中栏留位在 `docs/doc-layout.html`、
+  组件内部在各自组件里；`content.css` 只留**多个页面共用**的正文块（标题 / 段落 / 提示条 /
+  演示区 / 卡片 / 表格 / 徽标 / `<l-m>` 占位）。页面模块的 `<style>` 与它的 `<link>`
+  同处一个 shadow root，作用域一样，搬过去不损失什么，但改一处只需看一个文件。
 - **滚动只有 `.doc-main` 一条**（顶栏下面那一带）：`.doc-split`、`.doc-content` 都不滚，
   左右两栏是 `position: fixed; height: 100%`，内容超一屏时各自内部滚。
 - 页面**不想要**侧栏就不写 `.doc-split`，正文直接在外壳正文带里滚（`.doc-main`）。
@@ -265,7 +270,7 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 （外壳锁一屏、正文带在它里面滚），所以想撑满的页面**自己声明一屏**，一处定义：
 
 ```css
-/* content.css 里首页海报的做法 */
+/* docs/pages/home.html 里首页海报的做法 */
 .doc-poster {
   min-height: calc(100vh - var(--doc-topbar, 3.5rem));
 }
@@ -276,7 +281,7 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 不会冒出那条「多算 32px」的滚动条。
 
 ```css
-/* 想分左右两栏的页面（content.css）：两栏是 fixed，正文用 padding 留位；宽度不设上限 */
+/* 想分左右两栏的页面（docs/doc-layout.html）：两栏是 fixed，正文用 padding 留位；宽度不设上限 */
 .doc-split > .doc-content {
   min-width: 20rem;
   padding-inline: 15rem 14rem;

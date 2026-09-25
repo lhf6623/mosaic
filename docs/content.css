@@ -1,11 +1,15 @@
 /* ============================================================================
- * 文档站 —— 页面级样式；每个页面模块自己 <link>（文档级 <link> 进不了 shadow root）。
- * 两块内容：
- *   · 正文排版：一切 .doc-body 下的东西；
- *   · 不在组件里的页面结构：首页海报（.doc-poster / .art-*）、左右两栏的宿主（doc-nav / doc-toc）、
- *     中栏留位（.doc-split > .doc-content）、<l-m> 加载占位。
- * ⚠️ 组件**内部**的样式不在这里 —— 模板必然带 shadow root、外部 CSS 够不到，
- *    那些规则住在各自组件的 <style> 里（nav / toc / crumb / pager / cards / palette）。
+ * 文档站 —— **所有页面共用**的正文样式；每个页面模块自己 <link>
+ * （文档级 <link> 进不了 shadow root，见 P33 一族）。
+ *
+ * 分工：样式跟着它的使用者走 ——
+ *   · 只有一个使用者的：住在那个页面 / 组件的 <style> 里
+ *       首页海报 + 马赛克图案 → docs/pages/home.html
+ *       两栏宿主 + 中栏留位 + 两条断点 → docs/doc-layout.html
+ *       组件内部样式 → docs/components/*.html（nav / toc / crumb / pager / cards / palette）
+ *   · 多个页面共用的正文块（标题 / 段落 / 提示条 / 演示区 / 卡片 / 表格 / 徽标 / <l-m> 占位）
+ *       → 就是本文件
+ * ⚠️ 往这里加规则前先问一句：是不是只有一个页面在用？是的话放那个文件里。
  * ========================================================================== */
 
 /* ---------- 正文 ---------- */
@@ -88,7 +92,7 @@
 
 /* ---------- 代码块：mc-code 组件自带边框/行号/复制/高亮，文档这边只管间距 ---------- */
 
-mc-code {
+.doc-body mc-code {
   margin-block: var(--mc-space-4);
 }
 
@@ -212,15 +216,9 @@ mc-code {
  *   · 页面里写的是 <doc-palette> / <doc-cards> / <doc-pager> 标签；
  *   · 左栏（nav）与面包屑（crumb）只暴露宿主，宿主级的定位 / 间距仍留在本文件。 */
 
-/* ---------- 组件页头部与翻页 ----------
- * 面包屑本身是项目自己的 <mc-breadcrumb>（packages/breadcrumb/），<doc-crumb> 只负责
- * 从导航数据里派生「哪几级 + 带部署前缀的链接」（docs/components/crumb.html，订阅 docs/state/route.js）——
- * 它与 <doc-pager> 都是 ofa 组件模板、自带 shadow root，所以这里只留宿主上的间距 */
-
-doc-crumb {
-  display: block;
-  margin: 0 0 var(--mc-space-2);
-}
+/* ---------- 组件页头部 ----------
+ * 面包屑 / 翻页都是组件（docs/components/crumb.html、pager.html），宿主间距也在各自的
+ * :host 里；这里只剩页面自己的头部元素。 */
 
 .doc-body h1 code {
   font-size: 0.62em;
@@ -252,182 +250,9 @@ doc-crumb {
   color: rgb(var(--mc-color-success));
 }
 
-/* ============================================================================
- * 首页海报
- *
- * 首页只做一张海报：马赛克图案 + 两个入口（标题 sr-only）。选择器都带 .doc-poster
- * 前缀，是为了用 0,2,0 的特异性稳定压过上面 .doc-body h1 / p 的 0,1,1。
- * ========================================================================== */
-
-/* 定位容器：马赛克图案铺满它，正文叠在上层 */
-.doc-poster {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 正好一屏（顶栏以下）：外壳把一屏锁给 body，滚的是正文带 .doc-main，
-     所以这里得自己声明高度，海报的方块网格才是按「一屏」算出来的 */
-  min-height: calc(100vh - var(--doc-topbar, 3.5rem));
-  padding-block: var(--mc-space-8);
-  /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
-  overflow: hidden;
-}
-
-.poster-inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--mc-space-5);
-  /* 入口自己限宽，把两侧的余量让给背景图案 */
-  max-width: 38rem;
-  text-align: center;
-}
-
-/* ---------- 马赛克图案：层 .art-layer，块 .art-bit（数据来自 home.html） ---------- */
-
-.poster-art {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  color: rgb(var(--mc-color-fg));
-  /* 刻意不加遮罩：中心那块留白会变成按钮底下的一片白底 */
-}
-
-/* 视差只走 transform（提到合成层，不触发重排） */
-.art-layer {
-  position: absolute;
-  inset: 0;
-  will-change: transform;
-}
-
-/* 一块方块：位置、尺寸由数据给，这里只管长相 */
-.art-bit {
-  position: absolute;
-  display: block;
-  border: 1.5px solid currentColor;
-}
-
-/* 尺寸走 home.html 广播的 --art-*（两边同一个数）；括号里是兜底值 */
-.art-far {
-  width: var(--art-grain, 22.3px);
-  height: var(--art-grain, 22.3px);
-  /* 圆角只有这里用得到，比例留在 CSS（62 → 6px） */
-  border-radius: calc(var(--art-tile, 62px) * 0.097);
-}
-
-/* 边长每块不同，行内绑 width/height；这里只给圆角（62 → 14px） */
-.art-mid {
-  border-radius: calc(var(--art-tile, 62px) * 0.226);
-}
-
-/* 色片：实心、无描边，颜色按语义色 */
-.art-chip {
-  width: var(--art-chip, 44.6px);
-  height: var(--art-chip, 44.6px);
-  border: 0;
-  border-radius: calc(var(--art-tile, 62px) * 0.226);
-}
-
-.art-chip[data-color='primary'] {
-  background-color: rgb(var(--mc-color-primary));
-}
-.art-chip[data-color='info'] {
-  background-color: rgb(var(--mc-color-info));
-}
-.art-chip[data-color='success'] {
-  background-color: rgb(var(--mc-color-success));
-}
-.art-chip[data-color='warning'] {
-  background-color: rgb(var(--mc-color-warning));
-}
-.art-chip[data-color='danger'] {
-  background-color: rgb(var(--mc-color-danger));
-}
-
-/* 减弱动效偏好下不做视差 */
-@media (prefers-reduced-motion: reduce) {
-  .art-layer {
-    will-change: auto;
-  }
-}
-
-/* 首页两个入口：用项目自己的 mc-button，这里只管把它们排成一行 */
-.doc-poster .poster-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--mc-space-3);
-}
-
 /* 页面 shadow 里的 <l-m> 是加载占位，不能占位（P13） */
 l-m {
   display: none;
-}
-
-/* ---------- 浮动侧栏 + 正文留位（页面自己的左右两栏） ----------
- *
- * 左右两栏 position: fixed、**不在文档流里**：
- *   · 高度固定 100%（= 视口高），内部超出时自己滚；顶部用 padding 让开顶栏
- *     （顶栏 z-index 高一档，会盖住两栏顶部那一条）
- *   · 于是**不存在 sticky 的滑动区间问题** —— 内容怎么高怎么矮、切到哪一页，两栏都不动；
- *     页面高度变化也不再带动它们（这正是之前「换页时整页塌一下」的根源）
- *   · 正文用 padding 把两栏的位置留出来；中栏宽度**不设上限**（视口多宽就多宽），
- *     只留一条兜底下限 —— 两栏是 fixed、不占宽度，所以「正文多宽」与「两栏多宽」互不牵连
- *   · 滚动在顶栏下面的正文带（docs/layout.html 的 .doc-main）里发生，不影响两栏；
- *     滚动条因此从顶栏下方开始，不会像窗口滚动条那样伸进头部
- *   · ⚠️ fixed 的包含块是视口，前提是祖先链上没有 transform / filter / perspective /
- *     contain:paint / will-change —— 谁给外壳或布局页加了这些，两栏就会退化成跟着内容滚
- *   · 两栏不在正文的滚动链上，滚轮在栏内到底后会被吞掉 —— 外壳 docs/layout.html 里有一段
- *     只在边界接管的转发（用 composedPath() 认 <doc-nav>/<doc-toc>，见那里的注释）
- * 谁需要左栏 / 右栏，就在自己的模板里放 <doc-nav> / <doc-toc>。 */
-
-.doc-split {
-  display: block;
-  min-width: 0;
-}
-
-/* 左右两栏：浮在窗口两侧，整屏高，自己滚。样式挂在标签上（都是自定义元素） */
-doc-nav,
-doc-toc {
-  display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
-  position: fixed;
-  top: 0;
-  height: 100%;
-  z-index: var(--mc-z-sticky); /* 顶栏比它高一档，见 layout.html */
-  padding-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-6));
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
-doc-nav {
-  left: 0;
-  width: 15rem;
-  padding-inline: var(--mc-space-5);
-  border-right: 1px solid rgb(var(--mc-color-border));
-}
-
-/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html） */
-doc-toc {
-  right: 0;
-  width: 14rem;
-  padding-inline: var(--mc-space-5);
-  border-left: 1px solid rgb(var(--mc-color-border));
-}
-
-/* 中栏 = 分区布局页里包住 <slot> 的那一栏。左右 padding 就是两栏的占位，
-   宽度**不设上限**：视口多宽正文就用多宽（两栏是 fixed，不占它的宽度）。
-   只留一条下限兜底（20rem = 320px）：再窄就让窗口横向滚，不硬挤成一列字。
-   窄屏真正的处理在两条断点上（≤78rem 收右栏、≤52rem 左栏不再浮动、占位归零）。
-   它自己不滚（滚的是外壳的 .doc-main）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
-.doc-split > .doc-content {
-  min-width: 20rem;
-  padding-inline: 15rem 14rem;
 }
 
 /* 标题要避开顶栏：目录项点击走 scrollIntoView，锚点位置就靠这条 */
@@ -436,39 +261,16 @@ doc-toc {
   scroll-margin-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-4));
 }
 
-/* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
-   这里只能作用到宿主标签本身；那些规则写在 docs/components/nav.html 的 <style> 里。 */
+/* ---------- 两栏与中栏留位：样式在分区布局页里 ----------
+ * <doc-nav> / <doc-toc> 的宿主定位、.doc-split / .doc-content 的留位、以及它们的两条断点，
+ * 都只服务「组件文档页」那一层 —— 住在 docs/doc-layout.html 的 <style> 里
+ * （页面模块的 <style> 与它的 <link> 同处一个 shadow root，作用域一样）。
+ * 同理：左栏 / 右栏 / 面包屑 / 翻页 / 色板 / 卡片的内部样式在 docs/components/*.html 里。 */
 
-/* ---------- 窄屏：先收右栏，再退化成「菜单在上、正文在下」（必须排在基础规则之后） ---------- */
-
-/* 中档宽度放不下右栏：收掉它，右侧的占位也跟着去掉 */
-@media (max-width: 78rem) {
-  doc-toc {
-    display: none;
-  }
-
-  .doc-split > .doc-content {
-    padding-right: 0;
-  }
-}
+/* ---------- 窄屏：正文自己的内边距（两栏怎么收，见上面那条指路牌） ---------- */
 
 @media (max-width: 52rem) {
   .doc-body {
     padding: var(--mc-space-6) var(--mc-space-5) var(--mc-space-12);
-  }
-
-  /* 窄屏放不下浮动侧栏：左栏回到文档流顶部（浮动会盖住半屏正文） */
-  doc-nav {
-    position: static;
-    width: auto;
-    height: auto;
-    max-height: 45vh;
-    padding: var(--mc-space-4) var(--mc-space-5);
-    border-right: 0;
-    border-bottom: 1px solid rgb(var(--mc-color-border));
-  }
-
-  .doc-split > .doc-content {
-    padding-inline: 0;
   }
 }
