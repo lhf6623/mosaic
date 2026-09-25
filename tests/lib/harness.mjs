@@ -40,7 +40,7 @@ export function pageHelpers() {
     return out;
   };
 
-  /* <doc-nav> 是 ofa 组件模板（docs/doc-nav.html），条目住在它**自己的** shadow root 里。
+  /* <doc-nav> 是 ofa 组件模板（docs/components/nav.html），条目住在它**自己的** shadow root 里。
      CSS 选择器跨不过 shadow 边界，所以 `__deep*('doc-nav a')` 永远匹配不到 ——
      选择器里没法同时包含宿主和宿主 shadow 内的节点（P12 那条的同一个道理）。
      查组件内部一律走这个「宿主 + shadow 双路」助手。 */

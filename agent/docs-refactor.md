@@ -16,9 +16,9 @@
 2. **数据分两层**：静态数据保持纯模块（零 `$`、零 DOM，Node 套件要 import）；运行时状态进
    `$.stanz`（懒创建，避免赌 ofa 加载顺序）。
 3. **三个 store**：`route`（收益最大）/ `theme`（首帧不动）/ `palette`。
-4. **三个 class 组件**：`doc-trail.js` 里两个（→ `doc-crumb.html` / `doc-pager.html`，纯视图，**最值得改**）、
-   `doc-toc.js` 一个（→ `doc-toc.html`，**半混合**：模板管结构，扫描/滚动/滚动高亮仍靠 JS）。
-5. **先例已经在了**：`docs/doc-nav.html` 就是从手写元素改过来的，它头部注释记了当时的收益
+4. **三个 class 组件**：`doc-trail.js` 里两个（→ `components/crumb.html` / `components/pager.html`，纯视图，**最值得改**）、
+   `doc-toc.js` 一个（→ `components/toc.html`，**半混合**：模板管结构，扫描/滚动/滚动高亮仍靠 JS）。
+5. **先例已经在了**：`docs/components/nav.html` 就是从手写元素改过来的，它头部注释记了当时的收益
    （「以前得手写 `_append` 递归、`_link` 建 DOM、`syncActive` 切高亮……现在结构与数据同形」）。
 6. **四条假设已验**（§6）：store 引用怎么挂、`o-fill` 局部更新不换节点、
    模板能表达布尔属性但**不能**用 `:style.<自定义属性>`、proto 里的 `this` 不是元素。
@@ -34,34 +34,34 @@
 
 ### 1.1 数据
 
-| 数据                      | 现在住在哪                                     | 谁读                                                                                              | 能不能进 store                |
-| ------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
-| 导航树 + 派生查询         | [`site-map.js`](./../docs/site-map.js)         | `layout.html:8`、`doc-nav.html:63`、`doc-trail.js:21`、`site.js:7`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）       |
-| 当前路由                  | `routes.js:36` 每次从 `location.hash` 重算     | 同上 + `site.js:176`                                                                              | ✅ `route` store              |
-| 主题（三态 + 持久化）     | `theme-boot.js:8`（首帧）、`layout.html:66-83` | 外壳按钮；所有组件经令牌                                                                          | ⚠️ 只有运行时部分             |
-| 色板（解析 `tokens.css`） | `docs/doc-palette.html`                        | 设计令牌页的 `<doc-palette>`                                                                      | ✅ 组件内自包含（不做 store） |
-| 右栏目录 active           | `doc-toc.js`（滚动位置算）                     | 只有它自己                                                                                        | ❌ 纯局部状态                 |
-| 占位渲染                  | `site.js:94-213`                               | 组件总览卡片 / 色板 / ~~计数~~                                                                    | ➡️ 改成组件（§4.3）           |
+| 数据                      | 现在住在哪                                     | 谁读                                                                                    | 能不能进 store                |
+| ------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------- |
+| 导航树 + 派生查询         | [`site-map.js`](./../docs/site-map.js)         | `layout.html`、`components/{nav,crumb,pager,cards}.html`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）       |
+| 当前路由                  | `routes.js:36` 每次从 `location.hash` 重算     | 同上 + `site.js:176`                                                                    | ✅ `route` store              |
+| 主题（三态 + 持久化）     | `theme-boot.js:8`（首帧）、`layout.html:66-83` | 外壳按钮；所有组件经令牌                                                                | ⚠️ 只有运行时部分             |
+| 色板（解析 `tokens.css`） | `docs/components/palette.html`                 | 设计令牌页的 `<doc-palette>`                                                            | ✅ 组件内自包含（不做 store） |
+| 右栏目录 active           | `doc-toc.js`（滚动位置算）                     | 只有它自己                                                                              | ❌ 纯局部状态                 |
+| 占位渲染                  | `site.js:94-213`                               | 组件总览卡片 / 色板 / ~~计数~~                                                          | ➡️ 改成组件（§4.3）           |
 
 ### 1.2 「跟着路由走」原来挂了 5 处（**阶段 1 已收口**）
 
-| 位置（改造前）     | 怎么接                         | 干什么                | 现在                           |
-| ------------------ | ------------------------------ | --------------------- | ------------------------------ |
-| `layout.html:32`   | ofa 生命周期 `routerChange()`  | 顶栏高亮              | 订阅 store（钩子与轮询都删了） |
-| `doc-nav.html:110` | `hashchange` + `router-change` | 左栏行重算            | 订阅 store                     |
-| `doc-trail.js:33`  | 同上（`DocCrumb`）             | 面包屑                | 文件删除 → `doc-crumb.html`    |
-| `doc-trail.js:72`  | 同上（`DocPager`）             | 翻页                  | 文件删除 → `doc-pager.html`    |
-| `site.js:261`      | 同上                           | 换页复位 + 占位重渲染 | 订阅 store                     |
+| 位置（改造前）                             | 怎么接                         | 干什么                | 现在                               |
+| ------------------------------------------ | ------------------------------ | --------------------- | ---------------------------------- |
+| `layout.html:32`                           | ofa 生命周期 `routerChange()`  | 顶栏高亮              | 订阅 store（钩子与轮询都删了）     |
+| `components/nav.html`（原 `doc-nav.html`） | `hashchange` + `router-change` | 左栏行重算            | 订阅 store                         |
+| `doc-trail.js:33`                          | 同上（`DocCrumb`）             | 面包屑                | 文件删除 → `components/crumb.html` |
+| `doc-trail.js:72`                          | 同上（`DocPager`）             | 翻页                  | 文件删除 → `components/pager.html` |
+| `site.js:261`                              | 同上                           | 换页复位 + 占位重渲染 | 订阅 store                         |
 
 → 原来 8 个监听 + 1 个钩子，现在**只剩 `docs/state/route.js` 里一处**
 （`hashchange` + `router-change`），P28 只需记在那一个文件里。
 
 ### 1.3 还在手写 class 的组件（**阶段 1 已迁完两个**）
 
-| 文件           | 类                      | 行数 | 职责                                                                  | 状态                                              |
-| -------------- | ----------------------- | ---- | --------------------------------------------------------------------- | ------------------------------------------------- |
-| `doc-trail.js` | `DocCrumb` / `DocPager` | 120  | 从导航数据派生面包屑 / 翻页，`el()` 建 DOM                            | ✅ 已删 → `doc-crumb.html` / `doc-pager.html`     |
-| `doc-toc.js`   | `DocToc`                | 212  | 扫标题建目录、扁平树找滚动容器（P34）、滚动高亮、点击程序化滚动、防抖 | ✅ 已删 → `doc-toc.html`（结构进模板，逻辑留 JS） |
+| 文件           | 类                      | 行数 | 职责                                                                  | 状态                                                        |
+| -------------- | ----------------------- | ---- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `doc-trail.js` | `DocCrumb` / `DocPager` | 120  | 从导航数据派生面包屑 / 翻页，`el()` 建 DOM                            | ✅ 已删 → `components/crumb.html` / `components/pager.html` |
+| `doc-toc.js`   | `DocToc`                | 212  | 扫标题建目录、扁平树找滚动容器（P34）、滚动高亮、点击程序化滚动、防抖 | ✅ 已删 → `components/toc.html`（结构进模板，逻辑留 JS）    |
 
 ---
 
@@ -75,10 +75,13 @@ docs/
 ├── state/         $.stanz store（懒创建）
 │   ├── route.js   ✅ 已落地：唯一的导航信号源（+ onRouteChange 订阅表）
 │   └── theme.js   ⏳ 可选（现在主题还在 layout.html + theme-boot.js 里，够用）
-├── doc-nav.html   组件模板（已迁完）
-├── doc-crumb.html / doc-pager.html                    ✅ 已落地
-├── doc-toc.html                                       ✅ 已落地（结构进模板，扫描/滚动/高亮留 JS）
-├── doc-palette.html / doc-cards.html                  ✅ 已落地（色板 / 卡片墙，原来的页面占位）
+├── components/    文档站自己的组件：**文件名 + `doc-` 前缀 = 标签名**（与 packages/ 的 mc- 同一条规则）
+│   ├── nav.html    ✅ doc-nav：左栏二级菜单
+│   ├── toc.html    ✅ doc-toc：右栏本页目录（结构进模板，扫描/滚动/高亮留 JS）
+│   ├── crumb.html  ✅ doc-crumb：页头面包屑
+│   ├── pager.html  ✅ doc-pager：页尾翻页
+│   ├── cards.html  ✅ doc-cards：组件总览的卡片墙
+│   └── palette.html ✅ doc-palette：设计令牌页的色板
 ├── doc-layout.html / layout.html   布局页（页面模块，本来就带 <template page>）
 ├── content.css    只留宿主级样式（每页 <link>）
 └── （docs/site.js 已删除：滚轮接力 + 换页复位并入外壳 docs/layout.html；
@@ -183,12 +186,12 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 | `customElements.define(tag, Class)`             | 外壳里一行 `<l-m src="./x.html">`                                    | 注册点决定升级时机（见 §4.1 注意）                                         |
 | `content.css` 里的标签选择器                    | 宿主级留在 `content.css`，**内部结构样式搬进组件 `<style>`**         | 组件模板必然带 shadow root（`content.css:597` 已记过）                     |
 
-### 4.1 切片一：`doc-trail.js` → `doc-crumb.html` + `doc-pager.html`
+### 4.1 切片一：`doc-trail.js` → `components/crumb.html` + `components/pager.html`
 
 一个文件两个 class → ofa 一个文件一个 `tag`，所以拆两个文件：
 
 ```html
-<!-- docs/doc-crumb.html（示意） -->
+<!-- docs/components/crumb.html（示意） -->
 <template component>
   <mc-breadcrumb>
     <o-fill :value="levels" fill-key="path">
@@ -224,25 +227,25 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
   1. **布尔属性绑定**：`attr:current="… ? '' : null"`（null 不写属性）—— doc-nav 的
      `attr:aria-current="$data.aria"` 已是同款写法（非当前项为 `null`），照抄。
   2. **注册点**：现在 `site.js:251` 调 `defineDocTrail()`；改成外壳 `docs/layout.html` 里
-     `<l-m src="./doc-crumb.html">`（与 `doc-nav` 同一处，`layout.html:217`）。
+     `<l-m src="./components/crumb.html">`（与 `doc-nav` 同一处，`layout.html:217`）。
      ⚠️ 页面模板里的 `<doc-crumb>` 可能比注册早一步挂上 —— 元素会延后升级，但
      **它自己渲染出来的东西这时还不存在**；doc-trail 注释里那条「挂载那一刻 hash 未必落」
      的教训要一起考虑（延后升级 = 更晚拿到数据，方向是安全的）。
   3. **样式搬迁**：`content.css:391-405` 的 `doc-pager` / `.doc-pager-prev` / `.doc-pager-next`
-     搬进 `doc-pager.html` 的 `<style>`（宿主 `:host` 上）。`doc-crumb`（`content.css:356`）
+     搬进 `components/pager.html` 的 `<style>`（宿主 `:host` 上）。`doc-crumb`（`content.css:356`）
      只剩一条 margin，留外面没问题。
 - **顺带删掉**：两个 class 里的 `hashchange` / `router-change` 监听与 `_route` 签名守卫
   （数据变化由 store 驱动，不需要自己比对路由）。
 
 **✅ 实际落地（阶段 1）**：`doc-trail.js` 已删，两个组件在 `layout.html` 用 `<l-m>` 注册，
-`content.css` 的翻页样式搬进了组件；顶栏（`layout.html`）、左栏（`doc-nav.html`）、
+`content.css` 的翻页样式搬进了组件；顶栏（`layout.html`）、左栏（`components/nav.html`）、
 `site.js` 三处也都改成订阅 `state/route.js`。**踩到一条新坑**：`doc-crumb` 一开始用
 `o-fill` 逐级铺 `mc-breadcrumb-item`，而 `mc-breadcrumb` 的分隔符走 `::slotted()` ——
 条目被 `o-fill` 包了一层，`::slotted()` 就匹配不到，分隔符**静默消失**
 （`o-fill` 是 `display: contents`，布局看着完全正常）。改成「两级直接写开 + 属性钩子控制整块显隐」
 才修好，并收成 [P38](./ofa-pitfalls.md) + 一条断言（`docCrumb.before` 必须是 `['none', '"/"']`）。
 
-### 4.2 切片二：`doc-toc.js` → `doc-toc.html`（半混合，风险最高）
+### 4.2 切片二：`doc-toc.js` → `components/toc.html`（半混合，风险最高）
 
 模板只接 DOM 构建那一段，硬逻辑原样留在模块里：
 
@@ -278,7 +281,7 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 
 默认 **B**（先不改行为）。阶段 0 已验：`o-fill` 在数据**局部变化**时复用节点（也支持整体换数组，
 只要 `fill-key` 相同），所以 A 在「不毁节点」这条上是成立的；阶段 2 可以试 A，
-但要在 `doc-toc.html` 注释里记下依据，并跑 04 / 09 两条套件。
+但要在 `components/toc.html` 注释里记下依据，并跑 04 / 09 两条套件。
 
 **h3 缩进**：现在是 `item.style.setProperty('--mc-menu-pad-x', …)`（`doc-toc.js:151`）。
 `:style.<自定义属性>` 经实测**不可用**（静默失效），所以走已验证的替代写法：
@@ -290,13 +293,13 @@ mc-menu-item[data-level='3'] {
 }
 ```
 
-（`doc-nav.html` 的 `a[data-status='planned']` 就是同款做法；组件 `<style>` 能命中 `o-fill`
+（`components/nav.html` 的 `a[data-status='planned']` 就是同款做法；组件 `<style>` 能命中 `o-fill`
 渲染出来的条目，因为它们在同一个 shadow 树里。）
 
 **⚠️ `this` 语义**：`contentRoot()` 里的 `this.getRootNode()` 迁过去会直接坏
 （ofa 实例上没有 `getRootNode`），要写成 `this.ele.getRootNode()`。这条是整份配方里最容易踩的。
 
-### 4.3 切片三：占位 → `doc-palette.html` / `doc-cards.html`（✅ 已落地）
+### 4.3 切片三：占位 → `components/palette.html` / `components/cards.html`（✅ 已落地）
 
 - 两个消费者：`docs/pages/components.html:34` 的 `[data-component-cards="all"]`、
   `packages/color/page.html:56` 的 `[data-palette]`，各换成一个组件标签。
@@ -323,18 +326,18 @@ mc-menu-item[data-level='3'] {
 
 ### 4.5 不改的
 
-`theme-boot.js`（首帧）、`site-map.js` / `routes.js` 的纯函数部分、`doc-nav.html`（已是模板）。
+`theme-boot.js`（首帧）、`site-map.js` / `routes.js` 的纯函数部分、`components/nav.html`（已是模板）。
 
 ---
 
 ## 5. 顺序：垂直切片（每片 = 一个组件 + 它消费的 store）
 
-| 阶段 | 内容                                                                 | 验收（套件范围）                             | 状态 |
-| ---- | -------------------------------------------------------------------- | -------------------------------------------- | ---- |
-| 0    | 验 §6 的四条假设（一次性探针，不入库）                               | 探针结果补进 `research/state.md`             | ✅   |
-| 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）   | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
-| 2    | `doc-toc.html` 模板化（高亮走 B：结构进模板、命令式切 aria-current） | `--site 04 09`                               | ✅   |
-| 3    | 两个占位组件 + `site.js` 瘦身（两个 store 都没抽，理由见 §3.5）；    |
+| 阶段 | 内容                                                                             | 验收（套件范围）                             | 状态 |
+| ---- | -------------------------------------------------------------------------------- | -------------------------------------------- | ---- |
+| 0    | 验 §6 的四条假设（一次性探针，不入库）                                           | 探针结果补进 `research/state.md`             | ✅   |
+| 1    | `state/route.js` + `components/crumb.html` / `components/pager.html`（一次改完） | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
+| 2    | `components/toc.html` 模板化（高亮走 B：结构进模板、命令式切 aria-current）      | `--site 04 09`                               | ✅   |
+| 3    | 两个占位组件 + `site.js` 瘦身（两个 store 都没抽，理由见 §3.5）；                |
 
        收尾把 site.js 并入外壳后删除 | `--site 01 03 06`                            | ✅   |
 
@@ -343,7 +346,7 @@ mc-menu-item[data-level='3'] {
 每片都能单独回滚（新文件删掉 + 还原 1–2 个文件），不要跨片混提交。
 
 **阶段 1 的结果**：`--site 01 02 04 05 08 09` 64/64 + Breadcrumb 套件 20/20。
-验收面扩大了一条（原计划只 02/04/08）：改动落在 `layout.html` / `doc-nav.html` / `site.js`
+验收面扩大了一条（原计划只 02/04/08）：改动落在 `layout.html` / `components/nav.html` / `site.js`
 三个「全站共用」文件上，外壳与文档页也在影响半径里。
 
 **阶段 3 / 4 的结果**（与 `dom.js` 删除同批）：`--site 01 02 04 05 06 08 09` + breadcrumb 全绿
@@ -399,7 +402,7 @@ mc-menu-item[data-level='3'] {
 
 - [x] `grep -rn "extends HTMLElement" docs/ packages/` **归零**，并做成守卫：
       `tests/site/11-no-class-components.mjs`（node-only，违反即红）。
-- [x] `content.css` 里不再有组件内部结构的样式（翻页那几条已搬进 `doc-pager.html`）。
+- [x] `content.css` 里不再有组件内部结构的样式（翻页那几条已搬进 `components/pager.html`）。
 - [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通（改 `site-map.js` 时必查）。
 - [ ] 每阶段绑定套件绿；收尾全量一次绿（阶段 1 已绿；2/3/4 未做）。
 - [x] **`docs/dom.js` 已删除**：三个使用者分别改成 模板（layout 顶栏）/ 数据（doc-toc 高亮）/ 组件（色板与卡片）。

@@ -17,7 +17,7 @@
      这么写还顺带免掉「锚点后渲染 → 高亮要补一次」的时序问题。
   ⚠️ **标题不是一开始就齐的**：子页面先挂上、演示区与组件里的内容再各补一拍。
      所以挂 MutationObserver，标题签名变了才重建目录（签名没变不碰 DOM，
-     免得把正在点的节点换掉 —— 同 doc-nav.html 那条「不重建 DOM」的教训）。
+     免得把正在点的节点换掉 —— 同 nav.html 那条「不重建 DOM」的教训）。
   ⚠️ **此元素自带 shadow root 了**：proto 里的 `this` 是 ofa 实例，所有元素 API 走 `this.ele`
      （实测，见 agent/research/state.md §6）——`contentRoot()` / `scroller()` 都踩在这条上。
 -->

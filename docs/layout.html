@@ -254,21 +254,21 @@
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
-  <!-- 三栏里的两块：左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染，
-       现在都是 ofa 组件模板（doc-toc 扫页面自己的 h2/h3，见 docs/doc-toc.html） -->
-  <l-m src="./doc-nav.html"></l-m>
-  <l-m src="./doc-toc.html"></l-m>
+  <!-- 文档站自己的组件都在 docs/components/ 下，文件名带 doc- 前缀就是标签名（nav.html → doc-nav）。
+       三栏里的两块：左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染 -->
+  <l-m src="./components/nav.html"></l-m>
+  <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
-  <!-- 组件页头部的面包屑 / 页尾的翻页：本身也是 ofa 组件模板（docs/doc-crumb.html / doc-pager.html），
-       都从导航数据派生、订阅 docs/state/route.js；页面里只写 <doc-crumb> / <doc-pager> -->
+  <!-- 组件页头部的面包屑 / 页尾的翻页：都从导航数据派生、订阅 docs/state/route.js；
+       页面里只写 <doc-crumb> / <doc-pager> -->
   <l-m src="../packages/breadcrumb/breadcrumb.html"></l-m>
   <l-m src="../packages/breadcrumb/breadcrumb-item.html"></l-m>
-  <l-m src="./doc-crumb.html"></l-m>
-  <l-m src="./doc-pager.html"></l-m>
-  <!-- 两个「页面占位」也是组件（原来是 docs/site.js 里手搓 DOM）：组件总览的卡片墙、设计令牌的色板 -->
-  <l-m src="./doc-cards.html"></l-m>
-  <l-m src="./doc-palette.html"></l-m>
+  <l-m src="./components/crumb.html"></l-m>
+  <l-m src="./components/pager.html"></l-m>
+  <!-- 两个「页面占位」也是组件（原来在 layout 的脚本里手搓 DOM）：组件总览的卡片墙、设计令牌的色板 -->
+  <l-m src="./components/cards.html"></l-m>
+  <l-m src="./components/palette.html"></l-m>
 
   <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->
   <div class="doc-shell">

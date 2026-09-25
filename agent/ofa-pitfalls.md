@@ -204,7 +204,7 @@ ofa 的数据层/实例占了 `entries` 这个名字，声明它会让整棵组�
 
 > ⚠️ **把运行时建 DOM 改成模板时最容易踩这条**：`el('code', { textContent: x })` 没问题
 > （赋值走的是 DOM API），改成 `<code>{{x}}</code>` 就变成页面上显示字面量 `{{x}}` ——
-> 不报错、只是"没渲染"。Mosaic 的 `docs/doc-cards.html` 就这么中过一次
+> 不报错、只是"没渲染"。Mosaic 的 `docs/components/cards.html` 就这么中过一次
 > （`<code class="doc-comp-card-tag">{{$data.tagName}}</code>`，24 张卡片全显示字面量）。
 > 改法：换成 `<span class="…">`，等宽字体在组件 `<style>` 里补 `font-family: var(--mc-font-mono)`。
 
@@ -440,7 +440,7 @@ o-app → …` —— **直接跳过了布局页的 shadow root**，而当时的
 el = el.assignedSlot ?? el.parentNode ?? el.getRootNode()?.host ?? null;
 ```
 
-`docs/doc-toc.html` 的 `scroller()` 与 `packages/code/code.html` 的 `scrollableAncestor()`
+`docs/components/toc.html` 的 `scroller()` 与 `packages/code/code.html` 的 `scrollableAncestor()`
 都是按这条改的；同一条推论也适用于「找最近的宿主 / 找最近的容器」这类往上爬的代码。
 
 **同一族的另一条**：`position: sticky` 的滑动区间 = **它所在 grid 行的高度**。
@@ -477,6 +477,37 @@ P26 于是被触发，页面空白。
 
 冒烟测试里有一条 `--inject` 服务器专门跑这条路径（照抄 live-server 的注入规则），
 改模板结构或注释时如果破坏了它，测试会直接变红。
+
+### P40 · 组件文件**不写 `tag`** 时按文件名推断 —— 改名 / 挪目录就换标签或直接注册失败
+
+```html
+<!-- ❌ docs/components/nav.html：没写 tag，ofa 按文件名推断出 'nav' -->
+<template component>
+  <script>
+    export default () => ({ data: {} });
+  </script>
+</template>
+<!--
+  控制台：Error loading component module, wrong module address: …/components/nav.html
+  真正的 cause（只有监听 unhandledrejection 才看得到）：
+          Error in registering the 'nav' component
+-->
+
+<!-- ✅ 显式写 tag：与文件名、目录名彻底解耦 -->
+export default () => ({ tag: 'doc-nav', data: {} });
+```
+
+**为什么难查**：`nav` 不是合法的自定义元素名（自定义元素名必须带连字符），注册当场失败；
+而 ofa 的组件加载管线会**把内层错误再包一层** —— `<l-m>` 拿到含 `<template component>` 的
+文件后，会抽出模板、按 `${模板} .mjs --real:${url}` 合成模块再 import，内层错误丢在那一步，
+外层只留一句 `load_comp_module: wrong module address`，看起来像 URL 写错了。
+
+**写法**：每个组件都**显式写 `tag`**，别依赖文件名推断。Mosaic 的组件本来都写了；
+`docs/doc-nav.html` 是唯一的例外（文件名恰好等于标签，歪打正着），
+2026-09 把它挪进 `docs/components/` 并改名 `nav.html` 时立刻炸了 —— 六个组件只坏了它一个。
+
+**怎么定位**：组件不渲染、控制台只给「wrong module address」时，先
+`customElements.get('标签名')` 看注册上没上，再监听 `unhandledrejection` 读 `reason.cause`。
 
 ---
 
@@ -540,7 +571,7 @@ Mosaic 里这件事现在收在一处：`docs/state/route.js` 同时挂 `hashcha
 
 > 顺带一条同类坑：`parentNode` / `getRootNode().host` 走的是**节点树**，而滚动与投影按
 > **扁平树**。现在两栏浮动 + 窗口滚（见 `docs/content.css` 的分栏注释），
-> 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/doc-toc.html` 的 `scroller()` 与
+> 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/components/toc.html` 的 `scroller()` 与
 > `packages/code/code.html` 的 `scrollableAncestor()` 仍然按扁平树走 —— 页面将来若重新引入
 > 内部滚动区，只有扁平树能找到它。
 

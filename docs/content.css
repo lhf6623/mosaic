@@ -213,7 +213,7 @@ mc-code {
 }
 
 /* ---------- 色板与组件卡片 ----------
- * 两块都是组件了（docs/doc-palette.html / docs/doc-cards.html），自带 shadow root ——
+ * 两块都是组件了（docs/components/palette.html / docs/components/cards.html），自带 shadow root ——
  * 色板与卡片样式都住在各自的 <style> 里，这里只留这个指路牌，别再往回加。
  * 页面里写的是 <doc-palette> / <doc-cards> 标签。 */
 
@@ -226,7 +226,7 @@ mc-code {
 
 /* ---------- 组件页头部与翻页 ----------
  * 面包屑本身是项目自己的 <mc-breadcrumb>（packages/breadcrumb/），<doc-crumb> 只负责
- * 从导航数据里派生「哪几级 + 带部署前缀的链接」（docs/doc-crumb.html，订阅 docs/state/route.js）——
+ * 从导航数据里派生「哪几级 + 带部署前缀的链接」（docs/components/crumb.html，订阅 docs/state/route.js）——
  * 它与 <doc-pager> 都是 ofa 组件模板、自带 shadow root，所以这里只留宿主上的间距 */
 
 doc-crumb {
@@ -264,7 +264,7 @@ doc-crumb {
   color: rgb(var(--mc-color-success));
 }
 
-/* 翻页（<doc-pager>）的样式搬进了 docs/doc-pager.html 的 <style>：
+/* 翻页（<doc-pager>）的样式搬进了 docs/components/pager.html 的 <style>：
    它现在是 ofa 组件模板、自带 shadow root，这里的作用域够不到里面的链接
    （`.doc-body a` 的链接色同理）。这一段只留个指路牌，别再往回加。 */
 
@@ -435,7 +435,7 @@ doc-nav {
   border-right: 1px solid rgb(var(--mc-color-border));
 }
 
-/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/doc-toc.html） */
+/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html） */
 doc-toc {
   right: 0;
   width: 14rem;
@@ -460,7 +460,7 @@ doc-toc {
 }
 
 /* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
-   这里只能作用到宿主标签本身；那些规则写在 docs/doc-nav.html 的 <style> 里。 */
+   这里只能作用到宿主标签本身；那些规则写在 docs/components/nav.html 的 <style> 里。 */
 
 /* ---------- 窄屏：先收右栏，再退化成「菜单在上、正文在下」（必须排在基础规则之后） ---------- */
 

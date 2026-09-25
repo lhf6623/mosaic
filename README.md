@@ -77,7 +77,7 @@ mc-button::part(base) {
 | [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南              |
 | [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表     |
 | [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单            |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。39 条静默失效的坑，附现象、原因、正确写法                               |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。40 条静默失效的坑，附现象、原因、正确写法                               |
 | [文档站重构设计](./agent/docs-refactor.md)          | 已完成：class 组件改 ofa 组件模板 + `$.stanz` 抽路由状态 + `dom.js` 删除（含阶段 0 实测） |
 | [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                                |
 | [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                   |
@@ -92,7 +92,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js doc-nav.html doc-crumb.html doc-pager.html doc-toc.html doc-cards.html doc-palette.html shell.css
+docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js components/（nav / toc / crumb / pager / cards / palette.html，标签名 = doc- + 文件名）shell.css
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）

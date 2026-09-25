@@ -60,9 +60,9 @@
   </mc-menu>
 
   <script>
-    import { locate, menuOf, hasPage, SPEC_URL } from './site-map.js';
-    import { hashOf } from './routes.js';
-    import { onRouteChange, routeState } from './state/route.js';
+    import { locate, menuOf, hasPage, SPEC_URL } from '../site-map.js';
+    import { hashOf } from '../routes.js';
+    import { onRouteChange, routeState } from '../state/route.js';
 
     /**
      * 一个节点 → 模板要的字段。展示策略都收在这里：
@@ -102,6 +102,11 @@
       );
 
     export default () => ({
+      /* ⚠️ 一定要显式写 tag：不写时 ofa 用**文件名**推断标签名（老版本这里叫 doc-nav.html
+         所以能歪打正着），文件一改名/挪目录就会推断成别的名字而注册失败 ——
+         外层还只报 "wrong module address"，极难反查（见 ofa-pitfalls 的 P40） */
+      tag: 'doc-nav',
+
       data: { rows: [] },
 
       ready() {
