@@ -2,7 +2,7 @@
  * 站点 · 加载与外壳（第 1–7 节）：无 404、ofa 注册组件、D3 样式注入、工具类、令牌继承、@layer、主题切换
  */
 
-export default async function run({ page, visit, check, problems }) {
+export default async function run({ page, visit, check, problems, routerReady }) {
 /* ------------------------------------------------------------------ *
  * 1. 首页加载：无 404、无运行时错误
  * ------------------------------------------------------------------ */
@@ -11,10 +11,15 @@ await visit(page, '/index.html');
 check('首页加载无 404 / 无运行时报错', problems.length === 0, problems.join('\n        '));
 
 /* 2/3/7 节要一个真正加载了 Mosaic 组件的页面：首页是刻意做的海报、不引组件，所以切到组件文档页跑 */
+await routerReady();
 await page.evaluate(() => {
   location.hash = '#/packages/button/page.html';
 });
-await page.waitForFunction(() => !!window.__deep?.('mc-button'), { timeout: 15000 }).catch(() => {});
+/* 等的是**升级后**的实例：元素先出现、shadow root 晚一拍 —— 并行跑时这个窗口会拉大，
+   只等元素存在就会偶发地在升级前断言（实测：4 并行时这条会红） */
+await page
+  .waitForFunction(() => !!window.__deep('mc-button')?.shadowRoot, { timeout: 15000 })
+  .catch(() => {});
 
 /* ------------------------------------------------------------------ *
  * 2. ofa.js 注册组件，<l-m> 把组件拉起来
@@ -141,8 +146,17 @@ check(
 /* ------------------------------------------------------------------ *
  * 7. 【关键】主题切换能穿过 shadow 边界（曾坏过：`:root, :host` 让 shadow 内的 :host 重赋亮色值）
  * ------------------------------------------------------------------ */
-const buttonBg = () =>
-  page.evaluate(() => getComputedStyle(window.__deep('mc-button')).backgroundColor);
+/* 读颜色前先等实例在：并行跑时页面挂载更慢，不等就会读到 null，
+   而 getComputedStyle(null) 会直接把整个套件抛掉（实测 4 并行时红在这条） */
+const buttonBg = async () => {
+  await page
+    .waitForFunction(() => !!window.__deep('mc-button')?.shadowRoot, { timeout: 15000 })
+    .catch(() => {});
+  return page.evaluate(() => {
+    const button = window.__deep('mc-button');
+    return button ? getComputedStyle(button).backgroundColor : null;
+  });
+};
 
 const lightBg = await buttonBg();
 await page.evaluate(() => {

@@ -98,7 +98,7 @@ packages/
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
 docs/                 站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js theme-boot.js state/route.js snippets/ components/（nav / toc / crumb / pager / cards / palette.html，标签名 = doc- + 文件名）shell.css
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
-tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
+tests/                smoke.mjs 入口（并行跑 + --changed / --record）、lib/harness.mjs、lib/suites.mjs（套件清单）、select.mjs（选测中间层）、suite-map.json（生成：套件碰过的文件）、site/*.mjs
 agent/                规范文档（见上表）
 ```
 
@@ -111,9 +111,11 @@ pnpm install
 pnpm tokens        # 生成令牌并自检对比度（不达标退出 1）
 pnpm build         # = tokens && build:css → packages/boot/mosaic.css
 pnpm dev           # 本地服务器：http://localhost:8642（零依赖，强制禁缓存）
-pnpm test          # 真浏览器冒烟测试（驱动本机 Chrome）：11 个站点套件 + 每个已实现组件的套件
+pnpm test          # 真浏览器冒烟测试（驱动本机 Chrome）：12 个站点套件 + 每个已实现组件的套件，默认并行 4
+pnpm test:changed  # 只跑工作区改动命中的套件（选测中间层；指定基线用 node tests/smoke.mjs --changed main）
 pnpm test <slug>   # 只跑某个组件的套件（如 pnpm test menu）
 pnpm test:site     # 只跑站点套件；pnpm test:site nav 只跑名字/标签里匹配 nav 的那几条
+pnpm test:record   # 跑全量并重录依赖地图（加了 / 删了 / 挪了套件，或套件开始加载新文件时跑）
 pnpm typecheck     # tsc --noEmit（只检查 uno.config.ts）
 pnpm check:drift   # 重新生成后比对 git diff，防止产物与生成器漂移
 pnpm format        # prettier 格式化（pnpm format:check 只检查）
@@ -123,8 +125,17 @@ pnpm format        # prettier 格式化（pnpm format:check 只检查）
 `packages/<slug>/test/`（数据里 READY 的都该有一个）。`pnpm format` 不碰测试代码、
 生成产物、`packages/*/demos/*.html`（逐字展示的例子）与 `agent/research/`；文档页里内联的
 `<mc-code>` 要加 `<!-- prettier-ignore -->`，详见 [.prettierignore](./.prettierignore)。
-**测试只跑命中的那部分**（`pnpm test <slug>` / `pnpm test:site <关键词>`），全量 `pnpm test`
-留到收尾验收跑一次 —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」。
+
+**选测中间层**：`pnpm test:changed` 拿 git 改动去查 `tests/suite-map.json` —— 那是
+`pnpm test:record` 录下来的「每个套件实际请求过哪些仓库文件」，所以「改 `docs/layout.html`
+会影响谁」由数据回答，不靠人维护清单。地图没覆盖到的部分走兜底策略：测试基座 / 构建配置 /
+文档站外壳 → 全部，组件目录下的新文件 → 该组件 + 碰过这个目录的套件，纯文档 → 不跑，
+**未知路径 → 保守全量**；地图缺失或套件不在图里也一律跑该套件（宁可多跑不可漏跑）。
+一条命令看它怎么判：`node tests/select.mjs packages/tag/tag.html`。
+
+**全量为什么快**：一个套件 = 一个独立 page，都挂在同一个 browser context 上（CDN 只下一次），
+先预热一次公共资产再并行开工，所以墙上时间 ≈ 最慢那条套件；`--jobs N` 可调并行度，
+`--jobs 1` 退回串行排查时序问题。全量跑完会打印每个套件的用时，谁在拖后腿一眼可见。
 
 当前实测产物：**34.8 KB raw / 7.7 KB gzip**（其中令牌 14.0 KB raw，370 个工具类）。
 
