@@ -127,17 +127,17 @@ export default async function run({ check, newPage }) {
     const crumbBack = await h1();
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });
     await settle();
-    // 面包屑是项目自己的 mc-breadcrumb 渲染的（<doc-crumb> 只负责派生），选择器顺带守住这条
+    // 面包屑是项目自己的 mc-breadcrumb 渲染的（<doc-crumb> 只负责派生），选择器顺带守住这条。
+    // ⚠️ <doc-crumb> 现在是 ofa 组件模板、自带 shadow root：它里面的 mc-breadcrumb 要经 shadowRoot 取
     await p
       .waitForFunction(
-        () => !!window.__deep('doc-crumb')?.querySelector('mc-breadcrumb')?.shadowRoot,
+        () => !!window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb')?.shadowRoot,
         undefined,
         { timeout: 5000 },
       )
       .catch(() => {});
     const crumbHost = await p.evaluate(() => {
-      const crumb = window.__deep('doc-crumb');
-      const bar = crumb?.querySelector('mc-breadcrumb');
+      const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
       return {
         component: !!bar,
         nav: bar?.shadowRoot?.querySelector('nav')?.tagName ?? null,
@@ -145,7 +145,7 @@ export default async function run({ check, newPage }) {
         current: bar?.querySelector('mc-breadcrumb-item[current]')?.textContent.trim() ?? null,
       };
     });
-    await click('doc-crumb mc-breadcrumb a', '组件');
+    await click('mc-breadcrumb a', '组件');
     await settle();
     const crumb = await h1();
     check(

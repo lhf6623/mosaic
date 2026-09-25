@@ -2,9 +2,9 @@
 
 > **目标**：`docs/` 里不再有手写 `class Xxx extends HTMLElement`，运行时状态收进 store 模块。
 > **范围**：只动文档站（`docs/` + 两个引用占位的文档页）；`packages/` 组件的对外 API 不变。
-> **状态**：设计稿，**未开工**。实测依据见 [`research/state.md`](./research/state.md)，
-> 相关坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md) 的 P35–P37。
-> 标记：**【实测】** = 本机跑过；**【推论】** = 还没验，**阶段 0 必须先验**。
+> **状态**：**阶段 0、阶段 1 已落地**（见 §5）。实测依据见 [`research/state.md`](./research/state.md)，
+> 相关坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md) 的 P35–P38。
+> 标记：**【实测】** = 本机跑过；**【推论】** = 还没验（阶段 0 已把四条都验了，结论在 §6）。
 
 ---
 
@@ -19,10 +19,13 @@
    `doc-toc.js` 一个（→ `doc-toc.html`，**半混合**：模板管结构，扫描/滚动/滚动高亮仍靠 JS）。
 5. **先例已经在了**：`docs/doc-nav.html` 就是从手写元素改过来的，它头部注释记了当时的收益
    （「以前得手写 `_append` 递归、`_link` 建 DOM、`syncActive` 切高亮……现在结构与数据同形」）。
-6. **四条假设挡在开工前**（§6）：store 引用怎么挂、`o-fill` 局部更新会不会换节点、
-   模板能否表达布尔属性与自定义属性缩进、proto 里的 `this` 不是元素。
+6. **四条假设已验**（§6）：store 引用怎么挂、`o-fill` 局部更新不换节点、
+   模板能表达布尔属性但**不能**用 `:style.<自定义属性>`、proto 里的 `this` 不是元素。
 7. 迁移必然带来一个副作用：**组件模板一定带 shadow root**，`content.css` 只能作用到宿主标签，
    内部结构样式要搬进组件的 `<style>`（doc-nav 踩过，`content.css:597` 留了注释）。
+8. **另一条实测出来的硬约束**：`o-fill` / `o-if` 的内容在它们自己的 light DOM 里，
+   容器的 `::slotted()` 够不到 —— 组件内部用控制流渲染条目时，别指望容器画分隔符 / 位置样式
+   （阶段 1 的 `doc-crumb` 就因此丢过分隔符，见 [P38](./ofa-pitfalls.md)）。
 
 ---
 
@@ -39,25 +42,25 @@
 | 右栏目录 active           | `doc-toc.js`（滚动位置算）                     | 只有它自己                                                                                        | ❌ 纯局部状态           |
 | 占位渲染                  | `site.js:94-213`                               | 组件总览卡片 / 色板 / ~~计数~~                                                                    | ➡️ 改成组件（§4.3）     |
 
-### 1.2 「跟着路由走」现在挂了 5 处
+### 1.2 「跟着路由走」原来挂了 5 处（**阶段 1 已收口**）
 
-| 位置               | 怎么接                         | 干什么                |
-| ------------------ | ------------------------------ | --------------------- |
-| `layout.html:32`   | ofa 生命周期 `routerChange()`  | 顶栏高亮              |
-| `doc-nav.html:110` | `hashchange` + `router-change` | 左栏行重算            |
-| `doc-trail.js:33`  | 同上（`DocCrumb`）             | 面包屑                |
-| `doc-trail.js:72`  | 同上（`DocPager`）             | 翻页                  |
-| `site.js:261`      | 同上                           | 换页复位 + 占位重渲染 |
+| 位置（改造前）     | 怎么接                         | 干什么                | 现在                           |
+| ------------------ | ------------------------------ | --------------------- | ------------------------------ |
+| `layout.html:32`   | ofa 生命周期 `routerChange()`  | 顶栏高亮              | 订阅 store（钩子与轮询都删了） |
+| `doc-nav.html:110` | `hashchange` + `router-change` | 左栏行重算            | 订阅 store                     |
+| `doc-trail.js:33`  | 同上（`DocCrumb`）             | 面包屑                | 文件删除 → `doc-crumb.html`    |
+| `doc-trail.js:72`  | 同上（`DocPager`）             | 翻页                  | 文件删除 → `doc-pager.html`    |
+| `site.js:261`      | 同上                           | 换页复位 + 占位重渲染 | 订阅 store                     |
 
-→ 8 个监听 + 1 个钩子，每处都要单独记得 P28（`olink` 不触发 `hashchange`）。
-这是 `route` store 最实在的收益。
+→ 原来 8 个监听 + 1 个钩子，现在**只剩 `docs/state/route.js` 里一处**
+（`hashchange` + `router-change`），P28 只需记在那一个文件里。
 
-### 1.3 还在手写 class 的组件
+### 1.3 还在手写 class 的组件（**阶段 1 已迁完两个**）
 
-| 文件           | 类                      | 行数 | 职责                                                                  | 迁移动机                           |
-| -------------- | ----------------------- | ---- | --------------------------------------------------------------------- | ---------------------------------- |
-| `doc-trail.js` | `DocCrumb` / `DocPager` | 120  | 从导航数据派生面包屑 / 翻页，`el()` 建 DOM                            | 高：纯派生视图，无 DOM 依赖逻辑    |
-| `doc-toc.js`   | `DocToc`                | 212  | 扫标题建目录、扁平树找滚动容器（P34）、滚动高亮、点击程序化滚动、防抖 | 中：~40% 是 DOM 构建，60% 是硬逻辑 |
+| 文件           | 类                      | 行数 | 职责                                                                  | 状态                                          |
+| -------------- | ----------------------- | ---- | --------------------------------------------------------------------- | --------------------------------------------- |
+| `doc-trail.js` | `DocCrumb` / `DocPager` | 120  | 从导航数据派生面包屑 / 翻页，`el()` 建 DOM                            | ✅ 已删 → `doc-crumb.html` / `doc-pager.html` |
+| `doc-toc.js`   | `DocToc`                | 212  | 扫标题建目录、扁平树找滚动容器（P34）、滚动高亮、点击程序化滚动、防抖 | ⏳ 阶段 2                                     |
 
 ---
 
@@ -69,14 +72,15 @@ docs/
 ├── routes.js      纯转换（hashOf / repoPathOf / toRepoPath）
 ├── theme-boot.js  首帧同步脚本（不动，P25）
 ├── state/         $.stanz store（懒创建）
-│   ├── route.js
-│   ├── theme.js
-│   └── palette.js
+│   ├── route.js   ✅ 已落地：唯一的导航信号源（+ onRouteChange 订阅表）
+│   ├── theme.js   ⏳ 阶段 3
+│   └── palette.js ⏳ 阶段 3
 ├── doc-nav.html   组件模板（已迁完）
-├── doc-crumb.html / doc-pager.html / doc-toc.html / doc-palette.html / doc-cards.html   ← 本次新增
+├── doc-crumb.html / doc-pager.html                    ✅ 已落地
+├── doc-toc.html / doc-palette.html / doc-cards.html   ⏳ 阶段 2 / 3
 ├── doc-layout.html / layout.html   布局页（页面模块，本来就带 <template page>）
 ├── content.css    只留宿主级样式（每页 <link>）
-└── site.js        瘦成「滚轮接力 + 引导」，或彻底消失
+└── site.js        瘦成「滚轮接力 + 引导」，或彻底消失（阶段 3 再动）
 ```
 
 三条边界：
@@ -199,6 +203,14 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 - **顺带删掉**：两个 class 里的 `hashchange` / `router-change` 监听与 `_route` 签名守卫
   （数据变化由 store 驱动，不需要自己比对路由）。
 
+**✅ 实际落地（阶段 1）**：`doc-trail.js` 已删，两个组件在 `layout.html` 用 `<l-m>` 注册，
+`content.css` 的翻页样式搬进了组件；顶栏（`layout.html`）、左栏（`doc-nav.html`）、
+`site.js` 三处也都改成订阅 `state/route.js`。**踩到一条新坑**：`doc-crumb` 一开始用
+`o-fill` 逐级铺 `mc-breadcrumb-item`，而 `mc-breadcrumb` 的分隔符走 `::slotted()` ——
+条目被 `o-fill` 包了一层，`::slotted()` 就匹配不到，分隔符**静默消失**
+（`o-fill` 是 `display: contents`，布局看着完全正常）。改成「两级直接写开 + 属性钩子控制整块显隐」
+才修好，并收成 [P38](./ofa-pitfalls.md) + 一条断言（`docCrumb.before` 必须是 `['none', '"/"']`）。
+
 ### 4.2 切片二：`doc-toc.js` → `doc-toc.html`（半混合，风险最高）
 
 模板只接 DOM 构建那一段，硬逻辑原样留在模块里：
@@ -233,11 +245,22 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 | A 纯声明 | 改 `entries[i].aria`，靠 `o-fill` 就地更新一个属性                      | 滚动时高频改数据；若 `o-fill` 换节点，点击会落在不同节点上（04 套件防的就是这个） |
 | B 混合   | 结构交给模板，`syncActive()` 仍用 `setCurrent()` 直接切锚点属性（现状） | 保留 `dom.js` 依赖，但零行为变化                                                  |
 
-默认 **B**（先不改行为），阶段 0 验完 A 可行再切 A —— 并在 `doc-toc.html` 注释里记原因。
+默认 **B**（先不改行为）。阶段 0 已验：`o-fill` 在数据**局部变化**时复用节点（也支持整体换数组，
+只要 `fill-key` 相同），所以 A 在「不毁节点」这条上是成立的；阶段 2 可以试 A，
+但要在 `doc-toc.html` 注释里记下依据，并跑 04 / 09 两条套件。
 
 **h3 缩进**：现在是 `item.style.setProperty('--mc-menu-pad-x', …)`（`doc-toc.js:151`）。
-模板里想表达成 `:style.--mc-menu-pad-x="$data.level > 2 ? '…' : null"` —— 依赖
-「`:style.<自定义属性>` 支持 + null 回退」，**阶段 0 要验**；不行就保留命令式。
+`:style.<自定义属性>` 经实测**不可用**（静默失效），所以走已验证的替代写法：
+模板里给条目挂数据属性（`attr:data-level="$data.level"`），组件自己的 `<style>` 发自定义属性 ——
+
+```css
+mc-menu-item[data-level='3'] {
+  --mc-menu-pad-x: calc(var(--mc-space-3) * 2);
+}
+```
+
+（`doc-nav.html` 的 `a[data-status='planned']` 就是同款做法；组件 `<style>` 能命中 `o-fill`
+渲染出来的条目，因为它们在同一个 shadow 树里。）
 
 **⚠️ `this` 语义**：`contentRoot()` 里的 `this.getRootNode()` 迁过去会直接坏
 （ofa 实例上没有 `getRootNode`），要写成 `this.ele.getRootNode()`。这条是整份配方里最容易踩的。
@@ -265,60 +288,70 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 
 ## 5. 顺序：垂直切片（每片 = 一个组件 + 它消费的 store）
 
-| 阶段 | 内容                                                                  | 验收（套件范围）                        |
-| ---- | --------------------------------------------------------------------- | --------------------------------------- |
-| 0    | 验 §6 的四条假设（一次性探针，不入库）                                | 探针结果补进 `research/state.md`        |
-| 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）    | `--site 02 04 08` + Breadcrumb 组件套件 |
-| 2    | `doc-toc.html` 模板化（高亮按阶段 0 结论走 A / B）                    | `--site 04 09`                          |
-| 3    | `state/theme.js` + `state/palette.js` + 两个占位组件 + `site.js` 瘦身 | `--site 01 03 06`                       |
-| 4    | `layout.html` 顶栏（可选）+ 清理注释 / README / `dom.js` 去留         | 收尾**全量一次**                        |
+| 阶段 | 内容                                                                  | 验收（套件范围）                             | 状态 |
+| ---- | --------------------------------------------------------------------- | -------------------------------------------- | ---- |
+| 0    | 验 §6 的四条假设（一次性探针，不入库）                                | 探针结果补进 `research/state.md`             | ✅   |
+| 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）    | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
+| 2    | `doc-toc.html` 模板化（高亮按阶段 0 结论走 A / B）                    | `--site 04 09`                               | ⏳   |
+| 3    | `state/theme.js` + `state/palette.js` + 两个占位组件 + `site.js` 瘦身 | `--site 01 03 06`                            | ⏳   |
+| 4    | `layout.html` 顶栏（可选）+ 清理注释 / README / `dom.js` 去留         | 收尾**全量一次**                             | ⏳   |
 
 每片都能单独回滚（新文件删掉 + 还原 1–2 个文件），不要跨片混提交。
 
+**阶段 1 的结果**：`--site 01 02 04 05 08 09` 64/64 + Breadcrumb 套件 20/20。
+验收面扩大了一条（原计划只 02/04/08）：改动落在 `layout.html` / `doc-nav.html` / `site.js`
+三个「全站共用」文件上，外壳与文档页也在影响半径里。
+
 ---
 
-## 6. 阶段 0：开工前必须验的四条
+## 6. 阶段 0：四条假设的实测结论（**已验**）
 
-| #   | 假设                                                                                    | 怎么验                                                               | 它定了什么                                         |
-| --- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| 1   | ofa `data` 里挂 **store 引用**能跟随，挂原始值快照不能                                  | 两个组件：`this.s = store` vs `this.n = store.count`，从外部改 store | 所有消费方的写法（`{{nav.path}}` 还是手动同步）    |
-| 2   | `o-fill` 数据**局部变化**是否复用节点（不换节点）                                       | 列表 10 项，改中间一项的一个字段，比对节点引用（`===`）              | doc-toc 高亮走 A 还是 B；顶栏能否模板化            |
-| 3   | 模板能表达 `attr:布尔`（`''` 写 / `null` 不写）与 `:style.<自定义属性>`（含 null 回退） | 一个组件里三种绑定各来一遍，读 `hasAttribute` / `getComputedStyle`   | doc-toc 的 h3 缩进与 mc-breadcrumb-item 的 current |
-| 4   | proto 里 `this` 是 ofa 实例，元素 API 必须走 `this.ele`                                 | 在 proto 方法里读 `this.getRootNode` vs `this.ele.getRootNode`       | §4.0 配方的正确性（doc-toc 的 `contentRoot()`）    |
+| #   | 假设                                                    | 结论                                                                                                |
+| --- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 1   | ofa `data` 里挂 **store 引用**能跟随，挂原始值快照不能  | ✅ 成立：引用随 store 变，快照停在原值 → 消费方**挂引用**，不要拷贝原始值                           |
+| 2   | `o-fill` 数据**局部变化**是否复用节点                   | ✅ **不换节点**（整体换数组、`fill-key` 相同也复用）→ 滚动高亮可以走声明式（A）                     |
+| 3   | 模板能表达 `attr:布尔` 与 `:style.<自定义属性>`         | ⚠️ 布尔 ✅（`''` 写 / `null` 不写）；**`:style.<自定义属性>` ❌ 静默失效**；标准属性只认 kebab-case |
+| 4   | proto 里 `this` 是 ofa 实例，元素 API 必须走 `this.ele` | ✅ 成立（`this.getRootNode` 是 `undefined`）→ 配方里所有元素 API 显式走 `this.ele`                  |
 
-> 四条都是**【推论】**，验完逐条改成【实测】写进 `research/state.md` —— 与仓库「先实测再下结论」的惯例一致。
+> 完整记录（含复现步骤）见 [`research/state.md` §6](./research/state.md)。
+> 另外顺带验出 [P37](./ofa-pitfalls.md)（初值形状 → 首帧报错）与
+> [P38](./ofa-pitfalls.md)（控制流元素挡住 `::slotted()`，阶段 1 真的踩了）。
 
 ---
 
 ## 7. 风险与对策
 
-| 风险                                  | 后果                                                    | 对策                                                                    |
-| ------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Node 套件 import 到带 `$` 的模块      | `smoke.mjs` / `10-nav-data.mjs` 起不来                  | 静态数据保持纯模块；store 懒创建                                        |
-| `attached()` 挂载时 data 初值形状不对 | 首帧 `Error evaluating text expression`（P37，半静默）  | `data: { levels: [] }` 这类同形状初值；模板只在有值时读                 |
-| 组件模板带 shadow root                | `content.css` 够不到内部结构，样式静默失效              | 内部样式搬进组件 `<style>`；宿主级才留 `content.css`（doc-nav 先例）    |
-| `o-fill` 换节点                       | 真人点击 mousedown/click 落到两个节点（「要点好几次」） | 一定给 `fill-key`；`--site 04` 是护栏；阶段 0 第 2 条先验               |
-| 注册点从 `site.js` 挪到外壳 `<l-m>`   | 升级时机变化 → 首屏短暂空白 / 拿到旧路由                | 保持「数据从 store 来」；必要时保留「没数据就不渲染」的守卫             |
-| 滚动高亮高频写数据                    | 目录项频繁重建、点击丢失                                | 默认走 B（命令式切 `aria-current`），A 需阶段 0 证明节点复用            |
-| 切页重建组件导致监听重复挂            | 重复渲染 / 泄漏                                         | `startRouteTracking()` 幂等；组件侧 `watch` 退订、`detached()` 清理     |
-| 首帧主题被 store 拖成异步             | 闪色（P25）                                             | `theme-boot.js` 不动                                                    |
-| `$.stanz({})` 是数组内核（P36）       | `Array.isArray(store)` 误判                             | 不用它判分支；store 只当数据容器                                        |
-| 改造顺手改了测试断言「让它绿」        | 护栏失效                                                | 既有断言（04/09/06 等）只允许因**行为约定变化**而改，并在提交信息里说明 |
+| 风险                                  | 后果                                                    | 对策                                                                           |
+| ------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Node 套件 import 到带 `$` 的模块      | `smoke.mjs` / `10-nav-data.mjs` 起不来                  | 静态数据保持纯模块；store 懒创建                                               |
+| `attached()` 挂载时 data 初值形状不对 | 首帧 `Error evaluating text expression`（P37，半静默）  | `data: { levels: [] }` 这类同形状初值；模板只在有值时读                        |
+| 组件模板带 shadow root                | `content.css` 够不到内部结构，样式静默失效              | 内部样式搬进组件 `<style>`；宿主级才留 `content.css`（doc-nav 先例）           |
+| `o-fill` 换节点                       | 真人点击 mousedown/click 落到两个节点（「要点好几次」） | 一定给 `fill-key`；`--site 04` 是护栏；阶段 0 已验「局部改数据不换节点」       |
+| 控制流元素挡住容器的 `::slotted()`    | 分隔符 / 间距 / 位置样式**静默消失**（布局却正常，P38） | 组件的条目直接写开；位置相关的视觉放条目自己身上；断言 `::before` 的 `content` |
+| 注册点从 `site.js` 挪到外壳 `<l-m>`   | 升级时机变化 → 首屏短暂空白 / 拿到旧路由                | 保持「数据从 store 来」；必要时保留「没数据就不渲染」的守卫                    |
+| 滚动高亮高频写数据                    | 目录项频繁重建、点击丢失                                | 默认走 B（命令式切 `aria-current`），A 需阶段 0 证明节点复用                   |
+| 切页重建组件导致监听重复挂            | 重复渲染 / 泄漏                                         | `startRouteTracking()` 幂等；组件侧 `watch` 退订、`detached()` 清理            |
+| 首帧主题被 store 拖成异步             | 闪色（P25）                                             | `theme-boot.js` 不动                                                           |
+| `$.stanz({})` 是数组内核（P36）       | `Array.isArray(store)` 误判                             | 不用它判分支；store 只当数据容器                                               |
+| 改造顺手改了测试断言「让它绿」        | 护栏失效                                                | 既有断言（04/09/06 等）只允许因**行为约定变化**而改，并在提交信息里说明        |
 
 ---
 
 ## 8. 验收清单
 
-- [ ] `grep -rn "extends HTMLElement" docs/` **归零**（可写成一条 node-only 断言，进 `tests/site/`）。
-- [ ] `content.css` 里不再有组件内部结构的样式（只剩宿主级 + 文档排版）。
-- [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通。
-- [ ] 每阶段绑定套件绿；收尾全量一次绿。
+- [x] `grep -rn "extends HTMLElement" docs/` **归零**（阶段 1 后只剩 `doc-toc.js` 一个类，阶段 2 清）。
+- [x] `content.css` 里不再有组件内部结构的样式（翻页那几条已搬进 `doc-pager.html`）。
+- [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通（改 `site-map.js` 时必查）。
+- [ ] 每阶段绑定套件绿；收尾全量一次绿（阶段 1 已绿；2/3/4 未做）。
 - [ ] `dom.js` 的去留明确：若 `el` / `attr` 无人使用就删掉（`setCurrent` 若走路线 B 仍有人用）。
-- [ ] `agent/` 里同步：本文件、`research/state.md` 的【实测】结论、README 索引。
+- [ ] `agent/` 里同步：本文件、`research/state.md` 的【实测】结论、README 索引（阶段 1 已更新）。
 
 ---
 
 ## 9. 需要你定的事
+
+> 阶段 1 已按「垂直切片」做完（§5），下面 1、4 事实上已经按默认答案执行；
+> 2、3 还等定，其中 2 的依据在 §6（`o-fill` 局部更新不换节点，A 路线可行）。
 
 1. **顺序**：按我这个「垂直切片」（每个组件和它消费的 store 一次改完），还是先全量抽 store 再统一迁组件？
 2. **`doc-toc` 高亮**：默认走 B（混合、零行为变化），还是要求阶段 0 验通后直接上 A（纯声明）？

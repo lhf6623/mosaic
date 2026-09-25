@@ -250,6 +250,13 @@
         <code>.doc-body mc-breadcrumb a { color: … }</code>）。
       </li>
       <li>
+        <strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong
+        >：分隔符与级间距走 <code>::slotted(...)</code>，一旦被 <code>o-fill</code> /
+        <code>o-if</code> 包一层就静默消失（那两个元素把内容放进自己的 light DOM， 而且
+        <code>display: contents</code> 让布局看着正常）。整块显隐请用属性钩子而不是
+        <code>o-if</code> —— 详见 <code>agent/ofa-pitfalls.md</code> 的 P38。
+      </li>
+      <li>
         <code>separator</code> 属性与 <code>--mc-breadcrumb-sep</code> 令牌走两条通道：
         属性是非默认值时优先，写回默认值 <code>/</code>（或空值）时就以令牌为准 ——
         组件会清掉自己的内部变量，使用者写在 <code>style</code> 上的令牌照旧生效。

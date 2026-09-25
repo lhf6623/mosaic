@@ -226,10 +226,10 @@ const crumb = await (async () => {
     return out;
   });
 
-  /** 文档站集成：页面头部的 <doc-crumb> 由 <mc-breadcrumb> 渲染（本页就是「组件 / Breadcrumb」） */
+  /** 文档站集成：页面头部的 <doc-crumb> 由 <mc-breadcrumb> 渲染（本页就是「组件 / Breadcrumb」）。
+      ⚠️ <doc-crumb> 是 ofa 组件模板、自带 shadow root，里面的 mc-breadcrumb 要经 shadowRoot 取 */
   const docCrumb = await page.evaluate(() => {
-    const trail = window.__deep('doc-crumb');
-    const bar = trail?.querySelector('mc-breadcrumb');
+    const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
     const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
     return {
       component: !!bar,
@@ -238,14 +238,43 @@ const crumb = await (async () => {
       texts: items.map((i) => i.textContent.trim()),
       href: items[0]?.querySelector('a')?.getAttribute('href') ?? null,
       current: items.at(-1)?.getAttribute('aria-current') ?? null,
+      /* 每一级必须是 mc-breadcrumb 的**直接子元素**：分隔符走 ::slotted()，
+         一旦被 o-fill / o-if 包一层就静默消失（实测踩过，见 ofa-pitfalls P38） */
+      parents: items.map((i) => i.parentElement.tagName.toLowerCase()),
+      before: items.map((i) => getComputedStyle(i, '::before').content),
     };
   });
 
-  /** 真实点击第二级链接（组件）：路由跟着走（原生 <a>，组件不拦） */
+  /** 真实点击第二级链接（组件）：路由跟着走（原生 <a>，组件不拦）。
+      落到的 components.html 是站点页（本来就没有 doc-crumb），所以再从**左栏**切一次到组件页，
+      顺带验「三个消费方一起更新」——面包屑、顶栏、左栏各自订阅同一个 store；
+      若 docs/state/route.js 被实例化成两份（ESM 没去重），这里就会停在旧值 */
   const hashBefore = await page.evaluate(() => location.hash);
   await page.locator('demo-breadcrumb-basic mc-breadcrumb-item a').nth(1).click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(900);
   const hashAfter = await page.evaluate(() => location.hash);
+  const afterNav = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    window
+      .__inside('doc-nav', 'a')
+      .find((a) => a.textContent.trim() === 'Button')
+      ?.click();
+    await wait(1200);
+    const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
+    const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
+    return {
+      hash: location.hash,
+      crumb: items.map((i) => i.textContent.trim()),
+      top:
+        window.__deepAll('.doc-top-nav a')
+          .find((a) => a.hasAttribute('aria-current'))
+          ?.textContent.trim() ?? null,
+      nav:
+        window.__inside('doc-nav', 'a')
+          .find((a) => a.hasAttribute('aria-current'))
+          ?.textContent.trim() ?? null,
+    };
+  });
 
   page.off('response', onResponse);
   page.off('pageerror', onError);
@@ -260,6 +289,7 @@ const crumb = await (async () => {
     docCrumb,
     hashBefore,
     hashAfter,
+    afterNav,
     failed,
   };
 })();
@@ -422,7 +452,10 @@ check(
     crumb.docCrumb.levels === 2 &&
     JSON.stringify(crumb.docCrumb.texts) === JSON.stringify(['组件', 'Breadcrumb']) &&
     (crumb.docCrumb.href ?? '').includes('docs/pages/components.html') &&
-    crumb.docCrumb.current === 'page',
+    crumb.docCrumb.current === 'page' &&
+    // 每一级都是直接子元素，分隔符才画得出来（被 o-fill / o-if 包一层就没了，P38）
+    JSON.stringify(crumb.docCrumb.parents) === JSON.stringify(['mc-breadcrumb', 'mc-breadcrumb']) &&
+    JSON.stringify(crumb.docCrumb.before) === JSON.stringify(['none', '"/"']),
   JSON.stringify(crumb.docCrumb),
 );
 
@@ -430,6 +463,14 @@ check(
   '真实点击链接：路由跟着走（组件不拦原生 <a>）',
   crumb.hashBefore !== crumb.hashAfter && crumb.hashAfter.includes('docs/pages/components.html'),
   `${crumb.hashBefore} → ${crumb.hashAfter}`,
+);
+
+check(
+  '客户端切页后三个消费方一起更新（route store 是同一份实例）',
+  JSON.stringify(crumb.afterNav.crumb) === JSON.stringify(['组件', 'Button']) &&
+    crumb.afterNav.top === '组件' &&
+    crumb.afterNav.nav === 'Button',
+  JSON.stringify(crumb.afterNav),
 );
 
 check(

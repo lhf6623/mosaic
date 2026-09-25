@@ -101,8 +101,9 @@ $('o-root-provider').customTheme = 'light'; // ✅ 改值只能这样（见 P35�
   本次只验了反方向。若将来要让 `mc-*` 组件当 provider，先补这一条实测。
 - `dispatch` / `o-consumer` 的 `on:xxx` 在 Mosaic 的 shadow DOM 组件之间的穿透细节。
 
-**当前是否需要它**：不需要。文档站的数据是静态模块（`docs/site-map.js`），
-组件之间靠属性 / 事件 / 令牌通信，仓库里 0 处使用状态管理。
+**当前是否需要它**：文档站**已经用上了**——`docs/state/route.js` 用 `$.stanz` 存当前路由，
+是全站唯一的导航信号源（改造过程与取舍见 [`../docs-refactor.md`](../docs-refactor.md)）。
+组件库本身（`packages/`）暂时不需要：组件之间靠属性 / 事件 / 令牌通信。
 将来最可能用上的地方是**命令式组件**（如 `mc-toast` 的队列）或**跨页共享的全局配置**。
 
 ---
@@ -137,3 +138,29 @@ $.getRootProvider('ctx').customColor = 'blue'; // ✅
 | `$.stanz` 返回值的形状                         | 未提                                  | 数组内核，`Array.isArray` 为 true |
 | `data` 初始值形状与首帧表达式错误的关系        | 未提                                  | 嵌套路径 + 空对象 → 首帧报错 |
 | proto 方法从外部调用要走 `$()`                 | 示例都在模板里写 `on:click`           | 裸元素上没有这个方法        |
+
+---
+
+## 6. 阶段 0：改造前先验的四条（**已实测**）
+
+动 `docs/state/route.js` 与组件模板化之前，先把会决定写法、又没把握的四条验了
+（探针是一次性的，没入库；结论如下）。
+
+| # | 假设                                                     | 实测结果                                                                     | 定了什么 |
+| - | -------------------------------------------------------- | ---------------------------------------------------------------------------- | -------- |
+| 1 | `data` 里挂 **store 引用**会跟随、挂**原始值快照**不会     | ✅ 引用：`{{s.n}}` 随 `store.n = 7` 变；快照：`this.n = store.n` 从头到尾停在 `0` | 消费方一律挂 store 引用 / 用订阅，不拷贝原始值 |
+| 2 | `o-fill` 数据**局部变化**会不会换节点                     | ✅ 不换：改 `rows[1].label` / `rows[1].flag` 后三个节点引用原样（整体换数组、`fill-key` 相同的也复用） | 滚动高亮可以走声明式（改数据不毁节点），L3 的 doc-toc 不必退回命令式 |
+| 3 | 模板能表达布尔属性与自定义属性                            | ⚠️ 布尔 ✅（`attr:x="c ? '' : null"`：`''` 写、`null` 不写）；**`:style.<自定义属性>` ❌ 静默失效**；`:style.<标准属性>` 只认 **kebab-case**（`padding-left` ✅ / `paddingLeft` ❌） | 自定义属性要改用「`attr:data-*` 钩子 + 组件内 `<style>` 规则」发（实测可行） |
+| 4 | proto 里 `this` 是 ofa 实例，元素 API 要走 `this.ele`     | ✅ `typeof this.getRootNode === 'undefined'`，`this.ele.getRootNode` 是函数    | 迁移配方里所有元素 API 都要显式走 `this.ele`（`doc-toc` 的 `contentRoot()` 是第一个受害者） |
+
+**顺带验出来的两个坑**（都已收进 `ofa-pitfalls.md`）：
+
+- **P37 再验**：`data` 初值给 `null` / `{}` 而模板读嵌套路径 → 首帧
+  `Error evaluating text expression`（页面照常、只进控制台）。store 引用必须先给同形状初值。
+- **P38（新）**：`o-fill` / `o-if` 的内容在它们自己的 light DOM 里，`display: contents`
+  让布局看着正常，但容器的 `::slotted()` 匹配不到 —— 实测 `mc-breadcrumb` 的分隔符因此静默消失。
+  阶段 1 的 `doc-crumb` 就踩了这条，改成「每一级直接写开 + 属性钩子控制整块显隐」才修好。
+
+**订阅为什么不用 `$.stanz` 的 `watch`**：它的返回值能不能退订没有官方说明，
+而组件会随切页反复建毁、退订必须可靠，所以 `docs/state/route.js` 自己维护一张订阅表
+（`onRouteChange(cb)` 返回退订函数），store 只负责当「可绑定的状态容器」。

@@ -61,7 +61,8 @@
 
   <script>
     import { locate, menuOf, hasPage, SPEC_URL } from './site-map.js';
-    import { route, hashOf } from './routes.js';
+    import { hashOf } from './routes.js';
+    import { onRouteChange, routeState } from './state/route.js';
 
     /**
      * 一个节点 → 模板要的字段。展示策略都收在这里：
@@ -104,24 +105,21 @@
       data: { rows: [] },
 
       ready() {
-        /* hashchange 管页内跳转；router-change 管 o-app 导航 —— 顶栏链接走 pushState 时不触发
-           hashchange，只听前者会漏掉「从顶栏点进来」（实测高亮空着）。 */
-        this._onRoute = () => this.renderRows();
-        window.addEventListener('hashchange', this._onRoute);
-        document.addEventListener('router-change', this._onRoute);
+        /* 路由信号统一来自 docs/state/route.js（唯一挂 hashchange + router-change 的地方，
+           见那里的注释与 ofa-pitfalls 的 P28）；这里只订阅 */
+        this._unwatch = onRouteChange(() => this.renderRows());
         this.renderRows();
       },
 
-      // 全局监听必须在这里摘掉，否则切页后旧实例还在改新菜单
+      // 组件随切页建毁，退订必须在 detached 里做，否则旧实例还会改新菜单
       detached() {
-        window.removeEventListener('hashchange', this._onRoute);
-        document.removeEventListener('router-change', this._onRoute);
+        this._unwatch?.();
       },
 
       proto: {
         /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
-          const current = route();
+          const current = routeState().path;
           const entry = locate(current)?.entry ?? null;
           this.rows = entry ? rowsOf(entry, current) : [];
         },

@@ -3,9 +3,10 @@
   <script>
     /* 页面模块也能静态 import：ofa 编译期会把相对说明符改写成绝对 URL（实测），
        所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
-    import { hashOf, repoPathOf } from './routes.js';
+    import { hashOf } from './routes.js';
     import { el, setCurrent } from './dom.js';
     import { TOPBAR, locate } from './site-map.js';
+    import { onRouteChange, routeState } from './state/route.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
@@ -19,27 +20,16 @@
         this.renderTopNav();
         this.syncTopNav();
 
-        // 冷启动带 hash 时子页面可能晚一拍挂上，补几拍（自限）
-        let tries = 0;
-        const settle = () => {
-          this.syncTopNav();
-          if (++tries < 20 && !this.ele.querySelector('o-page')) setTimeout(settle, 50);
-        };
-        settle();
+        /* 顶栏高亮跟着路由走。以前这里靠 ofa 的 routerChange() 钩子 + 一个「等子页面挂上」的
+           轮询；现在统一订阅 docs/state/route.js —— 路径直接来自路由，不再依赖子页面何时挂上 */
+        this._unwatch = onRouteChange(() => this.syncTopNav());
       },
 
-      // 布局页切页时不重建，顶栏高亮只能靠这个钩子（olink 不触发 hashchange，见 P28）
-      routerChange() {
-        this.syncTopNav();
+      detached() {
+        this._unwatch?.();
       },
 
       proto: {
-        currentPath() {
-          const child = [...this.ele.querySelectorAll('o-page')].at(-1);
-          const src = child?.getAttribute('src') || this.app?.current?.src || '';
-          return src ? repoPathOf(src) : '';
-        },
-
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
            ⚠️ 链接用 hashOf() 生成，不用 olink：olink 是编译期指令，运行时造的 <a olink> 不会被处理 */
         renderTopNav() {
@@ -52,7 +42,7 @@
         /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
            不再需要那条 packages/<slug>/page.html 的兜底正则 */
         syncTopNav() {
-          const current = this.currentPath();
+          const current = routeState().path;
           const entry = current ? (locate(current)?.entry ?? null) : null;
           const links = [...this.ele.shadowRoot.querySelectorAll('.doc-top-nav a')];
 
@@ -217,9 +207,12 @@
   <l-m src="./doc-nav.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
-  <!-- 组件页头部的面包屑由 <doc-crumb> 从导航数据派生（docs/doc-trail.js），渲染的就是这个组件 -->
+  <!-- 组件页头部的面包屑 / 页尾的翻页：本身也是 ofa 组件模板（docs/doc-crumb.html / doc-pager.html），
+       都从导航数据派生、订阅 docs/state/route.js；页面里只写 <doc-crumb> / <doc-pager> -->
   <l-m src="../packages/breadcrumb/breadcrumb.html"></l-m>
   <l-m src="../packages/breadcrumb/breadcrumb-item.html"></l-m>
+  <l-m src="./doc-crumb.html"></l-m>
+  <l-m src="./doc-pager.html"></l-m>
 
   <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->
   <div class="doc-shell">

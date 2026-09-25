@@ -1,0 +1,84 @@
+<!--
+  <doc-pager> —— 组件页底部的「上一页 / 下一页」，从导航数据派生。
+
+  与 <doc-crumb> 同一套路：结构 = 数据（o-fill 铺 links），路由变化由 docs/state/route.js 驱动。
+  样式从 content.css 搬进来 —— 组件模板必然带 shadow root，那边的作用域够不到内部节点
+  （`.doc-body a` 的链接色同理，不搬进来翻页链接会掉成 UA 蓝）。
+
+  ⚠️ 两个 class（doc-pager-prev / doc-pager-next）保留：站点套件按它们点击与断言。
+  ⚠️ 没有上一页 / 下一页时 links 为空，宿主仍留着上边那条分隔线（与旧实现一致）。
+-->
+<template component>
+  <style>
+    :host {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--mc-space-4);
+      margin-top: var(--mc-space-12);
+      padding-top: var(--mc-space-5);
+      border-top: 1px solid rgb(var(--mc-color-border));
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+    }
+
+    a {
+      color: rgb(var(--mc-color-primary));
+      text-underline-offset: 2px;
+    }
+
+    .doc-pager-next {
+      margin-left: auto;
+    }
+  </style>
+
+  <o-fill :value="links" fill-key="key">
+    <a attr:class="$data.className" attr:href="$data.href">{{$data.label}}</a>
+  </o-fill>
+
+  <script>
+    import { onRouteChange, routeState } from './state/route.js';
+    import { hashOf } from './routes.js';
+    import { siblingsOf } from './site-map.js';
+
+    export default () => ({
+      tag: 'doc-pager',
+      data: { links: [] },
+
+      ready() {
+        this.renderLinks();
+      },
+
+      attached() {
+        this._unwatch = onRouteChange(() => this.renderLinks());
+      },
+
+      detached() {
+        this._unwatch?.();
+      },
+
+      proto: {
+        renderLinks() {
+          const { prev, next } = siblingsOf(routeState().path);
+          const links = [];
+          if (prev) {
+            links.push({
+              key: 'prev',
+              className: 'doc-pager-prev',
+              href: hashOf(prev.path),
+              label: `← ${prev.label}`,
+            });
+          }
+          if (next) {
+            links.push({
+              key: 'next',
+              className: 'doc-pager-next',
+              href: hashOf(next.path),
+              label: `${next.label} →`,
+            });
+          }
+          this.links = links;
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,68 @@
+<!--
+  <doc-crumb> —— 组件页头部的面包屑，从导航数据派生（包在 o-page 的 shadow root 里）。
+
+  以前是 docs/doc-trail.js 里一个手写 class：el() 建 DOM + 自己挂 hashchange / router-change。
+  现在结构写在模板里、数据来自 docs/state/route.js。
+
+  ⚠️ 每一级必须是 <mc-breadcrumb> 的**直接子元素**：它的分隔符与 flex 间距走 `::slotted(...)`，
+     而 o-fill / o-if 会把内容放进自己的 light DOM（那两个元素是 display: contents，布局看不出问题，
+     但 ::slotted() 匹配不到）—— 实测过，分隔符会静默消失。所以两级直接写开，整块显隐用属性钩子。
+  ⚠️ 当前页那一级不渲染 <a>（纯文本 + current），与旧实现一致 —— 否则会得到一个没有 href
+     却仍然悬停下划线的假链接。
+  ⚠️ 顶层入口自己那一页没有「在哪里面」这回事、隐藏页不在导航里 —— 两种都是 visible = false。
+-->
+<template component>
+  <style>
+    /* 整块收掉用属性钩子，不用 o-if（理由见文件头） */
+    mc-breadcrumb[data-hidden] {
+      display: none;
+    }
+  </style>
+
+  <mc-breadcrumb attr:data-hidden="visible ? null : ''">
+    <mc-breadcrumb-item>
+      <a attr:href="visible ? href : null">{{entry.label}}</a>
+    </mc-breadcrumb-item>
+    <mc-breadcrumb-item current>{{node.label}}</mc-breadcrumb-item>
+  </mc-breadcrumb>
+
+  <script>
+    import { onRouteChange, routeState } from './state/route.js';
+    import { hashOf } from './routes.js';
+
+    export default () => ({
+      tag: 'doc-crumb',
+
+      // 与模板里读的路径同形（P37：给 null 会在首帧抛 "Error evaluating text expression"）
+      data: {
+        visible: false,
+        href: '',
+        entry: { label: '' },
+        node: { label: '' },
+      },
+
+      ready() {
+        this.renderLevels();
+      },
+
+      attached() {
+        // 只订阅，不自己挂 hashchange / router-change（P28 只需记在 state/route.js 一处）
+        this._unwatch = onRouteChange(() => this.renderLevels());
+      },
+
+      detached() {
+        this._unwatch?.();
+      },
+
+      proto: {
+        renderLevels() {
+          const { entry, node, hidden } = routeState();
+          this.visible = !!entry && !!node && node !== entry && !hidden;
+          this.entry = { label: entry?.label ?? '' };
+          this.node = { label: node?.label ?? '' };
+          this.href = this.visible ? hashOf(entry.path) : '';
+        },
+      },
+    });
+  </script>
+</template>

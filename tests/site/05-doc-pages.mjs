@@ -28,7 +28,7 @@ const colocated = await (async () => {
     await p
       .waitForFunction(
         () => {
-          const bar = window.__deep('doc-crumb')?.querySelector('mc-breadcrumb');
+          const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
           const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
           return (
             !!bar?.shadowRoot &&
@@ -45,8 +45,9 @@ const colocated = await (async () => {
     const ok = await p.evaluate(() => {
       const navOk = window.__inside('doc-nav', 'a').length > 3;
       // 页面头部的面包屑必须是项目自己的 <mc-breadcrumb>（<doc-crumb> 只负责派生）：
-      // 至少两级（分区 + 本页），最后一级是当前页（aria-current="page" 且不是空文本）
-      const bar = window.__deep('doc-crumb')?.querySelector('mc-breadcrumb');
+      // 至少两级（分区 + 本页），最后一级是当前页（aria-current="page" 且不是空文本）。
+      // ⚠️ <doc-crumb> 现在是 ofa 组件模板、自带 shadow root，要经 shadowRoot 查里面的 mc-breadcrumb
+      const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
       const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
       const last = items.at(-1);
       const crumbOk =
