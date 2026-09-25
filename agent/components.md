@@ -395,6 +395,52 @@ ofa.js 的样式作用域不支持 `:host()` 内嵌 `:not()`，会静默失效�
 
 ## 三、ofa.js 组件骨架
 
+### 为什么只有这一种写法：`<template component>`，不手写 class
+
+ofa.js 是 **MVVM** 框架（官方自述 _"No-build MVVM front-end framework, Progressive micro front-end
+framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` 文件 = 一个 tag，
+视图编译进自己的 shadow root。
+
+| MVVM          | ofa.js 里的东西                                                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Model**     | 组件的 `data`（响应式）+ 跨组件共享的 `$.stanz(...)` store                                                                  |
+| **View**      | `<template component>` 编译出来的 shadow DOM                                                                                |
+| **ViewModel** | 组件实例：`data` 状态 / `proto` 命令（计算属性用 getter-setter）/ `attrs` 把宿主属性接成被观察数据 / `watch` / 四个生命周期 |
+
+与「经典 MVVM」有四处差别，前两条直接决定了 Mosaic 怎么写组件：
+
+1. **绑定是细粒度、直接改真 DOM，没有虚拟 DOM**：改 `data` 里某一项的某个字段，只动对应节点、
+   节点被复用（实测见 [`docs-refactor.md` §6](./docs-refactor.md)）—— 所以「改数据」可以放心用在
+   滚动高亮这类高频更新上。
+2. **双向不是默认的**，要显式 `sync:value="…"`。**Mosaic 一律不用**：对外只走「属性进（`attrs`）、
+   事件出（`on:change`）」，这是 C4「定制点只用原生 CSS」的必然要求。
+3. **响应式内核是独立库 Stanz**（`$.stanz` / `$.Stanz`），不是框架自研的那一套。
+4. `o-app` / `o-router` / `o-page` / 布局页嵌套路由属于「渐进式微前端」，超出 MVVM 描述的范围。
+
+**结论：一个 UI 组件只能是 `<template component>`。** 手写 `class X extends HTMLElement` 不是
+「另一种风格」，而是把框架已经给你的东西全部重做一遍，而且做得更差 —— 这是把 `docs/` 下四个手写元素
+（`doc-nav` / `doc-crumb` / `doc-pager` / `doc-toc`）全部迁完之后确认的：
+
+| 框架给的                                    | 手写 class 得自己实现                                                                   |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 数据 → DOM：`{{ }}` / `attr:` / `:style.x`  | `document.createElement` + `textContent` + `setAttribute`（还要自己抽 `el()` 这类助手） |
+| 列表复用与点击稳定：`o-fill` + `fill-key`   | 自己做「内容没变就别重建 DOM」的签名守卫（`doc-toc` 原来就有一段）                      |
+| 声明式控制流：`o-if` / `o-else`             | 自己管显隐与增删                                                                        |
+| 生命周期：`ready` / `attached` / `detached` | `connectedCallback` / `disconnectedCallback`（还得自己记住摘监听）                      |
+| 注册与按需加载：`tag` + `<l-m src>`         | 自己 `customElements.define`，自己安排加载顺序                                          |
+| 初值形状由 `data` 决定                      | 构造期拼 `innerHTML`，首帧读不到数据就得自己补                                          |
+
+代价只有一条，而且是被 P33 / P38 反复提醒过的那条：**模板必然带 shadow root**，内部样式要写进组件
+自己的 `<style>`，外面（页面级 CSS）够不到。这是「换来不再漏样式、不被页面 reset 打破」的等价交换，
+不是可以绕开的缺陷。
+
+> **边界**：不是所有东西都该塞进组件。跨 shadow 的**页面级行为**（滚轮接力、换页复位）写成普通模块
+> 就好 —— `docs/site.js` 现在 73 行，没有视图、也就没有理由造一个组件。
+>
+> **守卫**：`tests/site/11-no-class-components.mjs`（node-only）扫 `docs/` 与 `packages/`，
+> 出现 `class … extends HTMLElement` 直接红。迁移配方（class 写法 ↔ 模板写法）见
+> [`docs-refactor.md` §4.0](./docs-refactor.md)。
+
 ```html
 <template component>
   <style>
@@ -675,6 +721,8 @@ mc-dialog::part(panel) {
 [ ] 标签名 = mc- + 目录名，三方一致
 
 结构
+[ ] 用 <template component> 写，**不手写 class 扩展 HTMLElement**（站点级元素也一样；
+      tests/site/11-no-class-components.mjs 会拦）
 [ ] <style> 按五个分区顺序书写
 [ ] 视觉定义在 :host 上，外部 style="height:32px" 能直接覆盖
 [ ] 颜色全部走 L3 组件令牌，模板 class 里没有任何颜色工具类

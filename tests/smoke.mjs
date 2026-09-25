@@ -3,7 +3,7 @@
  * Mosaic 端到端冒烟测试入口（playwright-core + 系统 Chrome）。
  *
  * 用法（先起 `pnpm dev`）：
- *   node tests/smoke.mjs                 全量：10 个站点套件 + 每个 READY 组件的套件
+ *   node tests/smoke.mjs                 全量：11 个站点套件 + 每个 READY 组件的套件
  *   node tests/smoke.mjs --site          只跑站点套件
  *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（02 / 04 / 10）——
  *                                        位置参数同时按「套件文件 / 标签是否包含它」过滤；
@@ -30,6 +30,7 @@ const SITE_SUITES = [
   ['./site/08-subpath.mjs', '站点 · 子路径部署（Pages 项目页）'],
   ['./site/09-doc-toc.mjs', '站点 · 右栏本页目录'],
   ['./site/10-nav-data.mjs', '站点 · 导航数据对账'],
+  ['./site/11-no-class-components.mjs', '站点 · 组件写法守卫（node-only）'],
 ];
 
 const args = process.argv.slice(2);

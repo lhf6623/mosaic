@@ -365,11 +365,13 @@ mc-menu-item[data-level='3'] {
 
 ## 8. 验收清单
 
-- [x] `grep -rn "extends HTMLElement" docs/` **归零**（阶段 1 后只剩 `doc-toc.js` 一个类，阶段 2 清）。
+- [x] `grep -rn "extends HTMLElement" docs/ packages/` **归零**，并做成守卫：
+      `tests/site/11-no-class-components.mjs`（node-only，违反即红）。
 - [x] `content.css` 里不再有组件内部结构的样式（翻页那几条已搬进 `doc-pager.html`）。
 - [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通（改 `site-map.js` 时必查）。
 - [ ] 每阶段绑定套件绿；收尾全量一次绿（阶段 1 已绿；2/3/4 未做）。
 - [x] **`docs/dom.js` 已删除**：三个使用者分别改成 模板（layout 顶栏）/ 数据（doc-toc 高亮）/ 组件（色板与卡片）。
+- [x] 写法约定写进 [`components.md` §三](./components.md)：ofa 的 MVVM 面（M/V/VM 对照 + 与经典 MVVM 的四处差别）+ 「手写 class 要自己重做哪些东西」的逐条对照 + 边界（页面级行为写普通模块）。
 - [ ] `agent/` 里同步：本文件、`research/state.md` 的【实测】结论、README 索引（阶段 1 已更新）。
 
 ---
