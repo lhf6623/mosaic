@@ -1,0 +1,169 @@
+<!--
+  <doc-cards> —— 组件总览页的「全部组件」卡片墙（原来是 docs/site.js 里 el() 手搓 DOM）。
+
+  数据来自 docs/site-map.js 的 GROUPS（静态纯模块）：分组 → 卡片。已实现的卡片是链接，
+  待建的**不给死链**（和左栏菜单同一条策略：显示 stage 徽标，点了没反应），
+  所以链接与卡片是两段标记（o-if / o-else 各写一份，doc-nav 也是这个写法）。
+
+  ⚠️ 组件自带 shadow root：卡片样式（.doc-comp-*）从 content.css 搬到这里，
+     那边的作用域够不到节点。
+  ⚠️ 卡片 class 名保留（.doc-comp-card / .doc-comp-badge / …）：站点套件按它们计数与点击。
+-->
+<template component>
+  <style>
+    :host {
+      display: block;
+    }
+
+    .doc-comp-group {
+      margin-top: var(--mc-space-8);
+    }
+
+    .doc-comp-group h3 {
+      margin-top: 0;
+      margin-bottom: var(--mc-space-1);
+    }
+
+    .doc-comp-group-desc {
+      margin-top: 0;
+      margin-bottom: var(--mc-space-4);
+      font-size: var(--mc-text-sm);
+      color: rgb(var(--mc-color-fg-subtle));
+    }
+
+    .doc-comp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+      gap: var(--mc-space-3);
+    }
+
+    .doc-comp-card {
+      display: block;
+      padding: var(--mc-space-4);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+      text-decoration: none;
+      transition:
+        border-color var(--mc-duration-fast) var(--mc-ease-standard),
+        background-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+
+    a.doc-comp-card:hover {
+      border-color: rgb(var(--mc-color-primary));
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+
+    .doc-comp-card[data-status='planned'] {
+      opacity: 0.72;
+    }
+
+    .doc-comp-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mc-space-2);
+      margin-bottom: var(--mc-space-1);
+    }
+
+    .doc-comp-card-name {
+      color: rgb(var(--mc-color-fg));
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .doc-comp-badge {
+      flex: none;
+      padding: 0.1em 0.5em;
+      border-radius: var(--mc-radius-full);
+      font-size: var(--mc-text-xs);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg-muted));
+    }
+
+    .doc-comp-badge[data-status='ready'] {
+      background-color: rgb(var(--mc-color-success-subtle));
+      color: rgb(var(--mc-color-success));
+    }
+
+    .doc-comp-card-tag {
+      display: inline-block;
+      margin-bottom: var(--mc-space-2);
+      padding: 0.1em 0.4em;
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      font-size: var(--mc-text-xs);
+    }
+
+    .doc-comp-card-desc {
+      margin: 0;
+      font-size: var(--mc-text-sm);
+      color: rgb(var(--mc-color-fg-muted));
+    }
+  </style>
+
+  <o-fill :value="sections" fill-key="label">
+    <section class="doc-comp-group">
+      <h3>{{$data.label}}</h3>
+      <o-if :value="$data.summary">
+        <p class="doc-comp-group-desc">{{$data.summary}}</p>
+      </o-if>
+      <div class="doc-comp-grid">
+        <o-fill :value="$data.cards" fill-key="key">
+          <o-if :value="$data.href">
+            <a class="doc-comp-card" attr:href="$data.href" attr:data-status="$data.status">
+              <div class="doc-comp-card-top">
+                <span class="doc-comp-card-name">{{$data.label}}</span>
+                <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
+              </div>
+              <code class="doc-comp-card-tag">{{$data.tagName}}</code>
+              <p class="doc-comp-card-desc">{{$data.summary}}</p>
+            </a>
+          </o-if>
+          <o-else>
+            <div class="doc-comp-card" attr:data-status="$data.status">
+              <div class="doc-comp-card-top">
+                <span class="doc-comp-card-name">{{$data.label}}</span>
+                <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
+              </div>
+              <code class="doc-comp-card-tag">{{$data.tagName}}</code>
+              <p class="doc-comp-card-desc">{{$data.summary}}</p>
+            </div>
+          </o-else>
+        </o-fill>
+      </div>
+    </section>
+  </o-fill>
+
+  <script>
+    import { GROUPS, hasPage } from './site-map.js';
+    import { hashOf } from './routes.js';
+
+    export default () => ({
+      tag: 'doc-cards',
+
+      data: { sections: [] },
+
+      ready() {
+        /* 展示策略都收在这里：已实现的给站内链接（hashOf 带部署前缀），
+           待建的不给 href、只显示 stage 徽标 */
+        this.sections = GROUPS.map((group) => ({
+          label: group.label,
+          summary: group.summary ?? null,
+          cards: group.items.map((item) => {
+            const ready = hasPage(item);
+            return {
+              // 待建的没有 path，用 tagName 当 fill-key（与左栏菜单同一套约定）
+              key: item.path ?? item.tagName,
+              label: item.label,
+              tagName: item.tagName,
+              summary: item.summary,
+              status: ready ? 'ready' : 'planned',
+              badge: ready ? '已实现' : item.stage,
+              href: ready ? hashOf(item.path) : null,
+            };
+          }),
+        }));
+      },
+    });
+  </script>
+</template>

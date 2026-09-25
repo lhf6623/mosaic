@@ -12,8 +12,9 @@
 
   ⚠️ 只把「建 DOM」那一段交给模板（结构与数据同形）；扫描标题、**扁平树找滚动容器（P34）**、
      签名守卫、滚动高亮、防抖全部留在 JS —— 那是这块的难点，不是模板能表达的。
-  ⚠️ **高亮走命令式（路线 B）**：结构由模板渲染，当前项仍用 setCurrent() 直接切锚点属性。
-     阶段 0 实测过 o-fill 局部更新不换节点（改数据是安全的），但滚动时高频改数据没有必要冒险。
+  ⚠️ **高亮也走数据**：当前项 = `rows[i].aria`，模板负责渲染（阶段 0 实测：o-fill 局部改数据
+     复用节点，所以不会把正在点的节点换掉）。只写真正变化的那一两行，滚动开销可以忽略；
+     这么写还顺带免掉「锚点后渲染 → 高亮要补一次」的时序问题。
   ⚠️ **标题不是一开始就齐的**：组件总览页的卡片由 docs/site.js 异步渲染，才长出分组 h3。
      所以挂 MutationObserver，标题签名变了才重建目录（签名没变不碰 DOM，
      免得把正在点的节点换掉 —— 同 doc-nav.html 那条「不重建 DOM」的教训）。
@@ -34,14 +35,14 @@
     <mc-menu-item group>本页目录</mc-menu-item>
     <o-fill :value="rows" fill-key="id">
       <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
-        <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id">{{$data.label}}</a>
+        <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
+          >{{$data.label}}</a
+        >
       </mc-menu-item>
     </o-fill>
   </mc-menu>
 
   <script>
-    import { setCurrent } from './dom.js';
-
     /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录 */
     const HEADINGS = 'h2, h3';
 
@@ -81,15 +82,21 @@
 
         this._observer = new MutationObserver((records) => this.onMutate(records));
 
-        /* 自己的 shadow root 也要盯：条目是模板异步渲染出来的（mc-menu 升级还更晚），
-           锚点一出现就补一次高亮 —— 否则首屏第一个标题不高亮（实测：settle 重试因签名没变
-           提前返回，不会再切）。只看 childList，属性变化（高亮自己）不会自激 */
-        this._fillObserver = new MutationObserver(() => this.syncActive());
-        this._fillObserver.observe(this.ele.shadowRoot, { childList: true, subtree: true });
-
         this._onSlotChange = () => this.scheduleRebuild();
         this._onScroll = () => this.syncActive();
         this._onResize = () => this.syncActive();
+
+        /* 点目录项后先把自己点亮、并暂时不参与 scroll-spy：判定带是 240px，点击落在
+           短小节上时，紧跟着的下一节标题也在带内，按「最后一个过线标题」会把它抢走。
+           用户一旦自己滚（滚轮 / 触摸 / 按键）就交还给 scroll-spy */
+        this._onUserScroll = () => {
+          if (!this._pinned) return;
+          this._pinned = null;
+          this.syncActive();
+        };
+        for (const type of ['wheel', 'touchstart', 'keydown']) {
+          window.addEventListener(type, this._onUserScroll, { passive: true });
+        }
       },
 
       attached() {
@@ -108,10 +115,12 @@
         clearTimeout(this._rebuildTimer);
         clearTimeout(this._settleTimer);
         this._observer?.disconnect();
-        this._fillObserver?.disconnect();
         this._slot?.removeEventListener('slotchange', this._onSlotChange);
         this._scroller?.removeEventListener('scroll', this._onScroll);
         window.removeEventListener('resize', this._onResize);
+        for (const type of ['wheel', 'touchstart', 'keydown']) {
+          window.removeEventListener(type, this._onUserScroll);
+        }
         this.ele.shadowRoot.removeEventListener('click', this._onClick);
       },
 
@@ -161,6 +170,8 @@
           if (this._signature === signature) return true;
           this._signature = signature;
 
+          this._pinned = null; // 换页/标题变了：旧的点击固定作废
+
           const taken = new Set();
           this._entries = headings.map((heading) => {
             if (!heading.id) heading.id = slugify(heading.textContent, taken);
@@ -172,6 +183,7 @@
             id: entry.id,
             label: entry.heading.textContent.trim(),
             deep: entry.level > 2,
+            aria: null,
           }));
 
           // 一次性动作：盯住当前这一页、找到滚动容器并挂上 scroll-spy
@@ -211,12 +223,24 @@
           if (!entry) return;
 
           event.preventDefault();
+          this._pinned = entry.id;
+          this.applyActive(entry.id);
+
           const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
           entry.heading.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
         },
 
+        /** 把「当前项」写进数据（渲染交给模板）。只写真正变了的那一两行 */
+        applyActive(id) {
+          for (const row of this.rows) {
+            const next = row.id === id ? 'location' : null;
+            if (row.aria !== next) row.aria = next;
+          }
+        },
+
         /** 滚动位置 → 当前项。位置每次现量，演示区抽屉开合后不用额外通知 */
         syncActive() {
+          if (this._pinned) return; // 刚点过目录项：等用户自己滚了再交还
           if (!this._entries || !this._scroller) return;
           // 窗口滚动时视口就是滚动区（window 没有 getBoundingClientRect）
           const box =
@@ -230,10 +254,9 @@
             if (entry.heading.getBoundingClientRect().top <= line) active = entry;
           }
 
-          // 高亮走命令式（路线 B）：滚动高频调用，不为了一个属性去改数据
-          for (const link of this.ele.shadowRoot.querySelectorAll('a')) {
-            setCurrent(link, link.dataset.tocId === active?.id, 'location');
-          }
+          /* 高亮 = 改数据（渲染交给模板）：数据驱动顺带解决了时序 —— 首次 rebuild 时条目
+             可能还没渲染出来，模板后渲染时会读到已经写好的 aria（命令式则要观察者兜底） */
+          this.applyActive(active?.id);
         },
       },
     });

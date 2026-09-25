@@ -167,11 +167,12 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 > 凡是要「跟着路由走」的脚本都得同时听 o-app 冒泡的 `router-change` 事件
 > （`docs/site.js` 的换页处理、`docs/doc-nav.html` 的高亮都是这么接的）。
 
-> ⚠️ 页面里的占位（`[data-component-cards]` / `[data-palette]`）由 `site.js`
-> 轮询渲染。收工条件必须是「**某个** `<o-page src>` 已经是 hash 指向的页面」
-> （嵌套路由下有两个 o-page），不能是「`.doc-body` 换了」——
-> o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻就成立，
-> 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。右栏目录也吃这条：
+> 页面里的占位现在是**组件**（`<doc-cards>` / `<doc-palette>`，见 `docs/doc-cards.html`、
+> `docs/doc-palette.html`）：挂载即渲染，`site.js` 不再轮询等页面到齐。
+> **留下的历史教训**（将来再引入「运行时按需渲染页面内容」时会再踩）：
+> 收工条件必须是「**某个** `<o-page src>` 已经是 hash 指向的页面」（嵌套路由下有两个 o-page），
+> 不能是「`.doc-body` 换了」—— o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻
+> 就成立，真正那一页的占位永远没人渲染（冷启动时卡片区空白）。右栏目录也吃这条：
 > 标题晚到就靠 `MutationObserver` 重扫（`docs/doc-toc.html`）。
 
 #### 演示区：活样例 + 「查看代码」抽屉

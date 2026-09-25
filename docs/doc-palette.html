@@ -1,0 +1,174 @@
+<!--
+  <doc-palette> —— 设计令牌页的原始色阶色板（原来是 docs/site.js 里 el() 手搓 DOM）。
+
+  色值**实时从 packages/color/tokens.css 解析**（生成器输出的形状：
+  `--mc-<family>-<step>: R G B; /* #hex */`），不抄第二份 —— 改色后刷新即可，
+  不会出现「文档写的是旧色值」。
+
+  ⚠️ 组件自带 shadow root：色板内部样式（.doc-palette* / .doc-swatch）从 content.css 搬到这里，
+     那边的作用域够不到节点。
+  ⚠️ 拉取地址用 document.baseURI 拼绝对路径：脚本里的相对 fetch 是相对**文档**解析的，
+     显式写出来子路径部署（`--prefix /mosaic`）才不会错。
+-->
+<template component>
+  <style>
+    :host {
+      display: block;
+    }
+
+    .doc-palette {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-2);
+      margin: var(--mc-space-4) 0;
+    }
+
+    .doc-palette-row {
+      display: grid;
+      grid-template-columns: 6rem 1fr;
+      align-items: center;
+      gap: var(--mc-space-3);
+    }
+
+    .doc-palette-name {
+      font-size: var(--mc-text-sm);
+      font-weight: var(--mc-weight-medium);
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-mono);
+    }
+
+    .doc-palette-strips {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      border-radius: var(--mc-radius-md);
+      overflow: hidden;
+      border: 1px solid rgb(var(--mc-color-border));
+    }
+
+    .doc-swatch {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 0.35em;
+      font-size: 0.6rem;
+      font-family: var(--mc-font-mono);
+      color: rgb(var(--mc-color-fg));
+    }
+
+    /* 失败 / 空结果时才出现（原来是把这段文字写进宿主 textContent） */
+    .doc-palette-msg {
+      margin: var(--mc-space-2) 0 0;
+      font-size: var(--mc-text-sm);
+      color: rgb(var(--mc-color-danger));
+    }
+    .doc-palette-msg[data-empty] {
+      display: none;
+    }
+  </style>
+
+  <div class="doc-palette">
+    <o-fill :value="rows" fill-key="family">
+      <div class="doc-palette-row">
+        <div class="doc-palette-name">{{$data.family}}</div>
+        <div class="doc-palette-strips">
+          <o-fill :value="$data.swatches" fill-key="step">
+            <div
+              class="doc-swatch"
+              attr:title="$data.title"
+              :style.background-color="$data.bg"
+              :style.color="$data.fg"
+            >
+              {{$data.step}}
+            </div>
+          </o-fill>
+        </div>
+      </div>
+    </o-fill>
+    <p class="doc-palette-msg" attr:data-empty="message ? null : ''">{{message}}</p>
+  </div>
+
+  <script>
+    /** 色族的展示顺序（与设计令牌文档的叙述顺序一致） */
+    const LAYOUT_ORDER = ['neutral', 'primary', 'info', 'success', 'warning', 'danger'];
+
+    /**
+     * 生成器输出的形状：`--mc-<family>-<step>: R G B;` 后面跟一个 hex 注释
+     * （注释里不要再写那对符号，会把本段注释提前闭合 → 整个模块语法错误）
+     */
+    const TOKEN_RE = /--mc-([a-z]+)-(\d+):\s*([\d ]+);\s*\/\*\s*(#[0-9a-f]{6})\s*\*\//gi;
+
+    function relativeLuminance(r, g, b) {
+      const lin = (v) => {
+        const x = v / 255;
+        return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    }
+
+    export default () => ({
+      tag: 'doc-palette',
+
+      data: { rows: [], message: '' },
+
+      ready() {
+        this.loadRows();
+      },
+
+      proto: {
+        /**
+         * 拉 tokens.css → 解析出「色族 → 档位」→ 填数据（渲染交给模板）。
+         * ⚠️ 不能叫 load：ofa 会把 `load` 传给组件工厂，撞名有风险（P7 一族）。
+         */
+        async loadRows() {
+          let css;
+          try {
+            const res = await fetch(new URL('packages/color/tokens.css', document.baseURI), {
+              cache: 'no-cache',
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            css = await res.text();
+          } catch (err) {
+            this.message = `色板读取失败：${err.message}（请通过 http 服务打开，不要用 file://）`;
+            return;
+          }
+
+          const families = new Map();
+          for (const [, family, step, channels, hex] of css.matchAll(TOKEN_RE)) {
+            if (!families.has(family)) families.set(family, new Map());
+            families.get(family).set(Number(step), { channels: channels.trim(), hex });
+          }
+
+          if (!families.size) {
+            this.message = '没有从 tokens.css 里解析到原始色阶，正则可能需要跟着生成器更新。';
+            return;
+          }
+
+          const ordered = [...families.keys()].sort(
+            (a, b) => LAYOUT_ORDER.indexOf(a) - LAYOUT_ORDER.indexOf(b),
+          );
+
+          this.rows = ordered.map((family) => ({
+            family,
+            swatches: [...families.get(family).entries()]
+              .sort((a, b) => a[0] - b[0])
+              .map(([step, { channels, hex }]) => {
+                const [r, g, b] = channels.split(/\s+/).map(Number);
+                return {
+                  step: String(step),
+                  title: `--mc-${family}-${step} · ${hex}`,
+                  bg: `rgb(${channels})`,
+                  /* 浅底配深字、深底配浅字 */
+                  fg:
+                    relativeLuminance(r, g, b) > 0.45
+                      ? 'rgb(var(--mc-neutral-950))'
+                      : 'rgb(var(--mc-neutral-50))',
+                };
+              }),
+          }));
+          this.message = '';
+        },
+      },
+    });
+  </script>
+</template>

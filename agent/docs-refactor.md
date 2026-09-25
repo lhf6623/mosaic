@@ -2,7 +2,8 @@
 
 > **目标**：`docs/` 里不再有手写 `class Xxx extends HTMLElement`，运行时状态收进 store 模块。
 > **范围**：只动文档站（`docs/` + 两个引用占位的文档页）；`packages/` 组件的对外 API 不变。
-> **状态**：**阶段 0、阶段 1 已落地**（见 §5）。实测依据见 [`research/state.md`](./research/state.md)，
+> **状态**：**阶段 0 / 1 / 2 / 3 / 4 都已落地**（见 §5）——`docs/` 里没有手写 class 组件，
+> `docs/dom.js` 已删除。剩下可选的只有 `theme` store（§9-1）。实测依据见 [`research/state.md`](./research/state.md)，
 > 相关坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md) 的 P35–P38。
 > 标记：**【实测】** = 本机跑过；**【推论】** = 还没验（阶段 0 已把四条都验了，结论在 §6）。
 
@@ -33,14 +34,14 @@
 
 ### 1.1 数据
 
-| 数据                      | 现在住在哪                                     | 谁读                                                                                              | 能不能进 store            |
-| ------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------- |
-| 导航树 + 派生查询         | [`site-map.js`](./../docs/site-map.js)         | `layout.html:8`、`doc-nav.html:63`、`doc-trail.js:21`、`site.js:7`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）   |
-| 当前路由                  | `routes.js:36` 每次从 `location.hash` 重算     | 同上 + `site.js:176`                                                                              | ✅ `route` store          |
-| 主题（三态 + 持久化）     | `theme-boot.js:8`（首帧）、`layout.html:66-83` | 外壳按钮；所有组件经令牌                                                                          | ⚠️ 只有运行时部分         |
-| 色板（解析 `tokens.css`） | `site.js:28-92`                                | 设计令牌页的 `[data-palette]`                                                                     | ⏳ 阶段 3 `palette` store |
-| 右栏目录 active           | `doc-toc.js`（滚动位置算）                     | 只有它自己                                                                                        | ❌ 纯局部状态             |
-| 占位渲染                  | `site.js:94-213`                               | 组件总览卡片 / 色板 / ~~计数~~                                                                    | ➡️ 改成组件（§4.3）       |
+| 数据                      | 现在住在哪                                     | 谁读                                                                                              | 能不能进 store                |
+| ------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 导航树 + 派生查询         | [`site-map.js`](./../docs/site-map.js)         | `layout.html:8`、`doc-nav.html:63`、`doc-trail.js:21`、`site.js:7`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）       |
+| 当前路由                  | `routes.js:36` 每次从 `location.hash` 重算     | 同上 + `site.js:176`                                                                              | ✅ `route` store              |
+| 主题（三态 + 持久化）     | `theme-boot.js:8`（首帧）、`layout.html:66-83` | 外壳按钮；所有组件经令牌                                                                          | ⚠️ 只有运行时部分             |
+| 色板（解析 `tokens.css`） | `docs/doc-palette.html`                        | 设计令牌页的 `<doc-palette>`                                                                      | ✅ 组件内自包含（不做 store） |
+| 右栏目录 active           | `doc-toc.js`（滚动位置算）                     | 只有它自己                                                                                        | ❌ 纯局部状态                 |
+| 占位渲染                  | `site.js:94-213`                               | 组件总览卡片 / 色板 / ~~计数~~                                                                    | ➡️ 改成组件（§4.3）           |
 
 ### 1.2 「跟着路由走」原来挂了 5 处（**阶段 1 已收口**）
 
@@ -73,15 +74,15 @@ docs/
 ├── theme-boot.js  首帧同步脚本（不动，P25）
 ├── state/         $.stanz store（懒创建）
 │   ├── route.js   ✅ 已落地：唯一的导航信号源（+ onRouteChange 订阅表）
-│   ├── theme.js   ⏳ 阶段 3
-│   └── palette.js ⏳ 阶段 3
+│   └── theme.js   ⏳ 可选（现在主题还在 layout.html + theme-boot.js 里，够用）
 ├── doc-nav.html   组件模板（已迁完）
 ├── doc-crumb.html / doc-pager.html                    ✅ 已落地
 ├── doc-toc.html                                       ✅ 已落地（结构进模板，扫描/滚动/高亮留 JS）
-├── doc-palette.html / doc-cards.html                  ⏳ 阶段 3
+├── doc-palette.html / doc-cards.html                  ✅ 已落地（色板 / 卡片墙，原来的页面占位）
 ├── doc-layout.html / layout.html   布局页（页面模块，本来就带 <template page>）
 ├── content.css    只留宿主级样式（每页 <link>）
-└── site.js        瘦成「滚轮接力 + 引导」，或彻底消失（阶段 3 再动）
+└── site.js        ✅ 只剩 73 行：换页复位 + 滚轮接力（不再建 DOM、不再轮询）
+                    （docs/dom.js 已删除：原来三个使用者分别改成了模板 / 数据 / 组件）
 ```
 
 三条边界：
@@ -266,7 +267,7 @@ mc-menu-item[data-level='3'] {
 **⚠️ `this` 语义**：`contentRoot()` 里的 `this.getRootNode()` 迁过去会直接坏
 （ofa 实例上没有 `getRootNode`），要写成 `this.ele.getRootNode()`。这条是整份配方里最容易踩的。
 
-### 4.3 切片三（可选）：占位 → `doc-palette.html` / `doc-cards.html`
+### 4.3 切片三：占位 → `doc-palette.html` / `doc-cards.html`（✅ 已落地）
 
 - 两个消费者：`docs/pages/components.html:34` 的 `[data-component-cards="all"]`、
   `packages/color/page.html:56` 的 `[data-palette]`，各换成一个组件标签。
@@ -274,12 +275,22 @@ mc-menu-item[data-level='3'] {
   `site.js:168-213`）随之可以删掉大头 —— 异步性交给组件自己的生命周期。
 - **顺手清死代码**：`[data-component-count]`（`site.js:157`）在全仓没有任何生产者。
 - 验收：`--site 01 03 06`。
+- **实际落地**：两个组件都落地，占位机制（`[data-palette]` / `[data-component-cards]` 标记、
+  `dataset.rendered` 幂等、`RENDER_POLL_*` 轮询、`isRoutedPageMounted()`）整段删掉，
+  `[data-component-count]` 那个全仓没有生产者的死分支也一并清掉。
+  **没有做 `state/palette.js`**：色板只有设计令牌页一个消费方，放进组件自包含更简单
+  （将来真有第二个消费方再抽 store 不迟）。两块样式（`.doc-palette*` / `.doc-swatch`、
+  `.doc-comp-*`）从 `content.css` 搬进了各自的 `<style>` —— 组件自带 shadow root，
+  外面够不到。
 
-### 4.4 切片四（可选）：`layout.html` 顶栏模板化
+### 4.4 切片四：`layout.html` 顶栏模板化（✅ 已落地）
 
 `renderTopNav()` + `syncTopNav()`（`layout.html:45-60`）改成 `o-fill` + `attr:aria-current`，
 与 doc-nav 同构。硬约束不变：**只切 `aria-current`、绝不重建 DOM**（真人点击的 mousedown/click
 必须落在同一节点上）—— 这正是 doc-nav 用 `o-fill` + `fill-key` 做到的，验收跑 `--site 04`。
+**实际落地**：`renderTopNav()` 没了，入口在 `ready()` 里拼成 `data.links`；`syncTopNav()`
+只改 `links[i].aria` 这一个字段（阶段 0 已证 o-fill 局部改数据复用节点），`el()` / `setCurrent()`
+随之从 layout 里消失。`data.links` 这个键名实测安全（`entries` 才是保留名，见 P39）。
 
 ### 4.5 不改的
 
@@ -289,19 +300,26 @@ mc-menu-item[data-level='3'] {
 
 ## 5. 顺序：垂直切片（每片 = 一个组件 + 它消费的 store）
 
-| 阶段 | 内容                                                                  | 验收（套件范围）                             | 状态 |
-| ---- | --------------------------------------------------------------------- | -------------------------------------------- | ---- |
-| 0    | 验 §6 的四条假设（一次性探针，不入库）                                | 探针结果补进 `research/state.md`             | ✅   |
-| 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）    | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
-| 2    | `doc-toc.html` 模板化（高亮走 B：结构进模板、命令式切 aria-current）  | `--site 04 09`                               | ✅   |
-| 3    | `state/theme.js` + `state/palette.js` + 两个占位组件 + `site.js` 瘦身 | `--site 01 03 06`                            | ⏳   |
-| 4    | `layout.html` 顶栏（可选）+ 清理注释 / README / `dom.js` 去留         | 收尾**全量一次**                             | ⏳   |
+| 阶段 | 内容                                                                   | 验收（套件范围）                             | 状态 |
+| ---- | ---------------------------------------------------------------------- | -------------------------------------------- | ---- |
+| 0    | 验 §6 的四条假设（一次性探针，不入库）                                 | 探针结果补进 `research/state.md`             | ✅   |
+| 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）     | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
+| 2    | `doc-toc.html` 模板化（高亮走 B：结构进模板、命令式切 aria-current）   | `--site 04 09`                               | ✅   |
+| 3    | 两个占位组件 + `site.js` 瘦身（`theme`/`palette` store 未做，见 §4.3） | `--site 01 03 06`                            | ✅   |
+| 4    | `layout.html` 顶栏 + 清理注释 / README / `dom.js` 删除                 | 收尾**全量一次**                             | ✅   |
 
 每片都能单独回滚（新文件删掉 + 还原 1–2 个文件），不要跨片混提交。
 
 **阶段 1 的结果**：`--site 01 02 04 05 08 09` 64/64 + Breadcrumb 套件 20/20。
 验收面扩大了一条（原计划只 02/04/08）：改动落在 `layout.html` / `doc-nav.html` / `site.js`
 三个「全站共用」文件上，外壳与文档页也在影响半径里。
+
+**阶段 3 / 4 的结果**（与 `dom.js` 删除同批）：`--site 01 02 04 05 06 08 09` + breadcrumb 全绿
+（见提交信息里的实测数字）。一个**行为变化要记住**：`doc-cards` 组件化后，卡片墙里的分组标题
+（基础 / 表单 / …）住进了它的 shadow root，**右栏目录不再收录它们**（目录只扫页面自己的 h2/h3）——
+组件总览页的目录因此从 12 项变成 7 项。这是「组件自带 shadow root」的必然代价，接受。
+同时给 `doc-toc` 补了**点击固定**：点目录项后先点亮该项、暂时不参与 scroll-spy，
+用户自己滚（滚轮 / 触摸 / 按键）再交还 —— 判定带是 240px，点短小节时下一节会把高亮抢走。
 
 **阶段 2 的结果**：`--site 04 09` 17/17。两个坑值得记：
 ① **[P39](./ofa-pitfalls.md)**：`data: { entries: … }` 是保留键，整个组件不渲染，
@@ -351,17 +369,20 @@ mc-menu-item[data-level='3'] {
 - [x] `content.css` 里不再有组件内部结构的样式（翻页那几条已搬进 `doc-pager.html`）。
 - [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通（改 `site-map.js` 时必查）。
 - [ ] 每阶段绑定套件绿；收尾全量一次绿（阶段 1 已绿；2/3/4 未做）。
-- [ ] `dom.js` 的去留明确：若 `el` / `attr` 无人使用就删掉（`setCurrent` 若走路线 B 仍有人用）。
+- [x] **`docs/dom.js` 已删除**：三个使用者分别改成 模板（layout 顶栏）/ 数据（doc-toc 高亮）/ 组件（色板与卡片）。
 - [ ] `agent/` 里同步：本文件、`research/state.md` 的【实测】结论、README 索引（阶段 1 已更新）。
 
 ---
 
-## 9. 需要你定的事
+## 9. 已定的选择与唯一剩项
 
-> 阶段 1 已按「垂直切片」做完（§5），下面 1、4 事实上已经按默认答案执行；
-> 2、3 还等定，其中 2 的依据在 §6（`o-fill` 局部更新不换节点，A 路线可行）。
+> 1–4 都已有定论，留在这里只做记录。
 
-1. **顺序**：按我这个「垂直切片」（每个组件和它消费的 store 一次改完），还是先全量抽 store 再统一迁组件？
-2. **`doc-toc` 高亮**：默认走 B（混合、零行为变化），还是要求阶段 0 验通后直接上 A（纯声明）？
-3. **切片 3 / 4（占位组件、顶栏模板化）** 进不进这次范围？不进的话 `site.js` 与 `dom.js` 只做最小清理。
-4. **命名**：store 放 `docs/state/`（现在 `docs/` 是平铺的）、本设计文档叫 `docs-refactor.md`，是否接受。
+1. **顺序**：按「垂直切片」推进（每个组件和它消费的 store 一次改完）—— 阶段 1–4 都是这么做的。
+2. **`doc-toc` 高亮**：先按路线 B（命令式）落地；删除 `dom.js` 时改成**数据驱动**
+   （`rows[i].aria`，阶段 0 已证 o-fill 复用节点），并补了「点击固定」。
+3. **切片 3 / 4**：都做了（占位组件 + 顶栏模板化 + `site.js` 瘦身 + `dom.js` 删除）。
+4. **命名**：`docs/state/`、`agent/docs-refactor.md` 已按此落地。
+
+**唯一剩项（可选）**：`state/theme.js`。当前主题逻辑住在 `layout.html`（运行时）+ `theme-boot.js`
+（首帧同步脚本，不能动），只有外壳按钮一个消费方；抽 store 的收益要在「组件也要读/改主题」时才出现。

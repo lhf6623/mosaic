@@ -70,18 +70,18 @@ mc-button::part(base) {
 
 ## 文档
 
-| 文档                                                | 内容                                                                                           |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险             |
-| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案         |
-| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南                   |
-| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表          |
-| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单                 |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。39 条静默失效的坑，附现象、原因、正确写法                                    |
-| [文档站重构设计](./agent/docs-refactor.md)          | 两件事一起做：class 组件改 ofa 组件模板 + `$.stanz` 抽数据成 route / theme / palette（设计稿） |
-| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                                     |
-| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                        |
-| [调研：ofa 状态管理](./agent/research/state.md)     | `$.stanz` / `o-provider` 在 shadow DOM 下的实测记录（P35–P37 的来源）                          |
+| 文档                                                | 内容                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险        |
+| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案    |
+| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南              |
+| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表     |
+| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单            |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。39 条静默失效的坑，附现象、原因、正确写法                               |
+| [文档站重构设计](./agent/docs-refactor.md)          | 已完成：class 组件改 ofa 组件模板 + `$.stanz` 抽路由状态 + `dom.js` 删除（含阶段 0 实测） |
+| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                                |
+| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                   |
+| [调研：ofa 状态管理](./agent/research/state.md)     | `$.stanz` / `o-provider` 在 shadow DOM 下的实测记录（P35–P37 的来源）                     |
 
 ## 仓库结构
 
@@ -92,7 +92,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js doc-nav.html doc-crumb.html doc-pager.html doc-toc.html dom.js shell.css site.js
+docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js doc-nav.html doc-crumb.html doc-pager.html doc-toc.html doc-cards.html doc-palette.html shell.css site.js
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）

@@ -529,8 +529,8 @@ window.addEventListener('hashchange', sync); // 普通 hash 链接
 document.addEventListener('router-change', sync); // olink / 前进后退
 ```
 
-Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）、`docs/doc-nav.html`（二级菜单高亮，
-`ready()` 里挂、`detached()` 里摘）与 `docs/doc-toc.html` 都这么接。
+Mosaic 里这件事现在收在一处：`docs/state/route.js` 同时挂 `hashchange` 与 `router-change`，
+消费方（顶栏 / 左栏 / 面包屑 / 翻页 / 站点脚本）只订阅它。
 
 > 顺带一条同类坑：`parentNode` / `getRootNode().host` 走的是**节点树**，而滚动与投影按
 > **扁平树**。现在两栏浮动 + 窗口滚（见 `docs/content.css` 的分栏注释），

@@ -356,7 +356,7 @@ mosaic/
 │   ├── routes.js                  # 路由工具：route() 归一当前路由
 │   ├── doc-nav.html               # <doc-nav>：左栏二级菜单（站点级 ofa 组件模板，结构 = site-map 的树）
 │   ├── shell.css  content.css     # 文档级视口/高度链 / 正文 + 分栏样式（页面自己 link 后者）
-│   └── site.js  theme-boot.js     # 页面占位渲染 / 首帧主题
+│   └── site.js  theme-boot.js     # 换页复位 + 滚轮接力 / 首帧主题
 ├── tests/
 │   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件（单飞见 README）
 │   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具

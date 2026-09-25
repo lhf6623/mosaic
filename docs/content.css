@@ -212,140 +212,16 @@ mc-code {
   border-bottom: 0;
 }
 
-/* ---------- 色板 ---------- */
-
-.doc-palette {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mc-space-2);
-  margin: var(--mc-space-4) 0;
-}
-
-.doc-palette-row {
-  display: grid;
-  grid-template-columns: 6rem 1fr;
-  align-items: center;
-  gap: var(--mc-space-3);
-}
-
-.doc-palette-name {
-  font-size: var(--mc-text-sm);
-  font-weight: var(--mc-weight-medium);
-  color: rgb(var(--mc-color-fg));
-  font-family: var(--mc-font-mono);
-}
-
-.doc-palette-strips {
-  display: grid;
-  grid-template-columns: repeat(11, 1fr);
-  border-radius: var(--mc-radius-md);
-  overflow: hidden;
-  border: 1px solid rgb(var(--mc-color-border));
-}
-
-.doc-swatch {
-  aspect-ratio: 1 / 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 0.35em;
-  font-size: 0.6rem;
-  font-family: var(--mc-font-mono);
-  color: rgb(var(--mc-color-fg));
-}
+/* ---------- 色板与组件卡片 ----------
+ * 两块都是组件了（docs/doc-palette.html / docs/doc-cards.html），自带 shadow root ——
+ * 色板与卡片样式都住在各自的 <style> 里，这里只留这个指路牌，别再往回加。
+ * 页面里写的是 <doc-palette> / <doc-cards> 标签。 */
 
 .doc-status {
   margin-top: var(--mc-space-12);
   padding-top: var(--mc-space-5);
   border-top: 1px solid rgb(var(--mc-color-border));
   font-size: var(--mc-text-sm);
-}
-
-/* ---------- 组件总览卡片（由 docs/components.js 登记表渲染） ---------- */
-
-.doc-comp-group {
-  margin-top: var(--mc-space-8);
-}
-
-.doc-comp-group h3 {
-  margin-top: 0;
-  margin-bottom: var(--mc-space-1);
-}
-
-.doc-comp-group-desc {
-  margin-top: 0;
-  margin-bottom: var(--mc-space-4);
-  font-size: var(--mc-text-sm);
-  color: var(--mc-color-fg-subtle);
-}
-
-.doc-comp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: var(--mc-space-3);
-}
-
-.doc-comp-card {
-  display: block;
-  padding: var(--mc-space-4);
-  border: 1px solid rgb(var(--mc-color-border));
-  border-radius: var(--mc-radius-lg);
-  background-color: rgb(var(--mc-color-surface));
-  text-decoration: none;
-  transition:
-    border-color var(--mc-duration-fast) var(--mc-ease-standard),
-    background-color var(--mc-duration-fast) var(--mc-ease-standard);
-}
-
-a.doc-comp-card:hover {
-  border-color: rgb(var(--mc-color-primary));
-  background-color: rgb(var(--mc-color-primary-subtle));
-}
-
-.doc-comp-card[data-status='planned'] {
-  opacity: 0.72;
-}
-
-.doc-comp-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--mc-space-2);
-  margin-bottom: var(--mc-space-1);
-}
-
-.doc-comp-card-name {
-  color: rgb(var(--mc-color-fg));
-  font-weight: var(--mc-weight-semibold);
-}
-
-.doc-comp-badge {
-  flex: none;
-  padding: 0.1em 0.5em;
-  border-radius: var(--mc-radius-full);
-  font-size: var(--mc-text-xs);
-  background-color: rgb(var(--mc-color-surface-sunken));
-  color: rgb(var(--mc-color-fg-muted));
-}
-
-.doc-comp-badge[data-status='ready'] {
-  background-color: rgb(var(--mc-color-success-subtle));
-  color: rgb(var(--mc-color-success));
-}
-
-.doc-comp-card-tag {
-  display: inline-block;
-  margin-bottom: var(--mc-space-2);
-  padding: 0.1em 0.4em;
-  border-radius: var(--mc-radius-sm);
-  background-color: rgb(var(--mc-color-surface-sunken));
-  font-size: var(--mc-text-xs);
-}
-
-.doc-comp-card-desc {
-  margin: 0;
-  font-size: var(--mc-text-sm);
-  color: rgb(var(--mc-color-fg-muted));
 }
 
 /* ---------- 组件页头部与翻页 ----------

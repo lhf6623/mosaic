@@ -4,7 +4,6 @@
     /* 页面模块也能静态 import：ofa 编译期会把相对说明符改写成绝对 URL（实测），
        所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
     import { hashOf } from './routes.js';
-    import { el, setCurrent } from './dom.js';
     import { TOPBAR, locate } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
@@ -13,15 +12,23 @@
     const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
 
     export default () => ({
-      data: { themeLabel: '自动' },
+      data: { themeLabel: '自动', links: [] },
 
       ready() {
         this.readTheme();
-        this.renderTopNav();
+
+        /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
+           ⚠️ 链接一律用 hashOf() 生成、不走 olink：olink 是编译期指令，这份数据是运行时拼的 */
+        this.links = TOPBAR.map((entry) => ({
+          path: entry.path,
+          label: entry.label,
+          href: hashOf(entry.path),
+          aria: null,
+        }));
         this.syncTopNav();
 
-        /* 顶栏高亮跟着路由走。以前这里靠 ofa 的 routerChange() 钩子 + 一个「等子页面挂上」的
-           轮询；现在统一订阅 docs/state/route.js —— 路径直接来自路由，不再依赖子页面何时挂上 */
+        /* 高亮跟着路由走：只改 links[i].aria 这一个字段 —— o-fill 按 fill-key 复用节点，
+           绝不重建 DOM（真人点击的 mousedown/click 必须落在同一个节点上，04 套件盯着这条） */
         this._unwatch = onRouteChange(() => this.syncTopNav());
       },
 
@@ -30,23 +37,14 @@
       },
 
       proto: {
-        /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
-           ⚠️ 链接用 hashOf() 生成，不用 olink：olink 是编译期指令，运行时造的 <a olink> 不会被处理 */
-        renderTopNav() {
-          const links = TOPBAR.map((entry) =>
-            el('a', { href: hashOf(entry.path), textContent: entry.label }),
-          );
-          this.ele.shadowRoot.querySelector('.doc-top-nav').replaceChildren(...links);
-        },
-
         /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
            不再需要那条 packages/<slug>/page.html 的兜底正则 */
         syncTopNav() {
-          const current = routeState().path;
-          const entry = current ? (locate(current)?.entry ?? null) : null;
-          const links = [...this.ele.shadowRoot.querySelectorAll('.doc-top-nav a')];
-
-          links.forEach((a, i) => setCurrent(a, entry === TOPBAR[i]));
+          const entryPath = locate(routeState().path)?.entry?.path ?? null;
+          for (const link of this.links) {
+            const next = link.path === entryPath ? 'page' : null;
+            if (link.aria !== next) link.aria = next;
+          }
         },
 
         // 三态主题。首帧由 docs/theme-boot.js（head 里的同步经典脚本）应用
@@ -214,15 +212,22 @@
   <l-m src="../packages/breadcrumb/breadcrumb-item.html"></l-m>
   <l-m src="./doc-crumb.html"></l-m>
   <l-m src="./doc-pager.html"></l-m>
+  <!-- 两个「页面占位」也是组件（原来是 docs/site.js 里手搓 DOM）：组件总览的卡片墙、设计令牌的色板 -->
+  <l-m src="./doc-cards.html"></l-m>
+  <l-m src="./doc-palette.html"></l-m>
 
   <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->
   <div class="doc-shell">
     <header class="doc-top">
       <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
-      <!-- 一级菜单就是页面本身；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
-      <!-- 入口来自 docs/site-map.js 的 TOPBAR，由 renderTopNav() 渲染（加一个入口 = 那里加一行） -->
-      <nav class="doc-top-nav"></nav>
+      <!-- 一级菜单就是页面本身（入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；
+           二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
+      <nav class="doc-top-nav">
+        <o-fill :value="links" fill-key="path">
+          <a attr:href="$data.href" attr:aria-current="$data.aria">{{$data.label}}</a>
+        </o-fill>
+      </nav>
 
       <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
         <span>{{themeLabel}}</span>
