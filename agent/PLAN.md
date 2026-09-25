@@ -426,7 +426,7 @@ pnpm format:check  # prettier 只检查
 ### M1 — 令牌与基础组件
 
 - [x] 已实现：`mc-button` / `mc-code` / `mc-collapse`（含 item）/ `mc-menu`（含 item）/
-      `mc-breadcrumb`（含 item）/ `mc-card`
+      `mc-breadcrumb`（含 item）/ `mc-card` / `mc-tag`
 - [ ] 待建：`mc-icon` / `mc-badge` / `mc-spinner`
 - [ ] 每个组件补齐 `{name}.html` + `page.html` + `demos/*.html` + `test/{slug}.test.mjs`
       （**没有** per-component 的 `README.md` / `index.html`）

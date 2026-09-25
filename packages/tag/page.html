@@ -1,0 +1,319 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./tag.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/variants.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/closable.html"></l-m>
+    <l-m src="./demos/checkable.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Tag <code>mc-tag</code></h1>
+    <p class="doc-lead">分类 / 状态标签：一块小色片，可选可关。</p>
+    <p class="doc-badges">
+      <span class="doc-badge" data-status="ready">已实现</span>
+      <span class="doc-badge">M1</span>
+      <span class="doc-badge">packages/tag/</span>
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>语义色</h3>
+      <demo-tag-colors></demo-tag-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        默认是<strong>中性</strong> —— 标签是分类标记，语义色应当在需要强调时才用；六个色值都有。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>三种外观</h3>
+      <demo-tag-variants></demo-tag-variants>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/variants.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        <code>subtle</code>（默认）浅底深字，最不抢视线；<code>solid</code> 实心底；
+        <code>outline</code> 只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>三档尺寸</h3>
+      <demo-tag-sizes></demo-tag-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        尺寸只改字号与左右内边距，<strong>高度由字号撑</strong>：<code>sm</code> / <code>md</code> /
+        <code>lg</code> = 26 / 30 / 34px（行高 + 上下内边距 + 上下 1px 边框）。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>可关闭</h3>
+      <demo-tag-closable></demo-tag-closable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/closable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        <code>closable</code> 在右侧加一个原生 <code>&lt;button&gt;</code>；点击只发
+        <code>close</code>，组件<strong>不自己删 DOM</strong>，例子里的 <code>on:close</code> 里那句
+        <code>remove()</code> 就是使用者那一半。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>可选中</h3>
+      <demo-tag-checkable></demo-tag-checkable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/checkable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        <code>checkable</code> 让整块可点（shadow 里一个铺满宿主的原生按钮，带
+        <code>aria-pressed</code>），切换时发 <code>change</code>，<code>$event.data.selected</code>
+        是切换后的状态；选中态换成该色的实心。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>定制（L3 令牌 + <code>::part()</code>）</h3>
+      <demo-tag-customize></demo-tag-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        颜色与圆角走宿主 <code>style</code> 上的 L3 令牌；内部只有 × 一个 part，单独换色用
+        <code>mc-tag::part(close)</code>。
+      </p>
+    </section>
+
+    <h2>API</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>color</code></td>
+          <td>
+            <code>primary</code> <code>info</code> <code>success</code> <code>warning</code>
+            <code>danger</code> <code>neutral</code>
+          </td>
+          <td><code>neutral</code></td>
+          <td>语义色；默认中性，语义色是强调</td>
+        </tr>
+        <tr>
+          <td><code>variant</code></td>
+          <td><code>subtle</code> <code>solid</code> <code>outline</code></td>
+          <td><code>subtle</code></td>
+          <td>浅底深字 / 实心 / 描边</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>字号 12 / 14 / 16px，高度 26 / 30 / 34px</td>
+        </tr>
+        <tr>
+          <td><code>closable</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>右侧出现 × 按钮（<code>aria-label="移除"</code>），点击发 <code>close</code></td>
+        </tr>
+        <tr>
+          <td><code>checkable</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>整块可点，切换时发 <code>change</code></td>
+        </tr>
+        <tr>
+          <td><code>selected</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>
+            选中态（<code>checkable</code> 用）。既是初始值也是运行时状态：
+            <code>el.selected = true</code> 立刻生效
+          </td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>压暗 50%，不可选也不可关，两个原生按钮都进 <code>:disabled</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>事件</th>
+          <th>触发</th>
+          <th><code>$event.data</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>change</code></td>
+          <td><code>checkable</code> 的选中态变化</td>
+          <td><code>{ selected }</code></td>
+        </tr>
+        <tr>
+          <td><code>close</code></td>
+          <td>点了 ×</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      两个事件都带 <code>bubbles</code> + <code>composed</code>（可挂在祖先上收全部标签的通知）。
+      裸点击照旧是原生 <code>click</code>，不另造事件。
+    </p>
+
+    <h2>插槽 / part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽 / part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>标签内容：文字、小图标都行；<code>checkable</code> 时它同时是按钮的无障碍名</td>
+        </tr>
+        <tr>
+          <td><code>part="close"</code></td>
+          <td>那个 × 按钮（24×24 的命中区），单独换色 / 换形状用它</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>定制：L3 令牌 + <code>::part()</code></h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>令牌</th>
+          <th>默认</th>
+          <th>作用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--mc-tag-fill</code></td>
+          <td>按 <code>color</code></td>
+          <td><code>solid</code> 与选中态的底色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-on-fill</code></td>
+          <td>按 <code>color</code></td>
+          <td>实心上的文字色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-accent</code></td>
+          <td>按 <code>color</code></td>
+          <td><code>subtle</code> 的文字、<code>outline</code> 的线与文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-subtle-fill</code></td>
+          <td>按 <code>color</code></td>
+          <td><code>subtle</code> 的浅底（中性色用 <code>--mc-color-surface-sunken</code>）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-pad-x</code> / <code>--mc-tag-pad-y</code></td>
+          <td><code>--mc-space-3</code> / <code>--mc-space-1</code></td>
+          <td>左右 / 上下内边距（<code>size</code> 改的就是左右那个）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-gap</code></td>
+          <td><code>--mc-space-1</code></td>
+          <td>内容与 × 之间的间距</td>
+        </tr>
+        <tr>
+          <td><code>--mc-tag-radius</code></td>
+          <td><code>--mc-radius-md</code></td>
+          <td>圆角；全圆角写 <code>var(--mc-radius-full)</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>和 <code>mc-badge</code> 的分工</strong>：badge 是挂在别的元素上的徽标（计数、圆点、
+        不交互），tag 是内容本身的标签 —— 它才有关闭与选中。
+      </li>
+      <li>
+        <strong><code>selected</code> 会覆盖 <code>variant</code></strong
+        >：选中的标签统一用该色<strong>实心</strong>。所以可切换的标签用默认
+        <code>subtle</code> 才看得出变化；写死 <code>variant="solid"</code> 时选中前后一个样（那时用
+        <code>::part()</code> 或自己的 <code>aria-pressed</code> 样式补区别）。
+      </li>
+      <li>
+        <strong>不写死控件高</strong>：标签不是控件，高度由字号撑。需要固定高度就写宿主
+        <code>style="height: …"</code>；项目规范里 32px 的图标按钮下限对行内标签不适用 —— ×
+        的命中区是 24×24（WCAG 2.2 AA 的下限），别把 tag 当主操作。
+      </li>
+      <li>
+        <strong><code>closable</code> 不会把标签撑高</strong>：那个 24×24 的 × 比行高还高，
+        它靠负外边距抵消掉落在上下内边距里的部分 —— 加不加 <code>closable</code>、三档尺寸，
+        高度都只由字号决定。
+      </li>
+      <li>
+        <strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>。要在页面上消失，
+        自己在事件里 <code>el.remove()</code> 或改数据（组件不替使用者动 DOM）。
+      </li>
+      <li>
+        <strong>可关 + 可选同时开时，× 压在 toggle 层上面</strong>：点 × 只发
+        <code>close</code>，不会顺带切换选中。
+      </li>
+      <li>
+        <strong>长文本不折行</strong>（<code>white-space: nowrap</code>）：标签要么短，要么自己在
+        宿主上做截断（<code>max-width</code> + <code>overflow: hidden</code>）。
+      </li>
+      <li>
+        <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-tag style="…"&gt;</code> 直接覆盖，
+        不需要 <code>!important</code>；内部只有 × 一个 <code>part</code>。
+      </li>
+      <li>
+        <strong>在脏宿主页面里也正常</strong>：标签不依赖页面 reset，宿主页面的 <code>a</code> /
+        <code>p</code> 全局样式也够不到 shadow 里的两个按钮。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

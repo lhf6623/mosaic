@@ -79,6 +79,15 @@ export const SITE = [
               '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
           {
+            order: 45,
+            label: 'Tag',
+            path: 'packages/tag/page.html',
+            tagName: 'mc-tag',
+            stage: 'M1',
+            summary:
+              '分类 / 状态标签。语义色 × 浅底 / 实心 / 描边三个维度，可选可关（checkable / closable）。',
+          },
+          {
             order: 50,
             label: 'Badge',
             tagName: 'mc-badge',

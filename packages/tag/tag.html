@@ -1,0 +1,323 @@
+<!--
+  mc-tag — 分类 / 状态标签
+
+  和 mc-badge 的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互）；
+  tag 是「内容本身」的标签，可以做两件交互的事 —— 可关闭（closable）、可选中（checkable）。
+
+  三个维度正交，和 mc-button 同一套分工：
+  · color   只往四个色槽里填值（subtle 需要单独的浅底槽，所以比 button 多一个）；
+  · variant 只决定色槽贴到哪儿（subtle 默认 / solid / outline）；
+  · size    只改字号与左右内边距 —— **高度由字号和行高撑**，标签不是控件，不写死控件高。
+  于是 6 色 + 3 外观 = 9 条规则，而不是 18 条组合规则。
+
+  交互一律落在**原生元素**上，但刻意不「包一层按钮」：checkable 是 shadow 里一个铺满宿主的
+  透明 <button aria-pressed>，内容留在它旁边的默认插槽里（mc-button 同一种做法）。
+  这样 closable 的 × 能与它做**兄弟**而不是嵌套 —— HTML 不允许 button 里再放 button；
+  × 靠 z-index 压在 toggle 层上面（P21），点 × 不会连带切换选中。
+  代价是那个透明按钮是空的，无障碍名要把插槽文本镜像成 aria-label（见 applyLabel）。
+
+  closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM（同 mc-menu / mc-breadcrumb）：
+  使用者自己在事件里 remove() 或改数据。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      box-sizing: border-box;
+      position: relative; /* .mc-layer / .mc-toggle / .mc-close 的包含块（P21） */
+      gap: var(--mc-tag-gap);
+      padding-inline: var(--mc-tag-pad-x);
+      padding-block: var(--mc-tag-pad-y);
+      /* 三档外观都保留 1px 透明的线：切 variant / 切选中态时高度不抖 */
+      border: 1px solid transparent;
+      border-radius: var(--mc-tag-radius);
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      font-weight: var(--mc-weight-medium);
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        background-color var(--mc-duration-fast) var(--mc-ease-standard),
+        color var(--mc-duration-fast) var(--mc-ease-standard),
+        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+
+      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
+      --mc-tag-pad-x: var(--mc-space-3);
+      --mc-tag-pad-y: var(--mc-space-1);
+      --mc-tag-gap: var(--mc-space-1);
+      --mc-tag-radius: var(--mc-radius-md);
+      /* hover 反馈的强度：0 = 不响应（静态标签），checkable 才打开 */
+      --mc-tag-layer: 0;
+
+      /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，
+         subtle-fill 是浅底 —— 中性色没有 -subtle，用下沉面色 */
+      --mc-tag-fill: var(--mc-color-neutral);
+      --mc-tag-on-fill: var(--mc-color-neutral-fg);
+      --mc-tag-accent: var(--mc-color-fg-muted);
+      --mc-tag-subtle-fill: var(--mc-color-surface-sunken);
+
+      /* subtle 是默认外观，直接写在 :host 上（:host(:not([variant])) 会静默失效，P14） */
+      background-color: rgb(var(--mc-tag-subtle-fill));
+      color: rgb(var(--mc-tag-accent));
+    }
+
+    /* 2. 维度一 color：只往色槽里填值。neutral 是默认，已经写在上面 */
+    :host([color='primary']) {
+      --mc-tag-fill: var(--mc-color-primary);
+      --mc-tag-on-fill: var(--mc-color-primary-fg);
+      --mc-tag-accent: var(--mc-color-primary);
+      --mc-tag-subtle-fill: var(--mc-color-primary-subtle);
+    }
+    :host([color='info']) {
+      --mc-tag-fill: var(--mc-color-info);
+      --mc-tag-on-fill: var(--mc-color-info-fg);
+      --mc-tag-accent: var(--mc-color-info);
+      --mc-tag-subtle-fill: var(--mc-color-info-subtle);
+    }
+    :host([color='success']) {
+      --mc-tag-fill: var(--mc-color-success);
+      --mc-tag-on-fill: var(--mc-color-success-fg);
+      --mc-tag-accent: var(--mc-color-success);
+      --mc-tag-subtle-fill: var(--mc-color-success-subtle);
+    }
+    :host([color='warning']) {
+      --mc-tag-fill: var(--mc-color-warning);
+      --mc-tag-on-fill: var(--mc-color-warning-fg);
+      --mc-tag-accent: var(--mc-color-warning);
+      --mc-tag-subtle-fill: var(--mc-color-warning-subtle);
+    }
+    :host([color='danger']) {
+      --mc-tag-fill: var(--mc-color-danger);
+      --mc-tag-on-fill: var(--mc-color-danger-fg);
+      --mc-tag-accent: var(--mc-color-danger);
+      --mc-tag-subtle-fill: var(--mc-color-danger-subtle);
+    }
+
+    /* 3. 维度二 variant：只决定色槽贴到哪儿 */
+    :host([variant='solid']) {
+      background-color: rgb(var(--mc-tag-fill));
+      color: rgb(var(--mc-tag-on-fill));
+    }
+    :host([variant='outline']) {
+      background-color: transparent;
+      color: rgb(var(--mc-tag-accent));
+      border-color: rgb(var(--mc-tag-accent));
+    }
+
+    /* 4. 尺寸：只有字号与左右内边距两档变量，高度由行高撑（sm/md/lg = 26 / 30 / 34px） */
+    :host([size='sm']) {
+      --mc-tag-pad-x: var(--mc-space-2);
+      font-size: var(--mc-text-xs);
+      line-height: var(--mc-text-xs-lh);
+    }
+    :host([size='lg']) {
+      --mc-tag-pad-x: var(--mc-space-4);
+      font-size: var(--mc-text-base);
+      line-height: var(--mc-text-base-lh);
+    }
+
+    /* 状态 —— 选中：覆盖 variant，换成该色的实心。选中是状态，不是第三档外观 */
+    :host([selected]) {
+      background-color: rgb(var(--mc-tag-fill));
+      color: rgb(var(--mc-tag-on-fill));
+      border-color: transparent;
+    }
+
+    /* checkable 才有整块反馈与手型；disabled 用正向选择器把它们归零（不用 :not()，P14） */
+    :host([checkable]) {
+      --mc-tag-layer: 0.08;
+      cursor: pointer;
+    }
+    :host([disabled]) {
+      --mc-tag-layer: 0;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 5. 内部元素：工具类表达不了的部分 */
+    /* state layer：currentColor + 半透明，任意配色与主题都自动协调；强度由 --mc-tag-layer 给 */
+    .mc-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      background-color: currentColor;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    :host(:hover) .mc-layer {
+      opacity: var(--mc-tag-layer);
+    }
+    :host(:active) .mc-layer {
+      opacity: calc(var(--mc-tag-layer) * 1.5);
+    }
+
+    /* toggle 层：透明原生 button 铺满宿主，点击/键盘/焦点环都是浏览器给的。
+       z-index 必须高于 .mc-layer，否则点击被叠层拦掉（P21）；
+       非 checkable 时 display:none —— 常驻 DOM 靠属性显隐（P10） */
+    .mc-toggle {
+      all: unset;
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      cursor: inherit;
+      border-radius: inherit;
+    }
+    :host([checkable]) .mc-toggle {
+      display: block;
+    }
+    /* 焦点环用 ring 令牌，不用 currentColor：实心标签上白圈画在浅色页面里看不见（P16） */
+    .mc-toggle:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+
+    /* × 按钮：24×24 命中区（WCAG 2.2 AA 的下限；行内小标签够不到 32px 那道线）。
+       它是 toggle 层的兄弟且 z-index 更高 —— 点 × 不会连带切换选中 */
+    .mc-close {
+      display: none;
+      position: relative;
+      z-index: 3;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-space-6);
+      height: var(--mc-space-6);
+      /* 24px 的命中区不能反过来把标签撑高：负外边距把落在上下内边距里的那 8px 抵消掉，
+         高度仍旧由字号决定（closable 与否、三档尺寸都一样高） */
+      margin-block: calc(var(--mc-tag-pad-y) * -1);
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 1.25em;
+      line-height: 1;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+    :host([closable]) .mc-close {
+      display: inline-flex;
+    }
+    .mc-close:hover {
+      background-color: rgb(var(--mc-color-fg) / 0.12);
+    }
+    .mc-close:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+    .mc-close:disabled {
+      /* 禁用态不响应 hover（设计规范第五节），光标也不该变手型 */
+      background-color: transparent;
+      cursor: not-allowed;
+    }
+  </style>
+
+  <span class="mc-layer" aria-hidden="true"></span>
+
+  <!-- 空的原生按钮只承载交互语义（名字靠 applyLabel 从插槽文本镜像过来） -->
+  <button
+    class="mc-toggle"
+    type="button"
+    attr:aria-pressed="selected !== null ? 'true' : 'false'"
+    :disabled="disabled !== null"
+    on:click="onToggle($event)"
+  ></button>
+
+  <slot></slot>
+
+  <!-- × 是字符不是图标字体；无障碍名由 aria-label 给 -->
+  <button
+    class="mc-close"
+    part="close"
+    type="button"
+    aria-label="移除"
+    :disabled="disabled !== null"
+    on:click="onClose($event)"
+  >
+    ×
+  </button>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-tag',
+
+      attrs: {
+        // 标签默认中性 —— 语义色是强调，不是默认
+        color: 'neutral',
+        variant: 'subtle',
+        size: 'md',
+        // 布尔属性默认值必须是 null（P1）
+        closable: null,
+        checkable: null,
+        // 既是初始值也是运行时状态（规范 1.4）：el.selected = true 立刻生效
+        selected: null,
+        disabled: null,
+      },
+
+      ready() {
+        // 这里 shadow 已建好（同 mc-card / mc-collapse-item）
+        this._toggle = this.ele.shadowRoot.querySelector('.mc-toggle');
+        this._slot = this.ele.shadowRoot.querySelector('slot');
+
+        // 运行时状态走 property（规范 1.4）：setter 只写宿主属性，CSS 当次就读得到（P4）
+        Object.defineProperty(this.ele, 'selected', {
+          configurable: true,
+          get: () => this.ele.hasAttribute('selected'),
+          set: (value) => {
+            if (value) this.ele.setAttribute('selected', '');
+            else this.ele.removeAttribute('selected');
+          },
+        });
+      },
+
+      attached() {
+        /* toggle 按钮是空的（内容在旁边的插槽里），无障碍名得跟着插槽文本走 ——
+           slotchange 覆盖「内容变了」这一路，运行时不再盯子树 */
+        this._onSlotChange = () => this.applyLabel();
+        this._slot.addEventListener('slotchange', this._onSlotChange);
+        this.applyLabel();
+      },
+
+      detached() {
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      proto: {
+        /** 插槽文本 → toggle 按钮的 aria-label（空内容就不写，避免出现没有名字的按钮） */
+        applyLabel() {
+          const text = [...this._slot.assignedNodes()]
+            .map((node) => node.textContent ?? '')
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (text) this._toggle.setAttribute('aria-label', text);
+          else this._toggle.removeAttribute('aria-label');
+        },
+
+        /** 选中态以宿主属性为唯一真相；立刻写属性，事件带 selected（规范 1.4 / 1.5） */
+        onToggle() {
+          if (this.ele.hasAttribute('disabled')) return;
+          const selected = !this.ele.hasAttribute('selected');
+          if (selected) this.ele.setAttribute('selected', '');
+          else this.ele.removeAttribute('selected');
+          this.emit('change', { data: { selected }, bubbles: true, composed: true });
+        },
+
+        /** 只发事件，不删 DOM —— 删不删由使用者决定 */
+        onClose() {
+          if (this.ele.hasAttribute('disabled')) return;
+          this.emit('close', { bubbles: true, composed: true });
+        },
+      },
+    });
+  </script>
+</template>

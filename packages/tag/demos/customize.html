@@ -1,0 +1,29 @@
+<template component>
+  <style>
+    /* × 是内部元素（part="close"），要单独换色就穿透它；圆角 / 间距走 L3 令牌 */
+    mc-tag::part(close) {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-tag color="primary" style="--mc-tag-radius: var(--mc-radius-full)">全圆角</mc-tag>
+    <mc-tag
+      color="primary"
+      style="--mc-tag-pad-x: var(--mc-space-5); --mc-tag-gap: var(--mc-space-2)"
+    >
+      加宽内边距
+    </mc-tag>
+    <mc-tag
+      closable
+      style="--mc-tag-subtle-fill: var(--mc-color-primary-subtle); --mc-tag-accent: var(--mc-color-primary)"
+    >
+      换浅底色槽
+    </mc-tag>
+    <mc-tag closable color="success">× 被 <code>::part(close)</code> 改成危险色</mc-tag>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-tag-customize' });
+  </script>
+</template>

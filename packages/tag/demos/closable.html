@@ -1,0 +1,29 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-tag closable color="primary" on:close="onClose($event)">设计</mc-tag>
+    <mc-tag closable color="info" on:close="onClose($event)">前端</mc-tag>
+    <mc-tag closable on:close="onClose($event)">日常</mc-tag>
+    <mc-tag closable disabled>禁用（× 也点不动）</mc-tag>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    点 × 移除；最近一次 <code>close</code>：<strong>{{lastClosed}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-tag-closable',
+
+      data: {
+        lastClosed: '（还没关过）',
+      },
+
+      proto: {
+        onClose(event) {
+          this.lastClosed = event.target.textContent.trim();
+          event.target.remove(); // 组件只发事件，删不删 DOM 是使用者的事
+        },
+      },
+    });
+  </script>
+</template>
