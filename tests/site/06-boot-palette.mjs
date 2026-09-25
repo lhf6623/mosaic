@@ -79,6 +79,21 @@ const layoutState = await page.evaluate(() => {
     mainInShadow: !!layout?.shadowRoot?.querySelector('.doc-main'),
     navLinks: layout?.shadowRoot?.querySelectorAll('.doc-top-nav a').length ?? 0,
     themeBtn: !!layout?.shadowRoot?.querySelector('.doc-theme'),
+    /* 顶栏右侧的仓库入口：外链 + 图标按钮（要有 aria-label，装饰 SVG 要 aria-hidden） */
+    github: (() => {
+      const a = layout?.shadowRoot?.querySelector('.doc-github');
+      return a
+        ? {
+            href: a.getAttribute('href'),
+            target: a.getAttribute('target'),
+            rel: a.getAttribute('rel'),
+            label: a.getAttribute('aria-label'),
+            iconHidden: a.querySelector('svg')?.getAttribute('aria-hidden'),
+            inTopbar: a.closest('.doc-top') !== null,
+            inNav: a.closest('.doc-top-nav') !== null,
+          }
+        : null;
+    })(),
   };
 });
 check(
@@ -91,6 +106,18 @@ check(
     layoutState.navLinks === 5 &&
     layoutState.themeBtn,
   JSON.stringify(layoutState),
+);
+
+check(
+  '顶栏右侧有仓库入口：外链 + aria-label，图标是装饰性 SVG，且不混进一级菜单（nav 仍是 5 条）',
+  layoutState.github?.href === 'https://github.com/lhf6623/mosaic' &&
+    layoutState.github?.target === '_blank' &&
+    layoutState.github?.rel === 'noreferrer' &&
+    !!layoutState.github?.label &&
+    layoutState.github?.iconHidden === 'true' &&
+    layoutState.github?.inTopbar === true &&
+    layoutState.github?.inNav === false,
+  JSON.stringify(layoutState.github),
 );
 
 /** 切页时布局页不重建 —— 否则顶栏、主题按钮会闪 */
