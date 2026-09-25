@@ -108,9 +108,10 @@ export default async function run({ check, newPage }) {
     await p.goto(`${base}#${PREFIX}/docs/pages/components.html`, { waitUntil: 'load' });
     await settle();
     await p.evaluate(() => {
-      // 卡片文本是「Button 已实现 mc-button 按钮。…」，按 href 找才准
-      window.__deepAll('.doc-comp-card')
-        .find((c) => (c.getAttribute('href') || '').includes('packages/button/page.html'))
+      // 卡片本体是 <mc-card>，链接是它内部的标题（铺满卡片的链接）—— 按 href 找才准，
+      // 卡片文本是「Button 已实现 mc-button 按钮。…」
+      window.__deepAll('.doc-comp-card a')
+        .find((a) => (a.getAttribute('href') || '').includes('packages/button/page.html'))
         ?.click();
     });
     await settle();

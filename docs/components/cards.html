@@ -1,13 +1,21 @@
 <!--
   <doc-cards> —— 组件总览页的「全部组件」卡片墙（原来是 docs/site.js 里 el() 手搓 DOM）。
 
-  数据来自 docs/site-map.js 的 GROUPS（静态纯模块）：分组 → 卡片。已实现的卡片是链接，
-  待建的**不给死链**（和左栏菜单同一条策略：显示 stage 徽标，点了没反应），
-  所以链接与卡片是两段标记（o-if / o-else 各写一份，doc-nav 也是这个写法）。
+  数据来自 docs/site-map.js 的 GROUPS（静态纯模块）：分组 → 卡片。已实现的卡片给一个明确的
+  操作入口（卡内那个「查看文档」链接），待建的**不给死链**（和左栏菜单同一条策略：显示
+  stage 标记），所以有链接与没链接是两段标记（o-if / o-else 各写一份）。
 
-  ⚠️ 组件自带 shadow root：卡片样式（.doc-comp-*）从 content.css 搬到这里，
-     那边的作用域够不到节点。
-  ⚠️ 卡片 class 名保留（.doc-comp-card / .doc-comp-badge / …）：站点套件按它们计数与点击。
+  ⚠️ 卡片本体是项目自己的 <mc-card> —— 站点第一次拿它搭页面。排版三条策略：
+     · **收紧**：站点把 --mc-card-pad 降到 space-3，并把 part=base / part=body 变成 flex 列、
+       操作 margin-top: auto 钉在底边 —— 等高网格里多出来的空间落在摘要与操作之间，
+       不再让卡片下半截空一片（原来页脚自带 16+16 内边距 + 32px 空档，一张卡 267px 高）；
+     · **分层**：标题 text-lg + semibold，标签名 mono 小字、不给底色，摘要 text-sm + 弱化色；
+       状态只有一行小字（已实现 = success 色，待建 = 里程碑，fg-subtle），不再是三种胶囊；
+     · **一个轻出口**：可点的是卡内那个真 <a>（href / 右键 / 新标签页 / olink 都在），样式是
+       「文字按钮」（主色、无边框、hover 才有浅底），不做整卡可点。**已实现与待建的面完全一样**
+       —— 区分就是「底边有没有这个按钮」，待建那边在同一位置放一行 muted「待建」。
+  ⚠️ 卡片样式（.doc-comp-*）从 content.css 搬到这里 —— 组件自带 shadow root，那边够不到。
+     站点套件按 .doc-comp-card / .doc-comp-card-action 这类 class 计数与断言。
 -->
 <template component>
   <style>
@@ -33,64 +41,53 @@
 
     .doc-comp-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-      gap: var(--mc-space-3);
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+      gap: var(--mc-space-4);
     }
 
-    .doc-comp-card {
-      display: block;
-      padding: var(--mc-space-4);
-      border: 1px solid rgb(var(--mc-color-border));
-      border-radius: var(--mc-radius-lg);
-      background-color: rgb(var(--mc-color-surface));
-      text-decoration: none;
-      transition:
-        border-color var(--mc-duration-fast) var(--mc-ease-standard),
-        background-color var(--mc-duration-fast) var(--mc-ease-standard);
+    /* 站点自己定密度：12px 内边距 + 卡片内部 flex 列（操作钉底） */
+    mc-card.doc-comp-card {
+      --mc-card-pad: var(--mc-space-3);
     }
-
-    a.doc-comp-card:hover {
-      border-color: rgb(var(--mc-color-primary));
-      background-color: rgb(var(--mc-color-primary-subtle));
-    }
-
-    .doc-comp-card[data-status='planned'] {
-      opacity: 0.72;
-    }
-
-    .doc-comp-card-top {
+    mc-card.doc-comp-card::part(base) {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--mc-space-2);
-      margin-bottom: var(--mc-space-1);
+      flex-direction: column;
+      height: 100%;
     }
+    mc-card.doc-comp-card::part(body) {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+    }
+    /* 标题行与正文之间只留一个内边距：组件默认还留了「分隔线下方」那一份呼吸位，
+       这里没画线（divider="none"），那份就多余了 */
+    mc-card.doc-comp-card::part(header) {
+      margin-block-end: 0;
+    }
+
+    /* 待建的卡片**外观与已实现完全一致** —— 区分交给底边那个「查看文档」按钮的有无，
+       不再额外描边 / 压暗（同一面墙里两种面看起来才整齐） */
 
     .doc-comp-card-name {
-      color: rgb(var(--mc-color-fg));
+      font-size: var(--mc-text-lg);
       font-weight: var(--mc-weight-semibold);
+      color: rgb(var(--mc-color-fg));
     }
 
+    /* 状态只有一行小字：已实现（success）/ 里程碑（弱化） */
     .doc-comp-badge {
       flex: none;
-      padding: 0.1em 0.5em;
-      border-radius: var(--mc-radius-full);
       font-size: var(--mc-text-xs);
-      background-color: rgb(var(--mc-color-surface-sunken));
-      color: rgb(var(--mc-color-fg-muted));
+      color: rgb(var(--mc-color-fg-subtle));
     }
-
     .doc-comp-badge[data-status='ready'] {
-      background-color: rgb(var(--mc-color-success-subtle));
       color: rgb(var(--mc-color-success));
     }
 
+    /* 标签名：等宽小字，不给底色（原来那个灰方块会和状态胶囊一起抢视线） */
     .doc-comp-card-tag {
-      display: inline-block;
-      margin-bottom: var(--mc-space-2);
-      padding: 0.1em 0.4em;
-      border-radius: var(--mc-radius-sm);
-      background-color: rgb(var(--mc-color-surface-sunken));
+      margin-bottom: var(--mc-space-1);
+      color: rgb(var(--mc-color-fg-subtle));
       font-size: var(--mc-text-xs);
       /* 原来这个位置是 <code>（自带等宽）；<code> 里的 {{ }} 不会被 ofa 编译（P8），
          所以换成 <span>，等宽字体在这里补回来 */
@@ -101,6 +98,32 @@
       margin: 0;
       font-size: var(--mc-text-sm);
       color: rgb(var(--mc-color-fg-muted));
+    }
+
+    /* 操作入口：卡内一个真链接，样式做成「文字按钮」—— 24 张卡里不该有 24 个紫描边按钮。
+       margin-top: auto 把它钉到卡片底边，等高网格里每张卡的出口都在同一水平线上 */
+    mc-card .doc-comp-card-action {
+      align-self: flex-end;
+      margin-top: auto;
+      margin-inline-end: calc(var(--mc-space-1) * -1); /* 让文字与右边缘视觉对齐 */
+      padding: var(--mc-space-1) var(--mc-space-2);
+      border-radius: var(--mc-radius-md);
+      color: rgb(var(--mc-color-primary));
+      font-size: var(--mc-text-sm);
+      font-weight: var(--mc-weight-medium);
+      text-decoration: none;
+      transition: background-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    mc-card .doc-comp-card-action:hover {
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+
+    /* 待建卡的底边也压一行字：网格里每张卡的下沿节奏一致，不留空半截 */
+    .doc-comp-card-planned {
+      align-self: flex-end;
+      margin-top: auto;
+      font-size: var(--mc-text-sm);
+      color: rgb(var(--mc-color-fg-subtle));
     }
   </style>
 
@@ -113,24 +136,28 @@
       <div class="doc-comp-grid">
         <o-fill :value="$data.cards" fill-key="key">
           <o-if :value="$data.href">
-            <a class="doc-comp-card" attr:href="$data.href" attr:data-status="$data.status">
-              <div class="doc-comp-card-top">
-                <span class="doc-comp-card-name">{{$data.label}}</span>
-                <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
-              </div>
+            <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
+              <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
+              <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
+                >{{$data.badge}}</span
+              >
               <span class="doc-comp-card-tag">{{$data.tagName}}</span>
               <p class="doc-comp-card-desc">{{$data.summary}}</p>
-            </a>
+              <a class="doc-comp-card-action" attr:href="$data.href"
+                >查看文档<span aria-hidden="true"> →</span></a
+              >
+            </mc-card>
           </o-if>
           <o-else>
-            <div class="doc-comp-card" attr:data-status="$data.status">
-              <div class="doc-comp-card-top">
-                <span class="doc-comp-card-name">{{$data.label}}</span>
-                <span class="doc-comp-badge" attr:data-status="$data.status">{{$data.badge}}</span>
-              </div>
+            <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
+              <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
+              <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
+                >{{$data.badge}}</span
+              >
               <span class="doc-comp-card-tag">{{$data.tagName}}</span>
               <p class="doc-comp-card-desc">{{$data.summary}}</p>
-            </div>
+              <span class="doc-comp-card-planned">待建</span>
+            </mc-card>
           </o-else>
         </o-fill>
       </div>
@@ -148,7 +175,7 @@
 
       ready() {
         /* 展示策略都收在这里：已实现的给站内链接（hashOf 带部署前缀），
-           待建的不给 href、只显示 stage 徽标 */
+           待建的不给 href、只显示 stage 标记 */
         this.sections = GROUPS.map((group) => ({
           label: group.label,
           summary: group.summary ?? null,

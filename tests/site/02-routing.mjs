@@ -116,6 +116,53 @@ check(
   cardTags.length === ALL.length && cardTags.every((t) => /^[a-z][a-z0-9-]*(\(\))?$/.test(t)),
   `首张=${cardTags[0]} · 末张=${cardTags.at(-1)} · 含字面量=${cardTags.filter((t) => t.includes('{{')).length} 张`,
 );
+
+/* 卡片墙的卡片本体是**项目自己的 <mc-card>**（站点第一次拿组件搭页面）。
+   卡片是面不是行为：它自己不参与交互（没有 interactive / 镜像属性、宿主不可聚焦、
+   内部也没有控件），可点的是卡内那个「查看文档」真链接；待建的没有操作入口。 */
+const cardImpl = await page.evaluate(() => {
+  const host = window.__deepAll('doc-cards')[0];
+  const cards = [...host.shadowRoot.querySelectorAll('mc-card.doc-comp-card')];
+  const ready = cards.filter((c) => c.getAttribute('data-status') === 'ready');
+  const planned = cards.filter((c) => c.getAttribute('data-status') === 'planned');
+  const actions = ready.map((c) => c.querySelector('a.doc-comp-card-action'));
+  return {
+    total: cards.length,
+    upgraded: cards.every((c) => !!c.shadowRoot),
+    ready: ready.length,
+    planned: planned.length,
+    /** 卡片自己不参与交互 */
+    inert: cards.every(
+      (c) =>
+        !c.hasAttribute('interactive') &&
+        !c.hasAttribute('data-cover') &&
+        !c.hasAttribute('data-stretch') &&
+        c.tabIndex === -1 &&
+        !c.shadowRoot.querySelector('a, button, input, [tabindex]'),
+    ),
+    /** 操作入口是卡内那个原生 <a>，href 带部署前缀（hashOf 给的） */
+    actionsOk:
+      actions.length === ready.length &&
+      actions.every(
+        (a) => a?.tagName === 'A' && (a.getAttribute('href') || '').includes('packages/'),
+      ),
+    /** 待建的连操作入口都没有（不给死链） */
+    plannedStatic: planned.every((c) => !c.querySelector('a')),
+    /** 没有任何铺满用的伪元素规则落在链接上（整卡可点已经拿掉了） */
+    noStretch: actions.every((a) => getComputedStyle(a, '::after').position !== 'absolute'),
+  };
+});
+check(
+  '卡片墙用项目自己的 <mc-card>：卡片自己不参与交互，操作入口是卡内那个真链接，待建的没有入口',
+  cardImpl.total === ALL.length &&
+    cardImpl.upgraded &&
+    cardImpl.ready > 0 &&
+    cardImpl.inert &&
+    cardImpl.actionsOk &&
+    cardImpl.plannedStatic &&
+    cardImpl.noStretch,
+  JSON.stringify(cardImpl),
+);
 check(
   '组件页自带二级菜单：总览 + 全部组件',
   compState.split === true && compState.navLinks === ALL.length + 1,
