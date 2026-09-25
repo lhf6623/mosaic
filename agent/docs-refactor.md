@@ -81,8 +81,8 @@ docs/
 ├── doc-palette.html / doc-cards.html                  ✅ 已落地（色板 / 卡片墙，原来的页面占位）
 ├── doc-layout.html / layout.html   布局页（页面模块，本来就带 <template page>）
 ├── content.css    只留宿主级样式（每页 <link>）
-└── site.js        ✅ 只剩 73 行：换页复位 + 滚轮接力（不再建 DOM、不再轮询）
-                    （docs/dom.js 已删除：原来三个使用者分别改成了模板 / 数据 / 组件）
+└── （docs/site.js 已删除：滚轮接力 + 换页复位并入外壳 docs/layout.html；
+                    docs/dom.js 也删了 —— 三个使用者分别改成模板 / 数据 / 组件）
 ```
 
 三条边界：
@@ -109,7 +109,7 @@ export function startRouteTracking() // 挂 hashchange + router-change，幂等�
 
 - **唯一写入口**：`track()` 里 `route()` → `locate()` → 写一次；其余只读。
 - **消费方**：ofa 组件（layout 顶栏 / doc-nav / 新 doc-crumb / doc-pager）把 **store 引用**挂进 `data`；
-  普通脚本（site.js）用 `watch()` 退回订阅。
+  没有视图的脚本用 `onRouteChange()` 订阅。
 - **换页复位**（`site.js:255` 的滚回顶部）算路由的副作用，收进订阅侧。
 
 ### 3.2 `docs/state/theme.js`
@@ -334,8 +334,11 @@ mc-menu-item[data-level='3'] {
 | 0    | 验 §6 的四条假设（一次性探针，不入库）                               | 探针结果补进 `research/state.md`             | ✅   |
 | 1    | `state/route.js` + `doc-crumb.html` / `doc-pager.html`（一次改完）   | `--site 01 02 04 05 08 09` + Breadcrumb 套件 | ✅   |
 | 2    | `doc-toc.html` 模板化（高亮走 B：结构进模板、命令式切 aria-current） | `--site 04 09`                               | ✅   |
-| 3    | 两个占位组件 + `site.js` 瘦身（两个 store 都没抽，理由见 §3.5）      | `--site 01 03 06`                            | ✅   |
-| 4    | `layout.html` 顶栏 + 清理注释 / README / `dom.js` 删除               | 收尾**全量一次**                             | ✅   |
+| 3    | 两个占位组件 + `site.js` 瘦身（两个 store 都没抽，理由见 §3.5）；    |
+
+       收尾把 site.js 并入外壳后删除 | `--site 01 03 06`                            | ✅   |
+
+| 4 | `layout.html` 顶栏 + 清理注释 / README / `dom.js` 删除 | 收尾**全量一次** | ✅ |
 
 每片都能单独回滚（新文件删掉 + 还原 1–2 个文件），不要跨片混提交。
 

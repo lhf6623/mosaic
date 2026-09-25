@@ -92,7 +92,7 @@ packages/
   boot/               mosaic.css（生成：令牌 + 工具类）、mosaic.js（attachShadow 补丁 + adopt）、shadow-base.css
   color/              tokens.css（生成：三层令牌）+ 令牌文档页
   <name>/             {name}.html 组件本体、page.html 文档页、demos/*.html 例子、test/*.test.mjs
-docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js doc-nav.html doc-crumb.html doc-pager.html doc-toc.html doc-cards.html doc-palette.html shell.css site.js
+docs/                 文档站的站点级资源：pages/ layout.html doc-layout.html content.css site-map.js routes.js state/route.js doc-nav.html doc-crumb.html doc-pager.html doc-toc.html doc-cards.html doc-palette.html shell.css
 tools/                gen-tokens.mjs（调色板 + 对比度自检）、build-css.mjs、serve.mjs
 tests/                smoke.mjs 入口 + lib/harness.mjs + site/*.mjs（跨组件不变量）
 agent/                规范文档（见上表）

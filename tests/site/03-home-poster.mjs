@@ -207,8 +207,8 @@ check(
 );
 
 /*
- * 换页复位：滚动在正文带上，复位就得打在它身上（site.js 的 route-change 里做；
- * 顶栏 olink 不触发 hashchange，那里同时听 router-change）。
+ * 换页复位：滚动在正文带上，复位就得打在它身上（外壳 docs/layout.html 的路由订阅里做，
+ * 见 docs/state/route.js；顶栏 olink 不触发 hashchange，所以两个信号都要听）。
  */
 await goHash('packages/color/page.html');
 await page.evaluate(() => {

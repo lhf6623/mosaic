@@ -1,8 +1,13 @@
 <template page>
   <!-- 文档站外壳（嵌套路由的布局页）：子页面用 export const parent 挂上来，正文走 <slot> -->
   <script>
-    /* 页面模块也能静态 import：ofa 编译期会把相对说明符改写成绝对 URL（实测），
-       所以导航数据、路由工具、aria-current 都直接用站点共用模块，不再各抄一份 */
+    /* 外壳的脚本：页面模块也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
+       所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。
+
+       这里同时是**站点级行为**的归属地（原来在 docs/site.js，已并入）：
+         · 换页复位：把 `.doc-main` 滚回顶部；
+         · 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。
+       两者都是「外壳的事」——滚的是外壳的正文带，接管的是外壳进出的两个浮动栏。 */
     import { hashOf } from './routes.js';
     import { TOPBAR, locate } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
@@ -10,6 +15,15 @@
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
     const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
+
+    /** 行高兜底：deltaMode 为「行」时的像素换算（同 packages/code 的滚轮接力） */
+    const WHEEL_LINE = 16;
+
+    function wheelPixels(event) {
+      if (event.deltaMode === 1) return event.deltaY * WHEEL_LINE;
+      if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
+      return event.deltaY;
+    }
 
     export default () => ({
       data: { themeLabel: '自动', links: [] },
@@ -27,16 +41,56 @@
         }));
         this.syncTopNav();
 
-        /* 高亮跟着路由走：只改 links[i].aria 这一个字段 —— o-fill 按 fill-key 复用节点，
-           绝不重建 DOM（真人点击的 mousedown/click 必须落在同一个节点上，04 套件盯着这条） */
-        this._unwatch = onRouteChange(() => this.syncTopNav());
+        /* 侧栏滚到底后把滚轮接力给正文带。
+           ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主
+           （实测是 o-page），只能用 composedPath() 认 <doc-nav> / <doc-toc> */
+        this._onWheel = (event) => this.forwardWheel(event);
+        document.addEventListener('wheel', this._onWheel, { passive: false });
+
+        /* 路由变化：只改 links[i].aria 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，
+           04 套件盯着这条），顺带把正文带滚回顶部 */
+        this._unwatch = onRouteChange(() => {
+          this.syncTopNav();
+          this.resetScroll();
+        });
       },
 
       detached() {
         this._unwatch?.();
+        document.removeEventListener('wheel', this._onWheel);
       },
 
       proto: {
+        /** 正文带：页面上唯一的滚动容器，住在外壳自己的 shadow root 里（不用穿透查） */
+        mainScroller() {
+          return this.ele.shadowRoot.querySelector('.doc-main');
+        },
+
+        resetScroll() {
+          this.mainScroller()?.scrollTo({ top: 0 });
+        },
+
+        /** 只有「栏内还能滚」时才不插手；到了边界就把这一次滚轮转给正文带 */
+        forwardWheel(event) {
+          if (!event.deltaY || event.ctrlKey || event.metaKey) return;
+
+          const host = event
+            .composedPath()
+            .find((node) => node instanceof Element && node.matches?.('doc-nav, doc-toc'));
+          if (!host) return;
+
+          const down = event.deltaY > 0;
+          const atTop = host.scrollTop <= 0;
+          const atBottom = host.scrollTop + host.clientHeight >= host.scrollHeight - 1;
+          if ((down && !atBottom) || (!down && !atTop)) return;
+
+          const scroller = this.mainScroller();
+          if (!scroller) return;
+
+          event.preventDefault(); // 拦掉「被吞掉的那一次」，改由我们转发
+          scroller.scrollTop += wheelPixels(event);
+        },
+
         /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
            不再需要那条 packages/<slug>/page.html 的兜底正则 */
         syncTopNav() {

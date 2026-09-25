@@ -161,14 +161,14 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
   页面正文又在 shadow root 里、URL fragment 也进不去。
 - 窄屏：≤ 78rem 收起右栏（退回两栏）；≤ 52rem 退化成「菜单在上（封顶 45vh）、正文在下」。
 
-因此换页复位要打在外壳的 `.doc-main` 上（`docs/site.js` 里做；它在 shadow root 里，要穿透查）。
+因此换页复位与滚轮接力都写在外壳 `docs/layout.html` 里（正文带是它自己 shadow root 里的元素，不用穿透查）。
 
 > ⚠️ 顶栏的 `<a olink>` 走 `history.pushState`，**不触发 `hashchange`**。
 > 凡是要「跟着路由走」的脚本都得同时听 o-app 冒泡的 `router-change` 事件
-> （`docs/site.js` 的换页处理、`docs/doc-nav.html` 的高亮都是这么接的）。
+> （`docs/layout.html` 的顶栏高亮 + 换页复位、`docs/doc-nav.html` 的左栏高亮都是这么接的）。
 
 > 页面里的占位现在是**组件**（`<doc-cards>` / `<doc-palette>`，见 `docs/doc-cards.html`、
-> `docs/doc-palette.html`）：挂载即渲染，`site.js` 不再轮询等页面到齐。
+> `docs/doc-palette.html`）：挂载即渲染，不再需要轮询等页面到齐。
 > **留下的历史教训**（将来再引入「运行时按需渲染页面内容」时会再踩）：
 > 收工条件必须是「**某个** `<o-page src>` 已经是 hash 指向的页面」（嵌套路由下有两个 o-page），
 > 不能是「`.doc-body` 换了」—— o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻
@@ -435,7 +435,7 @@ framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` �
 不是可以绕开的缺陷。
 
 > **边界**：不是所有东西都该塞进组件。跨 shadow 的**页面级行为**（滚轮接力、换页复位）写成普通模块
-> 就好 —— `docs/site.js` 现在 73 行，没有视图、也就没有理由造一个组件。
+> 就好 —— 现在它们住在外壳 `docs/layout.html` 里，没有视图、也就没有理由造一个组件。
 >
 > **守卫**：`tests/site/11-no-class-components.mjs`（node-only）扫 `docs/` 与 `packages/`，
 > 出现 `class … extends HTMLElement` 直接红。迁移配方（class 写法 ↔ 模板写法）见
