@@ -6,9 +6,8 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 在 HTML 里加一个 `<link>` 和一个 `<script type="module">`，就能用 `<mc-button>` ——
 没有 npm、没有打包器、没有脚手架、没有配置文件。
 
-**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` /
-`mc-breadcrumb` / `mc-card` / `mc-tag` 已实现；Icon / Badge / Spinner 与 M2、M3 的组件接口
-已经定稿，进度见[里程碑](./agent/PLAN.md#五里程碑)。
+**文档站**：<https://lhf6623.github.io/mosaic/> —— 组件清单、每个组件的例子与 API、
+设计令牌色板都在那里，站点自己就是用这套组件渲染的。
 
 ## 快速开始
 
@@ -35,23 +34,6 @@ CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过
 | `<l-m src>`  | 按需拉取并注册组件本体，一个组件一条                       |
 
 > 示例里的 `0.1.0` 是计划中的 M1 版本；仓库当前还没有 tag，首次发布前这些 URL 会 404。
-
-## 组件
-
-| 组件                           | 标签                                   | 状态      |
-| ------------------------------ | -------------------------------------- | --------- |
-| Button                         | `mc-button`                            | ✅ 已实现 |
-| Code                           | `mc-code`                              | ✅ 已实现 |
-| Collapse                       | `mc-collapse` / `mc-collapse-item`     | ✅ 已实现 |
-| Menu                           | `mc-menu` / `mc-menu-item`             | ✅ 已实现 |
-| Breadcrumb                     | `mc-breadcrumb` / `mc-breadcrumb-item` | ✅ 已实现 |
-| Card                           | `mc-card`                              | ✅ 已实现 |
-| Tag                            | `mc-tag`                               | ✅ 已实现 |
-| Icon / Badge / Spinner         | —                                      | M1 待建   |
-| 表单、反馈、浮层、布局共 15 个 | —                                      | M2 / M3   |
-
-逐组件的属性 / 事件 / 插槽 / `part` / 令牌见 [组件 API 规范](./agent/component-spec.md)。
-每个组件的用法示例在它自己的文档页里（`packages/<名字>/page.html`）。
 
 ## 用法要点
 
@@ -127,9 +109,10 @@ agent/                规范与设计文档（见下表）
 
 ## 文档站
 
-仓库自带一个可运行的文档站，**它自己就是一个 ofa.js 应用**（`o-router` + `o-app` +
-`<template page>` 页面模块 + 两层布局页），可直接用 GitHub Pages 托管 ——
-Pages 源设为 `main` 分支的仓库根即可，不需要 CI。
+**在线**：<https://lhf6623.github.io/mosaic/>（GitHub Pages，源设为 `main` 分支的仓库根，不需要 CI）。
+
+站点源码就在 `docs/`：**它自己就是一个 ofa.js 应用**（`o-router` + `o-app` +
+`<template page>` 页面模块 + 两层布局页），改文档与改组件一样，推上去就是新的。
 
 ```bash
 pnpm dev                                 # http://localhost:8642
