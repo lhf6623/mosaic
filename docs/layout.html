@@ -202,9 +202,10 @@
   <l-m src="../packages/code/code.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
-  <!-- 左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染：前者是 ofa 组件模板，
-       后者是站点级普通自定义元素（它扫页面自己的 h2/h3，见 docs/doc-toc.js） -->
+  <!-- 三栏里的两块：左栏二级菜单（<doc-nav>）与右栏本页目录（<doc-toc>）都用 mc-menu 渲染，
+       现在都是 ofa 组件模板（doc-toc 扫页面自己的 h2/h3，见 docs/doc-toc.html） -->
   <l-m src="./doc-nav.html"></l-m>
+  <l-m src="./doc-toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
   <!-- 组件页头部的面包屑 / 页尾的翻页：本身也是 ofa 组件模板（docs/doc-crumb.html / doc-pager.html），

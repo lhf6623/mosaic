@@ -1,13 +1,12 @@
-/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数），并注册 <doc-toc>。
- * <doc-nav> / <doc-crumb> / <doc-pager> 都是 ofa 组件模板，由 docs/layout.html 的 <l-m> 注册
- * （见各自同名文件）；路由信号统一走 docs/state/route.js。
+/* 文档站站点脚本：渲染页面里的占位（组件卡片 / 色板 / 计数）。
+ * <doc-nav> / <doc-crumb> / <doc-pager> / <doc-toc> 都是 ofa 组件模板，由 docs/layout.html
+ * 的 <l-m> 注册（见各自同名文件）；路由信号统一走 docs/state/route.js。
  * 页面模板其实也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
  * 但占位渲染要跨页共用、还得跟着路由轮询，所以统一留在这里。 */
 
 import { GROUPS, ALL, hasPage } from './site-map.js';
 import { route, hashOf } from './routes.js';
 import { el } from './dom.js';
-import { defineDocToc } from './doc-toc.js';
 import { onRouteChange, startRouteTracking } from './state/route.js';
 
 /** 穿透 shadow root 的查询（正文在 o-page 的 shadow root 里，document.querySelector 看不到） */
@@ -247,7 +246,6 @@ document.addEventListener(
 
 /* ---------- 启动 ---------- */
 
-defineDocToc();
 startRouteTracking(); // 全站唯一挂 hashchange + router-change 的地方（docs/state/route.js）
 scheduleRender();
 

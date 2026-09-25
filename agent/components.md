@@ -97,7 +97,7 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 
 > ⚠️ **跨 shadow 树找滚动祖先要走扁平树**（先看 `assignedSlot`）。
 > 子页面是被外壳的 `<slot>` 投影进去的，顺 `parentNode` 爬会从文档树绕过去。
-> （`docs/doc-toc.js` 的 `scroller()`、`packages/code/code.html` 的 `scrollableAncestor()` 都按这条写；
+> （`docs/doc-toc.html` 的 `scroller()`、`packages/code/code.html` 的 `scrollableAncestor()` 都按这条写；
 > 现在通常能找到外壳的 `.doc-main`；找不到才退回 `window` / `document.scrollingElement`。）
 >
 > 样式分两处是 shadow DOM 的硬边界，不是选择：外壳在布局页的 shadow root 里，
@@ -156,7 +156,7 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 - 左栏菜单（`docs/doc-nav.html`）是**站点级 ofa 组件模板**：结构 = `docs/site-map.js` 的树，
   由 `o-fill` 逐条铺出来，自己只管「渲染哪一支 + 谁是当前页」。条目样式写在它自己的
   `<style>` 里（组件自带 shadow root，`content.css` 够不到内部节点）。
-- 右栏目录（`docs/doc-toc.js`）扫页面自己的 `h2/h3` 生成，用 `mc-menu` 渲染；
+- 右栏目录（`docs/doc-toc.html`）扫页面自己的 `h2/h3` 生成，用 `mc-menu` 渲染；
   **点击是程序化滚动，不是 `#id` 锚点** —— 地址栏 hash 归 ofa 路由器所有，
   页面正文又在 shadow root 里、URL fragment 也进不去。
 - 窄屏：≤ 78rem 收起右栏（退回两栏）；≤ 52rem 退化成「菜单在上（封顶 45vh）、正文在下」。
@@ -172,7 +172,7 @@ body               height: 100% + overflow: hidden（把一屏兜住，window �
 > （嵌套路由下有两个 o-page），不能是「`.doc-body` 换了」——
 > o-app 启动会先加载首页再切到 hash 页，后者会在首页挂上那一刻就成立，
 > 真正那一页的占位永远没人渲染（冷启动时卡片区空白）。右栏目录也吃这条：
-> 标题晚到就靠 `MutationObserver` 重扫（`docs/doc-toc.js`）。
+> 标题晚到就靠 `MutationObserver` 重扫（`docs/doc-toc.html`）。
 
 #### 演示区：活样例 + 「查看代码」抽屉
 

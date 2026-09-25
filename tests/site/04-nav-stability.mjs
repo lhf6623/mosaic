@@ -97,7 +97,7 @@ const beforeSwitch = await page.evaluate(() => {
   return {
     navMax: nav.scrollHeight - nav.clientHeight,
     navScrollTop: Math.round(nav.scrollTop),
-    tocFirst: toc.querySelector('a')?.textContent?.trim() ?? null,
+    tocFirst: (toc?.shadowRoot ?? toc).querySelector('a')?.textContent?.trim() ?? null,
   };
 });
 
@@ -122,7 +122,7 @@ const afterSwitch = await page.evaluate(() => {
     navScrollTop: Math.round(nav?.scrollTop ?? -1),
     navCurrent:
       window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim() ?? null,
-    tocFirst: toc?.querySelector('a')?.textContent?.trim() ?? null,
+    tocFirst: toc?.shadowRoot?.querySelector('a')?.textContent?.trim() ?? null,
   };
 });
 

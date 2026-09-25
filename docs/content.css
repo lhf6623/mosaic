@@ -559,7 +559,7 @@ doc-nav {
   border-right: 1px solid rgb(var(--mc-color-border));
 }
 
-/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/doc-toc.js） */
+/* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/doc-toc.html） */
 doc-toc {
   right: 0;
   width: 14rem;

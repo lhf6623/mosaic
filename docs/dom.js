@@ -1,4 +1,4 @@
-/* 文档站共用的 DOM 小工具：site.js / doc-toc.js 都要建 DOM，
+/* 文档站共用的 DOM 小工具：site.js / doc-toc.html 都要建 DOM，
  * 抽一份免得各抄一遍（抄三份的下场是每次修坑都得改三处）。
  * <doc-nav> / <doc-crumb> / <doc-pager> 不走这里 —— 它们是 ofa 组件模板，结构由 o-fill 铺出来。 */
 

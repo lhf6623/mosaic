@@ -166,6 +166,32 @@ if ((el.getAttribute('max-height') || '').trim() !== '') …
 但**字符串**属性（哪怕默认是空串）会被反射，别把 `:host([max-height])` 当条件用。
 写完新组件，去 devtools 里看一眼宿主的属性列表最快。
 
+### P39 · `data` 的键也有保留名（实测 `entries`）：整个组件不渲染，报错却不说键名
+
+```js
+// ❌ 组件完全不渲染：customElements.get('doc-toc') 有定义，但宿主**没有 shadow root**
+export default () => ({ tag: 'doc-toc', data: { entries: [] } });
+// 控制台只有一条：Error: Failed to render the tag 'doc-toc'
+
+// ✅ 换个名字（实测 rows / 嵌套对象 / 数组本身都没问题）
+data: { rows: [] },
+```
+
+**实测边界**：`data: { entries: [] }`、`{ entries: [{…}] }`、`{ entries: ['a'] }`、
+异步 `export default async () => …` —— **全炸**；同一模板换成 `{ rows: [] }` 或 `{ a: { b: 1 } }`
+一律正常。跟模板里有没有引用它无关。
+
+**原因**：与 [P31](#p31--attrs-的键也不能撞保留名组件构造期不能往宿主写属性) 同一族 ——
+ofa 的数据层/实例占了 `entries` 这个名字，声明它会让整棵组件渲染流程抛错并被包成一句
+「Failed to render the tag 'X'」。
+
+**怎么定位**（这条的价值所在）：报错不指向键名，删模板、删 `<style>`、换子元素**都试不出来**。
+最快的路径是**二分 `data` 的键**：先把 `data` 缩成 `{}`，再逐个加回来。
+本次就是先怀疑模板、绕了三轮，最后才收敛到一行 `data` —— **先怀疑键名，再怀疑模板。**
+
+**已知保留名**：`attrs` 侧 `wrap`（[P31](#p31--attrs-的键也不能撞保留名组件构造期不能往宿主写属性)）；
+`data` 侧 `entries`。新组件起字段名时避开这些，报错信息给不了提示。
+
 ---
 
 ## 二、模板语法
@@ -408,7 +434,7 @@ o-app → …` —— **直接跳过了布局页的 shadow root**，而当时的
 el = el.assignedSlot ?? el.parentNode ?? el.getRootNode()?.host ?? null;
 ```
 
-`docs/doc-toc.js` 的 `scroller()` 与 `packages/code/code.html` 的 `scrollableAncestor()`
+`docs/doc-toc.html` 的 `scroller()` 与 `packages/code/code.html` 的 `scrollableAncestor()`
 都是按这条改的；同一条推论也适用于「找最近的宿主 / 找最近的容器」这类往上爬的代码。
 
 **同一族的另一条**：`position: sticky` 的滑动区间 = **它所在 grid 行的高度**。
@@ -504,11 +530,11 @@ document.addEventListener('router-change', sync); // olink / 前进后退
 ```
 
 Mosaic 里 `docs/site.js`（换页复位 + 占位渲染）、`docs/doc-nav.html`（二级菜单高亮，
-`ready()` 里挂、`detached()` 里摘）与 `docs/doc-toc.js` 都这么接。
+`ready()` 里挂、`detached()` 里摘）与 `docs/doc-toc.html` 都这么接。
 
 > 顺带一条同类坑：`parentNode` / `getRootNode().host` 走的是**节点树**，而滚动与投影按
 > **扁平树**。现在两栏浮动 + 窗口滚（见 `docs/content.css` 的分栏注释），
-> 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/doc-toc.js` 的 `scroller()` 与
+> 页面上已经没有「外壳里的滚动容器」这回事了；但 `docs/doc-toc.html` 的 `scroller()` 与
 > `packages/code/code.html` 的 `scrollableAncestor()` 仍然按扁平树走 —— 页面将来若重新引入
 > 内部滚动区，只有扁平树能找到它。
 

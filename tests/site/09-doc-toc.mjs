@@ -1,6 +1,9 @@
 /**
  * 站点 · 右栏「本页目录」（<doc-toc>）：
  * 扫标题生成、h3 缩进、点击滚到标题（且不改地址栏 hash）、滚动时高亮跟着走、窄屏收掉右栏
+ *
+ * ⚠️ <doc-toc> 现在是 ofa 组件模板、自带 shadow root：条目（mc-menu / a）都在它的 shadow 里，
+ * 所以下面取到宿主后一律走 `host.shadowRoot` 再查（`window.__deep` 只负责找到宿主本身）。
  */
 
 export default async function run({ page, goTop, goHash, check }) {
@@ -22,7 +25,8 @@ export default async function run({ page, goTop, goHash, check }) {
   const toc = await page.evaluate(() => {
     const el = window.__deep('doc-toc');
     const main = window.__deep('.doc-main');
-    const links = el ? [...el.querySelectorAll('a')] : [];
+    const root = el?.shadowRoot ?? el;
+    const links = root ? [...root.querySelectorAll('a')] : [];
     // 标题在子页面（被 slot 投影进来的那一页）的 shadow root 里，不在目录元素自己的 root 里
     const page = [...window.__deepAll('o-page')].at(-1);
     const headings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
@@ -32,13 +36,13 @@ export default async function run({ page, goTop, goHash, check }) {
       links: links.length,
       headings: headings.length,
       first: links[0]?.textContent?.trim() ?? null,
-      current: el?.querySelector('a[aria-current]')?.textContent?.trim() ?? null,
-      currentValue: el?.querySelector('a[aria-current]')?.getAttribute('aria-current') ?? null,
+      current: root?.querySelector('a[aria-current]')?.textContent?.trim() ?? null,
+      currentValue: root?.querySelector('a[aria-current]')?.getAttribute('aria-current') ?? null,
       idsMatch: links.every((a, i) => levels[i] === headings[i]?.id),
       indents: links.map((a) => getComputedStyle(a).textIndent),
       headingLevels: headings.map((h) => h.tagName),
       mainOver: main.scrollHeight - main.clientHeight,
-      menuUpgraded: !!el?.querySelector('mc-menu')?.shadowRoot,
+      menuUpgraded: !!root?.querySelector('mc-menu')?.shadowRoot,
     };
   });
 
@@ -67,13 +71,14 @@ export default async function run({ page, goTop, goHash, check }) {
 
   const spy = await page.evaluate(async () => {
     const el = window.__deep('doc-toc');
-    const before = el.querySelector('a[aria-current]')?.dataset.tocId ?? null;
+    const root = el?.shadowRoot ?? el;
+    const before = root.querySelector('a[aria-current]')?.dataset.tocId ?? null;
     // 滚动在顶栏下面的正文带里（window 不可滚）
     const main = window.__deep('.doc-main');
     main.scrollTop = Math.round(main.scrollHeight * 0.5);
     await new Promise((r) => setTimeout(r, 250));
-    const after = el.querySelector('a[aria-current]')?.dataset.tocId ?? null;
-    const host = [...el.querySelectorAll('mc-menu-item')].filter((i) => i.hasAttribute('data-current'));
+    const after = root.querySelector('a[aria-current]')?.dataset.tocId ?? null;
+    const host = [...root.querySelectorAll('mc-menu-item')].filter((i) => i.hasAttribute('data-current'));
     return { before, after, hostCurrent: host.length };
   });
   check(
@@ -89,12 +94,16 @@ export default async function run({ page, goTop, goHash, check }) {
 
   const target = await page.evaluate(() => {
     // 挑中段的项：接近页尾的标题滚不到顶，位置断言不成立
-    const links = [...window.__deep('doc-toc').querySelectorAll('a')];
+    const tocs = window.__deep('doc-toc');
+    const root = tocs?.shadowRoot ?? tocs;
+    const links = [...root.querySelectorAll('a')];
     const a = links[Math.min(2, links.length - 1)];
     return { id: a.dataset.tocId, text: a.textContent.trim(), hash: location.hash };
   });
   await page.evaluate((id) => {
-    const links = [...window.__deep('doc-toc').querySelectorAll('a')];
+    const hits = window.__deep('doc-toc');
+    const root = hits?.shadowRoot ?? hits;
+    const links = [...root.querySelectorAll('a')];
     links.find((a) => a.dataset.tocId === id).click();
   }, target.id);
   await page.waitForTimeout(1200); // 平滑滚动
@@ -108,7 +117,7 @@ export default async function run({ page, goTop, goHash, check }) {
       // 顶栏是 sticky，标题要落在它下面（scroll-margin-top 那条）
       topbarBottom: Math.round(topbar.getBoundingClientRect().bottom),
       headingTop: heading ? Math.round(heading.getBoundingClientRect().top) : null,
-      current: el.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+      current: (el?.shadowRoot ?? el).querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   }, target.id);
 
@@ -164,10 +173,11 @@ export default async function run({ page, goTop, goHash, check }) {
   const onButton = await page.evaluate(() => {
     const el = window.__deep('doc-toc');
     el.__probeId = 'toc-1';
+    const root = el.shadowRoot;
     return {
-      first: el.querySelector('a')?.textContent?.trim() ?? null,
-      count: el.querySelectorAll('a').length,
-      current: el.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+      first: root.querySelector('a')?.textContent?.trim() ?? null,
+      count: root.querySelectorAll('a').length,
+      current: root.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
 
@@ -177,9 +187,9 @@ export default async function run({ page, goTop, goHash, check }) {
     const el = window.__deep('doc-toc');
     return {
       same: el?.__probeId === 'toc-1',
-      first: el?.querySelector('a')?.textContent?.trim() ?? null,
-      count: el?.querySelectorAll('a').length ?? 0,
-      current: el?.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+      first: el?.shadowRoot?.querySelector('a')?.textContent?.trim() ?? null,
+      count: el?.shadowRoot?.querySelectorAll('a').length ?? 0,
+      current: el?.shadowRoot?.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
 

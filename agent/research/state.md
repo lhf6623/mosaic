@@ -153,13 +153,23 @@ $.getRootProvider('ctx').customColor = 'blue'; // ✅
 | 3 | 模板能表达布尔属性与自定义属性                            | ⚠️ 布尔 ✅（`attr:x="c ? '' : null"`：`''` 写、`null` 不写）；**`:style.<自定义属性>` ❌ 静默失效**；`:style.<标准属性>` 只认 **kebab-case**（`padding-left` ✅ / `paddingLeft` ❌） | 自定义属性要改用「`attr:data-*` 钩子 + 组件内 `<style>` 规则」发（实测可行） |
 | 4 | proto 里 `this` 是 ofa 实例，元素 API 要走 `this.ele`     | ✅ `typeof this.getRootNode === 'undefined'`，`this.ele.getRootNode` 是函数    | 迁移配方里所有元素 API 都要显式走 `this.ele`（`doc-toc` 的 `contentRoot()` 是第一个受害者） |
 
-**顺带验出来的两个坑**（都已收进 `ofa-pitfalls.md`）：
+**顺带验出来的三个坑**（都已收进 `ofa-pitfalls.md`）：
 
 - **P37 再验**：`data` 初值给 `null` / `{}` 而模板读嵌套路径 → 首帧
   `Error evaluating text expression`（页面照常、只进控制台）。store 引用必须先给同形状初值。
 - **P38（新）**：`o-fill` / `o-if` 的内容在它们自己的 light DOM 里，`display: contents`
   让布局看着正常，但容器的 `::slotted()` 匹配不到 —— 实测 `mc-breadcrumb` 的分隔符因此静默消失。
   阶段 1 的 `doc-crumb` 就踩了这条，改成「每一级直接写开 + 属性钩子控制整块显隐」才修好。
+- **P39（新，阶段 2 踩到）**：**`data` 的键也有保留名**，`data: { entries: … }` 会让**整个组件
+  不渲染**，控制台只有一句 `Failed to render the tag 'X'`（不说是哪个键）。实测边界：
+  `entries` 无论空数组 / 对象数组 / 字符串数组、同步或异步导出**全炸**；
+  换成 `rows` / 嵌套对象一律正常。定位靠**二分 `data` 的键** —— 删模板、删 `<style>`、
+  换子元素都试不出来（绕了三轮才想到）。
+
+**阶段 2 另一个实现细节**：模板渲染是异步的，`syncActive()` 必须在条目出现后才能切高亮。
+起手用 `$.nextTick()` 没用（首次 `rebuild()` 时 `mc-menu` 还没升级完），最后改成
+**给组件自己的 shadow root 挂一个 `childList` 观察者**，锚点一出现就补一次高亮 ——
+与「标题签名没变就提前返回」的 settle 重试解耦。
 
 **订阅为什么不用 `$.stanz` 的 `watch`**：它的返回值能不能退订没有官方说明，
 而组件会随切页反复建毁、退订必须可靠，所以 `docs/state/route.js` 自己维护一张订阅表
