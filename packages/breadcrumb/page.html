@@ -22,145 +22,7 @@
       <span class="doc-badge">packages/breadcrumb/</span>
     </p>
 
-    <h2>mc-breadcrumb</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>separator</code></td>
-          <td>字符串</td>
-          <td><code>/</code></td>
-          <td>
-            级与级之间的分隔符。非默认值优先于 <code>--mc-breadcrumb-sep</code> 令牌； 空值与
-            <code>/</code> 都按默认处理（令牌照旧生效）
-          </td>
-        </tr>
-        <tr>
-          <td><code>label</code></td>
-          <td>字符串</td>
-          <td><code>面包屑</code></td>
-          <td>导航区块的无障碍名（渲染成 <code>&lt;nav aria-label&gt;</code>）</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>插槽 / part</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>每一级 <code>mc-breadcrumb-item</code></td>
-        </tr>
-        <tr>
-          <td><code>part="base"</code></td>
-          <td>内层 <code>&lt;nav&gt;</code>（导航区块本身）</td>
-        </tr>
-        <tr>
-          <td><code>part="list"</code></td>
-          <td>内层 <code>&lt;ol&gt;</code>（换行 / 对齐 / 间距）</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      语义在容器上：<code>mc-breadcrumb</code> 渲染 <code>&lt;nav aria-label&gt;</code> +
-      <code>&lt;ol role="list"&gt;</code>，每一级的 <code>role="listitem"</code>
-      由组件自己补，不用手写。
-    </p>
-
-    <h2>mc-breadcrumb-item</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>current</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>
-            当前页（最后一级）。字色更实、字重加重，并自动带上 <code>aria-current="page"</code>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      <strong>可点的一级：把原生 <code>&lt;a&gt;</code> 写在插槽里</strong>，它自己承载
-      <code>href</code> / <code>target</code> / <code>rel</code> 与键盘行为； 当前页写纯文本 +
-      <code>current</code>：
-    </p>
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-              &lt;mc-breadcrumb&gt;
-                &lt;mc-breadcrumb-item&gt;&lt;a href="/components"&gt;组件&lt;/a&gt;&lt;/mc-breadcrumb-item&gt;
-                &lt;mc-breadcrumb-item current&gt;面包屑&lt;/mc-breadcrumb-item&gt;
-              &lt;/mc-breadcrumb&gt;
-            </mc-code>
-
-    <h2>定制：L3 令牌</h2>
-    <p>
-      面包屑的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
-      <code>mc-breadcrumb</code> 的 <code>style</code> 上（令牌随继承进每一级的 shadow root）：
-    </p>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>令牌</th>
-          <th>默认</th>
-          <th>作用</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>--mc-breadcrumb-sep</code></td>
-          <td><code>'/'</code></td>
-          <td>
-            分隔符（CSS 字符串，要带引号）。<code>separator</code> 属性会压过它 ——
-            两者写同一个值就只用属性
-          </td>
-        </tr>
-        <tr>
-          <td><code>--mc-breadcrumb-sep-color</code></td>
-          <td><code>--mc-color-fg-subtle</code></td>
-          <td>分隔符颜色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-breadcrumb-gap</code></td>
-          <td><code>--mc-space-2</code></td>
-          <td>级与级之间的间距（也是分隔符与文字的间距）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-breadcrumb-item-color</code></td>
-          <td><code>--mc-color-fg-muted</code></td>
-          <td>普通一级的链接文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-breadcrumb-item-color-hover</code></td>
-          <td><code>--mc-color-fg</code></td>
-          <td>悬停文字（同时加下划线）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-breadcrumb-current-color</code></td>
-          <td><code>--mc-color-fg</code></td>
-          <td>当前页文字</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
@@ -217,7 +79,162 @@
       </p>
     </section>
 
+    <h2>API</h2>
+
+    <h3>mc-breadcrumb</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>separator</code></td>
+          <td>字符串</td>
+          <td><code>/</code></td>
+          <td>
+            级与级之间的分隔符。非默认值优先于 <code>--mc-breadcrumb-sep</code> 令牌； 空值与
+            <code>/</code> 都按默认处理（令牌照旧生效）
+          </td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>字符串</td>
+          <td><code>面包屑</code></td>
+          <td>导航区块的无障碍名（渲染成 <code>&lt;nav aria-label&gt;</code>）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>mc-breadcrumb-item</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>current</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>
+            当前页（最后一级）。字色更实、字重加重，并自动带上 <code>aria-current="page"</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽 / part</h2>
+
+    <h3>mc-breadcrumb</h3>
+
+    <p>
+      语义在容器上：<code>mc-breadcrumb</code> 渲染 <code>&lt;nav aria-label&gt;</code> +
+      <code>&lt;ol role="list"&gt;</code>，每一级的 <code>role="listitem"</code>
+      由组件自己补，不用手写。
+    </p>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽 / part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>每一级 <code>mc-breadcrumb-item</code></td>
+        </tr>
+        <tr>
+          <td><code>part="base"</code></td>
+          <td>内层 <code>&lt;nav&gt;</code>（导航区块本身）</td>
+        </tr>
+        <tr>
+          <td><code>part="list"</code></td>
+          <td>内层 <code>&lt;ol&gt;</code>（换行 / 对齐 / 间距）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>mc-breadcrumb-item</h3>
+
+    <p>
+      <strong>可点的一级：把原生 <code>&lt;a&gt;</code> 写在插槽里</strong>，它自己承载
+      <code>href</code> / <code>target</code> / <code>rel</code> 与键盘行为； 当前页写纯文本 +
+      <code>current</code>：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+              &lt;mc-breadcrumb&gt;
+                &lt;mc-breadcrumb-item&gt;&lt;a href="/components"&gt;组件&lt;/a&gt;&lt;/mc-breadcrumb-item&gt;
+                &lt;mc-breadcrumb-item current&gt;面包屑&lt;/mc-breadcrumb-item&gt;
+              &lt;/mc-breadcrumb&gt;
+            </mc-code>
+
+    <h2>定制：L3 令牌 + ::part()</h2>
+
+    <p>
+      面包屑的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
+      <code>mc-breadcrumb</code> 的 <code>style</code> 上（令牌随继承进每一级的 shadow root）：
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>令牌</th>
+          <th>默认</th>
+          <th>作用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--mc-breadcrumb-sep</code></td>
+          <td><code>'/'</code></td>
+          <td>
+            分隔符（CSS 字符串，要带引号）。<code>separator</code> 属性会压过它 ——
+            两者写同一个值就只用属性
+          </td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-sep-color</code></td>
+          <td><code>--mc-color-fg-subtle</code></td>
+          <td>分隔符颜色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-gap</code></td>
+          <td><code>--mc-space-2</code></td>
+          <td>级与级之间的间距（也是分隔符与文字的间距）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-item-color</code></td>
+          <td><code>--mc-color-fg-muted</code></td>
+          <td>普通一级的链接文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-item-color-hover</code></td>
+          <td><code>--mc-color-fg</code></td>
+          <td>悬停文字（同时加下划线）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-current-color</code></td>
+          <td><code>--mc-color-fg</code></td>
+          <td>当前页文字</td>
+        </tr>
+      </tbody>
+    </table>
+
     <h2>注意事项</h2>
+
     <ul>
       <li>
         <strong>链接必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code>）。组件不造链接：

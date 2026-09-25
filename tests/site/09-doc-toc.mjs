@@ -174,9 +174,11 @@ export default async function run({ page, goTop, goHash, check }) {
     const el = window.__deep('doc-toc');
     el.__probeId = 'toc-1';
     const root = el.shadowRoot;
+    const items = [...root.querySelectorAll('a')].map((a) => a.textContent.trim());
     return {
-      first: root.querySelector('a')?.textContent?.trim() ?? null,
-      count: root.querySelectorAll('a').length,
+      /** 组件页现在都以「例子」开头（文档页骨架统一了），首项区分不了两页 —— 比整份目录 */
+      items,
+      count: items.length,
       current: root.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
@@ -185,18 +187,25 @@ export default async function run({ page, goTop, goHash, check }) {
   await page.waitForTimeout(1200);
   const onMenu = await page.evaluate(() => {
     const el = window.__deep('doc-toc');
+    const items = [...(el?.shadowRoot?.querySelectorAll('a') ?? [])].map((a) =>
+      a.textContent.trim(),
+    );
     return {
       same: el?.__probeId === 'toc-1',
-      first: el?.shadowRoot?.querySelector('a')?.textContent?.trim() ?? null,
-      count: el?.shadowRoot?.querySelectorAll('a').length ?? 0,
+      items,
+      count: items.length,
       current: el?.shadowRoot?.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
 
   check(
     '换页后目录跟着换：元素跨页存活，内容扫的是新页的标题',
-    onMenu.same && onButton.count > 4 && onMenu.count > 4 && onMenu.first !== onButton.first && onMenu.current !== null,
-    `同元素=${onMenu.same} · 首项 ${onButton.first}(${onButton.count}) → ${onMenu.first}(${onMenu.count})`,
+    onMenu.same &&
+      onButton.count > 4 &&
+      onMenu.count > 4 &&
+      onMenu.items.join('|') !== onButton.items.join('|') &&
+      onMenu.current !== null,
+    `同元素=${onMenu.same} · button ${onButton.items.slice(0, 3).join(' / ')}(${onButton.count}) · menu ${onMenu.items.slice(0, 3).join(' / ')}(${onMenu.count})`,
   );
 
   /* ------------------------------------------------------------------ *

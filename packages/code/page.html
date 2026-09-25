@@ -26,121 +26,7 @@
       <span class="doc-badge">packages/code/</span>
     </p>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>src</code></td>
-          <td>URL</td>
-          <td>—</td>
-          <td>
-            <strong>片段文件</strong>：长片段或需要转义的片段放独立文件，优先级最高；缺
-            <code>language</code> 时按后缀推断
-          </td>
-        </tr>
-        <tr>
-          <td><code>code</code></td>
-          <td>字符串（可多行）</td>
-          <td>—</td>
-          <td>
-            代码文本；不写则读<strong>标签里的纯文本</strong>。<code>el.code</code>
-            是同一份值的运行时入口
-          </td>
-        </tr>
-        <tr>
-          <td><code>language</code></td>
-          <td>
-            语言 id 或别名（<code>js</code> <code>ts</code> <code>html</code> <code>css</code>
-            <code>json</code> <code>bash</code>…）
-          </td>
-          <td>—</td>
-          <td>留空或写 <code>text</code> / <code>none</code> 表示不高亮</td>
-        </tr>
-        <tr>
-          <td><code>line-numbers</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>显示行号（真实 DOM 文本，靠 <code>user-select: none</code> 不参与复制）</td>
-        </tr>
-        <tr>
-          <td><code>max-height</code></td>
-          <td>数字（px）或 CSS 长度</td>
-          <td>—</td>
-          <td>内容超过时内部滚动，如 <code>max-height="200"</code> / <code>"12rem"</code></td>
-        </tr>
-        <tr>
-          <td><code>soft-wrap</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>长行折行，而不是横向滚动</td>
-        </tr>
-        <tr>
-          <td><code>hljs-theme</code></td>
-          <td>官方主题名</td>
-          <td><code>github</code></td>
-          <td>亮色主题，取自 highlight.js 的 <code>styles/</code></td>
-        </tr>
-        <tr>
-          <td><code>hljs-theme-dark</code></td>
-          <td>官方主题名</td>
-          <td><code>github-dark</code></td>
-          <td>暗色主题</td>
-        </tr>
-        <tr>
-          <td><code>hljs-base</code></td>
-          <td>URL</td>
-          <td>内置固定版本 CDN</td>
-          <td>highlight.js 的 <code>build/</code> 目录，换自托管 / 换镜像用</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>part</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>body</code></td>
-          <td>滚动容器（<code>max-height</code> 作用在它身上）</td>
-        </tr>
-        <tr>
-          <td><code>pre</code> <code>code</code></td>
-          <td>等宽排版层 / 高亮产物层</td>
-        </tr>
-        <tr>
-          <td><code>line</code></td>
-          <td>行号模式下的每一行</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>代码文本怎么传</h2>
-    <p>
-      优先级：<code>src</code> &gt; <code>code</code> 属性 &gt; 标签内文本。<code>el.code</code>
-      读写当前原文（写入立刻重渲染）。
-    </p>
-    <ul>
-      <li>标签里直接贴 —— 短片段最好读</li>
-      <li><code>code="…"</code> —— 单行或多行都行</li>
-      <li><code>:code="变量"</code> —— ofa 模板绑定，从页面/组件数据里取</li>
-      <li>
-        <code>src="…"</code> —— 长片段、或含 <code>&lt;script&gt;</code> / 大量
-        <code>&lt;</code> 的片段放独立文件
-      </li>
-    </ul>
+    <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
@@ -259,6 +145,122 @@
         <code>::part()</code>。
       </p>
     </section>
+
+    <h2>API</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td>URL</td>
+          <td>—</td>
+          <td>
+            <strong>片段文件</strong>：长片段或需要转义的片段放独立文件，优先级最高；缺
+            <code>language</code> 时按后缀推断
+          </td>
+        </tr>
+        <tr>
+          <td><code>code</code></td>
+          <td>字符串（可多行）</td>
+          <td>—</td>
+          <td>
+            代码文本；不写则读<strong>标签里的纯文本</strong>。<code>el.code</code>
+            是同一份值的运行时入口
+          </td>
+        </tr>
+        <tr>
+          <td><code>language</code></td>
+          <td>
+            语言 id 或别名（<code>js</code> <code>ts</code> <code>html</code> <code>css</code>
+            <code>json</code> <code>bash</code>…）
+          </td>
+          <td>—</td>
+          <td>留空或写 <code>text</code> / <code>none</code> 表示不高亮</td>
+        </tr>
+        <tr>
+          <td><code>line-numbers</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>显示行号（真实 DOM 文本，靠 <code>user-select: none</code> 不参与复制）</td>
+        </tr>
+        <tr>
+          <td><code>max-height</code></td>
+          <td>数字（px）或 CSS 长度</td>
+          <td>—</td>
+          <td>内容超过时内部滚动，如 <code>max-height="200"</code> / <code>"12rem"</code></td>
+        </tr>
+        <tr>
+          <td><code>soft-wrap</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>长行折行，而不是横向滚动</td>
+        </tr>
+        <tr>
+          <td><code>hljs-theme</code></td>
+          <td>官方主题名</td>
+          <td><code>github</code></td>
+          <td>亮色主题，取自 highlight.js 的 <code>styles/</code></td>
+        </tr>
+        <tr>
+          <td><code>hljs-theme-dark</code></td>
+          <td>官方主题名</td>
+          <td><code>github-dark</code></td>
+          <td>暗色主题</td>
+        </tr>
+        <tr>
+          <td><code>hljs-base</code></td>
+          <td>URL</td>
+          <td>内置固定版本 CDN</td>
+          <td>highlight.js 的 <code>build/</code> 目录，换自托管 / 换镜像用</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>文字怎么传</h3>
+    <p>
+      优先级：<code>src</code> &gt; <code>code</code> 属性 &gt; 标签内文本。<code>el.code</code>
+      读写当前原文（写入立刻重渲染）。
+    </p>
+    <ul>
+      <li>标签里直接贴 —— 短片段最好读</li>
+      <li><code>code="…"</code> —— 单行或多行都行</li>
+      <li><code>:code="变量"</code> —— ofa 模板绑定，从页面/组件数据里取</li>
+      <li>
+        <code>src="…"</code> —— 长片段、或含 <code>&lt;script&gt;</code> / 大量
+        <code>&lt;</code> 的片段放独立文件
+      </li>
+    </ul>
+
+    <h2>插槽 / part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>body</code></td>
+          <td>滚动容器（<code>max-height</code> 作用在它身上）</td>
+        </tr>
+        <tr>
+          <td><code>pre</code> <code>code</code></td>
+          <td>等宽排版层 / 高亮产物层</td>
+        </tr>
+        <tr>
+          <td><code>line</code></td>
+          <td>行号模式下的每一行</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h2>注意事项</h2>
     <ul>

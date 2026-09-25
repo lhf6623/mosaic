@@ -23,81 +23,7 @@
       <span class="doc-badge">packages/button/</span>
     </p>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>color</code></td>
-          <td>六个语义色</td>
-          <td><code>primary</code></td>
-          <td>语义色</td>
-        </tr>
-        <tr>
-          <td><code>variant</code></td>
-          <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
-          <td><code>filled</code></td>
-          <td>外观样式</td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>尺寸</td>
-        </tr>
-        <tr>
-          <td><code>type</code></td>
-          <td><code>button</code> <code>submit</code> <code>reset</code></td>
-          <td><code>button</code></td>
-          <td>转发给内部原生 button</td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>禁用</td>
-        </tr>
-        <tr>
-          <td><code>loading</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>加载中，显示 spinner 且不可点</td>
-        </tr>
-        <tr>
-          <td><code>block</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>撑满父容器宽度</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>插槽</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>（默认）</td>
-          <td>按钮文案</td>
-        </tr>
-        <tr>
-          <td><code>prefix</code> / <code>suffix</code></td>
-          <td>前置 / 后置图标</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>语义色</h3>
@@ -173,6 +99,86 @@
         <code>--mc-button-accent</code> 是组件的色槽。
       </p>
     </section>
+
+    <h2>API</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>color</code></td>
+          <td>六个语义色</td>
+          <td><code>primary</code></td>
+          <td>语义色</td>
+        </tr>
+        <tr>
+          <td><code>variant</code></td>
+          <td><code>filled</code> <code>outline</code> <code>ghost</code></td>
+          <td><code>filled</code></td>
+          <td>外观样式</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>尺寸</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td><code>button</code> <code>submit</code> <code>reset</code></td>
+          <td><code>button</code></td>
+          <td>转发给内部原生 button</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>禁用</td>
+        </tr>
+        <tr>
+          <td><code>loading</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>加载中，显示 spinner 且不可点</td>
+        </tr>
+        <tr>
+          <td><code>block</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>撑满父容器宽度</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽 / part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>（默认）</td>
+          <td>按钮文案</td>
+        </tr>
+        <tr>
+          <td><code>prefix</code> / <code>suffix</code></td>
+          <td>前置 / 后置图标</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      没有 part：视觉全在宿主 <code>:host</code> 上，外部 <code>style="…"</code> 直接覆盖（见最后
+      一个例子）。
+    </p>
 
     <h2>注意事项</h2>
     <ul>

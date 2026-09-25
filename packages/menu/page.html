@@ -24,185 +24,7 @@
       <span class="doc-badge">packages/menu/</span>
     </p>
 
-    <h2>mc-menu</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>菜单项高度 / 内边距 / 字号</td>
-        </tr>
-        <tr>
-          <td><code>variant</code></td>
-          <td><code>plain</code> <code>surface</code></td>
-          <td><code>plain</code></td>
-          <td><code>surface</code> 加一圈边框底色，当卡片用</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>插槽 / part</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>菜单项 <code>mc-menu-item</code></td>
-        </tr>
-        <tr>
-          <td><code>part="list"</code></td>
-          <td>内层列表容器（项间距 / 布局）</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      列表语义挂在容器上：<code>mc-menu</code> 的列表是 <code>role="list"</code>， 菜单项的
-      <code>role="listitem"</code> 由组件自己补，不用手写。
-    </p>
-
-    <h2>mc-menu-item</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>group</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>分组标题行：纯文字、不可交互，不进列表项语义</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      <strong>状态不写在菜单项上，写在插槽里的原生元素上</strong> —— 这样键盘、焦点、
-      读屏语义全是浏览器给的，组件只按属性给出外观：
-    </p>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>状态</th>
-          <th>怎么写</th>
-          <th>组件做什么</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>当前项</td>
-          <td><code>&lt;a aria-current="page"&gt;</code></td>
-          <td>换底色与字色，字重加粗</td>
-        </tr>
-        <tr>
-          <td>悬停</td>
-          <td>不用写</td>
-          <td>整行浅底</td>
-        </tr>
-        <tr>
-          <td>禁用</td>
-          <td>
-            <code>&lt;button disabled&gt;</code>；<br />
-            链接要 <code>aria-disabled="true"</code> 并去掉 <code>href</code>
-          </td>
-          <td>压暗到 50%，光标 <code>not-allowed</code>，悬停不亮</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      两个状态由组件从插槽元素读出来、写到菜单项自己的宿主属性上：
-      <code>data-current</code> / <code>data-disabled</code>。想在外层 CSS 里按状态写样式，
-      直接选它们就行。另外<strong>行的盒子在 <code>&lt;mc-menu-item&gt;</code> 上</strong>
-      （高度、内边距、底色、文字缩进都在宿主，插槽元素只是一层铺满整行的交互层），
-      所以定宽、限高、改底色都写在这个标签上。
-    </p>
-
-    <h2>定制：L3 令牌</h2>
-    <p>
-      菜单项的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
-      <code>mc-menu</code> 的 <code>style</code> 上（令牌随继承进子项的 shadow root）：
-    </p>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>令牌</th>
-          <th>默认</th>
-          <th>作用</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>--mc-menu-item-h</code></td>
-          <td><code>--mc-control-h-md</code></td>
-          <td>菜单项行高（<code>size</code> 会改它）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-pad-x</code></td>
-          <td><code>--mc-space-4</code></td>
-          <td>行的左右内边距</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-font</code></td>
-          <td><code>--mc-text-sm</code></td>
-          <td>字号</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-gap</code></td>
-          <td><code>--mc-space-1</code></td>
-          <td>项与项之间的间距</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-radius</code></td>
-          <td><code>--mc-radius-md</code></td>
-          <td>行的圆角</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color</code></td>
-          <td><code>--mc-color-fg-muted</code></td>
-          <td>普通项文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color-hover</code></td>
-          <td><code>--mc-color-fg</code></td>
-          <td>悬停文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color-current</code></td>
-          <td><code>--mc-color-primary</code></td>
-          <td>当前项文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-bg-hover</code></td>
-          <td><code>--mc-color-surface-sunken</code></td>
-          <td>悬停底色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-bg-current</code></td>
-          <td><code>--mc-color-primary-subtle</code></td>
-          <td>当前项底色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-group-color</code></td>
-          <td><code>--mc-color-fg-subtle</code></td>
-          <td>分组标题文字</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
@@ -288,6 +110,202 @@
         <code>mc-menu::part(list)</code>。
       </p>
     </section>
+
+    <h2>API</h2>
+
+    <h3>mc-menu</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>菜单项高度 / 内边距 / 字号</td>
+        </tr>
+        <tr>
+          <td><code>variant</code></td>
+          <td><code>plain</code> <code>surface</code></td>
+          <td><code>plain</code></td>
+          <td><code>surface</code> 加一圈边框底色，当卡片用</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>mc-menu-item</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>group</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>分组标题行：纯文字、不可交互，不进列表项语义</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽 / part</h2>
+
+    <h3>mc-menu</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽 / part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>菜单项 <code>mc-menu-item</code></td>
+        </tr>
+        <tr>
+          <td><code>part="list"</code></td>
+          <td>内层列表容器（项间距 / 布局）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      列表语义挂在容器上：<code>mc-menu</code> 的列表是 <code>role="list"</code>， 菜单项的
+      <code>role="listitem"</code> 由组件自己补，不用手写。
+    </p>
+
+    <h3>mc-menu-item</h3>
+
+    <p>
+      <strong>状态不写在菜单项上，写在插槽里的原生元素上</strong> —— 这样键盘、焦点、
+      读屏语义全是浏览器给的，组件只按属性给出外观：
+    </p>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>状态</th>
+          <th>怎么写</th>
+          <th>组件做什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>当前项</td>
+          <td><code>&lt;a aria-current="page"&gt;</code></td>
+          <td>换底色与字色，字重加粗</td>
+        </tr>
+        <tr>
+          <td>悬停</td>
+          <td>不用写</td>
+          <td>整行浅底</td>
+        </tr>
+        <tr>
+          <td>禁用</td>
+          <td>
+            <code>&lt;button disabled&gt;</code>；<br />
+            链接要 <code>aria-disabled="true"</code> 并去掉 <code>href</code>
+          </td>
+          <td>压暗到 50%，光标 <code>not-allowed</code>，悬停不亮</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      两个状态由组件从插槽元素读出来、写到菜单项自己的宿主属性上：
+      <code>data-current</code> / <code>data-disabled</code>。想在外层 CSS 里按状态写样式，
+      直接选它们就行。另外<strong>行的盒子在 <code>&lt;mc-menu-item&gt;</code> 上</strong>
+      （高度、内边距、底色、文字缩进都在宿主，插槽元素只是一层铺满整行的交互层），
+      所以定宽、限高、改底色都写在这个标签上。
+    </p>
+
+    <h2>定制：L3 令牌 + ::part()</h2>
+
+    <p>
+      菜单项的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
+      <code>mc-menu</code> 的 <code>style</code> 上（令牌随继承进子项的 shadow root）：
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>令牌</th>
+          <th>默认</th>
+          <th>作用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--mc-menu-item-h</code></td>
+          <td><code>--mc-control-h-md</code></td>
+          <td>菜单项行高（<code>size</code> 会改它）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-pad-x</code></td>
+          <td><code>--mc-space-4</code></td>
+          <td>行的左右内边距</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-font</code></td>
+          <td><code>--mc-text-sm</code></td>
+          <td>字号</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-gap</code></td>
+          <td><code>--mc-space-1</code></td>
+          <td>项与项之间的间距</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-radius</code></td>
+          <td><code>--mc-radius-md</code></td>
+          <td>行的圆角</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-item-color</code></td>
+          <td><code>--mc-color-fg-muted</code></td>
+          <td>普通项文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-item-color-hover</code></td>
+          <td><code>--mc-color-fg</code></td>
+          <td>悬停文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-item-color-current</code></td>
+          <td><code>--mc-color-primary</code></td>
+          <td>当前项文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-item-bg-hover</code></td>
+          <td><code>--mc-color-surface-sunken</code></td>
+          <td>悬停底色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-item-bg-current</code></td>
+          <td><code>--mc-color-primary-subtle</code></td>
+          <td>当前项底色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-menu-group-color</code></td>
+          <td><code>--mc-color-fg-subtle</code></td>
+          <td>分组标题文字</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h2>注意事项</h2>
     <ul>

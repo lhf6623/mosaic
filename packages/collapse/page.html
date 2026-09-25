@@ -23,131 +23,7 @@
       <span class="doc-badge">packages/collapse/</span>
     </p>
 
-    <h2>mc-collapse</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>accordion</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>手风琴：同一时刻只允许一个子项展开</td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>头部高度 / 内边距 / 字号</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>插槽</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>（默认）</td>
-          <td>子项 <code>mc-collapse-item</code></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>mc-collapse-item</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>属性</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>header</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>头部文案。富内容用同名的 <code>header</code> 插槽</td>
-        </tr>
-        <tr>
-          <td><code>name</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>标识。<code>open</code>/<code>close</code> 事件的 <code>$event.data.name</code></td>
-        </tr>
-        <tr>
-          <td><code>open</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>展开状态。既是初始值也是运行时状态（JS 里读写 <code>item.open</code>）</td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>禁用：点不动、<kbd>Tab</kbd> 跳过、读屏可感知</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>插槽 / part</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽 <code>header</code></td>
-          <td>头部内容，给了就覆盖 <code>header</code> 属性的纯文本</td>
-        </tr>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>面板内容</td>
-        </tr>
-        <tr>
-          <td><code>part="header"</code></td>
-          <td>头部</td>
-        </tr>
-        <tr>
-          <td><code>part="body"</code></td>
-          <td>内容区</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>事件</th>
-          <th>触发</th>
-          <th><code>$event.data</code></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>open</code></td>
-          <td>展开时在<strong>子项</strong>上触发</td>
-          <td><code>{ name }</code></td>
-        </tr>
-        <tr>
-          <td><code>close</code></td>
-          <td>收起时在<strong>子项</strong>上触发</td>
-          <td><code>{ name }</code></td>
-        </tr>
-      </tbody>
-    </table>
-    <p>两个事件都会冒泡穿过 shadow 边界，所以挂在容器上就能收全部子项的通知。</p>
+    <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
@@ -244,6 +120,145 @@
         <code>::part(body)</code>。
       </p>
     </section>
+
+    <h2>API</h2>
+
+    <h3>mc-collapse</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>accordion</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>手风琴：同一时刻只允许一个子项展开</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>头部高度 / 内边距 / 字号</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>mc-collapse-item</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>header</code></td>
+          <td>字符串</td>
+          <td>—</td>
+          <td>头部文案。富内容用同名的 <code>header</code> 插槽</td>
+        </tr>
+        <tr>
+          <td><code>name</code></td>
+          <td>字符串</td>
+          <td>—</td>
+          <td>标识。<code>open</code>/<code>close</code> 事件的 <code>$event.data.name</code></td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>展开状态。既是初始值也是运行时状态（JS 里读写 <code>item.open</code>）</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>禁用：点不动、<kbd>Tab</kbd> 跳过、读屏可感知</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>事件</th>
+          <th>触发</th>
+          <th><code>$event.data</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>open</code></td>
+          <td>展开时在<strong>子项</strong>上触发</td>
+          <td><code>{ name }</code></td>
+        </tr>
+        <tr>
+          <td><code>close</code></td>
+          <td>收起时在<strong>子项</strong>上触发</td>
+          <td><code>{ name }</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>两个事件都会冒泡穿过 shadow 边界，所以挂在容器上就能收全部子项的通知。</p>
+
+    <h2>插槽 / part</h2>
+
+    <h3>mc-collapse</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>（默认）</td>
+          <td>子项 <code>mc-collapse-item</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>mc-collapse-item</h3>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽 / part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽 <code>header</code></td>
+          <td>头部内容，给了就覆盖 <code>header</code> 属性的纯文本</td>
+        </tr>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>面板内容</td>
+        </tr>
+        <tr>
+          <td><code>part="header"</code></td>
+          <td>头部</td>
+        </tr>
+        <tr>
+          <td><code>part="body"</code></td>
+          <td>内容区</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h2>注意事项</h2>
     <ul>
