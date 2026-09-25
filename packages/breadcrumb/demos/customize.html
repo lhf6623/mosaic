@@ -1,0 +1,19 @@
+<template component>
+  <mc-breadcrumb
+    style="
+      --mc-breadcrumb-item-color: var(--mc-color-fg-subtle);
+      --mc-breadcrumb-current-color: var(--mc-color-primary);
+      --mc-breadcrumb-sep-color: var(--mc-color-fg);
+      --mc-breadcrumb-gap: var(--mc-space-3);
+      --mc-breadcrumb-sep: '→';
+    "
+  >
+    <mc-breadcrumb-item><a href="#/docs/pages/home.html">首页</a></mc-breadcrumb-item>
+    <mc-breadcrumb-item><a href="#/docs/pages/components.html">组件</a></mc-breadcrumb-item>
+    <mc-breadcrumb-item current>面包屑</mc-breadcrumb-item>
+  </mc-breadcrumb>
+
+  <script>
+    export default async () => ({ tag: 'demo-breadcrumb-customize' });
+  </script>
+</template>

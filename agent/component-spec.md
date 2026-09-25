@@ -126,31 +126,32 @@ btn.removeAttribute('disabled');
 
 ## 二、组件索引
 
-| 组件            | 标签                               | 目录        | 里程碑 | 状态      |
-| --------------- | ---------------------------------- | ----------- | ------ | --------- |
-| Button          | `mc-button`                        | `button/`   | M1     | ✅ 已实现 |
-| Code            | `mc-code`                          | `code/`     | M1     | ✅ 已实现 |
-| Collapse        | `mc-collapse` / `mc-collapse-item` | `collapse/` | M1     | ✅ 已实现 |
-| Menu            | `mc-menu` / `mc-menu-item`         | `menu/`     | M1     | ✅ 已实现 |
-| Icon            | `mc-icon`                          | `icon/`     | M1     | 待建      |
-| Card            | `mc-card`                          | `card/`     | M1     | 待建      |
-| Badge           | `mc-badge`                         | `badge/`    | M1     | 待建      |
-| Spinner         | `mc-spinner`                       | `spinner/`  | M1     | 待建      |
-| Input           | `mc-input`                         | `input/`    | M2     | 待建      |
-| Textarea        | `mc-textarea`                      | `textarea/` | M2     | 待建      |
-| Checkbox        | `mc-checkbox`                      | `checkbox/` | M2     | 待建      |
-| Radio           | `mc-radio` / `mc-radio-group`      | `radio/`    | M2     | 待建      |
-| Switch          | `mc-switch`                        | `switch/`   | M2     | 待建      |
-| Select          | `mc-select` / `mc-option`          | `select/`   | M2     | 待建      |
-| Alert           | `mc-alert`                         | `alert/`    | M2     | 待建      |
-| Progress        | `mc-progress`                      | `progress/` | M2     | 待建      |
-| Toast（命令式） | —                                  | `toast/`    | M2     | 待建      |
-| Dialog          | `mc-dialog`                        | `dialog/`   | M3     | 待建      |
-| Dropdown        | `mc-dropdown` / `mc-menu-item`     | `dropdown/` | M3     | 待建      |
-| Tooltip         | `mc-tooltip`                       | `tooltip/`  | M3     | 待建      |
-| Tabs            | `mc-tabs` / `mc-tab`               | `tabs/`     | M3     | 待建      |
-| Table           | `mc-table`                         | `table/`    | M3     | 待建      |
-| Grid            | `mc-grid` / `mc-grid-item`         | `grid/`     | M3     | 待建      |
+| 组件            | 标签                                   | 目录          | 里程碑 | 状态      |
+| --------------- | -------------------------------------- | ------------- | ------ | --------- |
+| Button          | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
+| Code            | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
+| Collapse        | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
+| Menu            | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
+| Breadcrumb      | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
+| Icon            | `mc-icon`                              | `icon/`       | M1     | 待建      |
+| Card            | `mc-card`                              | `card/`       | M1     | 待建      |
+| Badge           | `mc-badge`                             | `badge/`      | M1     | 待建      |
+| Spinner         | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
+| Input           | `mc-input`                             | `input/`      | M2     | 待建      |
+| Textarea        | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
+| Checkbox        | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
+| Radio           | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
+| Switch          | `mc-switch`                            | `switch/`     | M2     | 待建      |
+| Select          | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
+| Alert           | `mc-alert`                             | `alert/`      | M2     | 待建      |
+| Progress        | `mc-progress`                          | `progress/`   | M2     | 待建      |
+| Toast（命令式） | —                                      | `toast/`      | M2     | 待建      |
+| Dialog          | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
+| Dropdown        | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
+| Tooltip         | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
+| Tabs            | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
+| Table           | `mc-table`                             | `table/`      | M3     | 待建      |
+| Grid            | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
 
 ---
 
@@ -549,6 +550,60 @@ DOM：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用
 
 > ⚠️ 菜单项同样**不能**给 `--mc-menu-*` 写默认值，否则会盖掉容器继承来的通道
 > （和 `mc-collapse-item` 同一条坑），消费侧一律 `var(--mc-menu-x, 兜底)`。
+
+### mc-breadcrumb / mc-breadcrumb-item
+
+```html
+<mc-breadcrumb separator="/" label="面包屑">
+  <mc-breadcrumb-item><a href="/components">组件</a></mc-breadcrumb-item>
+  <mc-breadcrumb-item><a href="/components/base">基础</a></mc-breadcrumb-item>
+  <mc-breadcrumb-item current>Button</mc-breadcrumb-item>
+</mc-breadcrumb>
+```
+
+**mc-breadcrumb（容器）**
+
+| 属性        | 值     | 默认     | 说明                                                                   |
+| ----------- | ------ | -------- | ---------------------------------------------------------------------- |
+| `separator` | 字符串 | `/`      | 级与级之间的分隔符；非默认值优先于 `--mc-breadcrumb-sep`（空值按默认） |
+| `label`     | 字符串 | `面包屑` | `<nav>` 的无障碍名（英文站写 `label="Breadcrumb"`）                    |
+
+| 插槽 / part   | 说明                        |
+| ------------- | --------------------------- |
+| 插槽（默认）  | 每一级 `mc-breadcrumb-item` |
+| `part="base"` | 内层 `<nav>`                |
+| `part="list"` | 内层 `<ol>`                 |
+
+**mc-breadcrumb-item（一级）**
+
+| 属性      | 值   | 默认 | 说明                                                                    |
+| --------- | ---- | ---- | ----------------------------------------------------------------------- |
+| `current` | 布尔 | —    | 当前页（最后一级）：字色更实 + 字重加重，并自动补 `aria-current="page"` |
+
+**每一级的交互元素由使用者写在插槽里**（原生 `<a>`），组件不造链接 —— 与 `mc-menu`
+同一条理由：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用于页面模板里的元素。
+当前页写纯文本 + `current`。列表语义：容器渲染 `<nav>` + `<ol role="list">`，
+每一级的 `role="listitem"` 由组件补（使用者自己写了 `role` 就不覆盖）。
+
+**没有 `size` / `variant`**：面包屑是一行文字导航，这两档不成立；改字号直接覆盖容器的
+`font-size`。**不承诺插槽里放 `<button>`** —— 页面 reset 对 `button` 的优先级压过组件内的
+`::slotted()`（[P33](./ofa-pitfalls.md)），要可点的级就用 `<a>`。
+同理，**宿主页面对 `a` 的颜色规则也压过 `::slotted(a)`**：页面里写了 `a { color: … }` 时
+`--mc-breadcrumb-item-color` / `--mc-breadcrumb-item-color-hover` 都管不到链接色（悬停只剩组件加的下划线）
+—— 链接色最终由页面的链接样式决定。要精确控制就写一条特异性不低于页面 `a` 规则的页面样式。
+
+| L3 令牌                            | 默认                   | 作用                             |
+| ---------------------------------- | ---------------------- | -------------------------------- |
+| `--mc-breadcrumb-sep`              | `'/'`                  | 分隔符（CSS 字符串，要带引号）   |
+| `--mc-breadcrumb-sep-color`        | `--mc-color-fg-subtle` | 分隔符颜色                       |
+| `--mc-breadcrumb-gap`              | `--mc-space-2`         | 级间距（也是分隔符与文字的间距） |
+| `--mc-breadcrumb-item-color`       | `--mc-color-fg-muted`  | 普通一级的文字                   |
+| `--mc-breadcrumb-item-color-hover` | `--mc-color-fg`        | 悬停文字                         |
+| `--mc-breadcrumb-current-color`    | `--mc-color-fg`        | 当前页文字                       |
+
+> ⚠️ `separator` 属性与 `--mc-breadcrumb-sep` 令牌走**两条通道**：属性落到宿主上一个内部变量
+> （`--mc-breadcrumb-sep-attr`），CSS 里是 `content: var(内部变量, var(--mc-breadcrumb-sep))`。
+> 让属性直接写 `--mc-breadcrumb-sep` 会把使用者写在 `style` 上的令牌一起抹掉（实测踩过）。
 
 ---
 

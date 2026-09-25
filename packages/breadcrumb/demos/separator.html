@@ -1,0 +1,19 @@
+<template component>
+  <div class="flex flex-col items-start gap-3">
+    <mc-breadcrumb separator="&gt;">
+      <mc-breadcrumb-item><a href="#/docs/pages/home.html">首页</a></mc-breadcrumb-item>
+      <mc-breadcrumb-item><a href="#/docs/pages/components.html">组件</a></mc-breadcrumb-item>
+      <mc-breadcrumb-item current>面包屑</mc-breadcrumb-item>
+    </mc-breadcrumb>
+
+    <mc-breadcrumb style="--mc-breadcrumb-sep: '·'">
+      <mc-breadcrumb-item><a href="#/docs/pages/home.html">首页</a></mc-breadcrumb-item>
+      <mc-breadcrumb-item><a href="#/docs/pages/components.html">组件</a></mc-breadcrumb-item>
+      <mc-breadcrumb-item current>面包屑</mc-breadcrumb-item>
+    </mc-breadcrumb>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-breadcrumb-separator' });
+  </script>
+</template>

@@ -1,0 +1,112 @@
+<!--
+  mc-breadcrumb — 面包屑容器
+
+  只做三件事：一行布局、分隔符、列表语义。每一级是 mc-breadcrumb-item。
+
+  **交互元素由使用者写在插槽里**（原生 <a>）—— 与 mc-menu 同一条理由：站内链接要靠 olink
+  补部署前缀，而 olink 是编译期指令、只作用于页面模板里的元素，组件在 shadow root 里造的
+  <a> 用不上（见 docs/routes.js）。纯文本的一级就是当前页，写 current。
+
+  分隔符画在每一项自己的 ::before 上（第一项除外），间距只有一个来源：.mc-list 的 gap。
+  separator 属性在 attached() 里落到一个内部变量上（刻意不碰 --mc-breadcrumb-sep 令牌，
+  否则会把使用者写在 style 上的覆盖一起抹掉）；不想动属性也可以直接覆盖令牌。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值 */
+    :host {
+      display: block;
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg-muted));
+
+      /* 分隔符。separator 属性会在 attached() 里落到同一个变量上，所以两条路都通：
+         <mc-breadcrumb separator=">"> 与 style="--mc-breadcrumb-sep: '·'" */
+      --mc-breadcrumb-sep: '/';
+
+      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
+         <mc-breadcrumb style="--mc-breadcrumb-current-color: var(--mc-color-primary)"> */
+      --mc-breadcrumb-item-color: var(--mc-color-fg-muted);
+      --mc-breadcrumb-item-color-hover: var(--mc-color-fg);
+      --mc-breadcrumb-current-color: var(--mc-color-fg);
+      --mc-breadcrumb-sep-color: var(--mc-color-fg-subtle);
+      --mc-breadcrumb-gap: var(--mc-space-2);
+    }
+
+    /* 2. 维度 / 3. 尺寸：面包屑是**一行文字导航**，没有 variant 与 size ——
+       只声明真正支持的维度（规范 1.2）。要改字号就覆盖 :host 的 font-size 或直接用 style */
+
+    /* 4. 状态：当前项在 mc-breadcrumb-item 上（current），容器不镜像状态 */
+
+    /* 5. 内部结构 */
+    .mc-list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-breadcrumb-gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* 分隔符 = 每一项自己的 ::before（第一项没有），与文字之间的间距由同一条 gap 通道补上。
+       ::slotted() 只接受**复合选择器**，所以用 :not(:first-child) 而不是兄弟组合器。
+       ⚠️ 属性走 -attr 这个内部变量，不写 --mc-breadcrumb-sep：两者落在同一个内联属性上，
+       JS 覆盖 / 清理它会把使用者写在 style 上的令牌一起抹掉（实测踩过） */
+    ::slotted(mc-breadcrumb-item:not(:first-child))::before {
+      content: var(--mc-breadcrumb-sep-attr, var(--mc-breadcrumb-sep));
+      margin-inline-end: var(--mc-breadcrumb-gap);
+      color: rgb(var(--mc-breadcrumb-sep-color));
+      user-select: none;
+    }
+  </style>
+
+  <!-- role=list 是 Safari 的补丁：list-style:none 会让 Safari 丢掉 <ol> 的列表语义 -->
+  <nav part="base" attr:aria-label="label">
+    <ol class="mc-list" part="list" role="list">
+      <slot></slot>
+    </ol>
+  </nav>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-breadcrumb',
+
+      attrs: {
+        separator: '/',
+        // 导航区块的无障碍名（<nav aria-label>）。默认中文，英文站写 label="Breadcrumb"
+        label: '面包屑',
+      },
+
+      attached() {
+        // 宿主属性一律等构造期结束再写（P31：ready 还太早，写宿主会抛 NotSupportedError）
+        this.applySeparator();
+      },
+
+      watch: {
+        separator() {
+          // 首次触发落在构造期，跳过（P5）
+          if (this._sepWatchInit === undefined) {
+            this._sepWatchInit = true;
+            return;
+          }
+          this.applySeparator();
+        },
+      },
+
+      proto: {
+        /**
+         * separator 属性 → --mc-breadcrumb-sep-attr（CSS 里 content 的兜底链的第一段）。
+         * content 只吃字符串，所以值要带引号；回到默认值时**删掉**这个内部变量，
+         * 而不是写 '/' —— 写同一族变量等于把「直接覆盖令牌」那条路堵死。
+         */
+        applySeparator() {
+          const value = (this.ele.getAttribute('separator') ?? '').trim();
+          if (!value || value === '/') this.ele.style.removeProperty('--mc-breadcrumb-sep-attr');
+          else this.ele.style.setProperty('--mc-breadcrumb-sep-attr', JSON.stringify(value));
+        },
+      },
+    });
+  </script>
+</template>

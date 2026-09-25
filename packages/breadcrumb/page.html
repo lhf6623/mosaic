@@ -1,0 +1,275 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./breadcrumb.html"></l-m>
+    <l-m src="./breadcrumb-item.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/separator.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/long.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Breadcrumb <code>mc-breadcrumb</code></h1>
+    <p class="doc-lead">
+      面包屑。容器 + 每一级两个标签；一级里的交互元素（原生
+      <code>&lt;a&gt;</code>）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
+    </p>
+    <p class="doc-badges">
+      <span class="doc-badge" data-status="ready">已实现</span>
+      <span class="doc-badge">M1</span>
+      <span class="doc-badge">packages/breadcrumb/</span>
+    </p>
+
+    <h2>mc-breadcrumb</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>separator</code></td>
+          <td>字符串</td>
+          <td><code>/</code></td>
+          <td>
+            级与级之间的分隔符。非默认值优先于 <code>--mc-breadcrumb-sep</code> 令牌； 空值与
+            <code>/</code> 都按默认处理（令牌照旧生效）
+          </td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>字符串</td>
+          <td><code>面包屑</code></td>
+          <td>导航区块的无障碍名（渲染成 <code>&lt;nav aria-label&gt;</code>）</td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>插槽 / part</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>每一级 <code>mc-breadcrumb-item</code></td>
+        </tr>
+        <tr>
+          <td><code>part="base"</code></td>
+          <td>内层 <code>&lt;nav&gt;</code>（导航区块本身）</td>
+        </tr>
+        <tr>
+          <td><code>part="list"</code></td>
+          <td>内层 <code>&lt;ol&gt;</code>（换行 / 对齐 / 间距）</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      语义在容器上：<code>mc-breadcrumb</code> 渲染 <code>&lt;nav aria-label&gt;</code> +
+      <code>&lt;ol role="list"&gt;</code>，每一级的 <code>role="listitem"</code>
+      由组件自己补，不用手写。
+    </p>
+
+    <h2>mc-breadcrumb-item</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>属性</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>current</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>
+            当前页（最后一级）。字色更实、字重加重，并自动带上 <code>aria-current="page"</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>可点的一级：把原生 <code>&lt;a&gt;</code> 写在插槽里</strong>，它自己承载
+      <code>href</code> / <code>target</code> / <code>rel</code> 与键盘行为； 当前页写纯文本 +
+      <code>current</code>：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+              &lt;mc-breadcrumb&gt;
+                &lt;mc-breadcrumb-item&gt;&lt;a href="/components"&gt;组件&lt;/a&gt;&lt;/mc-breadcrumb-item&gt;
+                &lt;mc-breadcrumb-item current&gt;面包屑&lt;/mc-breadcrumb-item&gt;
+              &lt;/mc-breadcrumb&gt;
+            </mc-code>
+
+    <h2>定制：L3 令牌</h2>
+    <p>
+      面包屑的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
+      <code>mc-breadcrumb</code> 的 <code>style</code> 上（令牌随继承进每一级的 shadow root）：
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>令牌</th>
+          <th>默认</th>
+          <th>作用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--mc-breadcrumb-sep</code></td>
+          <td><code>'/'</code></td>
+          <td>
+            分隔符（CSS 字符串，要带引号）。<code>separator</code> 属性会压过它 ——
+            两者写同一个值就只用属性
+          </td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-sep-color</code></td>
+          <td><code>--mc-color-fg-subtle</code></td>
+          <td>分隔符颜色</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-gap</code></td>
+          <td><code>--mc-space-2</code></td>
+          <td>级与级之间的间距（也是分隔符与文字的间距）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-item-color</code></td>
+          <td><code>--mc-color-fg-muted</code></td>
+          <td>普通一级的链接文字</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-item-color-hover</code></td>
+          <td><code>--mc-color-fg</code></td>
+          <td>悬停文字（同时加下划线）</td>
+        </tr>
+        <tr>
+          <td><code>--mc-breadcrumb-current-color</code></td>
+          <td><code>--mc-color-fg</code></td>
+          <td>当前页文字</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <demo-breadcrumb-basic></demo-breadcrumb-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        可点的级写原生 <code>&lt;a&gt;</code>，当前页写纯文本 + <code>current</code>。
+        顺序就是层级顺序，最后一级必须是当前页。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>分隔符</h3>
+      <demo-breadcrumb-separator></demo-breadcrumb-separator>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/separator.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        上面那条用 <code>separator</code> 属性（注意 HTML 里要写 <code>&amp;gt;</code>），
+        下面那条直接覆盖 <code>--mc-breadcrumb-sep</code> 令牌 —— 值是 CSS 字符串，要带引号。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>定制令牌</h3>
+      <demo-breadcrumb-customize></demo-breadcrumb-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        颜色、间距、分隔符各是一条令牌，覆盖在容器自己的 <code>style</code> 上，
+        令牌靠继承进每一级，不用碰组件内部。
+      </p>
+    </section>
+
+    <section class="doc-demo">
+      <h3>窄栏里自动换行</h3>
+      <demo-breadcrumb-long></demo-breadcrumb-long>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/long.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+      <p class="doc-hint">
+        层级多或容器窄时整行换行（列表是 <code>flex-wrap</code>），不会撑破容器。
+      </p>
+    </section>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>链接必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code>）。组件不造链接：
+        站内链接要经 ofa 的 <code>olink</code> 带部署前缀，而 <code>olink</code>
+        只作用于页面模板里的元素。
+      </li>
+      <li>
+        当前页写 <code>current</code>，组件据此给宿主加 <code>aria-current="page"</code>；
+        不要自己在宿主上写 <code>aria-current</code> —— <code>current</code> 会覆盖它。
+      </li>
+      <li>
+        每一级的 <code>role="listitem"</code> 由组件补；自己给
+        <code>&lt;mc-breadcrumb-item&gt;</code> 写了 <code>role</code> 时组件不覆盖。
+      </li>
+      <li>
+        面包屑<strong>不承诺插槽里放 <code>&lt;button&gt;</code></strong
+        >：页面 reset 对 <code>&lt;button&gt;</code> 的优先级高于组件内部的
+        <code>::slotted()</code> （见 <code>agent/ofa-pitfalls.md</code> 的 P33），要可点的级就用
+        <code>&lt;a&gt;</code>。
+      </li>
+      <li>
+        <strong
+          >宿主页面对 <code>&lt;a&gt;</code> 的颜色规则也会赢过组件的
+          <code>::slotted(a)</code></strong
+        >（同一条 P33）：页面里写了 <code>a { color: … }</code> 时
+        <code>--mc-breadcrumb-item-color</code> 与
+        <code>--mc-breadcrumb-item-color-hover</code>
+        都管不到链接色（悬停只剩组件加的下划线）—— 文档站的链接跟着正文链接色走就是这个原因。
+        要精确控制就在页面上写一条特异性不低于页面 <code>a</code> 规则的样式（如
+        <code>.doc-body mc-breadcrumb a { color: … }</code>）。
+      </li>
+      <li>
+        <code>separator</code> 属性与 <code>--mc-breadcrumb-sep</code> 令牌走两条通道：
+        属性是非默认值时优先，写回默认值 <code>/</code>（或空值）时就以令牌为准 ——
+        组件会清掉自己的内部变量，使用者写在 <code>style</code> 上的令牌照旧生效。
+      </li>
+      <li>
+        面包屑是<strong>一行文字导航</strong>，没有 <code>size</code> /
+        <code>variant</code> 维度。要改字号 / 行高就覆盖容器的 <code>font-size</code>（用
+        <code>style</code>）。
+      </li>
+      <li>
+        容器是块级元素、占满一行；要紧贴上一行就自己写 <code>style="display: inline-block"</code>。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

@@ -99,6 +99,15 @@ export const SITE = [
             summary:
               '垂直菜单。容器 + 菜单项两个标签，交互元素由使用者写在插槽里 —— 组件不造链接、也不改使用者的 DOM。',
           },
+          {
+            order: 80,
+            label: 'Breadcrumb',
+            path: 'packages/breadcrumb/page.html',
+            tagName: 'mc-breadcrumb',
+            stage: 'M1',
+            summary:
+              '面包屑。容器 + 每一级两个标签；一级里的链接由使用者写在插槽里，当前页写 current，组件不造链接。',
+          },
         ],
       },
       {

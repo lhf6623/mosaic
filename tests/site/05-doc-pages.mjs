@@ -11,6 +11,7 @@ export default async function run({ page, visit, check, newPage }) {
 const colocated = await (async () => {
   const p = await newPage();
   const bad = [];
+  const crumbBad = [];
   for (const c of READY) {
     // 必须经由路由打开（page.html 是 <template page>，当独立网页打开会渲染成空白）；
     // query 也必须有 —— 同文档 hash 跳转时 goto() 返回 null（不是 Response），断言会假失败
@@ -23,21 +24,57 @@ const colocated = await (async () => {
     p.removeAllListeners('pageerror');
     p.on('pageerror', (e) => failed.push(String(e)));
     const res = await visit(p, url);
+    // 面包屑与组件都会稍晚一拍挂上（<l-m> 异步注册组件），等升级 + 当前项都就位再断言
+    await p
+      .waitForFunction(
+        () => {
+          const bar = window.__deep('doc-crumb')?.querySelector('mc-breadcrumb');
+          const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
+          return (
+            !!bar?.shadowRoot &&
+            items.length >= 2 &&
+            items.every((i) => !!i.shadowRoot) &&
+            items.at(-1).getAttribute('aria-current') === 'page'
+          );
+        },
+        undefined,
+        { timeout: 5000 },
+      )
+      .catch(() => {});
     // 页面自己的二级菜单渲染出来 = 站点共享脚本与 <doc-nav> 组件都跑起来了（条目在组件 shadow 里）
-    const navOk = await p.evaluate(() => {
-      return window.__inside('doc-nav', 'a').length > 3;
+    const ok = await p.evaluate(() => {
+      const navOk = window.__inside('doc-nav', 'a').length > 3;
+      // 页面头部的面包屑必须是项目自己的 <mc-breadcrumb>（<doc-crumb> 只负责派生）：
+      // 至少两级（分区 + 本页），最后一级是当前页（aria-current="page" 且不是空文本）
+      const bar = window.__deep('doc-crumb')?.querySelector('mc-breadcrumb');
+      const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
+      const last = items.at(-1);
+      const crumbOk =
+        !!bar &&
+        items.length >= 2 &&
+        last.getAttribute('aria-current') === 'page' &&
+        !!last.textContent.trim();
+      return { navOk, crumbOk };
     });
-    if (!res?.ok() || failed.length || !navOk) {
-      bad.push(`${c.path} — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${navOk ? '' : ' · 二级菜单未渲染'}`);
+    if (!res?.ok() || failed.length || !ok.navOk) {
+      bad.push(
+        `${c.path} — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${ok.navOk ? '' : ' · 二级菜单未渲染'}`,
+      );
     }
+    if (!ok.crumbOk) crumbBad.push(c.path);
   }
   await p.close();
-  return bad;
+  return { bad, crumbBad };
 })();
 check(
   `每个已实现组件的文档页都在它自己的目录里（${READY.length} 个）`,
-  colocated.length === 0,
-  colocated.join('\n        '),
+  colocated.bad.length === 0,
+  colocated.bad.join('\n        '),
+);
+check(
+  `每个组件页头部的面包屑都由 <mc-breadcrumb> 渲染（两级 + 当前项）`,
+  colocated.crumbBad.length === 0,
+  colocated.crumbBad.join('\n        ') || `${READY.length} 页全通过`,
 );
 
 /* ------------------------------------------------------------------ *

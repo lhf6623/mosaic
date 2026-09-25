@@ -1,0 +1,106 @@
+<!--
+  mc-breadcrumb-item — 面包屑的一级（配合 mc-breadcrumb 使用）
+
+  插槽里放一个原生 <a>（可点的一级），或者直接写纯文本（当前页）。组件只负责这一级的文字
+  外观与当前项状态；href / target / rel 全写在原生元素上，组件不造链接 —— 站内链接要经 ofa 的
+  olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/routes.js）。
+
+  当前项写 `current`：宿主带上 aria-current="page"，字色更实、字重加重。
+  列表语义（role=listitem）由组件自己补，使用者写了 role 就不覆盖（同 mc-menu-item）。
+-->
+<template component>
+  <style>
+    /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道
+       （同 mc-menu-item 的坑），消费一律带兜底值。
+       font 退回继承：shadow-base 的 :host 会给每个宿主重赋 font-* / line-height，
+       不退回就跟着 text-base 走，而不是跟着容器的字号 */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      max-width: 100%;
+      font: inherit;
+      color: rgb(var(--mc-breadcrumb-item-color, var(--mc-color-fg-muted)));
+    }
+
+    /* 2. 维度 / 3. 尺寸：没有 variant 与 size（同容器） */
+
+    /* 4. 当前项（最后一级）：字色更实 + 中等字重 */
+    :host([current]) {
+      color: rgb(var(--mc-breadcrumb-current-color, var(--mc-color-fg)));
+      font-weight: var(--mc-weight-medium);
+    }
+
+    /* 5. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。
+       ⚠️ 颜色/下划线这两条写在 ::slotted(a) 上是安全的（祖先 shadow 树里没声明过），
+       但面包屑不承诺 <button> —— shadow-base 的 button reset 会赢过这里的声明（P33） */
+    ::slotted(a) {
+      color: inherit;
+      text-decoration: none;
+      border-radius: var(--mc-radius-sm);
+      transition: color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    ::slotted(a:hover) {
+      color: rgb(var(--mc-breadcrumb-item-color-hover, var(--mc-color-fg)));
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+    }
+    /* 焦点环用 ring 令牌，不用 currentColor（P16） */
+    ::slotted(a:focus-visible) {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-breadcrumb-item',
+
+      attrs: {
+        // 布尔属性默认值必须是 null，否则 <mc-breadcrumb-item current> 会被默认值冲掉（P1）
+        current: null,
+      },
+
+      attached() {
+        // 宿主属性一律等构造期结束再写（P31）
+        this.applyRole();
+        this.applyCurrent();
+      },
+
+      watch: {
+        current() {
+          // 首次触发落在构造期，跳过（P5）
+          if (this._currentWatchInit === undefined) {
+            this._currentWatchInit = true;
+            return;
+          }
+          this.applyCurrent();
+        },
+      },
+
+      proto: {
+        /** 列表语义：容器是 role=list，这一级就得是 listitem；使用者自己写了 role 就不覆盖 */
+        applyRole() {
+          if (!this.ele.hasAttribute('role')) this.ele.setAttribute('role', 'listitem');
+        },
+
+        /**
+         * current → aria-current="page"：两个属性绑在一起，使用者不用记两遍。
+         * ⚠️ 只摘掉**组件自己写上去**的那个 —— 使用者手写的 aria-current 不动，
+         * 否则「组件不改使用者 DOM」这条承诺就不成立了（这里踩过一回）。
+         */
+        applyCurrent() {
+          if (this.ele.hasAttribute('current')) {
+            this.ele.setAttribute('aria-current', 'page');
+            this._ariaCurrent = true;
+          } else if (this._ariaCurrent) {
+            this.ele.removeAttribute('aria-current');
+            this._ariaCurrent = false;
+          }
+        },
+      },
+    });
+  </script>
+</template>

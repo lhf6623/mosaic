@@ -3,9 +3,9 @@
 基于 [ofa.js](https://ofajs.com) 的 **免安装、免构建** Web Components UI 框架。
 CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
 
-**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` 已实现，各自带文档页、
-可交互演示和冒烟测试；令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、运行时引导层都已验证。
-其余组件的接口已经定稿，进度见 [PLAN.md 的里程碑](./agent/PLAN.md#五里程碑)。
+**当前状态（M1 进行中）**：`mc-button` / `mc-code` / `mc-collapse` / `mc-menu` / `mc-breadcrumb`
+已实现，各自带文档页、可交互演示和冒烟测试；令牌生成（含 34 项 WCAG 自检）、UnoCSS 管线、
+运行时引导层都已验证。其余组件的接口已经定稿，进度见 [PLAN.md 的里程碑](./agent/PLAN.md#五里程碑)。
 
 ## 快速开始
 
@@ -28,14 +28,15 @@ shadow root，`<l-m>` 按需拉组件本体。没有 npm、打包器、脚手架
 
 ## 组件
 
-| 组件                           | 标签                               | 状态      |
-| ------------------------------ | ---------------------------------- | --------- |
-| Button                         | `mc-button`                        | ✅ 已实现 |
-| Code                           | `mc-code`                          | ✅ 已实现 |
-| Collapse                       | `mc-collapse` / `mc-collapse-item` | ✅ 已实现 |
-| Menu                           | `mc-menu` / `mc-menu-item`         | ✅ 已实现 |
-| Icon / Card / Badge / Spinner  | —                                  | M1 待建   |
-| 表单、反馈、浮层、布局共 15 个 | —                                  | M2 / M3   |
+| 组件                           | 标签                                   | 状态      |
+| ------------------------------ | -------------------------------------- | --------- |
+| Button                         | `mc-button`                            | ✅ 已实现 |
+| Code                           | `mc-code`                              | ✅ 已实现 |
+| Collapse                       | `mc-collapse` / `mc-collapse-item`     | ✅ 已实现 |
+| Menu                           | `mc-menu` / `mc-menu-item`             | ✅ 已实现 |
+| Breadcrumb                     | `mc-breadcrumb` / `mc-breadcrumb-item` | ✅ 已实现 |
+| Icon / Card / Badge / Spinner  | —                                      | M1 待建   |
+| 表单、反馈、浮层、布局共 15 个 | —                                      | M2 / M3   |
 
 完整清单与逐组件 API 见 [component-spec.md](./agent/component-spec.md) —— 那是唯一真相源，
 文档站的左栏菜单、右栏目录、总览卡片、面包屑与翻页都由 `docs/site-map.js` 与页面标题派生，不用手工维护。

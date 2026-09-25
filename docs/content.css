@@ -349,14 +349,13 @@ a.doc-comp-card:hover {
 }
 
 /* ---------- 组件页头部与翻页 ----------
- * 面包屑与翻页现在是 <doc-crumb> / <doc-pager> 两个元素（docs/doc-trail.js）从导航数据派生，
- * 页面里不再手写链接；样式挂在标签上，和 doc-nav / doc-toc 一个套路 */
+ * 面包屑本身是项目自己的 <mc-breadcrumb>（packages/breadcrumb/），<doc-crumb> 只负责
+ * 从导航数据里派生「哪几级 + 带部署前缀的链接」（docs/doc-trail.js）——
+ * 外观、分隔符、当前项都在组件里，这里只留它与正文之间的间距 */
 
 doc-crumb {
   display: block;
   margin: 0 0 var(--mc-space-2);
-  font-size: var(--mc-text-sm);
-  color: rgb(var(--mc-color-fg-subtle));
 }
 
 .doc-body h1 code {
