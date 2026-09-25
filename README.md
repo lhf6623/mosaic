@@ -70,16 +70,18 @@ mc-button::part(base) {
 
 ## 文档
 
-| 文档                                                | 内容                                                                                   |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险     |
-| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案 |
-| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南           |
-| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表  |
-| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单         |
-| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。34 条静默失效的坑，附现象、原因、正确写法                            |
-| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                             |
-| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                |
+| 文档                                                | 内容                                                                                           |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [规划总纲](./agent/PLAN.md)                         | 定位、约束、六个关键决策（含被否决的备选及理由）、目录结构、构建分发、里程碑、风险             |
+| [**设计规范**](./agent/design-spec.md)              | **怎么用令牌**：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案         |
+| [设计令牌与配色](./agent/design-tokens.md)          | **有什么值**：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南                   |
+| [**组件 API 规范**](./agent/component-spec.md)      | **有哪些组件、各自什么接口**：四个正交维度、值读写规则、事件/插槽/part、逐组件 API 表          |
+| [组件编写规范](./agent/components.md)               | **怎么造组件**：目录约定、分层职责、`<style>` 五分区、文档站约定、交付检查清单                 |
+| [**ofa.js 实战踩坑清单**](./agent/ofa-pitfalls.md)  | **写组件前必读**。37 条静默失效的坑，附现象、原因、正确写法                                    |
+| [文档站重构设计](./agent/docs-refactor.md)          | 两件事一起做：class 组件改 ofa 组件模板 + `$.stanz` 抽数据成 route / theme / palette（设计稿） |
+| [调研：UnoCSS](./agent/research/unocss.md)          | preset 选型、shadow DOM 注入、体积实测数据                                                     |
+| [调研：jsDelivr 分发](./agent/research/jsdelivr.md) | 缓存策略、SRI、双载问题                                                                        |
+| [调研：ofa 状态管理](./agent/research/state.md)     | `$.stanz` / `o-provider` 在 shadow DOM 下的实测记录（P35–P37 的来源）                          |
 
 ## 仓库结构
 
@@ -117,6 +119,8 @@ pnpm format        # prettier 格式化（pnpm format:check 只检查）
 `packages/<slug>/test/`（数据里 READY 的都该有一个）。`pnpm format` 不碰测试代码、
 生成产物、`packages/*/demos/*.html`（逐字展示的例子）与 `agent/research/`；文档页里内联的
 `<mc-code>` 要加 `<!-- prettier-ignore -->`，详见 [.prettierignore](./.prettierignore)。
+**测试只跑命中的那部分**（`pnpm test <slug>` / `pnpm test:site <关键词>`），全量 `pnpm test`
+留到收尾验收跑一次 —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」。
 
 当前实测产物：**34.8 KB raw / 7.7 KB gzip**（其中令牌 14.0 KB raw，370 个工具类）。
 
