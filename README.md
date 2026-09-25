@@ -129,8 +129,9 @@ pnpm format        # prettier 格式化（pnpm format:check 只检查）
 **选测中间层**：`pnpm test:changed` 拿 git 改动去查 `tests/suite-map.json` —— 那是
 `pnpm test:record` 录下来的「每个套件实际请求过哪些仓库文件」，所以「改 `docs/layout.html`
 会影响谁」由数据回答，不靠人维护清单。地图没覆盖到的部分走兜底策略：测试基座 / 构建配置 /
-文档站外壳 → 全部，组件目录下的新文件 → 该组件 + 碰过这个目录的套件，纯文档 → 不跑，
-**未知路径 → 保守全量**；地图缺失或套件不在图里也一律跑该套件（宁可多跑不可漏跑）。
+文档站外壳 → 全部，组件目录下的新文件 → 该组件 + 碰过这个目录的套件，纯文档 → 不跑
+（`11-no-class-components` 这种扫全仓的 node-only 守卫除外：它 import 不到、也录不进地图，
+代价趋近 0，所以任何改动都带上它），**未知路径 → 保守全量**；地图缺失或套件不在图里也一律跑该套件（宁可多跑不可漏跑）。
 一条命令看它怎么判：`node tests/select.mjs packages/tag/tag.html`。
 
 **全量为什么快**：一个套件 = 一个独立 page，都挂在同一个 browser context 上（CDN 只下一次），

@@ -20,7 +20,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { join, posix } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { allSuites } from './lib/suites.mjs';
 
@@ -62,6 +63,61 @@ export function normalizePath(file) {
   const root = repoRoot();
   if (path.startsWith(root)) path = path.slice(root.length);
   return path.replace(/^\.\//, '').replace(/^\/+/, '');
+}
+
+/**
+ * 套件文件的**静态 import 闭包**（只跟相对路径，递归）。
+ *
+ * 为什么需要它：node-only 套件（10 / 11 / 12）不请求 HTTP，它们 `import` 的
+ * `docs/site-map.js` / `select.mjs` 在录制时**看不见** —— 于是「改了 site-map.js」
+ * 会漏掉正是守 site-map 结构的 10 号。这条洞补在录制侧（smoke.mjs --record 会把
+ * 闭包一起写进地图），选择侧就不用为它加特例。
+ */
+export function importClosure(entryPath, { only = true } = {}) {
+  const root = repoRoot();
+  const seen = new Set();
+  const out = new Set();
+
+  /** 相对说明符 → 真实文件（补 .js/.mjs/index.js 这几种写法） */
+  const resolve = (dir, spec) => {
+    const base = posix.normalize(posix.join(dir, spec));
+    if (base.startsWith('..')) return null; // 别爬出仓库
+    for (const candidate of [base, `${base}.js`, `${base}.mjs`, `${base}/index.js`]) {
+      try {
+        if (statSync(join(root, candidate)).isFile()) return candidate;
+      } catch {
+        /* 试下一个 */
+      }
+    }
+    return null;
+  };
+
+  const visit = (rel) => {
+    if (seen.has(rel)) return;
+    seen.add(rel);
+    let text;
+    try {
+      text = readFileSync(join(root, rel), 'utf8');
+    } catch {
+      return;
+    }
+    const dir = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '';
+    const specs = [
+      // import … from './x' / export … from './x' —— 说明符与 from 可能隔着好几行（格式化后的多行 import）
+      ...text.matchAll(/(?:^|\n)\s*(?:import|export)[\s\S]*?from\s*['"](\.[^'"]+)['"]/g),
+      // 副作用导入：import './x'
+      ...text.matchAll(/(?:^|\n)\s*import\s*['"](\.[^'"]+)['"]/g),
+    ];
+    for (const match of specs) {
+      const resolved = resolve(dir, match[1]);
+      if (!resolved) continue;
+      out.add(resolved);
+      visit(resolved);
+    }
+  };
+
+  if (only) visit(entryPath);
+  return [...out];
 }
 
 /* ------------------------------------------------------------------ *
@@ -118,6 +174,13 @@ function fallback(file, suites, byFile) {
  * @param {object}   [input.map]    依赖地图，默认读 tests/suite-map.json
  * @returns {{ selected: string[], skipped: string[], notes: object[], full: boolean }}
  */
+/**
+ * 无论怎么改都跑的套件：它们断言的是「全仓的静态事实」（fs 扫 docs/ 与 packages/），
+ * import 不到、HTTP 也录不到，静态推不出来 —— 而代价趋近 0（node-only）。
+ * 漏了它们等于漏掉那类守卫，所以宁可跑。
+ */
+const ALWAYS_RUN = new Set(['tests/site/11-no-class-components.mjs']);
+
 export function selectSuites({ changed, suites = allSuites(), map = loadMap() }) {
   const paths = suites.map((s) => s.path);
   const byFile = map?.byFile ?? {};
@@ -163,6 +226,13 @@ export function selectSuites({ changed, suites = allSuites(), map = loadMap() })
   } else if (changed?.length) {
     full = true; // 地图都没有：无从判断，全量
     notes.push({ file: '(依赖地图缺失)', suites: 'all', why: 'tests/suite-map.json 不存在 → 全部' });
+  }
+
+  for (const path of ALWAYS_RUN) {
+    if (paths.includes(path) && !keep.has(path)) {
+      keep.add(path);
+      notes.push({ file: path, suites: [path], why: '扫描全仓的静态守卫 → 总是跑' });
+    }
   }
 
   const selected = full ? paths : paths.filter((path) => keep.has(path));

@@ -26,7 +26,7 @@
 import { existsSync } from 'node:fs';
 import { createHarness, defaultJobs, BASE, CHANNEL } from './lib/harness.mjs';
 import { allSuites } from './lib/suites.mjs';
-import { changedFiles, loadMap, saveMap, selectSuites } from './select.mjs';
+import { changedFiles, importClosure, loadMap, saveMap, selectSuites } from './select.mjs';
 
 const argv = process.argv.slice(2);
 
@@ -233,11 +233,15 @@ const worker = async () => {
 await Promise.all(Array.from({ length: Math.min(jobs, suites.length) }, worker));
 await harness.close();
 
-/* 录制依赖地图：套件 → 它实际请求过的仓库文件（+ 套件文件自己）。
+/* 录制依赖地图：套件 → 它实际请求过的仓库文件（+ 套件文件自己 + 静态 import 闭包）。
    选测中间层用它做精确命中，见 tests/select.mjs。 */
 if (record) {
   const map = { version: 1, suites: {}, byFile: {} };
-  for (const o of outcomes) map.suites[o.path] = [...new Set([...o.files, o.path])].sort();
+  for (const o of outcomes) {
+    /* 三部分：真正请求过的文件 + 套件文件自己 + **静态 import 闭包**
+       （node-only 套件不请求 HTTP，它们 import 的 site-map.js / select.mjs 只能这样进地图） */
+    map.suites[o.path] = [...new Set([...o.files, o.path, ...importClosure(o.path)])].sort();
+  }
   for (const [path, files] of Object.entries(map.suites)) {
     for (const file of files) (map.byFile[file] ??= []).push(path);
   }

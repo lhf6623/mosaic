@@ -88,59 +88,20 @@
       "tests/site/02-routing.mjs"
     ],
     "tests/site/03-home-poster.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
-      "docs/layout.html",
       "docs/pages/components.html",
-      "docs/pages/home.html",
       "docs/pages/specs.html",
-      "docs/routes.js",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
       "packages/color/page.html",
       "packages/color/tokens.css",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
+      "tests/lib/harness.mjs",
       "tests/site/03-home-poster.mjs"
     ],
     "tests/site/04-nav-stability.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
-      "docs/layout.html",
       "docs/pages/components.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/site-map.js",
       "docs/snippets/highlight-demo.js",
-      "docs/state/route.js",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
       "packages/button/demos/override.html",
@@ -149,8 +110,6 @@
       "packages/button/demos/states.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
       "packages/code/demos/attribute.html",
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
@@ -162,10 +121,6 @@
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
       "packages/code/page.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
       "tests/site/04-nav-stability.mjs"
     ],
     "tests/site/05-doc-pages.mjs": [
@@ -378,28 +333,11 @@
       "tests/site/08-subpath.mjs"
     ],
     "tests/site/09-doc-toc.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
-      "docs/layout.html",
       "docs/pages/components.html",
       "docs/pages/guide.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/site-map.js",
       "docs/snippets/quick-start.html",
-      "docs/state/route.js",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
       "packages/button/demos/override.html",
@@ -408,65 +346,26 @@
       "packages/button/demos/states.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
       "packages/menu/demos/size.html",
       "packages/menu/demos/states.html",
       "packages/menu/demos/surface.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
       "packages/menu/page.html",
       "tests/site/09-doc-toc.mjs"
     ],
     "tests/site/10-nav-data.mjs": [
-      "app-config.js",
-      "docs/pages/home.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
+      "docs/site-map.js",
       "tests/site/10-nav-data.mjs"
     ],
     "tests/site/11-no-class-components.mjs": [
-      "app-config.js",
-      "docs/content.css",
-      "docs/layout.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
       "tests/site/11-no-class-components.mjs"
     ],
     "tests/site/12-affected.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/layout.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
       "docs/site-map.js",
-      "docs/state/route.js",
-      "packages/boot/mosaic.css",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
+      "tests/lib/suites.mjs",
+      "tests/select.mjs",
       "tests/site/12-affected.mjs"
     ],
     "packages/button/test/button.test.mjs": [
@@ -553,7 +452,8 @@
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "tests/lib/harness.mjs"
     ],
     "packages/card/test/card.test.mjs": [
       "app-config.js",
@@ -566,7 +466,6 @@
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -604,7 +503,6 @@
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -643,7 +541,6 @@
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -682,7 +579,6 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/pages/components.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -739,6 +635,7 @@
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
@@ -768,16 +665,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/10-nav-data.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/cards.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -789,14 +680,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/crumb.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -808,14 +695,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/nav.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -827,14 +710,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/pager.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -846,14 +725,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/palette.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -865,14 +740,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/toc.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -884,14 +755,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/content.css": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -909,9 +776,7 @@
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/09-doc-toc.mjs"
     ],
     "docs/doc-layout.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -940,15 +805,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/pages/components.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -967,25 +827,15 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/pages/home.html": [
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/card/test/card.test.mjs",
       "packages/code/test/code.test.mjs",
       "packages/collapse/test/collapse.test.mjs",
-      "packages/menu/test/menu.test.mjs",
-      "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/10-nav-data.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/pages/specs.html": [
       "tests/site/02-routing.mjs",
@@ -1002,15 +852,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/shell.css": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1037,14 +882,11 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/11-no-class-components.mjs",
+      "tests/site/10-nav-data.mjs",
       "tests/site/12-affected.mjs"
     ],
     "docs/snippets/highlight-demo.js": [
@@ -1069,15 +911,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "docs/theme-boot.js": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1118,16 +955,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/10-nav-data.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/boot/mosaic.js": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1154,16 +985,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/10-nav-data.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/breadcrumb/breadcrumb-item.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1175,14 +1000,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/breadcrumb/breadcrumb.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1194,14 +1015,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/breadcrumb/demos/basic.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1231,16 +1048,13 @@
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
       "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1335,14 +1149,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/card/demos/basic.html": [
       "packages/card/test/card.test.mjs",
@@ -1381,14 +1191,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/code/demos/attribute.html": [
       "packages/code/test/code.test.mjs",
@@ -1458,14 +1264,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/collapse/collapse.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1477,14 +1279,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/collapse/demos/accordion.html": [
       "packages/collapse/test/collapse.test.mjs",
@@ -1586,14 +1384,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/menu/menu.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -1605,14 +1399,10 @@
       "packages/tag/test/tag.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
-      "tests/site/03-home-poster.mjs",
-      "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
-      "tests/site/08-subpath.mjs",
-      "tests/site/09-doc-toc.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/08-subpath.mjs"
     ],
     "packages/menu/page.html": [
       "packages/menu/test/menu.test.mjs",
@@ -1656,6 +1446,16 @@
     ],
     "packages/tag/test/tag.test.mjs": [
       "packages/tag/test/tag.test.mjs"
+    ],
+    "tests/lib/harness.mjs": [
+      "packages/code/test/code.test.mjs",
+      "tests/site/03-home-poster.mjs"
+    ],
+    "tests/lib/suites.mjs": [
+      "tests/site/12-affected.mjs"
+    ],
+    "tests/select.mjs": [
+      "tests/site/12-affected.mjs"
     ],
     "tests/site/01-load-shell.mjs": [
       "tests/site/01-load-shell.mjs"

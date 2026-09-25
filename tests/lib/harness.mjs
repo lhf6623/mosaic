@@ -136,8 +136,13 @@ export async function createHarness() {
 
     /* 先落到站点再挂监听：有些套件开头直接 goTop / goHash（假定页面已经在站点上）。
        这次加载刻意不算进 problems —— 01 号套件断言 problems.length === 0，
-       它量的是自己那次 visit，不是这一跳。 */
+       它量的是自己那次 visit，不是这一跳。
+       录制地图时再多等一步 networkidle：落地这一跳的**后续懒加载**（路由页、<l-m> 拉的组件）
+       不该算成「套件碰过的文件」，否则 node-only 套件会按调度随机沾上一堆噪声。 */
     await page.goto(`${BASE}/index.html`, { waitUntil: 'load' }).catch(() => {});
+    if (process.env.MOSAIC_RECORD === '1') {
+      await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
+    }
 
     /** 套件里所有 page（含 newPage 开的）都挂同一套监听：错误清单 + 碰过的文件 */
     const trackPage = (p) => {

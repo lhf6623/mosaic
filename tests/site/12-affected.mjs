@@ -143,9 +143,17 @@ export default async function run({ check }) {
 
   const docs = pick(['README.md', 'agent/PLAN.md', '.prettierignore']);
   check(
-    '纯文档 / 仓库配置 → 一个都不跑（但新套件仍会被“不在图里→总是跑”捞回来）',
-    docs.notes.every((n) => n.suites !== 'all'),
+    '纯文档 / 仓库配置 → 不跑浏览器套件（合成清单里没有「总是跑」的静态守卫，所以是全空）',
+    docs.notes.every((n) => n.suites !== 'all') && docs.selected.length === 0,
     JSON.stringify(docs.notes.map((n) => [n.file, n.suites])),
+  );
+
+  /** 真实清单里那条静态守卫（11 扫全仓、跑一次 0.0s）在任何改动下都该被带上 */
+  const realDocs = selectSuites({ changed: ['README.md'], suites, map });
+  check(
+    '真实清单：纯文档也不漏掉「总是跑」的静态守卫（11 号，扫全仓的 node-only 守卫）',
+    recording || realDocs.selected.every((p) => p === 'tests/site/11-no-class-components.mjs'),
+    JSON.stringify(realDocs.selected),
   );
 
   const unknown = pick(['some/new-thing.bin']);
