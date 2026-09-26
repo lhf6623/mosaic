@@ -45,9 +45,12 @@
 | `mc-radio` + `mc-radio-group` | group 上用 `value` `default-value` `name` `direction`；radio 上用 `value` `disabled` | 默认插槽为标签文案                          |
 | `mc-switch`                   | `checked` / `default-checked` `disabled` `size`                                      | —                                           |
 | `mc-select` + `mc-option`     | select 上 `value` `multiple` `placeholder` `clearable`；option 上 `value` `disabled` | `option` part；弹层 `panel` part            |
-| `mc-alert`                    | `color` `variant` `title` `closable` `icon`                                          | `title` `description` 插槽                  |
 | `mc-progress`                 | `value` `max` `indeterminate` `color` `size`                                         | `bar` part；`aria-valuenow` 齐全            |
 | `toast()`                     | 命令式函数，返回 `{ close }`，对齐原生语义                                           | `toast(msg, { color, duration, position })` |
+
+> `mc-alert` **已实现**，接口见 [`alert.md`](./alert.md) —— 与上面的草案有两处出入（都是踩坑后的结论）：
+> 标题属性定为 `heading` 而不是 `title`（原生 `title` 会弹浏览器 tooltip，[P32](../pitfalls/01-props.md)），
+> 插槽是「默认（描述正文）+ `title` + `icon`」，没有单独的 `description` 插槽。
 
 `mc-select` 是 M2 里最复杂的一个：它要处理浮层定位、点击外部关闭（**必须用 `composedPath()`**，
 [P20](../pitfalls/04-dom-events.md)）、键盘导航、以及消费 `o-fill` 渲染出来的 option

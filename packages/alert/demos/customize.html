@@ -1,0 +1,31 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert
+      heading="改内边距与圆角"
+      style="--mc-alert-pad-y: var(--mc-space-4); --mc-alert-radius: var(--mc-radius-lg)"
+    >
+      尺寸、圆角、内边距都是宿主上的 L3 令牌，一句 <code>style="…"</code> 就能压住。
+    </mc-alert>
+
+    <mc-alert
+      color="neutral"
+      heading="只换色槽"
+      style="--mc-alert-subtle-fill: var(--mc-color-warning-subtle); --mc-alert-accent: var(--mc-color-warning)"
+    >
+      中性色的实例，换了 warning 的浅底与强调色 —— 色槽就是 <code>color</code> 唯一填的东西。
+    </mc-alert>
+
+    <mc-alert
+      color="info"
+      icon
+      heading="左侧色条"
+      style="border-inline-start-width: 4px; border-inline-start-color: rgb(var(--mc-color-info))"
+    >
+      宿主本来就留着一圈 1px 透明的线，想加色条直接改那一侧。
+    </mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-customize' });
+  </script>
+</template>

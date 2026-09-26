@@ -162,7 +162,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | Radio           | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
 | Switch          | `mc-switch`                            | `switch/`     | M2     | 待建      |
 | Select          | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
-| Alert           | `mc-alert`                             | `alert/`      | M2     | 待建      |
+| Alert           | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
 | Progress        | `mc-progress`                          | `progress/`   | M2     | 待建      |
 | Toast（命令式） | —                                      | `toast/`      | M2     | 待建      |
 | Dialog          | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
@@ -194,7 +194,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | Radio                         | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
 | Switch                        | `mc-switch`                            | `switch/`     | M2     | 待建      |
 | Select                        | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
-| Alert                         | `mc-alert`                             | `alert/`      | M2     | 待建      |
+| [Alert](./alert.md)           | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
 | Progress                      | `mc-progress`                          | `progress/`   | M2     | 待建      |
 | Toast（命令式）               | —                                      | `toast/`      | M2     | 待建      |
 | Dialog                        | `mc-dialog`                            | `dialog/`     | M3     | 待建      |

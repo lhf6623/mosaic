@@ -1,0 +1,39 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert closable color="info" heading="可关闭" on:close="onClose($event)"
+      >点右侧 × 移除这一条。</mc-alert
+    >
+    <mc-alert closable color="success" icon heading="带图标也可关" on:close="onClose($event)"
+      >× 是原生按钮，键盘 <kbd>Enter</kbd> / <kbd>Space</kbd> 一样能关。</mc-alert
+    >
+    <mc-alert closable variant="solid" color="danger" on:close="onClose($event)"
+      >实心外观也可以关。</mc-alert
+    >
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    点 × 移除；最近一次 <code>close</code>：<strong>{{lastClosed}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-alert-closable',
+
+      data: {
+        lastClosed: '（还没关过）',
+      },
+
+      proto: {
+        onClose(event) {
+          const el = event.target;
+          // 标题是属性不是文本，所以先看 heading
+          this.lastClosed = (el.getAttribute('heading') || el.textContent)
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 16);
+          el.remove(); // 组件只发事件，删不删 DOM 是使用者的事
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert heading="subtle（默认）" icon>浅底深字，最不抢视线，页内提示的常规选择。</mc-alert>
+    <mc-alert variant="solid" heading="solid" icon>底色满铺，留给必须被看见的那条。</mc-alert>
+    <mc-alert variant="outline" heading="outline" icon>只有一圈描边，适合已经有一层底的容器里。</mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-variants' });
+  </script>
+</template>

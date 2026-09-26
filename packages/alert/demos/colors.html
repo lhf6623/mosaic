@@ -1,0 +1,14 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert color="primary" heading="主要" icon>默认色，也是六色里最通用的一种强调。</mc-alert>
+    <mc-alert color="info" heading="信息" icon>只是告知，不需要做什么。</mc-alert>
+    <mc-alert color="success" heading="成功" icon>操作已经完成。</mc-alert>
+    <mc-alert color="warning" heading="警告" icon>需要注意，但还没出错。</mc-alert>
+    <mc-alert color="danger" heading="危险" icon>出错了，需要处理。</mc-alert>
+    <mc-alert color="neutral" heading="中性" icon>纯提示，不带语气。</mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-colors' });
+  </script>
+</template>

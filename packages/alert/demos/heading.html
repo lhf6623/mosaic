@@ -1,0 +1,18 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert heading="属性给纯文本标题">正文直接写在标签里，落进默认插槽。</mc-alert>
+    <mc-alert>没有标题时只有正文 —— 标题块不会白占一行。</mc-alert>
+    <mc-alert color="info">
+      <strong slot="title">插槽标题</strong>
+      标题要富内容（加粗、徽标、链接）就用 <code>slot="title"</code>，它优先于 <code>heading</code>。
+    </mc-alert>
+    <mc-alert color="info" heading="这个属性标题不会出现">
+      <strong slot="title">插槽优先</strong>
+      两个都给时，渲染的是插槽，属性那边只是后备。
+    </mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-heading' });
+  </script>
+</template>

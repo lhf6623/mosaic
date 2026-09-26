@@ -117,6 +117,7 @@
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
+      "packages/code/demos/part.html",
       "packages/code/demos/soft-wrap.html",
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
@@ -142,6 +143,16 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
+      "packages/alert/demos/closable.html",
+      "packages/alert/demos/colors.html",
+      "packages/alert/demos/customize.html",
+      "packages/alert/demos/heading.html",
+      "packages/alert/demos/icon-custom.html",
+      "packages/alert/demos/icon.html",
+      "packages/alert/demos/part.html",
+      "packages/alert/demos/variants.html",
+      "packages/alert/page.html",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
@@ -165,6 +176,7 @@
       "packages/card/demos/basic.html",
       "packages/card/demos/customize.html",
       "packages/card/demos/padding.html",
+      "packages/card/demos/part.html",
       "packages/card/demos/sections.html",
       "packages/card/demos/variants.html",
       "packages/card/page.html",
@@ -176,6 +188,7 @@
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
+      "packages/code/demos/part.html",
       "packages/code/demos/soft-wrap.html",
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
@@ -187,6 +200,7 @@
       "packages/collapse/demos/disabled.html",
       "packages/collapse/demos/events.html",
       "packages/collapse/demos/nested.html",
+      "packages/collapse/demos/part.html",
       "packages/collapse/demos/rich-header.html",
       "packages/collapse/demos/size.html",
       "packages/collapse/demos/style-override.html",
@@ -194,6 +208,7 @@
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
+      "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
       "packages/menu/demos/states.html",
       "packages/menu/demos/surface.html",
@@ -204,6 +219,7 @@
       "packages/tag/demos/closable.html",
       "packages/tag/demos/colors.html",
       "packages/tag/demos/customize.html",
+      "packages/tag/demos/part.html",
       "packages/tag/demos/sizes.html",
       "packages/tag/demos/variants.html",
       "packages/tag/page.html",
@@ -256,6 +272,7 @@
       "docs/components/palette.html",
       "docs/components/toc.html",
       "docs/content.css",
+      "docs/doc-layout.html",
       "docs/layout.html",
       "docs/pages/home.html",
       "docs/routes.js",
@@ -264,6 +281,16 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
+      "packages/alert/demos/closable.html",
+      "packages/alert/demos/colors.html",
+      "packages/alert/demos/customize.html",
+      "packages/alert/demos/heading.html",
+      "packages/alert/demos/icon-custom.html",
+      "packages/alert/demos/icon.html",
+      "packages/alert/demos/part.html",
+      "packages/alert/demos/variants.html",
+      "packages/alert/page.html",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
@@ -322,6 +349,7 @@
       "packages/collapse/demos/disabled.html",
       "packages/collapse/demos/events.html",
       "packages/collapse/demos/nested.html",
+      "packages/collapse/demos/part.html",
       "packages/collapse/demos/rich-header.html",
       "packages/collapse/demos/size.html",
       "packages/collapse/demos/style-override.html",
@@ -349,6 +377,7 @@
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
+      "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
       "packages/menu/demos/states.html",
       "packages/menu/demos/surface.html",
@@ -379,7 +408,6 @@
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -444,6 +472,7 @@
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
+      "packages/code/demos/part.html",
       "packages/code/demos/soft-wrap.html",
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
@@ -482,6 +511,7 @@
       "packages/card/demos/basic.html",
       "packages/card/demos/customize.html",
       "packages/card/demos/padding.html",
+      "packages/card/demos/part.html",
       "packages/card/demos/sections.html",
       "packages/card/demos/variants.html",
       "packages/card/page.html",
@@ -524,6 +554,7 @@
       "packages/tag/demos/closable.html",
       "packages/tag/demos/colors.html",
       "packages/tag/demos/customize.html",
+      "packages/tag/demos/part.html",
       "packages/tag/demos/sizes.html",
       "packages/tag/demos/variants.html",
       "packages/tag/page.html",
@@ -559,6 +590,7 @@
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
+      "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
       "packages/menu/demos/states.html",
       "packages/menu/demos/surface.html",
@@ -612,6 +644,46 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html"
     ],
+    "packages/alert/test/alert.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/alert/demos/closable.html",
+      "packages/alert/demos/colors.html",
+      "packages/alert/demos/customize.html",
+      "packages/alert/demos/heading.html",
+      "packages/alert/demos/icon-custom.html",
+      "packages/alert/demos/icon.html",
+      "packages/alert/demos/part.html",
+      "packages/alert/demos/variants.html",
+      "packages/alert/page.html",
+      "packages/alert/test/alert.test.mjs",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html"
+    ],
     "packages/collapse/test/collapse.test.mjs": [
       "app-config.js",
       "docs/components/cards.html",
@@ -623,7 +695,6 @@
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -635,7 +706,6 @@
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
@@ -645,6 +715,7 @@
       "packages/collapse/demos/disabled.html",
       "packages/collapse/demos/events.html",
       "packages/collapse/demos/nested.html",
+      "packages/collapse/demos/part.html",
       "packages/collapse/demos/rich-header.html",
       "packages/collapse/demos/size.html",
       "packages/collapse/demos/style-override.html",
@@ -656,6 +727,7 @@
   },
   "byFile": {
     "app-config.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -671,6 +743,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/cards.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -686,6 +759,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/crumb.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -701,6 +775,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/nav.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -716,6 +791,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/pager.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -731,6 +807,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/palette.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -746,6 +823,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/toc.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -761,6 +839,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/content.css": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -779,6 +858,7 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/doc-layout.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -792,10 +872,12 @@
       "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs",
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/layout.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -827,9 +909,7 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/pages/home.html": [
-      "packages/button/test/button.test.mjs",
       "packages/code/test/code.test.mjs",
-      "packages/collapse/test/collapse.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
       "tests/site/05-doc-pages.mjs",
@@ -843,6 +923,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/routes.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -858,6 +939,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/shell.css": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -873,6 +955,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/site-map.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -902,6 +985,7 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/state/route.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -917,6 +1001,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/theme-boot.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -932,6 +1017,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "index.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -945,7 +1031,61 @@
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
     ],
+    "packages/alert/alert.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/closable.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/colors.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/customize.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/heading.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/icon-custom.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/icon.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/part.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/variants.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/page.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/test/alert.test.mjs": [
+      "packages/alert/test/alert.test.mjs"
+    ],
     "packages/boot/mosaic.css": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -961,6 +1101,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/boot/mosaic.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -976,6 +1117,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/boot/shadow-base.css": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -991,6 +1133,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/breadcrumb/breadcrumb-item.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1006,6 +1149,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/breadcrumb/breadcrumb.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1048,7 +1192,6 @@
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
       "packages/code/test/code.test.mjs",
-      "packages/collapse/test/collapse.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
       "tests/site/05-doc-pages.mjs",
@@ -1140,6 +1283,7 @@
       "packages/button/test/button.test.mjs"
     ],
     "packages/card/card.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1166,6 +1310,10 @@
       "packages/card/test/card.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
+    "packages/card/demos/part.html": [
+      "packages/card/test/card.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/card/demos/sections.html": [
       "packages/card/test/card.test.mjs",
       "tests/site/05-doc-pages.mjs"
@@ -1182,6 +1330,7 @@
       "packages/card/test/card.test.mjs"
     ],
     "packages/code/code.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1231,6 +1380,11 @@
       "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
+    "packages/code/demos/part.html": [
+      "packages/code/test/code.test.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/code/demos/soft-wrap.html": [
       "packages/code/test/code.test.mjs",
       "tests/site/04-nav-stability.mjs",
@@ -1255,6 +1409,7 @@
       "packages/code/test/code.test.mjs"
     ],
     "packages/collapse/collapse-item.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1270,6 +1425,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/collapse/collapse.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1305,6 +1461,11 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/collapse/demos/nested.html": [
+      "packages/collapse/test/collapse.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/08-subpath.mjs"
+    ],
+    "packages/collapse/demos/part.html": [
       "packages/collapse/test/collapse.test.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/08-subpath.mjs"
@@ -1359,6 +1520,11 @@
       "tests/site/05-doc-pages.mjs",
       "tests/site/09-doc-toc.mjs"
     ],
+    "packages/menu/demos/part.html": [
+      "packages/menu/test/menu.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/09-doc-toc.mjs"
+    ],
     "packages/menu/demos/size.html": [
       "packages/menu/test/menu.test.mjs",
       "tests/site/05-doc-pages.mjs",
@@ -1375,6 +1541,7 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "packages/menu/menu-item.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1390,6 +1557,7 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/menu/menu.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -1425,6 +1593,10 @@
       "tests/site/05-doc-pages.mjs"
     ],
     "packages/tag/demos/customize.html": [
+      "packages/tag/test/tag.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/tag/demos/part.html": [
       "packages/tag/test/tag.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],

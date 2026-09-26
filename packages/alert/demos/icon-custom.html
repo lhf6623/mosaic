@@ -1,0 +1,16 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert color="warning">
+      <span slot="icon" aria-hidden="true">⏳</span>
+      自定义图标：<code>slot="icon"</code> 里放了东西，内置图形就让位。
+    </mc-alert>
+    <mc-alert color="success" icon>
+      <span slot="icon" aria-hidden="true">🎉</span>
+      同时写了 <code>icon</code> 也一样 —— 插槽优先，内置图形不出现。
+    </mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-icon-custom' });
+  </script>
+</template>

@@ -1,0 +1,305 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./alert.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/variants.html"></l-m>
+    <l-m src="./demos/heading.html"></l-m>
+    <l-m src="./demos/icon.html"></l-m>
+    <l-m src="./demos/icon-custom.html"></l-m>
+    <l-m src="./demos/closable.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Alert <code>mc-alert</code></h1>
+    <p class="doc-lead">页内提示条：一块语义色的小面，带图标、标题与描述，可关。</p>
+    <p class="doc-badges">
+      <span class="doc-badge" data-status="ready">已实现</span>
+      <span class="doc-badge">M2</span>
+      <span class="doc-badge">packages/alert/</span>
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>语义色</h3>
+      <p class="doc-hint">六个色值都有；不写 <code>color</code> 就是 <code>primary</code>。</p>
+      <demo-alert-colors></demo-alert-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外观</h3>
+      <p class="doc-hint">
+        <code>subtle</code>（默认）浅底深字，最不抢视线；<code>solid</code> 底色满铺；
+        <code>outline</code> 只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+      </p>
+      <demo-alert-variants></demo-alert-variants>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/variants.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>标题</h3>
+      <p class="doc-hint">
+        纯文本标题用 <code>heading</code>，富内容用
+        <code>slot="title"</code>；两者都没有时标题块不占位。
+      </p>
+      <demo-alert-heading></demo-alert-heading>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/heading.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>图标</h3>
+      <p class="doc-hint">
+        <code>icon</code> 打开左侧图标：四个语义图形， <code>primary</code> / <code>info</code> /
+        <code>neutral</code> 共用信息圆。
+      </p>
+      <demo-alert-icon></demo-alert-icon>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/icon.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自定义图标</h3>
+      <p class="doc-hint">
+        <code>slot="icon"</code> 有内容就让内置图形让位 ——
+        插槽内容自己负责无障碍，内置图形才是装饰性的。
+      </p>
+      <demo-alert-icon-custom></demo-alert-icon-custom>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/icon-custom.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>可关闭</h3>
+      <p class="doc-hint">
+        <code>closable</code> 在右侧加一个原生 <code>&lt;button&gt;</code>；点击只发
+        <code>close</code>，组件<strong>不自己删 DOM</strong>，例子里的 <code>remove()</code>
+        就是使用者那一半。
+      </p>
+      <demo-alert-closable></demo-alert-closable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/closable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow
+        边界。
+      </p>
+      <demo-alert-customize></demo-alert-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式。
+      </p>
+      <demo-alert-part></demo-alert-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>color</code></td>
+          <td>
+            <code>primary</code> <code>info</code> <code>success</code> <code>warning</code>
+            <code>danger</code> <code>neutral</code>
+          </td>
+          <td><code>primary</code></td>
+          <td>语义色：填进四个色槽</td>
+        </tr>
+        <tr>
+          <td><code>variant</code></td>
+          <td><code>subtle</code> <code>solid</code> <code>outline</code></td>
+          <td><code>subtle</code></td>
+          <td>浅底深字 / 实心 / 描边</td>
+        </tr>
+        <tr>
+          <td><code>heading</code></td>
+          <td>字符串</td>
+          <td>—</td>
+          <td>
+            标题纯文本；富内容用 <code>title</code> 插槽。<strong
+              >别换成原生 <code>title</code> 属性</strong
+            >（会弹浏览器自己的提示）
+          </td>
+        </tr>
+        <tr>
+          <td><code>icon</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>左侧出现该色的内置图形；换成自己的图标用 <code>icon</code> 插槽</td>
+        </tr>
+        <tr>
+          <td><code>closable</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>
+            右侧出现 × 按钮（<code>aria-label="关闭"</code>，命中区 32×32），点击发
+            <code>close</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>事件</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>类型</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>close</code></td>
+          <td><code>(event: Event) =&gt; void</code></td>
+          <td>点了 ×；冒泡 + <code>composed</code>，可挂在祖先上收全部提示条</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽与 part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>描述正文；长文本自动折行</td>
+        </tr>
+        <tr>
+          <td>插槽 <code>title</code></td>
+          <td>标题富内容；没给时回退到 <code>heading</code> 属性</td>
+        </tr>
+        <tr>
+          <td>插槽 <code>icon</code></td>
+          <td>自定义图标；有内容时内置图形让位</td>
+        </tr>
+        <tr>
+          <td><code>part="base"</code></td>
+          <td>整条：图标 / 正文 / × 那一行</td>
+        </tr>
+        <tr>
+          <td><code>part="icon"</code></td>
+          <td>图标容器（内置图形与 <code>icon</code> 插槽都在里面）</td>
+        </tr>
+        <tr>
+          <td><code>part="title"</code></td>
+          <td>标题行；没有标题时它会折掉</td>
+        </tr>
+        <tr>
+          <td><code>part="body"</code></td>
+          <td>描述容器；正文为空时它会折掉</td>
+        </tr>
+        <tr>
+          <td><code>part="close"</code></td>
+          <td>那个 × 按钮（32×32 的命中区）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>和 <code>toast()</code> 的分工</strong>：alert 是<strong>页内静态</strong>的一块面
+        —— 跟着内容流排版、不抢焦点、不会自己消失；自己进场自己走的浮层消息才用 toast。
+      </li>
+      <li>
+        <strong>不预设 <code>role</code></strong
+        >：静态提示条不该在渲染出来时就让屏幕阅读器播报。动态插入的报错要播报，自己在宿主上加
+        <code>role="alert"</code>（紧急）或 <code>role="status"</code>（礼貌）—— 组件不会覆盖它。
+      </li>
+      <li>
+        <strong>标题属性叫 <code>heading</code> 不是 <code>title</code></strong
+        >：原生 <code>title</code> 会弹浏览器自己的 tooltip；插槽名仍是 <code>title</code>
+        （插槽名不产生属性）。
+      </li>
+      <li>
+        <strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>。要在页面上消失，
+        自己在事件里 <code>el.remove()</code> 或改数据。
+      </li>
+      <li>
+        <strong>× 不会把提示条撑高</strong>：32×32 的命中区比行高还高，靠负外边距抵消掉落在上下
+        内边距里的那部分 —— 加不加 <code>closable</code>，单行提示条一样高。
+      </li>
+      <li>
+        <strong>图标是装饰性的</strong>：内置图形带 <code>aria-hidden</code>，含义由文案承担。 换成
+        <code>slot="icon"</code> 之后那句话也交给你 —— 纯装饰就自己加 <code>aria-hidden</code>。
+      </li>
+      <li>
+        <strong>没有 <code>size</code></strong
+        >：提示条不是控件，高度由内容撑。要固定尺寸就写宿主 <code>style="padding: …"</code> 或
+        <code>--mc-alert-pad-*</code>。
+      </li>
+      <li>
+        <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-alert style="…"&gt;</code> 直接覆盖，
+        不需要 <code>!important</code>；结构化定制（图标 / 标题 / 正文 / ×）走
+        <code>::part()</code>。
+      </li>
+      <li>
+        <strong>在脏宿主页面里也正常</strong>：不依赖页面 reset，宿主页面的 <code>p</code> /
+        <code>a</code> 全局样式也够不到 shadow 里的结构。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

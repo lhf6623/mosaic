@@ -197,6 +197,7 @@ export const SITE = [
             order: 10,
             label: 'Alert',
             zh: '提示条',
+            path: 'packages/alert/page.html',
             tagName: 'mc-alert',
             stage: 'M2',
             summary: '页内提示条。可关闭，带标题与描述。',
