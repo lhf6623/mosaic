@@ -186,3 +186,26 @@ ofa 的数据层/实例占了 `entries` 这个名字，声明它会让整棵组�
 `data` 侧 `entries`。新组件起字段名时避开这些，报错信息给不了提示。
 
 ---
+
+### P43 · 往实例上写字段会**覆盖同名的 proto 方法**（`this.sticky = …` 之后就再也调不到 `sticky()`）
+
+```js
+proto: {
+  sticky() {                     // 模板里 on:click="sticky()"
+    this.sticky = message('…');  // ❌ 把上面这个方法本身覆盖掉了
+  },
+}
+// 之后每次点击：Error evaluating element expression: 'on:click="sticky()"'
+```
+
+**机制**：proto 的方法就挂在实例数据上，跟 `data` / `this.xxx` 是**同一层命名空间** ——
+`this.sticky = 句柄` 不是"存一个字段"，而是把方法换成了一个普通对象，下一次点击自然调不动。
+
+**症状**：第一次点击正常，**第二次及以后全部静默失效**（控制台那条 `Error evaluating element expression`
+还只说表达式求值失败，不说是被谁覆盖的）。实测出现在 message 文档页的「停留时长」演示：
+点「不自动关」→ 点 `close()` → 再点「不自动关」，就再也弹不出来了。
+
+**避开**：存句柄 / 状态时加后缀或换名（`stickyMessage`、`pendingHandle`、`_sticky`），
+别用 proto 方法名本身。与 [P7](#p7--proto-方法名要避开-fn-上的通用名)（撞框架保留名）、
+[P39](#p39--data-的键也有保留名实测-entries整个组件不渲染报错却不说键名)（撞 data 保留名）
+是同一族：**ofa 的实例命名空间很挤，起名先查一遍自己有哪些 proto 方法。**

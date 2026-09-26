@@ -184,4 +184,37 @@ export default async function run({ page, visit, check }) {
   );
 
   await page.evaluate(() => document.getElementById('icon-probe')?.remove());
+  /* ------------------------------------------------------------------ *
+   * 内置图标页：点一行按钮 = 复制 name + message 提示（这条是页面级的真实用法：
+   * message 容器由它自己挂到 body，页面里一个标签都没有）
+   * ------------------------------------------------------------------ */
+  await visit(page, `/index.html?icon-copy=${Date.now()}#/packages/icon/page.html`);
+  await page
+    .waitForFunction(
+      () => !!window.__deep('demo-icon-builtins')?.shadowRoot?.querySelectorAll('button')?.length,
+      { timeout: 10000 },
+    )
+    .catch(() => {});
+  const copyResult = await page.evaluate(async () => {
+    const host = window.__deep('demo-icon-builtins');
+    const button = [...host.shadowRoot.querySelectorAll('button')][5];
+    const name = button.dataset.name;
+    button.click();
+    await new Promise((r) => setTimeout(r, 700));
+    const host2 = document.querySelector('mc-message');
+    const item = host2?.shadowRoot?.querySelector('.mc-item');
+    /* 剪贴板内容不在这里断言：套件没给 clipboard 权限时写不进去也读不出来，
+       复制本身走 execCommand 兜底仍然成功 —— 剪贴板的正确性由 message 套件管 */
+    return {
+      name,
+      toast: item?.querySelector('.mc-text')?.textContent?.trim() ?? null,
+      glyph: item?.querySelector('.mc-glyph mc-icon')?.getAttribute('name') ?? null,
+    };
+  });
+  check(
+    '图标页点一行：弹出 message 提示「已复制：<名字>」（带 success 语义图标）',
+    !!copyResult.name && copyResult.toast === `已复制：${copyResult.name}` && copyResult.glyph === 'success',
+    JSON.stringify(copyResult),
+  );
+
 }
