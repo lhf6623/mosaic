@@ -15,10 +15,19 @@ await routerReady();
 await page.evaluate(() => {
   location.hash = '#/packages/button/page.html';
 });
-/* 等的是**升级后**的实例：元素先出现、shadow root 晚一拍 —— 并行跑时这个窗口会拉大，
-   只等元素存在就会偶发地在升级前断言（实测：4 并行时这条会红） */
+/* 等的是**这一页的**按钮升级完。⚠️ 只等「有一个 mc-button 带 shadow root」会被首页自己的
+   两个 mc-button（海报 CTA）提前满足，等到的其实是切换前的旧页面；随后路由把旧页面卸载、
+   新页面的元素先建出来、shadow root 晚一拍 —— 断言正好落进那个窗口（实测必红）。
+   所以必须同时确认「已经在 Button 文档页上」且「所有按钮都升级完」。 */
 await page
-  .waitForFunction(() => !!window.__deep('mc-button')?.shadowRoot, { timeout: 15000 })
+  .waitForFunction(
+    () => {
+      const all = window.__deepAll('mc-button');
+      const title = window.__deepAll('h1')[0]?.textContent ?? '';
+      return title.startsWith('Button') && all.length > 0 && all.every((el) => !!el.shadowRoot);
+    },
+    { timeout: 15000 },
+  )
   .catch(() => {});
 
 /* ------------------------------------------------------------------ *
