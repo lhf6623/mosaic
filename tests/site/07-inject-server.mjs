@@ -141,7 +141,11 @@ try {
             return out;
           };
           const all = deep(document, 'mc-alert');
-          return all.length > 0 && all.every((el) => !!el.shadowRoot);
+          /* 内置图形由 mc-icon 异步渲染（它要先等样式表 adopt）—— 等它真的落进 shadow 再断言 */
+          const glyph = all[0]?.shadowRoot
+            ?.querySelector('mc-icon.mc-glyphs')
+            ?.shadowRoot?.querySelector('.mc-glyph[class*="mc-icon-"]');
+          return all.length > 0 && all.every((el) => !!el.shadowRoot) && !!glyph;
         },
         { timeout: 15000 },
       )
@@ -156,18 +160,25 @@ try {
       };
       const all = deep(document, 'mc-alert');
       const first = all[0];
+      const iconHost = first?.shadowRoot?.querySelector('mc-icon.mc-glyphs');
       return {
         total: all.length,
         upgraded: all.filter((el) => !!el.shadowRoot).length,
-        glyphs: first?.shadowRoot?.querySelectorAll('.mc-glyph').length ?? 0,
+        /* 内置图形已经搬进 mc-icon：本组件的 shadow 里只有 1 个 mc-icon 实例，
+           图形本体在它的 shadow 里 —— 所以「结构真的建出来」要往下钻一层看 */
+        icons: first?.shadowRoot?.querySelectorAll('mc-icon.mc-glyphs').length ?? 0,
+        glyph: iconHost?.shadowRoot?.querySelector('.mc-glyph[class*="mc-icon-"]')?.getAttribute('class') ?? null,
       };
     });
     await injPage.close();
 
     check(
       '组件模块在被 HTML 注入的服务器上仍能加载（实例全部升级、内部结构真的建出来）',
-      compState.total > 0 && compState.upgraded === compState.total && compState.glyphs === 4,
-      `${compState.upgraded}/${compState.total} 升级 · 图形 ${compState.glyphs} 个${
+      compState.total > 0 &&
+        compState.upgraded === compState.total &&
+        compState.icons === 1 &&
+        (compState.glyph ?? '').includes('mc-icon-info'),
+      `${compState.upgraded}/${compState.total} 升级 · 图标容器 ${compState.icons} 个 · 图形 ${compState.glyph ?? '(未渲染)'}${
         compErrs.length ? ' · ' + compErrs[0] : ''
       }`,
     );

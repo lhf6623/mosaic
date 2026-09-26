@@ -44,8 +44,10 @@ toast 是命令式浮层（自己进场、自己走，不占版面）。
 （slotchange + `heading` 的值一起判定，写宿主只能在 `attached()` 之后，[P31](../pitfalls/01-props.md)）。
 没有它们时空标题会白占一行、空正文会白留一个 gap。
 
-**图标是内置的静态 SVG**：四个语义图形 —— 信息圆（`primary` / `info` / `neutral` 共用）、对勾、
-三角叹号、叉圆；装饰性、容器带 `aria-hidden`。要别的图标就写 `slot="icon"`（有内容时内置图形让位），
+**图标来自 [mc-icon](./icon.md)**：按自己的 `color` 取内置图标集里的四个语义图形 —— 信息圆
+（`primary` / `info` / `neutral` 共用）、对勾（`success`）、三角叹号（`warning`）、叉圆（`danger`），
+渲染成装饰性（`aria-hidden`）。`mc-alert` 的内部有 `await load('../icon/icon.html')`，所以只引
+`mc-alert` 的使用者会连带取一次 `icon.html`。要别的图标就写 `slot="icon"`（有内容时内置图形让位），
 那时无障碍由使用者负责。
 
 **不预设 `role`**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。动态插入的报错要播报，使用者

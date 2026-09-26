@@ -12,8 +12,8 @@
 
   交互一律落在**原生元素**上，但刻意不「包一层按钮」：checkable 是 shadow 里一个铺满宿主的
   透明 <button aria-pressed>，内容留在它旁边的默认插槽里（mc-button 同一种做法）。
-  这样 closable 的 × 能与它做**兄弟**而不是嵌套 —— HTML 不允许 button 里再放 button；
-  × 靠 z-index 压在 toggle 层上面（P21），点 × 不会连带切换选中。
+  这样 closable 的关闭按钮能与它做**兄弟**而不是嵌套 —— HTML 不允许 button 里再放 button；
+  关闭按钮靠 z-index 压在 toggle 层上面（P21），点它不会连带切换选中。
   代价是那个透明按钮是空的，无障碍名要把插槽文本镜像成 aria-label（见 applyLabel）。
 
   closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM（同 mc-menu / mc-breadcrumb）：
@@ -51,6 +51,9 @@
       --mc-tag-pad-y: var(--mc-space-1);
       --mc-tag-gap: var(--mc-space-1);
       --mc-tag-radius: var(--mc-radius-md);
+      /* 关闭图标的字号（命中区固定 24px，改这个只改图形大小）。
+         1.25em 是按钮那一档同样的光学补偿：标签文字 14px + medium，同尺寸的描边图标看着偏轻 */
+      --mc-tag-close-size: 1.25em;
       /* hover 反馈的强度：0 = 不响应（静态标签），checkable 才打开 */
       --mc-tag-layer: 0;
 
@@ -198,7 +201,7 @@
       background-color: transparent;
       color: inherit;
       font: inherit;
-      font-size: 1.25em;
+      font-size: var(--mc-tag-close-size);
       line-height: 1;
       cursor: pointer;
       align-items: center;
@@ -234,7 +237,8 @@
 
   <slot></slot>
 
-  <!-- × 是字符不是图标字体；无障碍名由 aria-label 给 -->
+  <!-- 关闭：内置图标（静态图标直接用类，省一个组件请求）；无障碍名由 aria-label 给，
+       图形本身 mc-icon 那条规则不带语义，这里再显式 aria-hidden 一次 -->
   <button
     class="mc-close"
     part="close"
@@ -243,7 +247,7 @@
     :disabled="disabled !== null"
     on:click="onClose($event)"
   >
-    ×
+    <span class="mc-icon-close" aria-hidden="true"></span>
   </button>
 
   <script>

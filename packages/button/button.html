@@ -38,6 +38,13 @@
       --mc-button-on-fill: var(--mc-color-primary-fg); /* filled 上的文字 */
       --mc-button-accent: var(--mc-color-primary); /* outline / ghost 的线与文字 */
 
+      /* ---------- 图标特调：按钮里的图标比文字大一档（14px 文字 → 17.5px 图标） ----------
+       * 为什么按钮要单独调：图标集统一是「1em = 跟随字号」，在正文里正好；但按钮文字是
+       * 14px + font-weight 500，同尺寸的图标看着比文字轻一档（描边型图标 24px 画布 2px 描边，
+       * 缩到 14px 只剩 1.17px）。这里是**按钮层**的光学补偿：放大尺寸补重量，
+       * 而不是去改图标集本身（改整套描边会波及所有图标）。想再调就覆盖这一个变量。 */
+      --mc-button-icon-size: 1.25em;
+
       /* filled 是默认外观，直接写在 :host 上；写 :host(:not([variant])) 会静默失效（P14） */
       background-color: rgb(var(--mc-button-fill));
       color: rgb(var(--mc-button-on-fill));
@@ -147,16 +154,14 @@
       outline-offset: 2px;
     }
 
-    /* loading 指示器常驻 DOM 靠属性显隐；o-if / x-if 不响应运行时属性（P10） */
+    /* loading 指示器常驻 DOM 靠属性显隐；o-if / x-if 不响应运行时属性（P10）。
+       图形就是内置图标集里的 spinner（类名 = 内置图标，见 mc-icon）：
+       组件内部的**静态**图标直接吃类，不引 icon.html —— 少一个请求，
+       形状也和其余内置图标同一套描边。尺寸/颜色由那条图标规则给（1em + currentColor）。 */
     .mc-loader {
       display: none;
-      width: 1em;
-      height: 1em;
       flex-shrink: 0;
-      border: 2px solid transparent;
-      border-top-color: currentColor;
-      border-right-color: currentColor;
-      border-radius: 50%;
+      font-size: var(--mc-button-icon-size);
       animation: mc-btn-spin 0.7s linear infinite;
     }
     :host([loading]) .mc-loader {
@@ -173,13 +178,20 @@
       display: inline-flex;
       flex-shrink: 0;
     }
+    /* 槽里的图标：尺寸走上面那个令牌，**颜色必须跟按钮的文字色**（filled = on-fill、
+       outline / ghost = accent）。不靠"碰巧继承"：显式 color:inherit 之外，还压掉了
+       图标自带的 color 属性 —— 按钮的标签是整体，里面不该出现第二种颜色。 */
+    ::slotted(mc-icon) {
+      font-size: var(--mc-button-icon-size);
+      color: inherit;
+    }
   </style>
 
   <!-- 交互语义层：透明原生 button，盖满宿主 -->
   <button class="mc-native" :type="type" :disabled="disabled !== null || loading !== null"></button>
 
   <span class="mc-layer" aria-hidden="true"></span>
-  <span class="mc-loader" aria-hidden="true"></span>
+  <span class="mc-loader mc-icon-spinner" aria-hidden="true"></span>
   <slot name="prefix"></slot>
   <slot></slot>
   <slot name="suffix"></slot>

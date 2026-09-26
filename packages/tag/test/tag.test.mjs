@@ -1,6 +1,6 @@
 /**
  * mc-tag · 分类标签：三个维度正交（color / variant / size）、
- * closable 的 × 与 close 事件（只发事件不删 DOM）、checkable 的原生切换按钮与 change 事件、
+ * closable 的关闭按钮与 close 事件（只发事件不删 DOM）、checkable 的原生切换按钮与 change 事件、
  * selected 覆盖 variant、disabled 归零、运行时 property（el.selected）与 P31 动态创建
  */
 
@@ -121,7 +121,7 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** closable：× 的显隐、命中区、无障碍名、宿主压暗；不可关的实例里 × 是隐藏的 */
+    /** closable：关闭按钮的显隐、命中区、无障碍名、宿主压暗；不可关的实例里它是隐藏的 */
     const closable = await page.evaluate(() => {
       const colorBox = window.__deepAll('demo-tag-colors')[0].shadowRoot;
       const closeBox = window.__deepAll('demo-tag-closable')[0].shadowRoot;
@@ -129,8 +129,12 @@ export default async function run({ page, visit, check }) {
         const btn = el.shadowRoot.querySelector('.mc-close');
         const cs = getComputedStyle(btn);
         const r = btn.getBoundingClientRect();
+        /* 关闭图形是内置图标（静态图标直接用类，不引 icon.html） */
+        const glyph = el.shadowRoot.querySelector('.mc-close .mc-icon-close');
         return {
           display: cs.display,
+          glyphMask: glyph ? getComputedStyle(glyph).maskImage !== 'none' : false,
+          glyphSize: glyph ? Math.round(glyph.getBoundingClientRect().width) : 0,
           ariaLabel: btn.getAttribute('aria-label'),
           part: btn.getAttribute('part'),
           disabledProp: btn.disabled,
@@ -471,6 +475,8 @@ export default async function run({ page, visit, check }) {
       tag.closable.closable.display === 'flex' &&
       tag.closable.disabled.display === 'flex' &&
       tag.closable.closable.ariaLabel === '移除' &&
+      tag.closable.closable.glyphMask &&
+      tag.closable.closable.glyphSize > 0 &&
       tag.closable.closable.part === 'close' &&
       tag.closable.closable.disabledProp === false &&
       tag.closable.disabled.disabledProp === true &&

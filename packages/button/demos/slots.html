@@ -1,8 +1,10 @@
 <template component>
   <div class="flex flex-wrap items-center gap-3">
-    <mc-button><span slot="prefix">🔍</span>搜索</mc-button>
-    <mc-button color="danger" variant="outline"><span slot="prefix">🗑</span>删除</mc-button>
-    <mc-button><span slot="suffix">→</span>下一步</mc-button>
+    <mc-button><mc-icon name="search" slot="prefix"></mc-icon>搜索</mc-button>
+    <mc-button color="danger" variant="outline"
+      ><mc-icon name="trash" slot="prefix"></mc-icon>删除</mc-button
+    >
+    <mc-button>下一步<mc-icon name="arrow-right" slot="suffix"></mc-icon></mc-button>
   </div>
 
   <script>

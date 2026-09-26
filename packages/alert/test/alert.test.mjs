@@ -65,8 +65,9 @@ export default async function run({ page, visit, check }) {
           upgraded: !!root,
           buttons: [...root.querySelectorAll('button')].map((b) => b.className),
           innerLinks: root.querySelectorAll('a, input, select, textarea').length,
-          glyphs: root.querySelectorAll('.mc-glyph').length,
-          glyphsHidden: root.querySelector('.mc-glyphs').getAttribute('aria-hidden'),
+          // 内置图形现在是一个 mc-icon 实例：图形本体在图标集里（mc-icon 的 shadow），本组件的 shadow 里只有它
+          glyphs: root.querySelectorAll('mc-icon.mc-glyphs').length,
+          glyphsHidden: root.querySelector('mc-icon.mc-glyphs')?.getAttribute('aria-hidden'),
         };
       });
       return {
@@ -153,19 +154,15 @@ export default async function run({ page, visit, check }) {
         const root = el.shadowRoot;
         const icon = root.querySelector('.mc-icon');
         const iconDisplay = getComputedStyle(icon).display;
-        /* 整块藏起来时，内部图形的 computed display 仍是 block —— 判定要连祖先一起看 */
-        const shown =
-          iconDisplay === 'none'
-            ? []
-            : [...root.querySelectorAll('.mc-glyph')].filter(
-                (g) => getComputedStyle(g).display !== 'none',
-              );
+        const iconEl = root.querySelector('mc-icon.mc-glyphs');
+        /* 整块藏起来时留空；否则「显示的是哪个图形」= mc-icon 上的 name（图形本体在 mc-icon 里） */
+        const shown = iconDisplay === 'none' || !iconEl ? [] : [iconEl.getAttribute('name')];
         return {
           color: el.getAttribute('color') ?? 'primary',
           icon: el.hasAttribute('icon'),
           iconDisplay,
           iconBox: Math.round(icon.getBoundingClientRect().width),
-          visible: shown.map((g) => g.getAttribute('class').replace('mc-glyph ', '')),
+          visible: shown,
         };
       });
     });
@@ -180,7 +177,8 @@ export default async function run({ page, visit, check }) {
           hasIconData: el.hasAttribute('data-has-icon'),
           glyphsDisplay: getComputedStyle(root.querySelector('.mc-glyphs')).display,
           iconDisplay: getComputedStyle(root.querySelector('.mc-icon')).display,
-          slottedText: slotted?.textContent?.trim() ?? null,
+          // 演示里投的是 mc-icon（它自己不产生文本），所以看 name 而不是 textContent
+          slottedName: slotted?.getAttribute('name') ?? null,
           slottedVisible: slotted ? slotted.getBoundingClientRect().width > 0 : false,
         };
       });
@@ -298,9 +296,10 @@ export default async function run({ page, visit, check }) {
         atCreate,
         shadow: !!root,
         withHeading: read(),
-        glyph: [...root.querySelectorAll('.mc-glyph')]
-          .filter((g) => getComputedStyle(g).display !== 'none')
-          .map((g) => g.getAttribute('class').replace('mc-glyph ', '')),
+        glyph: (() => {
+          const el = root.querySelector('mc-icon.mc-glyphs');
+          return el ? [el.getAttribute('name')] : [];
+        })(),
       };
 
       /* 去掉 heading：标题块要折掉，不留空行 */
@@ -437,12 +436,13 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'mc-alert 注册并渲染出实例，每个实例只有一个原生按钮（×），内部没有别的控件，4 个内置图形都在 DOM 里且容器 aria-hidden',
+    'mc-alert 注册并渲染出实例，每个实例只有一个原生按钮（×），内部没有别的控件，图标容器是 1 个 mc-icon 且 aria-hidden',
     alert.overview.upgraded &&
       alert.overview.total >= 25 &&
       alert.overview.innerLinks === 0 &&
       JSON.stringify(alert.overview.buttonSets) === JSON.stringify(['mc-close']) &&
-      JSON.stringify(alert.overview.glyphSets) === JSON.stringify([4]) &&
+      // 改造前是 4 个手绘图形（4 个 svg 节点）；现在图形住在 mc-icon 的 shadow 里，本组件只留 1 个实例
+      JSON.stringify(alert.overview.glyphSets) === JSON.stringify([1]) &&
       JSON.stringify(alert.overview.glyphsHidden) === JSON.stringify(['true']),
     `${alert.overview.total} 条 · 按钮=${JSON.stringify(alert.overview.buttonSets)} · 图形=${JSON.stringify(alert.overview.glyphSets)}`,
   );
@@ -512,23 +512,42 @@ export default async function run({ page, visit, check }) {
       alert.icons.every((i) => i.iconDisplay === (i.icon ? 'flex' : 'none')) &&
       alert.icons[4].icon === false &&
       JSON.stringify(alert.icons.slice(0, 4).map((i) => i.visible[0])) ===
-        JSON.stringify([
-          'mc-glyph-info',
-          'mc-glyph-success',
-          'mc-glyph-warning',
-          'mc-glyph-danger',
-        ]) &&
+        JSON.stringify(['info', 'success', 'warning', 'error']) &&
       alert.icons.slice(0, 4).every((i) => i.visible.length === 1) &&
       alert.icons[4].visible.length === 0 &&
       alert.icons[0].iconBox > 0,
     JSON.stringify(alert.icons),
   );
 
+  /* 图标颜色必须跟随所在外观的文字色。⚠️ 真踩过：mc-icon 是**子组件**（自带 shadow root），
+     而 shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg) }` —— 它会掐断颜色继承，
+     于是实心（白字紫底）那条的图标是深灰、基本看不见。修法是 mc-icon 自己的 :host 写 color:inherit
+     （组件 <style> 未分层，赢过 reset 所在的 @layer）。这条断言就是守它的。 */
+  const iconColors = await page.evaluate(() => {
+    const box = window.__deepAll('demo-alert-variants')[0]?.shadowRoot;
+    if (!box) return [];
+    return window.__deepAll('mc-alert', box)
+      .filter((el) => el.hasAttribute('icon'))
+      .map((el) => {
+        const icon = el.shadowRoot.querySelector('mc-icon.mc-glyphs');
+        return {
+          variant: el.getAttribute('variant') ?? 'subtle',
+          host: getComputedStyle(el).color,
+          icon: icon ? getComputedStyle(icon).color : null,
+        };
+      });
+  });
+  check(
+    '图标颜色跟随所在 variant 的文字色（实心底上不能落回 fg —— shadow-base 的 :host reset 会掐断继承）',
+    iconColors.length >= 3 && iconColors.every((i) => i.icon === i.host),
+    JSON.stringify(iconColors),
+  );
+
   check(
     'icon 插槽有内容时内置图形让位（data-has-icon + .mc-glyphs 隐藏），插槽内容照常渲染',
     alert.iconSlots.every((s) => s.hasIconData && s.iconDisplay === 'flex') &&
       alert.iconSlots.every((s) => s.glyphsDisplay === 'none' && s.slottedVisible) &&
-      JSON.stringify(alert.iconSlots.map((s) => s.slottedText)) === JSON.stringify(['⏳', '🎉']),
+      JSON.stringify(alert.iconSlots.map((s) => s.slottedName)) === JSON.stringify(['clock', 'star']),
     JSON.stringify(alert.iconSlots),
   );
 
@@ -592,7 +611,7 @@ export default async function run({ page, visit, check }) {
       alert.runtime.withHeading.titleDisplay === 'block' &&
       alert.runtime.withHeading.iconDisplay === 'flex' &&
       alert.runtime.withHeading.closeDisplay === 'flex' &&
-      JSON.stringify(alert.runtime.glyph) === JSON.stringify(['mc-glyph-info']) &&
+      JSON.stringify(alert.runtime.glyph) === JSON.stringify(['info']) &&
       alert.runtime.afterRemoveHeading.hasTitle === false &&
       alert.runtime.afterRemoveHeading.titleDisplay === 'none' &&
       alert.runtime.afterSetHeading.hasTitle === true &&

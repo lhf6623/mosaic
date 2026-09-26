@@ -40,15 +40,16 @@ tag 是「内容本身」的标签 —— 它才有关闭与选中。
 （名字从插槽文本镜像过来），`closable` 的 × 是 `part="close"` 的原生按钮 —— 键盘
 <kbd>Space</kbd> / <kbd>Enter</kbd> 可切换，焦点环用 `--mc-color-ring`。
 
-| 令牌                    | 默认                            | 作用                                       |
-| ----------------------- | ------------------------------- | ------------------------------------------ |
-| `--mc-tag-fill`         | 按 `color`                      | `solid` 与选中态的底色                     |
-| `--mc-tag-on-fill`      | 按 `color`                      | 实心上的文字色                             |
-| `--mc-tag-accent`       | 按 `color`                      | `subtle` 的文字、`outline` 的线与文字      |
-| `--mc-tag-subtle-fill`  | 按 `color`                      | `subtle` 的浅底（中性色用 surface-sunken） |
-| `--mc-tag-pad-x` / `-y` | `--mc-space-3` / `--mc-space-1` | 左右 / 上下内边距                          |
-| `--mc-tag-gap`          | `--mc-space-1`                  | 内容与 × 之间的间距                        |
-| `--mc-tag-radius`       | `--mc-radius-md`                | 圆角（全圆角写 `--mc-radius-full`）        |
+| 令牌                    | 默认                            | 作用                                         |
+| ----------------------- | ------------------------------- | -------------------------------------------- |
+| `--mc-tag-fill`         | 按 `color`                      | `solid` 与选中态的底色                       |
+| `--mc-tag-on-fill`      | 按 `color`                      | 实心上的文字色                               |
+| `--mc-tag-accent`       | 按 `color`                      | `subtle` 的文字、`outline` 的线与文字        |
+| `--mc-tag-subtle-fill`  | 按 `color`                      | `subtle` 的浅底（中性色用 surface-sunken）   |
+| `--mc-tag-pad-x` / `-y` | `--mc-space-3` / `--mc-space-1` | 左右 / 上下内边距                            |
+| `--mc-tag-gap`          | `--mc-space-1`                  | 内容与关闭图标之间的间距                     |
+| `--mc-tag-close-size`   | `1.25em`                        | 关闭图标的字号（命中区固定 24×24，不受影响） |
+| `--mc-tag-radius`       | `--mc-radius-md`                | 圆角（全圆角写 `--mc-radius-full`）          |
 
 ```html
 <mc-tag color="success">已发布</mc-tag>

@@ -6,6 +6,9 @@ export default async function run({ page, visit, check }) {
   await page
     .waitForFunction(() => !!customElements.get('mc-button'), { timeout: 8000 })
     .catch(() => {});
+  /* 插槽探针用的是 mc-icon（站点外壳在 layout.html 里全局注册）—— 等它升级完再搭探针，
+     否则未升级的自定义元素是 0 宽，位置/顺序断言会假红 */
+  await page.waitForFunction(() => !!customElements.get('mc-icon'), { timeout: 8000 }).catch(() => {});
 
   /* 搭探针：每个断言要的元素都在这里，量完由最后一个 evaluate 拆掉 */
   await page.evaluate(() => {
@@ -52,7 +55,8 @@ export default async function run({ page, visit, check }) {
 
     put('row-slots', 'sl-slots', {}, '');
     document.getElementById('sl-slots').innerHTML =
-      '<span slot="prefix" id="sl-prefix">🔍</span>搜索<span slot="suffix" id="sl-suffix">→</span>';
+      '<mc-icon slot="prefix" id="sl-prefix" name="search"></mc-icon>搜索' +
+      '<mc-icon slot="suffix" id="sl-suffix" name="arrow-right"></mc-icon>';
 
     put('row-block', 'bk-block', { block: true }, '撑满');
 
@@ -177,6 +181,7 @@ export default async function run({ page, visit, check }) {
     const host = document.getElementById('sl-slots').getBoundingClientRect();
     const prefix = document.getElementById('sl-prefix');
     const suffix = document.getElementById('sl-suffix');
+    const button = document.getElementById('sl-slots');
     const box = (el) => el.getBoundingClientRect();
     return {
       // 宿主是 inline-flex，插槽元素被块级化成 flex —— flex / inline-flex 都算对
@@ -185,6 +190,11 @@ export default async function run({ page, visit, check }) {
       prefixInside: box(prefix).left >= host.left - 1 && box(prefix).right <= host.right + 1,
       suffixInside: box(suffix).right <= host.right + 1,
       order: box(prefix).left < box(suffix).left,
+      /* 图标特调：按钮里的图标比文字大一档，且颜色必须跟按钮文字色（不靠碰巧继承） */
+      labelFontSize: getComputedStyle(button).fontSize,
+      labelColor: getComputedStyle(button).color,
+      iconFontSize: getComputedStyle(prefix).fontSize,
+      iconColor: getComputedStyle(prefix).color,
     };
   });
   check(
@@ -195,6 +205,12 @@ export default async function run({ page, visit, check }) {
       slots.suffixInside &&
       slots.order,
     JSON.stringify(slots),
+  );
+  check(
+    '按钮里的图标特调：比文字大一档（--mc-button-icon-size），颜色跟按钮文字色一致',
+    parseFloat(slots.iconFontSize) > parseFloat(slots.labelFontSize) &&
+      slots.iconColor === slots.labelColor,
+    `文字 ${slots.labelFontSize}/${slots.labelColor} · 图标 ${slots.iconFontSize}/${slots.iconColor}`,
   );
 
   /* ---------- 原生 click 穿透 shadow（composed） ---------- */

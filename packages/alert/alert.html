@@ -8,7 +8,7 @@
   两个正交维度 + 两个状态布尔，和 mc-tag / mc-button 同一套分工：
   · color   只往四个色槽里填值（subtle 要单独的浅底槽）；
   · variant 只决定色槽贴到哪儿（subtle 默认 / solid / outline）；
-  · 状态：icon（左侧内置图形）、closable（右侧 ×）。
+  · 状态：icon（左侧内置图形）、closable（右侧关闭图标）。
   **没有 size** —— 提示条不是控件，高度由内容撑；要改就 style="padding:…" 或 --mc-alert-pad-*。
   于是 6 色 + 3 外观 = 9 条规则，而不是 18 条组合规则。
 
@@ -20,24 +20,24 @@
   空的标题块会白占一行、正文空了 gap 也还在。宿主属性只能在 attached() 之后写（P31），
   所以 ready() 里只做查询，判定统一走 applyState()。
 
-  图标是**内置的 4 个语义图形**（primary / info / neutral 共用信息圆），装饰性、带 aria-hidden；
-  要给自己的图标（将来有 mc-icon）就写 slot="icon"，有内容时内置图形让位。
-  图形靠 :host([color='…']) 切换显隐 —— 常驻 DOM，不用 o-if（P10）。
+  图标直接消费 **mc-icon**（4 个语义图形住在内置图标集里：info / success / warning / error），
+  `:name` 跟着 color 走 —— 常驻 DOM、不用 o-if（P10）。装饰性由 mc-icon 自己保证（不给 label 即
+  aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图形让位。
 
-  ⚠️ **图形用 DOM API 建，文件里不写内联 svg 标记**：Live Server 会往 HTML 里注入热重载 script，
-  注入点是「body / svg / head 的结束标签」里的第一个，而它是**纯文本替换、不看上下文** ——
-  内联 svg 一旦出现在组件模块 script 之前，注入的 script 就变成 ofa 眼里的「第一个 script」，
-  组件直接报「加载组件模块出错」（实测：VS Code Live Server 5500 端口）。仓库自带
-  tools/serve.mjs --inject 复现同一规则，tests/site/07 守这条不变量：组件文件里任何一个注入点
-  都必须排在模块 script 之后（现在的做法是让它们根本不存在）。
-  另外 path 只写**大写绝对指令**：UnoCSS 会扫仓库里的所有文件（注释也算），小写指令后面跟着的
-  坐标就是「margin 工具类」的形状，会被真的写进 mosaic.css，`pnpm check:drift` 立刻红。
+  ⚠️ **这个文件里没有任何 SVG 形状**（图标数据在 mc-icon 那边，构建期编译进 mosaic.css）。
+  这条约束值得留着：Live Server 会往 HTML 里注入热重载 script，注入点是「body / svg / head 的
+  结束标签」里的第一个，而它是**纯文本替换、不看上下文** —— 内联 svg 一旦出现在组件模块 script
+  之前，注入的 script 就变成 ofa 眼里的「第一个 script」，组件直接报「加载组件模块出错」（实测：
+  VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
+  tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
+  （同理，path 数据里的小写指令会被 UnoCSS 当 margin 工具类扫走 —— 所以图标数据放
+  packages/icon/icons.generated.ts，那份文件不在 UnoCSS 的扫描范围里。）
 
   **不预设 role**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。需要播报的用法（动态插入的
   报错）由使用者在宿主上加 role="alert" / role="status"，组件不去覆盖它（同 mc-card 不做整卡可点）。
 
   closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。
-  × 是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，
+  关闭按钮是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，
   所以单行提示条不会因为它变高；焦点环用 --mc-color-ring（不用 currentColor，P16）。
 -->
 <template component>
@@ -169,31 +169,14 @@
     .mc-content {
       overflow-wrap: anywhere;
     }
+    /* 内置图标：一个 mc-icon 实例，图形名跟着 color 走（见脚本的 GLYPH_NAMES）。
+       size="lg" = 1.25em，和改造前手绘图形的尺寸一致 */
     .mc-glyphs {
       display: flex;
       align-items: center;
     }
-    .mc-glyph {
-      display: none;
-      width: 1.25em;
-      height: 1.25em;
-    }
-    /* primary / info / neutral 共用信息图形；其余三色各自换图形 */
-    .mc-glyph-info {
-      display: block;
-    }
-    :host([color='success']) .mc-glyph-info,
-    :host([color='warning']) .mc-glyph-info,
-    :host([color='danger']) .mc-glyph-info {
-      display: none;
-    }
-    :host([color='success']) .mc-glyph-success,
-    :host([color='warning']) .mc-glyph-warning,
-    :host([color='danger']) .mc-glyph-danger {
-      display: block;
-    }
 
-    /* ×：32×32 命中区的原生按钮；负外边距抵消掉超出行高的那 6px，单行提示条不被撑高 */
+    /* 关闭按钮：32×32 命中区的原生按钮；负外边距抵消掉超出行高的那 6px，单行提示条不被撑高 */
     .mc-close {
       display: none;
       position: relative;
@@ -231,10 +214,10 @@
   </style>
 
   <div part="base" class="mc-base flex items-start">
-    <!-- 图标：内置图形是装饰性的（aria-hidden）；slot="icon" 是使用者的内容，不替它决定是否被朗读。
-         图形由 ready() 里的 buildGlyphs() 灌进来 —— 文件里不写内联 svg 标记，原因见文件头 -->
+    <!-- 图标：内置图形来自 mc-icon（不给 label，所以它自己就是 aria-hidden 的装饰）；
+         slot="icon" 是使用者的内容，不替它决定是否被朗读 -->
     <span class="mc-icon" part="icon">
-      <span class="mc-glyphs" aria-hidden="true"></span>
+      <mc-icon class="mc-glyphs" size="lg" aria-hidden="true" :name="glyphName"></mc-icon>
       <slot name="icon"></slot>
     </span>
 
@@ -243,156 +226,125 @@
       <div class="mc-body" part="body"><slot></slot></div>
     </div>
 
-    <!-- × 是字符不是图标字体；无障碍名由 aria-label 给 -->
+    <!-- 关闭：用内置的 close 图标；无障碍名由按钮自己的 aria-label 给 -->
     <button class="mc-close" part="close" type="button" aria-label="关闭" on:click="onClose()">
-      ×
+      <mc-icon name="close"></mc-icon>
     </button>
   </div>
 
   <script>
-    const SVG_NS = 'http://www.w3.org/2000/svg';
-
     /**
-     * 四个语义图形（24×24，1.75 描边，round 端点）。
-     * ⚠️ 用 DOM API 建、不写成内联标记：Live Server 的注入点是「body / svg / head 的结束标签」中
-     * 第一个出现的位置，纯文本替换、不看上下文 —— 内联 svg 落在模块 script 之前，注入的 script
-     * 就会抢走 ofa 的「第一个 script」，组件报「加载组件模块出错」（文件头有完整推演，07 号套件守着）。
+     * 语义色 → 内置图标名（primary / info / neutral 共用信息圆）。
+     * 图形本体住在 packages/icon/icons.generated.ts，构建期被编译成 CSS（零请求）；
+     * 这里只留一张映射表，形状一个字节都不进本文件。
      */
-    const GLYPHS = {
-      info: [
-        ['circle', { cx: '12', cy: '12', r: '9' }],
-        ['path', { d: 'M12 11L12 16.5', 'stroke-linecap': 'round' }],
-        ['circle', { cx: '12', cy: '7.5', r: '1.1', fill: 'currentColor', stroke: 'none' }],
-      ],
-      success: [
-        ['circle', { cx: '12', cy: '12', r: '9' }],
-        [
-          'path',
-          {
-            d: 'M8 12.3L10.8 15.1L16 9.4',
-            'stroke-linecap': 'round',
-            'stroke-linejoin': 'round',
-          },
-        ],
-      ],
-      warning: [
-        ['path', { d: 'M12 3.8 21.4 20H2.6L12 3.8Z', 'stroke-linejoin': 'round' }],
-        ['path', { d: 'M12 10L12 14.4', 'stroke-linecap': 'round' }],
-        ['circle', { cx: '12', cy: '17.2', r: '1.1', fill: 'currentColor', stroke: 'none' }],
-      ],
-      danger: [
-        ['circle', { cx: '12', cy: '12', r: '9' }],
-        ['path', { d: 'M9 9L15 15M15 9L9 15', 'stroke-linecap': 'round' }],
-      ],
+    const GLYPH_NAMES = {
+      primary: 'info',
+      info: 'info',
+      neutral: 'info',
+      success: 'success',
+      warning: 'warning',
+      danger: 'error',
     };
 
-    /** 属性表 → DOM 节点。所有图形共用 svg 根上的 viewBox / fill / stroke / stroke-width */
-    const makeNode = (tag, attrs) => {
-      const node = document.createElementNS(SVG_NS, tag);
-      for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-      return node;
-    };
+    export default async ({ load }) => {
+      /* 图标是独立组件：注册 mc-alert 之前先把它就位（路径相对本文件 URL 解析）。
+         只引 mc-alert 的使用者会连带取一次 icon.html —— 这是「不给每个组件各画一套图标」的代价。 */
+      await load('../icon/icon.html');
 
-    export default async () => ({
-      tag: 'mc-alert',
+      return {
+        tag: 'mc-alert',
 
-      attrs: {
-        color: 'primary',
-        variant: 'subtle',
-        // 标题文案，富内容走 title 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（见文件头）
-        heading: '',
-        // 布尔属性默认值必须是 null（P1）。icon 是「存在即显示内置图形」
-        icon: null,
-        closable: null,
-      },
+        attrs: {
+          color: 'primary',
+          variant: 'subtle',
+          // 标题文案，富内容走 title 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（见文件头）
+          heading: '',
+          // 布尔属性默认值必须是 null（P1）。icon 是「存在即显示内置图形」
+          icon: null,
+          closable: null,
+        },
 
-      ready() {
-        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-        this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
-        this.buildGlyphs();
-      },
+        ready() {
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+          this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+        },
 
-      attached() {
-        /* 标题/正文的空内容折叠只靠 slotchange 判定：分到节点一变就会响（同 mc-card）。
+        attached() {
+          /* 标题/正文的空内容折叠只靠 slotchange 判定：分到节点一变就会响（同 mc-card）。
            icon 插槽也一样 —— 有自定义图标时内置图形让位。 */
-        this._onSlotChange = () => this.applyState();
-        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
-        this.applyState();
-      },
-
-      detached() {
-        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
-      },
-
-      watch: {
-        /**
-         * heading 变了要有标题块 —— 但首次触发落在构造期，那时往宿主写属性会抛
-         * NotSupportedError（P5 + P31，实测踩过一回）。守卫之后这里就是纯粹的「文案变了」。
-         */
-        heading() {
-          if (this._headingWatchInit === undefined) {
-            this._headingWatchInit = true;
-            return;
-          }
+          this._onSlotChange = () => this.applyState();
+          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
           this.applyState();
         },
-      },
 
-      proto: {
-        /** 内置图形灌进 .mc-glyphs（在 shadow root 里，不是宿主上，P17）。四个都常驻，靠 :host([color]) 显隐 */
-        buildGlyphs() {
-          const box = this.ele.shadowRoot.querySelector('.mc-glyphs');
-          if (!box) return;
-          for (const [name, parts] of Object.entries(GLYPHS)) {
-            const svg = makeNode('svg', {
-              viewBox: '0 0 24 24',
-              fill: 'none',
-              stroke: 'currentColor',
-              'stroke-width': '1.75',
-              class: `mc-glyph mc-glyph-${name}`,
-            });
-            for (const [tag, attrs] of parts) svg.appendChild(makeNode(tag, attrs));
-            box.appendChild(svg);
-          }
+        detached() {
+          for (const slot of this._slots)
+            slot.removeEventListener('slotchange', this._onSlotChange);
         },
 
-        /** 三个 data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在） */
-        applyState() {
-          this.mirror('data-has-title', this.slotHasContent('title') || this.headingText() !== '');
-          this.mirror('data-has-body', this.slotHasContent(null));
-          this.mirror('data-has-icon', this.slotHasContent('icon'));
+        watch: {
+          /**
+           * heading 变了要有标题块 —— 但首次触发落在构造期，那时往宿主写属性会抛
+           * NotSupportedError（P5 + P31，实测踩过一回）。守卫之后这里就是纯粹的「文案变了」。
+           */
+          heading() {
+            if (this._headingWatchInit === undefined) {
+              this._headingWatchInit = true;
+              return;
+            }
+            this.applyState();
+          },
         },
 
-        /**
-         * 标题文案。⚠️ attach 那一刻宿主上还没有 heading 属性（ofa 稍后才写空值，P32），
-         * getAttribute 会给 null —— 直接 `?.trim() !== ''` 会得到 `undefined !== ''` = true，
-         * 于是空标题也判成「有标题」，白占一行。必须先落成空串。
-         */
-        headingText() {
-          return (this.ele.getAttribute('heading') ?? '').trim();
-        },
+        proto: {
+          /** 图标名跟着 color 走：4 个语义图形现在住在内置图标集里，靠 mc-icon 的 :name 绑定 */
+          get glyphName() {
+            return GLYPH_NAMES[this.color] ?? 'info';
+          },
 
-        /** 具名插槽有没有分到东西：**元素即内容**；纯文本/注释节点要非空白才算 */
-        slotHasContent(name) {
-          const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
-          const slot = this.ele.shadowRoot.querySelector(selector);
-          return (slot?.assignedNodes() ?? []).some(
-            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-          );
-        },
+          /** 三个 data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在） */
+          applyState() {
+            this.mirror(
+              'data-has-title',
+              this.slotHasContent('title') || this.headingText() !== '',
+            );
+            this.mirror('data-has-body', this.slotHasContent(null));
+            this.mirror('data-has-icon', this.slotHasContent('icon'));
+          },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
-        },
+          /**
+           * 标题文案。⚠️ attach 那一刻宿主上还没有 heading 属性（ofa 稍后才写空值，P32），
+           * getAttribute 会给 null —— 直接 `?.trim() !== ''` 会得到 `undefined !== ''` = true，
+           * 于是空标题也判成「有标题」，白占一行。必须先落成空串。
+           */
+          headingText() {
+            return (this.ele.getAttribute('heading') ?? '').trim();
+          },
 
-        /** 只发事件，不删 DOM —— 删不删由使用者决定 */
-        onClose() {
-          this.emit('close', { bubbles: true, composed: true });
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本/注释节点要非空白才算 */
+          slotHasContent(name) {
+            const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
+            const slot = this.ele.shadowRoot.querySelector(selector);
+            return (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+          },
+
+          /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+
+          /** 只发事件，不删 DOM —— 删不删由使用者决定 */
+          onClose() {
+            this.emit('close', { bubbles: true, composed: true });
+          },
         },
-      },
-    });
+      };
+    };
   </script>
 </template>

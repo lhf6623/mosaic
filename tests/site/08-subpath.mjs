@@ -122,8 +122,9 @@ export default async function run({ check, newPage }) {
       JSON.stringify(card),
     );
 
-    /* ⑤ 面包屑与分页链接 */
-    await click('.doc-pager-prev', '← 总览');
+    /* ⑤ 面包屑与分页链接。⚠️ 翻页箭头现在是 mc-icon（不再是一个 → 字符），
+       链接的可见文本只剩页面名 —— 这条顺带守住「图标不往文本里塞字符」 */
+    await click('.doc-pager-prev', '总览');
     await settle();
     const crumbBack = await h1();
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });

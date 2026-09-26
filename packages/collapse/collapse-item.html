@@ -54,27 +54,21 @@
       pointer-events: none; /* 鼠标堵死；键盘由 tabindex / click 拦截兜住 */
     }
 
-    /* 5. chevron：只动 transform */
+    /* 5. chevron：内置图标（mc-icon），开合只动 transform —— 收起 ▸ / 展开 ▾ */
     .mc-chevron {
       flex: none;
-      box-sizing: border-box;
-      width: 0.5em;
-      height: 0.5em;
-      border-right: 2px solid currentColor;
-      border-bottom: 2px solid currentColor;
       color: rgb(var(--mc-color-fg-subtle));
-      transform: rotate(-45deg); /* 收起 ▸ */
       transition: transform var(--mc-duration-base) var(--mc-ease-standard);
     }
     :host([open]) .mc-chevron {
-      transform: rotate(45deg); /* 展开 ▾ */
+      transform: rotate(90deg);
     }
   </style>
 
   <details class="mc-details" :open="open !== null">
     <summary class="mc-header flex items-center justify-between gap-3" part="header">
       <span class="min-w-0 flex-1 truncate"><slot name="header">{{header}}</slot></span>
-      <span class="mc-chevron" aria-hidden="true"></span>
+      <span class="mc-chevron mc-icon-chevron-right" aria-hidden="true"></span>
     </summary>
     <div class="mc-body" part="body"><slot></slot></div>
   </details>
