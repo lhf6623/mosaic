@@ -243,27 +243,6 @@
   color: rgb(var(--mc-color-fg-muted));
 }
 
-.doc-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mc-space-2);
-  margin: 0 0 var(--mc-space-6);
-}
-
-.doc-badge {
-  padding: 0.2em 0.6em;
-  border-radius: var(--mc-radius-full);
-  border: 1px solid rgb(var(--mc-color-border));
-  font-size: var(--mc-text-xs);
-  color: rgb(var(--mc-color-fg-muted));
-}
-
-.doc-badge[data-status='ready'] {
-  border-color: transparent;
-  background-color: rgb(var(--mc-color-success-subtle));
-  color: rgb(var(--mc-color-success));
-}
-
 /* 页面 shadow 里的 <l-m> 是加载占位，不能占位（P13） */
 l-m {
   display: none;
