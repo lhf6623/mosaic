@@ -22,19 +22,11 @@
      （实测，见 agent/research/state.md §6）——`contentRoot()` / `scroller()` 都踩在这条上。
 -->
 <template component>
-  <style>
-    /* h3 比 h2 缩进一档：走 mc-menu 的 L3 尺寸通道，不另开 API。
-       ⚠️ 不能用 `:style.--mc-menu-pad-x`（自定义属性经 :style. 绑定实测静默失效，
-       见 agent/research/state.md §6），所以用数据属性当钩子、在这里发变量 */
-    mc-menu-item[data-level='deep'] {
-      --mc-menu-pad-x: calc(var(--mc-space-3) * 2);
-    }
-  </style>
-
-  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录） -->
+  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录）。
+       也不分级缩进（h2/h3 拉平）—— 右栏只有十几项，缩进只会让可点的宽度变短。 -->
   <mc-menu size="sm">
     <o-fill :value="rows" fill-key="id">
-      <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
+      <mc-menu-item>
         <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
           >{{$data.label}}</a
         >
@@ -45,6 +37,10 @@
   <script>
     /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录 */
     const HEADINGS = 'h2, h3';
+
+    /** 不进目录的标题：组件文档页骨架的第一节是「例子」（整页的演示列表），
+        它里面的每个演示才是跳转目标 —— 这一节本身进目录只是噪声（骨架见 components.md） */
+    const SKIP_TITLES = new Set(['例子']);
 
     /** 当前项判定带：滚动容器顶部往下这么高的区间里，最后一个标题算「当前」。
      *  不能只留几像素 —— 点目录项后标题落在 scroll-margin-top（顶栏 + 间距 ≈ 72px）处，
@@ -162,7 +158,9 @@
           const root = this.contentRoot();
           if (!root) return false;
 
-          const headings = [...root.querySelectorAll(HEADINGS)].filter((h) => h.textContent.trim());
+          const headings = [...root.querySelectorAll(HEADINGS)].filter(
+            (h) => h.textContent.trim() && !SKIP_TITLES.has(h.textContent.trim()),
+          );
           if (!headings.length) return false;
 
           // 标题没变就别碰 DOM：重建会把正在点击 / 正在滚动的节点换掉
@@ -176,13 +174,12 @@
           this._entries = headings.map((heading) => {
             if (!heading.id) heading.id = slugify(heading.textContent, taken);
             else taken.add(heading.id);
-            return { heading, id: heading.id, level: Number(heading.tagName.slice(1)) };
+            return { heading, id: heading.id };
           });
 
           this.rows = this._entries.map((entry) => ({
             id: entry.id,
             label: entry.heading.textContent.trim(),
-            deep: entry.level > 2,
             aria: null,
           }));
 

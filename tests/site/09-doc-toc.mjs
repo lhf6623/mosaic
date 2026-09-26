@@ -29,7 +29,9 @@ export default async function run({ page, goTop, goHash, check }) {
     const links = root ? [...root.querySelectorAll('a')] : [];
     // 标题在子页面（被 slot 投影进来的那一页）的 shadow root 里，不在目录元素自己的 root 里
     const page = [...window.__deepAll('o-page')].at(-1);
-    const headings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
+    const allHeadings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
+    /* 与 docs/components/toc.html 的 SKIP_TITLES 同一条规则：组件页骨架的第一节「例子」不进目录 */
+    const headings = allHeadings.filter((h) => h.textContent.trim() !== '例子');
     const levels = links.map((a) => a.dataset.tocId);
     return {
       exists: !!el,
@@ -41,6 +43,7 @@ export default async function run({ page, goTop, goHash, check }) {
       idsMatch: links.every((a, i) => levels[i] === headings[i]?.id),
       indents: links.map((a) => getComputedStyle(a).textIndent),
       headingLevels: headings.map((h) => h.tagName),
+      allHeadings: allHeadings.length,
       mainOver: main.scrollHeight - main.clientHeight,
       menuUpgraded: !!root?.querySelector('mc-menu')?.shadowRoot,
     };
@@ -52,11 +55,11 @@ export default async function run({ page, goTop, goHash, check }) {
     `${toc.links} 项 / ${toc.headings} 个标题 · 对应=${toc.idsMatch}`,
   );
   check(
-    '目录用 mc-menu 渲染（不是自己造的一套），h3 比 h2 缩进一档',
+    '目录用 mc-menu 渲染（不是自己造的一套），且**级别拉平**：h2/h3 一视同仁、缩进一致',
     toc.menuUpgraded &&
       toc.headingLevels.includes('H2') &&
       toc.headingLevels.includes('H3') &&
-      toc.indents.some((v) => v !== toc.indents[0]),
+      new Set(toc.indents).size === 1,
     `升级=${toc.menuUpgraded} · 层级=${[...new Set(toc.headingLevels)].join('/')} · 缩进 ${[...new Set(toc.indents)].join(' / ')}`,
   );
   check(
@@ -175,13 +178,25 @@ export default async function run({ page, goTop, goHash, check }) {
     el.__probeId = 'toc-1';
     const root = el.shadowRoot;
     const items = [...root.querySelectorAll('a')].map((a) => a.textContent.trim());
+    const pageRoot = [...window.__deepAll('o-page')].at(-1)?.shadowRoot;
+    const headings = pageRoot
+      ? [...pageRoot.querySelectorAll('h2, h3')].map((h) => h.textContent.trim())
+      : [];
     return {
-      /** 组件页现在都以「例子」开头（文档页骨架统一了），首项区分不了两页 —— 比整份目录 */
       items,
       count: items.length,
+      headings,
       current: root.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
+
+  check(
+    '组件页：「例子」那一节不进目录（标题在正文里、目录里没有），首项从第一个演示开始',
+    onButton.headings.includes('例子') &&
+      !onButton.items.includes('例子') &&
+      onButton.items.length === onButton.headings.length - 1,
+    `${onButton.headings.length} 个标题（含「例子」）→ ${onButton.items.length} 项目录 · 首项「${onButton.items[0]}」`,
+  );
 
   await goHash('packages/menu/page.html');
   await page.waitForTimeout(1200);
