@@ -124,6 +124,14 @@ const demoDrawer = await (async () => {
         return {
           demoTag: host?.tagName.toLowerCase() ?? null,
           demoShadow: !!host?.shadowRoot,
+          /* 活样例里**已升级**的项目组件数：例子组件自己起得来，不代表它内部那些 mc-* 也注册上了
+             —— 组件模块加载失败（比如被 Live Server 注入抢走第一个 script）时，标签还在、
+             shadow root 却是空的，只数「有 shadow root 的例子组件」看不出来。 */
+          demoLive: host?.shadowRoot
+            ? [...host.shadowRoot.querySelectorAll('*')].filter(
+                (el) => el.tagName.toLowerCase().startsWith('mc-') && !!el.shadowRoot,
+              ).length
+            : 0,
           drawerExists: !!drawer,
           open: !!item?.open,
           label: item?.getAttribute('header') ?? null,
@@ -206,6 +214,19 @@ check(
     x.demos.every((d) => d.drawerExists && d.label === '查看代码'),
   ),
   JSON.stringify(drawerPages[0]?.demos.slice(0, 1)),
+);
+
+/* 活样例必须**真的渲染出组件**：每个演示文件里都至少有一个项目组件（见 demos/*.html），
+   所以「已升级的 mc-* 数」为 0 就意味着组件模块没加载起来 —— 页面照样能过前一条断言
+   （例子组件自己有 shadow root），但读者看到的是空白。 */
+const deadDemos = Object.entries(demoDrawer.pages).flatMap(([slug, x]) =>
+  x.demos.filter((d) => !(d.demoLive > 0)).map((d) => `${slug}: ${d.demoTag}`),
+);
+
+check(
+  '每个演示的活样例都渲染出了组件（≥1 个已升级的 mc-*，空演示拦在这里）',
+  drawerPages.every((x) => x.demos.every((d) => d.demoLive > 0)),
+  deadDemos.length ? deadDemos.join(' · ') : `${drawerTotal} 个演示全部有内容`,
 );
 
 /* 演示区的段落顺序（标题 → 说明（可选）→ 组件 → 代码）：**7 页全部迁完**，所以这里盯所有页。

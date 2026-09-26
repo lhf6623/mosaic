@@ -1,15 +1,76 @@
 /**
- * 站点 · HTML 注入免疫（第 12 节）：模拟 Live Server 的注入，页面模块仍能加载
+ * 站点 · HTML 注入免疫（第 12 节）：模拟 Live Server 的注入，页面模块与**组件模块**仍能加载
+ *
+ * Live Server 往 HTML 里注入 live-reload script，规则是「注入点依次找 body / svg / head 的结束
+ * 标签，取第一个命中处」——**纯文本替换、不看上下文**。而 ofa.js 取文件里的**第一个 `<script>`**
+ * 当模块：注入的 script 一旦排在前面就抢走它，报「加载组件模块出错」。
+ * 所以不变量是：任何一个 .html（页面模块、组件本体、演示文件）里，注入点要么不存在，
+ * 要么必须排在第一个 `<script>` 之后。
+ *
+ * 这里两条各管一段：静态扫描（全仓 .html，不启浏览器）+ 真浏览器（拿注入服务器跑一遍会撞的页面）。
  */
 import { spawn } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export default async function run({ check, newPage }) {
 /* ------------------------------------------------------------------ *
- * 12. 对静态服务器的 HTML 注入免疫（Live Server 往第一个 body/svg/head 结束标签注入 live-reload；页面模块注释里写这些标签原文会把注入点引到文件顶部，注入内容自带的注释又提前闭合我们的注释，ofa.js 取第一个 script 直接加载失败）
+ * 12.1 静态不变量：全仓 .html 的注入点都必须排在第一个 <script> 之后
  * ------------------------------------------------------------------ */
 
-const ROOT_DIR = fileURLToPath(new URL('../..', import.meta.url)); // 仓库根（这个文件在 tests/site/ 下）
+/** Live Server 的注入位置（规则照抄 tools/serve.mjs 的 injectLikeLiveServer） */
+function injectionPoint(html) {
+  const candidates = [/<\/body>/i, /<\/svg>/, /<\/head>/i];
+  for (const re of candidates) {
+    const m = re.exec(html);
+    if (m) return { index: m.index, mark: m[0] };
+  }
+  return null;
+}
+
+const rootDir = fileURLToPath(new URL('../..', import.meta.url));
+const htmlFiles = (() => {
+  const out = ['index.html'];
+  const skip = new Set(['node_modules', '.git', '.dsh']);
+  const walk = (dir, prefix) => {
+    for (const entry of readdirSync(`${rootDir}${dir}`, { withFileTypes: true })) {
+      if (skip.has(entry.name)) continue;
+      const rel = `${dir}${entry.name}`;
+      if (entry.isDirectory()) walk(`${rel}/`, `${prefix}${entry.name}/`);
+      else if (entry.name.endsWith('.html')) out.push(`${prefix}${entry.name}`);
+    }
+  };
+  walk('/docs/', 'docs/');
+  walk('/packages/', 'packages/');
+  return out;
+})();
+
+const lineOf = (text, index) => text.slice(0, index).split('\n').length;
+const vulnerable = [];
+for (const rel of htmlFiles) {
+  const html = readFileSync(`${rootDir}${rel}`, 'utf8');
+  const point = injectionPoint(html);
+  if (!point) continue; // 三个结束标签都没有 → live-server 也不注入，天然免疫
+  const script = /<script[^>]*>/i.exec(html);
+  if (!script || point.index < script.index) {
+    vulnerable.push(
+      `${rel}:${lineOf(html, point.index)} 的 ${point.mark} 排在第一个 <script> 之前` +
+        `${script ? `（第 ${lineOf(html, script.index)} 行）` : '（文件里根本没有 <script>）'}`,
+    );
+  }
+}
+
+check(
+  `${htmlFiles.length} 个 .html 的注入点都排在第一个 <script> 之后（注入抢不走 ofa 的模块）`,
+  vulnerable.length === 0,
+  vulnerable.length ? vulnerable.join('\n        ') : '无内联 svg / 无提前的 body 结束标签',
+);
+
+/* ------------------------------------------------------------------ *
+ * 12.2 真浏览器：在注入服务器上跑一遍「内联 svg 会撞」的那类页面
+ * ------------------------------------------------------------------ */
+
+const ROOT_DIR = rootDir;
 const INJECT_PORT = 8643;
 const injectServer = spawn(
   process.execPath,
@@ -54,12 +115,61 @@ try {
           : null,
       };
     });
-    await injPage.close();
 
     check(
       '页面模块在被 HTML 注入的服务器上仍能加载',
       injState.h1 === 'Mosaic' && injState.art && !injState.art.startsWith('0/'),
       `h1=${injState.h1} · 图案 ${injState.art}${injErrs.length ? ' · ' + injErrs[0] : ''}`,
+    );
+
+    /* 组件本体走的是另一条路：<l-m src="…/*.html"> 拉的是**组件文件本身**，
+       文件里任何注入点都会让 ofa 取错模块（alert 的内联 svg 就这么栽过）。
+       用文档页把「组件 + 演示」整条链路跑一遍，断言实例真的升级、图形真的建出来。 */
+    const compErrs = [];
+    injPage.on('pageerror', (e) => compErrs.push(String(e)));
+    await injPage.goto(`http://127.0.0.1:${INJECT_PORT}/index.html?inj=alert#/packages/alert/page.html`, {
+      waitUntil: 'load',
+    });
+    await injPage
+      .waitForFunction(
+        () => {
+          const deep = (root, sel, out = []) => {
+            for (const el of root.querySelectorAll('*')) {
+              if (el.matches?.(sel)) out.push(el);
+              if (el.shadowRoot) deep(el.shadowRoot, sel, out);
+            }
+            return out;
+          };
+          const all = deep(document, 'mc-alert');
+          return all.length > 0 && all.every((el) => !!el.shadowRoot);
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => {});
+    const compState = await injPage.evaluate(() => {
+      const deep = (root, sel, out = []) => {
+        for (const el of root.querySelectorAll('*')) {
+          if (el.matches?.(sel)) out.push(el);
+          if (el.shadowRoot) deep(el.shadowRoot, sel, out);
+        }
+        return out;
+      };
+      const all = deep(document, 'mc-alert');
+      const first = all[0];
+      return {
+        total: all.length,
+        upgraded: all.filter((el) => !!el.shadowRoot).length,
+        glyphs: first?.shadowRoot?.querySelectorAll('.mc-glyph').length ?? 0,
+      };
+    });
+    await injPage.close();
+
+    check(
+      '组件模块在被 HTML 注入的服务器上仍能加载（实例全部升级、内部结构真的建出来）',
+      compState.total > 0 && compState.upgraded === compState.total && compState.glyphs === 4,
+      `${compState.upgraded}/${compState.total} 升级 · 图形 ${compState.glyphs} 个${
+        compErrs.length ? ' · ' + compErrs[0] : ''
+      }`,
     );
   }
 } finally {
