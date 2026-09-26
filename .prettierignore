@@ -5,8 +5,12 @@ pnpm-lock.yaml
 # 生成产物：格式化它会让产物和生成器漂移（pnpm check:drift 会红）
 #   · packages/color/tokens.css  ← tools/gen-tokens.mjs
 #   · packages/boot/mosaic.css   ← tools/build-css.mjs (UnoCSS)
+#   · packages/icon/icons.generated.ts ← tools/gen-icons.mjs
+#   · packages/icon/icons.license.txt  ← tools/gen-icons.mjs
 packages/color/tokens.css
 packages/boot/mosaic.css
+packages/icon/icons.generated.ts
+packages/icon/icons.license.txt
 
 # 测试代码：里面大量是对齐过的期望值 / 断言数据，重排后反而更难读，
 # 而且它们只被测试运行，不影响对外风格。

@@ -1,0 +1,277 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./icon.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/builtins.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/label.html"></l-m>
+    <l-m src="./demos/remote.html"></l-m>
+    <l-m src="./demos/src.html"></l-m>
+    <l-m src="./demos/slot.html"></l-m>
+    <l-m src="./demos/styles.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Icon <code>mc-icon</code></h1>
+    <p class="doc-lead">
+      图标。先查内置、查不到再远程取一次；颜色继承周围文字色、尺寸跟随字号，取不到也只是留一个不跳版的空位。
+    </p>
+    <p class="doc-badges">
+      <span class="doc-badge" data-status="ready">已实现</span>
+      <span class="doc-badge">M1</span>
+      <span class="doc-badge">packages/icon/</span>
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <demo-icon-basic></demo-icon-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内置图标</h3>
+      <p class="doc-hint">
+        50 个内置图标，按语义分组；<code>name</code> 命中内置时不发请求，首屏就有。
+      </p>
+      <demo-icon-builtins></demo-icon-builtins>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/builtins.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-icon-sizes></demo-icon-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>语义色</h3>
+      <demo-icon-colors></demo-icon-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>无障碍标签</h3>
+      <p class="doc-hint">
+        有 <code>label</code> 时宿主是 <code>role="img"</code> + <code>aria-label</code>；没有
+        <code>label</code> 的图标整块对读屏隐藏（装饰性）。
+      </p>
+      <demo-icon-label></demo-icon-label>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/label.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>远程图标</h3>
+      <p class="doc-hint">
+        名字带集名就按那个集取（<code>mdi:home</code>）；不带冒号、内置又没有的，按
+        <code>icon-set</code>（默认 <code>lucide</code>）取。<code>lucide:search</code>
+        的集名等于内置来源集，退化成裸名后命中内置，不联网。
+      </p>
+      <demo-icon-remote></demo-icon-remote>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/remote.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>直接地址</h3>
+      <p class="doc-hint">
+        <code>src</code> 直接给一个 SVG 地址（相对路径按页面解析），给了它就不再查内置；这里用 data
+        URI，免得示例依赖网络。
+      </p>
+      <demo-icon-src></demo-icon-src>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/src.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自定义图形</h3>
+      <p class="doc-hint">默认插槽有内容时，内置 / 远程图形让位 —— 不想加依赖时用它。</p>
+      <demo-icon-slot></demo-icon-slot>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/slot.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        样式写在宿主上：<code>font-size</code> 就是尺寸、<code>color</code> 就是颜色，都是原生 CSS。
+      </p>
+      <demo-icon-styles></demo-icon-styles>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/styles.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        <code>part</code> 是组件内部那个图形槽（<code>glyph</code>）；<code>::part(glyph)</code>
+        改它的内部样式，这里让它转起来。
+      </p>
+      <demo-icon-part></demo-icon-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name</code></td>
+          <td>内置图标名 / <code>集名:图标名</code></td>
+          <td>—</td>
+          <td>先查内置、查不到再按需远程取一次；集名等于内置来源集时退化成裸名再查一次内置</td>
+        </tr>
+        <tr>
+          <td><code>src</code></td>
+          <td>SVG 地址（相对路径按页面解析）</td>
+          <td>—</td>
+          <td>直接给图形文件，不再查内置；品牌多色图走这条</td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>字符串</td>
+          <td>—</td>
+          <td>
+            有值 → 宿主 <code>role="img"</code> + <code>aria-label</code>；空 → 整块
+            <code>aria-hidden</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td><code>sm</code> <code>md</code> <code>lg</code></td>
+          <td><code>md</code></td>
+          <td>
+            <code>0.875em</code> / <code>1em</code> / <code>1.25em</code>，改的是
+            <code>font-size</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>color</code></td>
+          <td>
+            <code>current</code> <code>primary</code> <code>info</code> <code>success</code>
+            <code>warning</code> <code>danger</code> <code>neutral</code>
+          </td>
+          <td><code>current</code></td>
+          <td><code>current</code> 继承周围文字色；<code>neutral</code> 是次要文字色</td>
+        </tr>
+        <tr>
+          <td><code>icon-base</code></td>
+          <td>URL 前缀</td>
+          <td><code>https://api.iconify.design/</code></td>
+          <td>远程取图标的地址前缀（自托管 / 镜像）</td>
+        </tr>
+        <tr>
+          <td><code>icon-set</code></td>
+          <td>图标集名</td>
+          <td><code>lucide</code></td>
+          <td>裸名远程回退时用哪个集</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽与 part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>自定义图形；有内容时内置 / 远程图形让位</td>
+        </tr>
+        <tr>
+          <td><code>part="glyph"</code></td>
+          <td>图形槽：内置图标类名与取回的 SVG 都挂在它里面</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>取不到图标不报错</strong>：就地留一个 1em 的空盒子（不跳版），控制台一条
+        <code>[mosaic]</code> 警告。
+      </li>
+      <li>
+        <strong>同一个图标全页只取一次</strong>：取失败的名字也只请求一次，多写几个
+        <code>&lt;mc-icon name="mdi:home"&gt;</code> 不会重复发请求。
+      </li>
+      <li>
+        <strong>内置图标是 mask 单色渲染</strong>，改不了描边粗细；品牌多色图用
+        <code>src</code> 或默认插槽。
+      </li>
+      <li>
+        <strong>别用 sprite</strong>：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit
+        一致拒绝，shadow root 里引用文档级 <code>#id</code> 也不成立 —— 组件把取回的 SVG 直接内联。
+      </li>
+      <li>
+        类名 <code>mc-icon-&lt;名字&gt;</code> 是构建期产物，仅高级用法；主用法是
+        <code>name</code>。
+      </li>
+      <li>没有自定义事件；无障碍只看 <code>label</code>。</li>
+      <li>
+        远程取图走的是公共 API（没有可用性承诺）：要稳定就把 <code>icon-base</code>
+        指到自托管镜像。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

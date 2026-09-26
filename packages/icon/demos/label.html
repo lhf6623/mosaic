@@ -1,0 +1,16 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-6">
+    <span class="inline-flex items-center gap-2">
+      <mc-icon name="close" size="lg" label="关闭"></mc-icon>
+      <span class="text-xs">label="关闭"：读屏会念「关闭」</span>
+    </span>
+    <span class="inline-flex items-center gap-2">
+      <mc-icon name="close" size="lg"></mc-icon>
+      <span class="text-xs">没有 label：整块对读屏隐藏</span>
+    </span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-icon-label' });
+  </script>
+</template>

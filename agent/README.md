@@ -19,7 +19,7 @@
 **默认不用读的**（除非明确要考古）：
 
 - [`docs-refactor.md`](./docs-refactor.md) —— 已完成的一次文档站重构记录，留着是给将来的大改做参照；
-- [`research/`](./research/) —— 外部资料的抓取原文（unocss / jsdelivr / ofa 状态）。
+- [`research/`](./research/) —— 外部资料的抓取原文（unocss / jsdelivr / ofa 状态 / **iconify**）。
 
 ## 分工约定
 

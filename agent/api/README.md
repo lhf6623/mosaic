@@ -151,7 +151,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | Collapse        | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
 | Menu            | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
 | Breadcrumb      | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| Icon            | `mc-icon`                              | `icon/`       | M1     | 待建      |
+| Icon            | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
 | Card            | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
 | Tag             | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
 | Badge           | `mc-badge`                             | `badge/`      | M1     | 待建      |
@@ -183,7 +183,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Collapse](./collapse.md)     | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
 | [Menu](./menu.md)             | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
 | [Breadcrumb](./breadcrumb.md) | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| [Icon](./icon.md)             | `mc-icon`                              | `icon/`       | M1     | 待建      |
+| [Icon](./icon.md)             | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
 | [Card](./card.md)             | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
 | [Tag](./tag.md)               | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
 | [Badge](./badge.md)           | `mc-badge`                             | `badge/`      | M1     | 待建      |

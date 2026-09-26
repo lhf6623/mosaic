@@ -1,0 +1,346 @@
+<!--
+  mc-icon — 图标
+
+  三种来源，一个入口，优先级从高到低：
+    1. 默认插槽有内容      → 使用者自己放（元素即内容）
+    2. src="URL"           → 任意 SVG 文件（自托管 / 品牌多色图）
+    3. name="…"            → 先查本地，查不到再取远程
+
+  「本地」= mosaic.css 里有没有对应那条图标类规则（内置集由 UnoCSS 的 presetIcons 编译成
+  data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一份名单，而是直接问 CSS：
+  给图形槽挂上类名，再看 getComputedStyle().maskImage 是不是 none —— 于是「本地」的定义
+  就是「你发出去的那份样式表里有什么」，扩了内置集自动生效。
+
+  远程只在这两种写法下发生：name 本地查不到，或显式给了 src。所以「没用到的图标一个请求都不发」。
+    · name="mdi:home"          有冒号 → 冒号前是图标集
+    · name="circle-check-big"  没冒号 → 用内置来源集（lucide）
+  URL 形状：{icon-base}{集名}/{图标名}.svg，默认 https://api.iconify.design/；icon-base 一个属性
+  就能换自托管。取回来直接内联成 <svg>，**不用 <use> + symbol**（实测：跨域 <use> 被 Chrome 与
+  WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 WebKit 不会重新解析后到的 symbol
+  —— agent/research/iconify.md 有完整数据）。
+
+  改颜色只有两个控制点，都是原生 CSS：
+    · 颜色 = currentColor。默认继承周围文字色；color="primary|info|success|warning|danger|neutral"
+      给语义色；style="color:…" / 父元素继承 / class="text-primary" 一律有效。
+    · 尺寸 = font-size。盒子恒为 1em，size="sm|md|lg" 只是 0.875 / 1 / 1.25em，
+      所以 style="font-size:20px" 也直接管用。
+  这是对 API 规范 1.3（size = 控件高）的**显式例外**：图标不是控件，跟随字号才符合预期。
+
+  ⚠️ 文件里不写任何内联 SVG 标记（Live Server 的注入点会抢走模块 script，见 mc-alert 文件头）；
+  远程图标是运行时用 DOMParser 解析后灌进 shadow root 的，源码里没有它们的形状。
+-->
+
+<template component>
+  <style>
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      /* 图标盒子恒为 1em，于是 font-size 是唯一的尺寸入口 */
+      font-size: 1em;
+      line-height: 0;
+      vertical-align: middle;
+      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg) }`，
+         本意是给组件一个确定的基线色，但它会**掐断颜色继承** —— 图标被放进另一个组件的 shadow
+         root 里时（mc-alert、doc-pager、使用者的组件），拿到的是 fg 而不是周围的文字色，压在
+         实心底色上直接看不清。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行
+         就能把继承拿回来。font-size 同理（reset 会把宿主字号钉成 --mc-text-base）。 */
+      color: inherit;
+    }
+
+    /* ---------- 尺寸：只改 font-size（内联 style 优先级更高，能直接覆盖） ---------- */
+    :host([size='sm']) {
+      font-size: 0.875em;
+    }
+    :host([size='md']) {
+      font-size: 1em;
+    }
+    :host([size='lg']) {
+      font-size: 1.25em;
+    }
+
+    /* ---------- 语义色：只往 currentColor 里填值（默认 current 不写规则，直接继承） ---------- */
+    :host([color='primary']) {
+      color: rgb(var(--mc-color-primary));
+    }
+    :host([color='info']) {
+      color: rgb(var(--mc-color-info));
+    }
+    :host([color='success']) {
+      color: rgb(var(--mc-color-success));
+    }
+    :host([color='warning']) {
+      color: rgb(var(--mc-color-warning));
+    }
+    :host([color='danger']) {
+      color: rgb(var(--mc-color-danger));
+    }
+    /* 中性 = 次要文字色：图标落在卡片 / 页面上，用 muted 前景才对得上 */
+    :host([color='neutral']) {
+      color: rgb(var(--mc-color-fg-muted));
+    }
+
+    /* 图形槽。min-* 让「取不到图标」时也占住 1em —— 不留空洞、不跳版。
+       background-color 刻意不写在这里：那是内置图标类（.mc-icon-*）的职责，
+       写在这儿会让远程的品牌多色图标多出一个纯色底。 */
+    .mc-glyph {
+      display: inline-flex;
+      min-width: 1em;
+      min-height: 1em;
+      line-height: 0;
+    }
+    .mc-glyph > svg {
+      display: block;
+    }
+  </style>
+
+  <span class="mc-glyph" part="glyph" aria-hidden="true"></span>
+  <slot></slot>
+
+  <script>
+    /* 与 tools/icon-manifest.mjs 的 ICON_SOURCE 保持一致：裸名远程回退时用它当集名 */
+    const DEFAULT_SET = 'lucide';
+    const DEFAULT_BASE = 'https://api.iconify.design/';
+
+    /** url → Promise<string|null>：同一个图标全页只取一次；失败也记着（不重试、不刷屏） */
+    const SOURCES = new Map();
+    /** `${集}|${名字}` → 类名 | false：本地命中判定，每个名字只探一次 */
+    const LOCAL = new Map();
+    /** 探测时样式表还没到的哨兵值 —— 这种结论不确定，不写进缓存 */
+    const UNKNOWN = Symbol('unknown');
+    const warned = new Set();
+
+    function warn(message) {
+      if (warned.has(message)) return;
+      warned.add(message);
+      console.warn(`[mosaic] ${message}`);
+    }
+
+    /** 拆名字：'mdi:home' → ['mdi','home']；'search' → ['','search']；多段（@provider:x:y）只取后两段 */
+    function splitName(value) {
+      const parts = value.split(':');
+      const icon = parts.pop() ?? '';
+      const set = parts.pop() ?? '';
+      return [set, icon];
+    }
+
+    /**
+     * 归一化取回来的 svg：高度钉 1em、宽度按 viewBox 比例。
+     * 不能无脑 width=height=1em —— Iconify 对非方形图标会给出 width="1.16em" height="1em"
+     * （如 logos:vue 的 256×221），强行拉成正方形会把品牌图拉变形。
+     */
+    function normalize(svg) {
+      const box = (svg.getAttribute('viewBox') ?? '')
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
+      const width = box[2];
+      const height = box[3];
+      if (box.length === 4 && width > 0 && height > 0) {
+        svg.setAttribute('height', '1em');
+        svg.setAttribute('width', `${(width / height).toFixed(4)}em`);
+      } else {
+        svg.setAttribute('width', '1em');
+        svg.setAttribute('height', '1em');
+      }
+      svg.removeAttribute('style');
+      svg.setAttribute('aria-hidden', 'true');
+      return svg;
+    }
+
+    export default async () => ({
+      tag: 'mc-icon',
+
+      attrs: {
+        /** 图标名：本地名（search）或「集名:图标名」（mdi:home） */
+        name: '',
+        /** 直接给一个 SVG 地址（相对路径按页面解析）；给了它就不再查本地 */
+        src: '',
+        /** 有值 → 宿主是 role="img" + aria-label；没值 → 宿主整体 aria-hidden（装饰性图标） */
+        label: '',
+        size: 'md',
+        /* 默认 current：图标 95% 是装饰，强制默认语义色会让所有内联图标变色 */
+        color: 'current',
+        /** 远程取图标的 URL 前缀（自托管 / 镜像），留空用内置默认 */
+        iconBase: '',
+        /** 裸名远程回退时用哪个图标集，留空用内置默认（lucide） */
+        iconSet: '',
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._glyph = root.querySelector('.mc-glyph');
+        this._slot = root.querySelector('slot:not([name])');
+        this._sequence = 0;
+      },
+
+      attached() {
+        this._live = true;
+        this._onSlotChange = () => this.paint();
+        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this.paint();
+      },
+
+      detached() {
+        this._live = false;
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      watch: {
+        // watch 在构造期也会触发一次，那时 ready 还没跑 —— paint / applyLabel 自己守卫
+        name() {
+          this.paint();
+        },
+        src() {
+          this.paint();
+        },
+        label() {
+          this.applyLabel();
+        },
+      },
+
+      proto: {
+        setName() {
+          return (this.iconSet || '').trim() || DEFAULT_SET;
+        },
+
+        base() {
+          return ((this.iconBase || '').trim() || DEFAULT_BASE).replace(/\/?$/, '/');
+        },
+
+        /** 具名插槽没有，这里只有一个默认插槽：元素即内容，纯文本非空白也算 */
+        slotHasContent() {
+          return (this._slot?.assignedNodes() ?? []).some(
+            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+          );
+        },
+
+        /** 有 label 才是「有语义的图标」；否则整块（宿主一起）对读屏隐藏，图形本身永远 aria-hidden */
+        applyLabel() {
+          if (!this._live) return; // P31：挂载前写宿主属性会抛 NotSupportedError
+          const label = (this.label || '').trim();
+          if (label) {
+            this.ele.setAttribute('role', 'img');
+            this.ele.setAttribute('aria-label', label);
+            this.ele.removeAttribute('aria-hidden');
+          } else {
+            this.ele.removeAttribute('role');
+            this.ele.removeAttribute('aria-label');
+            this.ele.setAttribute('aria-hidden', 'true');
+          }
+        },
+
+        /** 唯一入口：插槽 > src > name（先本地、再远程）。属性一变就走这里，用序号作废过期的那一轮 */
+        async paint() {
+          const glyph = this._glyph;
+          if (!glyph || !this._live) return;
+          const sequence = ++this._sequence;
+
+          glyph.className = 'mc-glyph';
+          glyph.replaceChildren();
+          this.applyLabel();
+
+          if (this.slotHasContent()) return;
+
+          const src = (this.src || '').trim();
+          if (src) {
+            await this.load(glyph, src, sequence);
+            return;
+          }
+
+          const name = (this.name || '').trim().toLowerCase();
+          if (!name) return; // 名字为空：留一个 1em 空位，不跳版
+
+          const local = await this.localClass(name);
+          if (sequence !== this._sequence) return;
+          if (local) {
+            glyph.className = `mc-glyph ${local}`;
+            return;
+          }
+
+          const [set, icon] = splitName(name);
+          await this.load(glyph, `${this.base()}${set || this.setName()}/${icon}.svg`, sequence);
+        },
+
+        /** 本地命中判定（按名字缓存）。结论不确定（样式表没到）时不写缓存 */
+        async localClass(name) {
+          const key = `${this.setName()}|${name}`;
+          const cached = LOCAL.get(key);
+          if (cached !== undefined) return cached === false ? null : cached;
+          const result = await this.probe(name);
+          if (result !== UNKNOWN) LOCAL.set(key, result === null ? false : result);
+          return result === UNKNOWN ? null : result;
+        },
+
+        /**
+         * 挂上类名 → 问 CSS。两条实测过的前提写在这里：
+         *   · 样式表还没 adopt 时（D3 的 pending 窗口期）maskImage 同样是 none，必须等
+         *     adoptedStyleSheets 非空才能下结论，否则会把内置图标误判成远程、白跑一次网络；
+         *   · 集名等于内置来源集时退化成裸名再探一次：`lucide:search` 不该白跑远程。
+         */
+        async probe(name) {
+          const glyph = this._glyph;
+          const root = this.ele.shadowRoot;
+          const [prefix, icon] = splitName(name);
+          const candidates = [`mc-icon-${prefix ? `${prefix}-${icon}` : icon}`];
+          if (prefix && prefix === this.setName()) candidates.push(`mc-icon-${icon}`);
+
+          for (const cls of candidates) {
+            glyph.className = `mc-glyph ${cls}`;
+            if (!(await this.sheetsReady(root))) return UNKNOWN;
+            const style = getComputedStyle(glyph);
+            const mask = style.maskImage || style.webkitMaskImage || 'none';
+            if (mask !== 'none') return cls;
+          }
+          glyph.className = 'mc-glyph';
+          return null;
+        },
+
+        /** 就绪门：mosaic.js 把早于样式表加载完成的 shadow root 收进 pending 稍后补 adopt */
+        async sheetsReady(root) {
+          for (let i = 0; i < 20 && root.adoptedStyleSheets.length === 0; i++) {
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+          }
+          return root.adoptedStyleSheets.length > 0;
+        },
+
+        /** 取回来内联成 <svg>。失败只留空位 + 一条警告，不影响排版（与 mc-code 的高亮降级同级） */
+        async load(glyph, url, sequence) {
+          let href;
+          try {
+            href = new URL(url, document.baseURI).href;
+          } catch {
+            warn(`图标地址不合法：${url}`);
+            return;
+          }
+
+          if (!SOURCES.has(href)) {
+            SOURCES.set(
+              href,
+              fetch(href)
+                .then((res) =>
+                  res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)),
+                )
+                .catch((err) => {
+                  warn(`图标取不到：${href}（${err?.message ?? err}）`);
+                  return null;
+                }),
+            );
+          }
+
+          const text = await SOURCES.get(href);
+          if (sequence !== this._sequence || !text) return;
+
+          const parsed = new DOMParser().parseFromString(text, 'image/svg+xml');
+          const svg = parsed?.documentElement;
+          if (!svg || svg.nodeName !== 'svg') {
+            warn(`图标不是合法的 SVG：${href}`);
+            return;
+          }
+          glyph.replaceChildren(document.importNode(normalize(svg), true));
+        },
+      },
+    });
+  </script>
+</template>

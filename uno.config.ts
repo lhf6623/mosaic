@@ -1,4 +1,15 @@
-import { defineConfig, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss';
+import {
+  defineConfig,
+  presetIcons,
+  presetWind3,
+  transformerDirectives,
+  transformerVariantGroup,
+} from 'unocss';
+
+/* 内置图标集（生成物，见 tools/gen-icons.mjs + tools/icon-manifest.mjs）。
+ * 只在**构建期**读：presetIcons 把它编译成 data-URI 的 mask 规则写进 mosaic.css，
+ * 运行时零请求、零 JS —— 组件靠类名 `mc-icon-<名字>` 命中本地图标。 */
+import iconSet from './packages/icon/icons.generated';
 
 /*
  * Mosaic — UnoCSS 配置。三条硬约束（改动前先读 agent/plan/decisions.md 的 D3 / D4）：用 presetWind3 而非
@@ -237,6 +248,22 @@ export default defineConfig({
       // 偏好、跟不了 <html data-theme>（详见 agent/plan/decisions.md 的 D4）。显式写成 media 让误用可预期。
       dark: 'media',
     }),
+
+    /* 内置图标：纯 CSS（data-URI mask），客户端零 JS、零字体、零请求。
+     *
+     * · prefix 'mc-' + 集合名 'icon' → 类名 `mc-icon-<名字>`。**不能用 prefix '' + 集合 mc**：
+     *   那样类名是 `mc-<名字>`，会和组件自己的内部类同处一个命名空间 —— 实测 `.mc-close`
+     *   （mc-alert 的关闭按钮）会被写成图标规则，把那个按钮变成 1em 的遮罩盒子。
+     *   gen-icons.mjs 里有守卫，扫组件文件里的类名、撞了就构建失败。
+     * · scale 1 → 图标盒子 1em，尺寸交给 font-size（组件的 size 档位就是这么实现的）。
+     * · extraProperties 里的 display **必须写**：不写则元素是 display:inline，width/height
+     *   不生效，实测 rect 0×0、两引擎都完全不可见。 */
+    presetIcons({
+      collections: { icon: () => iconSet },
+      prefix: 'mc-',
+      scale: 1,
+      extraProperties: { display: 'inline-block', 'vertical-align': 'middle' },
+    }),
   ],
 
   // @apply / @screen 只在 .css 文件里生效（UnoCSS 的 idFilter 只认 css 扩展名），写在 .html 的 <style> 里会被原样留下
@@ -296,6 +323,10 @@ export default defineConfig({
    *  见文件顶部「精选工具类子集」。 */
   safelist: [
     ...CURATED_SAFELIST,
+    /* 内置图标的类名**必须**在这里：mc-icon 是在运行时拼 `mc-icon-${name}` 的
+     * （D5 记过——动态拼的类名会被静默丢弃，产物少几条规则、退出码还是 0）。
+     * 清单派生自同一份 icons.generated.ts，所以「内置集」只有一个真相源。 */
+    ...Object.keys(iconSet.icons).map((name) => `mc-icon-${name}`),
     // 兜底表达式形式的类
     'mc-focus-ring',
     'mc-truncate',
@@ -324,6 +355,9 @@ export default defineConfig({
     cssLayerName: (layer) => {
       if (layer === 'default') return 'mosaic.utilities';
       if (layer === 'shortcuts') return 'mosaic.components';
+      // 'mosaic.icons' 的**层顺序声明在 packages/color/tokens.css 里**（tools/gen-tokens.mjs 生成）：
+      // 只在这里映射名字是不够的 —— 层顺序由「首次出现」决定，靠 UnoCSS 产物自己引入这个层名，
+      // 它会被追加到 utilities 之后，图标规则里的 color:inherit / width:1em 就会盖掉使用者的工具类。
       if (layer === 'icons') return 'mosaic.icons';
       return `mosaic.${layer}`;
     },

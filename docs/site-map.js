@@ -70,10 +70,11 @@ export const SITE = [
             order: 30,
             label: 'Icon',
             zh: '图标',
+            path: 'packages/icon/page.html',
             tagName: 'mc-icon',
             stage: 'M1',
             summary:
-              '图标。内联 SVG sprite，随 font-size 等比缩放，不用 icons preset（体积代价太高）。',
+              '图标。先查内置、查不到再远程取一次；颜色继承 currentColor、尺寸跟随 font-size，取不到也只留一个不跳版的空位。',
           },
           {
             order: 40,

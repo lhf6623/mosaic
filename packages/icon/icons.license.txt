@@ -1,0 +1,13 @@
+Mosaic 内置图标 —— 来源与许可
+
+本文件由 tools/gen-icons.mjs 生成，随清单变化。
+内置图标数：50
+
+Lucide（Iconify 集名：lucide）
+  许可：ISC（ISC）
+  来源：https://github.com/lucide-icons/lucide/blob/main/LICENSE
+  作者：Lucide Contributors
+  本仓库内置其中 50 个图标的图形数据（清单见 tools/icon-manifest.mjs）
+
+说明：图形数据以 Iconify 的 JSON 格式原样取自上述图标集（尺寸、描边、填充都未改动）。
+署名：以上许可均不要求在界面上署名；本文件即为版权声明的留存位置，随仓库一起提交。

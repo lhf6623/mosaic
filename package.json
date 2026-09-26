@@ -5,11 +5,12 @@
   "type": "module",
   "description": "基于 ofa.js 的免安装、免构建 Web Components UI 框架（UnoCSS 原子化 + 三层 CSS 变量令牌）",
   "scripts": {
+    "icons": "node tools/gen-icons.mjs",
     "tokens": "node tools/gen-tokens.mjs",
     "check:tokens": "node tools/gen-tokens.mjs --check",
     "build:css": "node tools/build-css.mjs",
-    "build": "pnpm tokens && pnpm build:css",
-    "check:drift": "pnpm build && git diff --exit-code -- packages/color/tokens.css packages/boot/mosaic.css",
+    "build": "pnpm icons && pnpm tokens && pnpm build:css",
+    "check:drift": "pnpm build && git diff --exit-code -- packages/color/tokens.css packages/boot/mosaic.css packages/icon/icons.generated.ts packages/icon/icons.license.txt",
     "dev:css": "node tools/build-css.mjs --watch",
     "dev": "node tools/serve.mjs",
     "test": "node tests/smoke.mjs",
@@ -21,6 +22,8 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.136",
+    "@iconify/utils": "^3.1.7",
     "@types/node": "^26.6.1",
     "@unocss/cli": "^66.10.5",
     "playwright-core": "^1.63.0",

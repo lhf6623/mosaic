@@ -19,9 +19,16 @@
  * 把 px-4 之类的规则压掉。显式声明让顺序与 adopt 顺序解耦。
  *
  * 预期顺序（从低到高）：
+ *   mosaic.base < mosaic.tokens < mosaic.preflights < mosaic.icons <
+ *   mosaic.components < mosaic.utilities
  *   组件自己的 <style> 是未分层的 → 永远赢过全部上面这些层
+ *
+ * mosaic.icons 装在 preflights 之上、components 之下（UnoCSS 的 icons 层，见 uno.config.ts
+ * 的 outputToCssLayers）。**这一层必须在这里声明**：图标规则会写 color:inherit / width:1em，
+ * 若靠 UnoCSS 产物自己引入这个层名，它会被追加到 utilities **之后** —— 实测 .mc-icon-x 会盖掉
+ * text-primary（computed color 变成 rgb(0,0,0)）、w-full 也压不住 width:1em。
  */
-@layer mosaic.base, mosaic.tokens, mosaic.preflights, mosaic.components, mosaic.utilities;
+@layer mosaic.base, mosaic.tokens, mosaic.preflights, mosaic.icons, mosaic.components, mosaic.utilities;
 
 /* 令牌只写在 :root 上，**刻意不写 :host**。
  *

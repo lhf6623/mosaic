@@ -1,0 +1,22 @@
+<template component>
+  <style>
+    /* part 是组件内部那个图形槽（glyph）：::part(glyph) 能从 shadow 外面改它的内部样式。 */
+    mc-icon::part(glyph) {
+      animation: mc-icon-spin 1s linear infinite;
+    }
+    @keyframes mc-icon-spin {
+      to {
+        transform: rotate(1turn);
+      }
+    }
+  </style>
+
+  <div class="flex items-center gap-3">
+    <mc-icon name="spinner" size="lg" color="primary"></mc-icon>
+    <span class="text-sm">正在加载…</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-icon-part' });
+  </script>
+</template>
