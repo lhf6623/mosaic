@@ -74,8 +74,11 @@
       font-family: var(--mc-font-sans);
       font-size: var(--mc-text-sm);
       line-height: var(--mc-text-sm-lh);
-      /* 浮层唯一的视觉依据：没有 --mc-shadow-* 令牌，这里给浮层一个专用阴影 */
-      box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+      /* ⚠️ 用 filter: drop-shadow 而不是 box-shadow：box-shadow 画在**矩形边框盒**上，
+         有三角时会在三角那条边画出一条直边 —— 看起来就是「阴影凹进去一个口」，
+         而三角自己没有阴影、显平（实测就是这样）。drop-shadow 跟的是**整体轮廓**
+         （面板 + 三角），两截阴影才连得上。 */
+      filter: drop-shadow(0 3px 10px rgb(0 0 0 / 0.14));
 
       /* 锚点与翻转：12 个方向上的贴合 + 空间不足时自动翻 */
       position-anchor: --mc-popover-anchor;
@@ -159,6 +162,9 @@
     .mc-arrow {
       display: none;
       position: absolute;
+      /* ⚠️ 钻到面板背景**之下**：否则三角贴面板那一侧的底边会落在面板边线内侧 1px 上，
+         接缝处看得到一条错位的线。放到底下之后，露出来的部分正好是一个干净的三角。 */
+      z-index: -1;
       width: var(--mc-space-3);
       height: var(--mc-space-3);
       background-color: rgb(var(--mc-popover-panel-bg));
@@ -173,30 +179,48 @@
     /* 三角：贴哪条边 + 交叉轴位置。
        交叉轴位置 = 面板的 50% + `--mc-popover-arrow-shift`（脚本算好 = 触发元素中心 − 面板中心）。
 
-       ⚠️ 别改成 `left: anchor(center)` 之类：实测 **anchor() 放在 calc() 里整条声明会被丢弃**
-       （箭头回落到「静态位置」= 面板左内边缘，位置全错），而面板是 top layer 里的定位元素，
-       绝对定位子元素的参照是它自己，`50%` 这种老老实实的写法反而最稳。 */
-    /* 三角贴哪条边：按**实际解析出来的边**（脚本打开后写 `data-side`）。
-       为什么不是按 placement 写死：空间不够时浏览器会把面板翻到另一侧，写死的话箭头会留在
-       错的那条边上（实测：面板翻到上方了、箭头还在顶边指着上面）。 */
+       ⚠️ 试过三种写法，只有这个干净（都在浏览器里放大比过）：
+         · 旋转 45° 的方块 + 两条边框 → 面板那 1px 边线会横穿方块内部，看着是「套在边线上的方块」
+         · 外包一层描边三角（两层三角形）→ 内层缩边之后两个三角形状对不上，斜边会露出来
+         · 现在这个：**一个填充三角**（clip-path），描边靠它自己的 drop-shadow 1px ——
+           和面板的阴影是同一套机制，形状完全可控
+       ⚠️ 面板的阴影用 filter: drop-shadow 而不是 box-shadow：box-shadow 画在矩形边框盒上，
+       有三角时会在三角那条边画出一条直边（看着像「阴影凹进去一个口」）。 */
+    .mc-arrow {
+      display: none;
+      position: absolute;
+      /* ⚠️ 钻到面板背景**之下**：否则三角贴面板那一侧的底边会落在面板边线内侧 1px 上，
+         接缝处看得到一条错位的线。放到底下之后，露出来的部分正好是一个干净的三角。 */
+      z-index: -1;
+      width: var(--mc-space-3);
+      height: var(--mc-space-3);
+      background-color: rgb(var(--mc-popover-panel-bg));
+      /* 1px 的描边效果：跟面板轮廓一样的 drop-shadow，只是模糊半径写 0 */
+      filter: drop-shadow(0 0 0.5px rgb(var(--mc-popover-panel-border)));
+    }
+    :host([arrow]) .mc-arrow {
+      display: block;
+    }
+
     :host([arrow]) .mc-panel[data-side='bottom'] .mc-arrow {
       top: calc(var(--mc-space-3) / -2);
       left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
     }
     :host([arrow]) .mc-panel[data-side='top'] .mc-arrow {
       bottom: calc(var(--mc-space-3) / -2);
       left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
-      rotate: 225deg;
-    }
-    :host([arrow]) .mc-panel[data-side='right'] .mc-arrow {
-      left: calc(var(--mc-space-3) / -2);
-      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
-      rotate: 135deg;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
     }
     :host([arrow]) .mc-panel[data-side='left'] .mc-arrow {
       right: calc(var(--mc-space-3) / -2);
       top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
-      rotate: -45deg;
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    :host([arrow]) .mc-panel[data-side='right'] .mc-arrow {
+      left: calc(var(--mc-space-3) / -2);
+      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
+      clip-path: polygon(100% 0, 0 50%, 100% 100%);
     }
 
     /* **不做进场/退场动画**（有意的）：浮层弹出的动效在连续操作时反而拖慢手感，
@@ -216,7 +240,7 @@
   <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
        ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
   <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
-    <div class="mc-arrow" part="arrow" aria-hidden="true"></div>
+    <span class="mc-arrow" part="arrow" aria-hidden="true"></span>
     <slot name="panel"></slot>
   </div>
 
