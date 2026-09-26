@@ -13,6 +13,7 @@
     <l-m src="./demos/soft-wrap.html"></l-m>
     <l-m src="./demos/theme.html"></l-m>
     <l-m src="./demos/box-model.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Code <code>mc-code</code></h1>
@@ -28,53 +29,56 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
+      <p class="doc-hint">点右上角主题按钮：配色会跟着换成另一份官方主题。</p>
       <demo-code-basic></demo-code-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">点右上角主题按钮：配色会跟着换成另一份官方主题。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>片段文件（src）</h3>
+      <h3>片段文件</h3>
+      <p class="doc-hint">
+        内容来自 <code>docs/snippets/highlight-demo.js</code>；缺
+        <code>language</code> 时按后缀推断（这里是 <code>.js</code> → JavaScript）。
+      </p>
       <demo-code-src></demo-code-src>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/src.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        内容来自 <code>docs/snippets/highlight-demo.js</code>；缺
-        <code>language</code> 时按后缀推断（这里是 <code>.js</code> → JavaScript）。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>用 code 属性传</h3>
+      <p class="doc-hint">单行或多行都可以；<code>&lt;</code> 要写 <code>&amp;lt;</code>。</p>
       <demo-code-attribute></demo-code-attribute>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/attribute.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">单行或多行都可以；<code>&lt;</code> 要写 <code>&amp;lt;</code>。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>用页面数据传（<code>:code</code> 绑定）</h3>
+      <h3>页面数据</h3>
+      <p class="doc-hint">
+        ofa 的 <code>:code="变量"</code>：文本来自页面/组件自己的 <code>data</code>。
+      </p>
       <demo-code-binding></demo-code-binding>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/binding.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        ofa 的 <code>:code="变量"</code>：文本来自页面/组件自己的 <code>data</code>。
-      </p>
     </section>
 
     <section class="doc-demo">
@@ -88,7 +92,7 @@
     </section>
 
     <section class="doc-demo">
-      <h3>标记语言（HTML / XML）</h3>
+      <h3>标记语言</h3>
       <demo-code-markup></demo-code-markup>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -98,59 +102,71 @@
     </section>
 
     <section class="doc-demo">
-      <h3>限高滚动（max-height）</h3>
+      <h3>限高滚动</h3>
+      <p class="doc-hint">
+        <code>max-height="120"</code>：超出部分在组件内部滚动，滚到底后继续滚页面。
+      </p>
       <demo-code-max-height></demo-code-max-height>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/max-height.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>max-height="120"</code>：超出部分在组件内部滚动，滚到底后继续滚页面。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>长行折行（soft-wrap）</h3>
+      <h3>长行折行</h3>
+      <p class="doc-hint">长行折行，而不是横向滚动。</p>
       <demo-code-soft-wrap></demo-code-soft-wrap>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/soft-wrap.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">长行折行，而不是横向滚动。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>换一份官方主题</h3>
+      <h3>官方主题</h3>
+      <p class="doc-hint">同一页面上可以并存多种配色。</p>
       <demo-code-theme></demo-code-theme>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/theme.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">同一页面上可以并存多种配色。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>定制盒模型</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">改的都在宿主上，不用跨 shadow 边界。</p>
       <demo-code-box-model></demo-code-box-model>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/box-model.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        用 <code>style="…"</code> 改盒模型，<code>--mc-code-*</code> 改色槽； 内部结构用
-        <code>::part()</code>。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（mc-code 开了 <code>body</code> / <code>pre</code> /
+        <code>code</code> / <code>line</code>）。
+      </p>
+      <demo-code-part></demo-code-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -224,25 +240,45 @@
     </table>
 
     <h3>文字怎么传</h3>
-    <p>
-      优先级：<code>src</code> &gt; <code>code</code> 属性 &gt; 标签内文本。<code>el.code</code>
-      读写当前原文（写入立刻重渲染）。
-    </p>
-    <ul>
-      <li>标签里直接贴 —— 短片段最好读</li>
-      <li><code>code="…"</code> —— 单行或多行都行</li>
-      <li><code>:code="变量"</code> —— ofa 模板绑定，从页面/组件数据里取</li>
-      <li>
-        <code>src="…"</code> —— 长片段、或含 <code>&lt;script&gt;</code> / 大量
-        <code>&lt;</code> 的片段放独立文件
-      </li>
-    </ul>
-
-    <h2>插槽 / part</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>part</th>
+          <th>传值方式</th>
+          <th>优先级</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src="…"</code></td>
+          <td>最高</td>
+          <td>
+            长片段、或含 <code>&lt;script&gt;</code> / 大量 <code>&lt;</code> 的片段放独立文件
+          </td>
+        </tr>
+        <tr>
+          <td><code>code="…"</code></td>
+          <td>次之</td>
+          <td>单行或多行都行；写入立刻重渲染</td>
+        </tr>
+        <tr>
+          <td><code>:code="变量"</code></td>
+          <td>次之</td>
+          <td>ofa 模板绑定，从页面 / 组件自己的 <code>data</code> 里取</td>
+        </tr>
+        <tr>
+          <td>标签里直接贴</td>
+          <td>最低</td>
+          <td>短片段最好读</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -252,8 +288,12 @@
           <td>滚动容器（<code>max-height</code> 作用在它身上）</td>
         </tr>
         <tr>
-          <td><code>pre</code> <code>code</code></td>
-          <td>等宽排版层 / 高亮产物层</td>
+          <td><code>pre</code></td>
+          <td>等宽排版层（<code>&lt;pre&gt;</code>）</td>
+        </tr>
+        <tr>
+          <td><code>code</code></td>
+          <td>高亮产物层（<code>&lt;code&gt;</code>，语法高亮挂在它上面）</td>
         </tr>
         <tr>
           <td><code>line</code></td>

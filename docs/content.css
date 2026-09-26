@@ -119,6 +119,14 @@
 
 /* ---------- 演示区 ---------- */
 
+/* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：
+ *   <section class="doc-demo">
+ *     <h3>尺寸</h3>                              ← 标题：API 名中文，尽量短（取词规则见 agent/doc-pages.md）
+ *     <p class="doc-hint">三档头部高度…</p>       ← 说明：可选。导语，不是脚注
+ *     <demo-collapse-size></demo-collapse-size>  ← 组件：活样例
+ *     <mc-collapse class="doc-demo-code">…</mc-collapse>  ← 代码：默认收起的抽屉
+ * 一眼看得明白的例子不写说明；写了就必须在组件之前。05 号套件盯着这个顺序（按页迁移，清单在套件里）。 */
+
 .doc-demo {
   margin: var(--mc-space-5) 0;
   padding: var(--mc-space-5);
@@ -129,6 +137,12 @@
 
 .doc-demo h3 {
   margin-top: 0;
+}
+
+/* 说明在演示区里是**导语**（紧跟标题），所以自带一段下边距把它和活样例分开 ——
+ * `.doc-hint` 的公共样式配的是「跟在框尾」的场合（设计令牌页那种），别混用。 */
+.doc-demo > .doc-hint {
+  margin: 0 0 var(--mc-space-4);
 }
 
 /* 演示区的「查看代码」抽屉 —— 作者用项目自己的折叠面板写在页面里：

@@ -10,6 +10,7 @@
     <l-m src="./demos/closable.html"></l-m>
     <l-m src="./demos/checkable.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Tag <code>mc-tag</code></h1>
@@ -22,96 +23,112 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>语义色</h3>
+      <p class="doc-hint">
+        默认是<strong>中性</strong> —— 标签是分类标记，语义色应当在需要强调时才用；六个色值都有。
+      </p>
       <demo-tag-colors></demo-tag-colors>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/colors.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        默认是<strong>中性</strong> —— 标签是分类标记，语义色应当在需要强调时才用；六个色值都有。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>三种外观</h3>
+      <h3>外观</h3>
+      <p class="doc-hint">
+        <code>subtle</code>（默认）浅底深字，最不抢视线；<code>solid</code> 实心底；
+        <code>outline</code> 只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+      </p>
       <demo-tag-variants></demo-tag-variants>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/variants.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>subtle</code>（默认）浅底深字，最不抢视线；<code>solid</code> 实心底；
-        <code>outline</code> 只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>三档尺寸</h3>
+      <h3>尺寸</h3>
+      <p class="doc-hint">
+        尺寸只改字号与左右内边距，<strong>高度由字号撑</strong>：<code>sm</code> / <code>md</code> /
+        <code>lg</code> = 26 / 30 / 34px（行高 + 上下内边距 + 上下 1px 边框）。
+      </p>
       <demo-tag-sizes></demo-tag-sizes>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/sizes.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        尺寸只改字号与左右内边距，<strong>高度由字号撑</strong>：<code>sm</code> / <code>md</code> /
-        <code>lg</code> = 26 / 30 / 34px（行高 + 上下内边距 + 上下 1px 边框）。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>可关闭</h3>
+      <p class="doc-hint">
+        <code>closable</code> 在右侧加一个原生 <code>&lt;button&gt;</code>；点击只发
+        <code>close</code>，组件<strong>不自己删 DOM</strong>，例子里的 <code>on:close</code> 里那句
+        <code>remove()</code> 就是使用者那一半。
+      </p>
       <demo-tag-closable></demo-tag-closable>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/closable.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>closable</code> 在右侧加一个原生 <code>&lt;button&gt;</code>；点击只发
-        <code>close</code>，组件<strong>不自己删 DOM</strong>，例子里的 <code>on:close</code> 里那句
-        <code>remove()</code> 就是使用者那一半。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>可选中</h3>
+      <p class="doc-hint">
+        <code>checkable</code> 让整块可点（shadow 里一个铺满宿主的原生按钮，带
+        <code>aria-pressed</code>），切换时发 <code>change</code>，<code>$event.data.selected</code>
+        是切换后的状态；选中态换成该色的实心。
+      </p>
       <demo-tag-checkable></demo-tag-checkable>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/checkable.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>checkable</code> 让整块可点（shadow 里一个铺满宿主的原生按钮，带
-        <code>aria-pressed</code>），切换时发 <code>change</code>，<code>$event.data.selected</code>
-        是切换后的状态；选中态换成该色的实心。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>定制（L3 令牌 + <code>::part()</code>）</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        圆角、内边距、色槽都写在宿主上（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow 边界。
+      </p>
       <demo-tag-customize></demo-tag-customize>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/customize.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        颜色与圆角走宿主 <code>style</code> 上的 L3 令牌；内部只有 × 一个 part，单独换色用
-        <code>mc-tag::part(close)</code>。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（mc-tag 只开了 × 那个 <code>close</code>）。
+      </p>
+      <demo-tag-part></demo-tag-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -169,38 +186,38 @@
       </tbody>
     </table>
 
+    <h2>事件</h2>
+
     <table class="doc-table">
       <thead>
         <tr>
-          <th>事件</th>
-          <th>触发</th>
-          <th><code>$event.data</code></th>
+          <th>名称</th>
+          <th>类型</th>
+          <th>说明</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>change</code></td>
-          <td><code>checkable</code> 的选中态变化</td>
-          <td><code>{ selected }</code></td>
+          <td><code>(event: Event &amp; { data: { selected: boolean } }) =&gt; void</code></td>
+          <td>
+            <code>checkable</code> 的选中态变化；冒泡 +
+            <code>composed</code>，可挂在祖先上收全部标签
+          </td>
         </tr>
         <tr>
           <td><code>close</code></td>
-          <td>点了 ×</td>
-          <td>—</td>
+          <td><code>(event: Event) =&gt; void</code></td>
+          <td>点了 ×；冒泡 + <code>composed</code>，可挂在祖先上收全部标签</td>
         </tr>
       </tbody>
     </table>
 
-    <p>
-      两个事件都带 <code>bubbles</code> + <code>composed</code>（可挂在祖先上收全部标签的通知）。
-      裸点击照旧是原生 <code>click</code>，不另造事件。
-    </p>
-
-    <h2>插槽 / part</h2>
+    <h2>插槽与 part</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽 / part</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -212,54 +229,6 @@
         <tr>
           <td><code>part="close"</code></td>
           <td>那个 × 按钮（24×24 的命中区），单独换色 / 换形状用它</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>定制：L3 令牌 + <code>::part()</code></h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>令牌</th>
-          <th>默认</th>
-          <th>作用</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>--mc-tag-fill</code></td>
-          <td>按 <code>color</code></td>
-          <td><code>solid</code> 与选中态的底色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-on-fill</code></td>
-          <td>按 <code>color</code></td>
-          <td>实心上的文字色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-accent</code></td>
-          <td>按 <code>color</code></td>
-          <td><code>subtle</code> 的文字、<code>outline</code> 的线与文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-subtle-fill</code></td>
-          <td>按 <code>color</code></td>
-          <td><code>subtle</code> 的浅底（中性色用 <code>--mc-color-surface-sunken</code>）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-pad-x</code> / <code>--mc-tag-pad-y</code></td>
-          <td><code>--mc-space-3</code> / <code>--mc-space-1</code></td>
-          <td>左右 / 上下内边距（<code>size</code> 改的就是左右那个）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-gap</code></td>
-          <td><code>--mc-space-1</code></td>
-          <td>内容与 × 之间的间距</td>
-        </tr>
-        <tr>
-          <td><code>--mc-tag-radius</code></td>
-          <td><code>--mc-radius-md</code></td>
-          <td>圆角；全圆角写 <code>var(--mc-radius-full)</code></td>
         </tr>
       </tbody>
     </table>
@@ -301,6 +270,10 @@
       <li>
         <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-tag style="…"&gt;</code> 直接覆盖，
         不需要 <code>!important</code>；内部只有 × 一个 <code>part</code>。
+      </li>
+      <li>
+        <strong>裸点击就是原生 <code>click</code></strong
+        >（自带 <code>composed</code>，会穿过 shadow 边界冒泡），组件不另造事件。
       </li>
       <li>
         <strong>在脏宿主页面里也正常</strong>：标签不依赖页面 reset，宿主页面的 <code>a</code> /

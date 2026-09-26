@@ -11,6 +11,7 @@
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/nested.html"></l-m>
     <l-m src="./demos/style-override.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Collapse <code>mc-collapse</code></h1>
@@ -25,29 +26,31 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
+      <p class="doc-hint">
+        容器 + 子项两个标签搭起来：第二项写了 <code>open</code>，首屏就是展开的；点头部或按
+        <kbd>Enter</kbd> / <kbd>空格</kbd> 都能开合。
+      </p>
       <demo-collapse-basic></demo-collapse-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        第二项写了 <code>open</code>，首屏就是展开的；点头部或按 <kbd>Enter</kbd> /
-        <kbd>空格</kbd> 都能开合。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>手风琴（<code>accordion</code>）</h3>
+      <h3>手风琴</h3>
       <demo-collapse-accordion></demo-collapse-accordion>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/accordion.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">打开一项时容器把其它项收起来。</p>
     </section>
 
     <section class="doc-demo">
@@ -58,47 +61,46 @@
           ><mc-code language="html" src="./demos/size.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">尺寸写在容器上，子项跟着变。</p>
     </section>
 
     <section class="doc-demo">
       <h3>禁用</h3>
+      <p class="doc-hint">点不动，<kbd>Tab</kbd> 也会跳过。</p>
       <demo-collapse-disabled></demo-collapse-disabled>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/disabled.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">禁用项点不动，<kbd>Tab</kbd> 也会跳过。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>富标题（header 插槽）</h3>
+      <h3>自定义头部</h3>
       <demo-collapse-rich-header></demo-collapse-rich-header>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/rich-header.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">插槽内容放在头部左侧，太长会截断。</p>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
+      <p class="doc-hint">
+        事件挂在容器上就能收到所有子项的通知，<code>$event.data.name</code> 是子项的
+        <code>name</code> 属性。
+      </p>
       <demo-collapse-events></demo-collapse-events>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        事件挂在容器上就能收到所有子项的通知，<code>$event.data.name</code> 是子项的
-        <code>name</code> 属性。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>嵌套</h3>
+      <p class="doc-hint">子项里再放一个容器：内层自己互斥，不会影响外层已经展开的分支。</p>
       <demo-collapse-nested></demo-collapse-nested>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -108,27 +110,40 @@
     </section>
 
     <section class="doc-demo">
-      <h3>原生 CSS 精确覆盖</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        样式写在宿主上，一句 <code>style="…"</code> 直接压过去，不用跨 shadow 边界。
+      </p>
       <demo-collapse-style-override></demo-collapse-style-override>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/style-override.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        外框用原生 <code>style="…"</code> 覆盖；内部结构用 <code>::part(header)</code> /
-        <code>::part(body)</code>。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（这里开了 <code>header</code> / <code>body</code> 两个）。
+      </p>
+      <demo-collapse-part></demo-collapse-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
 
     <h3>mc-collapse</h3>
 
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -155,7 +170,7 @@
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -189,37 +204,43 @@
       </tbody>
     </table>
 
+    <h2>事件</h2>
+
     <table class="doc-table">
       <thead>
         <tr>
-          <th>事件</th>
-          <th>触发</th>
-          <th><code>$event.data</code></th>
+          <th>名称</th>
+          <th>类型</th>
+          <th>说明</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>open</code></td>
-          <td>展开时在<strong>子项</strong>上触发</td>
-          <td><code>{ name }</code></td>
+          <td><code>(event: Event &amp; { data: { name: string } }) =&gt; void</code></td>
+          <td>
+            展开时在<strong>子项</strong>上触发；冒泡 +
+            <code>composed</code>，挂在容器上能收全部子项
+          </td>
         </tr>
         <tr>
           <td><code>close</code></td>
-          <td>收起时在<strong>子项</strong>上触发</td>
-          <td><code>{ name }</code></td>
+          <td><code>(event: Event &amp; { data: { name: string } }) =&gt; void</code></td>
+          <td>
+            收起时在<strong>子项</strong>上触发；冒泡 +
+            <code>composed</code>，挂在容器上能收全部子项
+          </td>
         </tr>
       </tbody>
     </table>
-    <p>两个事件都会冒泡穿过 shadow 边界，所以挂在容器上就能收全部子项的通知。</p>
-
-    <h2>插槽 / part</h2>
+    <h2>插槽与 part</h2>
 
     <h3>mc-collapse</h3>
 
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -236,7 +257,7 @@
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽 / part</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>

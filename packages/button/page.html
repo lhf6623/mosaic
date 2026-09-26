@@ -25,6 +25,9 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>语义色</h3>
       <demo-button-colors></demo-button-colors>
@@ -36,7 +39,7 @@
     </section>
 
     <section class="doc-demo">
-      <h3>外观 × 颜色（正交组合）</h3>
+      <h3>外观 × 颜色</h3>
       <demo-button-variants></demo-button-variants>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -57,17 +60,20 @@
 
     <section class="doc-demo">
       <h3>状态</h3>
+      <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
       <demo-button-states></demo-button-states>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/states.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
     </section>
 
     <section class="doc-demo">
-      <h3>插槽（prefix / suffix）</h3>
+      <h3>图标插槽</h3>
+      <p class="doc-hint">
+        图标写在 <code>slot="prefix"</code> / <code>slot="suffix"</code>，文字照旧放默认插槽。
+      </p>
       <demo-button-slots></demo-button-slots>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -77,7 +83,7 @@
     </section>
 
     <section class="doc-demo">
-      <h3>撑满宽度（block）</h3>
+      <h3>撑满宽度</h3>
       <demo-button-block></demo-button-block>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -87,24 +93,24 @@
     </section>
 
     <section class="doc-demo">
-      <h3>原生 CSS 精确覆盖</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        样式写在宿主上，一句 <code>style="…"</code> 直接压过去；换色槽是
+        <code>--mc-button-fill</code> / <code>--mc-button-accent</code>。
+      </p>
       <demo-button-override></demo-button-override>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/override.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        用原生 <code>style="…"</code> 覆盖；<code>--mc-button-fill</code> /
-        <code>--mc-button-accent</code> 是组件的色槽。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <h2>属性</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -156,11 +162,11 @@
       </tbody>
     </table>
 
-    <h2>插槽 / part</h2>
+    <h2>插槽</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -170,16 +176,15 @@
           <td>按钮文案</td>
         </tr>
         <tr>
-          <td><code>prefix</code> / <code>suffix</code></td>
-          <td>前置 / 后置图标</td>
+          <td><code>prefix</code></td>
+          <td>前置图标</td>
+        </tr>
+        <tr>
+          <td><code>suffix</code></td>
+          <td>后置图标</td>
         </tr>
       </tbody>
     </table>
-    <p>
-      没有 part：视觉全在宿主 <code>:host</code> 上，外部 <code>style="…"</code> 直接覆盖（见最后
-      一个例子）。
-    </p>
-
     <h2>注意事项</h2>
     <ul>
       <li>

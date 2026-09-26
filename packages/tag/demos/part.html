@@ -1,0 +1,17 @@
+<template component>
+  <style>
+    /* × 是内部元素（part="close"）：只有它开了口子，能从外面单独换色。 */
+    mc-tag::part(close) {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-tag closable color="success">× 被 <code>::part(close)</code> 改成危险色</mc-tag>
+    <mc-tag closable color="primary">× 保持默认</mc-tag>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-tag-part' });
+  </script>
+</template>

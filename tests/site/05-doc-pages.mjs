@@ -115,7 +115,9 @@ const demoDrawer = await (async () => {
   const readDemos = () =>
     page.evaluate(() =>
       window.__deepAll('section.doc-demo').map((section) => {
-        const host = [...section.children].find((el) => el.tagName.toLowerCase().startsWith('demo-'));
+        const host = [...section.children].find((el) =>
+          el.tagName.toLowerCase().startsWith('demo-'),
+        );
         const drawer = section.querySelector(':scope > mc-collapse.doc-demo-code');
         const item = drawer?.querySelector('mc-collapse-item');
         const code = item?.querySelector('mc-code');
@@ -127,6 +129,15 @@ const demoDrawer = await (async () => {
           label: item?.getAttribute('header') ?? null,
           src: code?.getAttribute('src') ?? null,
           rendered: code?.code ?? '',
+          // 四段结构的顺序指纹：标题 → 说明 → 组件 → 代码（下面那条断言用它）
+          parts: [...section.children].map((el) => {
+            const tag = el.tagName.toLowerCase();
+            if (tag === 'h3') return 'h3';
+            if (el.classList.contains('doc-hint')) return 'hint';
+            if (tag.startsWith('demo-')) return 'demo';
+            if (el.classList.contains('doc-demo-code')) return 'code';
+            return tag;
+          }),
         };
       }),
     );
@@ -195,6 +206,27 @@ check(
     x.demos.every((d) => d.drawerExists && d.label === '查看代码'),
   ),
   JSON.stringify(drawerPages[0]?.demos.slice(0, 1)),
+);
+
+/* 演示区的段落顺序（标题 → 说明（可选）→ 组件 → 代码）：**7 页全部迁完**，所以这里盯所有页。
+   顺序指纹见 readDemos()；与旧版的关键差别是**说明必须在组件之前**（旧版把它当脚注挂在框尾），
+   而说明本身是可选段 —— 一眼就明白的例子不必写导语。 */
+const DEMO_PART_ORDERS = new Set(['h3|demo|code', 'h3|hint|demo|code']);
+const badParts = Object.entries(demoDrawer.pages).flatMap(([slug, x]) =>
+  x.demos
+    .filter((d) => !DEMO_PART_ORDERS.has(d.parts.join('|')))
+    .map((d) => `${slug}: ${d.parts.join('|')}`),
+);
+
+check(
+  '演示区段落顺序：标题 →（可选）说明 → 组件 → 代码（7 页全部）',
+  drawerPages.every((x) => x.demos.length > 0) && badParts.length === 0,
+  badParts.length
+    ? badParts.join(' · ')
+    : `${drawerPages.length} 页 / ${drawerTotal} 个演示全部符合；带导语的 ${drawerPages.reduce(
+        (n, x) => n + x.demos.filter((d) => d.parts.includes('hint')).length,
+        0,
+      )} 个`,
 );
 
 check(

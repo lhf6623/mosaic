@@ -10,6 +10,7 @@
     <l-m src="./demos/padding.html"></l-m>
     <l-m src="./demos/sections.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Card <code>mc-card</code></h1>
@@ -22,18 +23,21 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
+      <p class="doc-hint">
+        头尾写 <code>slot="header"</code> / <code>slot="footer"</code>，其余进默认插槽；
+        头尾各带一条通长分隔线。
+      </p>
       <demo-card-basic></demo-card-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        头尾写 <code>slot="header"</code> / <code>slot="footer"</code>，其余进默认插槽；
-        头尾各带一条通长分隔线。
-      </p>
     </section>
 
     <section class="doc-demo">
@@ -44,59 +48,66 @@
           ><mc-code language="html" src="./demos/sections.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        头部是一行：<code>slot="header"</code> 占左边、<code>slot="suffix"</code> 贴右边；
-        <code>divider="none"</code> 关掉两条分隔线。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>两种外观</h3>
+      <h3>外观</h3>
+      <p class="doc-hint"><code>outline</code> 适合放在已经有底色的容器里（侧栏、弹层内部）。</p>
       <demo-card-variants></demo-card-variants>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/variants.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>surface</code>（默认）有底色；<code>outline</code> 只有描边，适合放在已经有底色的
-        容器里（侧栏、弹层内部）。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>内边距</h3>
+      <p class="doc-hint">
+        <code>none</code>
+        是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。
+      </p>
       <demo-card-padding></demo-card-padding>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/padding.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>none</code>
-        是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>定制（令牌 + <code>::part()</code>）</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        颜色、圆角、内边距都在宿主上改（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow 边界。
+      </p>
       <demo-card-customize></demo-card-customize>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/customize.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        颜色与内边距按实例覆盖 L3 令牌；头尾这种整条的内部结构走
-        <code>mc-card::part(header)</code> / <code>::part(footer)</code>。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（这里开了 <code>header</code> /
+        <code>footer</code> 两个）。
+      </p>
+      <demo-card-part></demo-card-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -127,18 +138,11 @@
       </tbody>
     </table>
 
-    <p>
-      没有 <code>color</code>（容器不是强调元素，要强调覆盖 L3 令牌）、没有
-      <code>size</code> （高度由内容撑），也<strong>不做交互</strong>：操作元素（原生
-      <code>&lt;a&gt;</code> /
-      <code>&lt;button&gt;</code>）由你写在插槽里，想整卡可点见「注意事项」里的配方。
-    </p>
-
-    <h2>插槽 / part</h2>
+    <h2>插槽与 part</h2>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽 / part</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -148,8 +152,15 @@
           <td>主体内容</td>
         </tr>
         <tr>
-          <td>插槽 <code>header</code> / <code>footer</code></td>
-          <td>头尾，各带一条通长分隔线（<code>divider="none"</code> 可关）；没内容时不占地方</td>
+          <td>插槽 <code>header</code></td>
+          <td>
+            头部那一行左侧的内容（与
+            <code>suffix</code> 同行）；通长，下方一条分隔线；没内容时不占地方
+          </td>
+        </tr>
+        <tr>
+          <td>插槽 <code>footer</code></td>
+          <td>页脚内容；通长，上方一条分隔线；没内容时不占地方</td>
         </tr>
         <tr>
           <td>插槽 <code>suffix</code></td>
@@ -160,41 +171,16 @@
           <td>内层盒子：内边距就声明在它上面</td>
         </tr>
         <tr>
-          <td><code>part="header"</code> / <code>"body"</code> / <code>"footer"</code></td>
-          <td>头 / 正文 / 尾三块，头尾是贴到卡片边缘的一整条（可以换底色）</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>定制：L3 令牌 + <code>::part()</code></h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>令牌</th>
-          <th>默认</th>
-          <th>作用</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>--mc-card-bg</code></td>
-          <td><code>--mc-color-surface</code></td>
-          <td>卡片底色（<code>outline</code> 下不生效，那是透明）</td>
+          <td><code>part="header"</code></td>
+          <td>头部那一整条（贴到卡片边缘，可以换底色）</td>
         </tr>
         <tr>
-          <td><code>--mc-card-border</code></td>
-          <td><code>--mc-color-border</code></td>
-          <td>外框与头尾分隔线的颜色</td>
+          <td><code>part="body"</code></td>
+          <td>正文那块</td>
         </tr>
         <tr>
-          <td><code>--mc-card-pad</code></td>
-          <td><code>--mc-space-4</code></td>
-          <td>内边距（<code>padding</code> 属性改的就是它）</td>
-        </tr>
-        <tr>
-          <td><code>--mc-card-border-w</code></td>
-          <td><code>1px</code></td>
-          <td>边框宽度（自己铺「整卡可点」时按它算 <code>inset</code>）</td>
+          <td><code>part="footer"</code></td>
+          <td>页脚那一整条（贴到卡片边缘，可以换底色）</td>
         </tr>
       </tbody>
     </table>

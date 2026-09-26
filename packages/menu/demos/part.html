@@ -1,0 +1,17 @@
+<template component>
+  <style>
+    /* 内部容器被 shadow 边界封住，只有标了 part 的节点能从外面改：mc-menu 标了 list。 */
+    mc-menu::part(list) {
+      gap: var(--mc-space-3);
+    }
+  </style>
+
+  <mc-menu style="width: 14rem">
+    <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">项间距被拉开</a></mc-menu-item>
+    <mc-menu-item><a href="#/packages/button/page.html">整列的行距都变了</a></mc-menu-item>
+  </mc-menu>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-part' });
+  </script>
+</template>

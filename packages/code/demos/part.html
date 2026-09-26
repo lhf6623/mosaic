@@ -1,0 +1,20 @@
+<template component>
+  <style>
+    /* 内部结构被 shadow 边界封住，只有标了 part 的节点能从外面改：mc-code 标了 body / pre / code / line。 */
+    mc-code::part(pre) {
+      padding: var(--mc-space-4) var(--mc-space-5);
+    }
+    mc-code::part(line) {
+      color: rgb(var(--mc-color-fg-subtle));
+    }
+  </style>
+
+  <mc-code language="javascript" line-numbers>
+    const first = 1;
+    const second = 2;
+  </mc-code>
+
+  <script>
+    export default async () => ({ tag: 'demo-code-part' });
+  </script>
+</template>

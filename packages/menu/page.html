@@ -11,6 +11,7 @@
     <l-m src="./demos/surface.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Menu <code>mc-menu</code></h1>
@@ -26,99 +27,115 @@
 
     <h2>例子</h2>
 
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
+      <p class="doc-hint">
+        一个菜单项里放一个原生 <code>&lt;a&gt;</code>，它自己就是整行；当前项在
+        <code>&lt;a&gt;</code> 上写 <code>aria-current="page"</code>。
+      </p>
       <demo-menu-basic></demo-menu-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        一个菜单项里放一个原生 <code>&lt;a&gt;</code>，它自己就是整行；当前项在
-        <code>&lt;a&gt;</code> 上写 <code>aria-current="page"</code>。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>分组标题</h3>
+      <p class="doc-hint">
+        <code>&lt;mc-menu-item group&gt;</code> 是不可交互的纯文字行：鼠标穿透，
+        读屏也不会把它当成列表项。
+      </p>
       <demo-menu-groups></demo-menu-groups>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/groups.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        <code>&lt;mc-menu-item group&gt;</code> 是不可交互的纯文字行：鼠标穿透，
-        读屏也不会把它当成列表项。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
+      <p class="doc-hint">
+        尺寸写在容器上（<code>sm</code> / <code>md</code> / <code>lg</code> = <code>28</code> /
+        <code>36</code> / <code>44px</code>），菜单项跟着变。
+      </p>
       <demo-menu-size></demo-menu-size>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/size.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        尺寸写在容器上（<code>sm</code> / <code>md</code> / <code>lg</code> = <code>28</code> /
-        <code>36</code> / <code>44px</code>），菜单项跟着变。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>卡片外观（<code>variant="surface"</code>）</h3>
+      <h3>卡片外观</h3>
+      <p class="doc-hint">
+        默认的 <code>plain</code> 没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
+        <code>surface</code>。
+      </p>
       <demo-menu-surface></demo-menu-surface>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/surface.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        默认的 <code>plain</code> 没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
-        <code>surface</code>。
-      </p>
     </section>
 
     <section class="doc-demo">
       <h3>当前项与禁用</h3>
+      <p class="doc-hint">
+        前两项可用（<kbd>Tab</kbd> 能进、<kbd>Enter</kbd> 能激活）；后两项压暗： 一个是原生
+        <code>&lt;button disabled&gt;</code>，一个是去掉 <code>href</code> 的
+        <code>&lt;a&gt;</code>，两者都进不了焦点顺序。
+      </p>
       <demo-menu-states></demo-menu-states>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/states.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        前两项可用（<kbd>Tab</kbd> 能进、<kbd>Enter</kbd> 能激活）；后两项压暗： 一个是原生
-        <code>&lt;button disabled&gt;</code>，一个是去掉 <code>href</code> 的
-        <code>&lt;a&gt;</code>，两者都进不了焦点顺序。
-      </p>
     </section>
 
     <section class="doc-demo">
-      <h3>定制（令牌 + <code>::part()</code>）</h3>
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        颜色与内边距写在自己的 <code>style="…"</code> 上（L3 令牌按实例覆盖），不用跨 shadow 边界。
+      </p>
       <demo-menu-customize></demo-menu-customize>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/customize.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
-      <p class="doc-hint">
-        颜色与尺寸按实例覆盖 L3 令牌；项间距这种内部容器上的样式走
-        <code>mc-menu::part(list)</code>。
-      </p>
     </section>
 
-    <h2>API</h2>
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（mc-menu 开了 <code>list</code> 一个）。
+      </p>
+      <demo-menu-part></demo-menu-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
 
     <h3>mc-menu</h3>
 
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -145,7 +162,7 @@
     <table class="doc-table">
       <thead>
         <tr>
-          <th>属性</th>
+          <th>名称</th>
           <th>值</th>
           <th>默认</th>
           <th>说明</th>
@@ -161,14 +178,14 @@
       </tbody>
     </table>
 
-    <h2>插槽 / part</h2>
+    <h2>插槽与 part</h2>
 
     <h3>mc-menu</h3>
 
     <table class="doc-table">
       <thead>
         <tr>
-          <th>插槽 / part</th>
+          <th>名称</th>
           <th>说明</th>
         </tr>
       </thead>
@@ -184,17 +201,7 @@
       </tbody>
     </table>
 
-    <p>
-      列表语义挂在容器上：<code>mc-menu</code> 的列表是 <code>role="list"</code>， 菜单项的
-      <code>role="listitem"</code> 由组件自己补，不用手写。
-    </p>
-
     <h3>mc-menu-item</h3>
-
-    <p>
-      <strong>状态不写在菜单项上，写在插槽里的原生元素上</strong> —— 这样键盘、焦点、
-      读屏语义全是浏览器给的，组件只按属性给出外观：
-    </p>
 
     <table class="doc-table">
       <thead>
@@ -226,83 +233,24 @@
       </tbody>
     </table>
 
-    <p>
-      两个状态由组件从插槽元素读出来、写到菜单项自己的宿主属性上：
-      <code>data-current</code> / <code>data-disabled</code>。想在外层 CSS 里按状态写样式，
-      直接选它们就行。另外<strong>行的盒子在 <code>&lt;mc-menu-item&gt;</code> 上</strong>
-      （高度、内边距、底色、文字缩进都在宿主，插槽元素只是一层铺满整行的交互层），
-      所以定宽、限高、改底色都写在这个标签上。
-    </p>
-
-    <h2>定制：L3 令牌 + ::part()</h2>
-
-    <p>
-      菜单项的视觉全部走组件令牌，默认引用 L2 语义令牌。按实例覆盖就写在
-      <code>mc-menu</code> 的 <code>style</code> 上（令牌随继承进子项的 shadow root）：
-    </p>
     <table class="doc-table">
       <thead>
         <tr>
-          <th>令牌</th>
-          <th>默认</th>
-          <th>作用</th>
+          <th>宿主钩子</th>
+          <th>什么时候有</th>
+          <th>用途</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>--mc-menu-item-h</code></td>
-          <td><code>--mc-control-h-md</code></td>
-          <td>菜单项行高（<code>size</code> 会改它）</td>
+          <td><code>data-current</code></td>
+          <td>插槽元素的 <code>aria-current</code> 不为 <code>false</code></td>
+          <td>在外层 CSS 里给「当前项」写样式</td>
         </tr>
         <tr>
-          <td><code>--mc-menu-pad-x</code></td>
-          <td><code>--mc-space-4</code></td>
-          <td>行的左右内边距</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-font</code></td>
-          <td><code>--mc-text-sm</code></td>
-          <td>字号</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-gap</code></td>
-          <td><code>--mc-space-1</code></td>
-          <td>项与项之间的间距</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-radius</code></td>
-          <td><code>--mc-radius-md</code></td>
-          <td>行的圆角</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color</code></td>
-          <td><code>--mc-color-fg-muted</code></td>
-          <td>普通项文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color-hover</code></td>
-          <td><code>--mc-color-fg</code></td>
-          <td>悬停文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-color-current</code></td>
-          <td><code>--mc-color-primary</code></td>
-          <td>当前项文字</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-bg-hover</code></td>
-          <td><code>--mc-color-surface-sunken</code></td>
-          <td>悬停底色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-item-bg-current</code></td>
-          <td><code>--mc-color-primary-subtle</code></td>
-          <td>当前项底色</td>
-        </tr>
-        <tr>
-          <td><code>--mc-menu-group-color</code></td>
-          <td><code>--mc-color-fg-subtle</code></td>
-          <td>分组标题文字</td>
+          <td><code>data-disabled</code></td>
+          <td>插槽元素 <code>disabled</code> / <code>aria-disabled="true"</code></td>
+          <td>同上，禁用态</td>
         </tr>
       </tbody>
     </table>

@@ -167,12 +167,10 @@ export default async function run({ page, visit, check }) {
       return window.__deepAll('mc-card', box).map(read);
     });
 
-    /** 定制：L3 令牌 + ::part()（宿主 style 的圆角、头尾整条的底色与边框色、四个角的圆角） */
+    /** 外部样式：宿主 style 上的 L3 令牌（圆角、边框色；四个角的圆角也跟着走） */
     const customize = await page.evaluate(() => {
       const box = window.__deepAll('demo-card-customize')[0].shadowRoot;
       const el = window.__deepAll('mc-card', box)[0];
-      const header = el.shadowRoot.querySelector('.mc-header');
-      const footer = el.shadowRoot.querySelector('.mc-footer');
       const cs = (n) => getComputedStyle(n);
       const corners = (n) => [
         cs(n).borderTopLeftRadius,
@@ -183,14 +181,25 @@ export default async function run({ page, visit, check }) {
       return {
         radius: cs(el).borderTopLeftRadius,
         border: cs(el).borderTopColor,
+        headerCorners: corners(el.shadowRoot.querySelector('.mc-header')),
+        footerCorners: corners(el.shadowRoot.querySelector('.mc-footer')),
+        baseCorners: corners(el.shadowRoot.querySelector('.mc-base')),
+      };
+    });
+
+    /** 内部样式：::part(header) / ::part(footer) —— 头尾整条的底色、字色、字重、分隔线色 */
+    const part = await page.evaluate(() => {
+      const box = window.__deepAll('demo-card-part')[0].shadowRoot;
+      const el = window.__deepAll('mc-card', box)[0];
+      const header = el.shadowRoot.querySelector('.mc-header');
+      const footer = el.shadowRoot.querySelector('.mc-footer');
+      const cs = (n) => getComputedStyle(n);
+      return {
         headerBg: cs(header).backgroundColor,
         headerColor: cs(header).color,
         headerWeight: cs(header).fontWeight,
         headerBorder: cs(header).borderBottomColor,
         footerBg: cs(footer).backgroundColor,
-        headerCorners: corners(header),
-        footerCorners: corners(footer),
-        baseCorners: corners(el.shadowRoot.querySelector('.mc-base')),
       };
     });
 
@@ -303,7 +312,7 @@ export default async function run({ page, visit, check }) {
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { overview, basic, padding, variants, sections, customize, inert, dynamic, tokens, failed };
+    return { overview, basic, padding, variants, sections, customize, part, inert, dynamic, tokens, failed };
   })();
 
   check(
@@ -385,15 +394,19 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '::part(header) / ::part(footer) 可定制：整条底色、字色、字重、分隔线色都生效',
-    card.customize.headerBg !== 'rgba(0, 0, 0, 0)' &&
-      card.customize.headerColor === card.tokens.primary &&
-      Number(card.customize.headerWeight) >= 600 &&
-      card.customize.headerBorder === card.tokens.primary &&
-      card.customize.footerBg !== 'rgba(0, 0, 0, 0)' &&
-      card.customize.radius === '16px' &&
-      card.customize.border === card.tokens.borderStrong,
+    '外部样式（L3 令牌）：宿主 style 的圆角与边框色生效',
+    card.customize.radius === '16px' && card.customize.border === card.tokens.borderStrong,
     JSON.stringify(card.customize),
+  );
+
+  check(
+    '内部样式（::part）：整条底色、字色、字重、分隔线色都生效',
+    card.part.headerBg !== 'rgba(0, 0, 0, 0)' &&
+      card.part.headerColor === card.tokens.primary &&
+      Number(card.part.headerWeight) >= 600 &&
+      card.part.headerBorder === card.tokens.primary &&
+      card.part.footerBg !== 'rgba(0, 0, 0, 0)',
+    JSON.stringify(card.part),
   );
 
   check(

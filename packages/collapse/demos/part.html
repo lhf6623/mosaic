@@ -1,0 +1,26 @@
+<template component>
+  <style>
+    /* 内部结构被 shadow 边界封住，只有组件自己标了 part 的节点能从外面改：
+       collapse-item 标了 header（头部那一行）与 body（内容区）。 */
+    mc-collapse-item::part(header) {
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-semibold);
+    }
+    mc-collapse-item::part(body) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+  </style>
+
+  <mc-collapse>
+    <mc-collapse-item header="头部换成主色" open>
+      头部颜色与内容区底色都来自 <code>::part(header)</code> / <code>::part(body)</code>。
+    </mc-collapse-item>
+    <mc-collapse-item header="容器上没开 part">
+      外框（边框 / 圆角 / 底色）没有 part，只能用 <code>style="…"</code> 覆盖宿主。
+    </mc-collapse-item>
+  </mc-collapse>
+
+  <script>
+    export default async () => ({ tag: 'demo-collapse-part' });
+  </script>
+</template>

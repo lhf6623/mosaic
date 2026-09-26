@@ -1,11 +1,4 @@
 <template component>
-  <style>
-    /* × 是内部元素（part="close"），要单独换色就穿透它；圆角 / 间距走 L3 令牌 */
-    mc-tag::part(close) {
-      color: rgb(var(--mc-color-danger));
-    }
-  </style>
-
   <div class="flex flex-wrap items-center gap-3">
     <mc-tag color="primary" style="--mc-tag-radius: var(--mc-radius-full)">全圆角</mc-tag>
     <mc-tag
@@ -20,7 +13,6 @@
     >
       换浅底色槽
     </mc-tag>
-    <mc-tag closable color="success">× 被 <code>::part(close)</code> 改成危险色</mc-tag>
   </div>
 
   <script>

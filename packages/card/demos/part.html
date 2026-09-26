@@ -1,0 +1,27 @@
+<template component>
+  <style>
+    /* 内部结构被 shadow 边界封住，只有组件自己标了 part 的节点能从外面改：
+       card 标了 header（头部那一条）与 footer（页脚那一条）。 */
+    mc-card::part(header) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-semibold);
+      border-bottom-color: rgb(var(--mc-color-primary));
+    }
+    mc-card::part(footer) {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+  </style>
+
+  <mc-card style="width: 20rem">
+    <span slot="header">头部整条换了底色</span>
+    头部与页脚的底色、字号都来自 <code>::part(header)</code> / <code>::part(footer)</code>。
+    <span slot="footer">页脚也换了底色与字号</span>
+  </mc-card>
+
+  <script>
+    export default async () => ({ tag: 'demo-card-part' });
+  </script>
+</template>
