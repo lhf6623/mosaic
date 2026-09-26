@@ -384,6 +384,11 @@ export default async function run({ page, visit, check }) {
       await page.mouse.move(0, 0);
       await page.waitForTimeout(200);
       const out = { subtle: { before: await readClose(0) }, solid: { before: await readClose(1) } };
+      /* 期望的叠加色：层色 + 8%，跟组件里的 rgb(var(--mc-alert-layer-color) / var(--mc-alert-layer)) 对齐 */
+      const expected = {
+        subtle: withAlpha(tokens.fg, 0.08),
+        solid: withAlpha(tokens.dangerFg, 0.08),
+      };
 
       for (const [name, index] of [
         ['subtle', 0],
@@ -391,7 +396,19 @@ export default async function run({ page, visit, check }) {
       ]) {
         const point = await pointOf(index);
         await page.mouse.move(point.x, point.y);
-        await page.waitForTimeout(250);
+        /* 等到叠加色**真的**到位再读：这是过渡值，固定 sleep 在并行满载时会读到中间色（Tag 套件
+           实测读到过 96% 的中间色）。等不到就放行，让断言拿真实值去报错。 */
+        await page
+          .waitForFunction(
+            ({ i, want }) => {
+              const box = window.__deepAll('demo-alert-closable')[0].shadowRoot;
+              const btn = window.__deepAll('mc-alert', box)[i].shadowRoot.querySelector('.mc-close');
+              return btn.matches(':hover') && getComputedStyle(btn).backgroundColor === want;
+            },
+            { i: index, want: expected[name] },
+            { timeout: 3000 },
+          )
+          .catch(() => {});
         out[name].after = await readClose(index);
         await page.mouse.move(0, 0);
         await page.waitForTimeout(200);

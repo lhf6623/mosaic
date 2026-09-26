@@ -259,6 +259,18 @@ export default async function run({ page, visit, check }) {
     /** 点 toggle：立刻写宿主属性 + change（$event.data.selected），aria-pressed 跟着走 */
     const toggleClicks = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      /* 读 bg/fg 前要等这次颜色过渡**真的**走完：固定 sleep 在 4 个套件并行满载时会读到 96% 的
+         中间色（实测读到 rgb(119,77,238)，期望 rgb(114,70,237)）。属性/文本不需要等，只有样式要。 */
+      const settle = (node) =>
+        new Promise((resolve) => {
+          const done = () => {
+            node.removeEventListener('transitionend', done);
+            clearTimeout(timer);
+            resolve();
+          };
+          const timer = setTimeout(done, 1000); // 兜底：没触发过渡（或时长被压到 1ms）也要放行
+          node.addEventListener('transitionend', done);
+        });
       const box = window.__deepAll('demo-tag-checkable')[0].shadowRoot;
       const el = window.__deepAll('mc-tag', box)[1]; // 未选中的那个
       const seen = [];
@@ -270,7 +282,7 @@ export default async function run({ page, visit, check }) {
       toggle.click();
       /** 属性是当次就位的（规范 1.4）；底色有 120ms 过渡，读样式得等它走完 */
       const selectedAttrRightAway = el.hasAttribute('selected');
-      await wait(200);
+      await settle(el);
       const attrsAfterSelect = {
         selected: el.hasAttribute('selected'),
         bg: getComputedStyle(el).backgroundColor,
