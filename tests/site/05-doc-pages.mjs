@@ -291,9 +291,14 @@ const tagHits = Object.entries(demoDrawer.pages).map(([slug, x]) => {
   };
 });
 
+/* 例外：**命令式组件**（site-map 里 tagName 不是 `mc-*` 的，如 `message()`）。
+   它们没有可写的标签 —— 演示里只会看到函数调用，所以"代码必须提到标签"这条对它们不成立。
+   判定用 tagName 的形状，不写死名字：以后再加命令式组件自动走这条。 */
+const imperative = new Set(tagHits.filter((h) => !h.tag.startsWith('mc-')).map((h) => h.slug));
+
 check(
-  `每个演示的代码都提到它在演示的标签（${tagHits.length} 页 / ${drawerTotal} 个演示）`,
-  tagHits.every((h) => h.tag && h.total > 0 && h.hit === h.total),
+  `每个演示的代码都提到它在演示的标签（${tagHits.length} 页 / ${drawerTotal} 个演示，命令式 ${imperative.size} 页豁免）`,
+  tagHits.every((h) => h.tag && h.total > 0 && (h.hit === h.total || imperative.has(h.slug))),
   tagHits.map((h) => `${h.slug} <${h.tag}> ${h.hit}/${h.total}`).join(' · '),
 );
 

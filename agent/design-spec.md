@@ -310,7 +310,7 @@ M3 的做法，很值得抄：hover / active 的叠加层用**当前文字色**�
 - **优先用原生语义**，`<button>` 不需要 `role="button"`。只有在没有对应原生元素时才用 ARIA。
 - 图标按钮必须有 `aria-label`；纯装饰的 SVG 加 `aria-hidden="true"`。
 - 校验失败时加 `aria-invalid="true"`，并用 `aria-describedby` 关联错误文案（不要让用户靠颜色判断）。
-- 动态内容（toast、加载完成）用 `aria-live="polite"` 通知屏幕阅读器。
+- 动态内容（`message()` 消息条、加载完成）用 `aria-live="polite"` 通知屏幕阅读器。
 - **不要用 `aria-label` 覆盖已经可见的文案** —— 会造成语音控制和屏幕阅读器的用词不一致。
 
 ---

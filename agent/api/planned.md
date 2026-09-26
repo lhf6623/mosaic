@@ -37,16 +37,16 @@
 
 ### 各组件要点
 
-| 组件                          | 关键属性                                                                             | 关键插槽与 part                             |
-| ----------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
-| `mc-input`                    | `type` `clearable` `maxlength` `prefix`/`suffix` 文本                                | `prefix` `suffix` 插槽；`input` part        |
-| `mc-textarea`                 | 同 input + `rows` `auto-resize` `maxlength` + 字数统计                               | 同 input                                    |
-| `mc-checkbox`                 | `checked` / `default-checked` `indeterminate` `value`                                | 默认插槽为标签文案                          |
-| `mc-radio` + `mc-radio-group` | group 上用 `value` `default-value` `name` `direction`；radio 上用 `value` `disabled` | 默认插槽为标签文案                          |
-| `mc-switch`                   | `checked` / `default-checked` `disabled` `size`                                      | —                                           |
-| `mc-select` + `mc-option`     | select 上 `value` `multiple` `placeholder` `clearable`；option 上 `value` `disabled` | `option` part；弹层 `panel` part            |
-| `mc-progress`                 | `value` `max` `indeterminate` `color` `size`                                         | `bar` part；`aria-valuenow` 齐全            |
-| `toast()`                     | 命令式函数，返回 `{ close }`，对齐原生语义                                           | `toast(msg, { color, duration, position })` |
+| 组件                          | 关键属性                                                                             | 关键插槽与 part                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `mc-input`                    | `type` `clearable` `maxlength` `prefix`/`suffix` 文本                                | `prefix` `suffix` 插槽；`input` part               |
+| `mc-textarea`                 | 同 input + `rows` `auto-resize` `maxlength` + 字数统计                               | 同 input                                           |
+| `mc-checkbox`                 | `checked` / `default-checked` `indeterminate` `value`                                | 默认插槽为标签文案                                 |
+| `mc-radio` + `mc-radio-group` | group 上用 `value` `default-value` `name` `direction`；radio 上用 `value` `disabled` | 默认插槽为标签文案                                 |
+| `mc-switch`                   | `checked` / `default-checked` `disabled` `size`                                      | —                                                  |
+| `mc-select` + `mc-option`     | select 上 `value` `multiple` `placeholder` `clearable`；option 上 `value` `disabled` | `option` part；弹层 `panel` part                   |
+| `mc-progress`                 | `value` `max` `indeterminate` `color` `size`                                         | `bar` part；`aria-valuenow` 齐全                   |
+| `message()`                   | 命令式函数，返回 `{ close }`，对齐原生语义                                           | `message(text, { type, duration, key, closable })` |
 
 > `mc-alert` **已实现**，接口见 [`alert.md`](./alert.md) —— 与上面的草案有两处出入（都是踩坑后的结论）：
 > 标题属性定为 `heading` 而不是 `title`（原生 `title` 会弹浏览器 tooltip，[P32](../pitfalls/01-props.md)），

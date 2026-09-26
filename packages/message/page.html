@@ -1,0 +1,242 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/duration.html"></l-m>
+    <l-m src="./demos/closable.html"></l-m>
+    <l-m src="./demos/key.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Message <code>message()</code></h1>
+    <p class="doc-lead">
+      浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。<strong>没有标签</strong> —— 它由 JS
+      调用，容器由组件自己挂到页面上。
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        导入 <code>message.js</code> 直接调用；每种类型一个简写方法，都返回
+        <code>{ close }</code>。默认 3 秒后自己走。
+      </p>
+      <demo-message-basic></demo-message-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>停留时长</h3>
+      <p class="doc-hint">
+        <code>duration</code> 是毫秒；给 <code>0</code> 就不自动关 —— 这时只有两条路：
+        <strong>点消息条本身</strong>（可聚焦，回车也行），或者拿调用返回的
+        <code>{ close }</code> 句柄去关。演示下面那个 <code>close()</code> 按钮走的就是第二条。
+      </p>
+      <demo-message-duration></demo-message-duration>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/duration.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>可关闭</h3>
+      <p class="doc-hint">
+        <code>closable</code> 是独立属性、默认 <code>true</code>（右侧有 ×，点它才关；整条不可点）。
+        关掉它的场合是<strong>任务还没结束</strong>：一条「保存中」被点掉，用户会以为保存取消了 ——
+        所以不给 ×，停止的时机归任务方管。下面那个按钮点一下开始、再点一下就是「任务方来取消」
+        （消息自己给不出的能力，只有代码有）。
+      </p>
+      <demo-message-closable></demo-message-closable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/closable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>同 key 更新</h3>
+      <p class="doc-hint">
+        给一个 <code>key</code>，后一条就把前一条<strong>换掉</strong>（位置也保持）—— 上传进度、
+        保存状态这类「同一条消息在变」的场景用它，不要叠成一摞。
+      </p>
+      <demo-message-key></demo-message-key>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/key.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>方法</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>message(text, config?)</code></td>
+          <td>弹一条，返回 <code>{ close }</code>；<code>config</code> 见下表</td>
+        </tr>
+        <tr>
+          <td><code>message.success(text, config?)</code></td>
+          <td>
+            五个类型简写：<code>neutral</code> <code>info</code> <code>success</code>
+            <code>warning</code> <code>error</code>，等价于带上 <code>type</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>message.close(keyOrId)</code></td>
+          <td>按 <code>key</code> 或返回的 <code>id</code> 收掉一条</td>
+        </tr>
+        <tr>
+          <td><code>message.closeAll()</code></td>
+          <td>全收掉</td>
+        </tr>
+        <tr>
+          <td><code>message.config(options)</code></td>
+          <td>
+            改默认值（<code>duration</code> / <code>limit</code> /
+            <code>closable</code>），只影响之后创建的
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>配置</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>type</code></td>
+          <td>
+            <code>neutral</code> <code>info</code> <code>success</code> <code>warning</code>
+            <code>error</code>
+          </td>
+          <td><code>neutral</code></td>
+          <td>语义色 + 图标；<code>error</code> 是紧急播报</td>
+        </tr>
+        <tr>
+          <td><code>duration</code></td>
+          <td>毫秒</td>
+          <td><code>3000</code></td>
+          <td><code>0</code> = 不自动关</td>
+        </tr>
+        <tr>
+          <td><code>key</code></td>
+          <td>字符串</td>
+          <td>—</td>
+          <td>同 key 只留一条，后一条换掉前一条</td>
+        </tr>
+        <tr>
+          <td><code>closable</code></td>
+          <td>布尔</td>
+          <td><code>true</code></td>
+          <td>
+            右侧要不要 × 按钮（32×32 命中区，回车 / 空格也能关）。<code>false</code>
+            时不给按钮，纯展示
+          </td>
+        </tr>
+        <tr>
+          <td><code>icon</code></td>
+          <td>布尔</td>
+          <td>按 <code>type</code></td>
+          <td>覆盖某个类型要不要图标</td>
+        </tr>
+        <tr>
+          <td><code>limit</code></td>
+          <td>数字（全局）</td>
+          <td><code>5</code></td>
+          <td>同屏最多几条，超出从最旧的顶掉；走 <code>message.config()</code> 改</td>
+        </tr>
+        <tr>
+          <td><code>onClose</code></td>
+          <td>函数</td>
+          <td>—</td>
+          <td>
+            这条消失时回调一次（点 × / 到点 / <code>close()</code> /
+            <code>closeAll()</code> 都算）。 「进度上传」这类场景靠它停掉生产端 ——
+            用户关掉之后别再推同一条回来
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，
+        第一次调用时组件才把自己注册好并挂到
+        <code>document.body</code> 末尾，之后一直复用同一个容器。 页面里写标签不会得到任何东西 ——
+        只有 <code>message.js</code> 这一个入口。
+      </li>
+      <li>
+        <strong>为什么挂到 body 而不是就地展开</strong>：<code>position: fixed</code> 在 shadow root
+        里会被宿主页面上的 <code>transform</code> / <code>filter</code> / <code>contain</code>
+        困住（那是新的层叠上下文）；挂到 body 才能保证它永远在层级最上面。层级用
+        <code>--mc-z-toast</code>，没有魔法数字。
+      </li>
+      <li>
+        <strong>和 <code>mc-alert</code> 的分工</strong>：alert 是<strong>页内静态</strong>的一块面
+        —— 跟着内容流排版、不抢焦点、不会自己消失；message 是<strong>浮层</strong> ——
+        自己进场自己走、不占版面。要「一直留在页面上」就用 alert。
+      </li>
+      <li>
+        <strong><code>closable</code> 是独立属性，不跟 <code>duration</code> 推导</strong>：
+        「关不关得掉」和「多久自己走」是两件事，默认 <code>true</code>。自己会走的短提示嫌 ×
+        是噪音，写 <code>closable: false</code> 显式表达 —— 别让它变成一条看不出来的隐式规则。
+      </li>
+      <li>
+        <strong>关闭只有 × 一条路</strong>：整条消息<strong>不可点</strong> —— 消息是要读的，
+        点一下就没不该是默认行为。× 是原生 <code>&lt;button&gt;</code>，
+        <code>aria-label</code> 带上这条消息的正文，命中区 32×32（Mosaic 小控件的下限），
+        用负外边距抵消超出行高的部分，所以加不加 × 消息条一样高。
+      </li>
+      <li>
+        <strong>无障碍</strong>：容器是 <code>aria-live</code> 区域，
+        <code>error</code> 那条会把整块切成 <code>assertive</code> +
+        <code>role="alert"</code> （立刻播报），其余是
+        <code>polite</code>。类型图标是装饰性的，含义由文案承担。
+      </li>
+      <li>
+        <strong>同 key 只留一条</strong>：后一条把前一条<strong>换掉</strong>（位置也保持）。
+        进度类消息记得接 <code>onClose</code> 停掉生产端的定时器 —— 否则用户关掉之后，
+        下一拍又会用同一个 key 推回来，看着就是「关不掉」。
+      </li>
+      <li>
+        <strong>条数有上限</strong>：默认同屏 5 条，超了从最旧的开始顶掉 —— 连点两下不会刷满一屏。
+        用 <code>message.config({ limit })</code> 改。
+      </li>
+      <li>
+        <strong>动画跟着系统设置走</strong>：<code>prefers-reduced-motion: reduce</code>
+        下不播进场动画。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

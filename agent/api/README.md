@@ -144,65 +144,65 @@ item.open = true; // 组件提供了访问器时同样可以
 
 ## 二、组件索引
 
-| 组件            | 标签                                   | 目录          | 里程碑 | 状态      |
-| --------------- | -------------------------------------- | ------------- | ------ | --------- |
-| Button          | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
-| Code            | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
-| Collapse        | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
-| Menu            | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
-| Breadcrumb      | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| Icon            | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
-| Card            | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
-| Tag             | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
-| Badge           | `mc-badge`                             | `badge/`      | M1     | 待建      |
-| Spinner         | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
-| Input           | `mc-input`                             | `input/`      | M2     | 待建      |
-| Textarea        | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
-| Checkbox        | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
-| Radio           | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
-| Switch          | `mc-switch`                            | `switch/`     | M2     | 待建      |
-| Select          | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
-| Alert           | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
-| Progress        | `mc-progress`                          | `progress/`   | M2     | 待建      |
-| Toast（命令式） | —                                      | `toast/`      | M2     | 待建      |
-| Dialog          | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
-| Dropdown        | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
-| Tooltip         | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
-| Tabs            | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
-| Table           | `mc-table`                             | `table/`      | M3     | 待建      |
-| Grid            | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
+| 组件              | 标签                                   | 目录          | 里程碑 | 状态      |
+| ----------------- | -------------------------------------- | ------------- | ------ | --------- |
+| Button            | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
+| Code              | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
+| Collapse          | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
+| Menu              | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
+| Breadcrumb        | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
+| Icon              | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
+| Card              | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
+| Tag               | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
+| Badge             | `mc-badge`                             | `badge/`      | M1     | 待建      |
+| Spinner           | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
+| Input             | `mc-input`                             | `input/`      | M2     | 待建      |
+| Textarea          | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
+| Checkbox          | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
+| Radio             | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
+| Switch            | `mc-switch`                            | `switch/`     | M2     | 待建      |
+| Select            | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
+| Alert             | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
+| Progress          | `mc-progress`                          | `progress/`   | M2     | 待建      |
+| Message（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
+| Dialog            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
+| Dropdown          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
+| Tooltip           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
+| Tabs              | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
+| Table             | `mc-table`                             | `table/`      | M3     | 待建      |
+| Grid              | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
 
 ---
 
 ## 二、组件索引
 
-| 组件                          | 标签                                   | 目录          | 里程碑 | 状态      |
-| ----------------------------- | -------------------------------------- | ------------- | ------ | --------- |
-| [Button](./button.md)         | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
-| [Code](./code.md)             | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
-| [Collapse](./collapse.md)     | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
-| [Menu](./menu.md)             | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
-| [Breadcrumb](./breadcrumb.md) | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| [Icon](./icon.md)             | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
-| [Card](./card.md)             | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
-| [Tag](./tag.md)               | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
-| [Badge](./badge.md)           | `mc-badge`                             | `badge/`      | M1     | 待建      |
-| [Spinner](./spinner.md)       | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
-| Input                         | `mc-input`                             | `input/`      | M2     | 待建      |
-| Textarea                      | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
-| Checkbox                      | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
-| Radio                         | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
-| Switch                        | `mc-switch`                            | `switch/`     | M2     | 待建      |
-| Select                        | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
-| [Alert](./alert.md)           | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
-| Progress                      | `mc-progress`                          | `progress/`   | M2     | 待建      |
-| Toast（命令式）               | —                                      | `toast/`      | M2     | 待建      |
-| Dialog                        | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
-| Dropdown                      | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
-| Tooltip                       | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
-| Tabs                          | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
-| Table                         | `mc-table`                             | `table/`      | M3     | 待建      |
-| Grid                          | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
+| 组件                              | 标签                                   | 目录          | 里程碑 | 状态      |
+| --------------------------------- | -------------------------------------- | ------------- | ------ | --------- |
+| [Button](./button.md)             | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
+| [Code](./code.md)                 | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
+| [Collapse](./collapse.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
+| [Menu](./menu.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
+| [Breadcrumb](./breadcrumb.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
+| [Icon](./icon.md)                 | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
+| [Card](./card.md)                 | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
+| [Tag](./tag.md)                   | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
+| [Badge](./badge.md)               | `mc-badge`                             | `badge/`      | M1     | 待建      |
+| [Spinner](./spinner.md)           | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
+| Input                             | `mc-input`                             | `input/`      | M2     | 待建      |
+| Textarea                          | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
+| Checkbox                          | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
+| Radio                             | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
+| Switch                            | `mc-switch`                            | `switch/`     | M2     | 待建      |
+| Select                            | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
+| [Alert](./alert.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
+| Progress                          | `mc-progress`                          | `progress/`   | M2     | 待建      |
+| [Message](./message.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
+| Dialog                            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
+| Dropdown                          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
+| Tooltip                           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
+| Tabs                              | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
+| Table                             | `mc-table`                             | `table/`      | M3     | 待建      |
+| Grid                              | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
 
 ---
 

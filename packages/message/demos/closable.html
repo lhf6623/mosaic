@@ -1,0 +1,61 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-2">
+    <mc-icon name="close"></mc-icon>
+    <mc-button on:click="basic()">默认（带 ×）</mc-button>
+    <!-- 同一个按钮：点一下开始「保存中」，再点一下取消它 -->
+    <mc-button
+      color="info"
+      attr:variant="saving ? 'filled' : 'outline'"
+      on:click="toggleSave()"
+      >{{saving ? '取消保存' : '保存中（任务归组件管）'}}</mc-button
+    >
+    <mc-button variant="outline" on:click="autoOnly()">自动关 + 不给 ×</mc-button>
+  </div>
+
+  <script>
+    import message from '../../message/message.js';
+
+    let timer = null;
+
+    export default async () => ({
+      tag: 'demo-message-closable',
+
+      data: { saving: false },
+
+      proto: {
+        /* 默认：带 ×，点它才关 */
+        basic() {
+          message('默认就有 ×，点它关掉', { duration: 0 });
+        },
+
+        /* 纯告知、不需要交互：3 秒自己走，不给 × */
+        autoOnly() {
+          message('3 秒后自己走，不给 ×', { closable: false });
+        },
+
+        /**
+         * `closable: false` 的场合：**任务还没结束**。一条「保存中」被点掉，用户会以为取消了，
+         * 所以不给 × —— 停止的时机归任务方（这个按钮）管，不归用户点消息条。
+         */
+        toggleSave() {
+          if (this.saving) {
+            /* 取消：任务方来收这条（消息自己给不出的能力，只有代码有） */
+            clearTimeout(timer);
+            timer = null;
+            this.saving = false;
+            message.close('save');
+            return;
+          }
+          this.saving = true;
+          message('保存中…', { key: 'save', type: 'info', duration: 0, closable: false });
+          timer = setTimeout(() => {
+            timer = null;
+            this.saving = false;
+            // 同一个 key：换成结果（那条默认带 ×），3 秒后自己走
+            message('已保存', { key: 'save', type: 'success', duration: 3000 });
+          }, 1600);
+        },
+      },
+    });
+  </script>
+</template>

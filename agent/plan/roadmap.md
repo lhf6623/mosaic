@@ -49,10 +49,15 @@
 ### M2 — 表单与反馈
 
 `mc-input` / `mc-textarea` / `mc-checkbox` / `mc-radio` / `mc-switch` / `mc-select` /
-`mc-alert` / `mc-toast` / `mc-progress`
+`mc-alert` / `message()` / `mc-progress`
 
 表单类组件统一约定见 [组件 API 规范](../api/README.md)。
 这一批会大量撞上 [踩坑清单](../pitfalls/README.md) 的 P6 / P18 / P19 / P20（值的反射与事件穿透）。
+
+- [x] `message()`（`packages/message/`）—— 命令式消息条，接口见 [`api/message.md`](../api/message.md)。
+      它顺带把 M3 的**图层问题**验了：shadow root 里的浮层会被宿主页面的
+      `transform` / `filter` / `contain` 困住，挂在 `document.body` 上才稳（容器由模块自己挂）。
+      M3 的 dialog / dropdown / tooltip 直接沿用这条结论，不用再验一遍。
 
 ### M3 — 浮层与布局
 

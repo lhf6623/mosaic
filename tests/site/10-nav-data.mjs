@@ -157,10 +157,14 @@ export default async function run({ check }) {
           seenTags.set(node.tagName, node.label);
         }
         if (!node.stage) structural.push(`${at} 是组件却没写 stage（待建卡片要显示它）`);
+        /* 命令式组件（入口是函数，如 message()）：tagName 不是 mc-<目录名>，
+           标签由模块自己在运行时创建 —— 这条命名规矩对它不适用。
+           判定用 `mc-` 前缀的形状，不写死名字：以后再加命令式组件自动走这条。 */
+        const imperative = !node.tagName.startsWith('mc-');
         if (hasPage(node)) {
           if (!/^packages\/[^/]+\/page\.html$/.test(node.path)) {
             structural.push(`${at} 的 path 不在 packages/<目录>/page.html：${node.path}`);
-          } else if (node.tagName !== `mc-${slugOf(node)}`) {
+          } else if (!imperative && node.tagName !== `mc-${slugOf(node)}`) {
             structural.push(
               `${at} 的标签名与目录名对不上：${node.tagName} vs ${slugOf(node)}/`,
             );

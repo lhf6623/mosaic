@@ -1,0 +1,51 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-2">
+    <mc-icon name="upload"></mc-icon>
+    <mc-button on:click="start()">开始上传（同 key 更新）</mc-button>
+    <mc-button on:click="finish()">立刻完成</mc-button>
+  </div>
+
+  <script>
+    import message from '../../message/message.js';
+
+    let timer = null;
+    let percent = 0;
+
+    export default async () => ({
+      tag: 'demo-message-key',
+
+      proto: {
+        /* 同一个 key：后一条把前一条换掉，不会叠成两条（位置也保持）。
+           ⚠️ 两条讲究：
+           1. 进度中的那条显式 closable: false —— 跑到一半被点掉、定时器还在推同 key 的新消息，
+              看着就是"关不掉"；完事那条才给 ×。
+           2. onClose 让定时器知道"这条没了" —— 到点自动走时同样要停。 */
+        start() {
+          percent = 0;
+          clearInterval(timer);
+          const onClose = () => clearInterval(timer);
+          const tick = () => {
+            percent += 20;
+            const done = percent >= 100;
+            if (done) clearInterval(timer);
+            message(done ? '上传完成' : `上传中 ${percent}%`, {
+              key: 'upload',
+              type: done ? 'success' : 'info',
+              duration: done ? 3000 : 0,
+              /* 进度条跑到一半被点掉，定时器还在推同 key 的新消息，看着就是"关不掉"。
+                 这里显式不给 ×（closable: false），完事那条默认带 ×。 */
+              closable: done,
+              onClose,
+            });
+          };
+          message('上传中 0%', { key: 'upload', type: 'info', duration: 0, closable: false, onClose });
+          timer = setInterval(tick, 500);
+        },
+        finish() {
+          clearInterval(timer);
+          message.success('上传完成', { key: 'upload', duration: 3000, onClose: () => clearInterval(timer) });
+        },
+      },
+    });
+  </script>
+</template>

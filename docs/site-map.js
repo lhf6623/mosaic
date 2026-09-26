@@ -213,11 +213,13 @@ export const SITE = [
           },
           {
             order: 30,
-            label: 'Toast',
+            label: 'Message',
             zh: '消息条',
-            tagName: 'toast()',
+            path: 'packages/message/page.html',
+            // 命令式：入口是 message() 这个函数，容器标签由模块自己创建，使用者不用写标签
+            tagName: 'message',
             stage: 'M2',
-            summary: '命令式消息条，返回 Promise 与 close 句柄。',
+            summary: '命令式消息条：从顶部落下来一条，几秒后自己走；同 key 更新不叠加。',
           },
         ],
       },

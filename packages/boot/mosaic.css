@@ -613,6 +613,7 @@
 .bg-surface{--un-bg-opacity:1;background-color:rgb(var(--mc-color-surface) / var(--un-bg-opacity));}
 .bg-surface-raised{--un-bg-opacity:1;background-color:rgb(var(--mc-color-surface-raised) / var(--un-bg-opacity));}
 .bg-surface-sunken{--un-bg-opacity:1;background-color:rgb(var(--mc-color-surface-sunken) / var(--un-bg-opacity));}
+.bg-transparent{background-color:transparent;}
 .bg-warning{--un-bg-opacity:1;background-color:rgb(var(--mc-color-warning) / var(--un-bg-opacity));}
 .bg-warning-active{--un-bg-opacity:1;background-color:rgb(var(--mc-color-warning-active) / var(--un-bg-opacity));}
 .bg-warning-hover{--un-bg-opacity:1;background-color:rgb(var(--mc-color-warning-hover) / var(--un-bg-opacity));}

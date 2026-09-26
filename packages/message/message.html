@@ -1,0 +1,301 @@
+<!--
+  mc-message — 命令式消息条（容器）
+
+  ⚠️ **这个组件不直接使用**：使用者只写 `message.success('已保存')`，由
+  `packages/message/message.js` 负责「懒注册 + 挂到 document.body + 往这个组件的 rows 里推数据」。
+  为什么做成两个文件：
+
+  ofa.js 是 MVVM，**模板只在组件定义期编译**；运行时 `innerHTML` 塞进去的 `{{ }}` / `o-fill` 全是死的。
+  所以命令式 API 的正确形态只能是「函数只碰数据，视图永远由声明期模板渲染」：
+    1. 首次调用 → `<l-m src="message.html">` 把本组件注册上（实测运行时追加 l-m 可用）；
+    2. `document.createElement('mc-message')` 挂到 body 末尾（**必须挂 body**：shadow root 里的
+       position:fixed 会被宿主页面的 transform / filter / contain 困住，见 design-spec 第七节）；
+    3. 之后一律 `$('mc-message')` 拿实例、原地改 `rows` —— 实测**从外部整体替换数组不会渲染**
+       （`inst.rows = 外部数组` 之后 o-fill 一行动都不动），只能 push / splice。
+
+  为什么挂到 body 上也拿得到设计令牌：mosaic.js 给每个 shadow root adopt 两份表，
+  而令牌是自定义属性、从 :root 一路继承下来 —— 实测宿主上 `--mc-z-toast` 解析为 1500。
+
+  与 mc-alert 的分工：alert 是**页内静态**的一块面（在文档流里、不抢焦点、不会自己消失）；
+  message 是**命令式浮层**（自己进场自己走、不占版面）。两者都要「把状态告诉使用者」，
+  但一个在文档流里、一个在层级最上面，所以不是一个组件。
+
+  关闭方式只有一种：**右侧一个明确的 ×**（原生 <button>，32×32 命中区）。
+  要不要它由 `closable` 显式决定（默认 true）——**不跟 duration 推导**：
+  「关不关得掉」和「多久自己走」是两件事，混在一起读者从调用上看不出来。
+  **整条消息不可点** —— 它是给人读的，点一下就没不该是默认行为。
+
+  ⚠️ 组件只负责把行从 rows 里摘掉；**队列删除、定时器、onClose 都在 message.js 的 drop() 里**。
+  宿主上那个 close 监听必须调 drop() —— 只清一半会让队列静默泄漏、onClose 永不触发（踩过）。
+
+  ⚠️ 两个 ofa 的坑（都实测踩过，注释留在原地免得后人再踩）：
+  · `o-fill` 的模板只允许**一个**根子元素 —— 所以里面套了一层 `display: contents` 的 div
+    来同时挂「显隐 + 退场动画 + popover 语义」三件事（P42 的成对写法）。
+  · 条目识别用 `$index`：`o-fill` 内**不能用 `attr:data-*` 绑 `$data`**（`data` 是保留字，
+    见 P39 一族），所以 DOM → 数据只能靠位置反查，而 `$index` 实测可用。
+-->
+<template component>
+  <style>
+    /* ---------- 容器：固定顶栏居中，一列消息 ---------- */
+    :host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--mc-space-2);
+      pointer-events: none; /* 只有消息条本身可点，空白处不吃点击 */
+      font-family: var(--mc-font-sans);
+    }
+
+    /* ---------- 一条消息 ---------- */
+    .mc-item {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      max-width: min(36rem, calc(100vw - var(--mc-space-8)));
+      padding: var(--mc-space-2) var(--mc-space-4);
+      /* 圆角用 full：消息条是浮起的一条胶囊，不是卡片 */
+      border-radius: var(--mc-radius-full);
+      border: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+      /* 浮层唯一的视觉依据。没有 --mc-shadow-* 令牌（全仓组件都没用阴影），
+         这里给浮层一个专用阴影，明暗都压得住 */
+      box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+      color: rgb(var(--mc-color-fg));
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      pointer-events: auto;
+      /* ⚠️ 必须 !important：shadow-base 的 mosaic.base 层把 :host 的 font-size 钉成
+         --mc-text-base，而工具类在 mosaic.utilities 层 —— 层序是 base < utilities，
+         所以 text-sm 工具类在这里赢不了 reset（实测 16px 压过 14px） */
+      font-size: var(--mc-text-sm) !important;
+    }
+
+    /* ---------- 关闭按钮：右侧一个明确的 ×（32×32 命中区，和 mc-alert 同一套）
+       整条**不再可点**：消息条是要读的，点一下就没不应该是它的默认行为；
+       要关就点这个 ×，"哪里能点" 一目了然。 */
+    .mc-close {
+      display: none;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-space-8);
+      height: var(--mc-space-8);
+      /* 负外边距吃掉超出胶囊的部分：单行消息加不加 × 都一样高 */
+      margin-block: calc((var(--mc-text-sm-lh) - var(--mc-space-8)) / 2);
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: var(--mc-text-lg);
+      line-height: 1;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+    :host([data-has-closable]) .mc-close,
+    .mc-item[data-closable] .mc-close {
+      display: inline-flex;
+    }
+    .mc-close:hover {
+      background-color: rgb(var(--mc-color-fg) / 0.08);
+    }
+    .mc-close:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+
+    /* ⚠️ 容器必须显式 align-items: center：
+       `.mc-list` 是**纵向**的 flex 容器，条目在**交叉轴**上默认 stretch ——
+       于是一列消息的宽度会被最长那条撑开、所有短消息跟着一起变宽（实测：
+       一条 576px 的长消息会把 "短" 也拉到 576px）。加上它，每条各自按内容宽，
+       长的撞 max-width 才换行。 */
+    .mc-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .mc-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    /* ---------- 图标：跟着 type 换色（装饰性，由 mc-icon 自己 aria-hidden） ---------- */
+    .mc-glyph {
+      flex: none;
+      display: inline-flex;
+      font-size: var(--mc-text-lg);
+      color: rgb(var(--mc-color-fg-muted));
+    }
+    .mc-glyph[data-type='success'] {
+      color: rgb(var(--mc-color-success));
+    }
+    .mc-glyph[data-type='warning'] {
+      color: rgb(var(--mc-color-warning));
+    }
+    .mc-glyph[data-type='error'] {
+      color: rgb(var(--mc-color-danger));
+    }
+
+    /* ---------- 进场：从上方落下来一点 + 淡入。
+       退场不在这里：节点是被移除的，动画来不及播（要退场动画就得先标记再延迟删，
+       见 message.js 顶部的说明）。 */
+    @keyframes mc-message-in {
+      from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    .mc-item {
+      animation: mc-message-in var(--mc-duration-slow) var(--mc-ease-emphasized) both;
+    }
+
+    /* shadow-base 在 prefers-reduced-motion 下把所有 --mc-duration-* 归零，
+       但 animation 的时长读的是令牌，归零后动画变成瞬时 —— 这里再兜一层，
+       避免「动画名还在、帧还在跑」 */
+    @media (prefers-reduced-motion: reduce) {
+      .mc-item {
+        animation: none;
+      }
+    }
+  </style>
+
+  <!-- 容器只有这一个根子元素（P42）：o-fill 的宿主 + aria-live 都挂在它身上。
+       aria-live 跟着 message 的紧急程度走 —— 用 attr: 绑数据，不用 o-if 切（P10）。 -->
+  <div class="mc-list" role="log" attr:aria-live="live" attr:aria-label="'通知'">
+    <o-fill :value="rows" fill-key="id">
+      <div style="display: contents">
+        <div
+          class="mc-item"
+          attr:data-type="$data.type"
+          attr:data-closable="$data.closable ? '' : null"
+          attr:role="$data.assertive ? 'alert' : null"
+          attr:data-index="$index"
+        >
+          <o-if :value="$data.icon">
+            <span class="mc-glyph" attr:data-type="$data.type">
+              <mc-icon attr:name="$data.iconName"></mc-icon>
+            </span>
+          </o-if>
+          <span class="mc-text">{{$data.text}}</span>
+          <button
+            class="mc-close"
+            type="button"
+            attr:aria-label="'关闭提示：' + $data.text"
+            attr:data-index="$index"
+          >
+            <mc-icon name="close" aria-hidden="true"></mc-icon>
+          </button>
+        </div>
+      </div>
+    </o-fill>
+  </div>
+
+  <script>
+    export default async ({ load }) => {
+      /* 图标是独立组件：注册 mc-message 之前先就位（同 mc-alert）。
+         只引 message 的使用者会连带取一次 icon.html —— 这是「不各画一套图标」的代价。 */
+      await load('../icon/icon.html');
+
+      return {
+        tag: 'mc-message',
+
+        /* aria-live / role 由数据决定：error 是紧急播报（assertive + role=alert），
+           其余走 polite 的 log。见 data.live / data.assertive 的绑定。 */
+        data: {
+          rows: [],
+          live: 'polite',
+          assertive: false,
+        },
+
+        ready() {
+          /* ⚠️ `o-fill` 的模板里**绑不到 proto 方法**：条目作用域只有 $data / $index / $host，
+             写 on:click="activate" 会报「function "activate" not found」；
+             写 on:click="activate($event)" / "activate($index)" 会报「Error evaluating element
+             expression」（异常还会中断整块模板）。所以监听只能挂在**容器**上做事件委托 ——
+             这也正是 P12 推荐的形态（o-fill 的条目在它自己的 light DOM 里）。
+             ⚠️ proto / 生命周期里的 `this` 是 **ofa 实例（数据对象）**，元素 API 要走 `this.ele`
+             （P5 一族，实测 `this.shadowRoot` 是 undefined）。 */
+          const list = this.ele.shadowRoot.querySelector('.mc-list');
+          list.addEventListener('click', (event) => this._onActivate(event));
+          list.addEventListener('keydown', (event) => this._onActivate(event));
+        },
+
+        detached() {
+          const list = this.ele.shadowRoot?.querySelector('.mc-list');
+          if (!list) return;
+          list.replaceWith(list.cloneNode(true)); // 一次性摘掉委托监听（箭头函数没法逐个 remove）
+        },
+
+        proto: {
+          /**
+           * 委托入口：只有**点/敲 × 按钮**才关（整条不再可点）。
+           * 用委托而不是在条目上写 on:click —— 见 ready() 里那条（o-fill 里绑不到 proto 方法）。
+           */
+          _onActivate(event) {
+            const btn = event.composedPath().find((el) => el?.classList?.contains('mc-close'));
+            if (!btn) return;
+
+            if (event.type === 'keydown') {
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              event.preventDefault(); // 空格默认会滚页面
+              this._kb = btn; // 键盘处理过 → 随后那次合成 click 要忽略，否则会关两次
+              this.activate(Number(btn.getAttribute('data-index')));
+              return;
+            }
+            if (this._kb === btn) {
+              this._kb = null;
+              return;
+            }
+            /* 键盘为什么走 keydown 而不是 click：按钮上的 Space 只在 keyup 才合成 click，
+               而这里要的是"按下去就关"。两边都只调一次 activate()。 */
+            this.activate(Number(btn.getAttribute('data-index')));
+          },
+
+          /**
+           * 推一条消息。**必须原地 push**：实测从外部整体替换 rows（inst.rows = [...]）
+           * 之后 o-fill 完全不更新。参数由 message.js 归一好再传进来。
+           */
+          push(item) {
+            this.rows.push(item);
+            // 紧急程度 = 当前队列里最急的那条（error 优先）
+            this.assertive = this.rows.some((r) => r.type === 'error');
+            this.live = this.assertive ? 'assertive' : 'polite';
+          },
+
+          /** 按位置移除（DOM → 数据只能靠位置：见文件头 $index 那条）。 */
+          removeAt(index) {
+            const [removed] = this.rows.splice(index, 1);
+            this.assertive = this.rows.some((r) => r.type === 'error');
+            this.live = this.assertive ? 'assertive' : 'polite';
+            return removed ?? null;
+          },
+
+          /** 全部收起，返回被收起的条目（message.js 用它清定时器）。 */
+          clear() {
+            const removed = [...this.rows];
+            this.rows.length = 0;
+            this.assertive = false;
+            this.live = 'polite';
+            return removed;
+          },
+
+          /** 收掉第 index 条，并把事件抛给外部（message.js 用它清定时器）。 */
+          activate(index) {
+            const item = this.rows[index];
+            if (!item) return;
+            this.removeAt(index);
+            this.ele.dispatchEvent(
+              new CustomEvent('close', { detail: item, bubbles: true, composed: true }),
+            );
+          },
+        },
+      };
+    };
+  </script>
+</template>

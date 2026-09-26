@@ -1,0 +1,47 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <mc-icon name="clock"></mc-icon>
+      <mc-button on:click="short()">1 秒后自己走</mc-button>
+      <mc-button on:click="sticky()">不自动关（手动关）</mc-button>
+    </div>
+
+    <!-- { close } 句柄是能调的：用它做「页面上唯一那个能调 close() 的开关」，
+         不给的话这条就只剩"点消息条自己"一条路 -->
+    <p class="text-sm text-muted">
+      手动关：
+      <mc-button size="sm" variant="ghost" on:click="closeSticky()">close()</mc-button>
+      <span class="text-xs">{{closedCount ? `已关 ${closedCount} 次` : '还没关过'}}</span>
+    </p>
+  </div>
+
+  <script>
+    import message from '../../message/message.js';
+
+    export default async () => ({
+      tag: 'demo-message-duration',
+
+      data: { closedCount: 0 },
+
+      proto: {
+        short() {
+          message('duration: 1000 —— 一秒后消失', { duration: 1000 });
+        },
+        sticky() {
+          /* duration: 0 不会自己走 —— 演示这个维度，其余用默认（closable true → 带 ×）
+             ⚠️ 存句柄的字段别叫 sticky（P43）：proto 的方法就挂在实例数据上，
+             `this.sticky = 句柄` 会把 sticky() 自己覆盖掉，下一次点击就是
+             「Error evaluating element expression: on:click="sticky()"」—— 症状是"点第一次有用，
+             之后再也打不开"。 */
+          this.stickyMessage = message('duration: 0 —— 点右侧 × 关掉它，或调 close()', { duration: 0 });
+        },
+        closeSticky() {
+          if (!this.stickyMessage) return;
+          this.stickyMessage.close();
+          this.stickyMessage = null;
+          this.closedCount++;
+        },
+      },
+    });
+  </script>
+</template>
