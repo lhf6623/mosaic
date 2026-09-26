@@ -2,7 +2,7 @@
  * 站点 · 导航稳定性（第 9.5 / 10 节）：导航 DOM 不重建、真人节奏点击、二级菜单自己滚
  */
 
-export default async function run({ page, goTop, check }) {
+export default async function run({ page, goTop, visit, check, newPage }) {
 /* ------------------------------------------------------------------ *
  * 9.5 【回归】导航 DOM 必须稳定，真人节奏的点击一次就跳（曾每个轮询 tick 重建菜单，mousedown→click 之间节点被换掉，要点很多次；element.click() 测不出来，必须 page.mouse 走真实按下-抬起）
  * ------------------------------------------------------------------ */
@@ -183,4 +183,119 @@ check(
   navFrames.length > 30 && moved.length === 0,
   `${navFrames.length} 帧里移动 ${moved.length} 帧 · 末帧 nav.top=${navFrames.at(-1)?.[0]} toc.top=${navFrames.at(-1)?.[1]} scrollY=${navFrames.at(-1)?.[2]}`,
 );
+
+/* ------------------------------------------------------------------ *
+ * 窄屏：左栏 = 折叠抽屉 + 通栏「菜单」开关
+ *   · 桌面端（宽屏）不受影响：开关不显示、抽屉常显
+ *   · 窄屏默认收起（否则 36 条菜单先把正文顶到屏幕外）
+ *   · 点开关展开 / 再点收起；aria-expanded 与宿主 data-expanded 跟着走
+ *   · 选中条目跳走之后自动收起（否则新页面正文又压在菜单下面）
+ * ------------------------------------------------------------------ */
+const mobileDrawer = await (async () => {
+  const p = await newPage();
+  const readDrawer = () =>
+    p.evaluate(() => {
+      const nav = window.__deep('doc-nav');
+      const root = nav?.shadowRoot;
+      const toggle = root?.querySelector('.doc-nav-toggle');
+      const drawer = root?.querySelector('.doc-nav-drawer');
+      return {
+        expanded: nav?.hasAttribute('data-expanded') ?? null,
+        toggleDisplay: toggle ? getComputedStyle(toggle).display : null,
+        toggleWidth: toggle ? Math.round(toggle.getBoundingClientRect().width) : 0,
+        toggleText: toggle?.textContent.trim() ?? null,
+        drawerDisplay: drawer ? getComputedStyle(drawer).display : null,
+        navHeight: nav ? Math.round(nav.getBoundingClientRect().height) : 0,
+      };
+    });
+
+  await p.setViewportSize({ width: 390, height: 800 });
+  await visit(p, `/index.html?nav-drawer=${Date.now()}#/packages/alert/page.html`);
+  await p
+    .waitForFunction(() => !!window.__deep('doc-nav')?.shadowRoot?.querySelector('.doc-nav-toggle'), {
+      timeout: 10000,
+    })
+    .catch(() => {});
+  await p.waitForTimeout(600);
+
+  const collapsed = await readDrawer();
+  await p.evaluate(() => window.__deep('doc-nav').shadowRoot.querySelector('.doc-nav-toggle').click());
+  await p.waitForTimeout(400);
+  const opened = await readDrawer();
+  await p.evaluate(() => window.__deep('doc-nav').shadowRoot.querySelector('.doc-nav-toggle').click());
+  await p.waitForTimeout(400);
+  const reclosed = await readDrawer();
+  await p.evaluate(() => {
+    window.__deep('doc-nav').shadowRoot.querySelector('.doc-nav-toggle').click();
+    const link = [...window.__deep('doc-nav').shadowRoot.querySelectorAll('a')].find((a) =>
+      a.textContent.includes('按钮'),
+    );
+    link?.click();
+  });
+  await p.waitForTimeout(1600);
+  const afterNav = await readDrawer();
+  await p.close();
+
+  return { collapsed, opened, reclosed, afterNav };
+})();
+
+check(
+  '窄屏左栏默认收起：开关通栏可见（≈视口宽），抽屉不占位',
+  mobileDrawer.collapsed.toggleDisplay === 'flex' &&
+    mobileDrawer.collapsed.toggleWidth >= 386 &&
+    mobileDrawer.collapsed.drawerDisplay === 'none' &&
+    mobileDrawer.collapsed.expanded === false,
+  JSON.stringify(mobileDrawer.collapsed),
+);
+check(
+  '窄屏开关：点开 → 抽屉展开且封顶 45vh；再点 → 收起（data-expanded 同步）',
+  mobileDrawer.opened.expanded === true &&
+    mobileDrawer.opened.drawerDisplay === 'block' &&
+    mobileDrawer.opened.navHeight <= 400 &&
+    mobileDrawer.reclosed.expanded === false &&
+    mobileDrawer.reclosed.drawerDisplay === 'none',
+  JSON.stringify({ opened: mobileDrawer.opened, reclosed: mobileDrawer.reclosed }),
+);
+const desktopDrawer = await (async () => {
+  const p = await newPage();
+  await p.setViewportSize({ width: 1440, height: 900 });
+  await visit(p, `/index.html?nav-desktop=${Date.now()}#/packages/alert/page.html`);
+  await p
+    .waitForFunction(() => !!window.__deep('doc-nav')?.shadowRoot?.querySelector('.doc-nav-toggle'), {
+      timeout: 10000,
+    })
+    .catch(() => {});
+  await p.waitForTimeout(600);
+  const info = await p.evaluate(() => {
+    const nav = window.__deep('doc-nav');
+    const root = nav.shadowRoot;
+    return {
+      toggleDisplay: getComputedStyle(root.querySelector('.doc-nav-toggle')).display,
+      drawerDisplay: getComputedStyle(root.querySelector('.doc-nav-drawer')).display,
+      navWidth: Math.round(nav.getBoundingClientRect().width),
+      firstLinkVisible: (() => {
+        const a = root.querySelector('a');
+        return !!a && a.getBoundingClientRect().height > 0;
+      })(),
+    };
+  });
+  await p.close();
+  return info;
+})();
+
+check(
+  '桌面端不受影响：开关不显示、抽屉常显、侧栏仍是 15rem 浮动栏',
+  desktopDrawer.toggleDisplay === 'none' &&
+    desktopDrawer.drawerDisplay === 'block' &&
+    desktopDrawer.navWidth === 240 &&
+    desktopDrawer.firstLinkVisible === true,
+  JSON.stringify(desktopDrawer),
+);
+
+check(
+  '窄屏选中条目跳走后抽屉自动收起',
+  mobileDrawer.afterNav.expanded === false && mobileDrawer.afterNav.drawerDisplay === 'none',
+  JSON.stringify(mobileDrawer.afterNav),
+);
+
 }

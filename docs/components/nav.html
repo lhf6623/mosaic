@@ -2,7 +2,7 @@
   <doc-nav> —— 文档站左栏二级菜单，站点级 ofa 组件。
 
   菜单结构 = docs/site-map.js 的树 = 这份模板：o-fill 逐条铺 children（分组再嵌一层）。
-  本文件只管两件事 —— 该渲染哪一支（locate + menuOf）、谁是当前页（aria-current）；
+  本文件只管两件事 —— 该渲染哪一支（routeState 的 entry + menuOf）、谁是当前页（aria-current）；
   其余（分组标题行、待建外链、压暗）都是模板里一句绑定。
 
   为什么从普通自定义元素改成组件模板：以前得手写 _append 递归、_link 建 DOM、syncActive 切高亮，
@@ -21,19 +21,121 @@
     a[data-status='planned'] {
       opacity: 0.72;
     }
+
+    /* ---------- 窄屏：左栏变抽屉，靠一个明确的开关按钮开合 ----------
+       宽屏（>52rem）时左栏是常驻侧栏，按钮与抽屉的状态都不参与布局：
+       按钮 display:none，抽屉一律显示 —— 桌面端的行为与以前逐像素相同。 */
+    .doc-nav-drawer {
+      display: block;
+    }
+
+    .doc-nav-toggle {
+      display: none;
+    }
+
+    @media (max-width: 52rem) {
+      /* 宿主在 doc-layout 里带着 space-5 的内边距（那是给浮动侧栏的）。收成抽屉之后
+         内边距改由抽屉自己出，否则开关被挤在 20px 里、左右漏出两条底色。
+
+         ⚠️ 必须 !important：doc-layout 那份样式表在 `@layer` 里，而这个 <style> 没分层 ——
+         **未分层的规则永远赢过分层规则**（与具体选择器权重无关），所以这里裸写 :host
+         是压不住它的（实测 padding 仍然是 20px）。这条在 doc-layout.html 的注释里提过。 */
+      :host {
+        /* 上下内边距也交给自己：宿主原有 `topbar + space-6` 是给**浮动侧栏**留的，
+           收成文档流里的抽屉之后那条空白就露在开关上面。_content 的 padding-top
+           本来就已经让开了顶栏。 */
+        padding: 0 !important;
+      }
+
+      .doc-nav-drawer {
+        padding-block: var(--mc-space-4);
+      }
+
+      /* 开关通栏：sticky 让它滚到哪都够得着（宿主是 static，粘性只作用在内部） */
+      .doc-nav-toggle {
+        position: sticky;
+        top: var(--doc-topbar, 3.5rem);
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--mc-space-2);
+        width: 100%;
+        padding: var(--mc-space-3) var(--mc-space-5);
+        border: 0;
+        border-bottom: 1px solid rgb(var(--mc-color-border));
+        background-color: rgb(var(--mc-color-surface));
+        color: rgb(var(--mc-color-fg));
+        font: inherit;
+        font-size: var(--mc-text-sm);
+        font-weight: var(--mc-weight-medium);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .doc-nav-toggle:focus-visible {
+        outline: 2px solid rgb(var(--mc-color-ring));
+        outline-offset: -2px;
+      }
+
+      .doc-nav-caret {
+        margin-left: auto;
+        transition: transform var(--mc-duration-fast) var(--mc-ease-standard);
+      }
+
+      :host([data-expanded]) .doc-nav-caret {
+        transform: rotate(180deg);
+      }
+
+      /* 收起时抽屉不占位：默认收起，别让 36 条菜单先把正文顶到屏幕外 */
+      .doc-nav-drawer {
+        display: none;
+      }
+
+      :host([data-expanded]) .doc-nav-drawer {
+        display: block;
+      }
+    }
   </style>
 
-  <mc-menu>
-    <o-fill :value="rows" fill-key="key">
-      <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许**一个**根子元素，
-           而这一行要渲染「分组标题 + 组内条目」两块（<o-if> + <o-else>）。
-           ofa 发现多根时会自己包一层同样的 div 并打一条 console 警告（temp_multi_child）——
-           包裹本身无害（display:contents 不生成盒子，布局与不包时逐像素相同），但会刷屏。
-           显式写出这层，语义一致、控制台干净；tests/site/11 的「写法守卫」盯着这条不变量。 -->
-      <div style="display: contents">
-        <o-if :value="$data.pages">
-          <mc-menu-item group>{{$data.name}}</mc-menu-item>
-          <o-fill :value="$data.pages" fill-key="key">
+  <!-- 窄屏的菜单开关：文案跟着当前分区走（选中后会自动收起） -->
+  <button
+    class="doc-nav-toggle"
+    type="button"
+    attr:aria-expanded="expanded ? 'true' : 'false'"
+    on:click="toggleMenu"
+  >
+    <mc-icon name="menu"></mc-icon>
+    <span>菜单</span>
+    <mc-icon class="doc-nav-caret" name="chevron-down" aria-hidden="true"></mc-icon>
+  </button>
+
+  <div class="doc-nav-drawer">
+    <mc-menu>
+      <o-fill :value="rows" fill-key="key">
+        <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许**一个**根子元素，
+             而这一行要渲染「分组标题 + 组内条目」两块（<o-if> + <o-else>）。
+             ofa 发现多根时会自己包一层同样的 div 并打一条 console 警告（temp_multi_child）——
+             包裹本身无害（display:contents 不生成盒子，布局与不包时逐像素相同），但会刷屏。
+             显式写出这层，语义一致、控制台干净；tests/site/11 的「写法守卫」盯着这条不变量。 -->
+        <div style="display: contents">
+          <o-if :value="$data.pages">
+            <mc-menu-item group>{{$data.name}}</mc-menu-item>
+            <o-fill :value="$data.pages" fill-key="key">
+              <mc-menu-item>
+                <a
+                  attr:class="$data.className"
+                  attr:href="$data.href"
+                  attr:target="$data.target"
+                  attr:rel="$data.rel"
+                  attr:title="$data.title"
+                  attr:data-status="$data.status"
+                  attr:aria-current="$data.aria"
+                  >{{$data.name}}</a
+                >
+              </mc-menu-item>
+            </o-fill>
+          </o-if>
+          <o-else>
             <mc-menu-item>
               <a
                 attr:class="$data.className"
@@ -46,28 +148,14 @@
                 >{{$data.name}}</a
               >
             </mc-menu-item>
-          </o-fill>
-        </o-if>
-        <o-else>
-          <mc-menu-item>
-            <a
-              attr:class="$data.className"
-              attr:href="$data.href"
-              attr:target="$data.target"
-              attr:rel="$data.rel"
-              attr:title="$data.title"
-              attr:data-status="$data.status"
-              attr:aria-current="$data.aria"
-              >{{$data.name}}</a
-            >
-          </mc-menu-item>
-        </o-else>
-      </div>
-    </o-fill>
-  </mc-menu>
+          </o-else>
+        </div>
+      </o-fill>
+    </mc-menu>
+  </div>
 
   <script>
-    import { locate, menuOf, hasPage, SPEC_URL } from '../site-map.js';
+    import { menuOf, hasPage, SPEC_URL } from '../site-map.js';
     import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
@@ -126,13 +214,20 @@
          外层还只报 "wrong module address"，极难反查（见 ofa-pitfalls 的 P40） */
       tag: 'doc-nav',
 
-      data: { rows: [] },
+      /* expanded 由 toggleMenu 切，并同步到宿主的 data-expanded（样式挂在那个属性上） */
+      data: { rows: [], expanded: false },
 
       ready() {
         /* 路由信号统一来自 docs/state/route.js（唯一挂 hashchange + router-change 的地方，
            见那里的注释与 ofa-pitfalls 的 P28）；这里只订阅 */
-        this._unwatch = onRouteChange(() => this.renderRows());
+        this._unwatch = onRouteChange(() => {
+          this.renderRows();
+          /* 窄屏：点条目跳走之后把抽屉收起来 —— 否则新页面的正文还压在 360px 高的菜单下面 */
+          this.expanded = false;
+          this.syncExpanded();
+        });
         this.renderRows();
+        this.syncExpanded();
       },
 
       // 组件随切页建毁，退订必须在 detached 里做，否则旧实例还会改新菜单
@@ -143,9 +238,24 @@
       proto: {
         /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
-          const current = routeState().path;
-          const entry = locate(current)?.entry ?? null;
+          /* ⚠️ 别再调一次 locate()：routeState() 里已经是它算好的结果 ——
+             entry 是当前页所在的分区，node 是当前页自己。 */
+          const { path: current, entry } = routeState();
           this.rows = entry ? rowsOf(entry, current) : [];
+        },
+
+        toggleMenu() {
+          this.expanded = !this.expanded;
+          this.syncExpanded();
+        },
+
+        /**
+         * 展开态同步到宿主属性（样式挂在 :host([data-expanded]) 上）。
+         * ⚠️ 元素 API 要走 this.ele —— proto 里的 this 是 ofa 实例（this.ele 之外没有 DOM）。
+         * 判断顺序：宿主属性是**唯一**真相，data 只是它的镜像。
+         */
+        syncExpanded() {
+          this.ele.toggleAttribute('data-expanded', !!this.expanded);
         },
       },
     });
