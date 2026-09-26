@@ -166,33 +166,32 @@
     :host([arrow]) .mc-arrow {
       display: block;
     }
-    /* 三角贴哪条边跟着 placement 走（与面板的贴合边相反） */
-    :host([placement='bottom']) .mc-arrow,
-    :host(:not([placement])) .mc-arrow,
-    :host([placement='bottom-start']) .mc-arrow,
-    :host([placement='bottom-end']) .mc-arrow {
+    /* 三角：贴哪条边 + 交叉轴位置。
+       交叉轴位置 = 面板的 50% + `--mc-popover-arrow-shift`（脚本算好 = 触发元素中心 − 面板中心）。
+
+       ⚠️ 别改成 `left: anchor(center)` 之类：实测 **anchor() 放在 calc() 里整条声明会被丢弃**
+       （箭头回落到「静态位置」= 面板左内边缘，位置全错），而面板是 top layer 里的定位元素，
+       绝对定位子元素的参照是它自己，`50%` 这种老老实实的写法反而最稳。 */
+    /* 三角贴哪条边：按**实际解析出来的边**（脚本打开后写 `data-side`）。
+       为什么不是按 placement 写死：空间不够时浏览器会把面板翻到另一侧，写死的话箭头会留在
+       错的那条边上（实测：面板翻到上方了、箭头还在顶边指着上面）。 */
+    :host([arrow]) .mc-panel[data-side='bottom'] .mc-arrow {
       top: calc(var(--mc-space-3) / -2);
-      left: calc(50% - var(--mc-space-3) / 2);
+      left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
     }
-    :host([placement='top']) .mc-arrow,
-    :host([placement='top-start']) .mc-arrow,
-    :host([placement='top-end']) .mc-arrow {
+    :host([arrow]) .mc-panel[data-side='top'] .mc-arrow {
       bottom: calc(var(--mc-space-3) / -2);
-      left: calc(50% - var(--mc-space-3) / 2);
+      left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
       rotate: 225deg;
     }
-    :host([placement='right']) .mc-arrow,
-    :host([placement='right-start']) .mc-arrow,
-    :host([placement='right-end']) .mc-arrow {
+    :host([arrow]) .mc-panel[data-side='right'] .mc-arrow {
       left: calc(var(--mc-space-3) / -2);
-      top: calc(50% - var(--mc-space-3) / 2);
+      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
       rotate: 135deg;
     }
-    :host([placement='left']) .mc-arrow,
-    :host([placement='left-start']) .mc-arrow,
-    :host([placement='left-end']) .mc-arrow {
+    :host([arrow]) .mc-panel[data-side='left'] .mc-arrow {
       right: calc(var(--mc-space-3) / -2);
-      top: calc(50% - var(--mc-space-3) / 2);
+      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
       rotate: -45deg;
     }
 
@@ -225,12 +224,30 @@
 
   <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
        ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
-  <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="auto"
+    on:toggle="onNativeToggle"
+    on:animationend="onPanelAnimationEnd"
+  >
     <div class="mc-arrow" part="arrow" aria-hidden="true"></div>
     <slot name="panel"></slot>
   </div>
 
   <script>
+    /** 面板贴的是「上下」还是「左右」——决定箭头要横向还是纵向对锚 */
+    const AXIS_OF = (placement) =>
+      (placement ?? 'bottom').startsWith('top') || (placement ?? 'bottom').startsWith('bottom')
+        ? 'y'
+        : 'x';
+
+    /** 量一次触发元素的锚点矩形（面板与箭头都以它为基准） */
+    const rectOf = (el) => {
+      const box = el?.getBoundingClientRect();
+      return box && (box.width || box.height) ? box : null;
+    };
+
     export default () => ({
       tag: 'mc-popover',
 
@@ -251,6 +268,11 @@
 
       ready() {
         const panel = this.ele.shadowRoot.querySelector('.mc-panel');
+        /* 视口变化会重新解析锚点定位，箭头偏移跟着重算 */
+        this._onViewport = () => {
+          if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
+        };
+        window.addEventListener('resize', this._onViewport, { passive: true });
         /* 老浏览器没有 popover API 时不炸：整块功能降级为「面板常显」由 CSS 兜，
            这里只标记不可用，交互一律不动 */
         this.popoverOk = typeof panel?.showPopover === 'function';
@@ -261,6 +283,8 @@
 
       detached() {
         clearTimeout(this._hoverTimer);
+        clearTimeout(this._arrowSettle);
+        window.removeEventListener('resize', this._onViewport);
       },
 
       watch: {
@@ -348,9 +372,74 @@
          * 原生 toggle：Esc / 点空白（light-dismiss）关掉时**只有原生状态变了**，
          * 这里把宿主属性拉回来，两个方向才都收敛。
          */
+        /**
+         * 把箭头的交叉轴位置对齐到**触发元素**的中心（而不是面板的中心）。
+         * 面板比触发元素宽时（如 bottom-start），对着面板居中会让箭头飘到很远的地方。
+         * 偏移用 CSS 变量交给样式算（`left: calc(50% + var(--mc-popover-arrow-shift) - 半宽)`）。
+         */
+        syncArrowShift() {
+          if (!this.ele.hasAttribute('arrow')) return;
+          const panel = this.panel;
+          const anchorEl = rectOf(this.ele.shadowRoot.querySelector('.mc-anchor'));
+          const box = rectOf(panel);
+          if (!anchorEl || !box) return;
+          const placement = this.ele.getAttribute('placement') ?? 'bottom';
+          const axis = AXIS_OF(placement);
+
+          /* 1) 实际落在哪一侧：期望值可能被浏览器翻转，所以按几何反推。
+                主轴方向拿"有没有交叠"判断最稳（间距是 8px，交叠就说明还在同一块区域）。 */
+          const overlaps =
+            axis === 'y'
+              ? box.bottom > anchorEl.top && box.top < anchorEl.bottom
+              : box.right > anchorEl.left && box.left < anchorEl.right;
+          let side;
+          if (axis === 'y') {
+            side = !overlaps
+              ? box.top >= anchorEl.bottom
+                ? 'bottom'
+                : 'top'
+              : box.top >= anchorEl.y
+                ? 'bottom'
+                : 'top';
+          } else {
+            side = !overlaps
+              ? box.left >= anchorEl.right
+                ? 'right'
+                : 'left'
+              : box.left >= anchorEl.x
+                ? 'right'
+                : 'left';
+          }
+          panel.dataset.side = side;
+
+          /* 2) 箭头在交叉轴上对齐触发元素的中心 */
+          if (axis === 'y') {
+            panel.style.setProperty(
+              '--mc-popover-arrow-shift',
+              `${anchorEl.x + anchorEl.width / 2 - (box.x + box.width / 2)}px`,
+            );
+          } else {
+            panel.style.setProperty(
+              '--mc-popover-arrow-shift-y',
+              `${anchorEl.y + anchorEl.height / 2 - (box.y + box.height / 2)}px`,
+            );
+          }
+        },
+
+        /** 进场动画结束 = 面板已经在最终位置，这时算箭头偏移才准 */
+        onPanelAnimationEnd() {
+          this.syncArrowShift();
+        },
+
         onNativeToggle(event) {
           const nowOpen = event.newState === 'open';
           if (nowOpen) {
+            /* 箭头对齐触发元素。量偏移**不能**在进场动画跑完之前做：动画会给面板一个
+               `translate: 0 -4px`，那时量到的面板坐标是中间值，居中变体会偏十几到三十像素。
+               所以先退一帧兜底（prefers-reduced-motion 时没有动画、也就没有 animationend），
+               再等动画真正结束重算一次。 */
+            requestAnimationFrame(() => this.syncArrowShift());
+            this._arrowSettle = setTimeout(() => this.syncArrowShift(), 260);
             if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
             this.ele.dispatchEvent(
               new CustomEvent('open', {

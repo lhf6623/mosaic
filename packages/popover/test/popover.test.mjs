@@ -344,30 +344,103 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ------------------------------------------------------------------ *
-   * 7. 箭头 + 令牌 + prefers-reduced-motion
+   * 7. 箭头：交叉轴对齐**触发元素**（不是面板），翻转到另一侧时贴对边
+   *    实测踩过两个坑：① 对着面板居中 → 面板比触发元素宽时箭头飘到中间；
+   *    ② 按 placement 写死边 → 面板被浏览器翻转后箭头留在错的那条边
    * ------------------------------------------------------------------ */
-  await makePopover({ arrow: '', placement: 'top-start' });
+  await makePopover({ arrow: '', placement: 'bottom-start' });
   await wait(200);
-  await show();
-  await wait(300);
+  const arrowMath = await page.evaluate(async (list) => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const pop = window.__pop;
+    const inst = $(pop);
+    const results = [];
+    for (const placement of list) {
+      pop.setAttribute('placement', placement);
+      inst.show();
+      await wait(360); // 等进场动画结束：动画期间面板坐标是中间值，量出来会偏
+      const panel = pop.shadowRoot.querySelector('.mc-panel');
+      const arrow = pop.shadowRoot.querySelector('.mc-arrow');
+      const trigger = pop.querySelector('button');
+      const pr = panel.getBoundingClientRect();
+      const ar = arrow.getBoundingClientRect();
+      const tr = trigger.getBoundingClientRect();
+      const axis = placement.startsWith('top') || placement.startsWith('bottom') ? 'y' : 'x';
+      const cross =
+        axis === 'y'
+          ? Math.abs((ar.x + ar.right) / 2 - (tr.x + tr.right) / 2)
+          : Math.abs((ar.y + ar.bottom) / 2 - (tr.y + tr.bottom) / 2);
+      const side = panel.dataset.side;
+      const onEdge =
+        side === 'bottom'
+          ? Math.abs(ar.top - pr.top) < 12
+          : side === 'top'
+            ? Math.abs(ar.bottom - pr.bottom) < 12
+            : side === 'left'
+              ? Math.abs(ar.right - pr.right) < 12
+              : Math.abs(ar.left - pr.left) < 12;
+      results.push({ placement, side, cross: +cross.toFixed(1), onEdge });
+      inst.hide();
+      await wait(120);
+    }
+    return results;
+  }, placements);
+
+  const arrowBad = arrowMath.filter((a) => a.cross > 1.5 || !a.onEdge);
+  check(
+    '箭头交叉轴对齐触发元素中心，且贴在面板朝触发元素的那条边上（12 个方向）',
+    arrowMath.length === 12 && arrowBad.length === 0,
+    arrowBad.length ? JSON.stringify(arrowBad) : JSON.stringify(arrowMath.slice(0, 3)),
+  );
+
+  /* 翻转：把触发元素顶到视口右下角，面板会翻到另一侧 —— 箭头必须**跟着换边** */
+  await page.evaluate(() => {
+    const pop = window.__pop;
+    pop.style.cssText = 'position: fixed; right: 4px; bottom: 4px;';
+  });
+  await page.evaluate(async () => {
+    const pop = window.__pop;
+    pop.setAttribute('placement', 'bottom-start');
+    $(pop).show();
+    await new Promise((r) => setTimeout(r, 420));
+  });
+  const flippedArrow = await page.evaluate(() => {
+    const pop = window.__pop;
+    const panel = pop.shadowRoot.querySelector('.mc-panel');
+    const arrow = pop.shadowRoot.querySelector('.mc-arrow');
+    const tr = pop.querySelector('button').getBoundingClientRect();
+    const pr = panel.getBoundingClientRect();
+    const ar = arrow.getBoundingClientRect();
+    const side = panel.dataset.side;
+    return {
+      side,
+      flipped: side === 'top', // 贴着底边时应当翻到上方
+      onFlippedEdge: side === 'top' ? Math.abs(ar.bottom - pr.bottom) < 12 : false,
+      insideViewport: pr.top >= 0 && pr.bottom <= innerHeight && pr.right <= innerWidth,
+    };
+  });
+  check(
+    '面板被翻转时箭头跟着换边（贴底边 → 翻到上方 → 箭头贴在面板下沿）',
+    flippedArrow.flipped === true && flippedArrow.onFlippedEdge === true && flippedArrow.insideViewport === true,
+    JSON.stringify(flippedArrow),
+  );
+
+  /* 令牌 + reduced-motion */
   const arrow = await page.evaluate(() => {
     const pop = window.__pop;
     const el = pop.shadowRoot.querySelector('.mc-arrow');
     const panel = pop.shadowRoot.querySelector('.mc-panel');
-    const a = el.getBoundingClientRect();
-    const p = panel.getBoundingClientRect();
     return {
       display: getComputedStyle(el).display,
-      size: Math.round(a.width),
-      atBottom: Math.abs(a.bottom - p.bottom) < 12,
+      size: Math.round(el.getBoundingClientRect().width),
       panelBg: getComputedStyle(panel).backgroundColor,
       radius: getComputedStyle(panel).borderTopLeftRadius,
       fontFamily: getComputedStyle(panel).fontFamily.split(',')[0],
     };
   });
   check(
-    'arrow 渲染出小三角并贴在「对面那条边」（top 方向 → 面板底边）',
-    arrow.display === 'block' && arrow.size >= 8 && arrow.size <= 20 && arrow.atBottom === true,
+    'arrow 渲染出小三角（8–20px）',
+    arrow.display === 'block' && arrow.size >= 8 && arrow.size <= 20,
     JSON.stringify(arrow),
   );
   check(
