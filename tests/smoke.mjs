@@ -9,7 +9,11 @@
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）
  *   node tests/smoke.mjs --jobs 6        临时加大并行度（可用 JOBS=6 代替）
  *   node tests/smoke.mjs --list          只列出会跑哪些套件（可与 --changed 组合预览），不启动浏览器
- *   node tests/smoke.mjs --record        跑全量并重录依赖地图 tests/suite-map.json（选了就忽略 --changed）
+ *   node tests/smoke.mjs --record        重录依赖地图 tests/suite-map.json：
+ *                                        不给过滤 = 跑全量整份重录；给了过滤（如 `popover --record`）
+ *                                        = 只跑并只重录这些套件、其余条目合并保留（新增组件时用这条，
+ *                                        收尾从一次全量降成一次单套件）。两种都忽略 --changed
+ *                                        例：`node tests/smoke.mjs popover --record`
  *   node tests/smoke.mjs --site          只跑站点套件
  *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（04 / 10）——
  *                                        位置参数同时按「套件文件 / 标签是否包含它」过滤；
@@ -81,20 +85,20 @@ const pickedSite = wanted.length
   : all.filter((s) => s.kind === 'site');
 
 let suites = [];
-if (record) {
-  // 录制要的是完整地图：忽略一切过滤，跑全量
-  suites = all;
-} else {
-  if (includeSite) suites.push(...(pickedSite.length ? pickedSite : all.filter((s) => s.kind === 'site')));
-  if (includeComponents) {
-    suites.push(
-      ...all.filter((s) => s.kind === 'component' && (!wanted.length || wanted.includes(s.slug))),
-    );
-  }
+if (includeSite) suites.push(...(pickedSite.length ? pickedSite : all.filter((s) => s.kind === 'site')));
+if (includeComponents) {
+  suites.push(
+    ...all.filter((s) => s.kind === 'component' && (!wanted.length || wanted.includes(s.slug))),
+  );
 }
 
-/* 选测中间层：改动 → 该跑哪些套件（依赖地图 + 兜底策略，见 tests/select.mjs） */
-if (changedRef !== undefined) {
+/* 录制：没给过滤就是整份重录（跑全量）；给了过滤就**只录这些套件、其余条目合并保留** ——
+   新增一个组件时，收尾从「一次全量」降到「一次单套件」。见下面写地图那段。 */
+const partialRecord = record && wanted.length > 0;
+
+/* 选测中间层：改动 → 该跑哪些套件（依赖地图 + 兜底策略，见 tests/select.mjs）
+   录制时不做选测过滤：录制要的是「这套件碰过哪些文件」，跳着跑会漏。 */
+if (changedRef !== undefined && !record) {
   const changed = changedFiles(changedRef);
   if (changed === null) {
     console.log(`\n\x1b[33m取不到 git 改动（ref=${changedRef}）→ 全量\x1b[0m`);
@@ -148,7 +152,7 @@ const started = Date.now();
 console.log(
   `\n\x1b[1mMosaic 冒烟测试\x1b[0m  ${BASE}  (${CHANNEL})  ` +
     `\x1b[2m${suites.length} 个套件 · 并行 ${Math.min(jobs, suites.length)}` +
-    `${record ? ' · 录制依赖地图' : ''}\x1b[0m`,
+    `${record ? (partialRecord ? ' · 只重录本轮的套件' : ' · 整份重录依赖地图') : ''}\x1b[0m`,
 );
 
 /* 预热：先在共享 context 的缓存里放上公共资产（ofa.js / mosaic.css / shadow-base / 布局页与文档模块）。
@@ -236,25 +240,34 @@ await harness.close();
 /* 录制依赖地图：套件 → 它实际请求过的仓库文件（+ 套件文件自己 + 静态 import 闭包）。
    选测中间层用它做精确命中，见 tests/select.mjs。 */
 if (record) {
-  const map = { version: 1, suites: {}, byFile: {} };
+  /* 部分录制：拿现有地图当底，只替换本轮跑过的套件条目 —— 别把没跑的套件的记录冲掉。
+     整份录制（没给过滤）时才新建。 */
+  const map = partialRecord ? (loadMap() ?? { version: 1, suites: {}, byFile: {} }) : { version: 1, suites: {}, byFile: {} };
+  map.version = 1;
+  map.suites ??= {};
   for (const o of outcomes) {
     /* 三部分：真正请求过的文件 + 套件文件自己 + **静态 import 闭包**
        （node-only 套件不请求 HTTP，它们 import 的 site-map.js / select.mjs 只能这样进地图） */
     map.suites[o.path] = [...new Set([...o.files, o.path, ...importClosure(o.path)])].sort();
   }
+  /* byFile 是 suites 的反查索引，**整份重建**（部分录制时旧条目也一起参与重建） */
+  const byFile = {};
   for (const [path, files] of Object.entries(map.suites)) {
-    for (const file of files) (map.byFile[file] ??= []).push(path);
+    for (const file of files) (byFile[file] ??= []).push(path);
   }
   map.byFile = Object.fromEntries(
-    Object.entries(map.byFile)
+    Object.entries(byFile)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([file, list]) => [file, list.sort()]),
   );
   saveMap(map);
   const failedSuites = outcomes.filter((o) => o.failed).length;
   console.log(
-    `\n\x1b[2m已写入 tests/suite-map.json：${outcomes.length} 个套件 / ` +
-      `${Object.keys(map.byFile).length} 个文件` +
+    `\n\x1b[2m已写入 tests/suite-map.json：` +
+      (partialRecord
+        ? `本轮更新 ${outcomes.length} 个套件（其余 ${Object.keys(map.suites).length - outcomes.length} 个沿用旧记录）`
+        : `${outcomes.length} 个套件（整份重录）`) +
+      ` / 共 ${Object.keys(map.byFile).length} 个文件` +
       (failedSuites ? `（⚠️ 本轮有 ${failedSuites} 个套件失败，地图可能不全，补跑后再录一次）` : '') +
       '\x1b[0m',
   );
