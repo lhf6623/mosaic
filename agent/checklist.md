@@ -110,6 +110,8 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
 [ ] proto 方法名避开了 $.fn 上的通用名（get/set/text/html/data/watch/on/emit/class/style/remove/refresh/sync）
 [ ] attrs 的键也不撞保留名（已知 wrap 会让 createElement 直接坏，见 P31）
 [ ] ready() / 构造期没有往宿主元素写属性（style 也算），要写就写 shadow root 内部元素（P31）
+[ ] P41 组件文件里没有 body / svg / head 的结束标签排在模块 <script> 之前
+      （内联 svg 最自然就会踩：Live Server 往那儿注入，抢走 ofa 的第一个 script —— 07 / 05 号套件守着）
 
 质量
 [ ] 键盘可完成全部操作，焦点环可见且用的是 ring 令牌不是 currentColor（P16）

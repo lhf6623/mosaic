@@ -1,4 +1,4 @@
-# ofa.js 踩坑清单：40 条静默失效的坑
+# ofa.js 踩坑清单：41 条静默失效的坑
 
 全部坑都是**静默失效**：表象是「绑定不生效 / 点了没反应」，不报错、不抛异常，反查成本极高。
 写组件**之前**扫一遍对应主题，比事后二分快得多。
@@ -9,7 +9,7 @@
 | 二、模板语法                             | [P8](./02-template.md) [P9](./02-template.md) [P10](./02-template.md) [P11](./02-template.md) [P12](./02-template.md) [P30](./02-template.md)                                                              | [`02-template.md`](./02-template.md)         |
 | 三、样式作用域                           | [P13](./03-style-scope.md) [P14](./03-style-scope.md) [P15](./03-style-scope.md) [P16](./03-style-scope.md) [P33](./03-style-scope.md)                                                                     | [`03-style-scope.md`](./03-style-scope.md)   |
 | 四、DOM 与事件                           | [P17](./04-dom-events.md) [P18](./04-dom-events.md) [P19](./04-dom-events.md) [P20](./04-dom-events.md) [P21](./04-dom-events.md) [P22](./04-dom-events.md) [P34](./04-dom-events.md)                      | [`04-dom-events.md`](./04-dom-events.md)     |
-| 五、页面模块与静态服务器                 | [P26](./05-pages.md) [P27](./05-pages.md) [P40](./05-pages.md)                                                                                                                                             | [`05-pages.md`](./05-pages.md)               |
+| 五、页面模块与静态服务器                 | [P26](./05-pages.md) [P27](./05-pages.md) [P40](./05-pages.md) [P41](./05-pages.md)                                                                                                                        | [`05-pages.md`](./05-pages.md)               |
 | 六、平台与环境                           | [P23](./06-platform.md) [P24](./06-platform.md) [P25](./06-platform.md)                                                                                                                                    | [`06-platform.md`](./06-platform.md)         |
 | 七、布局页（嵌套页面/路由）              | [P28](./07-layout.md) [P29](./07-layout.md)                                                                                                                                                                | [`07-layout.md`](./07-layout.md)             |
 | 八、状态管理（`$.stanz` / `o-provider`） | [P35](./08-state.md) [P36](./08-state.md) [P37](./08-state.md)                                                                                                                                             | [`08-state.md`](./08-state.md)               |

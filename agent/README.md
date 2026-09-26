@@ -11,7 +11,7 @@
 | 写组件的 `<style>` / 事件 / 插槽与定制点             | [`authoring-style.md`](./authoring-style.md)                     |
 | 提交前自检、尺寸与无障碍基线                         | [`checklist.md`](./checklist.md)                                 |
 | 查某个组件的接口（属性 / 事件 / 插槽与 part / 令牌） | [组件 API 规范](api/README.md) §`mc-xxx`                         |
-| 写组件前扫一遍「静默失效」的坑                       | [踩坑清单](pitfalls/README.md)（40 条，按主题分节）              |
+| 写组件前扫一遍「静默失效」的坑                       | [踩坑清单](pitfalls/README.md)（41 条，按主题分节）              |
 | 改配色 / 加令牌 / 换肤                               | [`design-tokens.md`](./design-tokens.md)                         |
 | 选间距 / 排版 / 动效 / 层级 / 文案                   | [`design-spec.md`](./design-spec.md)                             |
 | 项目定位、关键决策、里程碑、风险                     | [`plan/`](./plan/README.md)（定位 / 决策 / 目录与构建 / 里程碑） |
@@ -42,7 +42,7 @@ agent/
 ├── design-spec.md       间距 / 排版 / 动效 / 层级
 ├── design-tokens.md     令牌体系 / 换色 / 换肤
 ├── api/                 组件 API 规范（README = 共用约定 + 索引，逐组件一个文件）
-├── pitfalls/            ofa.js 踩坑清单（README = 40 条索引，按主题分文件）
+├── pitfalls/            ofa.js 踩坑清单（README = 41 条索引，按主题分文件）
 ├── plan/                规划总纲（定位 / 决策 / 目录与构建 / 里程碑）
 ├── docs-refactor.md     已完成的重构记录（考古用，默认不读）
 └── research/            外部资料抓取原文（默认不读）
