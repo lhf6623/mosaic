@@ -379,16 +379,28 @@ export default async function run({ page, visit, check }) {
             : side === 'left'
               ? Math.abs(ar.right - pr.right) < 12
               : Math.abs(ar.left - pr.left) < 12;
-      results.push({ placement, side, cross: +cross.toFixed(1), onEdge });
+      /* ⚠️ 光量几何不够：UA 给 `[popover]` 的默认样式带 `overflow: auto`，会把伸出面板的
+         三角**裁掉** —— 那时 getBoundingClientRect 一切正常，肉眼却看不到箭头（实测踩过，
+         右侧那个方向完全看不见）。所以这里同时检测「贴边那一侧确实超出面板边缘」。 */
+      const protrudes =
+        side === 'bottom'
+          ? pr.top - ar.top
+          : side === 'top'
+            ? ar.bottom - pr.bottom
+            : side === 'left'
+              ? ar.right - pr.right
+              : pr.left - ar.left;
+      results.push({ placement, side, cross: +cross.toFixed(1), onEdge, protrudes: +protrudes.toFixed(1) });
       inst.hide();
       await wait(120);
     }
     return results;
   }, placements);
 
-  const arrowBad = arrowMath.filter((a) => a.cross > 1.5 || !a.onEdge);
+  /* protrudes > 2 才算真的露在外面（三角半宽 6px，能被裁掉就说明 overflow 没放开） */
+  const arrowBad = arrowMath.filter((a) => a.cross > 1.5 || !a.onEdge || a.protrudes < 2);
   check(
-    '箭头交叉轴对齐触发元素中心，且贴在面板朝触发元素的那条边上（12 个方向）',
+    '箭头交叉轴对齐触发元素中心、贴在正确的边上、且真的露在面板外（12 个方向，防 overflow 裁切）',
     arrowMath.length === 12 && arrowBad.length === 0,
     arrowBad.length ? JSON.stringify(arrowBad) : JSON.stringify(arrowMath.slice(0, 3)),
   );

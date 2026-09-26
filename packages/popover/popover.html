@@ -60,6 +60,10 @@
 
       box-sizing: border-box;
       min-width: var(--mc-popover-panel-min-width);
+      /* ⚠️ 必须显式 overflow: visible：UA 给 `[popover]` 的默认样式里带 `overflow: auto`，
+         它会把**伸出面板的三角裁掉** —— 实测右侧那种三角完全看不见（而贴着上/下沿的
+         那两个因为面板外面是空的，看起来又是好的，所以特别难发现）。 */
+      overflow: visible;
       /* 贴边时别把面板压出视口：宽度上限跟着视口走，长内容自己折行 */
       max-width: min(24rem, calc(100vw - var(--mc-space-8)));
       padding: var(--mc-popover-panel-pad);
