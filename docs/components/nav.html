@@ -25,9 +25,30 @@
 
   <mc-menu>
     <o-fill :value="rows" fill-key="key">
-      <o-if :value="$data.pages">
-        <mc-menu-item group>{{$data.name}}</mc-menu-item>
-        <o-fill :value="$data.pages" fill-key="key">
+      <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许**一个**根子元素，
+           而这一行要渲染「分组标题 + 组内条目」两块（<o-if> + <o-else>）。
+           ofa 发现多根时会自己包一层同样的 div 并打一条 console 警告（temp_multi_child）——
+           包裹本身无害（display:contents 不生成盒子，布局与不包时逐像素相同），但会刷屏。
+           显式写出这层，语义一致、控制台干净；tests/site/11 的「写法守卫」盯着这条不变量。 -->
+      <div style="display: contents">
+        <o-if :value="$data.pages">
+          <mc-menu-item group>{{$data.name}}</mc-menu-item>
+          <o-fill :value="$data.pages" fill-key="key">
+            <mc-menu-item>
+              <a
+                attr:class="$data.className"
+                attr:href="$data.href"
+                attr:target="$data.target"
+                attr:rel="$data.rel"
+                attr:title="$data.title"
+                attr:data-status="$data.status"
+                attr:aria-current="$data.aria"
+                >{{$data.name}}</a
+              >
+            </mc-menu-item>
+          </o-fill>
+        </o-if>
+        <o-else>
           <mc-menu-item>
             <a
               attr:class="$data.className"
@@ -40,22 +61,8 @@
               >{{$data.name}}</a
             >
           </mc-menu-item>
-        </o-fill>
-      </o-if>
-      <o-else>
-        <mc-menu-item>
-          <a
-            attr:class="$data.className"
-            attr:href="$data.href"
-            attr:target="$data.target"
-            attr:rel="$data.rel"
-            attr:title="$data.title"
-            attr:data-status="$data.status"
-            attr:aria-current="$data.aria"
-            >{{$data.name}}</a
-          >
-        </mc-menu-item>
-      </o-else>
+        </o-else>
+      </div>
     </o-fill>
   </mc-menu>
 

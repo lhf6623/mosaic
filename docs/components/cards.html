@@ -135,30 +135,35 @@
       </o-if>
       <div class="doc-comp-grid">
         <o-fill :value="$data.cards" fill-key="key">
-          <o-if :value="$data.href">
-            <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
-              <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
-              <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
-                >{{$data.badge}}</span
-              >
-              <span class="doc-comp-card-tag">{{$data.tagName}}</span>
-              <p class="doc-comp-card-desc">{{$data.summary}}</p>
-              <a class="doc-comp-card-action" attr:href="$data.href"
-                >查看文档<span aria-hidden="true"> →</span></a
-              >
-            </mc-card>
-          </o-if>
-          <o-else>
-            <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
-              <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
-              <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
-                >{{$data.badge}}</span
-              >
-              <span class="doc-comp-card-tag">{{$data.tagName}}</span>
-              <p class="doc-comp-card-desc">{{$data.summary}}</p>
-              <span class="doc-comp-card-planned">待建</span>
-            </mc-card>
-          </o-else>
+          <!-- ⚠️ 与左栏菜单同一个理由：o-fill 的模板只允许一个根子元素，而这一行要按
+               「已实现 / 待建」渲染两张不同的卡（<o-if> + <o-else>）。显式写这层 display:contents
+               包裹，免得 ofa 自己包一层再打 temp_multi_child 警告（布局与自动包裹逐像素相同）。 -->
+          <div style="display: contents">
+            <o-if :value="$data.href">
+              <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
+                <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
+                <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
+                  >{{$data.badge}}</span
+                >
+                <span class="doc-comp-card-tag">{{$data.tagName}}</span>
+                <p class="doc-comp-card-desc">{{$data.summary}}</p>
+                <a class="doc-comp-card-action" attr:href="$data.href"
+                  >查看文档<span aria-hidden="true"> →</span></a
+                >
+              </mc-card>
+            </o-if>
+            <o-else>
+              <mc-card divider="none" class="doc-comp-card" attr:data-status="$data.status">
+                <span slot="header" class="doc-comp-card-name">{{$data.label}}</span>
+                <span slot="suffix" class="doc-comp-badge" attr:data-status="$data.status"
+                  >{{$data.badge}}</span
+                >
+                <span class="doc-comp-card-tag">{{$data.tagName}}</span>
+                <p class="doc-comp-card-desc">{{$data.summary}}</p>
+                <span class="doc-comp-card-planned">待建</span>
+              </mc-card>
+            </o-else>
+          </div>
         </o-fill>
       </div>
     </section>
