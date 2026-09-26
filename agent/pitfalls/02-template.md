@@ -1,4 +1,4 @@
-# 二、模板语法（P8 / P9 / P10 / P11 / P12 / P30）
+# 二、模板语法（P8 / P9 / P10 / P11 / P12 / P30 / P42）
 
 > 索引见 [`README.md`](./README.md)。
 
@@ -80,5 +80,41 @@ Mosaic 首页的马赛克图案就是这么落地的：方块从「SVG `<rect>` 
 > 顺带一条：`:style="someObject"`（不带属性名）**不被支持**，而且同样是**静默中断整个
 > render** —— 模板 HTML 已经插进去了，但绑定全不生效、`ready()` 不执行，看起来像
 > 「数据没绑定上」。要绑多个样式就逐个写 `:style.left` / `:style.top`。
+
+### P42 · `o-fill` / `x-fill` 的模板只能有**一个**根子元素 —— 多根会被包一层 div 并打警告
+
+**现象**：控制台一条 `console.warn`（不是异常、不影响渲染）：
+
+```
+The template element can only contain one child element. If multiple child elements appear,
+the child elements will be repackaged in a <div> element
+```
+
+它**每次渲染都打**（只有具名 `<template>` 那条路径才有去重），于是总览页 6 条、组件页 1 条地
+刷屏；人肉看 DOM 还会发现里面多了一层没人写过、带 `style="display: contents"` 的 `<div>`。
+
+**原因**：ofa 把 `o-fill` / `x-fill` 的内容当**单元素模板**处理 —— 根元素多于一个（或根本没有
+元素、只有裸文本）时，它就把整段包进那层 div。具名 `<template name="…">` 还会多打一条
+`temp_wrap_child`，并给包裹挂上 `wrapper-<name>` 属性。
+
+**影响**：包裹本身**无害** —— `display: contents` 不生成盒子，布局与不包时逐像素相同（实测：
+左栏修复前后截图 sha256 一致）。真正的代价是两条：
+
+1. 每次渲染一条警告刷屏，容易让人以为站点坏了（**这才是主要问题**）；
+2. 依赖「直接子元素 / 相邻兄弟」的选择器会静默失配 —— DOM 里毕竟多了一层，`::slotted(a + a)`
+   这类能认出「平铺兄弟」的规则就认不出来了（机理同 [P38](./09-control-flow.md)）。
+
+最常踩的写法是**成对分支**：`<o-if>…</o-if><o-else>…</o-else>` 正好两个根。
+
+**写法**（二选一）：
+
+- 让 fill 模板只有一个根子元素：把成对分支自己包进一层 `<div style="display: contents">`，
+  显式表达「这两块是同一行的两块」—— 见 `docs/components/nav.html`（分组标题 + 组内条目）
+  与 `docs/components/cards.html`（已实现 / 待建两张卡）；
+- 或者把数据**摊平**（一行一个元素），模板里不再需要 `o-if` / `o-else`：左栏那种
+  「分组标题 + 组内条目」也可以摊成两类行，反而更贴近「平铺的兄弟节点」。
+
+**守卫**：`tests/site/11-no-class-components.mjs`（站点 · 写法守卫，node-only）静态扫
+`docs/` + `packages/` 的每个 `.html` —— 任何 fill 模板根元素 > 1（或模板是裸文本）直接红。
 
 ---
