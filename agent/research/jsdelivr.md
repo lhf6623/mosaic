@@ -1,6 +1,6 @@
 # 通过 jsDelivr 分发「无构建」Web Components UI 框架：工程与分发实践
 
-> ⚠️ **本文结论已被推翻，仅作当时的调研记录保留**：`agent/PLAN.md` D1 的实测表明，`/gh/` 下的
+> ⚠️ **本文结论已被推翻，仅作当时的调研记录保留**：`agent/plan/decisions.md` D1 的实测表明，`/gh/` 下的
 > `.html` 正常以 200 服务；Mosaic 最终走 `/gh/` 分发，且 `private: true` 永不 publish。
 > 下面「发布到 npm，用 `/npm/`」及其相关推论请勿再照做。
 

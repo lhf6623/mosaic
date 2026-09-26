@@ -1,7 +1,7 @@
 import { defineConfig, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss';
 
 /*
- * Mosaic — UnoCSS 配置。三条硬约束（改动前先读 agent/PLAN.md 的 D3 / D4）：用 presetWind3 而非
+ * Mosaic — UnoCSS 配置。三条硬约束（改动前先读 agent/plan/decisions.md 的 D3 / D4）：用 presetWind3 而非
  * wind4（wind4 的 theme 色不支持 <alpha-value>，会产出非法 CSS 且静默失效，还自带整页 reset）、
  * 必须开 outputToCssLayers、颜色只走语义令牌。本文件纯声明式，输入校验收在 tools/build-css.mjs。
  */
@@ -234,7 +234,7 @@ export default defineConfig({
       // 'on-demand' 只输出用到的 --un-* 变量；wind3 preflight 本来就不含元素级 reset，对组件库安全
       preflight: 'on-demand',
       // `dark:` 编译成 @media (prefers-color-scheme: dark)：在 shadow DOM 里会生效，但只跟随系统
-      // 偏好、跟不了 <html data-theme>（详见 agent/PLAN.md 的 D4）。显式写成 media 让误用可预期。
+      // 偏好、跟不了 <html data-theme>（详见 agent/plan/decisions.md 的 D4）。显式写成 media 让误用可预期。
       dark: 'media',
     }),
   ],

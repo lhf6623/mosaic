@@ -9,7 +9,7 @@
  * 由此有个降级性质：本文件失效时组件的颜色 / 尺寸照常，只有排布退化。
  *
  * 打 attachShadow 补丁的时机是关键：必须在任何组件实例化之前装好（本模块顶层即执行），
- * 所以文档里要把它放在 ofa.js **之后**。机制与取舍见 agent/PLAN.md 的 D3。
+ * 所以文档里要把它放在 ofa.js **之后**。机制与取舍见 agent/plan/decisions.md 的 D3。
  */
 
 const HERE = new URL('.', import.meta.url);

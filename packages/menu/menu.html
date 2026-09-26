@@ -5,7 +5,7 @@
 
   **交互元素由使用者写在插槽里**（原生 <a> / <button>），组件既不造链接也不碰使用者的 DOM：
   站内链接要靠 ofa 的 olink 指令补部署前缀，而 olink 只作用于页面模板（light DOM）里的元素，
-  组件在 shadow root 里造出来的 <a> 用不上（见 docs/routes.js 与 ofa-pitfalls.md 的 P28）。
+  组件在 shadow root 里造出来的 <a> 用不上（见 docs/routes.js 与 pitfalls/README.md 的 P28）。
 
   尺寸/颜色走 CSS 变量继承：子项在另一个 shadow root 里，容器选择器够不到它，
   只能像 mc-collapse 那样在 :host 上开一条通道，子项用 var() 带兜底值消费。

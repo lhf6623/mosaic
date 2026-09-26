@@ -189,7 +189,7 @@ check(
   '未实现的组件不给死链（指向规范文档）',
   await page.evaluate(() => {
     const a = window.__inside('doc-nav', 'a.doc-nav-comp[data-status="planned"]')[0];
-    return a?.href.includes('component-spec.md') && a?.target === '_blank';
+    return a?.href.includes('api/README.md') && a?.target === '_blank';
   }),
 );
 }

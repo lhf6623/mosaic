@@ -21,7 +21,7 @@
 | `$.stanz` 的返回形状                      | **数组内核代理**：`Array.isArray(store) === true`、`[object Array]`（对象 store 也是）【实测】  |
 | Mosaic 现在需要它吗                       | 文档站**已经在用**（`docs/state/route.js`，全站唯一的导航信号源）；组件库本身暂时不需要【实测】 |
 
-与此对应的坑已收进 [`../ofa-pitfalls.md`](../ofa-pitfalls.md) 的 **P35 / P36 / P37**。
+与此对应的坑已收进 [踩坑清单](../pitfalls/README.md) 的 **P35 / P36 / P37**。
 
 ---
 
@@ -74,7 +74,7 @@ $('o-root-provider').customTheme = 'light'; // ✅ 改值只能这样（见 P35�
 | 从外部调 proto 方法                                              | `$('#host').bump()` 可用；`document.querySelector('#host').bump` 是 `undefined` | ⚠️ 写法 |
 
 > 「属性写上了但 consumer 不动」是最值得记的一条：看 DOM 一切正常，只有消费方的数据不刷新，
-> 反查成本高 —— 正是 [`../ofa-pitfalls.md`](../ofa-pitfalls.md) 收的那类。
+> 反查成本高 —— 正是 [踩坑清单](../pitfalls/README.md) 收的那类。
 
 ---
 
@@ -153,7 +153,7 @@ $.getRootProvider('ctx').customColor = 'blue'; // ✅
 | 3 | 模板能表达布尔属性与自定义属性                            | ⚠️ 布尔 ✅（`attr:x="c ? '' : null"`：`''` 写、`null` 不写）；**`:style.<自定义属性>` ❌ 静默失效**；`:style.<标准属性>` 只认 **kebab-case**（`padding-left` ✅ / `paddingLeft` ❌） | 自定义属性要改用「`attr:data-*` 钩子 + 组件内 `<style>` 规则」发（实测可行） |
 | 4 | proto 里 `this` 是 ofa 实例，元素 API 要走 `this.ele`     | ✅ `typeof this.getRootNode === 'undefined'`，`this.ele.getRootNode` 是函数    | 迁移配方里所有元素 API 都要显式走 `this.ele`（`doc-toc` 的 `contentRoot()` 是第一个受害者） |
 
-**顺带验出来的三个坑**（都已收进 `ofa-pitfalls.md`）：
+**顺带验出来的三个坑**（都已收进 踩坑清单）：
 
 - **P37 再验**：`data` 初值给 `null` / `{}` 而模板读嵌套路径 → 首帧
   `Error evaluating text expression`（页面照常、只进控制台）。store 引用必须先给同形状初值。

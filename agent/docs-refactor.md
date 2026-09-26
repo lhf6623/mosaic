@@ -4,7 +4,7 @@
 > **范围**：只动文档站（`docs/` + 两个引用占位的文档页）；`packages/` 组件的对外 API 不变。
 > **状态**：**阶段 0 / 1 / 2 / 3 / 4 都已落地**（见 §5）——`docs/` 里没有手写 class 组件，
 > `docs/dom.js` 已删除。剩下可选的只有 `theme` store（§9-1）。实测依据见 [`research/state.md`](./research/state.md)，
-> 相关坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md) 的 P35–P38。
+> 相关坑见 [踩坑清单](pitfalls/README.md) 的 P35–P38。
 > 标记：**【实测】** = 本机跑过；**【推论】** = 还没验（阶段 0 已把四条都验了，结论在 §6）。
 
 ---
@@ -26,7 +26,7 @@
    内部结构样式要搬进组件的 `<style>`（`docs/content.css` 的指路注释，见 :213-222 / :264-269）。
 8. **另一条实测出来的硬约束**：`o-fill` / `o-if` 的内容在它们自己的 light DOM 里，
    容器的 `::slotted()` 够不到 —— 组件内部用控制流渲染条目时，别指望容器画分隔符 / 位置样式
-   （阶段 1 的 `doc-crumb` 就因此丢过分隔符，见 [P38](./ofa-pitfalls.md)）。
+   （阶段 1 的 `doc-crumb` 就因此丢过分隔符，见 [P38](pitfalls/09-control-flow.md)）。
 
 ---
 
@@ -244,7 +244,7 @@ export const relativeLuminance  // 纯函数，可被 Node 测试（可选）
 **踩到一条新坑**：`doc-crumb` 一开始用 `o-fill` 逐级铺 `mc-breadcrumb-item`，而 `mc-breadcrumb`
 的分隔符走 `::slotted()` —— 条目被 `o-fill` 包了一层就匹配不到，分隔符**静默消失**
 （`o-fill` 是 `display: contents`，布局看着完全正常）。改成「两级直接写开 + 属性钩子控制整块显隐」
-才修好，并收成 [P38](./ofa-pitfalls.md) + 一条断言（`docCrumb.before` 必须是 `['none', '"/"']`）。
+才修好，并收成 [P38](pitfalls/09-control-flow.md) + 一条断言（`docCrumb.before` 必须是 `['none', '"/"']`）。
 
 ### 4.2 切片二：`doc-toc.js` → `components/toc.html`（半混合，风险最高）
 
@@ -357,7 +357,7 @@ mc-menu-item[data-level='deep'] {
 （判定带 240px，否则点短小节时下一节会把高亮抢走）。
 
 **阶段 2 的结果**：`--site 04 09` 17/17。两个坑值得记：
-① **[P39](./ofa-pitfalls.md)**：`data: { entries: … }` 是保留键，整个组件不渲染，
+① **[P39](pitfalls/01-props.md)**：`data: { entries: … }` 是保留键，整个组件不渲染，
 报错只有 `Failed to render the tag 'doc-toc'` —— 我先怀疑模板绕了三轮，最后靠二分 `data` 的键收敛；
 ② 模板渲染是异步的，高亮必须在条目出现后再切 —— `$.nextTick()` 不够（首次 rebuild 时
 `mc-menu` 还没升级完），最终给**子页面**的 shadow root（`contentRoot()` 的返回值）挂 `childList`
@@ -375,8 +375,8 @@ mc-menu-item[data-level='deep'] {
 | 4   | proto 里 `this` 是 ofa 实例，元素 API 必须走 `this.ele` | ✅ 成立（`this.getRootNode` 是 `undefined`）→ 配方里所有元素 API 显式走 `this.ele`                  |
 
 > 完整记录（含复现步骤）见 [`research/state.md` §6](./research/state.md)。
-> 另外顺带验出 [P37](./ofa-pitfalls.md)（初值形状 → 首帧报错）与
-> [P38](./ofa-pitfalls.md)（控制流元素挡住 `::slotted()`，阶段 1 真的踩了）。
+> 另外顺带验出 [P37](pitfalls/08-state.md)（初值形状 → 首帧报错）与
+> [P38](pitfalls/09-control-flow.md)（控制流元素挡住 `::slotted()`，阶段 1 真的踩了）。
 
 ---
 
@@ -406,7 +406,7 @@ mc-menu-item[data-level='deep'] {
 - [ ] `tests/site/10-nav-data.mjs` 仍能**不启浏览器**跑通（改 `site-map.js` 时必查）。
 - [x] 每阶段绑定套件绿；收尾全量一次绿（阶段 1–4 全部落地，收尾全量已绿）。
 - [x] **`docs/dom.js` 已删除**：三个使用者分别改成 模板（layout 顶栏）/ 数据（doc-toc 高亮）/ 组件（色板与卡片）。
-- [x] 写法约定写进 [`components.md` §三](./components.md)：ofa 的 MVVM 面（M/V/VM 对照 + 与经典 MVVM 的四处差别）+ 「手写 class 要自己重做哪些东西」的逐条对照 + 边界（页面级行为写普通模块）。
+- [x] 写法约定写进 [`authoring.md` §四](./authoring.md)：ofa 的 MVVM 面（M/V/VM 对照 + 与经典 MVVM 的四处差别）+ 「手写 class 要自己重做哪些东西」的逐条对照 + 边界（页面级行为写普通模块）。
 - [x] `agent/` 里同步：本文件、`research/state.md` 的【实测】结论、README 索引。
 
 ---

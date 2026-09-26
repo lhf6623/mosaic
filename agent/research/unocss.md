@@ -1,7 +1,7 @@
 # UnoCSS 用于「无构建 UI 组件库（ofa.js + jsDelivr CDN）」的技术结论
 
 > ⚠️ 本文是 **M0 时期的调研记录**，部分「推荐落地方式」已被后续实现取代 ——
-> 最终落地见 `packages/boot/mosaic.js` / `packages/boot/shadow-base.css` 与 `agent/PLAN.md` 的 D3/D5。
+> 最终落地见 `packages/boot/mosaic.js` / `packages/boot/shadow-base.css` 与 `agent/plan/decisions.md` 的 D3/D5。
 
 > 验证环境：`unocss@66.10.5`（CLI 由 `@unocss/cli` 提供）、Node v24.20.0、pnpm/npm。
 > 文中所有体积数字与 CSS 产物均为**本机实跑结果**（`@unocss/core` `createGenerator()` + 真实 CLI），

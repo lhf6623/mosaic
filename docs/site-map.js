@@ -320,7 +320,7 @@ export const hasPage = (node) => typeof node.path === 'string';
 export const slugOf = (node) => node.path.split('/')[1];
 
 /** 未实现的组件不给死链，指到规范里的接口定义（外链，不走 hash 路由） */
-export const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/agent/component-spec.md';
+export const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/agent/api/README.md';
 
 /** 顶栏一级入口。顶层没有祖先，所以这里的 hidden 不需要继承 */
 export const TOPBAR = NAV.filter((entry) => entry.hidden !== true);

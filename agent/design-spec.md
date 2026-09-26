@@ -216,7 +216,7 @@ M3 的做法，很值得抄：hover / active 的叠加层用**当前文字色**�
 
 1. **焦点环必须可见**，不允许 `outline: none` 而不给替代方案。
 2. **不要用 `currentColor`** —— filled 按钮的文字是白的，白圈画在浅色页面上完全看不见。
-   用 `--mc-color-ring`（[P16](./ofa-pitfalls.md)）。
+   用 `--mc-color-ring`（[P16](pitfalls/03-style-scope.md)）。
 3. `offset: 2px`，让环与元素之间有缝隙，形状更清楚。
 4. 用 `:focus-visible` 而不是 `:focus` —— 鼠标点击不该出现焦点环。
 
@@ -283,7 +283,7 @@ M3 的做法，很值得抄：hover / active 的叠加层用**当前文字色**�
    才用上面这张表。
 3. ⚠️ **`z-index` 管不了 shadow 边界。** 宿主页面上的 `transform` / `filter` / `contain`
    会创建新的层叠上下文，把 shadow root 里的 `position: fixed` 困在里面。
-   M3 的浮层组件开工前必须先验证这一点（见 [PLAN.md 里程碑 M3](./PLAN.md#m3--浮层与布局)）。
+   M3 的浮层组件开工前必须先验证这一点（见 [里程碑 M3](./plan/roadmap.md#m3--浮层与布局)）。
 
 ---
 

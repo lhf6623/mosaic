@@ -141,7 +141,7 @@ export default async function run({ check }) {
     JSON.stringify({ full: shared.full, n: shared.selected.length }),
   );
 
-  const docs = pick(['README.md', 'agent/PLAN.md', '.prettierignore']);
+  const docs = pick(['README.md', 'agent/plan/decisions.md', '.prettierignore']);
   check(
     '纯文档 / 仓库配置 → 不跑浏览器套件（合成清单里没有「总是跑」的静态守卫，所以是全空）',
     docs.notes.every((n) => n.suites !== 'all') && docs.selected.length === 0,

@@ -11,7 +11,7 @@
   为什么不做进组件：可点区域要处理边框那一圈死区、伪元素的 cursor（WebKit 里 a 的
   cursor 是 auto，落在伪元素上会变箭头）、悬停位移带来的抖动（命中判定走变换后的盒子）——
   这些都是**行为**不是面；而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，
-  组件替它挑必然出错。职责边界见 agent/component-spec.md 的 mc-card 一节。
+  组件替它挑必然出错。职责边界见 agent/api/README.md 的 mc-card 一节。
 
   头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线，
   `divider="none"` 关掉（保留 1px 透明边框，避免关线时整张卡高度抖一下）。

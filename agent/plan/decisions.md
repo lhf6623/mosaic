@@ -1,31 +1,12 @@
-# Mosaic 规划
+# 关键决策（D1–D7）
 
-> 基于 [ofa.js](https://ofajs.com) 的 **免安装、免构建** Web Components UI 框架。
-> CSS 用 UnoCSS 做原子化，配色与尺寸走三层 CSS 变量令牌，通过 jsDelivr `/gh/` 分发。
+每条都记了**为什么这么选**，以及被否决的备选。改这些决定之前先读完整条。
 
-本文是总纲。配色见 [`design-tokens.md`](./design-tokens.md)，组件写法见 [`components.md`](./components.md)，
-ofa.js 的坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md)（**写组件前必读**），实测调研见 [`research/`](./research/)。
+> 相关：[`README.md`](./README.md)（定位与约束）、[`roadmap.md`](./roadmap.md)（里程碑）。
 
 ---
 
-## 一、定位与约束
-
-**一句话**：在 HTML 里加一个 `<link>` 和一个 `<script type="module">`，就能用 `<mc-button>`。
-不需要 npm，不需要打包器，不需要脚手架。
-
-| #   | 约束                                                  | 为什么                                                                                                                                                          |
-| --- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | 使用者侧零工具链                                      | 立项前提。任何"请先安装 X"的方案直接否决                                                                                                                        |
-| C2  | 组件**不过打包器**：`packages/**.html` 源 = 产物      | ofa.js 的组件形态就是一个可独立寻址的 `.html`，被运行时 `<l-m src>` 拉取。它不应该变成 JS bundle                                                                |
-| C3  | 组件不依赖宿主页面的任何 CSS                          | 宿主可能没有 reset，也可能有很激进的 reset                                                                                                                      |
-| C4  | 定制点只用原生 CSS：`style="..."` + 令牌 + `::part()` | 与 C1 配套：配置对象需要写 JS，CSS 不需要                                                                                                                       |
-| C5  | 只有一个运行时依赖 ofa.js，且 pin 在验证过的版本      | 见 [D1](#d1-分发走-gh仓库即产物) 与 [P23](./ofa-pitfalls.md)。唯一例外是代码高亮：**可选**依赖，懒加载、失败即降级（见 [D7](#d7-代码高亮可选依赖--失败即降级)） |
-
----
-
-## 二、关键决策
-
-### D1. 分发走 `/gh/`，仓库即产物
+## D1. 分发走 `/gh/`，仓库即产物
 
 **结论**：`https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...`，不发布 npm。
 示例里的 `0.1.0` 是计划中的 M1 版本；仓库当前还没有 tag，所以这些 URL 在首次发布前会 404。
@@ -59,7 +40,7 @@ ofa.js 的坑见 [`ofa-pitfalls.md`](./ofa-pitfalls.md)（**写组件前必读**
 
 ---
 
-### D2. 组件形态：`packages/{name}/{name}.html`，源即产物
+## D2. 组件形态：`packages/{name}/{name}.html`，源即产物
 
 ```
 packages/button/
@@ -80,7 +61,7 @@ packages/button/
 
 ---
 
-### D3. CSS 如何进入 Shadow DOM —— 分三层，各自用最合适的机制
+## D3. CSS 如何进入 Shadow DOM —— 分三层，各自用最合适的机制
 
 这是全案最核心的技术约束。
 
@@ -166,7 +147,7 @@ Element.prototype.attachShadow = function (init) {
 
 ---
 
-### D4. 主题：只走 CSS 变量，禁用 `dark:` 变体
+## D4. 主题：只走 CSS 变量，禁用 `dark:` 变体
 
 **结论**：主题切换 = 在 `<html>` 上切 `data-theme`，令牌整体换值。组件里**禁止** `dark:`。
 
@@ -189,7 +170,7 @@ HTML 干净、UnoCSS 不需要 safelist（没有拼接类名）、CSS 体积不�
 
 ---
 
-### D5. UnoCSS 的三层用法
+## D5. UnoCSS 的三层用法
 
 UnoCSS 在**构建期**运行，产出静态 CSS。它在这里有三个不可替代的作用：
 
@@ -243,7 +224,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
 
 ---
 
-### D6. 令牌三层模型
+## D6. 令牌三层模型
 
 ```
 L1 原始色阶   --mc-primary-500: 134 102 255;      ← 存 sRGB 通道三元组
@@ -276,7 +257,7 @@ UnoCSS 拼出 `rgb(rgb(114 70 237) / 1)` 这种非法 CSS，**所有语义色工
 
 ---
 
-### D7. 代码高亮：可选依赖 + 失败即降级
+## D7. 代码高亮：可选依赖 + 失败即降级
 
 **结论**：`mc-code` 的语法高亮由 highlight.js 提供，从 jsDelivr **按需懒加载**
 （core + 用到的语言，pin `11.11.1`），失败时**退化为纯文本**。
@@ -306,173 +287,3 @@ UnoCSS 拼出 `rgb(rgb(114 70 237) / 1)` 这种非法 CSS，**所有语义色工
 引入完整 highlight.js 包（127 KB 一次全下，且带一堆用不到的语言）。
 
 ---
-
-## 三、目录结构
-
-```
-mosaic/
-├── packages/
-│   ├── boot/                      ← 运行时引导
-│   │   ├── mosaic.js              # 手写：attachShadow 补丁 + adopt（唯一必需引入）
-│   │   ├── mosaic.css             # 生成并提交：令牌 + 工具类（可 <link>）
-│   │   └── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
-│   ├── color/
-│   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
-│   │   └── page.html              # 令牌文档页
-│   ├── button/ code/ collapse/ menu/ breadcrumb/
-│   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）
-│   │   ├── page.html              # 文档页，注册在 docs/site-map.js
-│   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
-│   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
-│   └── {next}/{next}.html ...
-├── tools/
-│   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
-│   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
-│   └── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
-├── uno.config.ts                  # 纯声明式配置，不引 node: 内置模块
-├── tsconfig.json                  # 只覆盖 uno.config.ts，供 IDE 与 pnpm typecheck
-├── index.html                     # 入口：只做引入（路由库 + o-app 挂载点）
-├── app-config.js                  # ofa.js 应用配置（首页地址、加载态、错误兜底）
-├── docs/                          # 站点级资源（跨组件的东西）
-│   ├── pages/                     # 站点级页面模块：home / guide / components / specs
-│   ├── layout.html                # 外壳布局页：顶栏 + 正文带 + <slot>
-│   ├── doc-layout.html            # 组件页分区布局（API + 演示 + 目录）
-│   ├── snippets/                  # 文档页引用的代码片段
-│   ├── state/route.js             # 抽出的路由状态（$.stanz）
-│   ├── components/                # 文档站自己的组件（nav/toc/crumb/pager/cards/palette.html：文件名 + doc- 前缀 = 标签名）
-│   ├── site-map.js                # 站点唯一数据源（结构即菜单）
-│   ├── routes.js                  # 路由工具：route() 归一当前路由
-│   ├── theme-boot.js              # 首帧主题（防闪白）
-│   └── shell.css  content.css     # 文档级视口/高度链 / 页面共用的正文样式
-├── tests/
-│   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件
-│   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
-│   └── site/*.mjs                 # 跨组件的站点不变量
-├── agent/
-│   ├── PLAN.md  design-spec.md  design-tokens.md
-│   ├── component-spec.md  components.md  ofa-pitfalls.md
-│   └── research/{unocss,jsdelivr,state}.md
-├── package.json                   # private: true（永不 publish）
-└── README.md
-```
-
-**没有 `dist/`**。`packages/**` 就是 CDN 上的东西。
-
-**产物与手写文件的分界**：
-
-| 文件                   | 手写 / 生成 | 可否 `<link>`              | 可否 adopt 进 shadow |
-| ---------------------- | ----------- | -------------------------- | -------------------- |
-| `boot/mosaic.js`       | 手写        | —（脚本）                  | 它负责 adopt         |
-| `boot/mosaic.css`      | **生成**    | ✅                         | ✅                   |
-| `boot/shadow-base.css` | 手写        | ❌                         | ✅                   |
-| `color/tokens.css`     | **生成**    | ✅（已被 mosaic.css 包含） | ✅                   |
-
----
-
-## 四、构建与分发
-
-```bash
-pnpm tokens        # tools/gen-tokens.mjs → packages/color/tokens.css（含 WCAG 自检，不达标退出 1）
-pnpm check:tokens  # 只自检，不写文件
-pnpm build:css     # unocss -c uno.config.ts → packages/boot/mosaic.css
-pnpm dev:css       # 同上，watch 模式
-pnpm build         # = tokens && build:css
-pnpm check:drift   # CI：重新生成后 git diff --exit-code，防止产物与生成器漂移
-pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
-pnpm format:check  # prettier 只检查
-```
-
-**发布流程**：
-
-1. 改代码 → `pnpm build` → 提交（**生成物一起提交**）
-2. 打 tag `v0.1.0` → 推送 → jsDelivr 自动可用
-3. 文档里的引入地址锁精确版本：`.../gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js`
-4. 发布后**逐文件比对内容哈希**：jsDelivr 有 version fallback，
-   新版本缺文件时会静默回退旧版本，只看 HTTP 200 会被骗过去
-
----
-
-## 五、里程碑
-
-### M0 — 打通骨架 ✅ **D3 已验证成立**
-
-冒烟测试在 `tests/smoke.mjs`（真浏览器；M0 当时 22 项断言，现为 194 项
-= 11 站点套件 + 5 组件套件，`pnpm test`）。
-
-- [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
-- [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
-- [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 370 条）
-- [x] 主题切换能穿过 shadow 边界（`rgb(114 70 237)` → `rgb(189 182 255)`）
-- [x] 令牌靠自定义属性继承进 shadow root
-- [x] 文档站五个页面可访问、无 404、色板实时渲染
-- [ ] 验证降级：故意让补丁失效，确认颜色/尺寸仍正常，只有排布退化
-- [ ] CI 接入（`check:drift` + 冒烟测试 + 体积上限）
-
-**M0 推翻/修正了两条我原本写错的设计**，都已落到实现里：
-
-1. **颜色令牌全链路必须是通道三元组。**
-   第一版 L1 存三元组、L2 却存完整颜色（`rgb(var(--mc-primary-600))`），
-   UnoCSS 拼出 `rgb(rgb(114 70 237) / 1)` 这种非法 CSS，**所有语义色工具类静默失效**。
-   是冒烟测试里的 `text-muted → neutral-600` 断言把它抓出来的。
-
-2. **令牌只能定义在 `:root`，不能带 `:host`。**
-   令牌表在 shadow root 里也会被 adopt，`:host` 会给宿主元素重新赋一遍亮色值，
-   盖掉从文档继承的暗色值 —— 切主题时组件纹丝不动。同样零报错。
-
-这两条都是「D3 是否成立」的一部分，结论是：**D3 成立**，但前提是上面两条守住。
-
-- **产出**：可运行的文档站（`pnpm dev`）+ 当时 22 项真浏览器断言全绿
-
-### M1 — 令牌与基础组件
-
-- [x] 已实现：`mc-button` / `mc-code` / `mc-collapse`（含 item）/ `mc-menu`（含 item）/
-      `mc-breadcrumb`（含 item）/ `mc-card` / `mc-tag`
-- [ ] 待建：`mc-icon` / `mc-badge` / `mc-spinner`
-- [ ] 每个组件补齐 `{name}.html` + `page.html` + `demos/*.html` + `test/{slug}.test.mjs`
-      （**没有** per-component 的 `README.md` / `index.html`）
-- **产出**：可发布的 0.1.0
-
-### M2 — 表单与反馈
-
-`mc-input` / `mc-textarea` / `mc-checkbox` / `mc-radio` / `mc-switch` / `mc-select` /
-`mc-alert` / `mc-toast` / `mc-progress`
-
-表单类组件统一约定见 [`components.md`](./components.md)。
-这一批会大量撞上 [`ofa-pitfalls.md`](./ofa-pitfalls.md) 的 P6 / P18 / P19 / P20（值的反射与事件穿透）。
-
-### M3 — 浮层与布局
-
-`mc-dialog` / `mc-dropdown` / `mc-tooltip` / `mc-tabs` / `mc-table` / `mc-grid`
-
-> ⚠️ M3 开头必须先验证图层：shadow DOM 里的 `position: fixed` + `z-index`
-> 与宿主页面层叠上下文的关系。`--mc-z-*` 令牌已定义好，但弹出层挂在 shadow root 内部时，
-> 是否会被宿主的 `transform` / `filter` 困住，需要实测后决定是否改用 popover API。
-
-### M4 — 工程加固
-
-CI 全量接入（令牌自检 + drift 检查 + 冒烟测试 + 体积上限）、
-主题预设、自托管部署方案。
-
----
-
-## 六、风险登记
-
-| 风险                       | 影响                                         | 缓解                                                            |
-| -------------------------- | -------------------------------------------- | --------------------------------------------------------------- |
-| **D3 运行时补丁失效**      | 组件失去排布（颜色/尺寸仍在）                | 降级是分级的（D3）；M0 端到端冒烟测试；退路是每组件 `<link>`    |
-| 生成物与生成器漂移         | CDN 上的东西和源码不一致                     | 生成物提交进仓库 + CI `check:drift`                             |
-| jsDelivr 在大陆不可达      | 使用者无法加载                               | 换入口域名 + 自托管；不赌单一 CDN                               |
-| 预编译工具类子集不够用     | 使用者写了不存在的类名，静默无效果           | 文档首页写明边界；提供反馈入口                                  |
-| ofa.js 升级破坏组件        | 大量组件同时失效                             | pin 验证过的版本（兼容区间 `>=4.7 <5`）+ 升级必跑冒烟（见 P23） |
-| 体积失控                   | 令牌 ≈14.1 KB + 工具类 ≈21 KB                | CI 设体积上限；L1 色阶可拆成独立文件按需引入                    |
-| 代码高亮的 CDN 不可达      | 代码块没有颜色（排版、行号、主题跟随都正常） | 失败即降级为纯文本；`hljs-base` 支持自托管 / 换镜像             |
-| 组件作者重复踩 ofa.js 的坑 | 排查极耗时（都是静默失效）                   | [`ofa-pitfalls.md`](./ofa-pitfalls.md) 作为写组件的必需前置阅读 |
-
----
-
-## 七、待定
-
-1. **标签前缀**：当前 `<mc-*>`。个人自用不 publish，只要目录名和标签前缀自洽即可。
-2. **品牌主色**：当前 OKLCH 色相 288°（紫罗兰）。
-   换色改 `tools/gen-tokens.mjs` 里一个数字，对比度自检会保证换完仍达标。
-3. **是否随组件附一份给 AI 读的自包含 `README.md`** —— 纯增量工作，M1 之后再定。

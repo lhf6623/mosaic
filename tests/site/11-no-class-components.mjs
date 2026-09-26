@@ -1,7 +1,7 @@
 /**
  * 站点 · 组件写法守卫（node-only）：
  * `docs/` 与 `packages/` 里**不允许手写 `class … extends HTMLElement`** —— 组件一律
- * `<template component>`（理由与逐条对照见 agent/components.md §三「为什么只有这一种写法」）。
+ * `<template component>`（理由与逐条对照见 agent/authoring.md §四「ofa.js 组件骨架」）。
  *
  * 背景：`docs/` 下曾经有四个手写元素（doc-nav / doc-crumb / doc-pager / doc-toc），
  * 它们各自重做了框架已经给的东西：el() 建 DOM、自己挂 hashchange/router-change、
@@ -47,6 +47,6 @@ export default async function run({ check }) {
     `没有手写 class 组件（扫了 ${files.length} 个文件：组件一律 <template component>）`,
     hits.length === 0,
     hits.join('\n        ') ||
-      `docs/ 与 packages/ 均为 0 处 —— 写法见 agent/components.md §三（迁移配方见 docs-refactor.md §4.0）`,
+      `docs/ 与 packages/ 均为 0 处 —— 写法见 agent/authoring.md §四（迁移配方见 docs-refactor.md §4.0）`,
   );
 }
