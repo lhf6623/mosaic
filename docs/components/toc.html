@@ -6,9 +6,17 @@
   页内后续渲染（示例、异步卡片）由 MutationObserver 兜。
     · 目录项不能用 `#id` 锚点：地址栏 hash 归 ofa 路由器所有（#/packages/…），
       而且页面正文在 shadow root 里、URL fragment 也进不去 —— 所以点击一律
-      preventDefault + 程序化滚动（见 agent/ofa-pitfalls.md 的 P28/P29 一带）；
+      preventDefault + 程序化滚动（见 agent/pitfalls/README.md 的 P28/P29 一带）；
     · 滚动容器是外壳的 `.doc-main`（顶栏下面那一带，见 layout.html 的注释），scroll-spy 盯它；
-      高亮仍旧走 mc-menu 那条路：给 <a> 写 aria-current，组件镜像成宿主的 data-current。
+      高亮仍旧走 mc-menu 那条路：给 <a> 写 aria-current，组件镜像成宿主的 data-current；
+      滚到底时**单独收尾到最后一项** —— 判定带只覆盖顶部 30%（≤240px），页尾那几节够不着
+      （见 syncActive() 里的注释与 09 号套件那条「滚到底」的断言）。
+
+  **两条大纲规则**（09 号套件逐条盯着）：
+    · 页面的 h2/h3 一条不漏地进目录，**不按标题名过滤** —— 目录是正文大纲的镜像，
+      少一条就变成「演示标题与页面小节平级」的假结构（曾经这么干过，右栏因此显得乱）；
+    · h2 = 节、h3 = 节里的子项：缩进一档 + 颜色弱一档、节与节之间留一道空。
+      缩进会吃掉可点宽度，所以右栏宽度按「最长标题放得下」定（见 <style> 里的注释）。
 
   ⚠️ 只把「建 DOM」那一段交给模板（结构与数据同形）；扫描标题、**扁平树找滚动容器（P34）**、
      签名守卫、滚动高亮、防抖全部留在 JS —— 那是这块的难点，不是模板能表达的。
@@ -22,11 +30,33 @@
      （实测，见 agent/research/state.md §6）——`contentRoot()` / `scroller()` 都踩在这条上。
 -->
 <template component>
-  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录）。
-       也不分级缩进（h2/h3 拉平）—— 右栏只有十几项，缩进只会让可点的宽度变短。 -->
+  <style>
+    /* 两级大纲：h2 = 节（正常前景色），h3 = 子项（退一档缩进 + 弱一档颜色）。
+       ⚠️ 条目文字是**单行 + overflow: hidden**（mc-menu-item 的固有行为，右栏够不着它的
+       shadow 去改），所以缩进会实打实吃掉可点宽度：右栏宽度（docs/doc-layout.html 的 15rem）
+       是按「最长的那个标题也放得下」反算的 —— 改宽度、改缩进量、给演示起更长的名字，
+       三件事都会顶到 09 号套件那条「任何一项都没被省略号截断」的断言上。 */
+    mc-menu {
+      /* 走 mc-menu 的色槽通道；`:host` 的默认值优先级低于外部声明，所以这里写得进 */
+      --mc-menu-item-color: var(--mc-color-fg);
+    }
+
+    mc-menu-item[data-level='deep'] {
+      --mc-menu-pad-x: calc(var(--mc-space-3) + var(--mc-space-2));
+      --mc-menu-item-color: var(--mc-color-fg-muted);
+    }
+
+    /* 换节留白：上一项是子项、这一项是节标题 —— 一行空说明「上一节到这儿结束了」。
+       o-fill 把条目铺成平铺的兄弟节点，所以相邻选择器认得出来（实测）。 */
+    mc-menu-item[data-level='deep'] + mc-menu-item:not([data-level]) {
+      margin-top: var(--mc-space-3);
+    }
+  </style>
+
+  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录） -->
   <mc-menu size="sm">
     <o-fill :value="rows" fill-key="id">
-      <mc-menu-item>
+      <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
         <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
           >{{$data.label}}</a
         >
@@ -35,12 +65,10 @@
   </mc-menu>
 
   <script>
-    /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录 */
+    /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录。
+     *  列全、**不按标题名过滤**：目录是正文大纲的镜像，「例子」也是页面上真实的一节 ——
+     *  滤掉它只会把它的子项（每个演示）顶到与小节平级，那才是「乱」的来源。 */
     const HEADINGS = 'h2, h3';
-
-    /** 不进目录的标题：组件文档页骨架的第一节是「例子」（整页的演示列表），
-        它里面的每个演示才是跳转目标 —— 这一节本身进目录只是噪声（骨架见 components.md） */
-    const SKIP_TITLES = new Set(['例子']);
 
     /** 当前项判定带：滚动容器顶部往下这么高的区间里，最后一个标题算「当前」。
      *  不能只留几像素 —— 点目录项后标题落在 scroll-margin-top（顶栏 + 间距 ≈ 72px）处，
@@ -158,9 +186,7 @@
           const root = this.contentRoot();
           if (!root) return false;
 
-          const headings = [...root.querySelectorAll(HEADINGS)].filter(
-            (h) => h.textContent.trim() && !SKIP_TITLES.has(h.textContent.trim()),
-          );
+          const headings = [...root.querySelectorAll(HEADINGS)].filter((h) => h.textContent.trim());
           if (!headings.length) return false;
 
           // 标题没变就别碰 DOM：重建会把正在点击 / 正在滚动的节点换掉
@@ -174,12 +200,13 @@
           this._entries = headings.map((heading) => {
             if (!heading.id) heading.id = slugify(heading.textContent, taken);
             else taken.add(heading.id);
-            return { heading, id: heading.id };
+            return { heading, id: heading.id, deep: Number(heading.tagName.slice(1)) > 2 };
           });
 
           this.rows = this._entries.map((entry) => ({
             id: entry.id,
             label: entry.heading.textContent.trim(),
+            deep: entry.deep,
             aria: null,
           }));
 
@@ -239,11 +266,31 @@
         syncActive() {
           if (this._pinned) return; // 刚点过目录项：等用户自己滚了再交还
           if (!this._entries || !this._scroller) return;
+
+          const scroller = this._scroller;
           // 窗口滚动时视口就是滚动区（window 没有 getBoundingClientRect）
-          const box =
-            this._scroller === window
-              ? { top: 0, height: window.innerHeight }
-              : this._scroller.getBoundingClientRect();
+          const viewport = scroller === window;
+          const box = viewport
+            ? { top: 0, height: window.innerHeight }
+            : scroller.getBoundingClientRect();
+
+          /* 滚到底就认最后一项收尾。判定带只有滚动区顶部 30%（≤240px），页尾那几节
+             可能整节都落在带下面 —— 不收尾的话最后一节永远点不亮（实测：button 页滚到底
+             还停在「API」，而「注意事项」就在屏幕里）。
+             ⚠️ 「滚不动的一屏」（内容比视口还矮）不算到底：那时整页都在眼前，该亮第一项。 */
+          const overflow = viewport
+            ? document.documentElement.scrollHeight - window.innerHeight
+            : scroller.scrollHeight - scroller.clientHeight;
+          const atBottom =
+            overflow > 1 &&
+            (viewport
+              ? window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
+              : scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1);
+          if (atBottom) {
+            this.applyActive(this._entries.at(-1)?.id);
+            return;
+          }
+
           const line = box.top + Math.min(box.height * ACTIVE_BAND_RATIO, ACTIVE_BAND_MAX);
 
           let active = this._entries[0];

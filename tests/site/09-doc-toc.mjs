@@ -1,10 +1,37 @@
 /**
  * 站点 · 右栏「本页目录」（<doc-toc>）：
- * 扫标题生成、h3 缩进、点击滚到标题（且不改地址栏 hash）、滚动时高亮跟着走、窄屏收掉右栏
+ * 扫标题生成（h2/h3 一条不漏）、两级大纲（h2 = 节 / h3 = 子项缩进）、每项都放得下不被截断、
+ * 点击滚到标题（且不改地址栏 hash）、滚动时高亮跟着走、窄屏收掉右栏
  *
  * ⚠️ <doc-toc> 现在是 ofa 组件模板、自带 shadow root：条目（mc-menu / a）都在它的 shadow 里，
  * 所以下面取到宿主后一律走 `host.shadowRoot` 再查（`window.__deep` 只负责找到宿主本身）。
  */
+
+/**
+ * 量一遍右栏的每一项：级别 / 缩进 / 余量。
+ * 余量 = 可点宽度 − 缩进 − 文字宽度：条目是单行 + `overflow: hidden`，
+ * 余量为负就是被截成了省略号 —— 右栏宽度与缩进量就是按这条预算定的（见 docs/doc-layout.html）。
+ */
+const readTocRows = (page) =>
+  page.evaluate(() => {
+    const el = window.__deep('doc-toc');
+    const root = el?.shadowRoot ?? el;
+    const links = root ? [...root.querySelectorAll('a')] : [];
+    return links.map((a) => {
+      const item = a.closest('mc-menu-item');
+      const range = document.createRange();
+      range.selectNodeContents(a);
+      const indent = parseFloat(getComputedStyle(a).textIndent) || 0;
+      return {
+        text: a.textContent.trim(),
+        deep: item?.hasAttribute('data-level') ?? false,
+        indent,
+        slack: Math.round(
+          a.getBoundingClientRect().width - indent - range.getBoundingClientRect().width,
+        ),
+      };
+    });
+  });
 
 export default async function run({ page, goTop, goHash, check }) {
   const failed = [];
@@ -29,9 +56,8 @@ export default async function run({ page, goTop, goHash, check }) {
     const links = root ? [...root.querySelectorAll('a')] : [];
     // 标题在子页面（被 slot 投影进来的那一页）的 shadow root 里，不在目录元素自己的 root 里
     const page = [...window.__deepAll('o-page')].at(-1);
-    const allHeadings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
-    /* 与 docs/components/toc.html 的 SKIP_TITLES 同一条规则：组件页骨架的第一节「例子」不进目录 */
-    const headings = allHeadings.filter((h) => h.textContent.trim() !== '例子');
+    // 目录是正文大纲的**镜像**：h2/h3 一条不漏，两边数量必须相等
+    const headings = page ? [...page.shadowRoot.querySelectorAll('h2, h3')] : [];
     const levels = links.map((a) => a.dataset.tocId);
     return {
       exists: !!el,
@@ -41,26 +67,33 @@ export default async function run({ page, goTop, goHash, check }) {
       current: root?.querySelector('a[aria-current]')?.textContent?.trim() ?? null,
       currentValue: root?.querySelector('a[aria-current]')?.getAttribute('aria-current') ?? null,
       idsMatch: links.every((a, i) => levels[i] === headings[i]?.id),
-      indents: links.map((a) => getComputedStyle(a).textIndent),
       headingLevels: headings.map((h) => h.tagName),
-      allHeadings: allHeadings.length,
       mainOver: main.scrollHeight - main.clientHeight,
       menuUpgraded: !!root?.querySelector('mc-menu')?.shadowRoot,
     };
   });
+  const rows = await readTocRows(page);
+  const shallowIndent = rows.find((r) => !r.deep)?.indent ?? null;
 
   check(
-    '组件页右栏有本页目录，项数 = 页面 h2/h3 数，且顺序 / id 一一对应',
+    '组件页右栏有本页目录，项数 = 页面 h2/h3 数（一条不漏），且顺序 / id 一一对应',
     toc.exists && toc.links > 4 && toc.links === toc.headings && toc.idsMatch,
     `${toc.links} 项 / ${toc.headings} 个标题 · 对应=${toc.idsMatch}`,
   );
   check(
-    '目录用 mc-menu 渲染（不是自己造的一套），且**级别拉平**：h2/h3 一视同仁、缩进一致',
+    '目录用 mc-menu 渲染（不是自己造的一套），且**两级**：h2 = 节不缩进、h3 = 子项深一档',
     toc.menuUpgraded &&
       toc.headingLevels.includes('H2') &&
       toc.headingLevels.includes('H3') &&
-      new Set(toc.indents).size === 1,
-    `升级=${toc.menuUpgraded} · 层级=${[...new Set(toc.headingLevels)].join('/')} · 缩进 ${[...new Set(toc.indents)].join(' / ')}`,
+      rows.every((r, i) => r.deep === (toc.headingLevels[i] === 'H3')) &&
+      rows.every((r) => !r.deep || r.indent > shallowIndent) &&
+      new Set(rows.filter((r) => !r.deep).map((r) => r.indent)).size === 1,
+    `升级=${toc.menuUpgraded} · 层级=${[...new Set(toc.headingLevels)].join('/')} · 缩进 ${[...new Set(rows.map((r) => `${r.deep ? '子项' : '节'}=${r.indent}px`))].join(' ')}`,
+  );
+  check(
+    '每一项都放得下：缩进吃了可点宽度，但没有一项被省略号截断',
+    rows.length > 0 && rows.every((r) => r.slack >= 0),
+    `最小余量 ${rows.length ? Math.min(...rows.map((r) => r.slack)) : '—'}px`,
   );
   check(
     '首屏高亮第一个标题（aria-current="location"，mc-menu 再镜像成 data-current）',
@@ -88,6 +121,27 @@ export default async function run({ page, goTop, goHash, check }) {
     '滚动到页面中部后，当前项跟着换（宿主 data-current 也同步）',
     spy.before !== null && spy.after !== null && spy.before !== spy.after && spy.hostCurrent === 1,
     `${spy.before} → ${spy.after} · data-current 的项 ${spy.hostCurrent} 个`,
+  );
+
+  /* 页尾收尾：判定带只有滚动区顶部 30%，最后一节可能整节都在带下面 —— 不单独收尾就永远点不亮 */
+
+  const tail = await page.evaluate(async () => {
+    const el = window.__deep('doc-toc');
+    const root = el?.shadowRoot ?? el;
+    const links = [...root.querySelectorAll('a')];
+    const main = window.__deep('.doc-main');
+    main.scrollTop = main.scrollHeight;
+    await new Promise((r) => setTimeout(r, 250));
+    return {
+      current: root.querySelector('a[aria-current]')?.dataset.tocId ?? null,
+      last: links.at(-1)?.dataset.tocId ?? null,
+      lastText: links.at(-1)?.textContent.trim() ?? null,
+    };
+  });
+  check(
+    '滚到底：当前项落到最后一条（页尾那几节在判定带以外，必须单独收尾）',
+    tail.last !== null && tail.current === tail.last,
+    `当前=${tail.current} · 最后一项=${tail.last}（${tail.lastText}）`,
   );
 
   /* ------------------------------------------------------------------ *
@@ -191,11 +245,11 @@ export default async function run({ page, goTop, goHash, check }) {
   });
 
   check(
-    '组件页：「例子」那一节不进目录（标题在正文里、目录里没有），首项从第一个演示开始',
-    onButton.headings.includes('例子') &&
-      !onButton.items.includes('例子') &&
-      onButton.items.length === onButton.headings.length - 1,
-    `${onButton.headings.length} 个标题（含「例子」）→ ${onButton.items.length} 项目录 · 首项「${onButton.items[0]}」`,
+    '组件页：「例子」也在目录里（目录 = 正文大纲的镜像），首项就是它',
+    onButton.headings[0] === '例子' &&
+      onButton.items[0] === '例子' &&
+      onButton.items.length === onButton.headings.length,
+    `${onButton.headings.length} 个标题 → ${onButton.items.length} 项目录 · 首项「${onButton.items[0]}」`,
   );
 
   await goHash('packages/menu/page.html');
@@ -212,6 +266,10 @@ export default async function run({ page, goTop, goHash, check }) {
       current: el?.shadowRoot?.querySelector('a[aria-current]')?.dataset.tocId ?? null,
     };
   });
+  /* menu 页装着全站最长的那个标题（「卡片外观（variant="surface"）」），
+     右栏宽度 / 缩进量的预算就是按它定的 —— 这里量一次，别让宽度在别处被悄悄改窄 */
+  const menuRows = await readTocRows(page);
+  const tightest = menuRows.reduce((a, b) => (b.slack < a.slack ? b : a), menuRows[0]);
 
   check(
     '换页后目录跟着换：元素跨页存活，内容扫的是新页的标题',
@@ -221,6 +279,11 @@ export default async function run({ page, goTop, goHash, check }) {
       onMenu.items.join('|') !== onButton.items.join('|') &&
       onMenu.current !== null,
     `同元素=${onMenu.same} · button ${onButton.items.slice(0, 3).join(' / ')}(${onButton.count}) · menu ${onMenu.items.slice(0, 3).join(' / ')}(${onMenu.count})`,
+  );
+  check(
+    '全站最长的那条也放得下（menu 页）：右栏宽度 = 「最长标题 + 缩进」反算出来的',
+    menuRows.length > 0 && menuRows.every((r) => r.slack >= 0),
+    `最小余量 ${tightest.slack}px ·「${tightest.text}」`,
   );
 
   /* ------------------------------------------------------------------ *

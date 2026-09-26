@@ -53,11 +53,15 @@
       border-right: 1px solid rgb(var(--mc-color-border));
     }
 
-    /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html） */
+    /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html）。
+       宽度 15rem 不是随手写的：缩进后的子项要放得下最长的那个标题
+       （「卡片外观（variant="surface"）」= 172px，见 toc.html 的 <style>），
+       内边距因此用 space-4 而不是左栏的 space-5 —— 少 8px 就少截断一次。
+       三条都要一起改：宽度、内边距、toc.html 的缩进量（09 号套件盯着「不许截断」）。 */
     doc-toc {
       right: 0;
-      width: 14rem;
-      padding-inline: var(--mc-space-5);
+      width: 15rem;
+      padding-inline: var(--mc-space-4);
       border-left: 1px solid rgb(var(--mc-color-border));
     }
 
@@ -68,7 +72,7 @@
        它自己不滚（滚的是外壳的 .doc-main）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
     .doc-split > .doc-content {
       min-width: 20rem;
-      padding-inline: 15rem 14rem;
+      padding-inline: 15rem 15rem;
     }
 
     /* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
