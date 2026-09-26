@@ -460,13 +460,23 @@ export default async function run({ page, visit, check }) {
     /^rgb\(/.test(arrow.panelBg) && /px$/.test(arrow.radius) && /system-ui|-apple-system/.test(arrow.fontFamily),
     JSON.stringify(arrow),
   );
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  const reduced = await page.evaluate(() => {
+  const animation = await page.evaluate(() => {
     const panel = window.__pop.shadowRoot.querySelector('.mc-panel');
-    return getComputedStyle(panel).animationName;
+    const arrow = window.__pop.shadowRoot.querySelector('.mc-arrow');
+    const cs = getComputedStyle(panel);
+    return {
+      panelAnimation: cs.animationName,
+      panelTransition: cs.transitionDuration,
+      arrowTransition: getComputedStyle(arrow).transitionDuration,
+    };
   });
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  check('prefers-reduced-motion: reduce 下不播进场动画', reduced === 'none', `animation-name=${reduced}`);
+  check(
+    '浮层不做动画（有意）：面板与三角都没有 animation / transition',
+    animation.panelAnimation === 'none' &&
+      (animation.panelTransition === '0s' || animation.panelTransition === '0s, 0s') &&
+      (animation.arrowTransition === '0s' || animation.arrowTransition === '0s, 0s'),
+    JSON.stringify(animation),
+  );
   await hide();
   await dropPopover();
 

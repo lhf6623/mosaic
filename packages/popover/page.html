@@ -249,6 +249,11 @@
         组件不报错，但也没有替代路径，用之前先确认目标浏览器。
       </li>
       <li>
+        <strong>没有进场动画</strong>（有意的）：浮层弹出的动效在连续操作时反而拖慢手感， 而且顶层的
+        <code>transform</code> 受限、能做出来的效果有限。要动画自己在
+        <code>::part(panel)</code> 上加。
+      </li>
+      <li>
         <strong>面板打开时才有内容</strong>：没打开时面板在 top layer 之外、不参与布局，
         所以不需要（也不该）在外面写 <code>display: none</code>。
       </li>

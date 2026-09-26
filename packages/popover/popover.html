@@ -199,21 +199,8 @@
       rotate: -45deg;
     }
 
-    /* ---------- 进场：top layer 里 transform 受限，只用 opacity + 轻微位移 ---------- */
-    @keyframes mc-popover-in {
-      from {
-        opacity: 0;
-        translate: 0 -4px;
-      }
-    }
-    .mc-panel:popover-open {
-      animation: mc-popover-in var(--mc-duration-base) var(--mc-ease-emphasized) both;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .mc-panel:popover-open {
-        animation: none;
-      }
-    }
+    /* **不做进场/退场动画**（有意的）：浮层弹出的动效在连续操作时反而拖慢手感，
+       而且 top layer 里 transform 受限、能做出来的效果有限。要动画的使用者自己加。 */
   </style>
 
   <!-- 触发元素：外面这层 .mc-anchor 是**锚点载体**，不能删（见文件头第 3 条） -->
@@ -228,13 +215,7 @@
 
   <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
        ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
-  <div
-    class="mc-panel"
-    part="panel"
-    popover="auto"
-    on:toggle="onNativeToggle"
-    on:animationend="onPanelAnimationEnd"
-  >
+  <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
     <div class="mc-arrow" part="arrow" aria-hidden="true"></div>
     <slot name="panel"></slot>
   </div>
@@ -287,7 +268,6 @@
 
       detached() {
         clearTimeout(this._hoverTimer);
-        clearTimeout(this._arrowSettle);
         window.removeEventListener('resize', this._onViewport);
       },
 
@@ -430,20 +410,11 @@
           }
         },
 
-        /** 进场动画结束 = 面板已经在最终位置，这时算箭头偏移才准 */
-        onPanelAnimationEnd() {
-          this.syncArrowShift();
-        },
-
         onNativeToggle(event) {
           const nowOpen = event.newState === 'open';
           if (nowOpen) {
-            /* 箭头对齐触发元素。量偏移**不能**在进场动画跑完之前做：动画会给面板一个
-               `translate: 0 -4px`，那时量到的面板坐标是中间值，居中变体会偏十几到三十像素。
-               所以先退一帧兜底（prefers-reduced-motion 时没有动画、也就没有 animationend），
-               再等动画真正结束重算一次。 */
+            /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */
             requestAnimationFrame(() => this.syncArrowShift());
-            this._arrowSettle = setTimeout(() => this.syncArrowShift(), 260);
             if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
             this.ele.dispatchEvent(
               new CustomEvent('open', {
