@@ -63,9 +63,12 @@
 
 `mc-dialog` / `mc-dropdown` / `mc-tooltip` / `mc-tabs` / `mc-table` / `mc-grid`
 
-> ⚠️ M3 开头必须先验证图层：shadow DOM 里的 `position: fixed` + `z-index`
-> 与宿主页面层叠上下文的关系。`--mc-z-*` 令牌已定义好，但弹出层挂在 shadow root 内部时，
-> 是否会被宿主的 `transform` / `filter` 困住，需要实测后决定是否改用 popover API。
+> ✅ **图层问题已验完（2026-09，随 `mc-popover` 一起落地）**：shadow root 里的
+> `position: fixed` 确实会被祖先的 `transform` / `filter` 困住（实测同一个 fixed 盒子
+> y 从 10 变成 1404），但**原生 `popover` 不受影响** —— 它进 top layer，天然在所有
+> `--mc-z-*` 之上。所以浮层一律走「原生 popover + CSS 锚点定位」，
+> **不挂 `document.body`、不用 `z-index` 令牌**；贴边翻转由 `position-try-fallbacks` 白拿。
+> 结论与踩到的四个坑见 [`packages/popover/popover.html`](../../packages/popover/popover.html) 的文件头。
 
 ### M4 — 工程加固
 

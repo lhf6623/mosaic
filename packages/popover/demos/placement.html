@@ -1,0 +1,24 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-popover placement="bottom-start">
+      <mc-button variant="outline">下方起始对齐</mc-button>
+      <div slot="panel">placement="bottom-start"</div>
+    </mc-popover>
+    <mc-popover placement="bottom">
+      <mc-button variant="outline">下方居中</mc-button>
+      <div slot="panel">placement="bottom"</div>
+    </mc-popover>
+    <mc-popover placement="top-end">
+      <mc-button variant="outline">上方末尾对齐</mc-button>
+      <div slot="panel">placement="top-end"</div>
+    </mc-popover>
+    <mc-popover placement="right">
+      <mc-button variant="outline">右侧</mc-button>
+      <div slot="panel">placement="right"</div>
+    </mc-popover>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-placement' });
+  </script>
+</template>

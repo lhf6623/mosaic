@@ -165,6 +165,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | Alert             | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
 | Progress          | `mc-progress`                          | `progress/`   | M2     | 待建      |
 | Message（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
+| Popover           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
 | Dialog            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
 | Dropdown          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
 | Tooltip           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
@@ -197,6 +198,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Alert](./alert.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
 | Progress                          | `mc-progress`                          | `progress/`   | M2     | 待建      |
 | [Message](./message.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
+| [Popover](./popover.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
 | Dialog                            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
 | Dropdown                          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
 | Tooltip                           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |

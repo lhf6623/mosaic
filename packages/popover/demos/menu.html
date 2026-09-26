@@ -1,0 +1,24 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-popover placement="bottom-start" style="--mc-popover-panel-min-width: 12rem; --mc-popover-panel-pad: var(--mc-space-2)">
+      <mc-button variant="outline">
+        <mc-icon name="menu" slot="prefix"></mc-icon>打开菜单
+      </mc-button>
+      <div slot="panel">
+        <mc-menu>
+          <mc-menu-item group>文档</mc-menu-item>
+          <mc-menu-item><a href="#/docs/pages/home.html">首页</a></mc-menu-item>
+          <mc-menu-item><a href="#/docs/pages/guide.html">快速开始</a></mc-menu-item>
+          <mc-menu-item group>组件</mc-menu-item>
+          <mc-menu-item><a href="#/packages/button/page.html">按钮（Button）</a></mc-menu-item>
+          <mc-menu-item><a href="#/packages/icon/page.html">图标（Icon）</a></mc-menu-item>
+        </mc-menu>
+      </div>
+    </mc-popover>
+    <span class="text-sm text-muted">面板里放的是项目自己的 mc-menu —— 这就是移动端菜单的做法。</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-menu' });
+  </script>
+</template>

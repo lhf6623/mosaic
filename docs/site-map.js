@@ -227,8 +227,17 @@ export const SITE = [
         order: 40,
         label: '浮层',
         summary:
-          '⚠️ 这一批开工前必须先验证图层：宿主页面的 transform / filter 会创建新的层叠上下文，可能把 shadow root 内的浮层困住',
+          '浮层：图层问题已验完 —— 用原生 popover（top layer）+ CSS 锚点定位，不挂 body、不用 z-index',
         children: [
+          {
+            order: 5,
+            label: 'Popover',
+            zh: '浮层',
+            path: 'packages/popover/page.html',
+            tagName: 'mc-popover',
+            stage: 'M3',
+            summary: '通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。',
+          },
           {
             order: 10,
             label: 'Dialog',

@@ -1,0 +1,25 @@
+<template component>
+  <p class="text-sm text-muted">
+    三个触发元素分别贴着视口的下、右、下右角落：空间不够时面板**自动翻到另一侧**，
+    不会溢出视口（`position-try-fallbacks: flip-block, flip-inline`）。
+  </p>
+
+  <div class="flex items-end justify-between" style="height: 220px">
+    <mc-popover placement="bottom-start">
+      <mc-button variant="outline">贴着底部</mc-button>
+      <div slot="panel">本来该在下方，空间不够 → 翻到上方。</div>
+    </mc-popover>
+    <mc-popover placement="right-start">
+      <mc-button variant="outline">贴着右侧</mc-button>
+      <div slot="panel">本来该在右侧，空间不够 → 翻到左侧。</div>
+    </mc-popover>
+    <mc-popover placement="bottom-end">
+      <mc-button variant="outline">下右角落</mc-button>
+      <div slot="panel">两个方向同时不够 → 两个方向都翻。</div>
+    </mc-popover>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-flip' });
+  </script>
+</template>

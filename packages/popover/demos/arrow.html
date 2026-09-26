@@ -1,0 +1,16 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-popover arrow placement="bottom-start">
+      <mc-button variant="outline">带箭头（下方）</mc-button>
+      <div slot="panel">小三角跟着 placement 贴在对面那条边上。</div>
+    </mc-popover>
+    <mc-popover arrow placement="right">
+      <mc-button variant="outline">带箭头（右侧）</mc-button>
+      <div slot="panel">换方向时三角会跟着换边。</div>
+    </mc-popover>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-arrow' });
+  </script>
+</template>

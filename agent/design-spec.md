@@ -283,6 +283,8 @@ M3 的做法，很值得抄：hover / active 的叠加层用**当前文字色**�
    才用上面这张表。
 3. ⚠️ **`z-index` 管不了 shadow 边界。** 宿主页面上的 `transform` / `filter` / `contain`
    会创建新的层叠上下文，把 shadow root 里的 `position: fixed` 困在里面。
+   **浮层组件不要用这张表**：`mc-popover` 实测下来，原生 `popover`（top layer）
+   不受层叠上下文影响，也就不需要 `--mc-z-*`；`position-try-fallbacks` 还白送贴边翻转。
    M3 的浮层组件开工前必须先验证这一点（见 [里程碑 M3](./plan/roadmap.md#m3--浮层与布局)）。
 
 ---

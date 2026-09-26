@@ -1,0 +1,265 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./popover.html"></l-m>
+    <l-m src="./demos/placement.html"></l-m>
+    <l-m src="./demos/trigger.html"></l-m>
+    <l-m src="./demos/controlled.html"></l-m>
+    <l-m src="./demos/arrow.html"></l-m>
+    <l-m src="./demos/flip.html"></l-m>
+    <l-m src="./demos/menu.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Popover <code>mc-popover</code></h1>
+    <p class="doc-lead">
+      通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>方位</h3>
+      <p class="doc-hint">
+        <code>placement</code> 十二个方向：上下左右 × 起始 / 居中 / 末尾。空间不够时浏览器
+        <strong>自动翻到另一侧</strong>，不会溢出视口。
+      </p>
+      <demo-popover-placement></demo-popover-placement>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/placement.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>触发方式</h3>
+      <p class="doc-hint">
+        <code>trigger</code> 三选一：<code>click</code>（默认）/ <code>hover</code> /
+        <code>manual</code>（只认 <code>open</code> 属性与 <code>show()</code>）。
+      </p>
+      <demo-popover-trigger></demo-popover-trigger>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/trigger.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>受控开合</h3>
+      <p class="doc-hint">
+        <code>open</code> 是受控属性：写上即开、移除即关。被 Esc / 点空白关掉时组件发
+        <code>close</code>，使用者据此把状态收回去 —— 外面那个按钮就是这套写法。
+      </p>
+      <demo-popover-controlled></demo-popover-controlled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/controlled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>箭头</h3>
+      <p class="doc-hint"><code>arrow</code> 加一个小三角，跟着 <code>placement</code> 换边。</p>
+      <demo-popover-arrow></demo-popover-arrow>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/arrow.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>贴边翻转</h3>
+      <p class="doc-hint">
+        下面三个触发元素分别贴着视口的底边、右边、右下角 —— 面板会自己翻到放得下的那一侧。
+      </p>
+      <demo-popover-flip></demo-popover-flip>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/flip.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>面板里放菜单</h3>
+      <p class="doc-hint">
+        面板内容由使用者给 —— 放项目自己的 <code>mc-menu</code> 就是一个下拉菜单。
+      </p>
+      <demo-popover-menu></demo-popover-menu>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/menu.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <h2>属性</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>值</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>placement</code></td>
+          <td>
+            <code>top</code> <code>bottom</code> <code>left</code> <code>right</code> ×
+            <code>-start</code> <code>(居中)</code> <code>-end</code>
+          </td>
+          <td><code>bottom</code></td>
+          <td>面板相对触发元素的方向；空间不够自动翻转</td>
+        </tr>
+        <tr>
+          <td><code>trigger</code></td>
+          <td><code>click</code> <code>hover</code> <code>manual</code></td>
+          <td><code>click</code></td>
+          <td>怎么开；<code>manual</code> 只认 <code>open</code> 与 <code>show()</code></td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>受控开合：属性在就开、移除就关（被 Esc / 点空白关掉时会发 <code>close</code>）</td>
+        </tr>
+        <tr>
+          <td><code>arrow</code></td>
+          <td>布尔</td>
+          <td>—</td>
+          <td>面板上一个小三角，方向跟着 <code>placement</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>方法</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>show()</code></td>
+          <td>打开；可被 <code>before-open</code> 拦掉（返回 <code>false</code> 表示没开）</td>
+        </tr>
+        <tr>
+          <td><code>hide()</code></td>
+          <td>关闭</td>
+        </tr>
+        <tr>
+          <td><code>toggle()</code></td>
+          <td>开合互换</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>事件</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>类型</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>before-open</code></td>
+          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
+          <td>打开前；<code>preventDefault()</code> 可拦掉这次打开</td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
+          <td>已打开</td>
+        </tr>
+        <tr>
+          <td><code>close</code></td>
+          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
+          <td>
+            已关闭；<code>reason</code> 是 <code>trigger</code> / <code>api</code> /
+            <code>dismiss</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>插槽与 part</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>插槽（默认）</td>
+          <td>触发元素（唯一一个；面板锚在它所在的容器上）</td>
+        </tr>
+        <tr>
+          <td>插槽 <code>panel</code></td>
+          <td>面板内容</td>
+        </tr>
+        <tr>
+          <td><code>part="panel"</code></td>
+          <td>面板本体（背景、内边距、圆角都在它上面）</td>
+        </tr>
+        <tr>
+          <td><code>part="arrow"</code></td>
+          <td>小三角；<code>arrow</code> 没写时不渲染</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>注意事项</h2>
+    <ul>
+      <li>
+        <strong>浮层用的是浏览器原生能力</strong>：面板是 <code>popover="auto"</code>（进
+        <strong>top layer</strong>），位置是 <strong>CSS 锚点定位</strong>。这带来三件白拿的事 ——
+        不受宿主页面 <code>transform</code> / <code>filter</code> 影响、滚动自动跟随、 Esc
+        与点空白关闭由浏览器处理（<code>--mc-z-*</code> 那一套层级令牌在这里用不上， top layer
+        天然在所有内容之上）。
+      </li>
+      <li>
+        <strong>面板宽度</strong>：默认最大 <code>24rem</code> 且不超过视口。
+        菜单那种固定宽度的面板用组件令牌调：
+        <code
+          >style="--mc-popover-panel-min-width: 12rem; --mc-popover-panel-pad:
+          var(--mc-space-2)"</code
+        >。
+      </li>
+      <li>
+        <strong>只给一个触发元素</strong>：默认插槽里放**一个**元素。面板的位置锚在它的容器上，
+        放多个元素时锚点会盖住整块、面板按整块对齐。
+      </li>
+      <li>
+        <strong>浏览器要求</strong>：需要 <code>popover</code> API 与 CSS 锚点定位 （Chrome 125+ /
+        Safari 17+ / Firefox 125+）。没有这些能力的浏览器上面板不会弹出 ——
+        组件不报错，但也没有替代路径，用之前先确认目标浏览器。
+      </li>
+      <li>
+        <strong>面板打开时才有内容</strong>：没打开时面板在 top layer 之外、不参与布局，
+        所以不需要（也不该）在外面写 <code>display: none</code>。
+      </li>
+    </ul>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>
