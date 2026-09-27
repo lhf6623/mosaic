@@ -351,6 +351,10 @@
         },
 
         toggle(reason = 'api') {
+          /* ⚠️ 和 show() / hide() 一样先看 popoverOk：面板不在（模板里被去掉、组件正在销毁）时
+             this.panel 是 null，直接读 .matches 会抛 TypeError —— 而 toggle 是被 .mc-anchor 的
+             on:click 直接调的，一点就炸。 */
+          if (!this.popoverOk) return false;
           return this.panel.matches(':popover-open') ? this.hide(reason) : this.show(reason);
         },
 
