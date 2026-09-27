@@ -266,4 +266,26 @@ framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` �
 
 布尔属性在 HTML 里**写存在即真**（`<mc-button disabled>`），不要写 `disabled="true"`。
 
+### 浮层组件（dropdown / tooltip / dialog / select 弹层）额外要接一件事
+
+原生浮层（`popover` / top layer）开合时，**浏览器会顺手把页面滚一下** —— 实测火狐，
+文档站正文带能从 1207 跳到 2057；而这条**在 Chrome 里完全复现不出来**（静默失效）。
+所以做浮层的组件必须在 `ready()` 里接滚动守卫（一行）：
+
+```js
+import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+
+ready() {
+  this._scrollGuard = attachFloatingScrollGuard(this.ele, panel); // panel = .mc-panel 那个 popover 元素
+},
+detached() { this._scrollGuard.dispose(); },
+
+/* 显式显示 / 收起那一行再包一层 —— toggle 事件是排队发的，挡不住同步那一瞬 */
+syncOpen() { this._scrollGuard.run(() => this.panel.showPopover()); }
+```
+
+工具与**上游依据 / 移除条件**见 [`packages/boot/scroll-pin.js`](../packages/boot/scroll-pin.js) 文件头。
+漏接会被 `tests/site/11-no-class-components.mjs` 的静态守卫拦下（声明或显示 popover 的组件必须真的
+import 它并用到导出）。
+
 ---

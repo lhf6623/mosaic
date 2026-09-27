@@ -46,20 +46,37 @@
  *
  * ## 用法
  *
+ * **浮层组件（推荐：一行接线）** —— 做 `mc-dropdown` / `mc-tooltip` / `mc-dialog` 这类组件时照抄：
+ *
+ * ```js
+ * import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+ *
+ * ready()    { this._scrollGuard = attachFloatingScrollGuard(this.ele, this.panel); }
+ * detached() { this._scrollGuard.dispose(); }
+ * ```
+ *
+ * 它自己监听面板的 `beforetoggle` / `toggle`（浏览器 light dismiss / Esc 也会发这两个事件），
+ * 所以不用在模板里为守卫加绑定。唯一要额外包一层的是**显式显示 / 收起那一行**：
+ *
+ * ```js
+ * this._scrollGuard.run(() => this.panel.showPopover());   // 同步动作里的位移要立刻回滚
+ * ```
+ *
+ * 因为 `toggle` 事件是排队发的（晚一拍），只靠它挡不住同步那一瞬。
+ *
+ * **任意场景（手动接线）**：
+ *
  * ```js
  * import { createScrollPin } from '../boot/scroll-pin.js';
  *
- * const pin = createScrollPin(this.ele);          // ready() 里建一次
- * pin.run(() => panel.showPopover());             // 快照 → 动作 → 钉住（同步 + 时间窗）
- * // 「浏览器自己先动」的场景（beforetoggle / toggle 这种成对钩子）：
- * pin.remember();                                 // 状态变化**之前**
- * // …浏览器把状态改掉…
- * pin.hold();                                     // 用刚记的锚点钉住
- * // detached() 里：
+ * const pin = createScrollPin(el);
+ * pin.run(() => doSomethingNative());   // 快照 → 动作 → 钉住
+ * pin.remember();                       // 状态变化**之前**记锚点
+ * pin.hold();                           // 状态变完钉回去
  * pin.dispose();
  * ```
  *
- * 也可以只用低层原语：`snapshotScroll(el)` 拿回滚函数、`holdScroll(restore, opts)` 钉住它。
+ * 再底层就用 `snapshotScroll(el)` 拿回滚函数、`holdScroll(restore, opts)` 钉住它。
  */
 
 /** 默认盯多久（ms）：够覆盖「原生动作 + 随后的模板重渲染」，又不至于黏手 */
@@ -212,6 +229,49 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
         document.removeEventListener(type, takeAnchor, { capture: true });
       }
       anchor = null;
+    },
+  };
+}
+
+/**
+ * 给**浮层组件**自动接好滚动守卫：自己监听面板的 `beforetoggle` / `toggle`。
+ *
+ * 浮层组件（`mc-dropdown` / `mc-tooltip` / `mc-dialog` 这类）只要两处：
+ *
+ * ```js
+ * ready()    { this._scrollGuard = attachFloatingScrollGuard(this.ele, this.panel); }
+ * detached() { this._scrollGuard.dispose(); }
+ * ```
+ *
+ * 另外**显式显示 / 收起那一行再包一层 `run()`** —— `toggle` 事件是排队发的，
+ * 挡不住同步动作那一瞬的位移：
+ *
+ * ```js
+ * this._scrollGuard.run(() => this.panel.showPopover());
+ * ```
+ *
+ * @param {Element} host  组件宿主（往上找滚动容器、也用于「按在里面不算用户滚动」）
+ * @param {Element} panel 浮层面板（`popover` 元素；浏览器自己关闭时也会在它上面发 toggle）
+ */
+export function attachFloatingScrollGuard(host, panel, options) {
+  const pin = createScrollPin(host, options);
+  const remember = () => pin.remember();
+  const hold = () => pin.hold();
+
+  /* beforetoggle 在状态**变化之前**触发，且浏览器的 light dismiss / Esc 也会发它 ——
+     关闭时的焦点归还、显示时的 top layer 插入都可能让浏览器顺手滚一下，
+     而那一刻已经从 toggle 里拿不到"原来的位置"了。 */
+  panel.addEventListener('beforetoggle', remember);
+  panel.addEventListener('toggle', hold);
+
+  return {
+    run: pin.run,
+    remember: pin.remember,
+    hold: pin.hold,
+    dispose() {
+      panel.removeEventListener('beforetoggle', remember);
+      panel.removeEventListener('toggle', hold);
+      pin.dispose();
     },
   };
 }

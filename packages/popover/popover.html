@@ -241,20 +241,14 @@
 
   <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
        ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
-  <div
-    class="mc-panel"
-    part="panel"
-    popover="auto"
-    on:beforetoggle="onBeforeToggle"
-    on:toggle="onNativeToggle"
-  >
+  <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
     <span class="mc-arrow" part="arrow" aria-hidden="true"></span>
     <slot name="panel"></slot>
   </div>
 
   <script>
     /* 定住滚动条的小工具（开合原生浮层时浏览器可能顺手滚页面，见那个文件头里的实测与上游链接） */
-    import { createScrollPin } from '../boot/scroll-pin.js';
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
     /** 面板贴的是「上下」还是「左右」——决定箭头要横向还是纵向对锚 */
     const AXIS_OF = (placement) =>
@@ -293,8 +287,9 @@
           if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
         };
         window.addEventListener('resize', this._onViewport, { passive: true });
-        /* 滚动锚点 + 钉住：手势、显示/收起的原生动作都走它（见 packages/boot/scroll-pin.js） */
-        this._scrollPin = createScrollPin(this.ele);
+        /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（浏览器的 light dismiss、
+           Esc 也会发这两个事件），所以模板里不用为它加绑定（见 packages/boot/scroll-pin.js） */
+        this._scrollGuard = attachFloatingScrollGuard(this.ele, panel);
         /* 老浏览器没有 popover API 时不炸：整块功能降级为「面板常显」由 CSS 兜，
            这里只标记不可用，交互一律不动 */
         this.popoverOk = typeof panel?.showPopover === 'function';
@@ -306,7 +301,7 @@
       detached() {
         clearTimeout(this._hoverTimer);
         window.removeEventListener('resize', this._onViewport);
-        this._scrollPin?.dispose();
+        this._scrollGuard?.dispose();
       },
 
       watch: {
@@ -335,8 +330,8 @@
           const shouldOpen = this.ele.hasAttribute('open');
           const isOpen = this.panel.matches(':popover-open');
           /* 显示 / 收起都是原生动作，而浏览器可能顺手把页面滚一下（见 scroll-pin.js） */
-          if (shouldOpen && !isOpen) this._scrollPin.run(() => this.panel.showPopover());
-          else if (!shouldOpen && isOpen) this._scrollPin.run(() => this.panel.hidePopover());
+          if (shouldOpen && !isOpen) this._scrollGuard.run(() => this.panel.showPopover());
+          else if (!shouldOpen && isOpen) this._scrollGuard.run(() => this.panel.hidePopover());
         },
 
         /** 打开。可被 before-open 拦掉（返回 false / preventDefault）。 */
@@ -453,20 +448,9 @@
           }
         },
 
-        /**
-         * `beforetoggle` 在状态**变化之前**触发 —— 而且浏览器的 light dismiss / Esc 也会发它。
-         * 拿它当「快照锚点」：关闭时的焦点归还、显示时的 top layer 插入都可能让浏览器顺手滚一下，
-         * 而那一刻我们还没法从 `toggle` 里拿到"原来的位置"。见 onNativeToggle。
-         */
-        onBeforeToggle() {
-          this._scrollPin.remember();
-        },
-
         onNativeToggle(event) {
-          /* 状态已经变了：把 beforetoggle 时记下的位置钉回去（含 light dismiss 这种浏览器
-             自己发起的关闭 —— 它不走 hide()/syncOpen()，是之前漏掉的那条路）。 */
-          this._scrollPin.hold();
-
+          /* 滚动守卫在 beforetoggle 记锚点、在这个 toggle 上钉回位置（它自己监听着面板；
+             这条注释说明为什么这里看不到守卫的代码）。下面只做状态同步与事件派发。 */
           const nowOpen = event.newState === 'open';
           if (nowOpen) {
             /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */

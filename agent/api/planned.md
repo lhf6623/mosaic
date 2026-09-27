@@ -62,11 +62,15 @@
 
 ## 五、M3 组件（接口草案）
 
-> ⚠️ **M3 开工前必须先验证图层问题**：shadow DOM 里的 `position: fixed` + `z-index`
-> 与宿主页面层叠上下文的关系。宿主页面上的 `transform` / `filter` / `contain`
-> 会创建新的层叠上下文，可能把 shadow root 内的浮层困住。
-> 验证后再决定是继续用 `position: fixed`，还是改用 popover API，还是挂载到 `document.body`。
-> 详见 [`design-spec.md` 第七节](../design-spec.md#七层级)。
+> **图层问题已经验完**（结论见 [`popover.md` 实现约束](./popover.md#实现约束改这个组件前必须知道)）：
+> 浮层一律用原生 `popover` 进 top layer —— 不受宿主页面 `transform` / `filter` / `contain`
+> 影响，还白拿 Esc 与点空白关闭；**不挂 `document.body`、不用 `z-index` 令牌**。
+> `mc-dialog` / `mc-dropdown` / `mc-tooltip` / `mc-select` 的弹层都照 `mc-popover` 的形态做。
+>
+> ⚠️ **这批组件还有一件必接的事**：浮层开合时浏览器会顺手滚页面（实测火狐，Chrome 复现不出来）——
+> 在 `ready()` 里 `attachFloatingScrollGuard(this.ele, panel)`，显式显示那一行用 `guard.run(…)` 包住。
+> 工具、上游依据与移除条件见 [`packages/boot/scroll-pin.js`](../../packages/boot/scroll-pin.js)；
+> 接法与理由见 [`authoring.md` §四](../authoring.md)。
 
 | 组件                           | 关键属性                                                                                                        | 关键插槽                        | 关键 part                                  |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------ |

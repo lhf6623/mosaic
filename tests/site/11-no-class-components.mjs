@@ -1,5 +1,5 @@
 /**
- * 站点 · 写法守卫（node-only）：三条结构不变量，都在 `docs/` + `packages/` 里扫源码。
+ * 站点 · 写法守卫（node-only）：四条结构不变量，都在 `docs/` + `packages/` 里扫源码。
  *
  * ① **不允许手写 `class … extends HTMLElement`** —— 组件一律 `<template component>`
  *    （理由与逐条对照见 agent/authoring.md §四「ofa.js 组件骨架」）。
@@ -20,6 +20,11 @@
  *    时而空白（message / popover 两页就这么炸过，见 P44）。
  *    以前只能验「演示里至少有 1 个已升级的 mc-*」，而演示里的 `mc-icon` 恰好也是 mc-* ——
  *    正是它让这条漏了过去，所以这条守卫改成**静态**的、逐页逐演示对账。
+ *
+ * ④ **做原生浮层的组件必须接滚动守卫**（`packages/boot/scroll-pin.js`）。
+ *    实测火狐：开合原生 popover 时浏览器会顺手把页面滚一下（用户看到「点一下页面往上蹿」）——
+ *    而这条在 Chrome 里**完全复现不出来**，正是「静默失效」那一类；漏接只有用户会发现。
+ *    所以在这里静态拦：声明或显示原生浮层的组件文件，必须引用 scroll-pin（怎么接见那个文件头）。
  *
  * 不需要浏览器：直接读文件，跑得飞快。
  */
@@ -248,5 +253,28 @@ export default async function run({ check }) {
     unregistered.length === 0,
     unregistered.join('\n        ') ||
       `站点外壳注册：${[...shellTags].sort().join(' / ')} —— 其余靠各页自己的 <l-m>，见 agent/doc-pages.md §二`,
+  );
+
+  /* ④ 原生浮层 ↔ 滚动守卫：声明或显示 popover 的**组件**必须引用 scroll-pin。
+        （只看组件文件：文档页 page.html 里出现「popover=」是在写正文，不是在用浮层。） */
+  const popoverComponents = [];
+  const missingGuard = [];
+  for (const file of files) {
+    if (!file.endsWith('.html')) continue;
+    const text = readFileSync(file, 'utf8');
+    if (!text.includes('<template component>') || !/showPopover\s*\(|popover=/.test(text)) continue;
+    popoverComponents.push(file.replace(ROOT, ''));
+    /* 「接了」= 真的 import 了 scroll-pin **并且**用到它的某个导出 —— 只提到名字（注释里写一句
+       "见 scroll-pin.js"）不算：那样的漏接照样会在火狐上把页面滚走。 */
+    const imported = /from\s*['"][^'"]*scroll-pin\.js['"]/.test(text);
+    const used = /attachFloatingScrollGuard|createScrollPin|holdScroll|snapshotScroll/.test(text);
+    if (!imported || !used) missingGuard.push(file.replace(ROOT, ''));
+  }
+  check(
+    `做原生浮层的组件都接了滚动守卫（${popoverComponents.length} 个：${popoverComponents.join(' / ') || '—'}）`,
+    missingGuard.length === 0,
+    missingGuard.length
+      ? `${missingGuard.join(' / ')} —— 浮层开合会被浏览器滚走页面（火狐），接法见 packages/boot/scroll-pin.js`
+      : '组件里都能看到 scroll-pin 的引用',
   );
 }

@@ -705,6 +705,40 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(pinApi),
   );
 
+  /* 自动接线入口（浮层组件照抄这个）：只挂面板事件，浏览器自己关掉也能兜住；dispose 后不再插手 */
+  const guardApi = await page.evaluate(async () => {
+    const { attachFloatingScrollGuard } = await import('/packages/boot/scroll-pin.js');
+    await window.__makeScrollHost();
+    const { host, panel, scroller } = window.__env;
+    const guard = attachFloatingScrollGuard(host, panel, { hold: 300 });
+
+    /* ① 直接调原生显示 / 收起（等价浏览器 light dismiss），不经过任何组件代码 */
+    panel.showPopover();
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    scroller.scrollTop = 300;
+    const origHide = panel.hidePopover.bind(panel);
+    panel.hidePopover = () => {
+      origHide();
+      scroller.scrollTop += 250;
+    };
+    panel.hidePopover();
+    await new Promise((r) => setTimeout(r, 500)); // 等守卫的时间窗走完
+    const afterDismiss = scroller.scrollTop;
+
+    /* ② dispose 之后不再插手 */
+    guard.dispose();
+    scroller.scrollTop = 100;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const afterDispose = scroller.scrollTop;
+    host.remove();
+    return { afterDismiss, afterDispose };
+  });
+  check(
+    '自动接线入口：不经组件也能兜住浏览器发起的关闭；dispose() 后不再插手',
+    guardApi.afterDismiss === 300 && guardApi.afterDispose === 100,
+    JSON.stringify(guardApi),
+  );
+
   /* ------------------------------------------------------------------ *
    * 9. 文档页本身：演示渲染出来了，点了真的会弹（顺带让依赖地图记下
    *    「popover 套件碰过 packages/popover/page.html」这条边）
