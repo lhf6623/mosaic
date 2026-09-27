@@ -371,6 +371,7 @@ export default async function run({ page, visit, check }) {
           ? Math.abs((ar.x + ar.right) / 2 - (tr.x + tr.right) / 2)
           : Math.abs((ar.y + ar.bottom) / 2 - (tr.y + tr.bottom) / 2);
       const side = panel.dataset.side;
+      const cs = getComputedStyle(arrow);
       const onEdge =
         side === 'bottom'
           ? Math.abs(ar.top - pr.top) < 12
@@ -390,7 +391,20 @@ export default async function run({ page, visit, check }) {
             : side === 'left'
               ? ar.right - pr.right
               : pr.left - ar.left;
-      results.push({ placement, side, cross: +cross.toFixed(1), onEdge, protrudes: +protrudes.toFixed(1) });
+      results.push({
+        placement,
+        side,
+        cross: +cross.toFixed(1),
+        onEdge,
+        protrudes: +protrudes.toFixed(1),
+        /* ⚠️ 三角是「填充三角 + clip-path」，**不是**旋转 45° 的方块。一旦 element 上还留着
+           `rotate`，围盒会被撑大（12px 的方块转 45° → 17px），但**中心不变** —— 上面那几条
+           只看中心 / 贴边的断言会全绿（这个回归就是这么漏掉的），所以这里单独盯旋转与边框残留。 */
+        rotate: cs.rotate,
+        bboxDelta: +Math.abs(ar.width - arrow.offsetWidth).toFixed(2),
+        clip: cs.clipPath.replace(/\s+/g, ' '),
+        border: `${cs.borderRightWidth}/${cs.borderBottomWidth}`,
+      });
       inst.hide();
       await wait(120);
     }
@@ -403,6 +417,26 @@ export default async function run({ page, visit, check }) {
     '箭头交叉轴对齐触发元素中心、贴在正确的边上、且真的露在面板外（12 个方向，防 overflow 裁切）',
     arrowMath.length === 12 && arrowBad.length === 0,
     arrowBad.length ? JSON.stringify(arrowBad) : JSON.stringify(arrowMath.slice(0, 3)),
+  );
+
+  /* 形状这条单独一检：三角必须是**没被转动**的填充三角，且四个方向各自朝外。
+     起因是一次真实回归 —— 箭头从「旋转方块 + 两条边框」改成 clip-path 时，旧规则没删干净，
+     `rotate: 45deg` 与两条边框继续生效，三角被转了 45°、尖歪到一边（用户一眼看出「箭头偏了」），
+     而上面那条几何断言**全绿**（旋转后的围盒中心仍在触发元素中心上）。 */
+  const EXPECTED_CLIP = {
+    bottom: 'polygon(50% 0px, 100% 100%, 0px 100%)',
+    top: 'polygon(0px 0px, 100% 0px, 50% 100%)',
+    left: 'polygon(0px 0px, 100% 50%, 0px 100%)',
+    right: 'polygon(100% 0px, 0px 50%, 100% 100%)',
+  };
+  const arrowShapeBad = arrowMath.filter(
+    (a) =>
+      a.rotate !== 'none' || a.bboxDelta > 0.5 || a.border !== '0px/0px' || a.clip !== EXPECTED_CLIP[a.side],
+  );
+  check(
+    '三角形状是对的：没被 rotate 撑开 / 没有旧边框残留，四个方向各自朝外',
+    arrowMath.length === 12 && arrowShapeBad.length === 0,
+    arrowShapeBad.length ? JSON.stringify(arrowShapeBad) : '12 个方向的三角形状一致',
   );
 
   /* 翻转：把触发元素顶到视口右下角，面板会翻到另一侧 —— 箭头必须**跟着换边** */
@@ -442,12 +476,18 @@ export default async function run({ page, visit, check }) {
     const pop = window.__pop;
     const el = pop.shadowRoot.querySelector('.mc-arrow');
     const panel = pop.shadowRoot.querySelector('.mc-panel');
+    const panelCs = getComputedStyle(panel);
     return {
       display: getComputedStyle(el).display,
       size: Math.round(el.getBoundingClientRect().width),
-      panelBg: getComputedStyle(panel).backgroundColor,
-      radius: getComputedStyle(panel).borderTopLeftRadius,
-      fontFamily: getComputedStyle(panel).fontFamily.split(',')[0],
+      panelBg: panelCs.backgroundColor,
+      radius: panelCs.borderTopLeftRadius,
+      fontFamily: panelCs.fontFamily.split(',')[0],
+      /* ⚠️ UA 给 `[popover]` 的是 `border: solid`（宽度 medium = 3px、颜色 currentColor）：
+         面板不显式写 `border: 0` 就会长出一圈 3px 边框（实测亮色 rgb(60 67 77)）。 */
+      border: `${panelCs.borderTopWidth} ${panelCs.borderTopStyle}`,
+      /* 描边改由 drop-shadow 跟「面板 + 三角」的整体轮廓做：两层，第一层是描边 */
+      filter: panelCs.filter,
     };
   });
   check(
@@ -459,6 +499,15 @@ export default async function run({ page, visit, check }) {
     '面板样式走令牌（背景是 surface 色、圆角、字体都是项目令牌）',
     /^rgb\(/.test(arrow.panelBg) && /px$/.test(arrow.radius) && /system-ui|-apple-system/.test(arrow.fontFamily),
     JSON.stringify(arrow),
+  );
+  /* 面板不画真边框（UA 那条 `border: solid` 必须被显式清零），描边由 drop-shadow 跟整体轮廓做 ——
+     两层阴影里的第一层就是那圈描边，少了它面板边缘只能靠投影，三角也会显得塌。 */
+  check(
+    '面板没有真边框（UA 的 `border: solid` 已清零），描边走两层 drop-shadow',
+    arrow.border === '0px none' &&
+      /^drop-shadow\(/.test(arrow.filter) &&
+      (arrow.filter.match(/drop-shadow\(/g) ?? []).length === 2,
+    JSON.stringify({ border: arrow.border, filter: arrow.filter }),
   );
   const animation = await page.evaluate(() => {
     const panel = window.__pop.shadowRoot.querySelector('.mc-panel');
