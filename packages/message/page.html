@@ -191,16 +191,8 @@
     <h2>注意事项</h2>
     <ul>
       <li>
-        <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，
-        第一次调用时组件才把自己注册好并挂到
-        <code>document.body</code> 末尾，之后一直复用同一个容器。 页面里写标签不会得到任何东西 ——
-        只有 <code>message.js</code> 这一个入口。
-      </li>
-      <li>
-        <strong>为什么挂到 body 而不是就地展开</strong>：<code>position: fixed</code> 在 shadow root
-        里会被宿主页面上的 <code>transform</code> / <code>filter</code> / <code>contain</code>
-        困住（那是新的层叠上下文）；挂到 body 才能保证它永远在层级最上面。层级用
-        <code>--mc-z-toast</code>，没有魔法数字。
+        <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的， 只有
+        <code>message.js</code> 这一个入口 —— 页面里写标签不会得到任何东西。
       </li>
       <li>
         <strong>和 <code>mc-alert</code> 的分工</strong>：alert 是<strong>页内静态</strong>的一块面
@@ -214,9 +206,8 @@
       </li>
       <li>
         <strong>关闭只有 × 一条路</strong>：整条消息<strong>不可点</strong> —— 消息是要读的，
-        点一下就没不该是默认行为。× 是原生 <code>&lt;button&gt;</code>，
-        <code>aria-label</code> 带上这条消息的正文，命中区 32×32（Mosaic 小控件的下限），
-        用负外边距抵消超出行高的部分，所以加不加 × 消息条一样高。
+        点一下就没不该是默认行为。× 的命中区 32×32，<code>aria-label</code>
+        带上这条消息的正文。
       </li>
       <li>
         <strong>无障碍</strong>：容器是 <code>aria-live</code> 区域，

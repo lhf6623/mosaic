@@ -245,11 +245,6 @@
         的命中区是 24×24（WCAG 2.2 AA 的下限），别把 tag 当主操作。
       </li>
       <li>
-        <strong><code>closable</code> 不会把标签撑高</strong>：那个 24×24 的 × 比行高还高，
-        它靠负外边距抵消掉落在上下内边距里的部分 —— 加不加 <code>closable</code>、三档尺寸，
-        高度都只由字号决定。
-      </li>
-      <li>
         <strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>。要在页面上消失，
         自己在事件里 <code>el.remove()</code> 或改数据（组件不替使用者动 DOM）。
       </li>
@@ -258,20 +253,12 @@
         <code>close</code>，不会顺带切换选中。
       </li>
       <li>
-        <strong>长文本不折行</strong>（<code>white-space: nowrap</code>）：标签要么短，要么自己在
-        宿主上做截断（<code>max-width</code> + <code>overflow: hidden</code>）。
+        <strong>长文本不折行</strong>：标签要么短，要么自己在宿主上做截断（<code>max-width</code> +
+        <code>overflow: hidden</code>）。
       </li>
       <li>
         <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-tag style="…"&gt;</code> 直接覆盖，
         不需要 <code>!important</code>；内部只有 × 一个 <code>part</code>。
-      </li>
-      <li>
-        <strong>裸点击就是原生 <code>click</code></strong
-        >（自带 <code>composed</code>，会穿过 shadow 边界冒泡），组件不另造事件。
-      </li>
-      <li>
-        <strong>在脏宿主页面里也正常</strong>：标签不依赖页面 reset，宿主页面的 <code>a</code> /
-        <code>p</code> 全局样式也够不到 shadow 里的两个按钮。
       </li>
     </ul>
 

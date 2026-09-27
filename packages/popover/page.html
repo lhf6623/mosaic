@@ -230,11 +230,9 @@
     <h2>注意事项</h2>
     <ul>
       <li>
-        <strong>浮层用的是浏览器原生能力</strong>：面板是 <code>popover="auto"</code>（进
-        <strong>top layer</strong>），位置是 <strong>CSS 锚点定位</strong>。这带来三件白拿的事 ——
-        不受宿主页面 <code>transform</code> / <code>filter</code> 影响、滚动自动跟随、 Esc
-        与点空白关闭由浏览器处理（<code>--mc-z-*</code> 那一套层级令牌在这里用不上， top layer
-        天然在所有内容之上）。
+        <strong>浮层不受宿主页面布局影响</strong>：面板不会被困在宿主页面的 <code>transform</code> /
+        <code>filter</code> 里，滚动时自动跟随，Esc 与点空白关闭都交给浏览器 （<code>--mc-z-*</code>
+        那一套层级令牌在这里用不上）。
       </li>
       <li>
         <strong>面板宽度</strong>：默认最大 <code>24rem</code> 且不超过视口。
@@ -245,8 +243,7 @@
         >。
       </li>
       <li>
-        <strong>只给一个触发元素</strong>：默认插槽里放**一个**元素。面板的位置锚在它的容器上，
-        放多个元素时锚点会盖住整块、面板按整块对齐。
+        <strong>只给一个触发元素</strong>：默认插槽里放**一个**元素。放多个元素时面板会按整块对齐。
       </li>
       <li>
         <strong>浏览器要求</strong>：需要 <code>popover</code> API 与 CSS 锚点定位 （Chrome 125+ /
@@ -254,13 +251,12 @@
         组件不报错，但也没有替代路径，用之前先确认目标浏览器。
       </li>
       <li>
-        <strong>没有进场动画</strong>（有意的）：浮层弹出的动效在连续操作时反而拖慢手感， 而且顶层的
-        <code>transform</code> 受限、能做出来的效果有限。要动画自己在
+        <strong>没有进场动画</strong>（有意的）：浮层动效在连续操作时反而拖慢手感。要动画自己在
         <code>::part(panel)</code> 上加。
       </li>
       <li>
-        <strong>面板打开时才有内容</strong>：没打开时面板在 top layer 之外、不参与布局，
-        所以不需要（也不该）在外面写 <code>display: none</code>。
+        <strong>面板打开时才有内容</strong>：没打开时它不在页面上，所以不需要（也不该）在外面写
+        <code>display: none</code>。
       </li>
     </ul>
 

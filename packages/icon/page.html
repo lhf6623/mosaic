@@ -233,27 +233,15 @@
 
     <h2>注意事项</h2>
     <ul>
+      <li><strong>取不到图标不报错</strong>：不跳版，控制台一条 <code>[mosaic]</code> 警告。</li>
       <li>
-        <strong>取不到图标不报错</strong>：就地留一个 1em 的空盒子（不跳版），控制台一条
-        <code>[mosaic]</code> 警告。
-      </li>
-      <li>
-        <strong>同一个图标全页只取一次</strong>：取失败的名字也只请求一次，多写几个
-        <code>&lt;mc-icon name="mdi:home"&gt;</code> 不会重复发请求。
-      </li>
-      <li>
-        <strong>内置图标是 mask 单色渲染</strong>，改不了描边粗细；品牌多色图用
+        <strong>内置图标改不了描边粗细</strong>（单色渲染）；品牌多色图用
         <code>src</code> 或默认插槽。
       </li>
       <li>
         <strong>别用 sprite</strong>：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit
-        一致拒绝，shadow root 里引用文档级 <code>#id</code> 也不成立 —— 组件把取回的 SVG 直接内联。
+        一致拒绝，要用内置图标就写 <code>name</code>。
       </li>
-      <li>
-        类名 <code>mc-icon-&lt;名字&gt;</code> 是构建期产物，仅高级用法；主用法是
-        <code>name</code>。
-      </li>
-      <li>没有自定义事件；无障碍只看 <code>label</code>。</li>
       <li>
         远程取图走的是公共 API（没有可用性承诺）：要稳定就把 <code>icon-base</code>
         指到自托管镜像。

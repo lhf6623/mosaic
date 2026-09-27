@@ -256,20 +256,11 @@
         <code>role="alert"</code>（紧急）或 <code>role="status"</code>（礼貌）—— 组件不会覆盖它。
       </li>
       <li>
-        <strong>标题属性叫 <code>heading</code> 不是 <code>title</code></strong
-        >：原生 <code>title</code> 会弹浏览器自己的 tooltip；插槽名仍是 <code>title</code>
-        （插槽名不产生属性）。
-      </li>
-      <li>
         <strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>。要在页面上消失，
         自己在事件里 <code>el.remove()</code> 或改数据。
       </li>
       <li>
-        <strong>× 不会把提示条撑高</strong>：32×32 的命中区比行高还高，靠负外边距抵消掉落在上下
-        内边距里的那部分 —— 加不加 <code>closable</code>，单行提示条一样高。
-      </li>
-      <li>
-        <strong>图标是装饰性的</strong>：内置图形带 <code>aria-hidden</code>，含义由文案承担。 换成
+        <strong>图标是装饰性的</strong>：含义由文案承担。换成
         <code>slot="icon"</code> 之后那句话也交给你 —— 纯装饰就自己加 <code>aria-hidden</code>。
       </li>
       <li>
@@ -281,10 +272,6 @@
         <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-alert style="…"&gt;</code> 直接覆盖，
         不需要 <code>!important</code>；结构化定制（图标 / 标题 / 正文 / ×）走
         <code>::part()</code>。
-      </li>
-      <li>
-        <strong>在脏宿主页面里也正常</strong>：不依赖页面 reset，宿主页面的 <code>p</code> /
-        <code>a</code> 全局样式也够不到 shadow 里的结构。
       </li>
     </ul>
 

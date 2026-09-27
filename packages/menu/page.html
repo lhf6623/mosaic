@@ -253,14 +253,13 @@
     <ul>
       <li>
         <strong>交互元素必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code> /
-        <code>&lt;button&gt;</code>）。组件不造链接：站内链接要经 ofa 的
-        <code>olink</code> 带部署前缀，而 <code>olink</code> 只作用于页面模板里的元素。
+        <code>&lt;button&gt;</code>）。组件不造链接：站内链接自己写 ofa 的
+        <code>olink</code> 带上部署前缀。
       </li>
       <li>
         组件不改使用者的 DOM，所以 <code>href</code> / <code>aria-current</code> /
-        <code>disabled</code> / <code>aria-disabled</code> 都写在原生元素上， 别写在
-        <code>&lt;mc-menu-item&gt;</code> 上（组件会把它们镜像成 <code>data-current</code> /
-        <code>data-disabled</code>）。<code>aria-current="false"</code>
+        <code>disabled</code> / <code>aria-disabled</code> 都写在原生元素上，别写在
+        <code>&lt;mc-menu-item&gt;</code> 上。<code>aria-current="false"</code>
         等于没写，不会点亮。
       </li>
       <li>
@@ -269,14 +268,12 @@
       </li>
       <li>
         别给插槽里的 <code>&lt;a&gt;</code> / <code>&lt;button&gt;</code> 写
-        <code>padding</code> 来改缩进：行盒子在 <code>&lt;mc-menu-item&gt;</code> 上， 对
-        <code>&lt;button&gt;</code> 写的 padding 还会被页面的 reset 吃掉。 改缩进用
-        <code>--mc-menu-pad-x</code>，改行高用 <code>--mc-menu-item-h</code>。
+        <code>padding</code> 来改缩进：对 <code>&lt;button&gt;</code> 写的 padding 还会被页面的
+        reset 吃掉。改缩进用 <code>--mc-menu-pad-x</code>，改行高用 <code>--mc-menu-item-h</code>。
       </li>
       <li>
-        禁用项如果用的是 <code>&lt;button&gt;</code>，光标可能仍是手型 —— 页面 reset 对
-        <code>&lt;button&gt;</code> 的 <code>cursor</code> 优先级高于组件内部样式；
-        <code>&lt;a&gt;</code> 没有这个问题。
+        禁用项如果用的是 <code>&lt;button&gt;</code>，光标可能仍是手型 —— 页面 reset 会赢过组件内部
+        样式；<code>&lt;a&gt;</code> 没有这个问题。
       </li>
       <li>分组标题行不可交互，里面只放文字，别塞链接。</li>
       <li>

@@ -187,8 +187,7 @@
         <code>slot="suffix"</code>）；站内链接照旧写 <code>olink</code>。
       </li>
       <li>
-        <strong>整卡可点自己写</strong>（组件不接管）。宿主是 <code>position: relative</code>，
-        给卡内那个元素铺一条伪元素就行：
+        <strong>整卡可点自己写</strong>（组件不接管）：给卡内那个元素铺一条伪元素就行：
         <code
           >a::after { content: ''; position: absolute; inset: calc(var(--mc-card-border-w) * -1);
           cursor: pointer; }</code
@@ -202,8 +201,8 @@
       <li><strong>卡片不留页面 reset</strong>：卡内元素的默认外边距照旧，要归零自己写。</li>
       <li>
         <strong>头尾是通长的整条</strong>：底色 / 边框色写在
-        <code>::part(header)</code> 上都是整条生效； 想给头尾单独加内边距也用
-        part（插槽元素被包在内边距里）。头尾外侧的圆角跟着宿主走， 卡片改成大圆角也不会露出直角。
+        <code>::part(header)</code> 上都是整条生效；想给头尾单独加内边距也用 part。
+        头尾外侧的圆角跟着宿主走，卡片改成大圆角也不会露出直角。
       </li>
       <li>
         <strong>圆角不裁内容</strong>：卡里故意溢出的东西（浮层、贴边徽标）不会被切掉；要让图片或
