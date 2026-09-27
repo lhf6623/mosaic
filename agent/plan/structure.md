@@ -11,10 +11,11 @@
 ```
 mosaic/
 ├── packages/
-│   ├── boot/                      ← 运行时引导
+│   ├── boot/                      ← 运行时引导 + 组件共用的运行时工具
 │   │   ├── mosaic.js              # 手写：attachShadow 补丁 + adopt（唯一必需引入）
 │   │   ├── mosaic.css             # 生成并提交：令牌 + 工具类（可 <link>）
-│   │   └── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
+│   │   ├── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
+│   │   └── scroll-pin.js          # 手写：定住滚动条（跨组件共用，组件 import 它）
 │   ├── color/
 │   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
 │   │   └── page.html              # 令牌文档页
@@ -63,6 +64,11 @@ mosaic/
 
 **没有 `dist/`**。`packages/**` 就是 CDN 上的东西。
 
+**组件共用的 JS 工具**放 `boot/`（分发时本来就必带这一层），组件用一行相对 `import` 引它
+（和文档站组件 `import '../site-map.js'` 同一条路，ofa 编译期会把说明符改写成绝对 URL）。
+现在只有一个：`scroll-pin.js` —— 做「不该改变滚动位置」的原生动作时把滚动条钉住
+（原生 popover 开合时浏览器会顺手滚页面，实测与上游链接写在该文件头）。
+
 **产物与手写文件的分界**：
 
 | 文件                   | 手写 / 生成 | 可否 `<link>`              | 可否 adopt 进 shadow |
@@ -70,6 +76,7 @@ mosaic/
 | `boot/mosaic.js`       | 手写        | —（脚本）                  | 它负责 adopt         |
 | `boot/mosaic.css`      | **生成**    | ✅                         | ✅                   |
 | `boot/shadow-base.css` | 手写        | ❌                         | ✅                   |
+| `boot/scroll-pin.js`   | 手写        | —（模块）                  | 组件 `import` 用     |
 | `color/tokens.css`     | **生成**    | ✅（已被 mosaic.css 包含） | ✅                   |
 
 ---

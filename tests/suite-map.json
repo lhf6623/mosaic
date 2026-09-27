@@ -195,6 +195,7 @@
       "packages/alert/page.html",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
+      "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
@@ -866,6 +867,7 @@
       "index.html",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
+      "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
@@ -1403,6 +1405,10 @@
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs"
+    ],
+    "packages/boot/scroll-pin.js": [
+      "packages/popover/test/popover.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/boot/shadow-base.css": [
       "packages/alert/test/alert.test.mjs",

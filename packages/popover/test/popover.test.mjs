@@ -668,6 +668,43 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ ...gestureGuard, 期望: 300 }),
   );
 
+  /* 工具本身（packages/boot/scroll-pin.js）的直接断言：上面三条走的是组件，这条盯工具契约 */
+  const pinApi = await page.evaluate(async () => {
+    const { snapshotScroll, holdScroll } = await import('/packages/boot/scroll-pin.js');
+    await window.__makeScrollHost();
+    const { host, pop, scroller } = window.__env;
+
+    /* ① snapshotScroll 能穿透 shadow root 与 <slot> 找到那个滚动容器 */
+    const start = scroller.scrollTop; // makeScrollHost 里滚到了 300
+    const restore = snapshotScroll(pop);
+    scroller.scrollTop = 420;
+    restore();
+    const restored = scroller.scrollTop; // 应回到 start
+
+    /* ② holdScroll 在时间窗内钉住…… */
+    const release = holdScroll(snapshotScroll(pop), { hold: 300, owner: pop });
+    scroller.scrollTop = 200; // 模拟浏览器顺手滚
+    await new Promise((r) => requestAnimationFrame(r));
+    const held = scroller.scrollTop;
+
+    /* ③ ……但用户一滚（滚轮）就立刻放手，之后不再拉回 */
+    window.dispatchEvent(new WheelEvent('wheel', { bubbles: true }));
+    scroller.scrollTop = 150;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const afterWheel = scroller.scrollTop;
+    release();
+    host.remove();
+    return { start, restored, held, afterWheel };
+  });
+  check(
+    '工具自身：snapshotScroll 穿 shadow+slot；holdScroll 会钉住、用户一动就放手',
+    pinApi.start === 300 &&
+      pinApi.restored === pinApi.start &&
+      pinApi.held === pinApi.start &&
+      pinApi.afterWheel === 150,
+    JSON.stringify(pinApi),
+  );
+
   /* ------------------------------------------------------------------ *
    * 9. 文档页本身：演示渲染出来了，点了真的会弹（顺带让依赖地图记下
    *    「popover 套件碰过 packages/popover/page.html」这条边）

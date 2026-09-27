@@ -84,15 +84,16 @@
    （用户描述是「点一下页面往上蹿」）。二分结论：触发点是原生 `showPopover()` 这个动作
    （面板留在 DOM 里但不显示时完全不跳；把 `position-anchor` / `position-try-fallbacks`
    摘掉也照跳），与锚点定位、面板样式都无关。而浮层是 `fixed` + top layer，开合它**不该**
-   改变页面滚动位置，所以组件在原生动作前后把位置钉住（`rememberScroll` / `_holdScroll`）。
+   改变页面滚动位置，所以在原生动作前后把位置钉住 —— 用 `packages/boot/scroll-pin.js`
+   （跨组件共用的工具，别的浮层/组件也要兜这件事时直接 `import` 它即可）。
    三种形状都要覆盖，少一种就漏：**① 显示动作里的同步 / 下一帧 / 更晚 task**；
    **② 手势之后、显示之前就被滚**（`attr:open` → 模板重渲染可能先滚，等 `showPopover()`
    再记快照就晚了 —— 所以用手势时刻的位置当锚点）；**③ 浏览器自己发起的关闭**
    （light dismiss / Esc 不走 `hide()`，只有 `beforetoggle` 快照 + `toggle` 回滚能兜住）。
    往上找滚动容器必须穿透 shadow root 与 `<slot>`（正文带住在槽与宿主之间）。
    用户自己滚（滚轮 / 触摸 / 在别处按下）当帧放手：只拦浏览器顺手带出来的位移，不拦人。
-   `packages/popover/test/popover.test.mjs` 对这三种形状各有一条断言（用「模拟浏览器滚页面」
-   的方式，浏览器里不跳也能守住）。
+   `packages/popover/test/popover.test.mjs` 对这三种形状各有一条断言 + 一条工具契约断言
+   （都用「模拟浏览器滚页面」的方式，浏览器里不跳也能守住）。
 
 另外两条：**`right` / `left` 的居中变体要单独写**（`anchor(center)` + `translate: 0 -50%`，
 第一版和 `-start` 合并在一个选择器里，交叉轴贴的是顶边）；**`close` 事件只有一个出口**
