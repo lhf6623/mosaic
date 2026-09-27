@@ -2,6 +2,11 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
+    <!-- ⚠️ mc-button 不在站点级依赖里（外壳只注册 code / icon / collapse / menu / breadcrumb / card），
+         演示的触发按钮用它，就必须本页注册：漏了的话 `*:not(:defined){display:none}`
+         会把没注册的标签连同文字一起藏掉 —— 不报错，只是每个演示的触发按钮都不见（见 P44）。 -->
+    <l-m src="../button/button.html"></l-m>
+
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./popover.html"></l-m>
     <l-m src="./demos/placement.html"></l-m>

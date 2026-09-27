@@ -1,5 +1,5 @@
 /**
- * 站点 · 写法守卫（node-only）：两条结构不变量，都在 `docs/` + `packages/` 里扫源码。
+ * 站点 · 写法守卫（node-only）：三条结构不变量，都在 `docs/` + `packages/` 里扫源码。
  *
  * ① **不允许手写 `class … extends HTMLElement`** —— 组件一律 `<template component>`
  *    （理由与逐条对照见 agent/authoring.md §四「ofa.js 组件骨架」）。
@@ -13,11 +13,20 @@
  *    包裹本身无害（不生成盒子），但每次渲染都打一条 `temp_multi_child` 的 console 警告，
  *    刷屏且容易让人以为站点坏了。要渲染多块时，自己把那段包成一个根（同一层 display:contents）。
  *
+ * ③ **演示区用到的组件必须在那一页注册得到**（站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()`）。
+ *    ofa 给每个组件模板注入了 `*:not(:defined){display:none}`：没注册的标签**连同里面的
+ *    文字一起被藏掉，不报错** —— 于是「演示区的按钮全不见、图标还在、控制台干干净净」。
+ *    这条**不能靠首页碰巧注册过**：深链 + 刷新时首页不一定渲染，于是同一个页面时而正常、
+ *    时而空白（message / popover 两页就这么炸过，见 P44）。
+ *    以前只能验「演示里至少有 1 个已升级的 mc-*」，而演示里的 `mc-icon` 恰好也是 mc-* ——
+ *    正是它让这条漏了过去，所以这条守卫改成**静态**的、逐页逐演示对账。
+ *
  * 不需要浏览器：直接读文件，跑得飞快。
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { READY, slugOf } from '../../docs/site-map.js';
 
 /** 仓库根（本文件在 tests/site/ 下） */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -105,6 +114,71 @@ function fillBlocks(text) {
   return out;
 }
 
+/* ------------------------------------------------------------------ *
+ * ③ 的原料：把 `<l-m src>` / `load('…')` 追成「这一页能拿到哪些组件标签」
+ * ------------------------------------------------------------------ */
+
+/** 仓库相对路径的 `..` 归一（只按 URL 形态算，不碰文件系统） */
+function resolveFrom(fromFile, src) {
+  const parts = fromFile.split('/').slice(0, -1);
+  for (const part of src.split('/')) {
+    if (!part || part === '.') continue;
+    if (part === '..') parts.pop();
+    else parts.push(part);
+  }
+  return parts.join('/');
+}
+
+/** ofa 组件的注册标签：`tag: 'mc-x'` */
+const tagsIn = (text) => [...text.matchAll(/tag:\s*'([\w-]+)'/g)].map((m) => m[1]);
+
+/** 一个文件里 `<l-m src>` 指向的仓库相对路径 */
+const linksIn = (file, text) =>
+  [...text.matchAll(/<l-m\s+src="([^"]+)"/g)].map((m) => resolveFrom(file, m[1]));
+
+/**
+ * 加载这几个 `.html` 之后、整条链上注册得到的标签。
+ * 链有两段：`<l-m>` 会连带处理组件模板内部的 `<l-m>`；组件的 `await load()` 同理
+ * （如 mc-alert → mc-icon）。两条都追，才不会把「靠组件自己带进来的标签」误报成缺注册。
+ */
+function registeredTags(entryFiles) {
+  const tags = new Set();
+  const seen = new Set();
+  const queue = [...entryFiles];
+  while (queue.length) {
+    const file = queue.shift();
+    if (seen.has(file) || !file.endsWith('.html')) continue;
+    seen.add(file);
+    let text;
+    try {
+      text = readFileSync(`${ROOT}${file}`, 'utf8');
+    } catch {
+      continue; // 追到仓库外（CDN 上的路径）就停 —— 那些不归这条守卫管
+    }
+    for (const tag of tagsIn(text)) tags.add(tag);
+    for (const next of linksIn(file, text)) queue.push(next);
+    for (const match of text.matchAll(/load\(\s*'([^']+)'\s*\)/g)) {
+      queue.push(resolveFrom(file, match[1]));
+    }
+  }
+  return tags;
+}
+
+/** 全仓项目组件标签：只有这些会被 ofa 的 `:not(:defined)` 藏掉 */
+const PROJECT_TAGS = new Set(
+  TREES.flatMap((tree) => walk(`${ROOT}${tree}`))
+    .filter((file) => file.endsWith('.html'))
+    .flatMap((file) => tagsIn(readFileSync(file, 'utf8'))),
+);
+
+/** 一个演示文件里出现的项目组件标签（文本里的同名标签会多算，只会更严、不会漏） */
+const usedTagsIn = (text) =>
+  new Set(
+    [...text.matchAll(/<([a-z][\w-]*)[\s>]/g)]
+      .map((match) => match[1])
+      .filter((tag) => PROJECT_TAGS.has(tag)),
+  );
+
 export default async function run({ check }) {
   const files = TREES.flatMap((tree) => walk(`${ROOT}${tree}`));
   const classHits = [];
@@ -139,5 +213,40 @@ export default async function run({ check }) {
     fillHits.length === 0,
     fillHits.join('\n        ') ||
       '两个成对分支（o-if / o-else）请自己包成一层 <div style="display: contents">，见 docs/components/nav.html 的注释',
+  );
+
+  /* ③ 演示区的组件依赖：站点外壳注册的那批 + 本页自己的 <l-m>（含演示自己带的），
+        必须盖住演示里用到的每一个项目组件。缺了不报错、只是被藏起来（P44）。 */
+  const shellText = readFileSync(`${ROOT}docs/layout.html`, 'utf8');
+  const shellTags = registeredTags(linksIn('docs/layout.html', shellText));
+  const unregistered = [];
+
+  for (const component of READY) {
+    const slug = slugOf(component);
+    const pageFile = `packages/${slug}/page.html`;
+    let pageText;
+    try {
+      pageText = readFileSync(`${ROOT}${pageFile}`, 'utf8');
+    } catch {
+      continue; // 没有文档页的组件（藏在 hidden 下的）不归这条管
+    }
+    const pageLinks = linksIn(pageFile, pageText);
+    const available = new Set([...shellTags, ...registeredTags(pageLinks)]);
+
+    for (const demo of pageLinks.filter((link) => link.includes('/demos/'))) {
+      const missing = [...usedTagsIn(readFileSync(`${ROOT}${demo}`, 'utf8'))].filter(
+        (tag) => !available.has(tag),
+      );
+      if (missing.length) {
+        unregistered.push(`${slug}/${demo.split('/').pop()} → 缺 ${missing.join(', ')}`);
+      }
+    }
+  }
+
+  check(
+    `演示区用到的项目组件都在那一页注册得到（${READY.length} 页逐演示对账）`,
+    unregistered.length === 0,
+    unregistered.join('\n        ') ||
+      `站点外壳注册：${[...shellTags].sort().join(' / ')} —— 其余靠各页自己的 <l-m>，见 agent/doc-pages.md §二`,
   );
 }

@@ -130,6 +130,20 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 - 抽屉就是**项目自己的折叠面板**，作者直接写在页面里（`content.css` 里那几条把容器
   的卡片外观压成一条分隔线，头部/内容区走 `::part()`）。它是站点级依赖，
   和 `mc-code` / `mc-collapse` 一起在 `docs/layout.html` 注册一次。
+- ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的只有
+  `mc-code` / `mc-icon` / `mc-collapse(-item)` / `mc-menu(-item)` / `mc-breadcrumb(-item)` /
+  `mc-card` 那一批，**不含 `mc-button`**。漏了的话 ofa 的 `*:not(:defined){display:none}`
+  会把没注册的标签连同文字一起藏掉 —— 不报错，只是演示区里那排按钮整个消失；而且
+  同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就空白（首页碰巧注册过
+  `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过，见 P44）。
+  写法照 `packages/card/page.html`，正文最前面一行：
+
+  ```html
+  <l-m src="../button/button.html"></l-m>
+  ```
+
+  11 号套件逐页对账这条（站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()` 必须盖住演示里用到的每个项目组件）。
+
 - **代码的路径按写它的那个文件解析**（和 `<link href>` 一样），所以例子里的相对
   `src` 要从 `demos/` 往上数；`<mc-code src="./demos/x.html">` 则相对文档页。
 - 冒烟测试逐页守这条约定：每个 `.doc-demo` 都有一个 `demo-*` 例子组件 + 一个抽屉、

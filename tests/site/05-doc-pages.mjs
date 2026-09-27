@@ -100,10 +100,22 @@ const demoDrawer = await (async () => {
         () => {
           const sections = window.__deepAll('section.doc-demo');
           const drawers = window.__deepAll('section.doc-demo > mc-collapse.doc-demo-code');
+          /* 还要等演示里的 mc-* 全部升级：页面自己的 <l-m> 与演示的 <l-m> 是并行加载的，
+             抽屉（外壳级依赖）先到不代表演示内部的按钮也到了 —— 不等就会偶发假失败。 */
+          const upgraded = sections.every((section) => {
+            const host = [...section.children].find((el) =>
+              el.tagName.toLowerCase().startsWith('demo-'),
+            );
+            if (!host?.shadowRoot) return false;
+            return [...host.shadowRoot.querySelectorAll('*')].every(
+              (el) => !el.tagName.toLowerCase().startsWith('mc-') || !!el.shadowRoot,
+            );
+          });
           return (
             sections.length > 0 &&
             sections.length === drawers.length &&
-            drawers.every((d) => d.querySelector('mc-collapse-item mc-code[src]'))
+            drawers.every((d) => d.querySelector('mc-collapse-item mc-code[src]')) &&
+            upgraded
           );
         },
         { timeout: 8000 },
@@ -132,6 +144,16 @@ const demoDrawer = await (async () => {
                 (el) => el.tagName.toLowerCase().startsWith('mc-') && !!el.shadowRoot,
               ).length
             : 0,
+          /* 演示里**没升级**的项目组件。ofa 给每个组件模板注入了 `*:not(:defined){display:none}`，
+             没注册的标签会连同里面的文字一起被藏掉、**不报错** —— 上面那个「≥1 个已升级」正是
+             被演示里的 mc-icon 蒙过去的（演示的按钮全不见、图标还在，见 P44）。 */
+          demoUnupgraded: host?.shadowRoot
+            ? [...host.shadowRoot.querySelectorAll('*')]
+                .filter(
+                  (el) => el.tagName.toLowerCase().startsWith('mc-') && !el.shadowRoot,
+                )
+                .map((el) => el.tagName.toLowerCase())
+            : [],
           drawerExists: !!drawer,
           open: !!item?.open,
           label: item?.getAttribute('header') ?? null,
@@ -227,6 +249,22 @@ check(
   '每个演示的活样例都渲染出了组件（≥1 个已升级的 mc-*，空演示拦在这里）',
   drawerPages.every((x) => x.demos.every((d) => d.demoLive > 0)),
   deadDemos.length ? deadDemos.join(' · ') : `${drawerTotal} 个演示全部有内容`,
+);
+
+/* 再往前一步：演示里的**每一个** mc-* 都必须升级。只要求「≥1 个」时，演示里的 mc-icon
+   就能把「按钮全没注册」这种情况蒙过去 —— 而没注册的标签被 ofa 的
+   `*:not(:defined){display:none}` 连文字一起藏掉，控制台一条报错都没有（见 P44）。
+   静态那一半在 11 号套件（逐页对账演示用到的组件有没有本页注册），这里是运行时的兜底。 */
+const unupgradedDemos = Object.entries(demoDrawer.pages).flatMap(([slug, x]) =>
+  x.demos
+    .filter((d) => (d.demoUnupgraded ?? []).length > 0)
+    .map((d) => `${slug}: ${d.demoTag} → ${d.demoUnupgraded.join(' / ')} 未升级`),
+);
+
+check(
+  '演示里的每个 mc-* 都升级了（漏注册的标签会被 :not(:defined) 静默藏掉）',
+  drawerPages.every((x) => x.demos.every((d) => (d.demoUnupgraded ?? []).length === 0)),
+  unupgradedDemos.length ? unupgradedDemos.join(' · ') : `${drawerTotal} 个演示全部升级`,
 );
 
 /* 演示区的段落顺序（标题 → 说明（可选）→ 组件 → 代码）：**7 页全部迁完**，所以这里盯所有页。
