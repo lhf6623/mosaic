@@ -28,10 +28,15 @@
 | `arrow`     | 布尔                                                     | —        | 面板上一个小三角，方向跟着 `placement`   |
 
 组件令牌（写在宿主 `style="…"` 上按实例覆盖）：
-`--mc-popover-offset`（面板到触发元素的距离）、`--mc-popover-panel-bg`、
-`--mc-popover-panel-border`（**轮廓色**，默认 `--mc-color-border-strong`：面板不画 `border`，
-一圈描边是 drop-shadow 跟「面板 + 三角」整体轮廓做的，三角共用这一条）、
-`--mc-popover-panel-radius`、`--mc-popover-panel-pad`、`--mc-popover-panel-min-width`。
+
+| 令牌                           | 默认                        | 作用                                                                                                |
+| ------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------- |
+| `--mc-popover-offset`          | `--mc-space-2`              | 面板到触发元素的距离（四个方向同一档）                                                              |
+| `--mc-popover-panel-bg`        | `--mc-color-surface-raised` | 面板底色                                                                                            |
+| `--mc-popover-panel-border`    | `--mc-color-border-strong`  | **轮廓色**：面板不画 `border`，一圈描边是 drop-shadow 跟「面板 + 三角」整体轮廓做的，三角共用这一条 |
+| `--mc-popover-panel-radius`    | `--mc-radius-lg`            | 面板圆角                                                                                            |
+| `--mc-popover-panel-pad`       | `--mc-space-4`              | 面板内边距                                                                                          |
+| `--mc-popover-panel-min-width` | `0`                         | 最小宽度：菜单类面板太窄会显得挤，也避免贴边翻转后宽度抖动                                          |
 
 ## 方法
 

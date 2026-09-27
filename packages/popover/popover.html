@@ -47,7 +47,7 @@
          1px 实线淡一档（最暗像素 222 vs 旧边框 213），取 strong 才与旧观感相当；暗色下
          border 与面板底色同为 neutral-800（一圈看不见），也只有 strong 才有轮廓。 */
       --mc-popover-offset: var(--mc-space-2);
-      --mc-popover-anchor: --mc-popover-anchor;
+      --mc-popover-anchor: --mc-popover-anchor; /* @internal：给 anchor-name / position-anchor 用的标识，不是使用者覆盖点 */
       --mc-popover-panel-bg: var(--mc-color-surface-raised);
       --mc-popover-panel-border: var(--mc-color-border-strong);
       --mc-popover-panel-radius: var(--mc-radius-lg);
@@ -206,22 +206,30 @@
 
     :host([arrow]) .mc-panel[data-side='bottom'] .mc-arrow {
       top: calc(var(--mc-space-3) / -2);
-      left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
+      left: calc(
+        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
+      ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(50% 0, 100% 100%, 0 100%);
     }
     :host([arrow]) .mc-panel[data-side='top'] .mc-arrow {
       bottom: calc(var(--mc-space-3) / -2);
-      left: calc(50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2);
+      left: calc(
+        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
+      ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 0, 50% 100%);
     }
     :host([arrow]) .mc-panel[data-side='left'] .mc-arrow {
       right: calc(var(--mc-space-3) / -2);
-      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
+      top: calc(
+        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
+      ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 50%, 0 100%);
     }
     :host([arrow]) .mc-panel[data-side='right'] .mc-arrow {
       left: calc(var(--mc-space-3) / -2);
-      top: calc(50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2);
+      top: calc(
+        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
+      ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(100% 0, 0 50%, 100% 100%);
     }
 

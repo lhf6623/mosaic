@@ -14,6 +14,7 @@
 | 写组件前扫一遍「静默失效」的坑                       | [踩坑清单](pitfalls/README.md)（44 条，按主题分节）              |
 | 改配色 / 加令牌 / 换肤                               | [`design-tokens.md`](./design-tokens.md)                         |
 | 选间距 / 排版 / 动效 / 层级 / 文案                   | [`design-spec.md`](./design-spec.md)                             |
+| 对账「文档和代码有没有脱节」                         | `pnpm check:docs`（约定在 `tools/doc-drift.config.mjs`）         |
 | 项目定位、关键决策、里程碑、风险                     | [`plan/`](./plan/README.md)（定位 / 决策 / 目录与构建 / 里程碑） |
 
 **默认不用读的**（除非明确要考古）：
@@ -27,7 +28,9 @@
 - **实现说明**写在组件文件头（`packages/<name>/*.html` 顶部的注释块）；
 - **页面上的用法**写在文档页自己（`packages/<name>/page.html`）；
 - 组件清单与逐组件接口的**唯一真相源**是 [组件 API 规范](api/README.md)，
-  改了组件 API 先改它，再改文档页。
+  改了组件 API 先改它，再改文档页；
+- 这三处（规范 / 文档页 / 组件代码）**有没有对上由 `pnpm check:docs` 守**：
+  它只认 `tools/doc-drift.config.mjs` 里的约定，所以改约定改配置、别改引擎。
 
 ## 现在长什么样
 

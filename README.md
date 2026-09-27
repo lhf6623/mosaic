@@ -71,9 +71,11 @@ mc-button::part(base) {
 
 ```bash
 pnpm install
-pnpm build   # 生成令牌与工具类 CSS（产物提交进仓库）
-pnpm dev     # 打开文档站：http://localhost:8642
-pnpm test    # 浏览器冒烟测试（另开一个终端先 pnpm dev）
+pnpm build        # 生成令牌与工具类 CSS（产物提交进仓库）
+pnpm check:tokens # 令牌自检：色板与对比度
+pnpm check:docs   # 文档 ↔ 代码对账：接口表 / 页面骨架 / 索引 / 路径 / 数字
+pnpm dev          # 打开文档站：http://localhost:8642
+pnpm test         # 浏览器冒烟测试（另开一个终端先 pnpm dev）
 ```
 
 组件本体**不需要构建**：`packages/**` 源即产物，`pnpm build` 只产出共享 CSS

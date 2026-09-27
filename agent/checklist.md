@@ -122,6 +122,9 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
 
 工程
 [ ] pnpm build 通过，产物体积没有异常增长
+[ ] pnpm check:docs 绿：接口表（agent/api 规范 + 文档页）与组件代码一一对上，
+      页面骨架 / 索引 / 文档里点名的路径与数字都没有脱节
+      （改的是**约定**而不是内容时，改的是 tools/doc-drift.config.mjs，不是引擎）
 [ ] 新增的令牌已加进 tools/gen-tokens.mjs（如果涉及色板）
 [ ] 新增的公共工具类已加进 uno.config.ts 的精选子集（如果使用者会用到）
 [ ] pnpm dev 验收页确认无误（`tools/serve.mjs`，零依赖、`no-store`；不要用别的静态服务器，见 P24）

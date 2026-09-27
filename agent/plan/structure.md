@@ -28,7 +28,9 @@ mosaic/
 ├── tools/
 │   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
 │   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
-│   └── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
+│   ├── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
+│   ├── doc-drift/                 # 文档 ↔ 代码对账引擎（通用副本 + 版本号，见下）
+│   └── doc-drift.config.mjs       # 本仓的约定（表头 / 骨架 / 豁免 / 要对账的数字）
 ├── uno.config.ts                  # 纯声明式配置，不引 node: 内置模块
 ├── tsconfig.json                  # 只覆盖 uno.config.ts，供 IDE 与 pnpm typecheck
 ├── index.html                     # 入口：只做引入（路由库 + o-app 挂载点）
@@ -92,9 +94,20 @@ pnpm build:css     # unocss -c uno.config.ts → packages/boot/mosaic.css
 pnpm dev:css       # 同上，watch 模式
 pnpm build         # = tokens && build:css
 pnpm check:drift   # CI：重新生成后 git diff --exit-code，防止产物与生成器漂移
+pnpm check:docs    # 文档 ↔ 代码对账：tools/doc-drift/drift.mjs 读 tools/doc-drift.config.mjs
 pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
 pnpm format:check  # prettier 只检查
 ```
+
+**`check:docs` 的两份东西分工**（改约定时只看第一个）：
+
+| 文件                         | 是什么                                                        | 什么时候改                                                                    |
+| ---------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `tools/doc-drift.config.mjs` | 本仓的约定：文件放哪、表头叫什么、什么算豁免、哪些数字要对账  | **约定变了改这里**                                                            |
+| `tools/doc-drift/`           | 通用引擎副本（零仓库知识），来自用户级 skill `doc-code-drift` | 引擎升版才动：`node ~/.dsh/skills/doc-code-drift/recipes/vendor.mjs --repo .` |
+
+引擎副本带版本号（`node tools/doc-drift/drift.mjs --version`）；仓库这份是给 CI / 别人 clone 用的，
+不依赖本机装没装 skill。
 
 **发布流程**：
 

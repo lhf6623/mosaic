@@ -75,7 +75,7 @@
       z-index: 1;
       flex: none;
       /* 列宽由 JS 按总行数写进 --mc-code-ln-w，三位数行号也不会挤 */
-      width: var(--mc-code-ln-w, 2.5em);
+      width: var(--mc-code-ln-w, 2.5em); /* @internal：JS 按行数写入，不是使用者的覆盖点 */
       padding-right: var(--mc-space-3);
       background-color: rgb(var(--mc-code-fill));
       color: rgb(var(--mc-code-dim));

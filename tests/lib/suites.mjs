@@ -24,6 +24,7 @@ const SITE = [
   ['site/10-nav-data.mjs', '站点 · 导航数据对账'],
   ['site/11-no-class-components.mjs', '站点 · 写法守卫（node-only）'],
   ['site/12-affected.mjs', '站点 · 选测中间层（node-only）'],
+  ['site/13-docs-drift.mjs', '站点 · 文档与代码对账（node-only）'],
 ];
 
 export const siteSuites = () =>

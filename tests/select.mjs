@@ -178,8 +178,13 @@ function fallback(file, suites, byFile) {
  * 无论怎么改都跑的套件：它们断言的是「全仓的静态事实」（fs 扫 docs/ 与 packages/），
  * import 不到、HTTP 也录不到，静态推不出来 —— 而代价趋近 0（node-only）。
  * 漏了它们等于漏掉那类守卫，所以宁可跑。
+ *
+ * 导出给 12 号套件对账（「纯文档改动也必须带上这些」），加一条守卫不用改两处。
  */
-const ALWAYS_RUN = new Set(['tests/site/11-no-class-components.mjs']);
+export const ALWAYS_RUN = new Set([
+  'tests/site/11-no-class-components.mjs',
+  'tests/site/13-docs-drift.mjs',
+]);
 
 export function selectSuites({ changed, suites = allSuites(), map = loadMap() }) {
   const paths = suites.map((s) => s.path);

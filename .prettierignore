@@ -23,3 +23,8 @@ packages/*/demos/*.html
 
 # 外部资料的摘录（几十 KB 的抓取原文，不是我们写的）
 agent/research/
+
+# 对账引擎的**仓库副本**（从 skill `doc-code-drift` 拷进来的，与 skill 里那份逐字节相同）。
+# 它不该被本仓的 prettier 重排 —— 一排就和 skill 那份分叉，「引擎副本是最新的」再也没法用比字节来验。
+# 本仓自己的约定在 tools/doc-drift.config.mjs（那份照常格式化）。
+tools/doc-drift/

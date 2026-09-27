@@ -12,6 +12,7 @@
 
 import { READY, slugOf } from '../../docs/site-map.js';
 import {
+  ALWAYS_RUN,
   changedFiles,
   loadMap,
   normalizePath,
@@ -148,12 +149,16 @@ export default async function run({ check }) {
     JSON.stringify(docs.notes.map((n) => [n.file, n.suites])),
   );
 
-  /** 真实清单里那条静态守卫（11 扫全仓、跑一次 0.0s）在任何改动下都该被带上 */
+  /** 真实清单里的静态守卫（11 扫写法、13 扫文档 ↔ 代码，跑一次 0.0s）在任何改动下都该被带上 */
   const realDocs = selectSuites({ changed: ['README.md'], suites, map });
+  const alwaysRun = [...ALWAYS_RUN].filter((path) => paths.includes(path)).sort();
+  const picked = [...realDocs.selected].sort();
   check(
-    '真实清单：纯文档也不漏掉「总是跑」的静态守卫（11 号，扫全仓的 node-only 守卫）',
-    recording || realDocs.selected.every((p) => p === 'tests/site/11-no-class-components.mjs'),
-    JSON.stringify(realDocs.selected),
+    `真实清单：纯文档也不漏掉「总是跑」的静态守卫（${alwaysRun.length} 号：${alwaysRun
+      .map((path) => path.replace('tests/site/', ''))
+      .join(' / ')}）`,
+    recording || JSON.stringify(picked) === JSON.stringify(alwaysRun),
+    JSON.stringify(picked),
   );
 
   const unknown = pick(['some/new-thing.bin']);

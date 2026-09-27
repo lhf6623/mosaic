@@ -55,7 +55,10 @@
        ⚠️ 属性走 -attr 这个内部变量，不写 --mc-breadcrumb-sep：两者落在同一个内联属性上，
        JS 覆盖 / 清理它会把使用者写在 style 上的令牌一起抹掉（实测踩过） */
     ::slotted(mc-breadcrumb-item:not(:first-child))::before {
-      content: var(--mc-breadcrumb-sep-attr, var(--mc-breadcrumb-sep));
+      content: var(
+        --mc-breadcrumb-sep-attr,
+        var(--mc-breadcrumb-sep)
+      ); /* @internal：属性写进来的内部变量 */
       margin-inline-end: var(--mc-breadcrumb-gap);
       color: rgb(var(--mc-breadcrumb-sep-color));
       user-select: none;

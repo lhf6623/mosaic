@@ -8,6 +8,7 @@
     "icons": "node tools/gen-icons.mjs",
     "tokens": "node tools/gen-tokens.mjs",
     "check:tokens": "node tools/gen-tokens.mjs --check",
+    "check:docs": "node tools/doc-drift/drift.mjs",
     "build:css": "node tools/build-css.mjs",
     "build": "pnpm icons && pnpm tokens && pnpm build:css",
     "check:drift": "pnpm build && git diff --exit-code -- packages/color/tokens.css packages/boot/mosaic.css packages/icon/icons.generated.ts packages/icon/icons.license.txt",

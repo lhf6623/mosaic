@@ -3,7 +3,7 @@
  * Mosaic 端到端冒烟测试入口（playwright-core + 系统 Chrome）。
  *
  * 用法（先起 `pnpm dev`）：
- *   node tests/smoke.mjs                 全量：12 个站点套件 + 每个 READY 组件的套件（默认并行 4）
+ *   node tests/smoke.mjs                 全量：13 个站点套件 + 每个 READY 组件的套件（默认并行 4）
  *   node tests/smoke.mjs --changed       只跑**工作区改动**命中的套件（选测中间层，见 tests/select.mjs）
  *   node tests/smoke.mjs --changed main  只跑与 `main` 有差异的部分（含未跟踪文件）
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）

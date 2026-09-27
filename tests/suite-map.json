@@ -929,6 +929,15 @@
       "packages/icon/icon.html",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html"
+    ],
+    "tests/site/13-docs-drift.mjs": [
+      "docs/site-map.js",
+      "tests/lib/suites.mjs",
+      "tests/site/13-docs-drift.mjs",
+      "tools/doc-drift.config.mjs",
+      "tools/doc-drift/drift.mjs",
+      "tools/doc-drift/lib/parse.mjs",
+      "tools/doc-drift/lib/version.mjs"
     ]
   },
   "byFile": {
@@ -1230,7 +1239,8 @@
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs",
       "tests/site/10-nav-data.mjs",
-      "tests/site/12-affected.mjs"
+      "tests/site/12-affected.mjs",
+      "tests/site/13-docs-drift.mjs"
     ],
     "docs/snippets/highlight-demo.js": [
       "packages/code/test/code.test.mjs",
@@ -2092,7 +2102,8 @@
       "tests/site/03-home-poster.mjs"
     ],
     "tests/lib/suites.mjs": [
-      "tests/site/12-affected.mjs"
+      "tests/site/12-affected.mjs",
+      "tests/site/13-docs-drift.mjs"
     ],
     "tests/select.mjs": [
       "tests/site/12-affected.mjs"
@@ -2132,6 +2143,21 @@
     ],
     "tests/site/12-affected.mjs": [
       "tests/site/12-affected.mjs"
+    ],
+    "tests/site/13-docs-drift.mjs": [
+      "tests/site/13-docs-drift.mjs"
+    ],
+    "tools/doc-drift.config.mjs": [
+      "tests/site/13-docs-drift.mjs"
+    ],
+    "tools/doc-drift/drift.mjs": [
+      "tests/site/13-docs-drift.mjs"
+    ],
+    "tools/doc-drift/lib/parse.mjs": [
+      "tests/site/13-docs-drift.mjs"
+    ],
+    "tools/doc-drift/lib/version.mjs": [
+      "tests/site/13-docs-drift.mjs"
     ]
   }
 }
