@@ -553,6 +553,122 @@ export default async function run({ page, visit, check }) {
   await dropPopover();
 
   /* ------------------------------------------------------------------ *
+   * 8.5 浮层的开合**不该改变页面的滚动位置**
+   *
+   * 火狐实测：点一下触发元素，站点的正文带会跳一段（用户看到「点一下页面往上蹿」）；
+   * 二分证明触发点就是原生 `showPopover()` 这个动作 —— 面板留在 DOM 里但不显示时完全不跳，
+   * 摘掉锚点定位也照跳。浮层是 fixed + top layer，开合它不该动页面滚动，所以组件在两个
+   * 原生动作前后把位置钉住。这里把宿主放进**真实结构**（shadow root 里的滚动容器 +
+   * `<slot>` 投递，和站点外壳的 `.doc-main` 同构），再造两次「浏览器顺手滚了页面」：
+   *   · 显示时：同步滚一次、下一帧再滚一次、150ms 后再滚一次（受控那条路的形状）；
+   *   · 关闭时：**浏览器自己发起的 light dismiss**（不走 hide()/syncOpen()），靠
+   *     `beforetoggle` 快照 + `toggle` 回滚兜住 —— 关闭要做「焦点归还」，那一步会把页面滚走。
+   * ------------------------------------------------------------------ */
+  await page.evaluate(() => {
+    /** 造宿主：滚动容器在 shadow root 里、内容靠 <slot> 投递；结果放在 window.__env */
+    window.__makeScrollHost = async () => {
+      const host = document.createElement('div');
+      host.style.cssText = 'position: fixed; left: 40px; top: 40px; width: 220px;';
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `<div class="scroller" style="height:160px;overflow:auto">
+        <div style="height:900px"></div>
+        <slot></slot>
+      </div>`;
+      document.body.append(host);
+
+      const pop = document.createElement('mc-popover');
+      pop.innerHTML = '<button>t</button><div slot="panel">panel</div>';
+      host.append(pop);
+      for (let i = 0; i < 100 && !pop.shadowRoot?.querySelector('.mc-panel'); i++) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
+      const scroller = shadow.querySelector('.scroller');
+      scroller.scrollTop = 300;
+      window.__env = { host, pop, panel: pop.shadowRoot.querySelector('.mc-panel'), scroller };
+      return true;
+    };
+  });
+
+  const scrollGuard = await page.evaluate(async () => {
+    await window.__makeScrollHost();
+    const { host, pop, panel, scroller } = window.__env;
+
+    const orig = panel.showPopover.bind(panel);
+    panel.showPopover = () => {
+      orig();
+      scroller.scrollTop += 250; // 同步滚
+      requestAnimationFrame(() => {
+        scroller.scrollTop += 250; // 下一帧再滚
+      });
+      setTimeout(() => {
+        scroller.scrollTop += 250; // 更晚的一次（受控那条路的重渲染）
+      }, 150);
+    };
+
+    $(pop).show();
+    const afterShow = scroller.scrollTop;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const afterFrame = scroller.scrollTop;
+    await new Promise((r) => setTimeout(r, 400));
+    const afterLate = scroller.scrollTop;
+    host.remove();
+    return { afterShow, afterFrame, afterLate };
+  });
+  check(
+    '显示浮层不会把页面滚走（原生动作里的滚动被回滚：同步 / 下一帧 / 更晚的 task 都算）',
+    scrollGuard.afterShow === 300 && scrollGuard.afterFrame === 300 && scrollGuard.afterLate === 300,
+    JSON.stringify({ ...scrollGuard, 期望: 300 }),
+  );
+
+  /* 浏览器自己关掉（light dismiss / Esc）：**不经过 hide()/syncOpen()**，只有 beforetoggle/toggle 两个钩子 */
+  const dismissGuard = await page.evaluate(async () => {
+    await window.__makeScrollHost();
+    const { host, pop, panel, scroller } = window.__env;
+    $(pop).show();
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const origHide = panel.hidePopover.bind(panel);
+    panel.hidePopover = () => {
+      origHide(); // 等价浏览器 light dismiss：直接调原生，不经过组件的 hide()
+      scroller.scrollTop += 250;
+      requestAnimationFrame(() => {
+        scroller.scrollTop += 250;
+      });
+    };
+    panel.hidePopover();
+    await new Promise((r) => setTimeout(r, 400));
+    const afterDismiss = scroller.scrollTop;
+    const stillOpen = panel.matches(':popover-open');
+    host.remove();
+    return { afterDismiss, stillOpen };
+  });
+  check(
+    '浏览器自己关掉浮层（light dismiss / Esc 那条路）也不该把页面滚走',
+    dismissGuard.afterDismiss === 300 && dismissGuard.stillOpen === false,
+    JSON.stringify({ ...dismissGuard, 期望: 300 }),
+  );
+
+  /* 手势之后、**显示之前**就被滚走：受控开合那条路 —— 外部按钮改数据 → 模板重渲染，
+     浏览器可能在这时就把页面滚了，等我们 showPopover 时再记快照已经晚了 */
+  const gestureGuard = await page.evaluate(async () => {
+    await window.__makeScrollHost();
+    const { host, pop, scroller } = window.__env;
+    document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true })); // ① 手势
+    scroller.scrollTop += 250; // ② 浏览器在显示动作之前先把页面滚了
+    $(pop).show(); // ③ 再显示
+    const afterShow = scroller.scrollTop;
+    await new Promise((r) => setTimeout(r, 400));
+    const afterLate = scroller.scrollTop;
+    host.remove();
+    return { afterShow, afterLate };
+  });
+  check(
+    '手势之后、显示之前被滚走也要拉回来（受控开合那条路：重渲染先滚、showPopover 后到）',
+    gestureGuard.afterShow === 300 && gestureGuard.afterLate === 300,
+    JSON.stringify({ ...gestureGuard, 期望: 300 }),
+  );
+
+  /* ------------------------------------------------------------------ *
    * 9. 文档页本身：演示渲染出来了，点了真的会弹（顺带让依赖地图记下
    *    「popover 套件碰过 packages/popover/page.html」这条边）
    * ------------------------------------------------------------------ */

@@ -237,7 +237,13 @@
 
   <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
        ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
-  <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="auto"
+    on:beforetoggle="onBeforeToggle"
+    on:toggle="onNativeToggle"
+  >
     <span class="mc-arrow" part="arrow" aria-hidden="true"></span>
     <slot name="panel"></slot>
   </div>
@@ -253,6 +259,61 @@
     const rectOf = (el) => {
       const box = el?.getBoundingClientRect();
       return box && (box.width || box.height) ? box : null;
+    };
+
+    /** 滚动守在原生动作之后还要盯多久（ms）：够覆盖「显示 + 随后的模板重渲染」，又不至于黏手 */
+    const SCROLL_GUARD_MS = 300;
+
+    /** 用户在窗口上一动就放开滚动守卫的事件（滚轮 / 按下 / 触摸，判定见 _holdScroll） */
+    const SCROLL_GUARD_RELEASE_ON = ['wheel', 'pointerdown', 'touchstart'];
+
+    /** 用户手势：在这些事件上记一份滚动快照，供 _scrollRestoreFor 选锚点 */
+    const SCROLL_GUARD_GESTURES = ['pointerdown', 'keydown'];
+
+    /**
+     * 记下「这个浮层所在的滚动环境」的位置，返回一个回滚函数。
+     *
+     * 为什么需要它：**显示原生浮层时，浏览器可能顺手把页面滚一下**。实测火狐 156：
+     * 点一下触发元素，站点的正文带（`docs/layout.html` 里的 `.doc-main`）会跳一段 ——
+     * 二分证明触发点就是原生 `showPopover()` 这个动作（面板留在 DOM 里但不显示时完全不跳，
+     * 摘掉锚点定位也照跳）。而浮层是 `position: fixed` + top layer，**显示它不该改变
+     * 页面的滚动位置**，所以显示前后把位置记下来、变了就回滚。
+     *
+     * ⚠️ 往上找容器必须**穿透 shadow root 与 slot**：正文带 `.doc-main` 住在外壳自己的
+     * shadow root 里，页面正文是 `<slot>` 投递进去的 —— 只走 `parentElement` 会跳过它
+     * （`assignedSlot` 那一步就是为这个）。文档滚动容器也一并记上。
+     */
+    const rememberScroll = (el) => {
+      const boxes = [];
+      const add = (box) => {
+        if (box && !boxes.some(([seen]) => seen === box)) {
+          boxes.push([box, box.scrollLeft, box.scrollTop]);
+        }
+      };
+
+      for (let node = el; node;) {
+        if (
+          node instanceof Element &&
+          (node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1)
+        ) {
+          add(node);
+        }
+        /* 往上走三步：① 被 `<slot>` 投递 → 进投递它的那棵 shadow tree（`assignedSlot`）；
+           ② 同一棵树里继续 `parentElement`（**这一步不能省**：正文带就住在槽与宿主之间）；
+           ③ 走到 shadow tree 顶端才跨出去到宿主。 */
+        node =
+          node.assignedSlot ??
+          node.parentElement ??
+          (node.getRootNode() instanceof ShadowRoot ? node.getRootNode().host : null);
+      }
+      add(document.scrollingElement);
+
+      return () => {
+        for (const [box, left, top] of boxes) {
+          if (box.scrollTop !== top) box.scrollTop = top;
+          if (box.scrollLeft !== left) box.scrollLeft = left;
+        }
+      };
     };
 
     export default () => ({
@@ -280,6 +341,15 @@
           if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
         };
         window.addEventListener('resize', this._onViewport, { passive: true });
+        /* 用户手势当「快照锚点」：有些路径（外部按钮改数据 → `attr:open` → 模板重渲染 →
+           watch → `showPopover()`）浏览器可能在**我们的显示动作之前**就把页面滚了，
+           那时只有手势那一刻的位置能代表"用户看到的位置"。见 _scrollRestoreFor。 */
+        this._onGesture = () => {
+          this._gestureScroll = { at: performance.now(), restore: rememberScroll(this.ele) };
+        };
+        for (const type of SCROLL_GUARD_GESTURES) {
+          document.addEventListener(type, this._onGesture, { capture: true, passive: true });
+        }
         /* 老浏览器没有 popover API 时不炸：整块功能降级为「面板常显」由 CSS 兜，
            这里只标记不可用，交互一律不动 */
         this.popoverOk = typeof panel?.showPopover === 'function';
@@ -291,6 +361,9 @@
       detached() {
         clearTimeout(this._hoverTimer);
         window.removeEventListener('resize', this._onViewport);
+        for (const type of SCROLL_GUARD_GESTURES) {
+          document.removeEventListener(type, this._onGesture, { capture: true });
+        }
       },
 
       watch: {
@@ -318,8 +391,66 @@
           if (!this.mounted || !this.popoverOk) return;
           const shouldOpen = this.ele.hasAttribute('open');
           const isOpen = this.panel.matches(':popover-open');
-          if (shouldOpen && !isOpen) this.panel.showPopover();
-          else if (!shouldOpen && isOpen) this.panel.hidePopover();
+          /* 显示 / 收起都是原生动作，而浏览器可能顺手把页面滚一下（见 rememberScroll） */
+          if (shouldOpen && !isOpen) this._keepScroll(() => this.panel.showPopover());
+          else if (!shouldOpen && isOpen) this._keepScroll(() => this.panel.hidePopover());
+        },
+
+        /**
+         * 执行一个原生显示 / 收起动作，并把页面的滚动位置钉住（见 _holdScroll）。
+         */
+        _keepScroll(action) {
+          const restore = this._scrollRestoreFor();
+          action();
+          this._holdScroll(restore);
+        },
+
+        /**
+         * 这次交互该回到哪个滚动位置：
+         * 手势刚发生（同一个交互）就用**手势那一刻**的位置 —— 浏览器可能在我们的显示动作
+         * 之前就先滚过了（受控开合那条路就是这样）；否则用此刻的位置。
+         */
+        _scrollRestoreFor() {
+          const gesture = this._gestureScroll;
+          if (gesture && performance.now() - gesture.at < SCROLL_GUARD_MS) return gesture.restore;
+          return rememberScroll(this.ele);
+        },
+
+        /**
+         * 把页面的滚动位置钉住：先同步回滚一次，再在**一个短时间窗内**继续盯。
+         *
+         * 为什么要按时间窗盯而不是只回滚一次：浏览器的位移不一定落在下一帧（实测「受控开合」
+         * 那条路：外部按钮改数据 → `attr:open` → 模板重渲染 → watch → `showPopover()`，
+         * 位移会被推到更晚的 task）。用户自己开始滚（滚轮 / 触摸；在别处按下也算）就立刻放手 ——
+         * **只拦浏览器顺手带出来的位移，不拦人**。
+         */
+        _holdScroll(restore) {
+          if (typeof restore !== 'function') return;
+          restore();
+
+          let released = false;
+          const release = (event) => {
+            /* 滚轮一律算「人在滚」；按下 / 触摸只在本组件之外才算（按在浮层或触发元素上，
+               那一下往往正是开合本身，不能算） */
+            if (event.type === 'wheel' || !(event.composedPath?.().includes(this.ele) ?? false)) {
+              released = true;
+            }
+          };
+          for (const type of SCROLL_GUARD_RELEASE_ON) {
+            window.addEventListener(type, release, { passive: true });
+          }
+          const until = performance.now() + SCROLL_GUARD_MS;
+          const watch = () => {
+            if (!released) restore();
+            if (released || performance.now() >= until) {
+              for (const type of SCROLL_GUARD_RELEASE_ON) {
+                window.removeEventListener(type, release);
+              }
+              return;
+            }
+            requestAnimationFrame(watch);
+          };
+          requestAnimationFrame(watch);
         },
 
         /** 打开。可被 before-open 拦掉（返回 false / preventDefault）。 */
@@ -436,7 +567,21 @@
           }
         },
 
+        /**
+         * `beforetoggle` 在状态**变化之前**触发 —— 而且浏览器的 light dismiss / Esc 也会发它。
+         * 拿它当「快照锚点」：关闭时的焦点归还、显示时的 top layer 插入都可能让浏览器顺手滚一下，
+         * 而那一刻我们还没法从 `toggle` 里拿到"原来的位置"。见 onNativeToggle。
+         */
+        onBeforeToggle() {
+          this._scrollBeforeToggle = this._scrollRestoreFor();
+        },
+
         onNativeToggle(event) {
+          /* 状态已经变了：先把 beforetoggle 时记下的滚动位置钉回去（含 light dismiss 这种
+             浏览器自己发起的关闭 —— 它不走 hide()/syncOpen()，是之前漏掉的那条路）。 */
+          this._holdScroll(this._scrollBeforeToggle);
+          this._scrollBeforeToggle = null;
+
           const nowOpen = event.newState === 'open';
           if (nowOpen) {
             /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */
