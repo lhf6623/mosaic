@@ -16,20 +16,23 @@ mosaic/
 │   │   ├── mosaic.css             # 生成并提交：令牌 + 工具类（可 <link>）
 │   │   ├── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
 │   │   └── scroll-pin.js          # 手写：定住滚动条（跨组件共用，组件 import 它）
-│   ├── color/
+│   ├── color/                     ← 组件单元的一种：只有 README + page.html，没有 api.md
 │   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
 │   │   └── page.html              # 令牌文档页
-  │   ├── button/ code/ collapse/ menu/ breadcrumb/ …   ← **一个组件 = 一个单元**
-  │   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）—— **入口一：使用者 CDN 引入**
-  │   │   ├── api.md                 # 接口规范（属性 / 事件 / 插槽与 part / 令牌），由 <doc-spec> 渲染进页面
-  │   │   ├── page.html              # 文档页，注册在 docs/site-map.js —— **入口二：文档站加载**
-  │   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
-  │   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
+│   ├── button/                    ← **一个组件 = 一个单元**，其余单元（code/ collapse/ …）同形
+│   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）—— **入口一：使用者 CDN 引入**
+│   │   ├── api.md                 # 接口规范（属性 / 事件 / 插槽与 part / 令牌），由 <doc-spec> 渲染进页面
+│   │   ├── page.html              # 文档页，注册在 docs/site-map.js —— **入口二：文档站加载**
+│   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
+│   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
 │   └── {next}/{next}.html ...
 ├── tools/
-  │   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
-  │   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
-  │   ├── gen-unit-readme.mjs        # 生成各组件单元的 README.md 入口卡（状态/文件清单由仓库事实推）
+│   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
+│   ├── gen-icons.mjs              # 图标子集 → packages/icon/icons.generated.ts
+│   ├── icon-manifest.mjs          # 内置图标的唯一清单（gen-icons / build-css / 守卫共用）
+│   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
+│   ├── gen-unit-readme.mjs        # 生成各组件单元的 README.md 入口卡（状态/文件清单由仓库事实推）
+│   ├── check-fresh.mjs            # 产物新鲜度：重跑生成再比对（pnpm check:drift）
 │   ├── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
 │   ├── doc-drift/                 # 文档 ↔ 代码对账引擎（通用副本 + 版本号，见下）
 │   └── doc-drift.config.mjs       # 本仓的约定（表头 / 骨架 / 豁免 / 要对账的数字）
@@ -51,13 +54,19 @@ mosaic/
 │   └── shell.css  content.css     # 文档级视口/高度链 / 页面共用的正文样式
 ├── tests/
 │   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件
+│   ├── select.mjs                 # 选套件（--changed / --site / 按 slug）
+│   ├── suite-map.json             # 文件 → 受影响套件（check:affected 用）
 │   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具
+│   ├── lib/suites.mjs             # 套件清单（doc-drift.config 也读它）
 │   └── site/*.mjs                 # 跨组件的站点不变量
 ├── agent/
 │   ├── README.md                  # 导航：什么时候读哪一份（先读这份）
+│   ├── tutorial.md                # 教程：从零做一个组件（照着走一遍，保证能成）
+│   ├── howto/                     # 食谱（只写步骤与验证）：改接口 / 加属性 / 加演示 / 加令牌
 │   ├── doc-site.md  doc-pages.md
 │   ├── authoring.md  authoring-style.md  checklist.md
 │   ├── design-spec.md  design-tokens.md
+│   ├── doc-render.md              # 参考区由 md 渲染 + 注意事项上移到页顶（已落地）
 │   ├── api/                       # 组件 API 规范：README + 逐组件一份
 │   ├── pitfalls/                  # ofa.js 踩坑：README + 按主题分文件
 │   ├── plan/                      # 规划总纲：定位 / 决策 / 目录与构建 / 里程碑
@@ -83,8 +92,6 @@ mosaic/
 | `boot/shadow-base.css` | 手写        | ❌                         | ✅                   |
 | `boot/scroll-pin.js`   | 手写        | —（模块）                  | 组件 `import` 用     |
 | `color/tokens.css`     | **生成**    | ✅（已被 mosaic.css 包含） | ✅                   |
-
----
 
 ---
 

@@ -66,3 +66,4 @@ pnpm check:docs   # unit-tokens 面：代码里的令牌文档写了没、文档
 - **忘了写 README 那行** → 对账报「代码有、文档没有」
 - **文档写了、代码删了** → 反向也会红，别留悬空文档
 - 涉及**色板**的新令牌，还要加进 `tools/gen-tokens.mjs`（那是另一条路，见 design-tokens.md）
+- 用属性驱动令牌时：`:host(:not([attr]))` 静默失效 —— [P14](../pitfalls/03-style-scope.md)；JS 写的内联样式又会压过 `:host([attr])` 的规则 —— [P15](../pitfalls/03-style-scope.md)

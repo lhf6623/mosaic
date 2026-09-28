@@ -222,7 +222,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
   - **不能用 `throw`**：理由同上，异常到不了终端。
 
 **预编译原子 CSS 的根本矛盾**：我们能编译的只有已知类名，而使用者会写什么是未知的。
-所以 `mosaic.css` 是一份**精选子集**（当前 370 个工具类）。
+所以 `mosaic.css` 是一份**精选子集**（当前 427 条工具类规则）。
 子集之外的（`mt-7`、`bg-gradient-to-r`…）不存在，需要时得自己写 CSS。
 这个边界已写在 `docs/pages/guide.html`（常见问题）与 [README](../README.md)，而不是等人踩坑。
 

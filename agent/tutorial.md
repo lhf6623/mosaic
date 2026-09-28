@@ -20,7 +20,7 @@
 ## 第 0 步 · 确认环境
 
 ```bash
-pnpm check:docs            # 期望：14 组全部对齐
+pnpm check:docs            # 期望：16 组全部对齐
 node tests/smoke.mjs button # 期望：全绿
 pnpm dev                    # 起服务，端口 8642，后面每步都能在浏览器里看
 ```
@@ -340,7 +340,7 @@ export default async function run({ page, visit, check }) {
 ## 第 8 步 · 验收
 
 ```bash
-pnpm check:docs             # 期望：14 组全绿（组数不变，但每个面都会多判 badge 这个单元）
+pnpm check:docs             # 期望：16 组全绿（组数不变，但每个面都会多判 badge 这个单元）
 node tests/smoke.mjs badge  # 期望：全绿
 ```
 

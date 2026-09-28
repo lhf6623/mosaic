@@ -52,12 +52,23 @@ pnpm check:docs
 
 ---
 
-## 提交前
+## 验证（提交前跑）
 
 ```bash
-pnpm check:docs            # 14 组全绿
+pnpm check:docs            # 16 组全绿
 node tests/smoke.mjs <slug> # 只跑这次命中的组件
 ```
 
 全量测试只在收尾跑一次 —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
 （选测中间层是 `pnpm test:changed`，加 / 挪了套件先 `pnpm test:record`）。
+
+---
+
+## 这一步最容易踩的
+
+改接口时连带踩到的几条（都不报错，靠对账才发现）：
+
+- 加的是**布尔属性**，默认值要写 `null` 不是 `false` —— [P1](../pitfalls/01-props.md)
+- 声明过的**字符串属性**会被 ofa 以空值写到宿主上，别假设「没写就没有」 —— [P32](../pitfalls/01-props.md)
+- 新发的**合成事件要带 `{ composed: true }`**，否则穿不出 shadow —— [P22](../pitfalls/04-dom-events.md)
+- 插槽 / part 的样式，`::slotted()` 压不过祖先 shadow 树的规则 —— [P33](../pitfalls/03-style-scope.md)
