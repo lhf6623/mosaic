@@ -139,4 +139,9 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
       或按标签挑 `node tests/smoke.mjs <slug> / --site <关键词>`；全量 `pnpm test:all`
       **只在明确要求时跑**（干净工作区上别跑裸 `pnpm test` —— 它会退化成全量）
       —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
+[ ] 提交前把**这次改过的文件**格式化一遍：`npx prettier --write <改过的文件…>`
+      —— md 文档与组件代码都算；`.prettierignore` 里的东西（生成产物 / demos / tests /
+      归档原文 / 对账引擎副本）别去动
+      —— 只在**提交前**做这一次，别每改一版就跑；`pnpm check` 里也没有 `format:check`
+      （全仓还有几十个历史文件没格式化，接进去会一直红）
 ```

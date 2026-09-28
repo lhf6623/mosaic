@@ -81,7 +81,14 @@ pnpm dev          # 打开文档站：http://localhost:8642（跑测试时让它
 pnpm test         # 冒烟测试：只跑本次改动命中的套件（--list 先预览；工作区干净时转全量）
 pnpm test:all     # 冒烟测试：全量 24 个套件 —— 只在明确要求时跑这条
 pnpm test:record  # 加了 / 挪了套件后重录依赖地图（tests/suite-map.json）
+pnpm format       # prettier --write 全仓（平时别跑，见下面「格式化」那条）
+pnpm format:check # prettier --check 全仓（同理）
 ```
+
+**格式化**：**提交前**把这次改过的文件跑一遍 prettier（md 文档与组件代码都算），一次就够 ——
+别每改一版就跑，`pnpm check` 里也**没有**接 `format:check`（仓库还有几十个历史文件没格式化，
+接进去会一直红）。全仓 `pnpm format` / `pnpm format:check` 留到哪天整体扫一遍再用；
+`.prettierignore` 里的生成产物 / demos / tests / 归档原文 / 对账引擎副本都别动。
 
 测试默认按**改动范围**跑：`pnpm test` 用依赖地图精确命中（判不了才退回全部；工作区干净时会退化成
 全量 —— 所以别在干净工作区上随手跑裸 `pnpm test`，要验就带筛选）；比某个 ref 用

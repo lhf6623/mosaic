@@ -23,6 +23,7 @@
 | 对账「文档和代码有没有脱节」                         | `pnpm check:docs`（约定在 `tools/doc-drift.config.mjs`）                        | 工具           |
 | 对账「提交进仓库的产物是不是源码生成的」             | `pnpm check:drift`（`tools/check-fresh.mjs`）                                   | 工具           |
 | 跑测试：这次该跑哪些                                 | `pnpm test`（`--list` 先预览；全量 `pnpm test:all` 只在明确要求时跑）           | 工具           |
+| 提交前格式化这次改过的文件（md + 代码）              | `npx prettier --write <改过的文件…>`（提交前一次，见 checklist）                | 工具           |
 | 参考区为什么由 md 渲染、注意事项为什么上移到页顶     | [`doc-render.md`](./doc-render.md)（**已落地**）                                | 背景           |
 | 项目定位、关键决策、里程碑、风险                     | [`plan/`](./plan/)（定位 / 决策 / 目录与构建 / 里程碑）                         | 背景 · 规划    |
 
