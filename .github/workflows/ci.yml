@@ -4,13 +4,17 @@
 #   pnpm check      静态守卫（typecheck + check:docs + check:drift + check:size），秒级
 #   pnpm test:all   真浏览器冒烟（13 站点套件 + 11 组件套件），约 1.5 分钟
 #
-# 冒烟测试连的是本地文档站，所以先把 tools/serve.mjs 起在后台（和本地 pnpm dev 同一条路），
-# 再用 curl 等它就绪 —— 不等待就会偶发「第一个套件 404」。
+# 冒烟测试连的是本地文档站，所以先把 tools/serve.mjs 起在后台（和 pnpm dev 同一条路），
+# 再用 curl 等它就绪 —— 不等待会偶发「第一个套件 404」。
 #
 # 浏览器：冒烟测试走 playwright-core + **系统 Chrome**（tests/lib/harness.mjs 的 CHANNEL，默认 chrome），
-# ubuntu-latest 镜像自带 google-chrome-stable，所以不需要 playwright install。
+# ubuntu-latest 镜像自带 google-chrome-stable，不需要 playwright install。
 # 哪天镜像里没有了：把 env.CHANNEL 换成 chromium，并在安装依赖后加一步
 #   npx playwright install --with-deps chromium
+#
+# 静态门禁那一步把失败原因同时发成 ::error:: 注解：公开仓库的 job log 要登录才能下载，
+# 而注解走 API 就能读到 —— 「CI 红了但看不到日志」时还有一条路；顺带四道门禁一次跑完，
+# 不用修一道推一次。
 #
 # 没接 pnpm format:check：全仓还有几十个文件没格式化（历史遗留），接进来会一直红。
 # 等清干净了再加，别让它长期挂着一条「反正一直红」的步骤 —— 那种红会训练人忽略 CI。
@@ -34,13 +38,13 @@ jobs:
       CHANNEL: chrome
       CI: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -48,8 +52,20 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 静态门禁
-        run: pnpm check
+      - name: 静态门禁（typecheck → check:docs → check:drift → check:size）
+        run: |
+          fail=0
+          for c in typecheck check:docs check:drift check:size; do
+            echo "=== pnpm $c ==="
+            if pnpm "$c" > "/tmp/$c.log" 2>&1; then
+              tail -n 3 "/tmp/$c.log"
+            else
+              cat "/tmp/$c.log"
+              tail -n 8 "/tmp/$c.log" | sed 's/^/::error::/'
+              fail=1
+            fi
+          done
+          exit $fail
 
       - name: 起文档站并等它就绪
         run: |
