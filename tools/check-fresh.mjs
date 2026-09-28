@@ -82,21 +82,31 @@ console.error(
     `         已经按源码重新生成好了 —— **把它们一起提交**（产物必须一起提交，使用者侧没有构建）。\n`,
 );
 
-/* 差异也打出来（只打变更行，前 12 行）。这段放最后：CI 上 job log 要登录才看得到，
-   我们把日志尾巴当成注解发出去 —— 它得能独立说清「是重排，还是真差异」。 */
-if (existsSync(resolve(ROOT, '.git'))) {
-  const diff = spawnSync(
-    'git',
-    ['--no-pager', 'diff', '--no-color', '--unified=0', '--', ...stale],
-    {
-      cwd: ROOT,
-      encoding: 'utf8',
-    },
-  );
-  const changed = (diff.stdout ?? '').split('\n').filter((line) => /^[-+@]/.test(line));
-  if (changed.length) {
-    console.error(`\n         差异 ${changed.length} 行（前 12 行）：`);
-    for (const line of changed.slice(0, 12)) console.error('         ' + line.slice(0, 140));
+/* 差异自己算，不依赖 git：CI 那台机器上 `git diff` 什么都没输出（大概率是报错被吞了），
+   而两份内容本来就在内存里。行前缀 - / + 是给 CI 的注解过滤器认的（它优先发 ^[-+@] 行）。 */
+const describeDiff = (beforeText, afterText) => {
+  const a = (beforeText ?? '').split('\n');
+  const b = (afterText ?? '').split('\n');
+  const max = Math.max(a.length, b.length);
+  let firstDiff = -1;
+  let diffLines = 0;
+  for (let i = 0; i < max; i += 1) {
+    if (a[i] !== b[i]) {
+      diffLines += 1;
+      if (firstDiff < 0) firstDiff = i;
+    }
   }
-}
+  const out = [`         行数：提交版 ${a.length} / 重建版 ${b.length}；不同行 ${diffLines}`];
+  if (firstDiff >= 0) {
+    out.push(`         首个不同在第 ${firstDiff + 1} 行：`);
+    for (let i = firstDiff; i <= Math.min(max - 1, firstDiff + 1); i += 1) {
+      if (a[i] === b[i]) continue;
+      out.push('- 提交版: ' + (a[i] ?? '(无)').slice(0, 150));
+      out.push('+ 重建版: ' + (b[i] ?? '(无)').slice(0, 150));
+    }
+  }
+  return out.join('\n');
+};
+
+for (const f of stale) console.error(describeDiff(before.get(f), read(f)));
 process.exit(1);
