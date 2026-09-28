@@ -76,7 +76,8 @@ pnpm check:tokens # 令牌自检：色板与对比度
 pnpm check:docs   # 文档 ↔ 代码对账：接口表 / 页面骨架 / 索引 / 路径 / 数字
 pnpm check:drift  # 产物新鲜度：重跑生成并比对，防止源码改了没重新 build
 pnpm check:size   # 体积预算：共享产物 raw/gzip + 组件本体单文件上限
-pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift && check:size
+pnpm lint:md      # markdown 结构：代码块语言 / 死锚点 / 列表符号（约定在 .markdownlint.jsonc）
+pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift && check:size && lint:md && format:check
 pnpm dev          # 打开文档站：http://localhost:8642（跑测试时让它开着）
 pnpm test         # 冒烟测试：只跑本次改动命中的套件（--list 先预览；工作区干净时转全量）
 pnpm test:all     # 冒烟测试：全量 24 个套件 —— 只在明确要求时跑这条
@@ -85,10 +86,14 @@ pnpm format       # prettier --write 全仓（平时别跑，见下面「格式�
 pnpm format:check # prettier --check 全仓（同理）
 ```
 
-**格式化**：**提交前**把这次改过的文件跑一遍 prettier（md 文档与组件代码都算），一次就够 ——
-别每改一版就跑，`pnpm check` 里也**没有**接 `format:check`（仓库还有几十个历史文件没格式化，
-接进去会一直红）。全仓 `pnpm format` / `pnpm format:check` 留到哪天整体扫一遍再用；
-`.prettierignore` 里的生成产物 / demos / tests / 归档原文 / 对账引擎副本都别动。
+**格式化**：改完代码或文档**随手跑一次命令**（它是命令、不费什么，不用攒到提交前）：
+
+```bash
+npx prettier --write <这次改过的文件…>   # 全仓已经干净，也可以直接 pnpm format
+```
+
+md 文档与组件代码都算；`.prettierignore` 里的生成产物 / demos / tests / 归档原文 / 对账引擎副本都别动。
+`pnpm format:check` 只校验（不写文件），它**也在** `pnpm check` 里 —— 改完忘了格式化的话，提交前拦得住。
 
 测试默认按**改动范围**跑：`pnpm test` 用依赖地图精确命中（判不了才退回全部；工作区干净时会退化成
 全量 —— 所以别在干净工作区上随手跑裸 `pnpm test`，要验就带筛选）；比某个 ref 用
@@ -102,7 +107,7 @@ pnpm format:check # prettier --check 全仓（同理）
 
 ## 仓库结构
 
-```
+```text
 index.html            入口：只做引入（CSS + ofa.js + 路由库 + o-app 挂载点）
 app-config.js         ofa.js 应用配置（首页、加载态、错误兜底）
 packages/

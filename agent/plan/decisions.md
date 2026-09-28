@@ -14,7 +14,7 @@
 我原本认定 `/gh/` 会把 `.html` 301 甩到 `raw.githubusercontent.com`，据此决定改走 npm。
 **那条结论是错的**，实测：
 
-```
+```text
 200  .../gh/ofajs/senti-ui@1.0.9/packages/button/button.html
      content-type: text/plain; cache-control: ...max-age=31536000, immutable
 200  .../gh/ofajs/ofa.js@4.7.5/libs/scsr/test/comps/btn/t-btn.html
@@ -46,7 +46,7 @@
 
 ## D2. 组件形态：`packages/{name}/{name}.html`，源即产物
 
-```
+```text
 packages/button/
   button.html          ← 组件本体，源 = 产物，构建不碰它
   page.html            ← 文档页，注册在 docs/site-map.js，路由 #/packages/button/page.html
@@ -230,7 +230,7 @@ primary: { DEFAULT: 'rgb(var(--mc-color-primary) / <alpha-value>)', /* ... */ }
 
 ## D6. 令牌三层模型
 
-```
+```text
 L1 原始色阶   --mc-primary-500: 134 102 255;      ← 存 sRGB 通道三元组
 L2 语义令牌   --mc-color-primary: rgb(var(--mc-primary-600));
 L3 组件令牌   --mc-button-fill: var(--mc-color-primary);

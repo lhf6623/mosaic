@@ -67,7 +67,7 @@ export default () => ({ tag: 'doc-example', data: {} });
 **现象**：文档页上这个组件的实例**全部没升级** —— 标签还写在页面里，但 `shadowRoot` 是 `null`、
 `customElements.get(标签)` 是 `undefined`，于是演示区那块空着、页面其余部分完全正常。控制台一条：
 
-```
+```text
 Uncaught (in promise) Error: 加载组件模块出错，错误的模块地址: …/packages/<name>/<name>.html
 ```
 

@@ -43,7 +43,7 @@ data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一�
 远程只在这两种写法下发生：name 本地查不到，或显式给了 src。所以「没用到的图标一个请求都不发」。
 · name="mdi:home" 有冒号 → 冒号前是图标集
 · name="circle-check-big" 没冒号 → 用内置来源集（lucide）
-URL 形状：{icon-base}{集名}/{图标名}.svg，默认 https://api.iconify.design/；icon-base 一个属性
+URL 形状：{icon-base}{集名}/{图标名}.svg，默认 <https://api.iconify.design/>；icon-base 一个属性
 就能换自托管。取回来直接内联成 <svg>，**不用 <use> + symbol**（实测：跨域 <use> 被 Chrome 与
 WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 WebKit 不会重新解析后到的 symbol
 —— agent/archive/research/iconify.md 有完整数据）。

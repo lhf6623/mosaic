@@ -8,7 +8,7 @@
 
 ## 一、目录结构
 
-```
+```text
 mosaic/
 ├── packages/
 │   ├── boot/                      ← 运行时引导 + 组件共用的运行时工具
@@ -107,7 +107,8 @@ pnpm build         # = icons && tokens && build:css（三份生成脚本，产�
 pnpm check:drift   # 产物新鲜度：重跑一遍生成并比对前后，变了就红（tools/check-fresh.mjs）
 pnpm check:docs    # 文档 ↔ 代码对账：tools/doc-drift/drift.mjs 读 tools/doc-drift.config.mjs
 pnpm check:size    # 体积预算：共享产物 raw/gzip + 组件本体单文件上限（tools/check-size.mjs）
-pnpm check         # 提交前一条龙：typecheck && check:docs && check:drift && check:size
+pnpm lint:md       # markdown 结构：代码块没写语言 / 死锚点 / 列表符号（约定在 .markdownlint.jsonc）
+pnpm check         # 提交前一条龙：typecheck && check:docs && check:drift && check:size && lint:md && format:check
 pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
 pnpm format:check  # prettier 只检查
 ```

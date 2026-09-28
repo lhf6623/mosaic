@@ -154,7 +154,7 @@ if (el.hasAttribute('max-height')) …
 if ((el.getAttribute('max-height') || '').trim() !== '') …
 ```
 
-**推论**：`attrs` 里布尔属性默认值写 `null`（[P1](#p1-布尔属性的默认值必须是-null不能是-false)）
+**推论**：`attrs` 里布尔属性默认值写 `null`（[P1](#p1--布尔属性的默认值必须是-null不能是-false)）
 时不会被写成属性，所以 `:host([soft-wrap])` 这类布尔选择器是安全的；
 但**字符串**属性（哪怕默认是空串）会被反射，别把 `:host([max-height])` 当条件用。
 写完新组件，去 devtools 里看一眼宿主的属性列表最快。

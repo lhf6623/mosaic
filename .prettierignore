@@ -31,3 +31,7 @@ agent/vendor/ofa-skill.md
 # 它不该被本仓的 prettier 重排 —— 一排就和 skill 那份分叉，「引擎副本是最新的」再也没法用比字节来验。
 # 本仓自己的约定在 tools/doc-drift.config.mjs（那份照常格式化）。
 tools/doc-drift/
+
+# markdownlint 的配置：prettier 会给 JSONC 补尾逗号，编辑器 / JSON 工具又会把它去掉 ——
+# 两边会一直互相改（实测过）。markdownlint 两种都接受，所以这份让编辑器说了算。
+.markdownlint.jsonc

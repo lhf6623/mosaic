@@ -19,7 +19,7 @@
 左右两栏是 `position: fixed`、**不在文档流里**（高度 100%），所以不管内容多高多矮、
 切到哪一页，它们都一动不动 —— 页面高度变化也带不走它们。
 
-```
+```text
 body               height: 100% + overflow: hidden（把一屏兜住，window 永不滚）
 └─ o-router        普通块（⚠️ 必须 overflow: visible，见下）
    └─ o-app/o-page  普通块，高度按内容走

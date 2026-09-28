@@ -61,7 +61,7 @@
 
 **现象**：把 `<o-fill>` 放进 `<svg>`，整页空白，控制台一条：
 
-```
+```text
 TypeError: Cannot read properties of undefined (reading 'querySelectorAll')
     at hr (ofa.min.mjs)      ← 模板编译阶段
 ```
@@ -85,7 +85,7 @@ Mosaic 首页的马赛克图案就是这么落地的：方块从「SVG `<rect>` 
 
 **现象**：控制台一条 `console.warn`（不是异常、不影响渲染）：
 
-```
+```text
 The template element can only contain one child element. If multiple child elements appear,
 the child elements will be repackaged in a <div> element
 ```

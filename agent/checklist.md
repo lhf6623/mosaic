@@ -62,7 +62,7 @@
 > 「ofa.js 正确性」这一节的每一条都对应 [踩坑清单](pitfalls/README.md) 里的一个坑，
 > 踩中的代价是**静默失效**（不报错、表象像"没生效"），所以不要跳。
 
-```
+```text
 目录与命名
 [ ] packages/{name}/{name}.html 组件本体 + page.html 文档页
 [ ] 文档页以 <template page> 开头，并 <link> 了 ../../docs/content.css
@@ -132,6 +132,8 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
 [ ] pnpm check:docs 绿：接口表（`packages/<slug>/api.md` 规范 + 文档页）与组件代码一一对上，
       页面骨架 / 索引 / 文档里点名的路径与数字都没有脱节
       （改的是**约定**而不是内容时，改的是 tools/doc-drift.config.mjs，不是引擎）
+[ ] pnpm lint:md 绿：markdown 里没有没写语言的代码块 / 死锚点 / 混用的列表符号
+      （关掉的那几条规则与为什么，写在 `.markdownlint.jsonc` 里；它也在 `pnpm check` 里）
 [ ] 新增的令牌已加进 tools/gen-tokens.mjs（如果涉及色板）
 [ ] 新增的公共工具类已加进 uno.config.ts 的精选子集（如果使用者会用到）
 [ ] pnpm dev 验收页确认无误（`tools/serve.mjs`，零依赖、`no-store`；不要用别的静态服务器，见 P24）
@@ -139,9 +141,9 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
       或按标签挑 `node tests/smoke.mjs <slug> / --site <关键词>`；全量 `pnpm test:all`
       **只在明确要求时跑**（干净工作区上别跑裸 `pnpm test` —— 它会退化成全量）
       —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
-[ ] 提交前把**这次改过的文件**格式化一遍：`npx prettier --write <改过的文件…>`
+[ ] 改完代码或文档**随手跑一次**格式化命令：`npx prettier --write <改过的文件…>`
       —— md 文档与组件代码都算；`.prettierignore` 里的东西（生成产物 / demos / tests /
       归档原文 / 对账引擎副本）别去动
-      —— 只在**提交前**做这一次，别每改一版就跑；`pnpm check` 里也没有 `format:check`
-      （全仓还有几十个历史文件没格式化，接进去会一直红）
+      —— 它是命令、不费事，所以不用攒到提交前；忘了也没关系：`pnpm check` 末尾的
+      `format:check` 会在提交前拦住（它只校验，不改文件）
 ```

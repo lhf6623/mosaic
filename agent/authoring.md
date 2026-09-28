@@ -24,7 +24,7 @@
 
 ## 一、目录与命名约定
 
-```
+```text
 packages/{name}/
   {name}.html      组件本体 —— 源 = 产物，构建不碰它
   page.html        文档页 —— ofa.js 页面模块（<template page>）

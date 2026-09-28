@@ -27,7 +27,7 @@
 每一级的 `parentElement` 是 `o-else` / `o-if`，`::before` 的 `content` 是 `none`（本该是 `"/"`）。
 
 **原因**：`o-fill` / `o-if` / `o-else` 都是自定义元素，条目渲染进的是**它们的** light DOM
-（见 [P12](#p12--o-fill-把条目渲染在自己的-light-domiinnerhtml里)）。
+（见 [P12](./02-template.md#p12--o-fill-把条目渲染在自己的-light-dominnerhtml里)）。
 `::slotted()` 只按「宿主元素的**被分配节点**」匹配，于是它看到的是 `o-fill`，不是里面的条目。
 
 **为什么难查**：`o-fill` 是 `display: contents`，条目在**布局上**照旧参与父容器（flex 间距、

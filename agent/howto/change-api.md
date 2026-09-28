@@ -57,14 +57,15 @@ pnpm check:docs
 ```bash
 pnpm check:docs            # 16 组全绿
 node tests/smoke.mjs <slug> # 只跑这次命中的组件
-npx prettier --write <这次改过的文件…>  # 提交前一次：md 文档与组件代码都算
+npx prettier --write <改过的文件…>  # 改完随手跑：md 文档与组件代码都算
 ```
 
 全量测试**只在明确要求时跑** —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
 （默认就是选测 `pnpm test`；加 / 挪了套件先 `pnpm test:record`；全量是 `pnpm test:all`，要跑得对方说一声）。
 ⚠️ 干净工作区上别跑裸 `pnpm test` —— 它会退化成全量。
-⚠️ 格式化只在**提交前**做一次，别每改一版就跑；`.prettierignore` 里的东西（产物 / demos /
-tests / 归档原文 / 对账引擎副本）别动。
+⚠️ 格式化是**命令**、不费事：改完代码或文档顺手跑一次就行，不用攒到提交前
+（忘了也会被 `pnpm check` 末尾的 `format:check` 拦住）；`.prettierignore` 里的东西
+（产物 / demos / tests / 归档原文 / 对账引擎副本）别动。
 
 ---
 

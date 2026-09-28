@@ -14,14 +14,14 @@
 
 - 11 组件套件，`pnpm test:all`）。
 
-* [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
-* [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
-* [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 427 条工具类规则）
-* [x] 主题切换能穿过 shadow 边界（`rgb(114 70 237)` → `rgb(189 182 255)`）
-* [x] 令牌靠自定义属性继承进 shadow root
-* [x] 文档站五个页面可访问、无 404、色板实时渲染
-* [ ] 验证降级：故意让补丁失效，确认颜色/尺寸仍正常，只有排布退化
-* [x] ~~CI 接入~~（push / PR 上跑 `pnpm check` + `pnpm test:all`）—— **后来已删**：推送时没人看
+- [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
+- [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
+- [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 427 条工具类规则）
+- [x] 主题切换能穿过 shadow 边界（`rgb(114 70 237)` → `rgb(189 182 255)`）
+- [x] 令牌靠自定义属性继承进 shadow root
+- [x] 文档站五个页面可访问、无 404、色板实时渲染
+- [ ] 验证降级：故意让补丁失效，确认颜色/尺寸仍正常，只有排布退化
+- [x] ~~CI 接入~~（push / PR 上跑 `pnpm check` + `pnpm test:all`）—— **后来已删**：推送时没人看
       那张脸，还要起浏览器，全量冒烟改成按需在本地跑。体积上限落在 `tools/check-size.mjs`。
       首次接上时顺带修掉两处**只在自动门禁里现形**的问题：产物里的 `Source:` 标记位置随机器变、
       滚动守卫 `dispose()` 之后挂起的 hold 还会 restore 一次
