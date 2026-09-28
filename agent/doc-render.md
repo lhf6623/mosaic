@@ -71,7 +71,7 @@
 ⚠️ **每页要自己注册 `mc-alert`**：站点外壳（`docs/layout.html:285-305`）只注册了
 code / icon / collapse(-item) / menu(-item) / breadcrumb(-item) / card，**不含 `mc-alert`**。
 漏了的话 ofa 的 `*:not(:defined){display:none}` 会把整条提示连内容一起藏掉 —— 不报错，
-且**同一个页面两种表现**：从首页点进来正常，深链打开再刷新就空白（[P44](../pitfalls/05-pages.md)）。
+且**同一个页面两种表现**：从首页点进来正常，深链打开再刷新就空白（[P44](./pitfalls/05-pages.md)）。
 写法照 [`doc-pages.md`](./doc-pages.md) §二 的既有约定，正文最前面加一行：
 
 ```html
@@ -284,8 +284,9 @@ alert 6、popover 6、icon 4、code 3、collapse 3；`button` / `color` 两页�
 **S2 与 S3 可并行**，但都要等 S1 验证通过 —— 渲染器的节名分发、链接改写、加载态这三件事
 不成立的话，铺 11 页就是 11 遍返工。
 
-**顺带（不阻塞主线）**：`research/` 2575 行（`jsdelivr.md`、`unocss.md` 零引用）、
-`docs-refactor.md` 426 行、`api/planned.md` 94 行的归档隔离，与本方案无关，单独处理。
+**顺带（已完成，2026-09-28）**：`research/` 2575 行 + `docs-refactor.md` 426 行已归档到
+[`agent/archive/`](./archive/)，不进导航、不参与对账。`api/planned.md`（94 行）**留在原地** ——
+它是 M2 / M3 组件的接口草案，还被 `api/README.md` 与 badge / spinner 引用着，不是考古材料。
 
 ---
 

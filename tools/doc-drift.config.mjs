@@ -187,7 +187,7 @@ const rules = [
     title: '开发文档 · 路径与目录树（agent/** ↔ 仓库）',
     files: ['agent/**/*.md', 'README.md'],
     // 考古 / 外部原文：记录的是历史状态，出现已删除的文件是正常的
-    skipFiles: ['agent/docs-refactor.md', 'agent/research/*'],
+    skipFiles: ['agent/archive/**', 'agent/vendor/**'],
     historyWords: '已删|删掉|删了|曾是|曾经|原来|以前|不再|去掉|旧版|history',
     placeholder: '[{}<>*…$|@=()!?#]',
     placeholderSegment: '^(?:x|y|z|n|xxx|yyy|name|slug|foo|bar|baz)$',

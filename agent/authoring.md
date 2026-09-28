@@ -174,7 +174,7 @@ framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` �
 与「经典 MVVM」有四处差别，前两条直接决定了 Mosaic 怎么写组件：
 
 1. **绑定是细粒度、直接改真 DOM，没有虚拟 DOM**：改 `data` 里某一项的某个字段，只动对应节点、
-   节点被复用（实测见 [`docs-refactor.md` §6](./docs-refactor.md)）—— 所以「改数据」可以放心用在
+   节点被复用（实测见 [`docs-refactor.md` §6](./archive/docs-refactor.md)）—— 所以「改数据」可以放心用在
    滚动高亮这类高频更新上。
 2. **双向不是默认的**，要显式 `sync:value="…"`。**Mosaic 一律不用**：对外只走「属性进（`attrs`）、
    事件出（`on:change`）」，这是 C4「定制点只用原生 CSS」的必然要求。
@@ -203,7 +203,7 @@ framework."_），而它的 MVVM 单位是 **Web Component**：一个 `.html` �
 >
 > **守卫**：`tests/site/11-no-class-components.mjs`（node-only）扫 `docs/` 与 `packages/`，
 > 出现 `class … extends HTMLElement` 直接红。迁移配方（class 写法 ↔ 模板写法）见
-> [`docs-refactor.md` §4.0](./docs-refactor.md)。
+> [`docs-refactor.md` §4.0](./archive/docs-refactor.md)。
 
 ```html
 <template component>

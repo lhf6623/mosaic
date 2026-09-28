@@ -6,7 +6,7 @@
 
 > ofa.js 有两套状态管理，都在**核心 dist** 里（零新依赖、不用构建）：
 > 共享状态 `$.stanz({...})`，上下文状态 `<o-provider>` / `<o-consumer>` / `<o-root-provider>`。
-> 三条都是**在 pin 的 ofa.js 4.7.5 上实测**出来的，完整记录见 [`research/state.md`](../research/state.md)。
+> 三条都是**在 pin 的 ofa.js 4.7.5 上实测**出来的，完整记录见 [`research/state.md`](../archive/research/state.md)。
 
 ### P35 · 上下文状态的运行时更新**只能走 ofa 的数据层**，裸元素属性 / `setAttribute` 静默无效
 

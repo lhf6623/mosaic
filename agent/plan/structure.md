@@ -61,8 +61,8 @@ mosaic/
 │   ├── api/                       # 组件 API 规范：README + 逐组件一份
 │   ├── pitfalls/                  # ofa.js 踩坑：README + 按主题分文件
 │   ├── plan/                      # 规划总纲：定位 / 决策 / 目录与构建 / 里程碑
-│   ├── docs-refactor.md           # 已完成的重构记录（考古用）
-│   └── research/{unocss,jsdelivr,state}.md
+│   ├── archive/                   # 已归档（默认不读）：docs-refactor.md + research/ 外部资料原文
+│   └── vendor/                    # 外部资料：ofa-skill.md（ofa.js 官方知识库）
 ├── package.json                   # private: true（永不 publish）
 └── README.md
 ```

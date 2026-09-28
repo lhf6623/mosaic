@@ -44,7 +44,7 @@ data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一�
 URL 形状：{icon-base}{集名}/{图标名}.svg，默认 https://api.iconify.design/；icon-base 一个属性
 就能换自托管。取回来直接内联成 <svg>，**不用 <use> + symbol**（实测：跨域 <use> 被 Chrome 与
 WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 WebKit 不会重新解析后到的 symbol
-—— agent/research/iconify.md 有完整数据）。
+—— agent/archive/research/iconify.md 有完整数据）。
 
 改颜色只有两个控制点，都是原生 CSS：
   · 颜色 = currentColor。默认继承周围文字色；color="primary|info|success|warning|danger|neutral"
@@ -72,7 +72,7 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 警告；同一个图标（含取失败的名字）全页只请求一次。
 
 **不用 `<use> + symbol` sprite**：跨域 `<use>` 被 Chrome 与 WebKit 一致拒绝，shadow root 里
-引用文档级 `#id` 也不成立（实测数据见 [`research/iconify.md`](../../agent/research/iconify.md)）；
+引用文档级 `#id` 也不成立（实测数据见 [`research/iconify.md`](../../agent/archive/research/iconify.md)）；
 组件把取回的 SVG 直接内联。**内置图标是 mask 单色渲染，改不了描边粗细**，品牌多色图用
 `src` 或默认插槽。
 

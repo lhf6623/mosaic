@@ -70,7 +70,7 @@ export function createIO(root) {
     listFiles: (glob) => listFiles(root, glob),
     listDirs: (glob) => listDirs(root, glob),
     allEntries,
-    /** 路径的唯一后缀命中（散文里常省略前缀，如 `research/state.md`） */
+    /** 路径的唯一后缀命中（散文里常省略前缀，如 `archive/research/state.md`） */
     uniqueSuffix(token) {
       return allEntries().filter((path) => path === token || path.endsWith(`/${token}`));
     },
