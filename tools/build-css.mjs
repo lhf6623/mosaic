@@ -59,16 +59,18 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 const outFile = resolve(ROOT, 'packages/boot/mosaic.css');
 const css = existsSync(outFile) ? readFileSync(outFile, 'utf8') : '';
 
-/* ---------- 产物归一：抹掉本机绝对路径 ----------
- * UnoCSS 会在产物里写 `/* Source: <绝对路径> *\/`，路径来自**构建的那台机器**
- * （Mac 上是 /Users/... 、Windows 上是 D:/...）。不处理的话，换一台机器 build 一次
- * 产物就变一次，「我在哪台机器上构建过」被当成真实 diff 提交进仓库，
- * 而且它会盖掉真正的样式差异。归一成仓库相对路径再写回。 */
-const normalized = css.replace(/\/\* Source: (.+?) \*\//g, (whole, p) => {
-  const root = ROOT.replace(/\\/g, '/');
-  const rel = p.replace(/\\/g, '/').replace(root + '/', '');
-  return `/* Source: ${rel} */`;
-});
+/* ---------- 产物归一：抹掉「构建那台机器」的痕迹 ----------
+ * UnoCSS 会给每个入口文件插一条 `/* Source: … *\/` 标记，标记内容与**位置**都跟机器有关：
+ *   · 路径：Mac 上是 /Users/... 、Windows 上是 D:/...；
+ *   · 位置：它落在第几行取决于 CLI 扫入口的先后（实测 macOS 与 Linux runner 不同）——
+ *     CI 上 check:drift 必红，而且报的是「产物过期」，指向完全错误的方向。
+ * 做法：把所有 Source 标记摘掉，只在**最前面**补一条固定的（内容来自 cli.entry.patterns
+ * 的第一个入口，也就是令牌文件）。这样换平台、换机器，产物都逐字节一致。 */
+const SOURCE_MARKER = '/* Source: packages/color/tokens.css */';
+const withoutMarkers = css.replace(/^\/\* Source: .* \*\/\r?\n/gm, '');
+const normalized = withoutMarkers.includes('Mosaic Design Tokens')
+  ? `${SOURCE_MARKER}\n${withoutMarkers}`
+  : withoutMarkers;
 if (normalized !== css) writeFileSync(outFile, normalized);
 
 const problems = [];
