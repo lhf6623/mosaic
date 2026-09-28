@@ -15,6 +15,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,6 +56,13 @@ for (const script of BUILD) {
 
 const stale = PRODUCTS.filter((f) => read(f) !== before.get(f));
 
+/** 内容指纹 + 头几条规则：CI 上只看到「哪份变了」定位不了，得能看出是重排还是真差异 */
+const fingerprint = (text) => {
+  if (text === null) return '(缺失)';
+  const rules = (text.match(/^[.\w][^\n{]*\{/gm) ?? []).slice(0, 3).join(' ');
+  return createHash('sha1').update(text).digest('hex').slice(0, 10) + '  头三条：' + rules;
+};
+
 if (!stale.length) {
   console.log(`[mosaic] 产物新鲜度：${PRODUCTS.length} 份产物都与源码一致（构建是幂等的）`);
   process.exit(0);
@@ -62,9 +70,33 @@ if (!stale.length) {
 
 console.error(
   `\n[mosaic] 产物与源码脱节 —— 这 ${stale.length} 份刚才被重新生成了：\n` +
-    stale.map((f) => `         · ${f}\n`).join('') +
+    stale
+      .map(
+        (f) =>
+          `         · ${f}\n` +
+          `           提交版 ${fingerprint(before.get(f))}\n` +
+          `           重建版 ${fingerprint(read(f))}\n`,
+      )
+      .join('') +
     `\n         意思是：有人改了源码（组件里的类名 / 令牌脚本 / 图标清单）却没跑 \`pnpm build\`。\n` +
-    `         已经按源码重新生成好了 —— **把它们一起提交**（产物必须一起提交，使用者侧没有构建）。\n` +
-    `         想看改了什么：\`git diff -- ${stale.join(' ')}\`\n`,
+    `         已经按源码重新生成好了 —— **把它们一起提交**（产物必须一起提交，使用者侧没有构建）。\n`,
 );
+
+/* 差异也打出来（只打变更行，前 12 行）。这段放最后：CI 上 job log 要登录才看得到，
+   我们把日志尾巴当成注解发出去 —— 它得能独立说清「是重排，还是真差异」。 */
+if (existsSync(resolve(ROOT, '.git'))) {
+  const diff = spawnSync(
+    'git',
+    ['--no-pager', 'diff', '--no-color', '--unified=0', '--', ...stale],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+    },
+  );
+  const changed = (diff.stdout ?? '').split('\n').filter((line) => /^[-+@]/.test(line));
+  if (changed.length) {
+    console.error(`\n         差异 ${changed.length} 行（前 12 行）：`);
+    for (const line of changed.slice(0, 12)) console.error('         ' + line.slice(0, 140));
+  }
+}
 process.exit(1);
