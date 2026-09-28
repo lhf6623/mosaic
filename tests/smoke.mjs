@@ -122,6 +122,24 @@ if (changedRef !== undefined && !record) {
   }
 }
 
+/* 全量、而且工作区是脏的时候提示一句选测能省多少。
+   仓库的规矩是「全量只在收尾验收跑一次」（见 agent/checklist.md），但默认那条命令就是全量 ——
+   不提示的话，「跑全量」很容易变成肌肉记忆；提示里直接把这次能省多少算出来。 */
+if (!record && changedRef === undefined && suites.length === all.length) {
+  const dirty = changedFiles('HEAD') ?? [];
+  if (dirty.length) {
+    const picked = selectSuites({ changed: dirty, suites: all, map: loadMap() });
+    console.log(
+      picked.full
+        ? `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动，但踩到了共享面 / 测试基座 —— 这次 ` +
+            `\x1b[2m--changed 也是全量，直接跑没问题\x1b[0m\n`
+        : `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动：` +
+            `\x1b[2mnode tests/smoke.mjs --changed\x1b[0m 只跑 ${picked.selected.length}/${all.length} 个套件，` +
+            `\x1b[2m--list 先预览；全量留给收尾验收\x1b[0m\n`,
+    );
+  }
+}
+
 if (!suites.length) {
   if (changedRef !== undefined) {
     console.log('\n改动没有命中任何套件（要全量就去掉 --changed，或加 --record 重录地图）\n');
