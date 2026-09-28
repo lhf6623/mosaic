@@ -30,8 +30,12 @@
 
 **代价与对策**：
 
-- 生成物必须**提交进仓库**（`packages/color/tokens.css`、`packages/boot/mosaic.css`）。
-  用 `pnpm check:drift` 在 CI 里重新生成后比对 `git diff`，防止提交的产物和生成器漂移。
+- 生成物必须**提交进仓库**（`packages/color/tokens.css`、`packages/boot/mosaic.css`、
+  `packages/icon/icons.generated.ts`、`packages/icon/icons.license.txt`）。
+  用 `pnpm check:drift`（= `tools/check-fresh.mjs`）防产物与生成器漂移：重新跑一遍生成，
+  比对前后内容，变了就红 —— **并且已经把新产物写好了，只要提交**。
+  ⚠️ 别指望「构建成功 = 产物是新的」：源码改了不重跑 build，测试照样绿
+  （测试跑的是仓库里那份旧产物），只有 CDN 上的使用者拿到旧 CSS。
 - 版本别名（`@latest` / `@1`）是 7 天缓存，**文档一律锁精确版本**。
 - jsDelivr 在大陆历史上反复出现不可达（可核实的集中事件是 2022-05）。
   冗余方案：换入口域名（`fastly.` / `gcore.` / `testingcf.jsdelivr.net`，同路径零改动）+ 自托管。

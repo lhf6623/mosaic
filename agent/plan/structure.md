@@ -95,9 +95,10 @@ pnpm tokens        # tools/gen-tokens.mjs → packages/color/tokens.css（含 WC
 pnpm check:tokens  # 只自检，不写文件
 pnpm build:css     # unocss -c uno.config.ts → packages/boot/mosaic.css
 pnpm dev:css       # 同上，watch 模式
-pnpm build         # = tokens && build:css
-pnpm check:drift   # CI：重新生成后 git diff --exit-code，防止产物与生成器漂移
+pnpm build         # = icons && tokens && build:css（三份生成脚本，产物都提交）
+pnpm check:drift   # 产物新鲜度：重跑一遍生成并比对前后，变了就红（tools/check-fresh.mjs）
 pnpm check:docs    # 文档 ↔ 代码对账：tools/doc-drift/drift.mjs 读 tools/doc-drift.config.mjs
+pnpm check         # 提交前一条龙：typecheck && check:docs && check:drift
 pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
 pnpm format:check  # prettier 只检查
 ```

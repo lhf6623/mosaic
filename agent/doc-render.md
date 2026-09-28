@@ -4,7 +4,7 @@
 >
 > **进度**：S1 渲染器 + `button` 试点 ✅ · S2 注意事项上移 ✅ ·
 > **S3 全部 11 页迁移 + `api.md` 搬进组件单元 ✅** · **S4 守卫改口径 ✅**。
-> 解析器单测 `node tests/lib/md-spec.test.mjs`（12 条）；`pnpm check:docs` 11 组全绿。
+> 解析器单测 `node tests/lib/md-spec.test.mjs`（12 条）；`pnpm check:docs` 14 组全绿。
 >
 > **⚠️ 落地时相对第二版方案的两处变化**：
 > 1. **md 落位改了**：不住 `agent/api/<slug>.md`，搬进 **`packages/<slug>/api.md`** ——
