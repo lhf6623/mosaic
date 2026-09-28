@@ -62,7 +62,8 @@ jobs:
             else
               cat "/tmp/$c.log"
               # 日志要登录才看得到，这里把「能定位」的行发成注解：diff 行 / 问题行 / 失败组
-              picked=$(grep -E '^[-+@]|· |提交版|重建版|✗|脱节|超预算' "/tmp/$c.log" | head -n 8)
+              picked=$(grep -E '^[-+@]' "/tmp/$c.log" | head -n 8)
+              [ -n "$picked" ] || picked=$(grep -E '· |✗|脱节|超预算|提交版|重建版' "/tmp/$c.log" | head -n 8)
               [ -n "$picked" ] || picked=$(tail -n 8 "/tmp/$c.log")
               echo "$picked" | sed 's/^/::error::/'
               fail=1
