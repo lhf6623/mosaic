@@ -3,12 +3,14 @@
  * Mosaic 端到端冒烟测试入口（playwright-core + 系统 Chrome）。
  *
  * 用法（先起 `pnpm dev`）：
- *   node tests/smoke.mjs                 全量：13 个站点套件 + 每个 READY 组件的套件（默认并行 4）
- *   node tests/smoke.mjs --changed       只跑**工作区改动**命中的套件（选测中间层，见 tests/select.mjs）
- *   node tests/smoke.mjs --changed main  只跑与 `main` 有差异的部分（含未跟踪文件）
+ *   pnpm test                默认：只跑**本次改动**命中的套件（选测中间层，见 tests/select.mjs）；
+ *                            工作区干净时转全量 —— 干净多半是「刚提交、要收尾」，那时静默只跑
+ *                            两个 node-only 守卫是这套机制唯一危险的失效方向
+ *   pnpm test origin/main    跟某个 ref 比（提交之后想验自己这批就用这条；显式 ref 照常选测）
+ *   pnpm test:all            全量：13 个站点套件 + 每个 READY 组件的套件（CI / 收尾验收用这条）
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）
  *   node tests/smoke.mjs --jobs 6        临时加大并行度（可用 JOBS=6 代替）
- *   node tests/smoke.mjs --list          只列出会跑哪些套件（可与 --changed 组合预览），不启动浏览器
+ *   pnpm test --list         只列出会跑哪些套件（可与其它参数组合预览），不启动浏览器
  *   node tests/smoke.mjs --record        重录依赖地图 tests/suite-map.json：
  *                                        不给过滤 = 跑全量整份重录；给了过滤（如 `popover --record`）
  *                                        = 只跑并只重录这些套件、其余条目合并保留（新增组件时用这条，
@@ -102,6 +104,14 @@ if (changedRef !== undefined && !record) {
   const changed = changedFiles(changedRef);
   if (changed === null) {
     console.log(`\n\x1b[33m取不到 git 改动（ref=${changedRef}）→ 全量\x1b[0m`);
+  } else if (!changed.length && changedRef === 'HEAD') {
+    /* 隐式 --changed（`pnpm test` 的默认）+ 工作区干净：无从判断你在测什么。
+       这时按**全量**走 —— 干净的工作区通常就是「刚提交、准备收尾」，而要是只跑两个
+       node-only 守卫，漏测是静默的（这套机制唯一危险的失效方向）。
+       只想验自己这批提交：`pnpm test origin/main`（显式 ref 照常选测）。 */
+    console.log(
+      `\n\x1b[1m▌选测\x1b[0m \x1b[2m工作区干净 → 全量（想跟分支比：pnpm test origin/main）\x1b[0m`,
+    );
   } else {
     const map = loadMap();
     const picked = selectSuites({ changed, suites, map });
@@ -122,20 +132,19 @@ if (changedRef !== undefined && !record) {
   }
 }
 
-/* 全量、而且工作区是脏的时候提示一句选测能省多少。
-   仓库的规矩是「全量只在收尾验收跑一次」（见 agent/checklist.md），但默认那条命令就是全量 ——
-   不提示的话，「跑全量」很容易变成肌肉记忆；提示里直接把这次能省多少算出来。 */
+/* 显式全量（`node tests/smoke.mjs` / `pnpm test:all`）且工作区脏时提示一句：
+   默认那条命令（`pnpm test`）只跑改动命中的范围，这里直接把能省多少算出来 ——
+   免得「跑全量」又变回肌肉记忆。 */
 if (!record && changedRef === undefined && suites.length === all.length) {
   const dirty = changedFiles('HEAD') ?? [];
   if (dirty.length) {
     const picked = selectSuites({ changed: dirty, suites: all, map: loadMap() });
     console.log(
       picked.full
-        ? `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动，但踩到了共享面 / 测试基座 —— 这次 ` +
-            `\x1b[2m--changed 也是全量，直接跑没问题\x1b[0m\n`
+        ? `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动，但踩到了共享面 / 测试基座 —— ` +
+            `\x1b[2m这次选测也是全量，跑全量没问题\x1b[0m\n`
         : `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动：` +
-            `\x1b[2mnode tests/smoke.mjs --changed\x1b[0m 只跑 ${picked.selected.length}/${all.length} 个套件，` +
-            `\x1b[2m--list 先预览；全量留给收尾验收\x1b[0m\n`,
+            `\x1b[2m只要 pnpm test 就只跑 ${picked.selected.length}/${all.length} 个套件（--list 先预览）\x1b[0m\n`,
     );
   }
 }

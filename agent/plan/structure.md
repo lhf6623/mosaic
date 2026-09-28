@@ -53,7 +53,7 @@ mosaic/
 │   ├── theme-boot.js              # 首帧主题（防闪白）
 │   └── shell.css  content.css     # 文档级视口/高度链 / 页面共用的正文样式
 ├── tests/
-│   ├── smoke.mjs                  # 冒烟测试入口：站点套件 + 各组件套件
+│   ├── smoke.mjs                  # 冒烟测试入口：默认只跑改动命中的套件（--record 重录地图）
 │   ├── select.mjs                 # 选套件（--changed / --site / 按 slug）
 │   ├── suite-map.json             # 文件 → 受影响套件（check:affected 用）
 │   ├── lib/harness.mjs            # 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具

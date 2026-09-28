@@ -77,13 +77,14 @@ pnpm check:docs   # 文档 ↔ 代码对账：接口表 / 页面骨架 / 索引 
 pnpm check:drift  # 产物新鲜度：重跑生成并比对，防止源码改了没重新 build
 pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift
 pnpm dev          # 打开文档站：http://localhost:8642（跑测试时让它开着）
-pnpm test:changed # 冒烟测试：只跑本次改动命中的套件（加 --list 先预览）
-pnpm test         # 冒烟测试：全量 24 个套件 —— 留给收尾验收
+pnpm test         # 冒烟测试：只跑本次改动命中的套件（--list 先预览；工作区干净时转全量）
+pnpm test:all     # 冒烟测试：全量 24 个套件 —— 收尾验收 / CI 用这条
 pnpm test:record  # 加了 / 挪了套件后重录依赖地图（tests/suite-map.json）
 ```
 
-测试按**改动范围**跑：`pnpm test:changed` 用依赖地图精确命中（判不了才退回全部），
-比某个 ref 用 `pnpm test:changed origin/main`；全量 `pnpm test` 留给收尾验收跑一次，别拿它当默认。
+测试默认按**改动范围**跑：`pnpm test` 用依赖地图精确命中（判不了才退回全部；工作区干净时转全量 ——
+那种状态多半是「刚提交、要收尾」，猜错方向的代价是静默漏测）；比某个 ref 用 `pnpm test origin/main`，
+收尾验收 / CI 跑 `pnpm test:all`。
 
 组件本体**不需要构建**：`packages/**` 源即产物，`pnpm build` 只产出共享 CSS
 （`packages/color/tokens.css` 与 `packages/boot/mosaic.css`）。

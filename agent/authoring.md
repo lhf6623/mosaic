@@ -38,19 +38,20 @@ tests/
   smoke.mjs       冒烟测试入口：站点套件 + 数据里每个 READY 组件的套件（一个套件一页，默认并行 4）
   lib/harness.mjs 公共基座：浏览器 / 断言 / 穿透查询注入 / 导航工具 / 「碰过哪些文件」采集
   lib/suites.mjs  套件清单的唯一真相源（站点套件定序 + READY 组件套件）
-  select.mjs      选测中间层：改动 → 该跑哪些套件（依赖地图 + 兜底策略，`pnpm test:changed`）
+  select.mjs      选测中间层：改动 → 该跑哪些套件（依赖地图 + 兜底策略，`pnpm test`）
   suite-map.json  生成并提交：每个套件碰过的仓库文件，`pnpm test:record` 重录
   site/*.mjs      跨组件的站点不变量（外壳、路由、D3、色板、注入免疫、选测中间层……）
 ```
 
-**改完只跑命中的范围**：`pnpm test:changed`（= `node tests/smoke.mjs --changed [ref]`；想看判定过程用
+**改完只跑命中的范围**：`pnpm test`（= `node tests/smoke.mjs --changed [ref]`；想看判定过程用
 `node tests/select.mjs <文件…>`）。它拿 git 改动查 `tests/suite-map.json` —— 那是录制下来的
 「每个套件实际请求过哪些仓库文件」，所以「改 `docs/layout.html` 会影响谁」由数据回答，
 不需要谁手工维护一张 glob 表。地图管不到的部分走兜底策略：测试基座 / 构建配置 / 文档站外壳 → 全部，
 `packages/<slug>/` 下的新文件 → 该组件的套件 + 地图里碰过这个目录的套件，纯文档 → 不跑
 （扫全仓的 node-only 守卫除外，见 `select.mjs` 的 ALWAYS_RUN），**未知路径 → 保守全量**；地图缺失、套件不在图里也一律跑（**宁可多跑，不可漏跑**）。
-加了 / 删了 / 挪了套件、或套件开始加载新文件时，`pnpm test:record` 重录一次地图
-（`tests/site/12-affected.mjs` 会盯着「地图有没有漏掉某个套件」）。全量 `pnpm test` 留到收尾验收跑一次。
+工作区**干净**时不猜（那种状态多半是「刚提交、要收尾」）→ 直接全量；只想验自己这批提交用
+`pnpm test origin/main`。加了 / 删了 / 挪了套件、或套件开始加载新文件时，`pnpm test:record` 重录一次地图
+（`tests/site/12-affected.mjs` 会盯着「地图有没有漏掉某个套件」）。全量 `pnpm test:all` 留到收尾验收跑一次。
 
 > 文档页是 **ofa.js 页面模块**，不是独立网页：它由 `o-router` 按 hash 路由加载，
 > 地址形如 `#/packages/button/page.html`。直接双击打开只会看到空白

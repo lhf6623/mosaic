@@ -135,7 +135,7 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
 [ ] 新增的令牌已加进 tools/gen-tokens.mjs（如果涉及色板）
 [ ] 新增的公共工具类已加进 uno.config.ts 的精选子集（如果使用者会用到）
 [ ] pnpm dev 验收页确认无误（`tools/serve.mjs`，零依赖、`no-store`；不要用别的静态服务器，见 P24）
-[ ] 测试只跑本次改动命中的范围：`pnpm test:changed`（选测中间层；加 / 挪了套件先 `pnpm test:record`），
-      或按标签挑 `node tests/smoke.mjs <slug> / --site <关键词>`；全量只在收尾验收跑一次
+[ ] 测试只跑本次改动命中的范围：`pnpm test`（默认就是选测；加 / 挪了套件先 `pnpm test:record`），
+      或按标签挑 `node tests/smoke.mjs <slug> / --site <关键词>`；收尾验收跑 `pnpm test:all`
       —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
 ```

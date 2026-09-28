@@ -11,7 +11,7 @@
 ### M0 — 打通骨架 ✅ **D3 已验证成立**
 
 冒烟测试在 `tests/smoke.mjs`（真浏览器；M0 当时 22 项断言，现在 13 站点套件
-+ 11 组件套件，`pnpm test`）。
++ 11 组件套件，`pnpm test:all`）。
 
 - [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
 - [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
@@ -20,7 +20,7 @@
 - [x] 令牌靠自定义属性继承进 shadow root
 - [x] 文档站五个页面可访问、无 404、色板实时渲染
 - [ ] 验证降级：故意让补丁失效，确认颜色/尺寸仍正常，只有排布退化
-- [ ] CI 接入（脚本已就位：`check:drift` + `check:docs` + 冒烟测试；缺的是 CI 载体 + 体积上限）
+- [ ] CI 接入（脚本已就位：`pnpm check` + `pnpm test:all`；缺的是 CI 载体 + 体积上限）
 
 **M0 推翻/修正了两条我原本写错的设计**，都已落到实现里：
 

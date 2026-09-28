@@ -60,7 +60,7 @@ node tests/smoke.mjs <slug> # 只跑这次命中的组件
 ```
 
 全量测试只在收尾跑一次 —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
-（选测中间层是 `pnpm test:changed`，加 / 挪了套件先 `pnpm test:record`）。
+（默认就是选测 `pnpm test`；加 / 挪了套件先 `pnpm test:record`；收尾跑 `pnpm test:all`）。
 
 ---
 

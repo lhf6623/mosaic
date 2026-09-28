@@ -10,6 +10,7 @@
  * `pnpm test:record` 正在重录地图时跳过 ①（那一刻地图一定是旧的）。
  */
 
+import { readFileSync } from 'node:fs';
 import { READY, slugOf } from '../../docs/site-map.js';
 import {
   ALWAYS_RUN,
@@ -201,5 +202,22 @@ export default async function run({ check }) {
     'git 取改动：拿到当前工作区改动清单（含未跟踪文件）',
     Array.isArray(changed) && changed.every((f) => typeof f === 'string' && !f.startsWith('/')),
     Array.isArray(changed) ? `${changed.length} 个改动文件` : '取不到（null）',
+  );
+
+  /* ------------------------------------------------------------------ *
+   * ⑤ 命令口径：默认那条（pnpm test）是选测，全量是显式那条
+   * ------------------------------------------------------------------ */
+
+  /* 默认退回全量 = 这套机制白做（「老是跑全量」正是它要解决的问题）。
+     所以把口径钉在测试里：想改默认，先改这里的期望。 */
+  const scripts = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+  ).scripts;
+  check(
+    'pnpm test 是选测、pnpm test:all 是全量（默认不许退回全量）',
+    scripts.test?.includes('smoke.mjs --changed') &&
+      scripts['test:all']?.includes('smoke.mjs') &&
+      !scripts['test:all'].includes('--changed'),
+    JSON.stringify({ test: scripts.test, 'test:all': scripts['test:all'] }),
   );
 }
