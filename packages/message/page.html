@@ -26,9 +26,18 @@
 
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，只有 <code>message.js</code> 一个入口 —— 页面里写标签不会得到任何东西。</li>
-        <li><strong>同 key 只留一条</strong>：后一条把前一条换掉。进度类消息记得接 <code>onClose</code> 停掉生产端的定时器 —— 否则关掉之后下一拍又会推回来，看着就是关不掉。</li>
-        <li>要「一直留在页面上」用 <code>mc-alert</code>：alert 是页内静态的一块面，不抢焦点、不会自己消失。</li>
+        <li>
+          <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，只有
+          <code>message.js</code> 一个入口 —— 页面里写标签不会得到任何东西。
+        </li>
+        <li>
+          <strong>同 key 只留一条</strong>：后一条把前一条换掉。进度类消息记得接
+          <code>onClose</code> 停掉生产端的定时器 —— 否则关掉之后下一拍又会推回来，看着就是关不掉。
+        </li>
+        <li>
+          要「一直留在页面上」用 <code>mc-alert</code>：alert
+          是页内静态的一块面，不抢焦点、不会自己消失。
+        </li>
       </ul>
     </mc-alert>
 

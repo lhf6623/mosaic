@@ -25,9 +25,16 @@
 
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong>需要 popover API 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox 125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。</li>
+        <li>
+          <strong>需要 popover API 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox
+          125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。
+        </li>
         <li><strong>默认插槽只放一个触发元素</strong>：放多个元素时面板会按整块对齐。</li>
-        <li><strong>浮层不受宿主页面布局影响</strong>：不会被 <code>transform</code> / <code>filter</code> 困住，Esc 与点空白关闭交给浏览器（<code>--mc-z-*</code> 那一套在这里用不上）。</li>
+        <li>
+          <strong>浮层不受宿主页面布局影响</strong>：不会被 <code>transform</code> /
+          <code>filter</code> 困住，Esc 与点空白关闭交给浏览器（<code>--mc-z-*</code>
+          那一套在这里用不上）。
+        </li>
       </ul>
     </mc-alert>
 
@@ -36,8 +43,9 @@
     <section class="doc-demo">
       <h3>方位</h3>
       <p class="doc-hint">
-        <code>placement</code> 十二个方向：上下左右，各带 <code>-start</code> / <code>-end</code>
-        后缀（不写后缀 = 居中）。空间不够时浏览器 <strong>自动翻到另一侧</strong>，不会溢出视口。
+        <code>placement</code> 十二个方向：上下左右，各带 <code>-start</code> /
+        <code>-end</code> 后缀（不写后缀 = 居中）。空间不够时浏览器
+        <strong>自动翻到另一侧</strong>，不会溢出视口。
       </p>
       <demo-popover-placement></demo-popover-placement>
       <mc-collapse class="doc-demo-code">
@@ -64,12 +72,15 @@
     <section class="doc-demo">
       <h3>受控开合</h3>
       <p class="doc-hint">
-        <code>open</code> 是受控属性：写上即开、移除即关。<strong>用它就得同时把 <code>trigger</code> 设成
-        <code>manual</code></strong> —— 默认的 <code>click</code> 走的是组件自己的 <code>toggle()</code>，
+        <code>open</code> 是受控属性：写上即开、移除即关。<strong
+          >用它就得同时把 <code>trigger</code> 设成 <code>manual</code></strong
+        >
+        —— 默认的 <code>click</code> 走的是组件自己的 <code>toggle()</code>，
         它会和外面这份状态抢着写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。组件在
-        <code>show()</code> / <code>hide()</code> 里同样会增删它（把浏览器发起的关闭同步回来），所以外部
-        只从「改属性」这一头驱动；被 Esc / 点空白关掉时属性已经删了、只发 <code>close</code>，使用者把
-        那边的状态收回去 —— 外面那个按钮就是这套写法。
+        <code>show()</code> /
+        <code>hide()</code> 里同样会增删它（把浏览器发起的关闭同步回来），所以外部
+        只从「改属性」这一头驱动；被 Esc / 点空白关掉时属性已经删了、只发
+        <code>close</code>，使用者把 那边的状态收回去 —— 外面那个按钮就是这套写法。
       </p>
       <demo-popover-controlled></demo-popover-controlled>
       <mc-collapse class="doc-demo-code">
@@ -82,7 +93,8 @@
     <section class="doc-demo">
       <h3>箭头</h3>
       <p class="doc-hint">
-        小三角<strong>默认就有</strong>，跟着 <code>placement</code> 换边；<code>arrow="none"</code> 关掉。
+        小三角<strong>默认就有</strong>，跟着 <code>placement</code> 换边；<code>arrow="none"</code>
+        关掉。
       </p>
       <demo-popover-arrow></demo-popover-arrow>
       <mc-collapse class="doc-demo-code">

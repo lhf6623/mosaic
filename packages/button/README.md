@@ -11,26 +11,28 @@
 
 ## 单元里有什么
 
-| 文件 | 角色 |
-| --- | --- |
-| `button.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
-| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
-| `demos/` | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
-| `test/` | 组件自己的冒烟套件（1 个文件） |
+| 文件          | 角色                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| `button.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `page.html`   | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`      | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`      | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `test/`       | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
 <!-- hand:start -->
+
 ## 设计取舍
 
 mc-button — Mosaic 参考组件实现
 
 写新组件请照抄它的结构与分层，三条主线：
+
 1. 视觉全部定义在 :host 上 —— 外部 style="…" 优先级最高，能直接覆盖；
 2. color（语义色）× variant（外观样式）是两个正交维度，不是一维枚举；
 3. 交互语义交给内部透明的原生 <button>，宿主只管"长什么样"。
-hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
+   hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
 
 ## 令牌
 
@@ -71,6 +73,7 @@ hover / active 用 state layer（currentColor + 半透明），不引 hover 色�
 ## 相邻单元
 
 - 消费 [`mc-icon`](../icon/)：槽里的图标字号走 `--mc-button-icon-size`（比按钮文字大一档）、颜色强制跟随按钮文字色 —— 按钮内部的 `mc-icon` **自己的 `color` 属性会被压掉**。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

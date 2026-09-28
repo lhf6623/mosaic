@@ -18,9 +18,18 @@
     <p class="doc-lead">分类 / 状态标签：一块小色片，可选可关。</p>
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong><code>selected</code> 会覆盖 <code>variant</code></strong>：选中的标签统一实心，所以可切换的标签用默认 <code>subtle</code> 才看得出变化。</li>
-        <li><strong>长文本不折行</strong>：标签要么短，要么自己在宿主上截断（<code>max-width</code> + <code>overflow: hidden</code>）。</li>
-        <li><strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>，要消失自己在事件里 <code>el.remove()</code>。</li>
+        <li>
+          <strong><code>selected</code> 会覆盖 <code>variant</code></strong
+          >：选中的标签统一实心，所以可切换的标签用默认 <code>subtle</code> 才看得出变化。
+        </li>
+        <li>
+          <strong>长文本不折行</strong>：标签要么短，要么自己在宿主上截断（<code>max-width</code> +
+          <code>overflow: hidden</code>）。
+        </li>
+        <li>
+          <strong><code>closable</code> 不删 DOM</strong>：只发
+          <code>close</code>，要消失自己在事件里 <code>el.remove()</code>。
+        </li>
       </ul>
     </mc-alert>
 

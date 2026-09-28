@@ -3,12 +3,12 @@
 **唯一真相源**：有哪些组件、各自什么接口。四个正交维度、值读写规则、属性 / 事件 /
 插槽与 part、逐组件 API 都在这里。改了组件 API 先改这份，再改文档页。
 
-| 模块                                                                                                               | 内容                                                   |
-| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| 本文件                                                                                                             | ① 全部组件共用的约定 ② 组件索引 ③ 各组件详细文件的入口 |
-| 逐组件 `api.md`                                                                                                    | **住在组件单元里**：`packages/<slug>/api.md` —— 属性 / 事件 / 插槽与 part / 令牌 |
-| [`badge.md`](./badge.md) [`spinner.md`](./spinner.md)                                                              | 接口已定但**目录还没建**（未实现），所以还留在 `agent/api/` |
-| [`planned.md`](./planned.md)                                                                                       | M2（接口已定，实现待做）+ M3（接口草案）               |
+| 模块                                                  | 内容                                                                             |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 本文件                                                | ① 全部组件共用的约定 ② 组件索引 ③ 各组件详细文件的入口                           |
+| 逐组件 `api.md`                                       | **住在组件单元里**：`packages/<slug>/api.md` —— 属性 / 事件 / 插槽与 part / 令牌 |
+| [`badge.md`](./badge.md) [`spinner.md`](./spinner.md) | 接口已定但**目录还没建**（未实现），所以还留在 `agent/api/`                      |
+| [`planned.md`](./planned.md)                          | M2（接口已定，实现待做）+ M3（接口草案）                                         |
 
 > **读这份的场合**：接一个组件、查接口、改组件 API。
 > 怎么写文档页见 [`../doc-pages.md`](../doc-pages.md)，怎么造组件见 [`../authoring.md`](../authoring.md)。
@@ -149,8 +149,8 @@ item.open = true; // 组件提供了访问器时同样可以
 
 ## 二、组件索引
 
-| 组件                              | 标签                                   | 目录          | 里程碑 | 状态      |
-| --------------------------------- | -------------------------------------- | ------------- | ------ | --------- |
+| 组件                                               | 标签                                   | 目录          | 里程碑 | 状态      |
+| -------------------------------------------------- | -------------------------------------- | ------------- | ------ | --------- |
 | [Button](../../packages/button/api.md)             | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
 | [Code](../../packages/code/api.md)                 | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
 | [Collapse](../../packages/collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
@@ -159,24 +159,24 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Icon](../../packages/icon/api.md)                 | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
 | [Card](../../packages/card/api.md)                 | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
 | [Tag](../../packages/tag/api.md)                   | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
-| [Badge](./badge.md)               | `mc-badge`                             | `badge/`      | M1     | 待建      |
-| [Spinner](./spinner.md)           | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
-| Input                             | `mc-input`                             | `input/`      | M2     | 待建      |
-| Textarea                          | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
-| Checkbox                          | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
-| Radio                             | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
-| Switch                            | `mc-switch`                            | `switch/`     | M2     | 待建      |
-| Select                            | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
+| [Badge](./badge.md)                                | `mc-badge`                             | `badge/`      | M1     | 待建      |
+| [Spinner](./spinner.md)                            | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
+| Input                                              | `mc-input`                             | `input/`      | M2     | 待建      |
+| Textarea                                           | `mc-textarea`                          | `textarea/`   | M2     | 待建      |
+| Checkbox                                           | `mc-checkbox`                          | `checkbox/`   | M2     | 待建      |
+| Radio                                              | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
+| Switch                                             | `mc-switch`                            | `switch/`     | M2     | 待建      |
+| Select                                             | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
 | [Alert](../../packages/alert/api.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
-| Progress                          | `mc-progress`                          | `progress/`   | M2     | 待建      |
+| Progress                                           | `mc-progress`                          | `progress/`   | M2     | 待建      |
 | [Message](../../packages/message/api.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
 | [Popover](../../packages/popover/api.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
-| Dialog                            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
-| Dropdown                          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
-| Tooltip                           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
-| Tabs                              | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
-| Table                             | `mc-table`                             | `table/`      | M3     | 待建      |
-| Grid                              | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
+| Dialog                                             | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
+| Dropdown                                           | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
+| Tooltip                                            | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
+| Tabs                                               | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |
+| Table                                              | `mc-table`                             | `table/`      | M3     | 待建      |
+| Grid                                               | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
 
 ---
 

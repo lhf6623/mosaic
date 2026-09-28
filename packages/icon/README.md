@@ -11,27 +11,29 @@
 
 ## 单元里有什么
 
-| 文件 | 角色 |
-| --- | --- |
-| `icon.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
-| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
-| `demos/` | 10 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
-| `test/` | 组件自己的冒烟套件（1 个文件） |
-| `icons.generated.ts` | 构建产物 / 附属文件 |
-| `icons.license.txt` | 构建产物 / 附属文件 |
+| 文件                 | 角色                                                                          |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `icon.html`          | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `page.html`          | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`             | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`             | 10 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
+| `test/`              | 组件自己的冒烟套件（1 个文件）                                                |
+| `icons.generated.ts` | 构建产物 / 附属文件                                                           |
+| `icons.license.txt`  | 构建产物 / 附属文件                                                           |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
 <!-- hand:start -->
+
 ## 设计取舍
 
 mc-icon — 图标
 
 三种来源，一个入口，优先级从高到低：
-  1. 默认插槽有内容      → 使用者自己放（元素即内容）
-  2. src="URL"           → 任意 SVG 文件（自托管 / 品牌多色图）
-  3. name="…"            → 先查本地，查不到再取远程
+
+1. 默认插槽有内容 → 使用者自己放（元素即内容）
+2. src="URL" → 任意 SVG 文件（自托管 / 品牌多色图）
+3. name="…" → 先查本地，查不到再取远程
 
 「本地」= mosaic.css 里有没有对应那条图标类规则（内置集由 UnoCSS 的 presetIcons 编译成
 data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一份名单，而是直接问 CSS：
@@ -39,18 +41,18 @@ data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一�
 就是「你发出去的那份样式表里有什么」，扩了内置集自动生效。
 
 远程只在这两种写法下发生：name 本地查不到，或显式给了 src。所以「没用到的图标一个请求都不发」。
-  · name="mdi:home"          有冒号 → 冒号前是图标集
-  · name="circle-check-big"  没冒号 → 用内置来源集（lucide）
+· name="mdi:home" 有冒号 → 冒号前是图标集
+· name="circle-check-big" 没冒号 → 用内置来源集（lucide）
 URL 形状：{icon-base}{集名}/{图标名}.svg，默认 https://api.iconify.design/；icon-base 一个属性
 就能换自托管。取回来直接内联成 <svg>，**不用 <use> + symbol**（实测：跨域 <use> 被 Chrome 与
 WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 WebKit 不会重新解析后到的 symbol
 —— agent/archive/research/iconify.md 有完整数据）。
 
 改颜色只有两个控制点，都是原生 CSS：
-  · 颜色 = currentColor。默认继承周围文字色；color="primary|info|success|warning|danger|neutral"
-    给语义色；style="color:…" / 父元素继承 / class="text-primary" 一律有效。
-  · 尺寸 = font-size。盒子恒为 1em，size="sm|md|lg" 只是 0.875 / 1 / 1.25em，
-    所以 style="font-size:20px" 也直接管用。
+· 颜色 = currentColor。默认继承周围文字色；color="primary|info|success|warning|danger|neutral"
+给语义色；style="color:…" / 父元素继承 / class="text-primary" 一律有效。
+· 尺寸 = font-size。盒子恒为 1em，size="sm|md|lg" 只是 0.875 / 1 / 1.25em，
+所以 style="font-size:20px" 也直接管用。
 这是对 API 规范 1.3（size = 控件高）的**显式例外**：图标不是控件，跟随字号才符合预期。
 
 ⚠️ 文件里不写任何内联 SVG 标记（Live Server 的注入点会抢走模块 script，见 mc-alert 文件头）；
@@ -100,6 +102,7 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 ## 相邻单元
 
 - 被 [`mc-alert`](../alert/) 与 [`message()`](../message/) 在运行时 `load()`，被 `mc-button` 在模板里消费；`mc-icon-*` 类名也被 `mc-button` 的 loading 指示器、`mc-collapse-item` 的折叠箭头**直接当类名用**（零请求）。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

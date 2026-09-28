@@ -168,12 +168,12 @@ pnpm dev                    # 起服务，端口 8642，后面每步都能在浏
 
 ## 属性
 
-| 名称      | 值                         | 默认      | 说明                                |
-| --------- | -------------------------- | --------- | ----------------------------------- |
+| 名称      | 值                           | 默认      | 说明                                |
+| --------- | ---------------------------- | --------- | ----------------------------------- |
 | `color`   | `primary` `success` `danger` | `primary` | 语义色                              |
-| `variant` | `solid` `subtle` `outline` | `subtle`  | 徽标默认用浅底，比 solid 更不抢视线 |
-| `size`    | `sm` `md`                  | `md`      | 徽标只有两档                        |
-| `dot`     | 布尔                       | —         | 只显示一个圆点，不显示内容          |
+| `variant` | `solid` `subtle` `outline`   | `subtle`  | 徽标默认用浅底，比 solid 更不抢视线 |
+| `size`    | `sm` `md`                    | `md`      | 徽标只有两档                        |
+| `dot`     | 布尔                         | —         | 只显示一个圆点，不显示内容          |
 
 ## 插槽
 
@@ -327,7 +327,11 @@ export default async function run({ page, visit, check }) {
     return out;
   });
 
-  check('默认外观是浅底（subtle），不是实心', got.def.bg !== 'rgb(0, 0, 0)', JSON.stringify(got.def));
+  check(
+    '默认外观是浅底（subtle），不是实心',
+    got.def.bg !== 'rgb(0, 0, 0)',
+    JSON.stringify(got.def),
+  );
   check('variant=solid 换成了实心那套色槽', got.solid.bg !== got.def.bg, JSON.stringify(got.solid));
   check('dot 收起文字、显示圆点', !got.dot.text && got.dot.dot, JSON.stringify(got.dot));
 }

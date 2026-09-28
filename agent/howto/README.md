@@ -10,13 +10,13 @@
 第一次做组件走 [`../tutorial.md`](../tutorial.md)（教程，保证能成）；
 做完了要改，回来这里。
 
-| 我要做什么 | 食谱 |
-| --- | --- |
-| **改了接口，要同步哪些地方**（最高频） | [`change-api.md`](./change-api.md) |
-| 给已有组件加一个属性 | [`add-attribute.md`](./add-attribute.md) |
-| 给组件加一个演示 | [`add-demo.md`](./add-demo.md) |
-| 给组件加一个令牌 | [`add-token.md`](./add-token.md) |
-| 提交前自检 | [`../checklist.md`](../checklist.md) |
+| 我要做什么                             | 食谱                                     |
+| -------------------------------------- | ---------------------------------------- |
+| **改了接口，要同步哪些地方**（最高频） | [`change-api.md`](./change-api.md)       |
+| 给已有组件加一个属性                   | [`add-attribute.md`](./add-attribute.md) |
+| 给组件加一个演示                       | [`add-demo.md`](./add-demo.md)           |
+| 给组件加一个令牌                       | [`add-token.md`](./add-token.md)         |
+| 提交前自检                             | [`../checklist.md`](../checklist.md)     |
 
 **写新食谱的三条**：
 

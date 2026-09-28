@@ -19,9 +19,19 @@
     </p>
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong>链接必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code>）：组件不造链接，站内链接自己写 ofa 的 <code>olink</code>。</li>
-        <li><strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong>：用 <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。</li>
-        <li><code>separator</code> 属性与 <code>--mc-breadcrumb-sep</code> 令牌走两条通道：属性是非默认值时优先，写回默认值时以令牌为准。</li>
+        <li>
+          <strong>链接必须写在插槽里</strong>（原生
+          <code>&lt;a&gt;</code>）：组件不造链接，站内链接自己写 ofa 的 <code>olink</code>。
+        </li>
+        <li>
+          <strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong>：用
+          <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。
+        </li>
+        <li>
+          <code>separator</code> 属性与
+          <code>--mc-breadcrumb-sep</code>
+          令牌走两条通道：属性是非默认值时优先，写回默认值时以令牌为准。
+        </li>
       </ul>
     </mc-alert>
 

@@ -39,7 +39,7 @@
 
 | 数据                      | 现在住在哪                                     | 谁读                                                                                    | 能不能进 store                |
 | ------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------- |
-| 导航树 + 派生查询         | [`site-map.js`](.././../docs/site-map.js)         | `layout.html`、`components/{nav,crumb,pager,cards}.html`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）       |
+| 导航树 + 派生查询         | [`site-map.js`](.././../docs/site-map.js)      | `layout.html`、`components/{nav,crumb,pager,cards}.html`、**测试入口 + 4 个 Node 套件** | ❌ 必须保持纯模块（§2）       |
 | 当前路由                  | `routes.js:36` 每次从 `location.hash` 重算     | 同上 + `site.js:176`                                                                    | ✅ `route` store              |
 | 主题（三态 + 持久化）     | `theme-boot.js:8`（首帧）、`layout.html:66-83` | 外壳按钮；所有组件经令牌                                                                | ⚠️ 只有运行时部分             |
 | 色板（解析 `tokens.css`） | `docs/components/palette.html`                 | 设计令牌页的 `<doc-palette>`                                                            | ✅ 组件内自包含（不做 store） |

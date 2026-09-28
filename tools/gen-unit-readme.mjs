@@ -12,6 +12,7 @@
  * 播下种子，之后原样保留 —— 否则重跑一次就把人写的东西冲掉了。
  */
 import fs from 'node:fs';
+import { format, resolveConfig } from 'prettier';
 import { SITE } from '../docs/site-map.js';
 
 const flat = [];
@@ -55,7 +56,7 @@ const NEIGHBORS = {
   ],
   popover: [
     '与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`planned.md`](../../agent/api/planned.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。',
-    "图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。",
+    '图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。',
   ],
   tag: [
     '与 `mc-badge`（[草案](../../agent/api/badge.md)，目录还没建）的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），tag 是「内容本身」的标签 —— 它才有关闭与选中。',
@@ -78,23 +79,35 @@ for (const slug of SLUGS) {
   if (!node) throw new Error(`site-map.js 里没有 ${slug}`);
 
   const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const bodyFiles = entries.filter((e) => e.isFile() && e.name.endsWith('.html') && e.name !== 'page.html');
+  const bodyFiles = entries.filter(
+    (e) => e.isFile() && e.name.endsWith('.html') && e.name !== 'page.html',
+  );
   const otherFiles = entries
     .filter((e) => e.isFile() && !e.name.endsWith('.html'))
     .map((e) => e.name)
     .filter((n) => n !== 'api.md' && n !== 'README.md');
-  const demoCount = entries.some((e) => e.name === 'demos') ? fs.readdirSync(`${dir}/demos`).length : 0;
-  const testCount = entries.some((e) => e.name === 'test') ? fs.readdirSync(`${dir}/test`).length : 0;
+  const demoCount = entries.some((e) => e.name === 'demos')
+    ? fs.readdirSync(`${dir}/demos`).length
+    : 0;
+  const testCount = entries.some((e) => e.name === 'test')
+    ? fs.readdirSync(`${dir}/test`).length
+    : 0;
 
   const rows = [];
   const main = bodyFiles.find((e) => e.name === `${slug}.html`);
-  if (main) rows.push(`| \`${main.name}\` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |`);
+  if (main)
+    rows.push(`| \`${main.name}\` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |`);
   for (const f of bodyFiles.filter((e) => e.name !== `${slug}.html`)) {
     rows.push(`| \`${f.name}\` | 同族子标签，随本体一起引入 |`);
   }
-  rows.push(`| \`page.html\` | **入口二**：文档站加载（注册在 [\`docs/site-map.js\`](../../docs/site-map.js)） |`);
+  rows.push(
+    `| \`page.html\` | **入口二**：文档站加载（注册在 [\`docs/site-map.js\`](../../docs/site-map.js)） |`,
+  );
   rows.push(`| \`api.md\` | 接口规范 —— 由 \`<doc-spec>\` 渲染进页面参考区 |`);
-  if (demoCount) rows.push(`| \`demos/\` | ${demoCount} 个演示（页面上的活样例与 \`<mc-code src>\` 引用**同一个文件**） |`);
+  if (demoCount)
+    rows.push(
+      `| \`demos/\` | ${demoCount} 个演示（页面上的活样例与 \`<mc-code src>\` 引用**同一个文件**） |`,
+    );
   if (testCount) rows.push(`| \`test/\` | 组件自己的冒烟套件（${testCount} 个文件） |`);
   for (const f of otherFiles) rows.push(`| \`${f}\` | 构建产物 / 附属文件 |`);
 
@@ -157,6 +170,13 @@ ${HAND_END}
 - 文档页怎么排：[\`doc-pages.md\`](../../agent/doc-pages.md)
 `;
 
-  fs.writeFileSync(readmePath, text);
-  console.log(`${readmePath}  (${text.split('\n').length} 行)`);
+  /* ⚠️ 落盘前过一遍 prettier：模板里的 markdown 表是**不补空格**的，直接写出去这些 README
+     会永远停在「未格式化」状态 —— 提交前手动格式化它们只是白费功夫（下次跑本脚本又变回来）。
+     ⚠️ `format()` **不会自己读配置文件**：只给 `filepath` 会退回默认值（printWidth 80），
+     与 `prettier --check .` 的口径对不上（实测：```html 代码块里的长标签就折返不回来）。
+     所以要 `resolveConfig` 取一次再传进去。 */
+  const cfg = await resolveConfig(readmePath);
+  const out = await format(text, { ...cfg, filepath: readmePath });
+  fs.writeFileSync(readmePath, out);
+  console.log(`${readmePath}  (${out.split('\n').length} 行)`);
 }

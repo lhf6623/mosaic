@@ -11,18 +11,19 @@
 
 ## 单元里有什么
 
-| 文件 | 角色 |
-| --- | --- |
-| `message.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
-| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
-| `demos/` | 4 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
-| `test/` | 组件自己的冒烟套件（1 个文件） |
-| `message.js` | 构建产物 / 附属文件 |
+| 文件           | 角色                                                                          |
+| -------------- | ----------------------------------------------------------------------------- |
+| `message.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `page.html`    | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`       | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`       | 4 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `test/`        | 组件自己的冒烟套件（1 个文件）                                                |
+| `message.js`   | 构建产物 / 附属文件                                                           |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
 <!-- hand:start -->
+
 ## 设计取舍
 
 mc-message — 命令式消息条（容器）
@@ -33,11 +34,12 @@ mc-message — 命令式消息条（容器）
 
 ofa.js 是 MVVM，**模板只在组件定义期编译**；运行时 `innerHTML` 塞进去的 `{{ }}` / `o-fill` 全是死的。
 所以命令式 API 的正确形态只能是「函数只碰数据，视图永远由声明期模板渲染」：
-  1. 首次调用 → `<l-m src="message.html">` 把本组件注册上（实测运行时追加 l-m 可用）；
-  2. `document.createElement('mc-message')` 挂到 body 末尾（**必须挂 body**：shadow root 里的
-     position:fixed 会被宿主页面的 transform / filter / contain 困住，见 design-spec 第七节）；
-  3. 之后一律 `$('mc-message')` 拿实例、原地改 `rows` —— 实测**从外部整体替换数组不会渲染**
-     （`inst.rows = 外部数组` 之后 o-fill 一行动都不动），只能 push / splice。
+
+1. 首次调用 → `<l-m src="message.html">` 把本组件注册上（实测运行时追加 l-m 可用）；
+2. `document.createElement('mc-message')` 挂到 body 末尾（**必须挂 body**：shadow root 里的
+   position:fixed 会被宿主页面的 transform / filter / contain 困住，见 design-spec 第七节）；
+3. 之后一律 `$('mc-message')` 拿实例、原地改 `rows` —— 实测**从外部整体替换数组不会渲染**
+   （`inst.rows = 外部数组` 之后 o-fill 一行动都不动），只能 push / splice。
 
 为什么挂到 body 上也拿得到设计令牌：mosaic.js 给每个 shadow root adopt 两份表，
 而令牌是自定义属性、从 :root 一路继承下来 —— 实测宿主上 `--mc-z-toast` 解析为 1500。
@@ -55,6 +57,7 @@ message 是**命令式浮层**（自己进场自己走、不占版面）。两�
 宿主上那个 close 监听必须调 drop() —— 只清一半会让队列静默泄漏、onClose 永不触发（踩过）。
 
 ⚠️ 两个 ofa 的坑（都实测踩过，注释留在原地免得后人再踩）：
+
 - `o-fill` 的模板只允许**一个**根子元素 —— 所以里面套了一层 `display: contents` 的 div
   来同时挂「显隐 + 退场动画 + popover 语义」三件事（P42 的成对写法）。
 - 条目识别用 `$index`：`o-fill` 内**不能用 `attr:data-*` 绑 `$data`**（`data` 是保留字，
@@ -109,6 +112,7 @@ message 是**命令式浮层**（自己进场自己走、不占版面）。两�
 - 与 [`mc-alert`](../alert/) 的分工：alert 是页内静态的一块面，message 是命令式浮层；**没有标签入口** —— 容器由模块自己挂到 `document.body` 末尾，图层问题（`position: fixed` 会被宿主页面的 `transform` / `filter` / `contain` 困住）就是在这里验的。
 
 - 内部 `await load('../icon/icon.html')`：类型图标跟着 `type` 走。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

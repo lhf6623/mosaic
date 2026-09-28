@@ -18,8 +18,15 @@
     <p class="doc-lead">内容承载面：一块面 + 头尾结构，里面的东西自己塞。</p>
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong>整卡可点自己写</strong>：给卡内那个元素铺一条伪元素，<code>inset</code> 要取<strong>负的边框宽度</strong>，否则最外那 1px 点不动。</li>
-        <li><strong>圆角不裁内容</strong>：要让图片或 <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加 <code>overflow: hidden</code>。</li>
+        <li>
+          <strong>整卡可点自己写</strong>：给卡内那个元素铺一条伪元素，<code>inset</code>
+          要取<strong>负的边框宽度</strong>，否则最外那 1px 点不动。
+        </li>
+        <li>
+          <strong>圆角不裁内容</strong>：要让图片或
+          <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加
+          <code>overflow: hidden</code>。
+        </li>
         <li><strong>不留页面 reset</strong>：卡内元素的默认外边距照旧，要归零自己写。</li>
       </ul>
     </mc-alert>

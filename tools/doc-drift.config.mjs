@@ -340,7 +340,9 @@ const rules = [
         // 参考区的表都是 .doc-table；演示区里的表格不算（那本来就是页面自己的内容）
         for (const m of text.matchAll(/<table class="doc-table"/g)) {
           const line = text.slice(0, m.index).split('\n').length;
-          problems.push(`${page}:${line}：页面里还有手抄的 .doc-table —— 参考区该由 <doc-spec> 渲染`);
+          problems.push(
+            `${page}:${line}：页面里还有手抄的 .doc-table —— 参考区该由 <doc-spec> 渲染`,
+          );
         }
       }
     },
@@ -513,7 +515,12 @@ const rules = [
           if (kind.startsWith('工具')) return; // 工具行指向命令，没有文档闭包
           const links = markdownLinks(cell);
           if (!links.length) {
-            problems.push(NAV + ':' + (index + 1) + '：这一行的「读这份」没有文件链接 —— 必读闭包必须是文件清单');
+            problems.push(
+              NAV +
+                ':' +
+                (index + 1) +
+                '：这一行的「读这份」没有文件链接 —— 必读闭包必须是文件清单',
+            );
             return;
           }
           let total = 0;
@@ -580,7 +587,10 @@ const rules = [
             body.push(lines[i]);
           }
           const section = body.join('\n');
-          if (!section.includes('```') || !(section.includes('pnpm ') || section.includes('node '))) {
+          if (
+            !section.includes('```') ||
+            !(section.includes('pnpm ') || section.includes('node '))
+          ) {
             problems.push(file + '：「验证」节里没有能跑的命令（pnpm / node）');
           }
         }
@@ -598,14 +608,24 @@ const rules = [
           if (ref.href.startsWith('#')) continue;
           const target = posix.normalize(posix.join(dirname(file), ref.href.split('#')[0]));
           if (!io.exists(target)) {
-            problems.push(file + ':' + lineOf(text, ref.index) + '：P' + ref.first + ' 指向的 ' + ref.href + ' 不存在');
+            problems.push(
+              file +
+                ':' +
+                lineOf(text, ref.index) +
+                '：P' +
+                ref.first +
+                ' 指向的 ' +
+                ref.href +
+                ' 不存在',
+            );
             continue;
           }
           const entryLines = io.read(target).split('\n');
           for (let n = ref.first; n <= ref.second; n += 1) {
             const prefix = '### P' + n;
             const hit = entryLines.some(
-              (line) => line.startsWith(prefix) && !'0123456789'.includes(line[prefix.length] || ''),
+              (line) =>
+                line.startsWith(prefix) && !'0123456789'.includes(line[prefix.length] || ''),
             );
             if (!hit) {
               problems.push(

@@ -11,18 +11,19 @@
 
 ## 单元里有什么
 
-| 文件 | 角色 |
-| --- | --- |
-| `menu.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
-| `menu-item.html` | 同族子标签，随本体一起引入 |
-| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
-| `demos/` | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
-| `test/` | 组件自己的冒烟套件（1 个文件） |
+| 文件             | 角色                                                                          |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `menu.html`      | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `menu-item.html` | 同族子标签，随本体一起引入                                                    |
+| `page.html`      | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`         | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`         | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `test/`          | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
 <!-- hand:start -->
+
 ## 设计取舍
 
 ### `menu.html`
@@ -54,10 +55,10 @@ mosaic.js 把 shadow-base.css adopt 进了每一层 shadow root —— 那里面
 shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面）。
 所以 padding / 底色 / 颜色一律写在宿主上，靠继承 + 「插槽元素铺满整行」来实现：
 
-  · 左右缩进  → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）
-  · 文字缩进  → 宿主 text-indent（继承属性，能穿 shadow 边界；写在插槽元素上会被 reset 吃掉）
-  · 垂直居中  → 宿主 line-height = 行高（同上）
-  · 底色      → 宿主 :host(:hover) / :host([data-current])
+· 左右缩进 → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）
+· 文字缩进 → 宿主 text-indent（继承属性，能穿 shadow 边界；写在插槽元素上会被 reset 吃掉）
+· 垂直居中 → 宿主 line-height = 行高（同上）
+· 底色 → 宿主 :host(:hover) / :host([data-current])
 
 状态同样从插槽元素读，但镜像到宿主上的 data-current / data-disabled —— 宿主没法用
 `:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类，同 P14）。
@@ -100,6 +101,7 @@ shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面
 ## 相邻单元
 
 - 与 [`mc-breadcrumb`](../breadcrumb/) 同一条理由：**交互元素由使用者写在插槽里**，组件不造链接、也不改使用者的 DOM；状态（当前项 / 禁用）写在使用者的元素上，组件只按属性给外观。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

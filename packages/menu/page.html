@@ -22,9 +22,20 @@
     </p>
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
-        <li><strong>交互元素必须写在插槽里</strong>（<code>&lt;a&gt;</code> / <code>&lt;button&gt;</code>）：<code>href</code> / <code>disabled</code> / <code>aria-current</code> 都写在原生元素上，写在 <code>&lt;mc-menu-item&gt;</code> 上无效。</li>
-        <li><strong>别用 padding 改缩进</strong>：对 <code>&lt;button&gt;</code> 写的 padding 会被页面 reset 吃掉；改缩进用 <code>--mc-menu-pad-x</code>。</li>
-        <li><strong>菜单与菜单项都撑满父容器</strong>：要限宽就写在菜单自己的 <code>style</code> 上，或者套一层定宽容器。</li>
+        <li>
+          <strong>交互元素必须写在插槽里</strong>（<code>&lt;a&gt;</code> /
+          <code>&lt;button&gt;</code>）：<code>href</code> / <code>disabled</code> /
+          <code>aria-current</code> 都写在原生元素上，写在
+          <code>&lt;mc-menu-item&gt;</code> 上无效。
+        </li>
+        <li>
+          <strong>别用 padding 改缩进</strong>：对 <code>&lt;button&gt;</code> 写的 padding 会被页面
+          reset 吃掉；改缩进用 <code>--mc-menu-pad-x</code>。
+        </li>
+        <li>
+          <strong>菜单与菜单项都撑满父容器</strong>：要限宽就写在菜单自己的
+          <code>style</code> 上，或者套一层定宽容器。
+        </li>
       </ul>
     </mc-alert>
 
