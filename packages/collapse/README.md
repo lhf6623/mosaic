@@ -63,7 +63,6 @@ item.setAttribute('open', ''); // 等价，但异步一拍
 ## 相邻单元
 
 - 与 [`mc-menu`](../menu/) / [`mc-breadcrumb`](../breadcrumb/) 同族：**容器 + 子项**两个标签，容器管外框与尺寸（靠 `--mc-collapse-*` 继承给子项），子项管自己那格。
-
 <!-- hand:end -->
 
 ## 改这个单元之前

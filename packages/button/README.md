@@ -71,7 +71,6 @@ hover / active 用 state layer（currentColor + 半透明），不引 hover 色�
 ## 相邻单元
 
 - 消费 [`mc-icon`](../icon/)：槽里的图标字号走 `--mc-button-icon-size`（比按钮文字大一档）、颜色强制跟随按钮文字色 —— 按钮内部的 `mc-icon` **自己的 `color` 属性会被压掉**。
-
 <!-- hand:end -->
 
 ## 改这个单元之前

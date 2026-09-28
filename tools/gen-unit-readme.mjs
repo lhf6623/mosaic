@@ -65,7 +65,12 @@ const NEIGHBORS = {
 const HAND_START = '<!-- hand:start -->';
 const HAND_END = '<!-- hand:end -->';
 
-const SLUGS = ['alert', 'breadcrumb', 'button', 'card', 'code', 'collapse', 'icon', 'menu', 'message', 'popover', 'tag'];
+/* 单元清单从 site-map 派生，不在这里硬编码 —— 加一个组件只要往 site-map 挂一条带 tagName 的节点，
+   跑一次脚本就有了（否则每加一个组件都要记得来改这个数组， forgotten 一次就是一份缺失的 README）。
+   ⚠️ 只收 `packages/` 下**有 tagName** 的节点：`packages/color/page.html` 是色板页，没有标签，不算单元。 */
+const SLUGS = flat
+  .filter((n) => (n.path ?? '').startsWith('packages/') && n.tagName)
+  .map((n) => n.path.split('/')[1]);
 
 for (const slug of SLUGS) {
   const dir = `packages/${slug}`;
@@ -113,7 +118,8 @@ for (const slug of SLUGS) {
       '',
       '## 相邻单元',
       '',
-      NEIGHBORS[slug].map((line) => `- ${line}`).join('\n\n'),
+      NEIGHBORS[slug]?.map((line) => `- ${line}`).join('\n\n') ??
+        '- （还没写相邻单元的分工 —— 补在这里：和谁像、边界在哪、为什么不是同一个组件）',
     ].join('\n');
   }
 

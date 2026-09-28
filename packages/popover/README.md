@@ -107,7 +107,6 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 - 与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`planned.md`](../../agent/api/planned.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。
 
 - 图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。
-
 <!-- hand:end -->
 
 ## 改这个单元之前

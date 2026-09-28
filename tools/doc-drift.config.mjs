@@ -8,6 +8,7 @@
  * 跑：`pnpm check:docs`（= `node tools/doc-drift/drift.mjs`）。
  */
 
+import { dirname, posix } from 'node:path';
 import { READY, slugOf } from '../docs/site-map.js';
 import { componentSuites, siteSuites } from '../tests/lib/suites.mjs';
 
@@ -187,7 +188,10 @@ const rules = [
     title: '开发文档 · 路径与目录树（agent/** ↔ 仓库）',
     files: ['agent/**/*.md', 'README.md'],
     // 考古 / 外部原文：记录的是历史状态，出现已删除的文件是正常的
-    skipFiles: ['agent/archive/**', 'agent/vendor/**'],
+    // ⚠️ 教程豁免：它讲的是「要创建什么」，正文里点名的 `packages/badge/*.html` 此刻就该不存在。
+    // 「路径面」的语义是「文档里点名的文件仓库里有吗」，对教程不成立 —— 教程里的**链接**
+    // 由 `doc-links` 那条 custom 规则守（它跳过代码块，所以只查真链接）。
+    skipFiles: ['agent/archive/**', 'agent/vendor/**', 'agent/tutorial.md'],
     historyWords: '已删|删掉|删了|曾是|曾经|原来|以前|不再|去掉|旧版|history',
     placeholder: '[{}<>*…$|@=()!?#]',
     placeholderSegment: '^(?:x|y|z|n|xxx|yyy|name|slug|foo|bar|baz)$',
@@ -389,6 +393,54 @@ const rules = [
             problems.push(
               `${file}：文件头注释 ${e - s + 1} 行（上限 ${MAX_HEAD_COMMENT}）—— 设计说明搬到 ${`packages/${c.slug}/README.md`} 的「设计取舍」节`,
             );
+          }
+        }
+      }
+    },
+  },
+  {
+    type: 'custom',
+    id: 'doc-links',
+    title: '文档 · 链接指向的文件都存在（md，跳过代码块与归档）',
+    run: ({ io, problems }) => {
+      /* 文档里的 `[…](…)` 链接，目标不存在就是断链 —— 链接坏掉是**静默**的：
+         没人报错，只是读者点了没反应，所以要有守卫。
+
+         两条豁免（缺一条就会误报）：
+         1. **代码块里的不算** —— 教程与规范里的示例路径（`packages/badge/badge.html`）
+            是给读者**复制到别处**用的，按当前文件解析必然不存在。
+         2. **归档目录不查** —— 里面是历史原文，记录的是当时状态。
+         http(s) / mailto / 纯锚点本来就不查。 */
+      const SKIP = /^(?:agent\/archive|agent\/vendor)\//;
+      /* ⚠️ `io.listFiles` 收**单个** glob 字符串，不收数组 —— 传数组会拿到空列表，
+         这条规则就变成「什么都不查还全绿」。逐条 flatMap，和引擎里的写法保持一致。 */
+      const GLOBS = ['agent/**/*.md', 'packages/**/*.md', 'docs/**/*.md', 'README.md'];
+      const files = GLOBS.flatMap((g) => io.listFiles(g));
+
+      for (const file of files) {
+        if (SKIP.test(file)) continue;
+        const lines = io.read(file).split('\n');
+        let fence = false;
+        for (let i = 0; i < lines.length; i++) {
+          if (/^\s*(?:```|````)/.test(lines[i])) {
+            fence = !fence;
+            continue;
+          }
+          if (fence) continue;
+          for (const m of lines[i].matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+            const href = m[1].trim();
+            if (/^(?:https?:|mailto:|#)/.test(href)) continue;
+            const base = href.split('#')[0];
+            if (!base) continue;
+            /* 走 posix，不用 `path.resolve`：后者在 Windows 上给了绝对路径（`D:\mosaic\…`），
+               再拿去 `io.exists` 拼一遍就变成 `D:\mosaic/D:\mosaic\…` —— 明明存在的链接全被报成断链。 */
+            const dir = dirname(file).split('\\').join('/');
+            const target = posix.normalize(posix.join(dir, base));
+            if (target.startsWith('..') || !io.exists(target)) {
+              problems.push(
+                `${file}:${i + 1}：链接指向 \`${href}\`（解析为 \`${target}\`），文件不存在`,
+              );
+            }
           }
         }
       }

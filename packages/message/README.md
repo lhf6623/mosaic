@@ -109,7 +109,6 @@ message 是**命令式浮层**（自己进场自己走、不占版面）。两�
 - 与 [`mc-alert`](../alert/) 的分工：alert 是页内静态的一块面，message 是命令式浮层；**没有标签入口** —— 容器由模块自己挂到 `document.body` 末尾，图层问题（`position: fixed` 会被宿主页面的 `transform` / `filter` / `contain` 困住）就是在这里验的。
 
 - 内部 `await load('../icon/icon.html')`：类型图标跟着 `type` 走。
-
 <!-- hand:end -->
 
 ## 改这个单元之前

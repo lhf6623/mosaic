@@ -108,7 +108,6 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 - 与 [`message()`](../message/) 的分工：alert 是**页内静态**的一块面（跟着内容流排版、不抢焦点、不会自己消失），message 是**命令式浮层**（自己进场、自己走、不占版面）—— 两者都要「把状态告诉使用者」，但一个在文档流里、一个在层级最上面。
 
 - 内部 `await load('../icon/icon.html')`：左侧图形跟着 `color` 变，所以只引 `mc-alert` 的使用者会连带取一次 `icon.html`。
-
 <!-- hand:end -->
 
 ## 改这个单元之前
