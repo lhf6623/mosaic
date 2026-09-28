@@ -70,7 +70,7 @@ export function createIO(root) {
     listFiles: (glob) => listFiles(root, glob),
     listDirs: (glob) => listDirs(root, glob),
     allEntries,
-    /** 路径的唯一后缀命中（散文里常省略前缀，如 `archive/research/state.md`） */
+    /** 路径的唯一后缀命中（散文里常省略前缀，如 `research/state.md`） */
     uniqueSuffix(token) {
       return allEntries().filter((path) => path === token || path.endsWith(`/${token}`));
     },
@@ -330,15 +330,6 @@ export const DEFAULT_NATIVE_EVENTS = new Set([
 function runSurface({ io, config, surface, component, problems, notes }) {
   const vars = { slug: component.slug, dir: component.dir, tag: component.tag ?? '' };
   const file = fill(surface.files, vars);
-
-  /* 按文件豁免（与 rules.skipFiles 同语义）：某个文件不再适用这一面时用。
-     例：参考区改由 md 渲染后，那一页的 page.html 里就没有手写表格了，
-     它不该再对「参考区表格 ↔ 代码」这一面对账（那一面改为由 md 那一面承担）。 */
-  const skips = (surface.skipFiles ?? []).map(
-    (glob) => new RegExp(`^${glob.replace(/\*/g, '.*')}$`),
-  );
-  if (skips.some((re) => re.test(file))) return;
-
   if (!io.exists(file)) {
     if (surface.missing) problems.push(`${file}：${surface.missing}`);
     return;
@@ -817,8 +808,8 @@ function runPathsRule({ io, config, rule, components, problems }) {
     if (skip.some((re) => re.test(file))) continue;
     const text = io.read(file);
     const lines = text.split('\n');
-    // api.md 有两个住处，正则也就有两组：`packages/<slug>/api.md`（已实现）与
-    // `agent/api/<slug>.md`（未实现的草案）—— 取第一个命中的分组（`group` = 备选组号）
+    // api.md 有两个住处，正则也就有两组：packages/<slug>/api.md（已实现）与
+    // agent/api/<slug>.md（未实现的草案）—— 取第一个命中的分组（group = 备选组号）。
     const specSlug = rule.plannedSpec
       ? (() => {
           const m = file.match(new RegExp(rule.plannedSpec.filePattern));
@@ -935,10 +926,10 @@ const RULES = {
   commands: runCommandsRule,
   tree: runTreeRule,
   counts: runCountsRule,
-    /** 逃生口：仓库特有、前几类都装不下的账，config 里直接写函数。
-        签名与其它规则一致，收到的是展开后的那几个字段（不是嵌套的 `api`）。 */
-    custom: ({ io, config, components, rule, problems }) =>
-      rule.run({ io, config, components, rule, problems }),
+  /** 逃生口：仓库特有、前几类都装不下的账，config 里直接写函数。
+      签名与其它规则一致，收到的是展开后的那几个字段（不是嵌套的 `api`）。 */
+  custom: ({ io, config, components, rule, problems }) =>
+    rule.run({ io, config, components, rule, problems }),
 };
 
 /* ================================================================== *

@@ -123,34 +123,6 @@ const pageSkeleton = {
   },
 };
 
-/** 组件文档：参考区表格 ↔ 代码 */
-const pageApi = {
-  id: 'page-api',
-  title: '组件文档 · 参考区表格 ↔ 组件代码',
-  kind: 'html',
-  files: 'packages/{slug}/page.html',
-  /* 参考区已改由 md 渲染的页（见 agent/doc-render.md）：page.html 里没有手写表格了，
-     这一面自然对不上 —— 那一页的接口事实由上面的 `api-spec` 面（md ↔ 代码）守着。
-     ⚠️ 迁移推进一页就在这里加一行；**11 页迁完，整个面删除**（那时没有页面再手写参考表格）。 */
-  skipFiles: ['packages/button/page.html'],
-  // 多标签包（collapse / menu / breadcrumb）用 <h3>mc-x</h3> 分节
-  tagSections: '^mc-[\\w-]+$',
-  sections: {
-    属性: { header: ['名称', '值', '默认', '说明'], facet: 'attrs', name: 0, default: 2 },
-    事件: { header: ['名称', '类型', '说明'], facet: 'events', name: 0 },
-    '插槽与 part': {
-      header: ['名称', '说明'],
-      facet: 'slotsParts',
-      name: 0,
-      bareNames: 'codeFacts',
-    },
-    插槽: { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'sectionTitle' },
-    part: { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'sectionTitle' },
-  },
-  // 「标题说实话」：只有 part 就不能写成「插槽与 part」
-  slotPartTitle: true,
-};
-
 /** 组件文档：演示区 ↔ demos/*.html */
 const pageDemos = {
   id: 'page-demos',
