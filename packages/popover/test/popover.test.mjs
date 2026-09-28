@@ -739,6 +739,71 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(guardApi),
   );
 
+  /* ↓ 两条回归，都是 CI 上暴露出来的（本地 rAF 快，原来那条「等过时间窗再断言」测不到）。
+
+     ① dispose 要把**挂起的那份 hold** 一起掐掉。原来只摘监听、不管已经在跑的 hold，
+        它还会继续每帧拿过期快照 restore。⚠️ 这里用**普通元素**当面板：真 mc-popover 自带
+        一份守卫，会把「谁 restore 的」搅在一起（第一版回归测试就栽在这上面）。 */
+  const disposeReleases = await page.evaluate(async () => {
+    const { attachFloatingScrollGuard } = await import('/packages/boot/scroll-pin.js');
+    const host = document.createElement('div');
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML =
+      '<div class="scroller" style="height:160px;overflow:auto"><div style="height:900px"></div><slot></slot></div>';
+    document.body.append(host);
+    const panel = document.createElement('div');
+    host.append(panel); // 走 <slot> 投进 .scroller —— snapshotScroll 是**往上**走的，
+    // 传 host 的话 scroller 在它的 shadow root 里（往下），快照根本captured不到（第一版就栽在这）
+    const scroller = shadow.querySelector('.scroller');
+    scroller.scrollTop = 300;
+
+    const guard = attachFloatingScrollGuard(panel, panel, { hold: 300 });
+    panel.dispatchEvent(new Event('beforetoggle')); // 记锚点
+    panel.dispatchEvent(new Event('toggle')); // 起一份 hold
+    await new Promise((r) => requestAnimationFrame(r));
+    guard.dispose(); // 时间窗没过就 dispose
+    scroller.scrollTop = 100;
+    await new Promise((r) => setTimeout(r, 400)); // 等过 hold 的时间窗
+    const after = scroller.scrollTop;
+    host.remove();
+    return after;
+  });
+  check(
+    'dispose 连挂起的 hold 一起掐掉（时间窗没过就 dispose 也不许再 restore）',
+    disposeReleases === 100,
+    `dispose 之后 scrollTop = ${disposeReleases}（期望 100）`,
+  );
+
+  /* ② 时间窗过了就不许再 restore —— 哪怕那一帧是**迟到**的。
+       原来 watch() 先 restore 再判 until：rAF 被节流时下一帧可能远迟于 until，
+       于是拿过期快照把用户/测试刚设的位置盖回去（CI 上就是这么红的）。
+       这里把 rAF 换成 700ms 的慢帧，确定性地复现。 */
+  const lateFrame = await page.evaluate(async () => {
+    const { holdScroll, snapshotScroll } = await import('/packages/boot/scroll-pin.js');
+    const scroller = document.createElement('div');
+    scroller.style.cssText = 'height:160px;overflow:auto';
+    scroller.innerHTML = '<div style="height:900px"></div>';
+    document.body.append(scroller);
+    scroller.scrollTop = 300;
+
+    const realRaf = window.requestAnimationFrame;
+    window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 700);
+
+    const release = holdScroll(snapshotScroll(scroller), { hold: 300 });
+    scroller.scrollTop = 100; // 时间窗早过了，用户自己滚到 100
+    await new Promise((r) => setTimeout(r, 900)); // 等那个迟到的帧跑完
+    window.requestAnimationFrame = realRaf;
+    const after = scroller.scrollTop;
+    release();
+    scroller.remove();
+    return after;
+  });
+  check(
+    '时间窗过了就不许再 restore（rAF 被节流、迟到的那一帧也不行）',
+    lateFrame === 100,
+    `迟到帧之后 scrollTop = ${lateFrame}（期望 100）`,
+  );
+
   /* ------------------------------------------------------------------ *
    * 9. 文档页本身：演示渲染出来了，点了真的会弹（顺带让依赖地图记下
    *    「popover 套件碰过 packages/popover/page.html」这条边）

@@ -142,33 +142,54 @@ export function snapshotScroll(el) {
  *                                         不算「用户要滚页面」（那一下往往正是开合本身）
  * @returns {() => void} 提前放手（幂等）
  */
-export function holdScroll(restore, { hold = HOLD_MS, owner = null } = {}) {
+export function holdScroll(restore, { hold = HOLD_MS, owner = null, onEnd = null } = {}) {
   if (typeof restore !== 'function') return () => {};
 
   restore();
 
   let released = false;
+  let ended = false;
+  let frame = 0;
+
+  /** 收尾：摘监听、掐掉还没跑的那一帧、通知调用方（幂等） */
+  const stop = () => {
+    if (ended) return;
+    ended = true;
+    if (frame) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    }
+    for (const type of RELEASE_ON) window.removeEventListener(type, release);
+    onEnd?.();
+  };
+
   const release = (event) => {
     /* 滚轮一律算「人在滚」；按下 / 触摸只在 owner 之外才算 */
     if (event.type === 'wheel' || !(owner && (event.composedPath?.().includes(owner) ?? false))) {
       released = true;
+      stop();
     }
   };
   for (const type of RELEASE_ON) window.addEventListener(type, release, { passive: true });
 
   const until = performance.now() + hold;
   const watch = () => {
-    if (!released) restore();
+    frame = 0;
+    /* ⚠️ 顺序：先判「结束」再 restore。rAF 被节流时（headless Chrome / 后台标签页）下一帧可能
+       远迟于 until，按原来的顺序会在这时**又 restore 一次**（拿的是过期快照）—— 实测它会把
+       dispose() 之后刚设的位置盖回去（CI 上就是这么红的）。 */
     if (released || performance.now() >= until) {
-      for (const type of RELEASE_ON) window.removeEventListener(type, release);
+      stop();
       return;
     }
-    requestAnimationFrame(watch);
+    restore();
+    frame = requestAnimationFrame(watch);
   };
-  requestAnimationFrame(watch);
+  frame = requestAnimationFrame(watch);
 
   return () => {
     released = true;
+    stop();
   };
 }
 
@@ -184,6 +205,16 @@ export function holdScroll(restore, { hold = HOLD_MS, owner = null } = {}) {
  */
 export function createScrollPin(el, { hold = HOLD_MS } = {}) {
   let anchor = null;
+  /** 在跑着的 hold：dispose 必须把它们一起掐掉，否则时间窗内还会 restore（见 holdScroll 的注释） */
+  const holds = new Map();
+  let holdSeq = 0;
+
+  const startHold = (restore) => {
+    const id = (holdSeq += 1);
+    const release = holdScroll(restore, { hold, owner: el, onEnd: () => holds.delete(id) });
+    holds.set(id, release);
+    return release;
+  };
 
   const takeAnchor = () => {
     anchor = { at: performance.now(), restore: snapshotScroll(el) };
@@ -212,22 +243,24 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
 
     /** 用最近的锚点钉住（没有就现场记一份） */
     hold(restore = freshAnchor()) {
-      return holdScroll(restore, { hold, owner: el });
+      return startHold(restore);
     },
 
     /** 快照 → 执行动作 → 钉住。返回动作的返回值 */
     run(action) {
       const restore = freshAnchor();
       const result = action();
-      holdScroll(restore, { hold, owner: el });
+      startHold(restore);
       return result;
     },
 
-    /** 退订手势监听（组件 detached 时调用） */
+    /** 退订手势监听 + 掐掉挂起的 hold（组件 detached 时调用） */
     dispose() {
       for (const type of GESTURES) {
         document.removeEventListener(type, takeAnchor, { capture: true });
       }
+      for (const release of [...holds.values()]) release();
+      holds.clear();
       anchor = null;
     },
   };

@@ -154,19 +154,23 @@ await goTop('组件');
 await page.waitForTimeout(1200);
 
 await page.evaluate(() => {
-  window.__navFrames = [];
-  const t0 = performance.now();
+  window.__navSamples = [];
   const tick = () => {
     const nav = window.__deep('doc-nav');
     const toc = window.__deep('doc-toc');
-    window.__navFrames.push([
+    window.__navSamples.push([
       Math.round(nav.getBoundingClientRect().top),
       Math.round(toc.getBoundingClientRect().top),
       Math.round(window.scrollY),
+      window.__deepAll('h1')[0]?.textContent?.trim() ?? null,
     ]);
-    if (performance.now() - t0 < 1500) requestAnimationFrame(tick);
   };
-  requestAnimationFrame(tick);
+  /* ⚠️ 用 setInterval 采样，**不要用 requestAnimationFrame**：headless Chrome（CI 就是）
+     不合成画面，rAF 被节流 —— 实测 CI 上 1.5 秒只出 2 帧，这条就挂在「采样帧数 > 30」
+     这个和产品无关的前提上。要判的是「两栏有没有动」，setInterval 读到的是同一份布局。 */
+  tick(); // 先立刻采一拍：定时器首拍在 16ms 之后，而 evaluate 往返 + 点链接可能在这之前就换完页了
+  const timer = setInterval(tick, 16);
+  setTimeout(() => clearInterval(timer), 1500);
 });
 await page.evaluate(() => {
   window.__inside('doc-nav', 'a')
@@ -175,13 +179,16 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(1800);
 
-const navFrames = await page.evaluate(() => window.__navFrames);
-const moved = navFrames.filter(([navTop, tocTop, y]) => navTop !== 0 || tocTop !== 0 || y !== 0);
+const navSamples = await page.evaluate(() => window.__navSamples);
+const moved = navSamples.filter(([navTop, tocTop, y]) => navTop !== 0 || tocTop !== 0 || y !== 0);
+/* 断言「采样跨过了换页」而不是「采到多少帧」：次数是环境温度（并行满载时定时器会被拖慢，
+   实测 93 → 30），拿它当门槛就是把稳定性押在机器上。h1 变过 = 这次换页确实被采到了。 */
+const headings = new Set(navSamples.map((sample) => sample[3]));
 
 check(
   '换页时两侧浮动栏一动不动（内容高矮与它们无关）',
-  navFrames.length > 30 && moved.length === 0,
-  `${navFrames.length} 帧里移动 ${moved.length} 帧 · 末帧 nav.top=${navFrames.at(-1)?.[0]} toc.top=${navFrames.at(-1)?.[1]} scrollY=${navFrames.at(-1)?.[2]}`,
+  navSamples.length > 0 && moved.length === 0 && headings.size > 1,
+  `${navSamples.length} 次采样里移动 ${moved.length} 次 · h1=[${[...headings].join(' | ')}] · 末次 nav.top=${navSamples.at(-1)?.[0]} toc.top=${navSamples.at(-1)?.[1]} scrollY=${navSamples.at(-1)?.[2]}`,
 );
 
 /* ------------------------------------------------------------------ *
