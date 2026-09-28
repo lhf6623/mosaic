@@ -5,6 +5,9 @@
 组件接口本身以 [组件 API 规范](api/README.md) 为准。
 
 > **读这份的场合**：写或改任何组件文档页、加一个新组件页、调整演示区结构。
+>
+> **要动手而不是查规矩**：加一个演示走 [`howto/add-demo.md`](./howto/add-demo.md)（食谱）；
+> 改完接口要同步哪些地方走 [`howto/change-api.md`](./howto/change-api.md)。
 
 ---
 

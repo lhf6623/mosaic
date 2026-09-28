@@ -6,6 +6,10 @@
 逐组件接口以 [组件 API 规范](api/README.md) 为准。
 
 > **读这份的场合**：新建组件、改组件骨架、判断某个能力该不该由组件承担。
+>
+> **要动手而不是查规矩**：第一次做组件走 [`tutorial.md`](./tutorial.md)（教程，保证能成）；
+> 给已有组件加属性走 [`howto/add-attribute.md`](./howto/add-attribute.md)（食谱）。
+> 这份只讲「规矩是什么」，步骤不在这里抄第二份。
 
 **指路**：设计规则（间距 / 排版 / 动效 / 层级）见 [`design-spec.md`](./design-spec.md)，
 令牌值见 [`design-tokens.md`](./design-tokens.md)；参考实现是
