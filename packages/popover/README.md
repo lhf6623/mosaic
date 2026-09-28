@@ -40,6 +40,12 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 滚一下页面（实测火狐 156，二分结论与上游链接写在该文件头），那是**运行时的兜底**，
 不是定位逻辑 —— 别把它当作可以省掉的装饰。
 
+⚠️ **受控与非受控是两条互斥的路，混用是「点了没反应 / 面板不弹」的最常见来源**：
+`trigger="click"` / `hover` 时开合由组件自己管，它顺手把状态写回 `open` 属性；要自己管状态就用
+`trigger="manual"` + `open` 属性 —— 组件同样会增删这个属性（把浏览器发起的关闭同步回来，
+两个方向才都收敛），外部只改属性、只听 `close`。两条路一起用：点触发元素走的是组件自己的
+`toggle()`，会和外部那份 state 抢着写同一个属性。
+
 ## 令牌
 
 写在宿主 `style="…"` 上按实例覆盖：
@@ -92,9 +98,17 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
    `packages/popover/test/popover.test.mjs` 对这三种形状各有一条断言 + 一条工具契约断言
    （都用「模拟浏览器滚页面」的方式，浏览器里不跳也能守住）。
 
-另外两条：**`right` / `left` 的居中变体要单独写**（`anchor(center)` + `translate: 0 -50%`，
+另外四条：**`right` / `left` 的居中变体要单独写**（`anchor(center)` + `translate: 0 -50%`，
 第一版和 `-start` 合并在一个选择器里，交叉轴贴的是顶边）；**`close` 事件只有一个出口**
-（`show()` / `hide()` 都不直接发，统一由原生 `toggle` 派发，两处都发会重复）。
+（`show()` / `hide()` 都不直接发，统一由原生 `toggle` 派发，两处都发会重复）；
+**「这一下点击是开还是关」要按 pointerdown 那一刻判**（`onAnchorPointerDown`）——
+`popover="auto"` 的 light dismiss 就发生在 pointerdown 上，等 click 到达时面板已经被浏览器
+关掉了，这时再 `toggle()` 会把它**重新开回来**（表现是「点第二次关不掉」，面板一直开着）。
+所以 `trigger="click"` 的判定是「按下去时是否开着」，而且这条只有**真机指针**验得出来：
+合成 `click` 不触发 light dismiss，套件里专门有一条走 `page.mouse` 的断言守着；
+**「默认就显示」的开关（`arrow`）要把默认态留在基类规则里**，属性只表达非默认那一档
+（`arrow="none"` 关掉）—— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），默认态一旦挂到属性
+选择器上就会整体失效（同 `mc-card` 的 `divider="none"`）。
 
 ## 刻意不做的
 

@@ -162,7 +162,10 @@
            面板那层 drop-shadow 跟的是「面板 + 三角」的整体轮廓，一圈描边自然连上。
        ⚠️ 所以这里**别再给三角自己加 filter / border**：双层描边会在接缝处叠出一道深线。 */
     .mc-arrow {
-      display: none;
+      /* ⚠️ **默认就是显示**：三角是基类状态，关掉才写属性值（`arrow="none"`）。
+         别改成「默认隐藏 + :host(:not([arrow])) 显示」—— ofa 里 `:host()` 嵌 `:not()`
+         静默失效（P14），那样三角根本不会出现。 */
+      display: block;
       position: absolute;
       /* ⚠️ 钻到面板背景**之下**：否则三角贴面板那一侧的底边会落在面板边线内侧 1px 上，
          接缝处看得到一条错位的线。放到底下之后，露出来的部分正好是一个干净的三角。 */
@@ -171,32 +174,32 @@
       height: var(--mc-space-3);
       background-color: rgb(var(--mc-popover-panel-bg));
     }
-    :host([arrow]) .mc-arrow {
-      display: block;
+    :host([arrow='none']) .mc-arrow {
+      display: none;
     }
 
-    :host([arrow]) .mc-panel[data-side='bottom'] .mc-arrow {
+    .mc-panel[data-side='bottom'] .mc-arrow {
       top: calc(var(--mc-space-3) / -2);
       left: calc(
         50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(50% 0, 100% 100%, 0 100%);
     }
-    :host([arrow]) .mc-panel[data-side='top'] .mc-arrow {
+    .mc-panel[data-side='top'] .mc-arrow {
       bottom: calc(var(--mc-space-3) / -2);
       left: calc(
         50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 0, 50% 100%);
     }
-    :host([arrow]) .mc-panel[data-side='left'] .mc-arrow {
+    .mc-panel[data-side='left'] .mc-arrow {
       right: calc(var(--mc-space-3) / -2);
       top: calc(
         50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 50%, 0 100%);
     }
-    :host([arrow]) .mc-panel[data-side='right'] .mc-arrow {
+    .mc-panel[data-side='right'] .mc-arrow {
       left: calc(var(--mc-space-3) / -2);
       top: calc(
         50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
@@ -212,6 +215,7 @@
   <span
     class="mc-anchor"
     on:click="onAnchorClick"
+    on:pointerdown="onAnchorPointerDown"
     on:mouseenter="onAnchorEnter"
     on:mouseleave="onAnchorLeave"
   >
@@ -251,6 +255,8 @@
         trigger: 'click',
         /* 受控开合：open 出现即开、移除即关。布尔属性默认必须是 null（P1） */
         open: null,
+        /* 箭头：**默认显示**，关掉写 `arrow="none"`。默认状态归 CSS 基类规则，
+           属性只表达「非默认」那一档（同 mc-card 的 divider="none"，理由见 P14） */
         arrow: null,
       },
 
@@ -351,9 +357,35 @@
 
         /* ---------- 触发 ---------- */
 
+        /**
+         * 记下这一下**按在触发元素上**时面板是否已经开着。
+         * ⚠️ 必须在 pointerdown 记：`popover="auto"` 的 light dismiss 就发生在 pointerdown 上，
+         * 等 click 到达时面板已经被浏览器关掉了 —— 那时再 toggle() 会把它**重新开回来**，
+         * 表现就是「点第二次关不掉」（实测 Chrome：面板一直开着，还又发了一次 open）。
+         * 合成 `MouseEvent('click')` 不经过 light dismiss，所以这条只有真机指针能验出来。
+         */
+        onAnchorPointerDown() {
+          if (!this.popoverOk) return;
+          this._openAtPointerDown = this.panel.matches(':popover-open');
+          /* 这一下是「关」的意思：先把 close 的 reason 定成 trigger —— 浏览器发起的
+             light dismiss 走 onNativeToggle，那儿取的就是这个值（不设会报成 dismiss）。
+             按在**关着**的触发元素上时顺手清掉，免得残留的 reason 记到下一次关闭头上。 */
+          this._closingReason = this._openAtPointerDown ? 'trigger' : null;
+        },
+
         onAnchorClick() {
           /* trigger 没写就是 click（不能读 this.trigger：attrs 的默认值不会写回宿主） */
           if ((this.ele.getAttribute('trigger') ?? 'click') !== 'click') return;
+          const wasOpen = this._openAtPointerDown === true;
+          this._openAtPointerDown = false;
+          /* 按下去时开着 = 这一下是「关」：light dismiss 已经在 pointerdown 上关掉了，
+             这里不能再 toggle 回开（见 onAnchorPointerDown）。原生 toggle 会照常到达
+             onNativeToggle，属性清理与 close 事件都归它 —— 这里补发会变成一次关闭两条 close。 */
+          if (wasOpen) {
+            /* 兜底：万一某版浏览器把 dismiss 推迟到 click 之后，面板这会儿还开着就自己补一次 */
+            if (this.panel.matches(':popover-open')) this.hide('trigger');
+            return;
+          }
           this.toggle('trigger');
         },
 
@@ -379,7 +411,8 @@
          * 偏移用 CSS 变量交给样式算（`left: calc(50% + var(--mc-popover-arrow-shift) - 半宽)`）。
          */
         syncArrowShift() {
-          if (!this.ele.hasAttribute('arrow')) return;
+          /* 箭头默认就显示，只有显式 arrow="none" 才跳过（省掉一次无关的测量） */
+          if (this.ele.getAttribute('arrow') === 'none') return;
           const panel = this.panel;
           const anchorEl = rectOf(this.ele.shadowRoot.querySelector('.mc-anchor'));
           const box = rectOf(panel);

@@ -1,12 +1,16 @@
 <template component>
   <div class="flex flex-wrap items-center gap-4">
-    <mc-popover arrow placement="bottom-start">
-      <mc-button variant="outline">带箭头（下方）</mc-button>
-      <div slot="panel">小三角跟着 placement 贴在对面那条边上。</div>
+    <mc-popover placement="bottom-start">
+      <mc-button variant="outline">默认（带箭头）</mc-button>
+      <div slot="panel">不写属性也有小三角，跟着 placement 贴在对面那条边上。</div>
     </mc-popover>
-    <mc-popover arrow placement="right">
-      <mc-button variant="outline">带箭头（右侧）</mc-button>
+    <mc-popover placement="right">
+      <mc-button variant="outline">换方向</mc-button>
       <div slot="panel">换方向时三角会跟着换边。</div>
+    </mc-popover>
+    <mc-popover placement="bottom" arrow="none">
+      <mc-button variant="outline">arrow="none"（关掉）</mc-button>
+      <div slot="panel">写 arrow="none" 才没有三角。</div>
     </mc-popover>
   </div>
 

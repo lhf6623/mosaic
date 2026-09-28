@@ -9,7 +9,7 @@
 固定住内容形态与交互的预设，共用同一套定位与层级。
 
 ```html
-<mc-popover placement="bottom-start" arrow>
+<mc-popover placement="bottom-start">
   <mc-button variant="outline">打开菜单</mc-button>
   <div slot="panel"><mc-menu>…</mc-menu></div>
 </mc-popover>
@@ -22,12 +22,12 @@
 
 ## 属性
 
-| 名称        | 值                                                       | 默认     | 说明                                     |
-| ----------- | -------------------------------------------------------- | -------- | ---------------------------------------- |
-| `placement` | `top` `bottom` `left` `right` × `-start` / 居中 / `-end` | `bottom` | 面板相对触发元素的方向；空间不够自动翻转 |
-| `trigger`   | `click` `hover` `manual`                                 | `click`  | 怎么开；`manual` 只认 `open` 与 `show()` |
-| `open`      | 布尔                                                     | —        | 受控开合：属性在就开、移除就关           |
-| `arrow`     | 布尔                                                     | —        | 面板上一个小三角，方向跟着 `placement`   |
+| 名称        | 值                                                | 默认     | 说明                                                               |
+| ----------- | ------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| `placement` | `top` `bottom` `left` `right` × `-start` / `-end` | `bottom` | 面板相对触发元素的方向（不写后缀 = 居中）；空间不够自动翻转        |
+| `trigger`   | `click` `hover` `manual`                          | `click`  | 怎么开；`manual` 只认 `open` 与 `show()`；受控开合就配它           |
+| `open`      | 布尔                                              | —        | 受控开合：属性在就开、移除就关；要受控就把 `trigger` 设成 `manual` |
+| `arrow`     | `none`                                            | —        | 面板上一个小三角，方向跟着 `placement`；**默认显示**，写 `none` 关掉 |
 
 ## 方法
 
@@ -57,4 +57,4 @@
 | 名称    | 说明                          |
 | ------- | ----------------------------- |
 | `panel` | 面板本体                      |
-| `arrow` | 小三角；没写 `arrow` 时不渲染 |
+| `arrow` | 小三角；`arrow="none"` 时不显示 |

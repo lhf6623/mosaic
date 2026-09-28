@@ -1,21 +1,69 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
-    <mc-popover placement="bottom-start">
-      <mc-button variant="outline">下方起始对齐</mc-button>
-      <div slot="panel">placement="bottom-start"</div>
-    </mc-popover>
-    <mc-popover placement="bottom">
-      <mc-button variant="outline">下方居中</mc-button>
-      <div slot="panel">placement="bottom"</div>
-    </mc-popover>
-    <mc-popover placement="top-end">
-      <mc-button variant="outline">上方末尾对齐</mc-button>
-      <div slot="panel">placement="top-end"</div>
-    </mc-popover>
-    <mc-popover placement="right">
-      <mc-button variant="outline">右侧</mc-button>
-      <div slot="panel">placement="right"</div>
-    </mc-popover>
+  <!-- 12 个 placement 全列出来：中间留空，上 / 下 / 左 / 右各三个（-start / 居中 / -end）。
+       一次只开一个面板（点空白、Esc 或再点触发元素就关），所以它们不会互相压。
+       ⚠️ 上 / 下两行必须**整行铺开**，不能挤在一格里换行：换行后行距只剩 gap（32px），
+       上一行弹出的面板（52px 高 + 8px 间距）会盖住下一行的按钮，那一行就点不着了（实测）。 -->
+  <div class="flex flex-col items-center gap-8">
+    <div class="flex flex-wrap items-center justify-center gap-8">
+      <mc-popover placement="top-start">
+        <mc-button variant="outline">top-start</mc-button>
+        <div slot="panel">placement="top-start"</div>
+      </mc-popover>
+      <mc-popover placement="top">
+        <mc-button variant="outline">top</mc-button>
+        <div slot="panel">placement="top"</div>
+      </mc-popover>
+      <mc-popover placement="top-end">
+        <mc-button variant="outline">top-end</mc-button>
+        <div slot="panel">placement="top-end"</div>
+      </mc-popover>
+    </div>
+
+    <div class="flex w-full items-start justify-between gap-8">
+      <div class="flex flex-col items-start gap-8">
+        <mc-popover placement="left-start">
+          <mc-button variant="outline">left-start</mc-button>
+          <div slot="panel">placement="left-start"</div>
+        </mc-popover>
+        <mc-popover placement="left">
+          <mc-button variant="outline">left</mc-button>
+          <div slot="panel">placement="left"</div>
+        </mc-popover>
+        <mc-popover placement="left-end">
+          <mc-button variant="outline">left-end</mc-button>
+          <div slot="panel">placement="left-end"</div>
+        </mc-popover>
+      </div>
+      <div class="flex flex-col items-end gap-8">
+        <mc-popover placement="right-start">
+          <mc-button variant="outline">right-start</mc-button>
+          <div slot="panel">placement="right-start"</div>
+        </mc-popover>
+        <mc-popover placement="right">
+          <mc-button variant="outline">right</mc-button>
+          <div slot="panel">placement="right"</div>
+        </mc-popover>
+        <mc-popover placement="right-end">
+          <mc-button variant="outline">right-end</mc-button>
+          <div slot="panel">placement="right-end"</div>
+        </mc-popover>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-8">
+      <mc-popover placement="bottom-start">
+        <mc-button variant="outline">bottom-start</mc-button>
+        <div slot="panel">placement="bottom-start"</div>
+      </mc-popover>
+      <mc-popover placement="bottom">
+        <mc-button variant="outline">bottom</mc-button>
+        <div slot="panel">placement="bottom"</div>
+      </mc-popover>
+      <mc-popover placement="bottom-end">
+        <mc-button variant="outline">bottom-end</mc-button>
+        <div slot="panel">placement="bottom-end"</div>
+      </mc-popover>
+    </div>
   </div>
 
   <script>

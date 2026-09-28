@@ -9,6 +9,7 @@
  *   · 必须清掉 UA 给 popover 的 `inset: 0; margin: auto`（auto 外边距会吃掉锚点定位）
  *   · 锚点容器必须是 inline-flex（inline-block 会带 3px 基线缝隙，整体偏移）
  *   · close 事件只能有一个出口（API 与原生 toggle 都发就会重复）
+ *   · 真机「点第二次关不掉」只有**真指针**能测出来（合成 click 不触发 light dismiss）
  */
 
 export default async function run({ page, visit, check }) {
@@ -254,6 +255,48 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ------------------------------------------------------------------ *
+   * 4b. 真实指针：点第二次要真的关掉
+   *
+   * ⚠️ 上面三条用的是合成 `MouseEvent('click')` —— 它**不经过浏览器的 light dismiss**
+   * （那是 pointerdown 上的原生行为）。于是「真机点第二次关不掉」这个 bug 一直躲过了套件：
+   * pointerdown 上 light dismiss 先把面板关了，紧接着 click 里的 toggle() 又把它开回来。
+   * 这条必须走 page.mouse 的真指针，并且先断言命中 —— 环境一变（比如有东西盖住触发元素）
+   * 要当场红，而不是静默地测了个寂寞。
+   * ------------------------------------------------------------------ */
+  await wait(200);
+  const realPointer = await page.evaluate(() => {
+    const pop = window.__pop;
+    /* 第 3 节把这台宿主挪到了右下角；真机点击换回视口正中（那里没有别的东西盖着） */
+    pop.style.cssText = 'position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);';
+    pop.setAttribute('trigger', 'click');
+    window.__realEvents = [];
+    for (const type of ['open', 'close']) {
+      pop.addEventListener(type, (e) => window.__realEvents.push(`${type}:${e.detail?.reason ?? ''}`));
+    }
+    const anchor = pop.shadowRoot.querySelector('.mc-anchor').getBoundingClientRect();
+    const x = anchor.x + anchor.width / 2;
+    const y = anchor.y + anchor.height / 2;
+    return { x, y, hit: document.elementFromPoint(x, y)?.tagName?.toLowerCase() ?? null };
+  });
+  await page.mouse.click(realPointer.x, realPointer.y);
+  await wait(250);
+  const realOpened = await isOpen();
+  await page.mouse.click(realPointer.x, realPointer.y);
+  await wait(250);
+  const realClosed = !(await isOpen());
+  const realAttrOff = !(await openAttr());
+  const realEvents = await page.evaluate(() => window.__realEvents.splice(0));
+  check(
+    '真实指针点触发元素：第一次开、第二次关，close 只发一条（light dismiss 不能把这次点击吞成重开）',
+    realPointer.hit === 'button' &&
+      realOpened === true &&
+      realClosed === true &&
+      realAttrOff === true &&
+      realEvents.join('|') === 'open:trigger|close:trigger',
+    JSON.stringify({ ...realPointer, realOpened, realClosed, realAttrOff, realEvents }),
+  );
+
+  /* ------------------------------------------------------------------ *
    * 5. open 属性受控 + 原生 light-dismiss 双向同步 + 事件只发一次
    * ------------------------------------------------------------------ */
   const controlled = await page.evaluate(async () => {
@@ -348,7 +391,8 @@ export default async function run({ page, visit, check }) {
    *    实测踩过两个坑：① 对着面板居中 → 面板比触发元素宽时箭头飘到中间；
    *    ② 按 placement 写死边 → 面板被浏览器翻转后箭头留在错的那条边
    * ------------------------------------------------------------------ */
-  await makePopover({ arrow: '', placement: 'bottom-start' });
+  /* ⚠️ 这里刻意**不写** arrow 属性：箭头是默认显示的，写在属性上会把「默认」这条掩盖掉 */
+  await makePopover({ placement: 'bottom-start' });
   await wait(200);
   const arrowMath = await page.evaluate(async (list) => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -494,6 +538,35 @@ export default async function run({ page, visit, check }) {
     'arrow 渲染出小三角（8–20px）',
     arrow.display === 'block' && arrow.size >= 8 && arrow.size <= 20,
     JSON.stringify(arrow),
+  );
+  /* 默认值这一面：**不写属性**就该有三角（上面那条量的就是默认态），只有显式 `arrow="none"` 才关掉。
+     ⚠️ 默认态不许挂在 `:host(:not([arrow]))` 上 —— ofa 里那种写法静默失效（P14）。 */
+  const arrowSwitch = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const pop = window.__pop;
+    const inst = $(pop);
+    const el = pop.shadowRoot.querySelector('.mc-arrow');
+    inst.hide();
+    await wait(150);
+    pop.removeAttribute('arrow');
+    inst.show();
+    await wait(320);
+    const byDefault = getComputedStyle(el).display;
+    inst.hide();
+    await wait(150);
+    pop.setAttribute('arrow', 'none');
+    inst.show();
+    await wait(320);
+    const byNone = getComputedStyle(el).display;
+    inst.hide();
+    await wait(150);
+    pop.removeAttribute('arrow');
+    return { byDefault, byNone };
+  });
+  check(
+    '箭头默认显示（不写属性就有），arrow="none" 关掉',
+    arrowSwitch.byDefault === 'block' && arrowSwitch.byNone === 'none',
+    JSON.stringify(arrowSwitch),
   );
   check(
     '面板样式走令牌（背景是 surface 色、圆角、字体都是项目令牌）',
