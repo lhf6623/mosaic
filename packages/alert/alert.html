@@ -1,44 +1,8 @@
 <!--
   mc-alert — 页内提示条
 
-  和 message() 的分工：alert 是**页内静态**的一块面（跟着内容流排版、不抢焦点、不会自己消失）；
-  message 是命令式浮层（自己进场、自己走，不占版面）。两者都要「把状态告诉使用者」，但
-  一个在文档流里、一个在层级最上面，所以不是一个组件。
-
-  两个正交维度 + 两个状态布尔，和 mc-tag / mc-button 同一套分工：
-  · color   只往四个色槽里填值（subtle 要单独的浅底槽）；
-  · variant 只决定色槽贴到哪儿（subtle 默认 / solid / outline）；
-  · 状态：icon（左侧内置图形）、closable（右侧关闭图标）。
-  **没有 size** —— 提示条不是控件，高度由内容撑；要改就 style="padding:…" 或 --mc-alert-pad-*。
-  于是 6 色 + 3 外观 = 9 条规则，而不是 18 条组合规则。
-
-  标题属性叫 heading 不叫 title：title 是原生属性，挂上去浏览器会弹自己的 tooltip，而且
-  ofa 会把声明过的字符串属性以空值写到宿主上（P32），"有没有给标题"只能看值、不能看属性在不在。
-  插槽名照旧叫 title（插槽名不产生属性）—— 和 mc-collapse-item 的 header 属性 + header 插槽同构。
-
-  标题/正文的显隐只从宿主上的 data-has-title / data-has-body 选（同 mc-card 的 data-has-header）：
-  空的标题块会白占一行、正文空了 gap 也还在。宿主属性只能在 attached() 之后写（P31），
-  所以 ready() 里只做查询，判定统一走 applyState()。
-
-  图标直接消费 **mc-icon**（4 个语义图形住在内置图标集里：info / success / warning / error），
-  `:name` 跟着 color 走 —— 常驻 DOM、不用 o-if（P10）。装饰性由 mc-icon 自己保证（不给 label 即
-  aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图形让位。
-
-  ⚠️ **这个文件里没有任何 SVG 形状**（图标数据在 mc-icon 那边，构建期编译进 mosaic.css）。
-  这条约束值得留着：Live Server 会往 HTML 里注入热重载 script，注入点是「body / svg / head 的
-  结束标签」里的第一个，而它是**纯文本替换、不看上下文** —— 内联 svg 一旦出现在组件模块 script
-  之前，注入的 script 就变成 ofa 眼里的「第一个 script」，组件直接报「加载组件模块出错」（实测：
-  VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
-  tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
-  （同理，path 数据里的小写指令会被 UnoCSS 当 margin 工具类扫走 —— 所以图标数据放
-  packages/icon/icons.generated.ts，那份文件不在 UnoCSS 的扫描范围里。）
-
-  **不预设 role**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。需要播报的用法（动态插入的
-  报错）由使用者在宿主上加 role="alert" / role="status"，组件不去覆盖它（同 mc-card 不做整卡可点）。
-
-  closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。
-  关闭按钮是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，
-  所以单行提示条不会因为它变高；焦点环用 --mc-color-ring（不用 currentColor，P16）。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

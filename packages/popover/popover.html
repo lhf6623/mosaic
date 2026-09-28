@@ -1,37 +1,8 @@
 <!--
   mc-popover — 通用浮层（点击/悬停/手动触发，锚在触发元素上）
 
-  与 mc-dropdown / mc-tooltip 的分工：popover 是**通用容器**（内容由使用者给），
-  dropdown / tooltip 将来只是在它上面固定住内容形态的预设；三者共用同一套定位与层级。
-
-  ⚠️ **定位与层叠都用浏览器原生能力，这是本组件最核心的决定**（设计规范第七节要求
-  M3 浮层开工前先验图层，下面是实测结论，别再退回 JS 算坐标）：
-
-    1. 面板用 `popover="auto"` → 进 **top layer**：天然在所有 `--mc-z-*` 之上，
-       不受宿主页面的 `transform` / `filter` / `contain` 影响（而那正是 shadow root 里
-       `position: fixed` 的死穴：实测同一个 fixed 盒子，祖先带 transform 时 y 从 10 变成 1404）。
-       顺带白拿 **Esc 关闭** 与 **点空白关闭**（light-dismiss），不用自己写 composedPath。
-    2. 位置用 **CSS 锚点定位**（`anchor-name` / `position-anchor` / `anchor()`）：
-       不用 JS 读 rect 算坐标、滚动与缩放自动跟随，**贴边自动翻转**（`position-try-fallbacks`）
-       也是白拿的 —— 实测下方放不下会翻到上方、右侧放不下会翻到左侧且不溢出。
-    3. ⚠️ **锚点必须设在 shadow 内的元素上**：把 `anchor-name` 设在 light DOM 的 slot 元素上
-       **无效**（跨 shadow 边界不成立，面板会掉到 UA 默认位置）。所以触发元素外面套一层
-       `.mc-anchor`，锚点挂在它身上。
-    4. ⚠️ **必须显式清掉 UA 给 popover 的 `inset: 0; margin: auto`**：那两个 auto 外边距会把
-       `left: anchor(left)` 挤掉（实测面板水平居中而不是与触发元素左对齐）。
-    5. ⚠️ **必须显式 `border: 0`**（和上一条同一类坑）：UA 给 `[popover]` 的是 `border: solid` ——
-       只写了 style，宽度取 medium（**3px**）、颜色取 currentColor，所以不写边框就会得到一圈
-       3px 的「跟着文字颜色走」的边框（实测亮色下 rgb(60 67 77)、暗色下接近白）。面板的描边
-       现在由 drop-shadow 跟「面板 + 三角」的**整体轮廓**做（见 `.mc-panel` 里的注释），
-       所以这条更要显式归零 —— 以前是那行 `border: 1px solid …` 顺手盖住它的。
-    6. ⚠️ top layer 里 `transform` 受限，进场动画只用 opacity + 轻微位移，别用 scale。
-
-  为什么用原生 popover 而不是挂 document.body：见 (1)。这也回答了 roadmap 里
-  「是否改用 popover API」那个问题 —— 答案是**用**。
-
-  ⚠️ 依赖 `packages/boot/scroll-pin.js`（定住滚动条的工具）：开合原生浮层时浏览器可能顺手
-  滚一下页面（实测火狐 156，二分结论与上游链接写在该文件头），那是**运行时的兜底**，
-  不是定位逻辑 —— 别把它当作可以省掉的装饰。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

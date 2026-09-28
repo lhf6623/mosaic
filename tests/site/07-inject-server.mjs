@@ -177,7 +177,9 @@ try {
       compState.total > 0 &&
         compState.upgraded === compState.total &&
         compState.icons === 1 &&
-        (compState.glyph ?? '').includes('mc-icon-info'),
+        /* 图形是**某个**语义图形就行，别绑死 info：页面上第一个 mc-alert 随页面内容变
+           （组件页顶部的「注意事项」是 warning），绑定具体颜色会让这条断言跟着文案走。 */
+        /mc-icon-(?:info|success|warning|danger)/.test(compState.glyph ?? ''),
       `${compState.upgraded}/${compState.total} 升级 · 图标容器 ${compState.icons} 个 · 图形 ${compState.glyph ?? '(未渲染)'}${
         compErrs.length ? ' · ' + compErrs[0] : ''
       }`,

@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./breadcrumb.html"></l-m>
     <l-m src="./breadcrumb-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -16,6 +17,14 @@
       面包屑。容器 + 每一级两个标签；一级里的交互元素（原生
       <code>&lt;a&gt;</code>）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
     </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>链接必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code>）：组件不造链接，站内链接自己写 ofa 的 <code>olink</code>。</li>
+        <li><strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong>：用 <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。</li>
+        <li><code>separator</code> 属性与 <code>--mc-breadcrumb-sep</code> 令牌走两条通道：属性是非默认值时优先，写回默认值时以令牌为准。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -76,145 +85,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-
-    <h3>mc-breadcrumb</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>separator</code></td>
-          <td>字符串</td>
-          <td><code>/</code></td>
-          <td>
-            级与级之间的分隔符。非默认值优先于 <code>--mc-breadcrumb-sep</code> 令牌； 空值与
-            <code>/</code> 都按默认处理（令牌照旧生效）
-          </td>
-        </tr>
-        <tr>
-          <td><code>label</code></td>
-          <td>字符串</td>
-          <td><code>面包屑</code></td>
-          <td>导航区块的无障碍名（渲染成 <code>&lt;nav aria-label&gt;</code>）</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-breadcrumb-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>current</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>
-            当前页（最后一级）。字色更实、字重加重，并自动带上 <code>aria-current="page"</code>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-
-    <h3>mc-breadcrumb</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>每一级 <code>mc-breadcrumb-item</code></td>
-        </tr>
-        <tr>
-          <td><code>part="base"</code></td>
-          <td>内层 <code>&lt;nav&gt;</code>（导航区块本身）</td>
-        </tr>
-        <tr>
-          <td><code>part="list"</code></td>
-          <td>内层 <code>&lt;ol&gt;</code>（换行 / 对齐 / 间距）</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-breadcrumb-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>
-            该级内容：可点的级写原生 <code>&lt;a&gt;</code>（<code>href</code> /
-            <code>target</code> / <code>rel</code> 与键盘行为由它承载），当前页写纯文本 +
-            <code>current</code>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-
-    <ul>
-      <li>
-        <strong>链接必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code>）。组件不造链接：
-        站内链接自己写 ofa 的 <code>olink</code> 带上部署前缀。
-      </li>
-      <li>
-        当前页写 <code>current</code>，组件据此给宿主加 <code>aria-current="page"</code>；
-        不要自己在宿主上写 <code>aria-current</code> —— <code>current</code> 会覆盖它。
-      </li>
-      <li>
-        每一级的 <code>role="listitem"</code> 由组件补；自己给
-        <code>&lt;mc-breadcrumb-item&gt;</code> 写了 <code>role</code> 时组件不覆盖。
-      </li>
-      <li>
-        面包屑<strong>不承诺插槽里放 <code>&lt;button&gt;</code></strong
-        >：要可点的级就用 <code>&lt;a&gt;</code>。
-      </li>
-      <li>
-        <strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong>：别用
-        <code>o-fill</code> / <code>o-if</code> 包一层，整块显隐请用属性钩子。
-      </li>
-      <li>
-        <code>separator</code> 属性与 <code>--mc-breadcrumb-sep</code> 令牌走两条通道：
-        属性是非默认值时优先，写回默认值 <code>/</code>（或空值）时就以令牌为准。
-      </li>
-      <li>
-        面包屑是<strong>一行文字导航</strong>，没有 <code>size</code> /
-        <code>variant</code> 维度。要改字号 / 行高就覆盖容器的 <code>font-size</code>（用
-        <code>style</code>）。
-      </li>
-      <li>
-        容器是块级元素、占满一行；要紧贴上一行就自己写 <code>style="display: inline-block"</code>。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

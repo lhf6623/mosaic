@@ -1,4 +1,4 @@
-/* Source: /Users/lhf/Documents/Github/mosaic/packages/color/tokens.css */
+/* Source: packages/color/tokens.css */
 /* ============================================================================
  * Mosaic Design Tokens — 由 tools/gen-tokens.mjs 生成，请勿手工编辑
  * 品牌色相 288° (OKLCH) · 6 色族 × 11 档 · 重新生成：pnpm tokens
@@ -406,6 +406,7 @@
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;}
 .pointer-events-auto{pointer-events:auto;}
 .pointer-events-none{pointer-events:none;}
+.visible{visibility:visible;}
 .absolute{position:absolute;}
 .fixed{position:fixed;}
 .relative{position:relative;}
@@ -540,6 +541,7 @@
 .cursor-not-allowed{cursor:not-allowed;}
 .select-text{-webkit-user-select:text;user-select:text;}
 .select-none{-webkit-user-select:none;user-select:none;}
+.resize{resize:both;}
 .items-start{align-items:flex-start;}
 .items-end{align-items:flex-end;}
 .items-center{align-items:center;}
@@ -634,13 +636,14 @@
 .p-5{padding:1.25rem;}
 .p-6{padding:1.5rem;}
 .p-8{padding:2rem;}
+.px,
+.px-4{padding-left:1rem;padding-right:1rem;}
 .px-0{padding-left:0;padding-right:0;}
 .px-1{padding-left:0.25rem;padding-right:0.25rem;}
 .px-10{padding-left:2.5rem;padding-right:2.5rem;}
 .px-12{padding-left:3rem;padding-right:3rem;}
 .px-2{padding-left:0.5rem;padding-right:0.5rem;}
 .px-3{padding-left:0.75rem;padding-right:0.75rem;}
-.px-4{padding-left:1rem;padding-right:1rem;}
 .px-5{padding-left:1.25rem;padding-right:1.25rem;}
 .px-6{padding-left:1.5rem;padding-right:1.5rem;}
 .px-8{padding-left:2rem;padding-right:2rem;}
@@ -753,6 +756,7 @@
 .ring-primary{--un-ring-opacity:1;--un-ring-color:rgb(var(--mc-color-primary) / var(--un-ring-opacity));}
 .ring-success{--un-ring-opacity:1;--un-ring-color:rgb(var(--mc-color-success) / var(--un-ring-opacity));}
 .ring-warning{--un-ring-opacity:1;--un-ring-color:rgb(var(--mc-color-warning) / var(--un-ring-opacity));}
+.drop-shadow{--un-drop-shadow:drop-shadow(0 1px 2px var(--un-drop-shadow-color, rgb(0 0 0 / 0.1))) drop-shadow(0 1px 1px var(--un-drop-shadow-color, rgb(0 0 0 / 0.06)));filter:var(--un-blur) var(--un-brightness) var(--un-contrast) var(--un-drop-shadow) var(--un-grayscale) var(--un-hue-rotate) var(--un-invert) var(--un-saturate) var(--un-sepia);}
 .filter{filter:var(--un-blur) var(--un-brightness) var(--un-contrast) var(--un-drop-shadow) var(--un-grayscale) var(--un-hue-rotate) var(--un-invert) var(--un-saturate) var(--un-sepia);}
 .transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms;}
 .transition-none{transition:none;}

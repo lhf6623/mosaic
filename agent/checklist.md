@@ -122,7 +122,10 @@ ofa.js 正确性  ← 逐条对照 agent/pitfalls/
 
 工程
 [ ] pnpm build 通过，产物体积没有异常增长
-[ ] pnpm check:docs 绿：接口表（agent/api 规范 + 文档页）与组件代码一一对上，
+[ ] **单元六件套齐全**：`<slug>.html` / `api.md` / `README.md` / `page.html` / `demos/` / `test/`
+      —— `api.md` 是接口事实的唯一手写源，`README.md` 是入口卡（目录里有什么 / 状态 / 相邻单元分工），
+      **README 里不许出现接口节标题**（写了就是第二份会漂移的副本，`unit-readme` 守卫盯着）
+[ ] pnpm check:docs 绿：接口表（`packages/<slug>/api.md` 规范 + 文档页）与组件代码一一对上，
       页面骨架 / 索引 / 文档里点名的路径与数字都没有脱节
       （改的是**约定**而不是内容时，改的是 tools/doc-drift.config.mjs，不是引擎）
 [ ] 新增的令牌已加进 tools/gen-tokens.mjs（如果涉及色板）

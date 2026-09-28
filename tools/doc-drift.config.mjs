@@ -48,18 +48,17 @@ const code = {
  * 文档侧：每个面（surface）对一次账
  * ------------------------------------------------------------------ */
 
-/** 开发文档：组件 API 规范（agent/api/<slug>.md），每组件一份 */
+/** 开发文档：组件 API 规范（packages/<slug>/api.md），每组件一份 —— 单元内聚，跟着组件走 */
 const apiSpec = {
   id: 'api-spec',
-  title: '开发文档 · 逐组件 API 规范（agent/api/*.md ↔ 组件代码）',
+  title: '开发文档 · 逐组件 API 规范（packages/*/api.md ↔ 组件代码）',
   kind: 'markdown',
-  files: 'agent/api/{slug}.md',
+  files: 'packages/{slug}/api.md',
   missing: '已实现的组件在 API 规范里必须逐组件一份',
   tables: [
     { header: ['名称', '值', '默认'], facet: 'attrs', name: 0, default: 2 },
-    // 令牌表在这仓里有两种形状（`令牌 / 默认 / 作用` 与 `令牌 / 作用`）——
-    // 表头按前缀匹配，所以只声明第一列就两种都收
-    { header: ['令牌'], facet: 'tokens', name: 0 },
+    // ⚠️ 令牌表**不在这里** —— api.md 是页面参考区的渲染源，而令牌不进页面；
+    // 令牌搬进了单元 README，由下面的 `unit-tokens` 面单独对账
     { header: ['名称', '类型', '说明'], facet: 'events', name: 0 },
     // 插槽与 part 同一张表：裸名字按代码事实归类，省得猜错种类
     { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'codeFacts' },
@@ -81,6 +80,24 @@ const apiSpec = {
       const: 'DEFAULTS',
     },
   },
+};
+
+/**
+ * 开发文档：单元 README 里的令牌表（packages/<slug>/README.md ↔ 组件代码）
+ *
+ * 令牌不进文档页（将来由主题编辑器展示），所以不住 api.md（那是页面渲染源）——
+ * 但**对账不能跟着停**：代码里加了令牌而文档没写，以前靠 api-spec 面的 tokens facet 抓，
+ * 现在那一列没了，这一面接过来。少一面守卫 = 静默失效。
+ */
+const unitTokens = {
+  id: 'unit-tokens',
+  title: '开发文档 · 组件令牌（packages/*/README.md ↔ 组件代码）',
+  kind: 'markdown',
+  files: 'packages/{slug}/README.md',
+  tables: [
+    // 两种形状都收（`令牌 / 默认 / 作用` 与 `令牌 / 作用`）：表头按前缀匹配，只声明第一列
+    { header: ['令牌'], facet: 'tokens', name: 0 },
+  ],
 };
 
 /** 组件文档：页面骨架（doc-pages.md §一 的固定骨架） */
@@ -111,6 +128,10 @@ const pageApi = {
   title: '组件文档 · 参考区表格 ↔ 组件代码',
   kind: 'html',
   files: 'packages/{slug}/page.html',
+  /* 参考区已改由 md 渲染的页（见 agent/doc-render.md）：page.html 里没有手写表格了，
+     这一面自然对不上 —— 那一页的接口事实由上面的 `api-spec` 面（md ↔ 代码）守着。
+     ⚠️ 迁移推进一页就在这里加一行；**11 页迁完，整个面删除**（那时没有页面再手写参考表格）。 */
+  skipFiles: ['packages/button/page.html'],
   // 多标签包（collapse / menu / breadcrumb）用 <h3>mc-x</h3> 分节
   tagSections: '^mc-[\\w-]+$',
   sections: {
@@ -171,8 +192,13 @@ const rules = [
     placeholder: '[{}<>*…$|@=()!?#]',
     placeholderSegment: '^(?:x|y|z|n|xxx|yyy|name|slug|foo|bar|baz)$',
     topDirs: ['packages', 'tools', 'docs', 'tests', 'agent'],
-    // 规范里给「还没实现的组件」写文件名，是在定接口，不算脱节
-    plannedSpec: { filePattern: '^agent/api/([\\w-]+)\\.md$' },
+    // 规范里给「还没实现的组件」写文件名，是在定接口，不算脱节。
+    // 两条：已实现的住在组件单元里（`packages/<slug>/api.md`），
+    // 未实现的草案还留在 `agent/api/<slug>.md`（badge / spinner，目录都还没建）
+    plannedSpec: {
+      filePattern: '^(?:packages/([\\w-]+)/api\\.md|agent/api/([\\w-]+)\\.md)$',
+      group: 2,
+    },
     // 带行号的引用可能是上游源码（`packages/xhear/register.mjs:42` —— ofa.js 的包）
     foreignLineRef: {
       pattern: '^packages/([\\w-]+)/',
@@ -248,10 +274,133 @@ const rules = [
       },
     ],
   },
+  {
+    /* 参考区改由 md 渲染之后，这一面（页面手写表格 ↔ 代码）就没对象了 ——
+       接口事实改由上面的 `api-spec` 面（packages/<slug>/api.md ↔ 代码）守着，
+       「每页真的挂了 <doc-spec>、src 指向的 md 真的存在」由 rules 里的 `page-spec-ref` 守着。
+       留一个 custom 面兜住**反向**那条：页面里不许再手抄参考表格（防止回潮）。 */
+    type: 'custom',
+    id: 'page-no-hand-table',
+    title: '组件文档 · 页面不许再手抄参考表格（防回潮）',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const page = `packages/${c.slug}/page.html`;
+        if (!io.exists(page)) continue;
+        const text = io.read(page);
+        // 参考区的表都是 .doc-table；演示区里的表格不算（那本来就是页面自己的内容）
+        for (const m of text.matchAll(/<table class="doc-table"/g)) {
+          const line = text.slice(0, m.index).split('\n').length;
+          problems.push(`${page}:${line}：页面里还有手抄的 .doc-table —— 参考区该由 <doc-spec> 渲染`);
+        }
+      }
+    },
+  },
+  {
+    type: 'custom',
+    id: 'page-spec-ref',
+    title: '组件文档 · 每页挂 <doc-spec> 且 src 指向存在的 md',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const page = `packages/${c.slug}/page.html`;
+        if (!io.exists(page)) continue;
+        const text = io.read(page);
+        const m = text.match(/<doc-spec[^>]*\ssrc="([^"]+)"/);
+        if (!m) {
+          problems.push(`${page}：没有 <doc-spec>，参考区是空的`);
+          continue;
+        }
+        // src 按页面文件解析（ofa 编译期会把相对地址改写成绝对地址，同 mc-code 的 src）
+        const src = m[1];
+        const rel = src.startsWith('./')
+          ? `packages/${c.slug}/${src.slice(2)}`
+          : src.replace(/^(\.\.\/)+/, '');
+        if (!io.exists(rel)) {
+          problems.push(`${page}：<doc-spec src="${src}"> 指向的 md 不存在（解析成 ${rel}）`);
+        }
+      }
+    },
+  },
+  {
+    /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。
+       三件事盯住它别越线、别烂：
+         ① 有 api.md 的单元必须有 README.md（反过来也一样）；
+         ② README 里不许出现任何接口节标题 —— 那些归 api.md，写了就是第二份会漂移的副本；
+         ③ 状态（M 几）与 site-map.js 对账 —— 这是 README 里唯一允许重复的「事实」。 */
+    type: 'custom',
+    id: 'unit-readme',
+    title: '组件单元 · README 入口卡（存在 / 不写接口事实 / 状态对账）',
+    run: ({ io, components, problems }) => {
+      /* ② README 里不许出现**接口**节标题 —— 属性 / 方法 / 事件 / 配置 / 插槽 / part 归 api.md，
+         写了就是第二份会漂移的副本。
+         ⚠️ **令牌是唯一例外**：按海风的定性，令牌不进文档页（将来由主题编辑器展示），
+         也不留在 api.md 里当「渲染源里没人渲染的半截」—— 它归 README，由 `unit-tokens` 面对账。
+         整行精确匹配：`## 为什么不发事件` 这种不算接口节。 */
+      const FORBIDDEN = /^(?:属性|方法|事件|配置|插槽(?:\s+与\s+part)?|part)$/;
+      for (const c of components) {
+        const readme = `packages/${c.slug}/README.md`;
+        const api = `packages/${c.slug}/api.md`;
+        const hasApi = io.exists(api);
+        const hasReadme = io.exists(readme);
+        if (hasApi && !hasReadme) {
+          problems.push(`${readme}：有 api.md 的单元必须有 README.md（单元入口卡）`);
+          continue;
+        }
+        if (!hasApi && hasReadme) {
+          problems.push(`${api}：有 README.md 却没有 api.md —— 接口规范才是单元的必配件`);
+          continue;
+        }
+        if (!hasReadme) continue;
+
+        const text = io.read(readme);
+        for (const m of text.matchAll(/^##\s+(.+?)\s*$/gm)) {
+          const name = m[1].replace(/`/g, '').trim();
+          if (FORBIDDEN.test(name)) {
+            const line = text.slice(0, m.index).split('\n').length;
+            problems.push(
+              `${readme}:${line}：README 里出现了「${name}」节 —— 接口事实的唯一手写源是 api.md，这里写了就是第二份会漂移的副本`,
+            );
+          }
+        }
+
+        const want = stageOf(c.slug);
+        const got = text.match(/\*\*状态\*\*：[^·]*·\s*(M\d)/)?.[1] ?? null;
+        if (want && got !== want) {
+          problems.push(`${readme}：写的里程碑是 ${got ?? '（没写）'}，site-map.js 里是 ${want}`);
+        }
+      }
+
+      /* ④ 组件本体不许再长篇大论：头注释只留一行定位 + 指针，设计说明归 README 的「设计取舍」。
+         这份文件是要经 CDN 发给使用者的产物，注释会一起发出去 —— 顺便也消掉「两处都写」的漂移源。
+         行内注释（`/* …`）不在其列：那些解释的是「这一行为什么这么写」，就该留在代码旁边。 */
+      const MAX_HEAD_COMMENT = 8;
+      for (const c of components) {
+        for (const file of c.facts.files.filter((f) => f.endsWith('.html'))) {
+          const lines = io.read(file).split('\n');
+          const s = lines.findIndex((l) => /^\s*<!--/.test(l));
+          if (s < 0 || s > 2) continue;
+          let e = -1;
+          for (let i = s; i < lines.length; i++) {
+            if (/-->/.test(lines[i])) {
+              e = i;
+              break;
+            }
+          }
+          if (e - s + 1 > MAX_HEAD_COMMENT) {
+            problems.push(
+              `${file}：文件头注释 ${e - s + 1} 行（上限 ${MAX_HEAD_COMMENT}）—— 设计说明搬到 ${`packages/${c.slug}/README.md`} 的「设计取舍」节`,
+            );
+          }
+        }
+      }
+    },
+  },
 ];
 
 export default {
   code,
-  surfaces: [apiSpec, pageSkeleton, pageApi, pageDemos],
+  // `page-api`（页面手写参考表格 ↔ 代码）已随 S3 一并删除：11 页全部改由 md 渲染，
+  // 那一面再留着就是「对 11 页全 skip」的空转 —— 接口事实由 `api-spec` 守，
+  // 「挂了 doc-spec / 不许再手抄表格」由 rules 里两条 custom 守。
+  surfaces: [apiSpec, unitTokens, pageSkeleton, pageDemos],
   rules,
 };

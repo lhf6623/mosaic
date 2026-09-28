@@ -1,21 +1,8 @@
 <!--
   mc-card — 内容承载面
 
-  只做三件事：一块面（variant）、内边距通道（padding）、头尾结构（header / footer /
-  suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义（没有 color 维度）。
-
-  **不做交互。** 组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则：
-  · 卡内要放什么操作元素（原生 <a> / <button>）由使用者写，链接照旧走 olink；
-  · 「整卡可点」如果真需要，是使用者自己在页面 CSS 里铺一条 ::after —— 宿主保持
-    position: relative 就是给那条伪元素当包含块的（对外契约，别删）；配方与坑见文档页。
-  为什么不做进组件：可点区域要处理边框那一圈死区、伪元素的 cursor（WebKit 里 a 的
-  cursor 是 auto，落在伪元素上会变箭头）、悬停位移带来的抖动（命中判定走变换后的盒子）——
-  这些都是**行为**不是面；而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，
-  组件替它挑必然出错。职责边界见 agent/api/README.md 的 mc-card 一节。
-
-  头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线，
-  `divider="none"` 关掉（保留 1px 透明边框，避免关线时整张卡高度抖一下）。
-  显隐只从宿主上选（P10 / P14）：data-has-header / data-has-footer —— 不用 o-if 跟随属性。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

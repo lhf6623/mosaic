@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/accordion.html"></l-m>
     <l-m src="./demos/size.html"></l-m>
@@ -18,6 +19,13 @@
     <p class="doc-lead">
       折叠面板。容器 + 子项两个标签：容器管外框、尺寸和互斥，子项管自己那格的开合。
     </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>头部文案用 <code>header</code> 属性，不要用 <code>title</code></strong>：那是全局 HTML 属性，悬停时浏览器会弹一个原生 tooltip。</li>
+        <li><strong>组件不做高度过渡</strong>：要动画自己加在 <code>::part(body)</code> 上。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -130,160 +138,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-
-    <h3>mc-collapse</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>accordion</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>手风琴：同一时刻只允许一个子项展开</td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>头部高度 / 内边距 / 字号</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-collapse-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>header</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>头部文案。富内容用同名的 <code>header</code> 插槽</td>
-        </tr>
-        <tr>
-          <td><code>name</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>标识。<code>open</code>/<code>close</code> 事件的 <code>$event.data.name</code></td>
-        </tr>
-        <tr>
-          <td><code>open</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>展开状态。既是初始值也是运行时状态（JS 里读写 <code>item.open</code>）</td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>禁用：点不动、<kbd>Tab</kbd> 跳过、读屏可感知</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>事件</h2>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>类型</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>open</code></td>
-          <td><code>(event: Event &amp; { data: { name: string } }) =&gt; void</code></td>
-          <td>
-            展开时在<strong>子项</strong>上触发；冒泡 +
-            <code>composed</code>，挂在容器上能收全部子项
-          </td>
-        </tr>
-        <tr>
-          <td><code>close</code></td>
-          <td><code>(event: Event &amp; { data: { name: string } }) =&gt; void</code></td>
-          <td>
-            收起时在<strong>子项</strong>上触发；冒泡 +
-            <code>composed</code>，挂在容器上能收全部子项
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <h2>插槽与 part</h2>
-
-    <h3>mc-collapse</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>（默认）</td>
-          <td>子项 <code>mc-collapse-item</code></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-collapse-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽 <code>header</code></td>
-          <td>头部内容，给了就覆盖 <code>header</code> 属性的纯文本</td>
-        </tr>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>面板内容</td>
-        </tr>
-        <tr>
-          <td><code>part="header"</code></td>
-          <td>头部</td>
-        </tr>
-        <tr>
-          <td><code>part="body"</code></td>
-          <td>内容区</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>子项要放在容器里用：外框和子项之间的分隔线由容器画。</li>
-      <li>
-        头部文案用 <code>header</code> 属性，不要用 <code>title</code> —— 那是全局 HTML
-        属性，浏览器会在悬停时弹一个原生 tooltip。
-      </li>
-      <li>组件不做高度过渡；要动画自己加在 <code>::part(body)</code> 上。</li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

@@ -22,8 +22,11 @@ import config from '../../tools/doc-drift.config.mjs';
 /** 仓库根（本文件在 tests/site/ 下） */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** 应有的组数：开发文档 5 个面（API 规范 / 索引 / 路径与目录树 / 目录树 / 命令 / 数字）+ 组件文档 3 + 自检 1 */
-const EXPECTED_GROUPS = 10;
+/** 应有的组数：组件文档 3 个面（API 规范 / 页面骨架 / 演示区）+ 开发文档 4 条规则
+ *  （索引 / 路径与目录树 / 目录树 / 命令 / 数字）+ 防回潮与 doc-spec 接线 2 条 custom + 自检 1。
+ *  ⚠️ `page-api`（页面手写参考表格 ↔ 代码）在 S3 之后整个删了 —— 参考区改由 md 渲染，
+ *  那一面没有对象可对了；它的两块职责分别归 `api-spec` 面与两条 custom 规则。 */
+const EXPECTED_GROUPS = 13;
 
 /** skill 里那份引擎（本机装了才对账；CI 上不一定有） */
 const SKILL_ENGINE = join(homedir(), '.dsh/skills/doc-code-drift/scripts');

@@ -1,25 +1,8 @@
 <!--
   mc-menu-item — 菜单项（配合 mc-menu 使用）
 
-  插槽里放一个原生 <a> 或 <button>，它承载全部语义与交互：href、键盘、焦点环、
-  aria-current、disabled / aria-disabled 都是浏览器给的，组件只读它、不改它。
-  链接为什么必须由使用者写：站内链接要经 ofa 的 olink 补部署前缀，而 olink 只作用于
-  页面模板里的元素 —— 组件在 shadow root 里造的 <a> 用不上（docs/routes.js）。
-
-  ⚠️ 行的视觉全在**宿主**上，插槽元素只铺满整行（position:absolute; inset:0）。
-  原因是一条实测出来的层叠规则：插槽元素同时是**祖先 shadow 树**里的普通元素，而
-  mosaic.js 把 shadow-base.css adopt 进了每一层 shadow root —— 那里面对 button 的
-  `padding: 0 / background: none / cursor: pointer` 是「直接命中」，优先级压过本组件
-  shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面）。
-  所以 padding / 底色 / 颜色一律写在宿主上，靠继承 + 「插槽元素铺满整行」来实现：
-
-    · 左右缩进  → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）
-    · 文字缩进  → 宿主 text-indent（继承属性，能穿 shadow 边界；写在插槽元素上会被 reset 吃掉）
-    · 垂直居中  → 宿主 line-height = 行高（同上）
-    · 底色      → 宿主 :host(:hover) / :host([data-current])
-
-  状态同样从插槽元素读，但镜像到宿主上的 data-current / data-disabled —— 宿主没法用
-  `:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类，同 P14）。
+  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

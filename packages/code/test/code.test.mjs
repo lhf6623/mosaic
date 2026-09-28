@@ -417,7 +417,9 @@ const srcSnippet = await (async () => {
       tokens: block.querySelectorAll('span[class*="hljs-"]').length,
     };
   });
-  return { expected: fileText.trim(), ...state };
+  /* 换行符不算内容差异：Windows 上 checkout 出来的文件是 CRLF，而 mc-code 归一成 LF */
+  const norm = (s) => String(s ?? '').replace(/\r\n?/g, '\n').trim();
+  return { expected: norm(fileText), text: norm(state?.text), tokens: state?.tokens ?? 0 };
 })();
 check(
   'src 从片段文件读内容（文件里是真 HTML，不用实体转义），并自动高亮',

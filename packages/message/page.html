@@ -8,6 +8,7 @@
          站点外壳（docs/layout.html）只注册 code / icon / collapse / menu / breadcrumb / card 那一批，
          **不含 mc-button** —— 别指望首页碰巧注册过它：深链 + 刷新时首页不一定渲染，
          于是同一页两种表现（从首页点进来正常、刷新后按钮消失）。 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
 
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
@@ -22,6 +23,14 @@
       浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。<strong>没有标签</strong> —— 它由 JS
       调用，容器由组件自己挂到页面上。
     </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，只有 <code>message.js</code> 一个入口 —— 页面里写标签不会得到任何东西。</li>
+        <li><strong>同 key 只留一条</strong>：后一条把前一条换掉。进度类消息记得接 <code>onClose</code> 停掉生产端的定时器 —— 否则关掉之后下一拍又会推回来，看着就是关不掉。</li>
+        <li>要「一直留在页面上」用 <code>mc-alert</code>：alert 是页内静态的一块面，不抢焦点、不会自己消失。</li>
+      </ul>
+    </mc-alert>
 
     <h2>例子</h2>
 
@@ -84,151 +93,9 @@
       </mc-collapse>
     </section>
 
-    <h2>方法</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>message(text, config?)</code></td>
-          <td>弹一条，返回 <code>{ close }</code>；<code>config</code> 见下表</td>
-        </tr>
-        <tr>
-          <td><code>message.success(text, config?)</code></td>
-          <td>
-            五个类型简写：<code>neutral</code> <code>info</code> <code>success</code>
-            <code>warning</code> <code>error</code>，等价于带上 <code>type</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>message.close(keyOrId)</code></td>
-          <td>按 <code>key</code> 或返回的 <code>id</code> 收掉一条</td>
-        </tr>
-        <tr>
-          <td><code>message.closeAll()</code></td>
-          <td>全收掉</td>
-        </tr>
-        <tr>
-          <td><code>message.config(options)</code></td>
-          <td>
-            改默认值（<code>duration</code> / <code>limit</code> /
-            <code>closable</code>），只影响之后创建的
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>配置</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>type</code></td>
-          <td>
-            <code>neutral</code> <code>info</code> <code>success</code> <code>warning</code>
-            <code>error</code>
-          </td>
-          <td><code>neutral</code></td>
-          <td>语义色 + 图标；<code>error</code> 是紧急播报</td>
-        </tr>
-        <tr>
-          <td><code>duration</code></td>
-          <td>毫秒</td>
-          <td><code>3000</code></td>
-          <td><code>0</code> = 不自动关</td>
-        </tr>
-        <tr>
-          <td><code>key</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>同 key 只留一条，后一条换掉前一条</td>
-        </tr>
-        <tr>
-          <td><code>closable</code></td>
-          <td>布尔</td>
-          <td><code>true</code></td>
-          <td>
-            右侧要不要 × 按钮（32×32 命中区，回车 / 空格也能关）。<code>false</code>
-            时不给按钮，纯展示
-          </td>
-        </tr>
-        <tr>
-          <td><code>icon</code></td>
-          <td>布尔</td>
-          <td>按 <code>type</code></td>
-          <td>覆盖某个类型要不要图标</td>
-        </tr>
-        <tr>
-          <td><code>limit</code></td>
-          <td>数字（全局）</td>
-          <td><code>5</code></td>
-          <td>同屏最多几条，超出从最旧的顶掉；走 <code>message.config()</code> 改</td>
-        </tr>
-        <tr>
-          <td><code>onClose</code></td>
-          <td>函数</td>
-          <td>—</td>
-          <td>
-            这条消失时回调一次（点 × / 到点 / <code>close()</code> /
-            <code>closeAll()</code> 都算）。 「进度上传」这类场景靠它停掉生产端 ——
-            用户关掉之后别再推同一条回来
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的， 只有
-        <code>message.js</code> 这一个入口 —— 页面里写标签不会得到任何东西。
-      </li>
-      <li>
-        <strong>和 <code>mc-alert</code> 的分工</strong>：alert 是<strong>页内静态</strong>的一块面
-        —— 跟着内容流排版、不抢焦点、不会自己消失；message 是<strong>浮层</strong> ——
-        自己进场自己走、不占版面。要「一直留在页面上」就用 alert。
-      </li>
-      <li>
-        <strong><code>closable</code> 是独立属性，不跟 <code>duration</code> 推导</strong>：
-        「关不关得掉」和「多久自己走」是两件事，默认 <code>true</code>。自己会走的短提示嫌 ×
-        是噪音，写 <code>closable: false</code> 显式表达 —— 别让它变成一条看不出来的隐式规则。
-      </li>
-      <li>
-        <strong>关闭只有 × 一条路</strong>：整条消息<strong>不可点</strong> —— 消息是要读的，
-        点一下就没不该是默认行为。× 的命中区 32×32，<code>aria-label</code>
-        带上这条消息的正文。
-      </li>
-      <li>
-        <strong>无障碍</strong>：容器是 <code>aria-live</code> 区域，
-        <code>error</code> 那条会把整块切成 <code>assertive</code> +
-        <code>role="alert"</code> （立刻播报），其余是
-        <code>polite</code>。类型图标是装饰性的，含义由文案承担。
-      </li>
-      <li>
-        <strong>同 key 只留一条</strong>：后一条把前一条<strong>换掉</strong>（位置也保持）。
-        进度类消息记得接 <code>onClose</code> 停掉生产端的定时器 —— 否则用户关掉之后，
-        下一拍又会用同一个 key 推回来，看着就是「关不掉」。
-      </li>
-      <li>
-        <strong>条数有上限</strong>：默认同屏 5 条，超了从最旧的开始顶掉 —— 连点两下不会刷满一屏。
-        用 <code>message.config({ limit })</code> 改。
-      </li>
-      <li>
-        <strong>动画跟着系统设置走</strong>：<code>prefers-reduced-motion: reduce</code>
-        下不播进场动画。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

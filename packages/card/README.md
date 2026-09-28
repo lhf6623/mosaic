@@ -1,0 +1,81 @@
+# mc-card（卡片）
+
+> **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
+> 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
+> 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
+> 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
+
+**状态**：已实现 · M1 · 标签 `mc-card` · 目录 `packages/card/`
+
+卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。
+
+## 单元里有什么
+
+| 文件 | 角色 |
+| --- | --- |
+| `card.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
+| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
+| `demos/` | 6 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
+| `test/` | 组件自己的冒烟套件（1 个文件） |
+
+只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
+
+<!-- hand:start -->
+## 设计取舍
+
+mc-card — 内容承载面
+
+只做三件事：一块面（variant）、内边距通道（padding）、头尾结构（header / footer /
+suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义（没有 color 维度）。
+
+**不做交互。** 组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则：
+- 卡内要放什么操作元素（原生 <a> / <button>）由使用者写，链接照旧走 olink；
+- 「整卡可点」如果真需要，是使用者自己在页面 CSS 里铺一条 ::after —— 宿主保持
+  position: relative 就是给那条伪元素当包含块的（对外契约，别删）；配方与坑见文档页。
+为什么不做进组件：可点区域要处理边框那一圈死区、伪元素的 cursor（WebKit 里 a 的
+cursor 是 auto，落在伪元素上会变箭头）、悬停位移带来的抖动（命中判定走变换后的盒子）——
+这些都是**行为**不是面；而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，
+组件替它挑必然出错。职责边界见 agent/api/README.md 的 mc-card 一节。
+
+头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线，
+`divider="none"` 关掉（保留 1px 透明边框，避免关线时整张卡高度抖一下）。
+显隐只从宿主上选（P10 / P14）：data-has-header / data-has-footer —— 不用 o-if 跟随属性。
+
+## 令牌
+
+| 令牌                 | 默认                 | 作用                                           |
+| -------------------- | -------------------- | ---------------------------------------------- |
+| `--mc-card-bg`       | `--mc-color-surface` | 卡片底色（`outline` 下不生效，那是透明）       |
+| `--mc-card-border`   | `--mc-color-border`  | 外框与头尾分隔线的颜色                         |
+| `--mc-card-pad`      | `--mc-space-4`       | 内边距（`padding` 属性改的就是它）             |
+| `--mc-card-border-w` | `1px`                | 边框宽度（自己铺「整卡可点」时按它算 `inset`） |
+
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+
+**「整卡可点」的三条坑**（配方见 `packages/card/page.html` 的注意事项）：`inset`
+要按 `--mc-card-border-w` 取负值盖住边框那圈、`cursor` 必须显式写、悬停别给卡片加位移。
+
+**明确不加的维度与能力**：`color`（容器不是强调元素，要强调用 L3 令牌）、`size`（高度由内容撑，
+密疏用 `padding`）、`media` / `cover` 插槽（图像排版变体太多，插槽自己搭更自由）、
+阴影 / elevation（令牌层没有阴影标度，层级靠底色明度差）、`href` 与 `interactive`
+（组件造链接与 `olink` 冲突；整卡可点交给使用者，组件只保证包含块）。
+
+## 为什么不发事件
+
+> 页面上**没有**这一节：按 [`doc-pages.md`](../../agent/doc-pages.md) §一「有事件才写这一节」——
+> 卡片是纯容器，不 emit 任何事件（插槽里的交互元素由使用者自己挂监听）。
+> 这一行留给对账与改代码的人 —— 不渲染（README 不进页面）。
+
+## 相邻单元
+
+- **不做交互**：组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则 —— 操作元素由使用者写在插槽里，宿主固定 `position: relative` 给「整卡可点」那条 `::after` 当包含块。理由见上面「设计取舍」。
+
+<!-- hand:end -->
+
+## 改这个单元之前
+
+- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
+- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
+- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
+- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)

@@ -6,11 +6,16 @@
 | 模块                                                                                                               | 内容                                                   |
 | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
 | 本文件                                                                                                             | ① 全部组件共用的约定 ② 组件索引 ③ 各组件详细文件的入口 |
-| `button.md` `code.md` `icon.md` `card.md` `tag.md` `badge.md` `spinner.md` `collapse.md` `menu.md` `breadcrumb.md` | M1 逐组件：属性 / 事件 / 插槽与 part / 令牌            |
+| 逐组件 `api.md`                                                                                                    | **住在组件单元里**：`packages/<slug>/api.md` —— 属性 / 事件 / 插槽与 part / 令牌 |
+| [`badge.md`](./badge.md) [`spinner.md`](./spinner.md)                                                              | 接口已定但**目录还没建**（未实现），所以还留在 `agent/api/` |
 | [`planned.md`](./planned.md)                                                                                       | M2（接口已定，实现待做）+ M3（接口草案）               |
 
 > **读这份的场合**：接一个组件、查接口、改组件 API。
 > 怎么写文档页见 [`../doc-pages.md`](../doc-pages.md)，怎么造组件见 [`../authoring.md`](../authoring.md)。
+
+> **组件是最小单元**：本体 `<slug>.html` + `api.md` + `page.html` + `demos/` + `test/` 住在同一个
+> `packages/<slug>/` 下。对外只有两个入口 —— 本体（使用者 CDN 引入）与 `page.html`（文档站加载），
+> 其余是单元内部资产。所以逐组件规范跟着组件走，不再另建一处。
 
 ---
 
@@ -146,14 +151,14 @@ item.open = true; // 组件提供了访问器时同样可以
 
 | 组件                              | 标签                                   | 目录          | 里程碑 | 状态      |
 | --------------------------------- | -------------------------------------- | ------------- | ------ | --------- |
-| [Button](./button.md)             | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
-| [Code](./code.md)                 | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
-| [Collapse](./collapse.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
-| [Menu](./menu.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
-| [Breadcrumb](./breadcrumb.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| [Icon](./icon.md)                 | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
-| [Card](./card.md)                 | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
-| [Tag](./tag.md)                   | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
+| [Button](../../packages/button/api.md)             | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
+| [Code](../../packages/code/api.md)                 | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
+| [Collapse](../../packages/collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
+| [Menu](../../packages/menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
+| [Breadcrumb](../../packages/breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
+| [Icon](../../packages/icon/api.md)                 | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
+| [Card](../../packages/card/api.md)                 | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
+| [Tag](../../packages/tag/api.md)                   | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
 | [Badge](./badge.md)               | `mc-badge`                             | `badge/`      | M1     | 待建      |
 | [Spinner](./spinner.md)           | `mc-spinner`                           | `spinner/`    | M1     | 待建      |
 | Input                             | `mc-input`                             | `input/`      | M2     | 待建      |
@@ -162,10 +167,10 @@ item.open = true; // 组件提供了访问器时同样可以
 | Radio                             | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
 | Switch                            | `mc-switch`                            | `switch/`     | M2     | 待建      |
 | Select                            | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
-| [Alert](./alert.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
+| [Alert](../../packages/alert/api.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
 | Progress                          | `mc-progress`                          | `progress/`   | M2     | 待建      |
-| [Message](./message.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
-| [Popover](./popover.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
+| [Message](../../packages/message/api.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
+| [Popover](../../packages/popover/api.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
 | Dialog                            | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
 | Dropdown                          | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
 | Tooltip                           | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |

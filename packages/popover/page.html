@@ -5,6 +5,7 @@
     <!-- ⚠️ mc-button 不在站点级依赖里（外壳只注册 code / icon / collapse / menu / breadcrumb / card），
          演示的触发按钮用它，就必须本页注册：漏了的话 `*:not(:defined){display:none}`
          会把没注册的标签连同文字一起藏掉 —— 不报错，只是每个演示的触发按钮都不见（见 P44）。 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
 
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
@@ -21,6 +22,14 @@
     <p class="doc-lead">
       通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
     </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>需要 popover API 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox 125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。</li>
+        <li><strong>默认插槽只放一个触发元素</strong>：放多个元素时面板会按整块对齐。</li>
+        <li><strong>浮层不受宿主页面布局影响</strong>：不会被 <code>transform</code> / <code>filter</code> 困住，Esc 与点空白关闭交给浏览器（<code>--mc-z-*</code> 那一套在这里用不上）。</li>
+      </ul>
+    </mc-alert>
 
     <h2>例子</h2>
 
@@ -103,162 +112,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>placement</code></td>
-          <td>
-            <code>top</code> <code>bottom</code> <code>left</code> <code>right</code> ×
-            <code>-start</code> <code>(居中)</code> <code>-end</code>
-          </td>
-          <td><code>bottom</code></td>
-          <td>面板相对触发元素的方向；空间不够自动翻转</td>
-        </tr>
-        <tr>
-          <td><code>trigger</code></td>
-          <td><code>click</code> <code>hover</code> <code>manual</code></td>
-          <td><code>click</code></td>
-          <td>怎么开；<code>manual</code> 只认 <code>open</code> 与 <code>show()</code></td>
-        </tr>
-        <tr>
-          <td><code>open</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>受控开合：属性在就开、移除就关（被 Esc / 点空白关掉时会发 <code>close</code>）</td>
-        </tr>
-        <tr>
-          <td><code>arrow</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>面板上一个小三角，方向跟着 <code>placement</code></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>方法</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>show()</code></td>
-          <td>打开；可被 <code>before-open</code> 拦掉（返回 <code>false</code> 表示没开）</td>
-        </tr>
-        <tr>
-          <td><code>hide()</code></td>
-          <td>关闭</td>
-        </tr>
-        <tr>
-          <td><code>toggle()</code></td>
-          <td>开合互换</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>事件</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>类型</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>before-open</code></td>
-          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
-          <td>打开前；<code>preventDefault()</code> 可拦掉这次打开</td>
-        </tr>
-        <tr>
-          <td><code>open</code></td>
-          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
-          <td>已打开</td>
-        </tr>
-        <tr>
-          <td><code>close</code></td>
-          <td><code>(event: Event &amp; { data: { reason: string } }) =&gt; void</code></td>
-          <td>
-            已关闭；<code>reason</code> 是 <code>trigger</code> / <code>api</code> /
-            <code>dismiss</code>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>触发元素（唯一一个；面板锚在它所在的容器上）</td>
-        </tr>
-        <tr>
-          <td>插槽 <code>panel</code></td>
-          <td>面板内容</td>
-        </tr>
-        <tr>
-          <td><code>part="panel"</code></td>
-          <td>面板本体（背景、内边距、圆角都在它上面）</td>
-        </tr>
-        <tr>
-          <td><code>part="arrow"</code></td>
-          <td>小三角；<code>arrow</code> 没写时不渲染</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        <strong>浮层不受宿主页面布局影响</strong>：面板不会被困在宿主页面的 <code>transform</code> /
-        <code>filter</code> 里，滚动时自动跟随，Esc 与点空白关闭都交给浏览器 （<code>--mc-z-*</code>
-        那一套层级令牌在这里用不上）。
-      </li>
-      <li>
-        <strong>面板宽度</strong>：默认最大 <code>24rem</code> 且不超过视口。
-        菜单那种固定宽度的面板用组件令牌调：
-        <code
-          >style="--mc-popover-panel-min-width: 12rem; --mc-popover-panel-pad:
-          var(--mc-space-2)"</code
-        >。
-      </li>
-      <li>
-        <strong>只给一个触发元素</strong>：默认插槽里放**一个**元素。放多个元素时面板会按整块对齐。
-      </li>
-      <li>
-        <strong>浏览器要求</strong>：需要 <code>popover</code> API 与 CSS 锚点定位 （Chrome 125+ /
-        Safari 17+ / Firefox 125+）。没有这些能力的浏览器上面板不会弹出 ——
-        组件不报错，但也没有替代路径，用之前先确认目标浏览器。
-      </li>
-      <li>
-        <strong>没有进场动画</strong>（有意的）：浮层动效在连续操作时反而拖慢手感。要动画自己在
-        <code>::part(panel)</code> 上加。
-      </li>
-      <li>
-        <strong>面板打开时才有内容</strong>：没打开时它不在页面上，所以不需要（也不该）在外面写
-        <code>display: none</code>。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

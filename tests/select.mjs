@@ -60,7 +60,10 @@ export function changedFiles(ref = 'HEAD') {
 /** 归一成仓库相对路径：绝对路径、`./` 前缀、反斜杠都收拾掉 */
 export function normalizePath(file) {
   let path = String(file).trim().replace(/\\/g, '/');
-  const root = repoRoot();
+  /* ⚠️ root 也要归一：Windows 上 `fileURLToPath` 给的是 `D:\mosaic\`（反斜杠），
+     而上面的 path 已经换成正斜杠 —— 不归一就永远 startsWith 不上，
+     绝对路径不会被收敛成相对路径，于是「哪些套件该跑」的判定在 Windows 上静默失效。 */
+  const root = repoRoot().replace(/\\/g, '/');
   if (path.startsWith(root)) path = path.slice(root.length);
   return path.replace(/^\.\//, '').replace(/^\/+/, '');
 }

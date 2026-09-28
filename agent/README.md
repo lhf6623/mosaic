@@ -15,7 +15,7 @@
 | 改配色 / 加令牌 / 换肤                               | [`design-tokens.md`](./design-tokens.md)                         |
 | 选间距 / 排版 / 动效 / 层级 / 文案                   | [`design-spec.md`](./design-spec.md)                             |
 | 对账「文档和代码有没有脱节」                         | `pnpm check:docs`（约定在 `tools/doc-drift.config.mjs`）         |
-| 想把参考区改成渲染 api 规范 md（少写一份）           | [`doc-render.md`](./doc-render.md)（**未定稿**，先看它 §六）     |
+| 想砍掉参考区那千行手抄表格、把注意事项上移到页顶     | [`doc-render.md`](./doc-render.md)（**待批**，先看它 §一与 §七） |
 | 项目定位、关键决策、里程碑、风险                     | [`plan/`](./plan/README.md)（定位 / 决策 / 目录与构建 / 里程碑） |
 
 **默认不用读的**（除非明确要考古）：
@@ -48,7 +48,7 @@ agent/
 ├── api/                 组件 API 规范（README = 共用约定 + 索引，逐组件一个文件）
 ├── pitfalls/            ofa.js 踩坑清单（README = 44 条索引，按主题分文件）
 ├── plan/                规划总纲（定位 / 决策 / 目录与构建 / 里程碑）
-├── doc-render.md        api 规范 md 渲染进文档页的方案（未定稿）
+├── doc-render.md        参考区由 md 渲染 + 注意事项上移到页顶（待批）
 ├── docs-refactor.md     已完成的重构记录（考古用，默认不读）
 └── research/            外部资料抓取原文（默认不读）
 ```

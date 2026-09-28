@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./icon.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/builtins.html"></l-m>
@@ -20,6 +21,13 @@
     <p class="doc-lead">
       图标。先查内置、查不到再远程取一次；颜色继承周围文字色、尺寸跟随字号，取不到也只是留一个不跳版的空位。
     </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>别用 sprite</strong>：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit 一致拒绝，要用内置图标就写 <code>name</code>。</li>
+        <li><strong>远程取图走公共 API</strong>（没有可用性承诺）：要稳定就把 <code>icon-base</code> 指到自托管镜像。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <section class="doc-demo">
@@ -146,107 +154,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>name</code></td>
-          <td>内置图标名 / <code>集名:图标名</code></td>
-          <td>—</td>
-          <td>先查内置、查不到再按需远程取一次；集名等于内置来源集时退化成裸名再查一次内置</td>
-        </tr>
-        <tr>
-          <td><code>src</code></td>
-          <td>SVG 地址（相对路径按页面解析）</td>
-          <td>—</td>
-          <td>直接给图形文件，不再查内置；品牌多色图走这条</td>
-        </tr>
-        <tr>
-          <td><code>label</code></td>
-          <td>字符串</td>
-          <td>—</td>
-          <td>
-            有值 → 宿主 <code>role="img"</code> + <code>aria-label</code>；空 → 整块
-            <code>aria-hidden</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>
-            <code>0.875em</code> / <code>1em</code> / <code>1.25em</code>，改的是
-            <code>font-size</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>color</code></td>
-          <td>
-            <code>current</code> <code>primary</code> <code>info</code> <code>success</code>
-            <code>warning</code> <code>danger</code> <code>neutral</code>
-          </td>
-          <td><code>current</code></td>
-          <td><code>current</code> 继承周围文字色；<code>neutral</code> 是次要文字色</td>
-        </tr>
-        <tr>
-          <td><code>icon-base</code></td>
-          <td>URL 前缀</td>
-          <td><code>https://api.iconify.design/</code></td>
-          <td>远程取图标的地址前缀（自托管 / 镜像）</td>
-        </tr>
-        <tr>
-          <td><code>icon-set</code></td>
-          <td>图标集名</td>
-          <td><code>lucide</code></td>
-          <td>裸名远程回退时用哪个集</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>自定义图形；有内容时内置 / 远程图形让位</td>
-        </tr>
-        <tr>
-          <td><code>part="glyph"</code></td>
-          <td>图形槽：内置图标类名与取回的 SVG 都挂在它里面</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li><strong>取不到图标不报错</strong>：不跳版，控制台一条 <code>[mosaic]</code> 警告。</li>
-      <li>
-        <strong>内置图标改不了描边粗细</strong>（单色渲染）；品牌多色图用
-        <code>src</code> 或默认插槽。
-      </li>
-      <li>
-        <strong>别用 sprite</strong>：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit
-        一致拒绝，要用内置图标就写 <code>name</code>。
-      </li>
-      <li>
-        远程取图走的是公共 API（没有可用性承诺）：要稳定就把 <code>icon-base</code>
-        指到自托管镜像。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

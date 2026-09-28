@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/src.html"></l-m>
     <l-m src="./demos/attribute.html"></l-m>
@@ -21,6 +22,13 @@
       代码展示。内容是标签里的纯文本（或一个片段文件），语法高亮按需加载；
       取不到高亮时只是没有颜色，代码照常显示。
     </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>标签内文本里的 <code>&lt;</code> 要写成 <code>&amp;lt;</code></strong>；长片段建议放独立文件（文件是真 HTML/JS，不用转义）。</li>
+        <li><strong>相对路径按写它的那个文件解析</strong>（和 <code>&lt;link href&gt;</code> 一样）。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -156,160 +164,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>src</code></td>
-          <td>URL</td>
-          <td>—</td>
-          <td>
-            <strong>片段文件</strong>：长片段或需要转义的片段放独立文件，优先级最高；缺
-            <code>language</code> 时按后缀推断
-          </td>
-        </tr>
-        <tr>
-          <td><code>code</code></td>
-          <td>字符串（可多行）</td>
-          <td>—</td>
-          <td>
-            代码文本；不写则读<strong>标签里的纯文本</strong>。<code>el.code</code>
-            是同一份值的运行时入口
-          </td>
-        </tr>
-        <tr>
-          <td><code>language</code></td>
-          <td>
-            语言 id 或别名（<code>js</code> <code>ts</code> <code>html</code> <code>css</code>
-            <code>json</code> <code>bash</code>…）
-          </td>
-          <td>—</td>
-          <td>留空或写 <code>text</code> / <code>none</code> 表示不高亮</td>
-        </tr>
-        <tr>
-          <td><code>line-numbers</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>显示行号（真实 DOM 文本，靠 <code>user-select: none</code> 不参与复制）</td>
-        </tr>
-        <tr>
-          <td><code>max-height</code></td>
-          <td>数字（px）或 CSS 长度</td>
-          <td>—</td>
-          <td>内容超过时内部滚动，如 <code>max-height="200"</code> / <code>"12rem"</code></td>
-        </tr>
-        <tr>
-          <td><code>soft-wrap</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>长行折行，而不是横向滚动</td>
-        </tr>
-        <tr>
-          <td><code>hljs-theme</code></td>
-          <td>官方主题名</td>
-          <td><code>github</code></td>
-          <td>亮色主题，取自 highlight.js 的 <code>styles/</code></td>
-        </tr>
-        <tr>
-          <td><code>hljs-theme-dark</code></td>
-          <td>官方主题名</td>
-          <td><code>github-dark</code></td>
-          <td>暗色主题</td>
-        </tr>
-        <tr>
-          <td><code>hljs-base</code></td>
-          <td>URL</td>
-          <td>内置固定版本 CDN</td>
-          <td>highlight.js 的 <code>build/</code> 目录，换自托管 / 换镜像用</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>文字怎么传</h3>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>传值方式</th>
-          <th>优先级</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>src="…"</code></td>
-          <td>最高</td>
-          <td>
-            长片段、或含 <code>&lt;script&gt;</code> / 大量 <code>&lt;</code> 的片段放独立文件
-          </td>
-        </tr>
-        <tr>
-          <td><code>code="…"</code></td>
-          <td>次之</td>
-          <td>单行或多行都行；写入立刻重渲染</td>
-        </tr>
-        <tr>
-          <td><code>:code="变量"</code></td>
-          <td>次之</td>
-          <td>ofa 模板绑定，从页面 / 组件自己的 <code>data</code> 里取</td>
-        </tr>
-        <tr>
-          <td>标签里直接贴</td>
-          <td>最低</td>
-          <td>短片段最好读</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>body</code></td>
-          <td>滚动容器（<code>max-height</code> 作用在它身上）</td>
-        </tr>
-        <tr>
-          <td><code>pre</code></td>
-          <td>等宽排版层（<code>&lt;pre&gt;</code>）</td>
-        </tr>
-        <tr>
-          <td><code>code</code></td>
-          <td>高亮产物层（<code>&lt;code&gt;</code>，语法高亮挂在它上面）</td>
-        </tr>
-        <tr>
-          <td><code>line</code></td>
-          <td>行号模式下的每一行</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        标签内文本或 <code>code</code> 属性里的 <code>&lt;</code> 要写成 <code>&amp;lt;</code>；
-        长片段建议放独立文件（文件是真 HTML/JS，不用转义）。
-      </li>
-      <li>
-        相对路径按<strong>写它的那个文件</strong>解析（和 <code>&lt;link href&gt;</code> 一样）。
-      </li>
-      <li>
-        高亮取不到时（离网 / CSP 拦截 / 语言名写错）退化为纯文本 + 一条控制台警告，
-        排版、行号、主题跟随都不受影响。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

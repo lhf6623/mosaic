@@ -1,33 +1,48 @@
-# mc-popover
+# mc-popover（浮层）
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](./README.md)；踩坑见 [`../pitfalls/`](../pitfalls/README.md)。
+> **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
+> 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
+> 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
+> 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
----
+**状态**：已实现 · M3 · 标签 `mc-popover` · 目录 `packages/popover/`
 
-`packages/popover/popover.html` · **已实现**
+通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。
 
-通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
+## 单元里有什么
 
-与 `mc-dropdown` / `mc-tooltip` 的分工：popover 是**通用容器**；那两个将来只是在它上面
-固定住内容形态与交互的预设，共用同一套定位与层级。
+| 文件 | 角色 |
+| --- | --- |
+| `popover.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它） |
+| `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md` | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区 |
+| `demos/` | 6 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**） |
+| `test/` | 组件自己的冒烟套件（1 个文件） |
 
-```html
-<mc-popover placement="bottom-start" arrow>
-  <mc-button variant="outline">打开菜单</mc-button>
-  <div slot="panel"><mc-menu>…</mc-menu></div>
-</mc-popover>
-```
+只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
-## 属性
+<!-- hand:start -->
+## 设计取舍
 
-| 名称        | 值                                                       | 默认     | 说明                                     |
-| ----------- | -------------------------------------------------------- | -------- | ---------------------------------------- |
-| `placement` | `top` `bottom` `left` `right` × `-start` / 居中 / `-end` | `bottom` | 面板相对触发元素的方向；空间不够自动翻转 |
-| `trigger`   | `click` `hover` `manual`                                 | `click`  | 怎么开；`manual` 只认 `open` 与 `show()` |
-| `open`      | 布尔                                                     | —        | 受控开合：属性在就开、移除就关           |
-| `arrow`     | 布尔                                                     | —        | 面板上一个小三角，方向跟着 `placement`   |
+mc-popover — 通用浮层（点击/悬停/手动触发，锚在触发元素上）
 
-组件令牌（写在宿主 `style="…"` 上按实例覆盖）：
+与 mc-dropdown / mc-tooltip 的分工：popover 是**通用容器**（内容由使用者给），
+dropdown / tooltip 将来只是在它上面固定住内容形态的预设；三者共用同一套定位与层级。
+
+⚠️ **定位与层叠全部交给浏览器原生能力，这是本组件最核心的决定**（设计规范第七节要求
+M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，位置用 CSS 锚点定位，
+贴边翻转白拿 —— 别再退回 JS 读 rect 算坐标。这也回答了 roadmap 里
+「是否改用 popover API」那个问题 —— 答案是**用**。
+
+这套决定落地时踩出来的**六条坑不写在这里**，见下面「实现约束」（改这个组件前逐条看）。
+
+⚠️ 依赖 `packages/boot/scroll-pin.js`（定住滚动条的工具）：开合原生浮层时浏览器可能顺手
+滚一下页面（实测火狐 156，二分结论与上游链接写在该文件头），那是**运行时的兜底**，
+不是定位逻辑 —— 别把它当作可以省掉的装饰。
+
+## 令牌
+
+写在宿主 `style="…"` 上按实例覆盖：
 
 | 令牌                           | 默认                        | 作用                                                                                                |
 | ------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -38,30 +53,7 @@
 | `--mc-popover-panel-pad`       | `--mc-space-4`              | 面板内边距                                                                                          |
 | `--mc-popover-panel-min-width` | `0`                         | 最小宽度：菜单类面板太窄会显得挤，也避免贴边翻转后宽度抖动                                          |
 
-## 方法
-
-| 名称       | 说明                                                       |
-| ---------- | ---------------------------------------------------------- |
-| `show()`   | 打开；可被 `before-open` 拦掉（返回 `false` 表示这次没开） |
-| `hide()`   | 关闭                                                       |
-| `toggle()` | 开合互换                                                   |
-
-## 事件
-
-| 名称          | 类型                                            | 说明                                             |
-| ------------- | ----------------------------------------------- | ------------------------------------------------ |
-| `before-open` | `(event: Event & { data: { reason } }) => void` | 打开前；`preventDefault()` 可拦掉                |
-| `open`        | `(event: Event & { data: { reason } }) => void` | 已打开                                           |
-| `close`       | `(event: Event & { data: { reason } }) => void` | 已关闭；`reason` = `trigger` / `api` / `dismiss` |
-
-## 插槽与 part
-
-| 名称           | 说明                                             |
-| -------------- | ------------------------------------------------ |
-| 插槽（默认）   | 触发元素（**只放一个**；面板锚在它所在的容器上） |
-| 插槽 `panel`   | 面板内容                                         |
-| `part="panel"` | 面板本体                                         |
-| `part="arrow"` | 小三角；没写 `arrow` 时不渲染                    |
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
 
 ## 实现约束（改这个组件前必须知道）
 
@@ -110,7 +102,17 @@
   能做的效果有限。要动画的使用者自己在 `::part(panel)` 上加，或者用 `open` / `close`
   事件自己驱动。
 
-## 浏览器要求
+## 相邻单元
 
-需要原生 `popover` 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+）。
-没有这些能力的浏览器面板不会弹出 —— 组件不报错，但也没有替代路径。
+- 与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`planned.md`](../../agent/api/planned.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。
+
+- 图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。
+
+<!-- hand:end -->
+
+## 改这个单元之前
+
+- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
+- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
+- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
+- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)

@@ -1,10 +1,14 @@
 # mc-spinner
 
 > 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](./README.md)；踩坑见 [`../pitfalls/`](../pitfalls/README.md)。
+>
+> ⚠️ **这份还在 `agent/api/` 是因为它还没有单元可归**：`packages/spinner/` 目录没建、组件未实现。
+> 组件是最小单元（本体 + `api.md` + `page.html` + `demos/` + `test/`），
+> 建目录那天这份搬到 `packages/spinner/api.md` —— 已实现的 11 份都已经搬了。
 
 ---
 
-`packages/spinner/spinner.html` · M1
+`packages/spinner/spinner.html` · M1 · **未实现**
 
 | 名称    | 值                 | 默认      | 说明                                   |
 | ------- | ------------------ | --------- | -------------------------------------- |

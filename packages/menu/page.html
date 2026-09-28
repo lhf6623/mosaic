@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./menu.html"></l-m>
     <l-m src="./menu-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -19,6 +20,14 @@
       垂直菜单。容器 + 菜单项两个标签；交互元素（原生 <code>&lt;a&gt;</code> /
       <code>&lt;button&gt;</code>）由使用者写在菜单项里，组件不造链接、也不改使用者的 DOM。
     </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>交互元素必须写在插槽里</strong>（<code>&lt;a&gt;</code> / <code>&lt;button&gt;</code>）：<code>href</code> / <code>disabled</code> / <code>aria-current</code> 都写在原生元素上，写在 <code>&lt;mc-menu-item&gt;</code> 上无效。</li>
+        <li><strong>别用 padding 改缩进</strong>：对 <code>&lt;button&gt;</code> 写的 padding 会被页面 reset 吃掉；改缩进用 <code>--mc-menu-pad-x</code>。</li>
+        <li><strong>菜单与菜单项都撑满父容器</strong>：要限宽就写在菜单自己的 <code>style</code> 上，或者套一层定宽容器。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -122,165 +131,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-
-    <h3>mc-menu</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>菜单项高度 / 内边距 / 字号</td>
-        </tr>
-        <tr>
-          <td><code>variant</code></td>
-          <td><code>plain</code> <code>surface</code></td>
-          <td><code>plain</code></td>
-          <td><code>surface</code> 加一圈边框底色，当卡片用</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-menu-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>group</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>分组标题行：纯文字、不可交互，不进列表项语义</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-
-    <h3>mc-menu</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>菜单项 <code>mc-menu-item</code></td>
-        </tr>
-        <tr>
-          <td><code>part="list"</code></td>
-          <td>内层列表容器（项间距 / 布局）</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>mc-menu-item</h3>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>状态</th>
-          <th>怎么写</th>
-          <th>组件做什么</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>当前项</td>
-          <td><code>&lt;a aria-current="page"&gt;</code></td>
-          <td>换底色与字色，字重加粗</td>
-        </tr>
-        <tr>
-          <td>悬停</td>
-          <td>不用写</td>
-          <td>整行浅底</td>
-        </tr>
-        <tr>
-          <td>禁用</td>
-          <td>
-            <code>&lt;button disabled&gt;</code>；<br />
-            链接要 <code>aria-disabled="true"</code> 并去掉 <code>href</code>
-          </td>
-          <td>压暗到 50%，光标 <code>not-allowed</code>，悬停不亮</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>宿主钩子</th>
-          <th>什么时候有</th>
-          <th>用途</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>data-current</code></td>
-          <td>插槽元素的 <code>aria-current</code> 不为 <code>false</code></td>
-          <td>在外层 CSS 里给「当前项」写样式</td>
-        </tr>
-        <tr>
-          <td><code>data-disabled</code></td>
-          <td>插槽元素 <code>disabled</code> / <code>aria-disabled="true"</code></td>
-          <td>同上，禁用态</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        <strong>交互元素必须写在插槽里</strong>（原生 <code>&lt;a&gt;</code> /
-        <code>&lt;button&gt;</code>）。组件不造链接：站内链接自己写 ofa 的
-        <code>olink</code> 带上部署前缀。
-      </li>
-      <li>
-        组件不改使用者的 DOM，所以 <code>href</code> / <code>aria-current</code> /
-        <code>disabled</code> / <code>aria-disabled</code> 都写在原生元素上，别写在
-        <code>&lt;mc-menu-item&gt;</code> 上。<code>aria-current="false"</code>
-        等于没写，不会点亮。
-      </li>
-      <li>
-        菜单与每个菜单项都撑满父容器。要限宽就写在菜单自己的 <code>style</code> 上，
-        或者套一层定宽容器。
-      </li>
-      <li>
-        别给插槽里的 <code>&lt;a&gt;</code> / <code>&lt;button&gt;</code> 写
-        <code>padding</code> 来改缩进：对 <code>&lt;button&gt;</code> 写的 padding 还会被页面的
-        reset 吃掉。改缩进用 <code>--mc-menu-pad-x</code>，改行高用 <code>--mc-menu-item-h</code>。
-      </li>
-      <li>
-        禁用项如果用的是 <code>&lt;button&gt;</code>，光标可能仍是手型 —— 页面 reset 会赢过组件内部
-        样式；<code>&lt;a&gt;</code> 没有这个问题。
-      </li>
-      <li>分组标题行不可交互，里面只放文字，别塞链接。</li>
-      <li>
-        自己给 <code>&lt;mc-menu-item&gt;</code> 写了 <code>role</code> 时组件不会覆盖； 默认只在
-        <code>role="list"</code> 里补 <code>role="listitem"</code>。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

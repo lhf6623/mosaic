@@ -48,7 +48,7 @@
 | `mc-progress`                 | `value` `max` `indeterminate` `color` `size`                                         | `bar` part；`aria-valuenow` 齐全                   |
 | `message()`                   | 命令式函数，返回 `{ close }`，对齐原生语义                                           | `message(text, { type, duration, key, closable })` |
 
-> `mc-alert` **已实现**，接口见 [`alert.md`](./alert.md) —— 与上面的草案有两处出入（都是踩坑后的结论）：
+> `mc-alert` **已实现**，接口见 [`alert.md`](../../packages/alert/api.md) —— 与上面的草案有两处出入（都是踩坑后的结论）：
 > 标题属性定为 `heading` 而不是 `title`（原生 `title` 会弹浏览器 tooltip，[P32](../pitfalls/01-props.md)），
 > 插槽是「默认（描述正文）+ `title` + `icon`」，没有单独的 `description` 插槽。
 
@@ -62,7 +62,7 @@
 
 ## 五、M3 组件（接口草案）
 
-> **图层问题已经验完**（结论见 [`popover.md` 实现约束](./popover.md#实现约束改这个组件前必须知道)）：
+> **图层问题已经验完**（结论见 [`popover.md` 实现约束](../../packages/popover/api.md#实现约束改这个组件前必须知道)）：
 > 浮层一律用原生 `popover` 进 top layer —— 不受宿主页面 `transform` / `filter` / `contain`
 > 影响，还白拿 Esc 与点空白关闭；**不挂 `document.body`、不用 `z-index` 令牌**。
 > `mc-dialog` / `mc-dropdown` / `mc-tooltip` / `mc-select` 的弹层都照 `mc-popover` 的形态做。

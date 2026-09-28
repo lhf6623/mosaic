@@ -1,0 +1,126 @@
+<!--
+  <doc-spec> —— 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（ofa 组件模板）。
+
+  用法（写在 packages/<slug>/page.html 里，src 按**页面文件**解析 —— ofa 编译页面模块时会把
+  相对地址改写成绝对地址，组件拿到的已经是绝对 URL，同 mc-code 的 src）：
+
+    <doc-spec src="./api.md"></doc-spec>
+
+  **为什么渲染进 light DOM 而不是自己的 shadow root**：右栏的 <doc-toc> 收标题走的是
+  `contentRoot().querySelectorAll('h2, h3')`（docs/components/toc.html），**不下钻嵌套组件的
+  shadow root**。渲染进 shadow root 的话，参考区那几节会从目录里静默消失，而 09 号套件的断言
+  「目录项数 = 页面 h2/h3 数」两边一起变少 —— 照样全绿。放进 light DOM + <slot> 投影，
+  标题既在目录里、又享有页面自己的 content.css 样式。
+
+  **渲染范围由 md 自己决定**：只有白名单七节（属性 / 方法 / 事件 / 配置 / 插槽与 part /
+  插槽 / part）出得来，其余（令牌、实现约束、agent 开场白）一律丢 —— 规则在 docs/lib/md-spec.mjs 与
+  agent/doc-render.md §三。这里不做二次过滤，免得两处口径打架。
+
+  ⚠️ 失败只降级、不抛：md 取不到 / 解析不出来时控制台一条 [mosaic] 警告，页面上这一块是空的，
+     其余部分（例子、面包屑、翻页）照常。
+-->
+<template component>
+  <style>
+    /* 自定义元素默认 inline，不写会塌 */
+    :host {
+      display: block;
+    }
+  </style>
+
+  <!-- light DOM 的渲染结果投影在这里显示（不塞 shadow root，理由见文件头） -->
+  <slot></slot>
+
+  <script>
+    import { parseSpecMd } from '../lib/md-spec.mjs';
+
+    /** 按 URL 缓存：同一份 md 在页面上被引用多次只取一次 */
+    const textByUrl = new Map();
+    let warned = false;
+
+    function loadText(url) {
+      if (!textByUrl.has(url)) {
+        const p = (async () => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.text();
+        })();
+        textByUrl.set(url, p);
+        p.catch(() => textByUrl.delete(url)); // 失败不缓存，允许重试
+      }
+      return textByUrl.get(url);
+    }
+
+    export default () => ({
+      tag: 'doc-spec',
+
+      attrs: {
+        // 规范 md 的地址，按写它的那个页面文件解析
+        src: '',
+      },
+
+      // ofa 初始化会把 watch 都用默认值触发一遍（P5），统一走 `_mounted` 守卫
+      watch: {
+        src() {
+          this.onAttrChange();
+        },
+      },
+
+      proto: {
+        onAttrChange() {
+          if (!this._mounted) return;
+          this.load();
+        },
+
+        /** 取 md → 解析 → 写进 light DOM。src 变了或组件已卸载就丢弃过期结果 */
+        async load() {
+          const src = String(this.src ?? '').trim();
+          if (!src) return;
+
+          let url;
+          try {
+            url = new URL(src, document.baseURI).href;
+          } catch {
+            return;
+          }
+          this._url = url;
+
+          try {
+            const text = await loadText(url);
+            if (this._url !== url || !this.ele.isConnected) return;
+
+            const { html, sections } = parseSpecMd(text, { baseUrl: url });
+            if (!sections.length) {
+              console.warn(
+                `[mosaic] doc-spec: ${url} 里没有可渲染的节（属性 / 方法 / 事件 / 配置 / 插槽 / part），参考区为空`,
+              );
+            }
+            this._sections = sections;
+            this.ele.innerHTML = html;
+            this.ele.setAttribute('data-state', 'ready');
+          } catch (err) {
+            if (this._url !== url || !this.ele.isConnected) return;
+            this.ele.setAttribute('data-state', 'error');
+            if (!warned) {
+              warned = true;
+              console.warn(
+                `[mosaic] doc-spec 规范 md 加载失败，参考区为空：src=${src} → ${url}`,
+                err,
+              );
+            }
+          }
+        },
+      },
+
+      ready() {
+        this._sections = [];
+        this.ele.setAttribute('data-state', 'loading');
+        this._mounted = true;
+        this.load();
+      },
+
+      detached() {
+        this._mounted = false;
+      },
+    });
+  </script>
+</template>

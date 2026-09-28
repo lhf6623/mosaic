@@ -2,6 +2,8 @@
  * 站点 · 组件文档页（第 11 / 11.3 节）：文档跟着组件走、每个演示都能点开看代码
  */
 import { READY, slugOf } from '../../docs/site-map.js';
+import fs from 'node:fs';
+import { parseSpecMd } from '../../docs/lib/md-spec.mjs';
 
 export default async function run({ page, visit, check, newPage }) {
 /* ------------------------------------------------------------------ *
@@ -12,6 +14,7 @@ const colocated = await (async () => {
   const p = await newPage();
   const bad = [];
   const crumbBad = [];
+  const specBad = [];
   for (const c of READY) {
     // 必须经由路由打开（page.html 是 <template page>，当独立网页打开会渲染成空白）；
     // query 也必须有 —— 同文档 hash 跳转时 goto() 返回 null（不是 Response），断言会假失败
@@ -41,6 +44,14 @@ const colocated = await (async () => {
         { timeout: 5000 },
       )
       .catch(() => {});
+    // 参考区是运行时渲染的（<doc-spec> 取 md 现解析），等它自己报 ready 再断言
+    await p
+      .waitForFunction(
+        () => window.__deep('doc-spec')?.getAttribute('data-state') === 'ready',
+        undefined,
+        { timeout: 5000 },
+      )
+      .catch(() => {});
     // 页面自己的二级菜单渲染出来 = 站点共享脚本与 <doc-nav> 组件都跑起来了（条目在组件 shadow 里）
     const ok = await p.evaluate(() => {
       const navOk = window.__inside('doc-nav', 'a').length > 3;
@@ -55,8 +66,40 @@ const colocated = await (async () => {
         items.length >= 2 &&
         last.getAttribute('aria-current') === 'page' &&
         !!last.textContent.trim();
-      return { navOk, crumbOk };
+      /* 参考区：渲染出来的 h2/h3 必须与「同一份 md 经同一个解析器算出的结果」**逐条对上**。
+         守的是渲染管线忠实（白名单改名、解析 bug、页面漏挂 doc-spec、md 取不到，都会红）。
+         ⚠️ 它**不**守「这一节该不该有」—— 那两边同源、一起少也不会红；
+         「节是否齐全、名字与默认值对不对」由 13 号套件的 drift 面从**组件代码**那边对过来。 */
+      const spec = window.__deep('doc-spec');
+      const specOk = spec
+        ? {
+            state: spec.getAttribute('data-state'),
+            heads: [...spec.querySelectorAll('h2, h3')].map((h) => h.textContent.trim()),
+          }
+        : { state: 'no-doc-spec', heads: [] };
+      return { navOk, crumbOk, specOk };
     });
+
+    /* node 侧拿期望值：parseSpecMd 自己算「这份 md 会渲染出哪些节」，与浏览器同源 */
+    /* 期望值从解析器的产出里按**出现顺序**取（h3 紧跟它所属的那个 h2，别拼成「先 h2 后 h3」） */
+    const mdPath = `packages/${slugOf(c)}/api.md`;
+    const want = fs.existsSync(mdPath)
+      ? parseSpecMd(fs.readFileSync(mdPath, 'utf8'), { baseUrl: mdPath })
+      : null;
+    const wantHeads = (want?.html.match(/<h[23]>([^<]+)<\/h[23]>/g) ?? []).map((m) =>
+      m.replace(/<\/?h[23]>/g, ''),
+    );
+    const gotHeads = ok.specOk.heads;
+    if (
+      ok.specOk.state !== 'ready' ||
+      wantHeads.length === 0 ||
+      gotHeads.join('|') !== wantHeads.join('|')
+    ) {
+      specBad.push(
+        `${c.path} — state=${ok.specOk.state} · 页面「${gotHeads.join(' ')}」≠ md「${wantHeads.join(' ')}」`,
+      );
+    }
+
     if (!res?.ok() || failed.length || !ok.navOk) {
       bad.push(
         `${c.path} — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${ok.navOk ? '' : ' · 二级菜单未渲染'}`,
@@ -65,7 +108,7 @@ const colocated = await (async () => {
     if (!ok.crumbOk) crumbBad.push(c.path);
   }
   await p.close();
-  return { bad, crumbBad };
+  return { bad, crumbBad, specBad };
 })();
 check(
   `每个已实现组件的文档页都在它自己的目录里（${READY.length} 个）`,
@@ -76,6 +119,11 @@ check(
   `每个组件页头部的面包屑都由 <mc-breadcrumb> 渲染（两级 + 当前项）`,
   colocated.crumbBad.length === 0,
   colocated.crumbBad.join('\n        ') || `${READY.length} 页全通过`,
+);
+check(
+  `参考区渲染出来的节与 md 解析结果逐条对上（渲染管线忠实，${READY.length} 页）`,
+  colocated.specBad.length === 0,
+  colocated.specBad.join('\n        ') || `${READY.length} 页全通过`,
 );
 
 /* ------------------------------------------------------------------ *
@@ -202,7 +250,10 @@ const demoDrawer = await (async () => {
       for (const code of codes) {
         const url = code.getAttribute('src');
         const text = await (await fetch(url)).text();
-        out.push({ url, same: code.code.trim() === text.trim() });
+        /* 换行符不算内容差异：Windows 上 checkout 出来的文件是 CRLF，而 mc-code 归一成 LF，
+           直接比会把「平台差异」报成「页面与文件不一致」—— 那会盖掉真正的不一致。 */
+        const norm = (s) => s.replace(/\r\n?/g, '\n').trim();
+        out.push({ url, same: norm(code.code) === norm(text) });
       }
       return out;
     });

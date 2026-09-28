@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./card.html"></l-m>
     <l-m src="../button/button.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -15,6 +16,14 @@
     <doc-crumb></doc-crumb>
     <h1>Card <code>mc-card</code></h1>
     <p class="doc-lead">内容承载面：一块面 + 头尾结构，里面的东西自己塞。</p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong>整卡可点自己写</strong>：给卡内那个元素铺一条伪元素，<code>inset</code> 要取<strong>负的边框宽度</strong>，否则最外那 1px 点不动。</li>
+        <li><strong>圆角不裁内容</strong>：要让图片或 <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加 <code>overflow: hidden</code>。</li>
+        <li><strong>不留页面 reset</strong>：卡内元素的默认外边距照旧，要归零自己写。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -97,127 +106,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>variant</code></td>
-          <td><code>surface</code> <code>outline</code></td>
-          <td><code>surface</code></td>
-          <td>有底色 / 只有描边（两者都有 1px 边框）</td>
-        </tr>
-        <tr>
-          <td><code>padding</code></td>
-          <td><code>none</code> <code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>
-            内边距 = <code>0</code> / <code>--mc-space-3</code> / <code>--mc-space-4</code> /
-            <code>--mc-space-6</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>divider</code></td>
-          <td><code>line</code> <code>none</code></td>
-          <td><code>line</code></td>
-          <td>头尾分隔线；<code>none</code> 只把线改成透明，卡片高度不变</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>主体内容</td>
-        </tr>
-        <tr>
-          <td>插槽 <code>header</code></td>
-          <td>
-            头部那一行左侧的内容（与
-            <code>suffix</code> 同行）；通长，下方一条分隔线；没内容时不占地方
-          </td>
-        </tr>
-        <tr>
-          <td>插槽 <code>footer</code></td>
-          <td>页脚内容；通长，上方一条分隔线；没内容时不占地方</td>
-        </tr>
-        <tr>
-          <td>插槽 <code>suffix</code></td>
-          <td>头部那一行<strong>贴右边</strong>的附加物（徽标 / 状态 / 小按钮）；有它就等于有头</td>
-        </tr>
-        <tr>
-          <td><code>part="base"</code></td>
-          <td>内层盒子：内边距就声明在它上面</td>
-        </tr>
-        <tr>
-          <td><code>part="header"</code></td>
-          <td>头部那一整条（贴到卡片边缘，可以换底色）</td>
-        </tr>
-        <tr>
-          <td><code>part="body"</code></td>
-          <td>正文那块</td>
-        </tr>
-        <tr>
-          <td><code>part="footer"</code></td>
-          <td>页脚那一整条（贴到卡片边缘，可以换底色）</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        <strong>卡内要放操作就写原生元素</strong>：<code>&lt;a href&gt;</code> /
-        <code>&lt;button&gt;</code> 直接写在插槽里（一般放 <code>slot="footer"</code> 或
-        <code>slot="suffix"</code>）；站内链接照旧写 <code>olink</code>。
-      </li>
-      <li>
-        <strong>整卡可点自己写</strong>（组件不接管）：给卡内那个元素铺一条伪元素就行：
-        <code
-          >a::after { content: ''; position: absolute; inset: calc(var(--mc-card-border-w) * -1);
-          cursor: pointer; }</code
-        >
-        —— <code>inset</code> 取<strong>负的边框宽度</strong>，否则卡片最外那 1px 点不动；
-        <code>cursor</code> 要显式写，否则 WebKit 上光标不变手型；悬停<strong
-          >不要给卡片加位移</strong
-        >
-        （指针会在边缘来回进出，表现为抖）。
-      </li>
-      <li><strong>卡片不留页面 reset</strong>：卡内元素的默认外边距照旧，要归零自己写。</li>
-      <li>
-        <strong>头尾是通长的整条</strong>：底色 / 边框色写在
-        <code>::part(header)</code> 上都是整条生效；想给头尾单独加内边距也用 part。
-        头尾外侧的圆角跟着宿主走，卡片改成大圆角也不会露出直角。
-      </li>
-      <li>
-        <strong>圆角不裁内容</strong>：卡里故意溢出的东西（浮层、贴边徽标）不会被切掉；要让图片或
-        <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加
-        <code>overflow: hidden</code>。
-      </li>
-      <li>
-        卡片不投影，层级靠底色明度差（见设计令牌一节）；要更「浮」就在宿主 <code>style</code> 上加
-        <code>box-shadow</code>。
-      </li>
-      <li>
-        <code>padding="none"</code> 时它就是个纯盒子，内边距自己给；需要结构化的内边距用
-        <code>::part(base)</code>。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

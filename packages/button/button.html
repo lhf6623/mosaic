@@ -1,11 +1,8 @@
 <!--
   mc-button — Mosaic 参考组件实现
 
-  写新组件请照抄它的结构与分层，三条主线：
-  1. 视觉全部定义在 :host 上 —— 外部 style="…" 优先级最高，能直接覆盖；
-  2. color（语义色）× variant（外观样式）是两个正交维度，不是一维枚举；
-  3. 交互语义交给内部透明的原生 <button>，宿主只管"长什么样"。
-  hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

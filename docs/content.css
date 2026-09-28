@@ -117,6 +117,25 @@
   background-color: rgb(var(--mc-color-warning-subtle));
 }
 
+/* ---------- 注意事项：页面顶部那一块（<mc-alert class="doc-notes"> 承载） ----------
+   上移后它夹在 doc-lead 与「例子」之间，所以上下各留一档；
+   ⚠️ 站点正文给 li 的是 fg-muted，而注意事项不是次要信息 —— 这里改回正文色
+   （改的是 li 自己，不是 --mc-alert-body-color：那条只管 part="body" 容器） */
+
+.doc-notes {
+  margin: var(--mc-space-4) 0;
+  --mc-alert-body-color: rgb(var(--mc-color-fg));
+}
+
+.doc-notes ul {
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.doc-notes li {
+  color: rgb(var(--mc-color-fg));
+}
+
 /* ---------- 演示区 ---------- */
 
 /* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：
@@ -222,6 +241,28 @@
 
 .doc-table tr:last-child td {
   border-bottom: 0;
+}
+
+/* ---------- 参考区里的代码块 ----------
+ * `<doc-spec>` 渲染规范 md 时，节里的围栏代码落成 <pre class="doc-pre">（见 docs/lib/md-spec.mjs）。
+ * 它住在页面 light DOM，拿不到 mc-code 的外观，所以这里补一份「和 mc-code 同口径」的壳：
+ * 同样的等宽字体、surface 底、边框圆角与横向滚动。配色不做（没有 highlight.js，纯文本）。 */
+.doc-pre {
+  margin: var(--mc-space-4) 0;
+  padding: var(--mc-space-4);
+  overflow-x: auto;
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+  font-family: var(--mc-font-mono);
+  font-size: var(--mc-text-sm);
+  line-height: var(--mc-leading-normal);
+  tab-size: 2;
+}
+
+.doc-pre code {
+  font-family: inherit;
+  font-size: inherit;
 }
 
 /* ---------- 组件里的东西：样式不在这里 ----------

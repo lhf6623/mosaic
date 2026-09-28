@@ -1,15 +1,8 @@
 <!--
   mc-breadcrumb — 面包屑容器
 
-  只做三件事：一行布局、分隔符、列表语义。每一级是 mc-breadcrumb-item。
-
-  **交互元素由使用者写在插槽里**（原生 <a>）—— 与 mc-menu 同一条理由：站内链接要靠 olink
-  补部署前缀，而 olink 是编译期指令、只作用于页面模板里的元素，组件在 shadow root 里造的
-  <a> 用不上（见 docs/routes.js）。纯文本的一级就是当前页，写 current。
-
-  分隔符画在每一项自己的 ::before 上（第一项除外），间距只有一个来源：.mc-list 的 gap。
-  separator 属性在 attached() 里落到一个内部变量上（刻意不碰 --mc-breadcrumb-sep 令牌，
-  否则会把使用者写在 style 上的覆盖一起抹掉）；不想动属性也可以直接覆盖令牌。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>

@@ -19,15 +19,17 @@ mosaic/
 │   ├── color/
 │   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
 │   │   └── page.html              # 令牌文档页
-│   ├── button/ code/ collapse/ menu/ breadcrumb/
-│   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）
-│   │   ├── page.html              # 文档页，注册在 docs/site-map.js
-│   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
-│   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
+  │   ├── button/ code/ collapse/ menu/ breadcrumb/ …   ← **一个组件 = 一个单元**
+  │   │   ├── {name}.html            # 组件本体（源 = 产物，构建不碰它）—— **入口一：使用者 CDN 引入**
+  │   │   ├── api.md                 # 接口规范（属性 / 事件 / 插槽与 part / 令牌），由 <doc-spec> 渲染进页面
+  │   │   ├── page.html              # 文档页，注册在 docs/site-map.js —— **入口二：文档站加载**
+  │   │   ├── demos/*.html           # 可交互演示（一个例子一个文件）
+  │   │   └── test/{slug}.test.mjs   # 组件自己的冒烟套件
 │   └── {next}/{next}.html ...
 ├── tools/
-│   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
-│   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
+  │   ├── gen-tokens.mjs             # 调色板生成 + WCAG 自检
+  │   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
+  │   ├── gen-unit-readme.mjs        # 生成各组件单元的 README.md 入口卡（状态/文件清单由仓库事实推）
 │   ├── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
 │   ├── doc-drift/                 # 文档 ↔ 代码对账引擎（通用副本 + 版本号，见下）
 │   └── doc-drift.config.mjs       # 本仓的约定（表头 / 骨架 / 豁免 / 要对账的数字）
@@ -41,7 +43,8 @@ mosaic/
 │   ├── doc-layout.html            # 组件页分区布局（API + 演示 + 目录）
 │   ├── snippets/                  # 文档页引用的代码片段
 │   ├── state/route.js             # 抽出的路由状态（$.stanz）
-│   ├── components/                # 文档站自己的组件（nav/toc/crumb/pager/cards/palette.html：文件名 + doc- 前缀 = 标签名）
+│   ├── components/                # 文档站自己的组件（nav/toc/crumb/pager/cards/palette/spec.html：文件名 + doc- 前缀 = 标签名）
+│   ├── lib/md-spec.mjs            # 规范 md 的受限子集解析器（<doc-spec> 用它渲染参考区）
 │   ├── site-map.js                # 站点唯一数据源（结构即菜单）
 │   ├── routes.js                  # 路由工具：route() 归一当前路由
 │   ├── theme-boot.js              # 首帧主题（防闪白）

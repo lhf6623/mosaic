@@ -3,6 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./tag.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/variants.html"></l-m>
@@ -15,6 +16,14 @@
     <doc-crumb></doc-crumb>
     <h1>Tag <code>mc-tag</code></h1>
     <p class="doc-lead">分类 / 状态标签：一块小色片，可选可关。</p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li><strong><code>selected</code> 会覆盖 <code>variant</code></strong>：选中的标签统一实心，所以可切换的标签用默认 <code>subtle</code> 才看得出变化。</li>
+        <li><strong>长文本不折行</strong>：标签要么短，要么自己在宿主上截断（<code>max-width</code> + <code>overflow: hidden</code>）。</li>
+        <li><strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>，要消失自己在事件里 <code>el.remove()</code>。</li>
+      </ul>
+    </mc-alert>
+
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
@@ -118,149 +127,9 @@
       </mc-collapse>
     </section>
 
-    <h2>属性</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>值</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>color</code></td>
-          <td>
-            <code>primary</code> <code>info</code> <code>success</code> <code>warning</code>
-            <code>danger</code> <code>neutral</code>
-          </td>
-          <td><code>neutral</code></td>
-          <td>语义色；默认中性，语义色是强调</td>
-        </tr>
-        <tr>
-          <td><code>variant</code></td>
-          <td><code>subtle</code> <code>solid</code> <code>outline</code></td>
-          <td><code>subtle</code></td>
-          <td>浅底深字 / 实心 / 描边</td>
-        </tr>
-        <tr>
-          <td><code>size</code></td>
-          <td><code>sm</code> <code>md</code> <code>lg</code></td>
-          <td><code>md</code></td>
-          <td>字号 12 / 14 / 16px，高度 26 / 30 / 34px</td>
-        </tr>
-        <tr>
-          <td><code>closable</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>右侧出现 × 按钮（<code>aria-label="移除"</code>），点击发 <code>close</code></td>
-        </tr>
-        <tr>
-          <td><code>checkable</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>整块可点，切换时发 <code>change</code></td>
-        </tr>
-        <tr>
-          <td><code>selected</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>
-            选中态（<code>checkable</code> 用）。既是初始值也是运行时状态：
-            <code>el.selected = true</code> 立刻生效
-          </td>
-        </tr>
-        <tr>
-          <td><code>disabled</code></td>
-          <td>布尔</td>
-          <td>—</td>
-          <td>压暗 50%，不可选也不可关，两个原生按钮都进 <code>:disabled</code></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>事件</h2>
-
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>类型</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>change</code></td>
-          <td><code>(event: Event &amp; { data: { selected: boolean } }) =&gt; void</code></td>
-          <td>
-            <code>checkable</code> 的选中态变化；冒泡 +
-            <code>composed</code>，可挂在祖先上收全部标签
-          </td>
-        </tr>
-        <tr>
-          <td><code>close</code></td>
-          <td><code>(event: Event) =&gt; void</code></td>
-          <td>点了 ×；冒泡 + <code>composed</code>，可挂在祖先上收全部标签</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>插槽与 part</h2>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>说明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>插槽（默认）</td>
-          <td>标签内容：文字、小图标都行；<code>checkable</code> 时它同时是按钮的无障碍名</td>
-        </tr>
-        <tr>
-          <td><code>part="close"</code></td>
-          <td>那个 × 按钮（24×24 的命中区），单独换色 / 换形状用它</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>注意事项</h2>
-    <ul>
-      <li>
-        <strong>和 <code>mc-badge</code> 的分工</strong>：badge 是挂在别的元素上的徽标（计数、圆点、
-        不交互），tag 是内容本身的标签 —— 它才有关闭与选中。
-      </li>
-      <li>
-        <strong><code>selected</code> 会覆盖 <code>variant</code></strong
-        >：选中的标签统一用该色<strong>实心</strong>。所以可切换的标签用默认
-        <code>subtle</code> 才看得出变化；写死 <code>variant="solid"</code> 时选中前后一个样（那时用
-        <code>::part()</code> 或自己的 <code>aria-pressed</code> 样式补区别）。
-      </li>
-      <li>
-        <strong>不写死控件高</strong>：标签不是控件，高度由字号撑。需要固定高度就写宿主
-        <code>style="height: …"</code>；项目规范里 32px 的图标按钮下限对行内标签不适用 —— ×
-        的命中区是 24×24（WCAG 2.2 AA 的下限），别把 tag 当主操作。
-      </li>
-      <li>
-        <strong><code>closable</code> 不删 DOM</strong>：只发 <code>close</code>。要在页面上消失，
-        自己在事件里 <code>el.remove()</code> 或改数据（组件不替使用者动 DOM）。
-      </li>
-      <li>
-        <strong>可关 + 可选同时开时，× 压在 toggle 层上面</strong>：点 × 只发
-        <code>close</code>，不会顺带切换选中。
-      </li>
-      <li>
-        <strong>长文本不折行</strong>：标签要么短，要么自己在宿主上做截断（<code>max-width</code> +
-        <code>overflow: hidden</code>）。
-      </li>
-      <li>
-        <strong>颜色与圆角全在宿主上</strong>：<code>&lt;mc-tag style="…"&gt;</code> 直接覆盖，
-        不需要 <code>!important</code>；内部只有 × 一个 <code>part</code>。
-      </li>
-    </ul>
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
 
     <doc-pager></doc-pager>
   </div>

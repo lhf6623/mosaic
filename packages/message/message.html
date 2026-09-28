@@ -1,38 +1,8 @@
 <!--
   mc-message — 命令式消息条（容器）
 
-  ⚠️ **这个组件不直接使用**：使用者只写 `message.success('已保存')`，由
-  `packages/message/message.js` 负责「懒注册 + 挂到 document.body + 往这个组件的 rows 里推数据」。
-  为什么做成两个文件：
-
-  ofa.js 是 MVVM，**模板只在组件定义期编译**；运行时 `innerHTML` 塞进去的 `{{ }}` / `o-fill` 全是死的。
-  所以命令式 API 的正确形态只能是「函数只碰数据，视图永远由声明期模板渲染」：
-    1. 首次调用 → `<l-m src="message.html">` 把本组件注册上（实测运行时追加 l-m 可用）；
-    2. `document.createElement('mc-message')` 挂到 body 末尾（**必须挂 body**：shadow root 里的
-       position:fixed 会被宿主页面的 transform / filter / contain 困住，见 design-spec 第七节）；
-    3. 之后一律 `$('mc-message')` 拿实例、原地改 `rows` —— 实测**从外部整体替换数组不会渲染**
-       （`inst.rows = 外部数组` 之后 o-fill 一行动都不动），只能 push / splice。
-
-  为什么挂到 body 上也拿得到设计令牌：mosaic.js 给每个 shadow root adopt 两份表，
-  而令牌是自定义属性、从 :root 一路继承下来 —— 实测宿主上 `--mc-z-toast` 解析为 1500。
-
-  与 mc-alert 的分工：alert 是**页内静态**的一块面（在文档流里、不抢焦点、不会自己消失）；
-  message 是**命令式浮层**（自己进场自己走、不占版面）。两者都要「把状态告诉使用者」，
-  但一个在文档流里、一个在层级最上面，所以不是一个组件。
-
-  关闭方式只有一种：**右侧一个明确的 ×**（原生 <button>，32×32 命中区）。
-  要不要它由 `closable` 显式决定（默认 true）——**不跟 duration 推导**：
-  「关不关得掉」和「多久自己走」是两件事，混在一起读者从调用上看不出来。
-  **整条消息不可点** —— 它是给人读的，点一下就没不该是默认行为。
-
-  ⚠️ 组件只负责把行从 rows 里摘掉；**队列删除、定时器、onClose 都在 message.js 的 drop() 里**。
-  宿主上那个 close 监听必须调 drop() —— 只清一半会让队列静默泄漏、onClose 永不触发（踩过）。
-
-  ⚠️ 两个 ofa 的坑（都实测踩过，注释留在原地免得后人再踩）：
-  · `o-fill` 的模板只允许**一个**根子元素 —— 所以里面套了一层 `display: contents` 的 div
-    来同时挂「显隐 + 退场动画 + popover 语义」三件事（P42 的成对写法）。
-  · 条目识别用 `$index`：`o-fill` 内**不能用 `attr:data-*` 绑 `$data`**（`data` 是保留字，
-    见 P39 一族），所以 DOM → 数据只能靠位置反查，而 `$index` 实测可用。
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
   <style>
