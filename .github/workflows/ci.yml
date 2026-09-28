@@ -2,19 +2,17 @@
 #
 # 本地对应的就是这两条：
 #   pnpm check      静态守卫（typecheck + check:docs + check:drift + check:size），秒级
-#   pnpm test:all   真浏览器冒烟（13 站点套件 + 11 组件套件），约 1.5 分钟
+#   pnpm test:all   真浏览器冒烟（13 站点套件 + 11 组件套件），约 1.5 分钟（本地）
+#
+# 浏览器：不再赌 runner 镜像里有没有 Chrome（第一次接 CI 就是栽在这上面），
+# 改成用 playwright-core 自带的那份 Chromium：装一次、版本与本仓锁定的 playwright-core 对齐。
+# 本地仍然用系统 Chrome（tests/lib/harness.mjs 的 CHANNEL 默认 chrome），这里只覆盖 CI。
 #
 # 冒烟测试连的是本地文档站，所以先把 tools/serve.mjs 起在后台（和 pnpm dev 同一条路），
 # 再用 curl 等它就绪 —— 不等待会偶发「第一个套件 404」。
 #
-# 浏览器：冒烟测试走 playwright-core + **系统 Chrome**（tests/lib/harness.mjs 的 CHANNEL，默认 chrome），
-# ubuntu-latest 镜像自带 google-chrome-stable，不需要 playwright install。
-# 哪天镜像里没有了：把 env.CHANNEL 换成 chromium，并在安装依赖后加一步
-#   npx playwright install --with-deps chromium
-#
-# 静态门禁那一步把失败原因同时发成 ::error:: 注解：公开仓库的 job log 要登录才能下载，
-# 而注解走 API 就能读到 —— 「CI 红了但看不到日志」时还有一条路；顺带四道门禁一次跑完，
-# 不用修一道推一次。
+# 公开仓库的 job log 要登录才能下载，所以每一步失败都把关键行发成 ::error:: 注解
+# （走 API 就能读到）：「CI 红了但看不到日志」时还有一条路。
 #
 # 没接 pnpm format:check：全仓还有几十个文件没格式化（历史遗留），接进来会一直红。
 # 等清干净了再加，别让它长期挂着一条「反正一直红」的步骤 —— 那种红会训练人忽略 CI。
@@ -35,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      CHANNEL: chrome
+      CHANNEL: chromium
       CI: '1'
     steps:
       - uses: actions/checkout@v7
@@ -61,7 +59,6 @@ jobs:
               tail -n 3 "/tmp/$c.log"
             else
               cat "/tmp/$c.log"
-              # 日志要登录才看得到，这里把「能定位」的行发成注解：diff 行 / 问题行 / 失败组
               picked=$(grep -E '^[-+@]' "/tmp/$c.log" | head -n 8)
               [ -n "$picked" ] || picked=$(grep -E '· |✗|脱节|超预算|提交版|重建版' "/tmp/$c.log" | head -n 8)
               [ -n "$picked" ] || picked=$(tail -n 8 "/tmp/$c.log")
@@ -70,6 +67,9 @@ jobs:
             fi
           done
           exit $fail
+
+      - name: 装冒烟用的浏览器（playwright-core 自带 Chromium）
+        run: npx playwright-core install --with-deps chromium
 
       - name: 起文档站并等它就绪
         run: |
@@ -86,4 +86,13 @@ jobs:
           exit 1
 
       - name: 浏览器冒烟（全量）
-        run: pnpm test:all
+        run: |
+          if pnpm test:all > /tmp/smoke.log 2>&1; then
+            tail -n 12 /tmp/smoke.log
+          else
+            cat /tmp/smoke.log
+            picked=$(grep -E '· |FAIL|✗|Error' /tmp/smoke.log | head -n 8)
+            [ -n "$picked" ] || picked=$(tail -n 8 /tmp/smoke.log)
+            echo "$picked" | sed 's/^/::error::/'
+            exit 1
+          fi
