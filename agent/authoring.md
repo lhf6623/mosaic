@@ -51,7 +51,9 @@ tests/
 （扫全仓的 node-only 守卫除外，见 `select.mjs` 的 ALWAYS_RUN），**未知路径 → 保守全量**；地图缺失、套件不在图里也一律跑（**宁可多跑，不可漏跑**）。
 工作区**干净**时不猜（那种状态多半是「刚提交、要收尾」）→ 直接全量；只想验自己这批提交用
 `pnpm test origin/main`。加了 / 删了 / 挪了套件、或套件开始加载新文件时，`pnpm test:record` 重录一次地图
-（`tests/site/12-affected.mjs` 会盯着「地图有没有漏掉某个套件」）。全量 `pnpm test:all` 留到收尾验收跑一次。
+（`tests/site/12-affected.mjs` 会盯着「地图有没有漏掉某个套件」）。
+⚠️ 全量 `pnpm test:all` **只在明确要求时跑** —— 其中也包括别在干净工作区上随手跑裸 `pnpm test`
+（它会退化成全量）；要验就带筛选（`pnpm test popover`）。
 
 > 文档页是 **ofa.js 页面模块**，不是独立网页：它由 `o-router` 按 hash 路由加载，
 > 地址形如 `#/packages/button/page.html`。直接双击打开只会看到空白

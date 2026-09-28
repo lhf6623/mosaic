@@ -59,8 +59,9 @@ pnpm check:docs            # 16 组全绿
 node tests/smoke.mjs <slug> # 只跑这次命中的组件
 ```
 
-全量测试只在收尾跑一次 —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
-（默认就是选测 `pnpm test`；加 / 挪了套件先 `pnpm test:record`；收尾跑 `pnpm test:all`）。
+全量测试**只在明确要求时跑** —— 中途重复全量既慢，又会掩盖「这次改动影响了什么」
+（默认就是选测 `pnpm test`；加 / 挪了套件先 `pnpm test:record`；全量是 `pnpm test:all`，要跑得对方说一声）。
+⚠️ 干净工作区上别跑裸 `pnpm test` —— 它会退化成全量。
 
 ---
 

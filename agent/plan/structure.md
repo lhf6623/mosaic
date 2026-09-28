@@ -73,7 +73,6 @@ mosaic/
 │   ├── plan/                      # 规划总纲：定位 / 决策 / 目录与构建 / 里程碑
 │   ├── archive/                   # 已归档（默认不读）：docs-refactor.md + research/ 外部资料原文
 │   └── vendor/                    # 外部资料：ofa-skill.md（ofa.js 官方知识库）
-├── .github/workflows/ci.yml       # CI：push / PR 跑 pnpm check + pnpm test:all
 ├── package.json                   # private: true（永不 publish）
 └── README.md
 ```
@@ -120,7 +119,7 @@ pnpm format:check  # prettier 只检查
 | `tools/doc-drift.config.mjs` | 本仓的约定：文件放哪、表头叫什么、什么算豁免、哪些数字要对账  | **约定变了改这里**                                                            |
 | `tools/doc-drift/`           | 通用引擎副本（零仓库知识），来自用户级 skill `doc-code-drift` | 引擎升版才动：`node ~/.dsh/skills/doc-code-drift/recipes/vendor.mjs --repo .` |
 
-引擎副本带版本号（`node tools/doc-drift/drift.mjs --version`）；仓库这份是给 CI / 别人 clone 用的，
+引擎副本带版本号（`node tools/doc-drift/drift.mjs --version`）；仓库这份是给别人 clone 用的，
 不依赖本机装没装 skill。
 
 **发布流程**：
@@ -131,7 +130,8 @@ pnpm format:check  # prettier 只检查
 4. 发布后**逐文件比对内容哈希**：jsDelivr 有 version fallback，
    新版本缺文件时会静默回退旧版本，只看 HTTP 200 会被骗过去
 
-**CI**：push / PR 到 `main` 自动跑 `pnpm check` + `pnpm test:all`（`.github/workflows/ci.yml`）——
-门禁与本地完全同源（本地默认那条是选测，CI 那条是全量），发布前看 CI 那张脸就够了。
+**门禁都在本地**：`pnpm check`（静态守卫，秒级）随手跑；`pnpm test` 按改动范围选测；
+全量 `pnpm test:all` 只在明确要求时跑。以前接过 push / PR 上自动跑全量的 GitHub Actions，
+**已删**（推送时没人看那张脸，还要起浏览器；本地跑同一套更省事）。
 
 ---
