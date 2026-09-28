@@ -21,8 +21,9 @@
 * [x] 令牌靠自定义属性继承进 shadow root
 * [x] 文档站五个页面可访问、无 404、色板实时渲染
 * [ ] 验证降级：故意让补丁失效，确认颜色/尺寸仍正常，只有排布退化
-* [ ] CI 接入（`.github/workflows/ci.yml`：`pnpm check` + `pnpm test:all`；体积上限落在
-      `tools/check-size.mjs`。**待首次 push 在 GitHub 上跑绿再勾**）
+* [x] CI 接入（`.github/workflows/ci.yml`：`pnpm check` + `pnpm test:all`；体积上限落在
+      `tools/check-size.mjs`。首次 push 跑绿时顺带修掉两处**只在 CI 现形**的问题：产物里的
+      `Source:` 标记位置随机器变、滚动守卫 `dispose()` 之后挂起的 hold 还会 restore 一次）
 
 **M0 推翻/修正了两条我原本写错的设计**，都已落到实现里：
 
