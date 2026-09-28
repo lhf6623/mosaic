@@ -75,7 +75,8 @@ pnpm build        # 生成令牌与工具类 CSS（产物提交进仓库）
 pnpm check:tokens # 令牌自检：色板与对比度
 pnpm check:docs   # 文档 ↔ 代码对账：接口表 / 页面骨架 / 索引 / 路径 / 数字
 pnpm check:drift  # 产物新鲜度：重跑生成并比对，防止源码改了没重新 build
-pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift
+pnpm check:size   # 体积预算：共享产物 raw/gzip + 组件本体单文件上限
+pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift && check:size
 pnpm dev          # 打开文档站：http://localhost:8642（跑测试时让它开着）
 pnpm test         # 冒烟测试：只跑本次改动命中的套件（--list 先预览；工作区干净时转全量）
 pnpm test:all     # 冒烟测试：全量 24 个套件 —— 收尾验收 / CI 用这条
@@ -85,6 +86,9 @@ pnpm test:record  # 加了 / 挪了套件后重录依赖地图（tests/suite-map
 测试默认按**改动范围**跑：`pnpm test` 用依赖地图精确命中（判不了才退回全部；工作区干净时转全量 ——
 那种状态多半是「刚提交、要收尾」，猜错方向的代价是静默漏测）；比某个 ref 用 `pnpm test origin/main`，
 收尾验收 / CI 跑 `pnpm test:all`。
+
+**CI**：push / PR 到 `main` 跑的就是同一套 —— `pnpm check` + `pnpm test:all`，外加先把
+`tools/serve.mjs` 起起来（[`.github/workflows/ci.yml`](.github/workflows/ci.yml)）。CI 上跑全量，本地默认跑选测。
 
 组件本体**不需要构建**：`packages/**` 源即产物，`pnpm build` 只产出共享 CSS
 （`packages/color/tokens.css` 与 `packages/boot/mosaic.css`）。

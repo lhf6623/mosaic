@@ -33,6 +33,7 @@ mosaic/
 │   ├── build-css.mjs              # CSS 构建入口（含「缺输入大声失败」守卫）
 │   ├── gen-unit-readme.mjs        # 生成各组件单元的 README.md 入口卡（状态/文件清单由仓库事实推）
 │   ├── check-fresh.mjs            # 产物新鲜度：重跑生成再比对（pnpm check:drift）
+│   ├── check-size.mjs             # 体积预算：共享产物 raw/gzip + 组件本体单文件上限
 │   ├── serve.mjs                  # 本地静态服务器（零依赖，强制禁缓存）
 │   ├── doc-drift/                 # 文档 ↔ 代码对账引擎（通用副本 + 版本号，见下）
 │   └── doc-drift.config.mjs       # 本仓的约定（表头 / 骨架 / 豁免 / 要对账的数字）
@@ -72,6 +73,7 @@ mosaic/
 │   ├── plan/                      # 规划总纲：定位 / 决策 / 目录与构建 / 里程碑
 │   ├── archive/                   # 已归档（默认不读）：docs-refactor.md + research/ 外部资料原文
 │   └── vendor/                    # 外部资料：ofa-skill.md（ofa.js 官方知识库）
+├── .github/workflows/ci.yml       # CI：push / PR 跑 pnpm check + pnpm test:all
 ├── package.json                   # private: true（永不 publish）
 └── README.md
 ```
@@ -105,7 +107,8 @@ pnpm dev:css       # 同上，watch 模式
 pnpm build         # = icons && tokens && build:css（三份生成脚本，产物都提交）
 pnpm check:drift   # 产物新鲜度：重跑一遍生成并比对前后，变了就红（tools/check-fresh.mjs）
 pnpm check:docs    # 文档 ↔ 代码对账：tools/doc-drift/drift.mjs 读 tools/doc-drift.config.mjs
-pnpm check         # 提交前一条龙：typecheck && check:docs && check:drift
+pnpm check:size    # 体积预算：共享产物 raw/gzip + 组件本体单文件上限（tools/check-size.mjs）
+pnpm check         # 提交前一条龙：typecheck && check:docs && check:drift && check:size
 pnpm dev           # 本地验收：tools/serve.mjs（零依赖，cache-control: no-store，端口 8642）
 pnpm format:check  # prettier 只检查
 ```
@@ -127,5 +130,8 @@ pnpm format:check  # prettier 只检查
 3. 文档里的引入地址锁精确版本：`.../gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.js`
 4. 发布后**逐文件比对内容哈希**：jsDelivr 有 version fallback，
    新版本缺文件时会静默回退旧版本，只看 HTTP 200 会被骗过去
+
+**CI**：push / PR 到 `main` 自动跑 `pnpm check` + `pnpm test:all`（`.github/workflows/ci.yml`）——
+门禁与本地完全同源（本地默认那条是选测，CI 那条是全量），发布前看 CI 那张脸就够了。
 
 ---
