@@ -4,9 +4,11 @@
 #   pnpm check      静态守卫（typecheck + check:docs + check:drift + check:size），秒级
 #   pnpm test:all   真浏览器冒烟（13 站点套件 + 11 组件套件），约 1.5 分钟（本地）
 #
-# 浏览器：不再赌 runner 镜像里有没有 Chrome（第一次接 CI 就是栽在这上面），
-# 改成用 playwright-core 自带的那份 Chromium：装一次、版本与本仓锁定的 playwright-core 对齐。
-# 本地仍然用系统 Chrome（tests/lib/harness.mjs 的 CHANNEL 默认 chrome），这里只覆盖 CI。
+# 浏览器：用镜像自带的 Chrome（tests/lib/harness.mjs 的 CHANNEL 默认就是它）—— 本地与 CI 同一条路。
+# 曾经改成 playwright-core 自带 Chromium + 一步 install，事后证明那次失败跟浏览器无关
+# （浏览器装好了、套件也跑起来了，同一处仍然红），白下载一遍，已回退。
+# 真遇到镜像没有 Chrome：把 env.CHANNEL 换成 chromium，并在静态门禁前加
+#   npx playwright-core install --with-deps chromium
 #
 # 冒烟测试连的是本地文档站，所以先把 tools/serve.mjs 起在后台（和 pnpm dev 同一条路），
 # 再用 curl 等它就绪 —— 不等待会偶发「第一个套件 404」。
@@ -33,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      CHANNEL: chromium
+      CHANNEL: chrome
       CI: '1'
     steps:
       - uses: actions/checkout@v7
@@ -68,8 +70,10 @@ jobs:
           done
           exit $fail
 
-      - name: 装冒烟用的浏览器（playwright-core 自带 Chromium）
-        run: npx playwright-core install --with-deps chromium
+      - name: 记录浏览器版本（冒烟用镜像自带的 Chrome —— harness 的 CHANNEL 默认就是它）
+        run: |
+          google-chrome --version && exit 0
+          echo '::error::镜像里没有 google-chrome —— 冒烟会起不来（换 Chromium 的做法见头注释）'
 
       - name: 起文档站并等它就绪
         run: |
@@ -91,8 +95,9 @@ jobs:
             tail -n 12 /tmp/smoke.log
           else
             cat /tmp/smoke.log
-            picked=$(grep -E '· |FAIL|✗|Error' /tmp/smoke.log | head -n 8)
-            [ -n "$picked" ] || picked=$(tail -n 8 /tmp/smoke.log)
+            # 从「失败清单」那段截（那里才是原因）；没有这段说明是启动期就崩了
+            picked=$(sed -n '/失败清单/,$p' /tmp/smoke.log | head -n 12)
+            [ -n "$picked" ] || picked=$(tail -n 12 /tmp/smoke.log)
             echo "$picked" | sed 's/^/::error::/'
             exit 1
           fi
