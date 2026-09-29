@@ -1,0 +1,82 @@
+<!--
+  mc-grid — 栅格容器（同目录还有 mc-grid-item.html）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主 = 栅格容器。列数由 JS 写进内部变量（P31：宿主 style 只能在构造期之后写），
+          没给 cols 时 CSS 的兜底就是 1 列 —— 与 applyTrack() 删变量的语义一致 */
+    :host {
+      display: grid;
+      box-sizing: border-box;
+      grid-template-columns: repeat(var(--mc-grid-cols, 1), minmax(0, 1fr)); /* @internal */
+      gap: var(--mc-space-4);
+      font-family: var(--mc-font-sans);
+      color: rgb(var(--mc-color-fg));
+    }
+
+    /* 2. gap 三档：只换间距，不动列 */
+    :host([gap='sm']) {
+      gap: var(--mc-space-2);
+    }
+    :host([gap='lg']) {
+      gap: var(--mc-space-6);
+    }
+
+    /* 3. 最小子项宽度：列数交给 auto-fill，cols 让位（否定选择器在 :host 里静默失效，P14） */
+    :host([min-item-width]) {
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(var(--mc-grid-min-w, 12rem), 1fr)
+      ); /* @internal */
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-grid',
+
+      attrs: {
+        cols: null, // 列数；null = 不写 → 1 列
+        gap: 'md',
+        minItemWidth: null, // 如 12rem；给了它就用 auto-fill，cols 让位
+      },
+
+      attached() {
+        // ready() 还在构造期，往宿主写 style 会抛 NotSupportedError（P31）—— 挂载后再写
+        this._mounted = true;
+        this.applyTrack();
+      },
+
+      watch: {
+        cols() {
+          if (this._mounted) this.applyTrack(); // 首次触发落在构造期，跳过（P5）
+        },
+        minItemWidth() {
+          if (this._mounted) this.applyTrack();
+        },
+      },
+
+      proto: {
+        /** cols / min-item-width → 宿主上的两个内部变量。回到默认值时**删掉**变量而不是写兜底值：
+            写同一个变量等于把使用者写在 style 上的覆盖抹掉。 */
+        applyTrack() {
+          const cols = Number.parseInt(this.cols, 10);
+          if (Number.isInteger(cols) && cols > 0) {
+            this.ele.style.setProperty('--mc-grid-cols', String(cols));
+          } else {
+            this.ele.style.removeProperty('--mc-grid-cols');
+          }
+
+          const min = String(this.minItemWidth ?? '').trim();
+          if (min) this.ele.style.setProperty('--mc-grid-min-w', min);
+          else this.ele.style.removeProperty('--mc-grid-min-w');
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,23 @@
+<template component>
+  <style>
+    .cell {
+      padding: var(--mc-space-3);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      text-align: center;
+    }
+  </style>
+
+  <mc-grid cols="4">
+    <mc-grid-item class="cell" span="2">跨两列</mc-grid-item>
+    <mc-grid-item class="cell">1</mc-grid-item>
+    <mc-grid-item class="cell">2</mc-grid-item>
+    <mc-grid-item class="cell">1</mc-grid-item>
+    <mc-grid-item class="cell" span="3">跨三列</mc-grid-item>
+  </mc-grid>
+
+  <script>
+    export default async () => ({ tag: 'demo-grid-span' });
+  </script>
+</template>

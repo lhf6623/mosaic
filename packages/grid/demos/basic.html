@@ -1,0 +1,22 @@
+<template component>
+  <style>
+    .cell {
+      padding: var(--mc-space-4);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      text-align: center;
+    }
+  </style>
+
+  <mc-grid cols="2">
+    <mc-grid-item class="cell">一</mc-grid-item>
+    <mc-grid-item class="cell">二</mc-grid-item>
+    <mc-grid-item class="cell">三</mc-grid-item>
+    <mc-grid-item class="cell">四</mc-grid-item>
+  </mc-grid>
+
+  <script>
+    export default async () => ({ tag: 'demo-grid-basic' });
+  </script>
+</template>

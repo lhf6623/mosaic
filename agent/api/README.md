@@ -183,7 +183,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Tooltip](../../packages/tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`    | M3     | ✅ 已实现 |
 | [Tabs](../../packages/tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | ✅ 已实现 |
 | [Table](../../packages/table/api.md)               | `mc-table`                             | `table/`      | M3     | ✅ 已实现 |
-| Grid                                               | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | 待建      |
+| [Grid](../../packages/grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | ✅ 已实现 |
 
 ---
 

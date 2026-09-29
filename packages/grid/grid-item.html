@@ -1,0 +1,52 @@
+<!--
+  mc-grid-item — 栅格的子项（配合 mc-grid 使用）
+
+  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主 = 一个栅格子项。跨列数由 JS 写进内部变量（P31：宿主 style 只能在构造期之后写） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      min-width: 0;
+      grid-column: span var(--mc-grid-span, 1); /* @internal */
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-grid-item',
+
+      attrs: {
+        span: 1, // 跨几列
+      },
+
+      attached() {
+        this._mounted = true;
+        this.applySpan();
+      },
+
+      watch: {
+        span() {
+          if (this._mounted) this.applySpan(); // 首次触发落在构造期，跳过（P5）
+        },
+      },
+
+      proto: {
+        /** span → 宿主上的内部变量；span=1 时删掉变量，交回 CSS 的兜底（span 1） */
+        applySpan() {
+          const span = Number.parseInt(this.span, 10);
+          if (Number.isInteger(span) && span > 1) {
+            this.ele.style.setProperty('--mc-grid-span', String(span));
+          } else {
+            this.ele.style.removeProperty('--mc-grid-span');
+          }
+        },
+      },
+    });
+  </script>
+</template>

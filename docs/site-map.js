@@ -313,6 +313,7 @@ export const SITE = [
             order: 40,
             label: 'Grid',
             zh: '栅格',
+            path: 'packages/grid/page.html',
             tagName: 'mc-grid',
             stage: 'M3',
             summary: '栅格。',

@@ -1,0 +1,33 @@
+<template component>
+  <style>
+    .cell {
+      padding: var(--mc-space-3);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      text-align: center;
+    }
+  </style>
+
+  <div class="flex flex-col gap-4">
+    <mc-grid cols="3" gap="sm">
+      <mc-grid-item class="cell">gap=sm</mc-grid-item>
+      <mc-grid-item class="cell">sm</mc-grid-item>
+      <mc-grid-item class="cell">sm</mc-grid-item>
+    </mc-grid>
+    <mc-grid cols="3" gap="md">
+      <mc-grid-item class="cell">gap=md</mc-grid-item>
+      <mc-grid-item class="cell">md</mc-grid-item>
+      <mc-grid-item class="cell">md</mc-grid-item>
+    </mc-grid>
+    <mc-grid cols="3" gap="lg">
+      <mc-grid-item class="cell">gap=lg</mc-grid-item>
+      <mc-grid-item class="cell">lg</mc-grid-item>
+      <mc-grid-item class="cell">lg</mc-grid-item>
+    </mc-grid>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-grid-gap' });
+  </script>
+</template>

@@ -1,0 +1,110 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./grid.html"></l-m>
+    <l-m src="./grid-item.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/cols.html"></l-m>
+    <l-m src="./demos/gap.html"></l-m>
+    <l-m src="./demos/min-width.html"></l-m>
+    <l-m src="./demos/span.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Grid <code>mc-grid</code></h1>
+    <p class="doc-lead">
+      栅格。容器只决定列与间距，子项决定自己跨几列 —— 布局走 CSS Grid，子项内容由使用者自己写。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <code>cols</code> 与 <code>min-item-width</code> 同时写时以
+          <code>min-item-width</code> 为准：列数交给 <code>auto-fill</code> 按容器宽度算。
+        </li>
+        <li>
+          子项要能压缩：<code>mc-grid-item</code> 里放长内容时记得给子元素
+          <code>min-width: 0</code>（或 <code>class="min-w-0"</code>），否则长文本会把列撑宽。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">容器 + 子项两个标签搭起来，<code>cols="2"</code> 就是两列。</p>
+      <demo-grid-basic></demo-grid-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>列数</h3>
+      <p class="doc-hint"><code>cols</code> 直接给列数；同一个容器里多出来的子项自动换行。</p>
+      <demo-grid-cols></demo-grid-cols>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/cols.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>间距</h3>
+      <p class="doc-hint">
+        <code>gap</code> 只有三档，分别对应 <code>--mc-space-2</code> / <code>--mc-space-4</code> /
+        <code>--mc-space-6</code> —— 想更细就覆盖宿主的 <code>gap</code>。
+      </p>
+      <demo-grid-gap></demo-grid-gap>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/gap.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>最小宽度自适应</h3>
+      <p class="doc-hint">
+        不写列数、只给 <code>min-item-width</code>：容器窄了就少几列，宽了就多几列，不用写断点。
+      </p>
+      <demo-grid-min-width></demo-grid-min-width>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/min-width.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>跨列</h3>
+      <p class="doc-hint">子项上的 <code>span</code> 就是 <code>grid-column: span n</code>。</p>
+      <demo-grid-span></demo-grid-span>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/span.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>
