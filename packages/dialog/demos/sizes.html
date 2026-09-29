@@ -1,0 +1,24 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="open = 'sm'">sm</mc-button>
+    <mc-button on:click="open = 'md'">md</mc-button>
+    <mc-button on:click="open = 'lg'">lg</mc-button>
+
+    <mc-dialog size="sm" heading="sm" attr:open="open === 'sm' ? '' : null" on:close="open = null">
+      <p>22rem 宽，适合一句确认。</p>
+    </mc-dialog>
+    <mc-dialog size="md" heading="md" attr:open="open === 'md' ? '' : null" on:close="open = null">
+      <p>32rem 宽（默认），常规表单与说明。</p>
+    </mc-dialog>
+    <mc-dialog size="lg" heading="lg" attr:open="open === 'lg' ? '' : null" on:close="open = null">
+      <p>44rem 宽，放得下表格或两栏内容。</p>
+    </mc-dialog>
+  </div>
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-sizes',
+
+      data: { open: null },
+    });
+  </script>
+</template>

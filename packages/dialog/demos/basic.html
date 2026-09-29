@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="open = true">打开对话框</mc-button>
+    <mc-dialog heading="确认删除" closable attr:open="open ? '' : null" on:close="open = false">
+      <p>删除后无法恢复，确定继续吗？</p>
+      <mc-button slot="footer" color="danger" on:click="open = false">删除</mc-button>
+      <mc-button slot="footer" variant="outline" on:click="open = false">取消</mc-button>
+    </mc-dialog>
+  </div>
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-basic',
+
+      data: { open: false },
+    });
+  </script>
+</template>

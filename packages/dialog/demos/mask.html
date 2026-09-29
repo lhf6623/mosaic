@@ -1,0 +1,27 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="openA = true">点遮罩可以关</mc-button>
+    <mc-button variant="outline" on:click="openB = true">点遮罩不关</mc-button>
+
+    <mc-dialog
+      heading="点遮罩就关"
+      closable
+      mask-closable
+      attr:open="openA ? '' : null"
+      on:close="openA = false"
+    >
+      <p>写了 <code>mask-closable</code>：点遮罩、按 <kbd>Esc</kbd>、点 × 三条路都能关。</p>
+    </mc-dialog>
+
+    <mc-dialog heading="只能按 Esc 或 ×" closable attr:open="openB ? '' : null" on:close="openB = false">
+      <p>没写 <code>mask-closable</code>：点遮罩不关（防误触），<kbd>Esc</kbd> 与 × 照常。</p>
+    </mc-dialog>
+  </div>
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-mask',
+
+      data: { openA: false, openB: false },
+    });
+  </script>
+</template>

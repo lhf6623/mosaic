@@ -251,6 +251,7 @@ export const SITE = [
             order: 10,
             label: 'Dialog',
             zh: '对话框',
+            path: 'packages/dialog/page.html',
             tagName: 'mc-dialog',
             stage: 'M3',
             summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',

@@ -1,0 +1,141 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button
+         与页首的 mc-alert 都要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./dialog.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/controlled.html"></l-m>
+    <l-m src="./demos/mask.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/slots.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Dialog <code>mc-dialog</code></h1>
+    <p class="doc-lead">
+      模态对话框：遮罩 + 居中面板，打开时焦点进面板、<kbd>Tab</kbd> 在面板内循环， <kbd>Esc</kbd> /
+      点遮罩 / × 关闭。
+    </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>需要原生 <code>popover</code></strong
+          >（Chrome 125+ / Safari 17+ / Firefox 125+）：没有这个能力的浏览器上面板不会出现 ——
+          不报错，也没有替代路径。
+        </li>
+        <li>
+          <strong>标题属性叫 <code>heading</code></strong
+          >，不叫 <code>title</code>：后者会让宿主弹出浏览器原生 tooltip（与
+          <code>mc-alert</code> 一致）。
+        </li>
+        <li>
+          <strong>打开会抢焦点</strong>：面板拿到焦点、<kbd>Tab</kbd> 出不去；关闭后焦点归还
+          打开它的那个元素。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        按钮改 <code>open</code> 属性打开；关闭走 <code>close</code> 事件把状态收回来 —— 角上的 × 由
+        <code>closable</code> 开。
+      </p>
+      <demo-dialog-basic></demo-dialog-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>受控开合</h3>
+      <p class="doc-hint">
+        <code>open</code> 是唯一的状态源：属性在就开、移除就关，从 JS 里用
+        <code>dialog.open = true</code>（property）同样立刻生效。
+      </p>
+      <demo-dialog-controlled></demo-dialog-controlled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/controlled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>遮罩</h3>
+      <p class="doc-hint">
+        默认点遮罩<strong>不</strong>关（防误触）；要关就写 <code>mask-closable</code>。
+        两条路都保留 <kbd>Esc</kbd> 与 ×。
+      </p>
+      <demo-dialog-mask></demo-dialog-mask>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/mask.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <p class="doc-hint">三档只改面板宽度：22 / 32（默认）/ 44rem。</p>
+      <demo-dialog-sizes></demo-dialog-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>富标题</h3>
+      <p class="doc-hint">
+        标题要放标记就用 <code>slot="header"</code>；底部操作区落进
+        <code>slot="footer"</code>，没有内容时整行不占位。
+      </p>
+      <demo-dialog-slots></demo-dialog-slots>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/slots.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        内部结构封在 shadow 里，只有 <code>::part(overlay)</code> / <code>::part(panel)</code> /
+        <code>::part(header)</code> / <code>::part(body)</code> / <code>::part(footer)</code>
+        五个节点能从外面改。
+      </p>
+      <demo-dialog-part></demo-dialog-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

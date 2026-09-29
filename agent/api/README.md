@@ -178,7 +178,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Progress](../../packages/progress/api.md)         | `mc-progress`                          | `progress/`   | M2     | ✅ 已实现 |
 | [Message](../../packages/message/api.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
 | [Popover](../../packages/popover/api.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
-| Dialog                                             | `mc-dialog`                            | `dialog/`     | M3     | 待建      |
+| [Dialog](../../packages/dialog/api.md)             | `mc-dialog`                            | `dialog/`     | M3     | ✅ 已实现 |
 | Dropdown                                           | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | 待建      |
 | Tooltip                                            | `mc-tooltip`                           | `tooltip/`    | M3     | 待建      |
 | Tabs                                               | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | 待建      |

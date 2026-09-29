@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="open = true">富标题 + 底部操作区</mc-button>
+    <mc-dialog closable attr:open="open ? '' : null" on:close="open = false">
+      <strong slot="header">富标题：可以放任意标记</strong>
+      <p>正文落进默认插槽，底部落进 <code>slot="footer"</code>。</p>
+      <mc-button slot="footer" variant="outline" on:click="open = false">知道了</mc-button>
+    </mc-dialog>
+  </div>
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-slots',
+
+      data: { open: false },
+    });
+  </script>
+</template>

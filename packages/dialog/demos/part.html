@@ -1,0 +1,42 @@
+<template component>
+  <style>
+    /* 内部结构封在 shadow 里：只有标了 part 的五个节点能从外面改 */
+    mc-dialog::part(overlay) {
+      background-color: rgb(var(--mc-color-primary) / 0.25);
+    }
+    mc-dialog::part(panel) {
+      border: 2px solid rgb(var(--mc-color-primary));
+      border-radius: var(--mc-radius-2xl);
+    }
+    mc-dialog::part(header) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+    mc-dialog::part(body) {
+      font-size: var(--mc-text-base);
+    }
+    mc-dialog::part(footer) {
+      border-top: 1px solid rgb(var(--mc-color-border));
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="open = true">改 ::part()</mc-button>
+    <mc-dialog
+      heading="内部样式"
+      closable
+      mask-closable
+      attr:open="open ? '' : null"
+      on:close="open = false"
+    >
+      <p>遮罩、面板、头部、正文、底部各是一个 part，都能从外面用 <code>::part()</code> 改。</p>
+      <mc-button slot="footer" on:click="open = false">关闭</mc-button>
+    </mc-dialog>
+  </div>
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-part',
+
+      data: { open: false },
+    });
+  </script>
+</template>
