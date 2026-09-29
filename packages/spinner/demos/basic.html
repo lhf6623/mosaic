@@ -1,0 +1,12 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-spinner></mc-spinner>
+    <span>正在加载…</span>
+    <mc-spinner label="正在同步"></mc-spinner>
+    <span>正在同步</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-spinner-basic' });
+  </script>
+</template>

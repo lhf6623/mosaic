@@ -1,0 +1,15 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <!-- 内容超过 max：显示「max+」 -->
+    <mc-badge max="99">120</mc-badge>
+    <!-- 没超过：原样显示 -->
+    <mc-badge max="99">5</mc-badge>
+    <mc-badge max="999" color="danger" variant="solid">1234</mc-badge>
+    <!-- 内容不是纯数字：max 不参与 -->
+    <mc-badge max="99" color="info">新</mc-badge>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-badge-max' });
+  </script>
+</template>

@@ -1,0 +1,19 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <!-- 不写 color 就是 current：跟着外层文字色走 -->
+    <mc-spinner></mc-spinner>
+    <mc-spinner color="primary"></mc-spinner>
+    <mc-spinner color="info"></mc-spinner>
+    <mc-spinner color="success"></mc-spinner>
+    <mc-spinner color="warning"></mc-spinner>
+    <mc-spinner color="danger"></mc-spinner>
+    <mc-spinner color="neutral"></mc-spinner>
+    <!-- 同一个 current，在两段不同颜色的文字里各跟各的 -->
+    <span style="color: rgb(var(--mc-color-danger))"><mc-spinner></mc-spinner> 危险</span>
+    <span style="color: rgb(var(--mc-color-fg-muted))"><mc-spinner></mc-spinner> 次要</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-spinner-colors' });
+  </script>
+</template>

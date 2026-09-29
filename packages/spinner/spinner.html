@@ -1,0 +1,130 @@
+<!--
+  mc-spinner — 加载中指示器
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。图形恒为 1em，font-size 是唯一的尺寸入口 */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      font-size: 1em;
+      line-height: 0;
+      vertical-align: middle;
+      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg) }`，
+         它本意是给组件一个确定的基线色，却会**掐断颜色继承** —— color="current"（默认）就再也
+         跟不住周围的文字色。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行就够 */
+      color: inherit;
+
+      /* L3 组件令牌：动画时长与环的粗细。时长必须走 --mc-duration-*：
+         shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，这里就自动变成静态 */
+      --mc-spinner-duration: calc(var(--mc-duration-slow) * 3);
+      --mc-spinner-thickness: 0.125em;
+    }
+
+    /* 2. 维度一 color：只往 currentColor 里填值。current（默认）不写规则，直接继承 */
+    :host([color='primary']) {
+      color: rgb(var(--mc-color-primary));
+    }
+    :host([color='info']) {
+      color: rgb(var(--mc-color-info));
+    }
+    :host([color='success']) {
+      color: rgb(var(--mc-color-success));
+    }
+    :host([color='warning']) {
+      color: rgb(var(--mc-color-warning));
+    }
+    :host([color='danger']) {
+      color: rgb(var(--mc-color-danger));
+    }
+    /* 中性 = 次要文字色：和 mc-icon 一个口径，落在卡片 / 页面上才对得上 */
+    :host([color='neutral']) {
+      color: rgb(var(--mc-color-fg-muted));
+    }
+
+    /* 3. 维度二 size：1em / 1.5em / 2em，随继承来的字号缩放（内联 style 优先级更高，能直接覆盖） */
+    :host([size='sm']) {
+      font-size: 1em;
+    }
+    :host([size='md']) {
+      font-size: 1.5em;
+    }
+    :host([size='lg']) {
+      font-size: 2em;
+    }
+
+    /* 4. 内部元素：开口的环。缺口由 border-right-color 给，转起来就是「在转」的信号 */
+    .mc-spinner {
+      display: block;
+      width: 1em;
+      height: 1em;
+      border: var(--mc-spinner-thickness) solid currentColor;
+      border-right-color: transparent;
+      border-radius: var(--mc-radius-full);
+      animation: mc-spinner-rotate var(--mc-spinner-duration) linear infinite;
+    }
+    @keyframes mc-spinner-rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <!-- 纯装饰：语义在宿主上（role="status" + aria-label），图形本身对读屏隐藏 -->
+  <span class="mc-spinner" aria-hidden="true"></span>
+
+  <script>
+    /* color 也收 hex（`<mc-spinner color="#ff6b35">`）：旋转图形没有色槽，color 直接就是前景色，
+       所以用 fg 模式；'current' 是它自己的语义取值，一并交给 CSS */
+    import { colorAttr, FG_NAMES } from '../boot/color-attr.js';
+
+    const color = colorAttr({ mode: 'fg', names: FG_NAMES });
+
+    export default async () => ({
+      tag: 'mc-spinner',
+
+      attrs: {
+        size: 'md',
+        /* 默认 current：spinner 几乎总是嵌在按钮 / 文字里，强制默认语义色会让它跟周围脱节 */
+        color: 'current',
+        /** 屏幕阅读器文案。它不显示在界面上，所以默认值就是它的全部内容 */
+        label: '加载中',
+      },
+
+      attached() {
+        this._live = true;
+        // 宿主属性等构造期结束再写（P31）
+        this.ele.setAttribute('role', 'status');
+        // 宿主 style 同理，color 的首次同步在这里
+        color.sync(this.ele, this.color);
+        this.applyLabel();
+      },
+
+      watch: {
+        // watch 在构造期也会触发一次（P5），applyLabel 里的 _live 守卫把它挡掉
+        label() {
+          this.applyLabel();
+        },
+        // color 收 hex：首次触发落在构造期，跳过由 colorAttr 内部处理
+        color(value) {
+          color.change(this.ele, value);
+        },
+      },
+
+      proto: {
+        /** label → 宿主的 aria-label（空值就不写，避免出现没有名字的 status） */
+        applyLabel() {
+          if (!this._live) return; // P31：挂载前写宿主属性会抛 NotSupportedError
+          const label = (this.label || '').trim();
+          if (label) this.ele.setAttribute('aria-label', label);
+          else this.ele.removeAttribute('aria-label');
+        },
+      },
+    });
+  </script>
+</template>

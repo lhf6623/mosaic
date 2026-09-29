@@ -9,8 +9,9 @@
 >
 > 教程的原则是**保证成功**：下面每一段代码都是可以直接复制的，每一步都有「怎么知道自己做对了」。
 
-这一课做 `mc-badge`（挂在别的元素上的徽标）。它已经在
-[`api/badge.md`](./api/badge.md) 里有接口草案，照着做就是把它实现出来。
+这一课做 `mc-badge`（挂在别的元素上的徽标）。接口就是
+[`packages/badge/api.md`](../packages/badge/api.md)，照着做就是把它实现出来
+—— 这一课后来真的落地了，产物见 [`packages/badge/`](../packages/badge/)。
 
 **会做到的**：`color` / `variant` / `size` / `dot` 四个维度 + 文档页 + 演示 + 测试 + 通过验收。
 **不会做**：`max`（数值超过显示 `99+`）—— 它要读插槽文本再改写显示，属于进阶，见最后一节。
@@ -359,8 +360,9 @@ node tests/smoke.mjs badge  # 期望：全绿
 
 ## 做完之后
 
-把 [`api/badge.md`](./api/badge.md) 那份草案删掉（内容已经搬进 `packages/badge/api.md`），
-并在 `agent/api/README.md` 的索引里更新状态。
+把草案（`agent/api/badge.md`）删掉 —— 内容已经搬进
+[`packages/badge/api.md`](../packages/badge/api.md)，并在 `agent/api/README.md` 的索引里更新状态。
+这两件事后来就是这么做的。
 
 **还想往下做**：`max`（数值超过显示 `99+`）——
 难点在于内容来自**插槽**，要读 `this.ele.textContent` 判断再改写显示，

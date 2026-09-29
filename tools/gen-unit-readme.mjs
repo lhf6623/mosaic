@@ -59,7 +59,7 @@ const NEIGHBORS = {
     '图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。',
   ],
   tag: [
-    '与 `mc-badge`（[草案](../../agent/api/badge.md)，目录还没建）的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），tag 是「内容本身」的标签 —— 它才有关闭与选中。',
+    '与 [`mc-badge`](../badge/) 的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），tag 是「内容本身」的标签 —— 它才有关闭与选中。',
   ],
 };
 

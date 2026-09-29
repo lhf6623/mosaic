@@ -1,0 +1,229 @@
+<!--
+  mc-badge — 徽标
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。徽标不是控件：高度用自己的 --mc-badge-h，不借 --mc-control-h-* */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      position: relative; /* 内部绝对定位元素的包含块（P21） */
+      vertical-align: middle;
+      white-space: nowrap;
+      user-select: none;
+      /* 三档外观都保留 1px 透明的线：切 variant / 换 color 时高度不抖 */
+      border: 1px solid transparent;
+      border-radius: var(--mc-badge-radius);
+      padding-inline: var(--mc-badge-pad-x);
+      min-height: var(--mc-badge-h);
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-badge-font);
+      line-height: 1;
+      font-weight: var(--mc-weight-medium);
+      transition:
+        background-color var(--mc-duration-fast) var(--mc-ease-standard),
+        color var(--mc-duration-fast) var(--mc-ease-standard),
+        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+
+      /* L3 组件令牌：默认引用 L2 令牌。按实例覆盖写在宿主 style 上 */
+      --mc-badge-h: 1.25rem;
+      --mc-badge-pad-x: var(--mc-space-2);
+      --mc-badge-font: var(--mc-text-xs);
+      --mc-badge-radius: var(--mc-radius-full);
+      --mc-badge-dot: 0.5rem;
+
+      /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，subtle-fill 是浅底。
+         徽标没有 neutral（草案如此）：它默认就是 primary，中性场景交给 mc-tag */
+      --mc-badge-fill: var(--mc-color-primary);
+      --mc-badge-on-fill: var(--mc-color-primary-fg);
+      --mc-badge-accent: var(--mc-color-primary);
+      --mc-badge-subtle-fill: var(--mc-color-primary-subtle);
+
+      /* subtle 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+      background-color: rgb(var(--mc-badge-subtle-fill));
+      color: rgb(var(--mc-badge-accent));
+    }
+
+    /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
+    :host([color='info']) {
+      --mc-badge-fill: var(--mc-color-info);
+      --mc-badge-on-fill: var(--mc-color-info-fg);
+      --mc-badge-accent: var(--mc-color-info);
+      --mc-badge-subtle-fill: var(--mc-color-info-subtle);
+    }
+    :host([color='success']) {
+      --mc-badge-fill: var(--mc-color-success);
+      --mc-badge-on-fill: var(--mc-color-success-fg);
+      --mc-badge-accent: var(--mc-color-success);
+      --mc-badge-subtle-fill: var(--mc-color-success-subtle);
+    }
+    :host([color='warning']) {
+      --mc-badge-fill: var(--mc-color-warning);
+      --mc-badge-on-fill: var(--mc-color-warning-fg);
+      --mc-badge-accent: var(--mc-color-warning);
+      --mc-badge-subtle-fill: var(--mc-color-warning-subtle);
+    }
+    :host([color='danger']) {
+      --mc-badge-fill: var(--mc-color-danger);
+      --mc-badge-on-fill: var(--mc-color-danger-fg);
+      --mc-badge-accent: var(--mc-color-danger);
+      --mc-badge-subtle-fill: var(--mc-color-danger-subtle);
+    }
+
+    /* 3. 维度二 variant：只决定色槽贴到哪儿 */
+    :host([variant='solid']) {
+      background-color: rgb(var(--mc-badge-fill));
+      color: rgb(var(--mc-badge-on-fill));
+    }
+    :host([variant='outline']) {
+      background-color: transparent;
+      color: rgb(var(--mc-badge-accent));
+      border-color: rgb(var(--mc-badge-accent));
+    }
+
+    /* 4. 尺寸与状态 */
+    :host([size='sm']) {
+      --mc-badge-h: 1rem;
+      --mc-badge-pad-x: var(--mc-space-1);
+      --mc-badge-font: 0.625rem;
+      --mc-badge-dot: 0.375rem;
+    }
+
+    /* dot：常驻 DOM + :host([dot]) 显隐（P10）。开着时只留一个圆点，整块变成正圆 */
+    :host([dot]) {
+      padding-inline: 0;
+      min-width: var(--mc-badge-h);
+    }
+
+    /* 5. 内部元素：只放工具类表达不了的 */
+    .mc-content {
+      display: inline-flex;
+      align-items: center;
+    }
+    .mc-dot {
+      display: none;
+      width: var(--mc-badge-dot);
+      height: var(--mc-badge-dot);
+      border-radius: var(--mc-radius-full);
+      /* 圆点跟着当前文字色走：subtle 是 accent、solid 是 on-fill，不引新色 */
+      background-color: currentColor;
+    }
+    /* max 裁剪出来的 `${max}+` 住在常驻的 span 里（P17），显隐同样靠宿主属性 */
+    .mc-text {
+      display: none;
+    }
+    :host([dot]) .mc-dot {
+      display: block;
+    }
+    :host([dot]) .mc-content,
+    :host([data-overflow]) .mc-content {
+      display: none;
+    }
+    :host([data-overflow]) .mc-text {
+      display: inline;
+    }
+  </style>
+
+  <span class="mc-dot" aria-hidden="true"></span>
+  <span class="mc-content"><slot></slot></span>
+  <span class="mc-text"></span>
+
+  <script>
+    /* color 也收 hex（`<mc-badge color="#fff000">`）：语义名照旧交给 CSS，hex 走共享接线器。
+        徽标默认是浅底外观（subtle），所以这里要接 subtle-fill —— 主题重算与「浅底上读不清」的
+        警告都在那个文件里 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
+
+    export default async () => ({
+      tag: 'mc-badge',
+
+      attrs: {
+        color: 'primary',
+        variant: 'subtle',
+        size: 'md',
+        // 布尔属性默认值必须是 null（P1）
+        dot: null,
+        // 数字型属性：attr 是字符串，applyMax 里自己 parse（P4：属性到 data 是异步的）
+        max: null,
+      },
+
+      ready() {
+        // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）
+        const root = this.ele.shadowRoot;
+        this._content = root.querySelector('.mc-content');
+        this._text = root.querySelector('.mc-text');
+        this._slot = root.querySelector('slot');
+      },
+
+      attached() {
+        this._live = true;
+        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+        color.sync(this.ele, this.color);
+
+        /* 内容换了要重算 max 截断 —— slotchange 覆盖「内容变了」这一路（同 mc-tag 的 applyLabel） */
+        this._onSlotChange = () => this.applyMax();
+        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this.applyMax();
+      },
+
+      detached() {
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心「值变了」
+        color(value) {
+          color.change(this.ele, value);
+        },
+        // 首次触发同样在构造期 —— applyMax 里的 _live 守卫把它挡掉
+        max() {
+          this.applyMax();
+        },
+        dot() {
+          this.applyMax();
+        },
+      },
+
+      proto: {
+        /** 插槽的纯文本。元素内容（图标）算空串：max 只认「内容本身是数字」这一种 */
+        slotText() {
+          return [...(this._slot?.assignedNodes() ?? [])]
+            .map((node) => node.textContent ?? '')
+            .join('')
+            .trim();
+        },
+
+        /**
+         * 内容与 max 的裁决：纯数字且超过上限 → 显示 `${max}+`。
+         * 结果写在常驻的内部 span 上（P17），显隐交给 `:host([data-overflow])`（P10）。
+         */
+        applyMax() {
+          if (!this._content || !this._text) return;
+          const el = this.ele;
+          /* dot 打开时内容整块不显示，也就没有「超过上限」这回事（两个状态互斥） */
+          const raw = el.hasAttribute('dot') ? '' : this.slotText();
+          const maxAttr = el.getAttribute('max');
+          const max = maxAttr === null ? NaN : Number(maxAttr);
+          const over = /^\d+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
+          this._text.textContent = over ? `${max}+` : '';
+          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
+          this.mirror('data-overflow', over);
+        },
+
+        /** 只在真的变了的时候写宿主 —— 否则每次 slotchange 都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>
