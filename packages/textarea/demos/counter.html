@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-textarea maxlength="50" rows="2" placeholder="最多 50 个字"></mc-textarea>
+    <mc-textarea maxlength="20" rows="2" default-value="这条一进来就带着内容"></mc-textarea>
+    <mc-textarea rows="2" placeholder="没有 maxlength，就不显示字数"></mc-textarea>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-textarea-counter' });
+  </script>
+</template>

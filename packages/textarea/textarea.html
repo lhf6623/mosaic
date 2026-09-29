@@ -1,0 +1,335 @@
+<!--
+  mc-textarea — 多行输入框
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。尺寸 / 内边距 / 底色 / 边框全写在这里，外部 style="…" 才压得住 */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      position: relative; /* 内部绝对定位元素的包含块（P21） */
+      min-height: var(--mc-control-h-md);
+      padding: var(--mc-space-2) var(--mc-space-4);
+      border: 1px solid rgb(var(--mc-textarea-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-textarea-bg));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+      transition: border-color var(--mc-duration-fast) var(--mc-ease-standard);
+
+      /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
+      --mc-textarea-bg: var(--mc-color-surface-sunken);
+      --mc-textarea-border: var(--mc-color-border-strong);
+      --mc-textarea-border-hover: var(--mc-color-fg-subtle);
+      --mc-textarea-placeholder: var(--mc-color-fg-subtle);
+      --mc-textarea-affix-color: var(--mc-color-fg-muted);
+      --mc-textarea-counter-color: var(--mc-color-fg-subtle);
+      --mc-textarea-gap: var(--mc-space-2);
+    }
+
+    /* 2. 尺寸：三档只改 min-height / 内边距 / 字号（真实高度由 rows 与内容决定）。
+       行高要跟着字号走 —— 它直接决定一行有多高 */
+    :host([size='sm']) {
+      min-height: var(--mc-control-h-sm);
+      padding-inline: var(--mc-space-3);
+      font-size: var(--mc-text-xs);
+      line-height: var(--mc-text-xs-lh);
+    }
+    :host([size='lg']) {
+      min-height: var(--mc-control-h-lg);
+      padding-inline: var(--mc-space-5);
+      font-size: var(--mc-text-base);
+      line-height: var(--mc-text-base-lh);
+    }
+
+    /* 3. 状态。焦点环用 ring 令牌（P16）；错误色只有 --mc-color-danger 一处。
+       ⚠️ 顺序有意义：:host([disabled]) 排在 :host(:hover) 之后才压得住（同特异性） */
+    :host(:hover) {
+      border-color: rgb(var(--mc-textarea-border-hover));
+    }
+    :host(:focus-within) {
+      border-color: rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: -1px;
+    }
+    :host([invalid]) {
+      border-color: rgb(var(--mc-color-danger));
+    }
+    :host([disabled]) {
+      border-color: rgb(var(--mc-textarea-border));
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 4. 内部结构 */
+    .mc-base {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--mc-textarea-gap);
+    }
+    /* 原生 textarea 只负责"输入"；撑满整行，点哪儿都能聚焦 */
+    .mc-input {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background-color: transparent;
+      color: inherit;
+      font: inherit;
+      resize: vertical;
+    }
+    .mc-input::placeholder {
+      color: rgb(var(--mc-textarea-placeholder));
+    }
+    .mc-input:focus {
+      outline: none;
+    } /* 焦点环画在宿主上（一条环包住前后缀与字数） */
+    .mc-input:disabled {
+      cursor: not-allowed;
+    }
+    /* 自动增高时高度由脚本写死：手动拖拽与滚动条都会跟它打架 */
+    :host([auto-resize]) .mc-input {
+      overflow: hidden;
+      resize: none;
+    }
+
+    /* 5. 前后缀 + 字数统计。空插槽不占 gap —— slot 有没有内容只有 JS 看得见，
+       所以由脚本镜像成宿主上的 data-has-*（P10：常驻 DOM + 属性显隐） */
+    .mc-prefix,
+    .mc-suffix {
+      display: none;
+      flex: none;
+      color: rgb(var(--mc-textarea-affix-color));
+    }
+    :host([data-has-prefix]) .mc-prefix,
+    :host([data-has-suffix]) .mc-suffix {
+      display: inline-flex;
+    }
+
+    .mc-counter {
+      display: none;
+      margin-block-start: var(--mc-space-1);
+      font-size: var(--mc-text-xs);
+      line-height: var(--mc-text-xs-lh);
+      color: rgb(var(--mc-textarea-counter-color));
+      text-align: end;
+    }
+    :host([data-has-maxlength]) .mc-counter {
+      display: block;
+    }
+  </style>
+
+  <div part="base" class="mc-base">
+    <span class="mc-prefix" part="prefix"><slot name="prefix"></slot></span>
+    <textarea
+      class="mc-input"
+      part="textarea"
+      attr:name="name === '' ? null : name"
+      attr:placeholder="placeholder === '' ? null : placeholder"
+      attr:rows="rows"
+      :disabled="disabled !== null"
+      attr:readonly="readonly !== null ? '' : null"
+      attr:maxlength="maxlength === null ? null : maxlength"
+      attr:aria-required="required !== null ? 'true' : 'false'"
+      attr:aria-invalid="invalid !== null ? 'true' : 'false'"
+      on:input="onInput($event)"
+      on:change="onChange()"
+    ></textarea>
+    <span class="mc-suffix" part="suffix"><slot name="suffix"></slot></span>
+  </div>
+  <span class="mc-counter" part="counter"></span>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-textarea',
+
+      attrs: {
+        // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
+        defaultValue: '',
+        placeholder: '',
+        // 表单字段名，转发给内部原生 textarea
+        name: '',
+        size: 'md',
+        // 行数：跟着原生 rows 走，所以它是真实高度而不是 min-height
+        rows: 3,
+        // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-textarea auto-resize> 失效
+        autoResize: null,
+        maxlength: null,
+        disabled: null,
+        readonly: null,
+        required: null,
+        invalid: null,
+      },
+
+      ready() {
+        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+        const root = this.ele.shadowRoot;
+        this._input = root.querySelector('.mc-input');
+        this._counter = root.querySelector('.mc-counter');
+        this._slots = [...root.querySelectorAll('slot')];
+        // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
+        this.applyDefaultValue();
+
+        // 自动增高的监听句柄（P43：别用 resize 这样会盖掉 proto 方法的名字）
+        this._onAutoResize = () => this.resizeToContent();
+
+        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，
+           这样事件处理器里 e.target.value 读得到（P18），也不需要第二条属性反射通道 */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => this._input.value,
+          set: (v) => {
+            this._input.value = String(v ?? '');
+            this.applyState();
+          },
+        });
+      },
+
+      attached() {
+        this._mounted = true;
+        // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
+        this.applyDefaultValue();
+        this._defaultApplied = true;
+        this._onSlotChange = () => this.applyState();
+        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+        this.bindAutoResize();
+        this.applyState();
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫
+        autoResize() {
+          this.bindAutoResize();
+        },
+        maxlength() {
+          this.applyState();
+        },
+      },
+
+      detached() {
+        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+        this._input?.removeEventListener('input', this._onAutoResize);
+        this.cancelResizeFrame();
+      },
+
+      proto: {
+        /**
+         * 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。
+         * 两条路径都要接住 —— 声明式 HTML 在 ready() 时属性已在；createElement 之后再写属性的，
+         * 要等 attached()。所以由 _defaultApplied 记账，谁先到谁生效。
+         */
+        applyDefaultValue() {
+          if (this._defaultApplied === true || !this._input) return;
+          // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
+          const initial = this.ele.getAttribute('default-value');
+          if (initial === null || initial === '') return;
+          this._input.value = initial;
+          this._defaultApplied = true;
+        },
+
+        /** 自动增高只挂一次监听，`auto-resize` 去掉时立刻摘掉并清掉写进去的高度 */
+        bindAutoResize() {
+          if (!this._input) return;
+          this._input.removeEventListener('input', this._onAutoResize);
+          this.cancelResizeFrame();
+          if (this.autoResize === null) {
+            this._resizeRetry = false;
+            this._input.style.height = '';
+            return;
+          }
+          this._input.addEventListener('input', this._onAutoResize);
+          // 允许一次"下一帧补量"：attached() 可能早于元素拿到布局
+          this._resizeRetry = true;
+          this.resizeToContent();
+        },
+
+        /** 取消还没跑的那一帧（P31：只写 shadow 内部元素；帧句柄必须有人收） */
+        cancelResizeFrame() {
+          if (this._resizeFrame) cancelAnimationFrame(this._resizeFrame);
+          this._resizeFrame = null;
+        },
+
+        /**
+         * 自动增高：把高度设成内容高度。scrollHeight 本身就是内容高度（与 CSS height 无关），
+         * 不需要先把 height 归零。
+         *
+         * ⚠️ attached() 可能跑在元素拿到布局之前，那时 scrollHeight 是 0 —— 直接写成 `0px`
+         * 会把内容整块裁掉（实测：demo 里那条空着时连 placeholder 都看不见，直到第一次输入）。
+         * 所以量到 0 就下一帧补一次；只补一次，元素藏在 display:none 里时不会变成每帧空转。
+         */
+        resizeToContent() {
+          if (this.autoResize === null) return;
+          const el = this._input;
+          const height = el.scrollHeight;
+          if (height === 0) {
+            if (!this._resizeRetry) return;
+            this._resizeRetry = false;
+            this._resizeFrame = requestAnimationFrame(() => {
+              this._resizeFrame = null;
+              this.resizeToContent();
+            });
+            return;
+          }
+          el.style.height = `${height}px`;
+        },
+
+        /** data-has-* 是 CSS 唯一的输入；字数统计也在这里刷新 */
+        applyState() {
+          // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
+          if (!this._mounted) return;
+          this.mirror('data-has-value', this._input.value !== '');
+          this.mirror('data-has-prefix', this.slotHasContent('prefix'));
+          this.mirror('data-has-suffix', this.slotHasContent('suffix'));
+          // 只有给了 maxlength 才显示「当前/上限」（maxlength 编码进字符串，空格也算一个）
+          const limit = this.maxlength === null ? null : Number(this.maxlength);
+          this.mirror('data-has-maxlength', limit !== null);
+          if (limit !== null) this._counter.textContent = `${this._input.value.length}/${limit}`;
+        },
+
+        /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+        slotHasContent(name) {
+          const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
+          return (slot?.assignedNodes() ?? []).some(
+            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+          );
+        },
+
+        /** 只在真的变了的时候写宿主 —— 否则每次按键都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+
+        /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+        onInput(event) {
+          event.stopPropagation();
+          this.applyState();
+          this.emit('input', {
+            data: { value: this._input.value },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
+        onChange() {
+          this.applyState();
+          this.emit('change', {
+            data: { value: this._input.value },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

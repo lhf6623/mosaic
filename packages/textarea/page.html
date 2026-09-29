@@ -1,0 +1,146 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./textarea.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/rows.html"></l-m>
+    <l-m src="./demos/auto-resize.html"></l-m>
+    <l-m src="./demos/counter.html"></l-m>
+    <l-m src="./demos/states.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Textarea <code>mc-textarea</code></h1>
+    <p class="doc-lead">
+      多行输入框。高度由 <code>rows</code> 与内容决定，另有自动增高与字数统计；值读写与
+      <code>mc-input</code> 同一套。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong><code>value</code> 是 property 不是属性</strong>：初始值写在
+          <code>default-value</code> 上，运行时改值写 <code>el.value = '…'</code>。
+        </li>
+        <li>
+          <strong><code>size</code> 改的是最小高度</strong>：真实高度由 <code>rows</code> 与内容
+          决定，想要固定高度就写宿主 <code>style="height: …"</code>。
+        </li>
+        <li>
+          <strong>字数统计要 <code>maxlength</code> 才有</strong>：没给上限就没有
+          <code>当前/上限</code> 那一行。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        第二条的 <code>default-value</code> 是初始值，只读一次；之后改属性不会回头覆盖当前值。
+      </p>
+      <demo-textarea-basic></demo-textarea-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <p class="doc-hint">
+        三档改的是最小高度、内边距与字号；<code>rows</code> 一样时它们看起来一样高。
+      </p>
+      <demo-textarea-sizes></demo-textarea-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>行数</h3>
+      <demo-textarea-rows></demo-textarea-rows>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/rows.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自动增高</h3>
+      <p class="doc-hint">
+        <code>auto-resize</code> 跟着内容长高，不再出现滚动条；第二条是关闭时的对照。
+      </p>
+      <demo-textarea-auto-resize></demo-textarea-auto-resize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/auto-resize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>字数统计</h3>
+      <p class="doc-hint">
+        给了 <code>maxlength</code> 才显示右下角的 <code>当前/上限</code>，它随输入实时更新。
+      </p>
+      <demo-textarea-counter></demo-textarea-counter>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/counter.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>状态</h3>
+      <p class="doc-hint">
+        四个状态布尔都转发给内部原生控件：<code>disabled</code> 用原生
+        <code>disabled</code> （键盘与读屏都感知得到），<code>invalid</code> 只是把边框换成危险色。
+      </p>
+      <demo-textarea-states></demo-textarea-states>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式。
+      </p>
+      <demo-textarea-part></demo-textarea-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽与 part）由 api.md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

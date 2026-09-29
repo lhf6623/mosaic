@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-textarea rows="1" placeholder="一行"></mc-textarea>
+    <mc-textarea rows="3" placeholder="三行（默认）"></mc-textarea>
+    <mc-textarea rows="6" placeholder="六行"></mc-textarea>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-textarea-rows' });
+  </script>
+</template>

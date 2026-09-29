@@ -1,0 +1,10 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-textarea auto-resize rows="1" placeholder="多打几行字，高度会跟着长"></mc-textarea>
+    <mc-textarea rows="1" placeholder="这条不自动增高，内容多了自己滚"></mc-textarea>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-textarea-auto-resize' });
+  </script>
+</template>

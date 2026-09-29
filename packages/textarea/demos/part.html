@@ -1,0 +1,38 @@
+<template component>
+  <style>
+    /* 前后缀、输入区、字数统计都是内部元素：只有开了 part 的才改得动。
+       选择器带上 .part-custom —— 否则这一页的两条都会被改，就没有对照了。 */
+    .part-custom::part(base) {
+      gap: var(--mc-space-3);
+    }
+    .part-custom::part(textarea) {
+      letter-spacing: 0.05em;
+    }
+    .part-custom::part(prefix) {
+      color: rgb(var(--mc-color-danger));
+    }
+    .part-custom::part(suffix) {
+      padding-inline-start: var(--mc-space-1);
+      color: rgb(var(--mc-color-info));
+    }
+    .part-custom::part(counter) {
+      color: rgb(var(--mc-color-primary));
+      text-align: start;
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <mc-textarea class="part-custom" maxlength="30" rows="2" placeholder="内部样式">
+      <span slot="prefix">#</span>
+      <span slot="suffix">条</span>
+    </mc-textarea>
+    <mc-textarea maxlength="30" rows="2" placeholder="默认对照">
+      <span slot="prefix">#</span>
+      <span slot="suffix">条</span>
+    </mc-textarea>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-textarea-part' });
+  </script>
+</template>

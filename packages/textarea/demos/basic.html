@@ -1,0 +1,10 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-textarea placeholder="说点什么…"></mc-textarea>
+    <mc-textarea default-value="初始文案写在 default-value 上" name="remark"></mc-textarea>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-textarea-basic' });
+  </script>
+</template>

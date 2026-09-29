@@ -154,6 +154,7 @@ export const SITE = [
             order: 20,
             label: 'Textarea',
             zh: '多行输入',
+            path: 'packages/textarea/page.html',
             tagName: 'mc-textarea',
             stage: 'M2',
             summary: '多行输入框。支持自动增高与字数统计。',
