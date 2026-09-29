@@ -1,0 +1,15 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-switch disabled>禁用（关闭）</mc-switch>
+    <mc-switch disabled checked>禁用（打开）</mc-switch>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    禁用用的是内部原生 input 的 <code>disabled</code> —— <kbd>Tab</kbd> 会跳过、读屏读得出；
+    鼠标与键盘都改不动状态。
+  </p>
+
+  <script>
+    export default async () => ({ tag: 'demo-switch-disabled' });
+  </script>
+</template>

@@ -181,6 +181,7 @@ export const SITE = [
             order: 50,
             label: 'Switch',
             zh: '开关',
+            path: 'packages/switch/page.html',
             tagName: 'mc-switch',
             stage: 'M2',
             summary: '开关。',

@@ -1,0 +1,99 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./switch.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/disabled.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+    <!-- mc-alert 不在站点外壳注册的那批里（见 agent/doc-pages.md §二），本页自己引 -->
+    <l-m src="../alert/alert.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Switch <code>mc-switch</code></h1>
+    <p class="doc-lead">
+      开关。只有开 / 关两态，改完立刻生效 —— 比 <code>mc-checkbox</code> 少一个「提交」的心智。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>它不是复选框</strong>：内部原生 input 带 <code>role="switch"</code>，
+          读屏读「开关，已打开 / 已关闭」。要勾选多项、或需要半选，用 <code>mc-checkbox</code>。
+        </li>
+        <li>
+          <strong><code>checked</code> 既是初始值也是运行时状态</strong>：HTML 里写属性， JS 里
+          <code>el.checked = true</code> 写完立刻生效。
+        </li>
+        <li>
+          <strong>开关不带 <code>value</code></strong
+          >：它表达的是一个状态位，不是「带值的选项」； 要提交就自己配一个隐藏字段。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        文案写在标签里（默认插槽）；<code>on:change</code> 的载荷是
+        <code>$event.data.checked</code>。
+      </p>
+      <demo-switch-basic></demo-switch-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-switch-sizes></demo-switch-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>禁用</h3>
+      <demo-switch-disabled></demo-switch-disabled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/disabled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        轨道是 <code>track</code>、滑块是 <code>thumb</code>、整行是 <code>base</code> —— 没有开
+        <code>part</code> 的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
+        改轨道长度不用再改第二条规则。
+      </p>
+      <demo-switch-part></demo-switch-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

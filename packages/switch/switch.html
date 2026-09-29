@@ -1,0 +1,217 @@
+<!--
+  mc-switch — 开关
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 几何令牌。尺寸直接写在宿主上，使用者 style="height:32px" 才压得住 */
+    :host {
+      display: inline-flex;
+      position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-control-h-md);
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      /* L3 组件令牌：轨道 / 滑块 / 内边距都开成可覆盖点。轨道长宽一定是 2 倍关系吗？
+         不是 —— 滑块行程由这三条算出来，改任何一个都不用跟着改第二条规则 */
+      --mc-switch-gap: var(--mc-space-2);
+      --mc-switch-pad-x: var(--mc-space-3);
+      --mc-switch-track-w: 2.25rem;
+      --mc-switch-track-h: 1.25rem;
+      --mc-switch-thumb: 1rem;
+      --mc-switch-pad: 0.125rem;
+    }
+
+    /* 2. 尺寸：三档只改高度 / 内边距 / 字号 + 轨道三件套（口径见 agent/checklist.md 第二节） */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm);
+      font-size: var(--mc-text-xs);
+      --mc-switch-pad-x: var(--mc-space-2);
+      --mc-switch-track-w: 1.75rem;
+      --mc-switch-track-h: 1rem;
+      --mc-switch-thumb: 0.75rem;
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg);
+      font-size: var(--mc-text-base);
+      --mc-switch-pad-x: var(--mc-space-4);
+      --mc-switch-track-w: 2.75rem;
+      --mc-switch-track-h: 1.5rem;
+      --mc-switch-thumb: 1.25rem;
+    }
+
+    /* 3. 状态。顺序有意义：选中那条要排在 hover 之后（同特异性时后者赢） */
+    .mc-track {
+      background-color: rgb(var(--mc-color-border-strong));
+    }
+    .mc-base:hover .mc-track {
+      background-color: rgb(var(--mc-color-fg-subtle));
+    }
+    :host([checked]) .mc-track {
+      background-color: rgb(var(--mc-color-primary));
+    }
+    :host([disabled]) {
+      opacity: 0.5;
+    }
+    :host([disabled]) .mc-base {
+      cursor: not-allowed;
+    }
+    /* 禁用态不响应 hover（设计规范第五节）—— 正向覆盖，不用 :not()（P14） */
+    :host([disabled]) .mc-base:hover .mc-track {
+      background-color: rgb(var(--mc-color-border-strong));
+    }
+    :host([disabled][checked]) .mc-base:hover .mc-track {
+      background-color: rgb(var(--mc-color-primary));
+    }
+
+    /* 4. 内部结构。行盒子在这个原生 <label> 上：点轨道、点文案都落在同一个原生 input 上。
+       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
+       不铺满就出现「点在行里但没点到文案」的死区 */
+    .mc-base {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      gap: var(--mc-switch-gap);
+      box-sizing: border-box;
+      height: 100%;
+      padding-inline: var(--mc-switch-pad-x);
+      cursor: pointer;
+    }
+    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
+    .mc-native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .mc-track {
+      display: inline-flex;
+      align-items: center;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-switch-track-w);
+      height: var(--mc-switch-track-h);
+      padding: var(--mc-switch-pad);
+      border-radius: var(--mc-radius-full);
+      transition: background-color var(--mc-duration-base) var(--mc-ease-standard);
+    }
+    /* 焦点环画在轨道上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
+    .mc-native:focus-visible + .mc-track {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+    .mc-thumb {
+      display: block;
+      box-sizing: border-box;
+      width: var(--mc-switch-thumb);
+      height: var(--mc-switch-thumb);
+      border-radius: var(--mc-radius-full);
+      background-color: rgb(var(--mc-color-surface));
+      transform: translateX(0);
+      transition: transform var(--mc-duration-base) var(--mc-ease-standard);
+    }
+    /* 行程 = 轨道宽 − 滑块宽 − 两侧内边距：改任何一条令牌它自己跟上 */
+    :host([checked]) .mc-thumb {
+      transform: translateX(
+        calc(var(--mc-switch-track-w) - var(--mc-switch-thumb) - var(--mc-switch-pad) * 2)
+      );
+    }
+
+    .mc-label {
+      min-width: 0;
+    }
+  </style>
+
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点开关，读屏也把文案算成控件名 -->
+  <label class="mc-base" part="base">
+    <!-- role="switch"：读屏读「开关，已打开 / 已关闭」而不是「复选框」（原生 change 见脚本转发） -->
+    <input
+      class="mc-native"
+      type="checkbox"
+      role="switch"
+      :disabled="disabled !== null"
+      on:change="onNativeChange()"
+    />
+    <span class="mc-track" part="track"><span class="mc-thumb" part="thumb"></span></span>
+    <span class="mc-label"><slot></slot></span>
+  </label>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-switch',
+
+      attrs: {
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-switch checked> 失效
+        checked: null,
+        disabled: null,
+        size: 'md',
+      },
+
+      ready() {
+        // 这里 shadow 已建好（同 mc-collapse-item）；宿主属性一律留到 attached 才写（P31）
+        this._native = this.ele.shadowRoot.querySelector('.mc-native');
+
+        // 运行时状态走 property（规范 1.4）：setter 立刻同步内部原生 input，不等 ofa 那一拍（P4）
+        Object.defineProperty(this.ele, 'checked', {
+          configurable: true,
+          get: () => this._native.checked,
+          set: (value) => {
+            this.ele.toggleAttribute('checked', !!value);
+            this.applyChecked();
+          },
+        });
+
+        this.applyChecked();
+        this.applyDisabled();
+      },
+
+      watch: {
+        /* 首次触发落在构造期（P5）。这两个 apply 只写 shadow 内部的原生 input（幂等），
+           构造期调用也安全 —— 没有需要跳过的副作用，所以不装首次守卫。 */
+        checked() {
+          this.applyChecked();
+        },
+        disabled() {
+          this.applyDisabled();
+        },
+      },
+
+      proto: {
+        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
+        applyChecked() {
+          const want = this.ele.hasAttribute('checked');
+          if (this._native.checked !== want) this._native.checked = want;
+        },
+
+        applyDisabled() {
+          this._native.disabled = this.ele.hasAttribute('disabled');
+        },
+
+        /** 原生 change 只到 shadow 边界（P19），由组件自己转成同名的 composed 事件 */
+        onNativeChange() {
+          const checked = this._native.checked;
+          this.ele.toggleAttribute('checked', checked);
+          this.emit('change', {
+            data: { checked },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

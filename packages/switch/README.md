@@ -1,0 +1,67 @@
+# mc-switch（开关）
+
+> **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
+> 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
+> 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
+> 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
+
+**状态**：已实现 · M2 · 标签 `mc-switch` · 目录 `packages/switch/`
+
+开关。一个原生 `<input type="checkbox" role="switch">` 承载语义（键盘、读屏、命中区），
+视觉是轨道 + 滑块两个内部元素。
+
+## 单元里有什么
+
+| 文件          | 角色                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| `switch.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `page.html`   | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`      | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`      | 4 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `test/`       | 组件自己的冒烟套件（1 个文件）                                                |
+
+只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
+
+<!-- hand:start -->
+
+## 设计取舍
+
+**原生 input 是 `type="checkbox"` + `role="switch"`**，不是 `type="checkbox"` 加样式——
+ARIA 的 `switch` 角色让读屏读「开关，已打开」而不是「复选框，已勾选」，
+而键盘行为（<kbd>Space</kbd> 切换）、焦点、命中区仍然全部来自原生 checkbox。
+
+**滑块的行程是算出来的，不是写死的第二条值**：`--mc-switch-track-w` − `--mc-switch-thumb` −
+两侧 `--mc-switch-pad`。三档尺寸只是换这三条令牌（外加宿主高度与字号），
+不会出现「改了轨道长度、滑块位移忘了跟」这种静默走形。
+
+**跟 checkbox 一样用原生 `<label>` 包住 input 与文案**（而不是铺一层透明 overlay）：
+文案是插槽内容，使用者会往里塞链接；<label> 的激活只作用于「非交互后代」，
+点链接照常跳转、点文案才切换。
+
+**刻意不做**：`value`（开关本身不是「带值的选项」，要提交就自己带一个隐藏字段）；
+`loading`（切换是瞬时的，需要等待就自己禁用它再放 loading 图标）。
+
+## 令牌
+
+| 令牌                  | 默认                | 作用                                     |
+| --------------------- | ------------------- | ---------------------------------------- |
+| `--mc-switch-gap`     | `var(--mc-space-2)` | 轨道与文案的间距                         |
+| `--mc-switch-pad-x`   | `var(--mc-space-3)` | 行盒子左右内边距（三档尺寸改它）         |
+| `--mc-switch-track-w` | `2.25rem`           | 轨道长度（滑块行程由它算出来）           |
+| `--mc-switch-track-h` | `1.25rem`           | 轨道高度                                 |
+| `--mc-switch-thumb`   | `1rem`              | 滑块直径                                 |
+| `--mc-switch-pad`     | `0.125rem`          | 滑块与轨道边缘的内边距（进入行程的计算） |
+
+## 相邻单元
+
+- `mc-checkbox`（[`../checkbox/`](../checkbox/)）：表单里勾若干项、需要三态（含半选）时用它。
+- `mc-radio-group`（[`../radio/`](../radio/)）：在两个以上互斥选项里选一个时用它。
+
+<!-- hand:end -->
+
+## 改这个单元之前
+
+- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
+- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
+- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
+- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
