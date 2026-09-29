@@ -12,11 +12,11 @@
 
 冒烟测试在 `tests/smoke.mjs`（真浏览器；M0 当时 22 项断言，现在 13 站点套件
 
-- 11 组件套件，`pnpm test:all`）。
+- 26 组件套件，`pnpm test:all`）。
 
 - [x] `attachShadow` 补丁在真实 ofa.js 上生效 —— shadow root 内 `class="flex gap-2"` 起作用
 - [x] `@layer` 优先级正确 —— 组件自身 `<style>`（未分层）赢过工具类
-- [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 427 条工具类规则）
+- [x] 工具类产物注入 shadow root（M0 当时的快照：387 条规则；现为 430 条工具类规则）
 - [x] 主题切换能穿过 shadow 边界（`rgb(114 70 237)` → `rgb(189 182 255)`）
 - [x] 令牌靠自定义属性继承进 shadow root
 - [x] 文档站五个页面可访问、无 404、色板实时渲染
@@ -43,29 +43,31 @@
 
 ### M1 — 令牌与基础组件
 
-- [x] 已实现：`mc-button` / `mc-code` / `mc-collapse`（含 item）/ `mc-menu`（含 item）/
-      `mc-breadcrumb`（含 item）/ `mc-card` / `mc-tag`
-- [ ] 待建：`mc-icon` / `mc-badge` / `mc-spinner`
-- [ ] 每个组件补齐 `{name}.html` + `page.html` + `demos/*.html` + `test/{slug}.test.mjs`
-      （**没有** per-component 的 `README.md` / `index.html`）
+- [x] 全部已实现（10 个）：`mc-button` / `mc-code` / `mc-collapse`（含 item）/ `mc-menu`（含 item）/
+      `mc-breadcrumb`（含 item）/ `mc-card` / `mc-tag` / `mc-icon` / `mc-badge` / `mc-spinner`
+- [x] 六件套齐全：本体 + `api.md` + `README.md` + `page.html` + `demos/` + `test/`（**没有** per-component 的 `index.html`）
 - **产出**：可发布的 0.1.0
 
 ### M2 — 表单与反馈
 
-`mc-input` / `mc-textarea` / `mc-checkbox` / `mc-radio` / `mc-switch` / `mc-select` /
-`mc-alert` / `message()` / `mc-progress`
+`mc-input` / `mc-textarea` / `mc-checkbox` / `mc-radio` / `mc-switch` / `mc-select` / `mc-alert` / `message()` / `mc-progress`
 
 表单类组件统一约定见 [组件 API 规范](../api/README.md)。
 这一批会大量撞上 [踩坑清单](../pitfalls/README.md) 的 P6 / P18 / P19 / P20（值的反射与事件穿透）。
 
-- [x] `message()`（`packages/message/`）—— 命令式消息条，接口见 [`packages/message/api.md`](../../packages/message/api.md)。
-      它顺带把 M3 的**图层问题**验了：shadow root 里的浮层会被宿主页面的
-      `transform` / `filter` / `contain` 困住，挂在 `document.body` 上才稳（容器由模块自己挂）。
-      M3 的 dialog / dropdown / tooltip 直接沿用这条结论，不用再验一遍。
+> ✅ **已全部落地**（2026-09）：9 个组件都在 `packages/` 下，接口以各自 `api.md` 为准；值读写口径
+> （`default-value` 属性 + 宿主 `value` property）在 `mc-input` 里定型，跨组件约定与「实现与草案的出入」见
+> [`api/planned.md`](../api/planned.md)（含转发前 `stopPropagation()`、一律用 `attr:` 这两条新发现）。
+
+- [x] `message()`（`packages/message/`）—— 命令式消息条，接口见 [`packages/message/api.md`](../../packages/message/api.md)；
+      它顺带把 M3 的**图层问题**验了（结论见下，dialog / dropdown / tooltip 直接沿用）。
 
 ### M3 — 浮层与布局
 
 `mc-dialog` / `mc-dropdown` / `mc-tooltip` / `mc-tabs` / `mc-table` / `mc-grid`
+
+> ✅ **已全部落地**（2026-09）：浮层三件套照同一条结论做（原生 `popover` + CSS 锚点 + 滚动守卫，
+> 11 号守卫静态盯着）；`mc-table` 的 `columns` / `data` 只走宿主 property（`data` 撞保留名，见 P31）。
 
 > ✅ **图层问题已验完（2026-09，随 `mc-popover` 一起落地）**：shadow root 里的
 > `position: fixed` 确实会被祖先的 `transform` / `filter` 困住（实测同一个 fixed 盒子

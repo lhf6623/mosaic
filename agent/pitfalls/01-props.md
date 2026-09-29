@@ -128,8 +128,10 @@ ready() {
 保留名那头同理：撞上 `$.fn` 已占用的名字，ofa.js 只打一条 warning 就跳过，行为不可预期。
 
 **已知保留名**：proto 侧 `refresh` / `sync`（配合 [P7](#p7--proto-方法名要避开-fn-上的通用名) 的清单），
-attrs 侧已知 `wrap`。**写法上的推论**：组件自己的运行时状态优先写到 shadow root 内部的
-元素上；确实要写宿主时放到 `attached()` 里。
+attrs 侧已知 `wrap` 与 `data` —— 后者的报错长得不一样：`attrs: { data: null }` 时
+`document.createElement('mc-table')` 抛 `TypeError: 'set' on proxy: trap returned falsish for property 'data'`，
+元素连 shadow root 都没有（`mc-table` 因此把 `data` 只做成宿主 property + 组件自己听属性）。
+**写法上的推论**：组件自己的运行时状态优先写到 shadow root 内部的元素上；确实要写宿主时放到 `attached()` 里。
 
 **为什么难查**：报错不指向组件文件（栈顶是调用 `createElement` 的那行），
 页面上标记写的实例照常工作，只有"动态创建组件"这条路径坏掉。

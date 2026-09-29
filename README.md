@@ -56,7 +56,7 @@ mc-button::part(base) {
 }
 ```
 
-**工具类是一份预编译的精选子集**（当前 427 条工具类规则），覆盖布局 / 间距 / 排版 / 语义色，
+**工具类是一份预编译的精选子集**（当前 430 条工具类规则），覆盖布局 / 间距 / 排版 / 语义色，
 在你自己页面的 HTML 里可以直接写。子集之外的类名（`mt-7`、`bg-gradient-to-r` 之类）
 **不存在**，需要时自己写 CSS。
 
@@ -80,7 +80,7 @@ pnpm lint:md      # markdown 结构：代码块语言 / 死锚点 / 列表符号
 pnpm check        # 提交前一条龙：typecheck && check:docs && check:drift && check:size && lint:md && format:check
 pnpm dev          # 打开文档站：http://localhost:8642（跑测试时让它开着）
 pnpm test         # 冒烟测试：只跑本次改动命中的套件（--list 先预览；工作区干净时转全量）
-pnpm test:all     # 冒烟测试：全量 24 个套件 —— 只在明确要求时跑这条
+pnpm test:all     # 冒烟测试：全量 39 个套件 —— 只在明确要求时跑这条
 pnpm test:record  # 加了 / 挪了套件后重录依赖地图（tests/suite-map.json）
 pnpm format       # prettier --write 全仓（平时别跑，见下面「格式化」那条）
 pnpm format:check # prettier --check 全仓（同理）
