@@ -1,0 +1,279 @@
+<!--
+  mc-tooltip — 提示气泡（原生 popover + CSS 锚点定位）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    :host {
+      display: inline-block;
+
+      /* L3 令牌：面板到触发元素的距离、底色、圆角、内边距都由这里给，按实例覆盖写在宿主 style 上 */
+      --mc-tooltip-offset: var(--mc-space-2);
+      /* @internal：给 anchor-name / position-anchor 用的标识，不是使用者覆盖点 */
+      --mc-tooltip-anchor: --mc-tooltip-anchor;
+      --mc-tooltip-panel-bg: var(--mc-color-surface-raised);
+      --mc-tooltip-panel-border: var(--mc-color-border-strong);
+      --mc-tooltip-panel-radius: var(--mc-radius-md);
+      --mc-tooltip-panel-pad: var(--mc-space-2) var(--mc-space-3);
+    }
+
+    /* 锚点：必须是自己 shadow 里的元素（设在 light DOM 的 slot 元素上无效）。
+       inline-flex 而不是 inline-block：后者的行盒基线缝隙会让锚点盒子比触发元素高 3px，
+       而**锚点的几何就是面板的定位基准**（同 mc-popover）。 */
+    .mc-anchor {
+      display: inline-flex;
+      anchor-name: --mc-tooltip-anchor;
+    }
+
+    /* 面板：position: fixed + 锚点定位。⚠️ 不写 display —— 关着时靠 UA 的
+       `[popover]:not(:popover-open){display:none}` 收起来（作者一写 display 就压过它）。 */
+    .mc-panel {
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      max-width: min(20rem, calc(100vw - var(--mc-space-8)));
+      padding: var(--mc-tooltip-panel-pad);
+      /* UA 给 `[popover]` 的是 `border: solid`（宽度 medium = 3px、颜色 currentColor），不写就是一圈 3px */
+      border: 0;
+      border-radius: var(--mc-tooltip-panel-radius);
+      background-color: rgb(var(--mc-tooltip-panel-bg));
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-xs);
+      line-height: var(--mc-text-xs-lh);
+      overflow-wrap: anywhere;
+      /* 描边跟整体轮廓走（面板不画真 border）：两层里第一层是描边、第二层是投影 */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-tooltip-panel-border)))
+        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+      position-anchor: --mc-tooltip-anchor;
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+    }
+
+    /* 12 个 placement：只写「面板哪条边贴锚点哪条边」；默认 top（不写后缀 = 居中）。
+       ⚠️ 默认态挂在 `:host([placement='top'])` 上而不是 `:host(:not([placement]))`：
+       ofa 会把声明过的字符串属性连默认值一起写到宿主上（P32，实测 `placement="top"` 一定在），
+       而 `:host()` 里嵌 `:not()` 在 ofa 里静默失效（P14）。 */
+    :host([placement='top']) .mc-panel {
+      bottom: anchor(top);
+      left: anchor(center);
+      translate: -50% 0;
+      margin-bottom: var(--mc-tooltip-offset);
+    }
+    :host([placement='top-start']) .mc-panel {
+      bottom: anchor(top);
+      left: anchor(left);
+      margin-bottom: var(--mc-tooltip-offset);
+    }
+    :host([placement='top-end']) .mc-panel {
+      bottom: anchor(top);
+      right: anchor(right);
+      margin-bottom: var(--mc-tooltip-offset);
+    }
+    :host([placement='bottom']) .mc-panel {
+      top: anchor(bottom);
+      left: anchor(center);
+      translate: -50% 0;
+      margin-top: var(--mc-tooltip-offset);
+    }
+    :host([placement='bottom-start']) .mc-panel {
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-tooltip-offset);
+    }
+    :host([placement='bottom-end']) .mc-panel {
+      top: anchor(bottom);
+      right: anchor(right);
+      margin-top: var(--mc-tooltip-offset);
+    }
+    /* ⚠️ 居中变体必须单独写：交叉轴上 anchor(center) + -50% 位移 */
+    :host([placement='right']) .mc-panel {
+      left: anchor(right);
+      top: anchor(center);
+      translate: 0 -50%;
+      margin-left: var(--mc-tooltip-offset);
+    }
+    :host([placement='right-start']) .mc-panel {
+      left: anchor(right);
+      top: anchor(top);
+      margin-left: var(--mc-tooltip-offset);
+    }
+    :host([placement='right-end']) .mc-panel {
+      left: anchor(right);
+      bottom: anchor(bottom);
+      margin-left: var(--mc-tooltip-offset);
+    }
+    :host([placement='left']) .mc-panel {
+      right: anchor(left);
+      top: anchor(center);
+      translate: 0 -50%;
+      margin-right: var(--mc-tooltip-offset);
+    }
+    :host([placement='left-start']) .mc-panel {
+      right: anchor(left);
+      top: anchor(top);
+      margin-right: var(--mc-tooltip-offset);
+    }
+    :host([placement='left-end']) .mc-panel {
+      right: anchor(left);
+      bottom: anchor(bottom);
+      margin-right: var(--mc-tooltip-offset);
+    }
+  </style>
+
+  <!-- 触发元素由使用者写进默认插槽；这层 .mc-anchor 只是锚点载体（不能删） -->
+  <span
+    class="mc-anchor"
+    on:mouseenter="onAnchorEnter"
+    on:mouseleave="onAnchorLeave"
+    on:focusin="onAnchorFocus"
+    on:focusout="onAnchorBlur"
+    on:click="onAnchorClick"
+  >
+    <slot></slot>
+  </span>
+
+  <!-- 面板：popover="manual" + 锚点定位。内容和显隐都由脚本管，浏览器不参与 light dismiss -->
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="manual"
+    role="tooltip"
+    attr:aria-hidden="shown ? 'false' : 'true'"
+  >
+    {{content}}
+  </div>
+
+  <script>
+    /* @unocss-skip-start */
+    /* 这段 JS 里的标识符会被 UnoCSS 的候选提取器当成类名，白产出工具类规则、让 check:drift 红。
+       skip 标记把整段排除（同 packages/code/code.html）。 */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+
+    export default () => ({
+      tag: 'mc-tooltip',
+
+      attrs: {
+        // 纯文本内容。不叫 title —— 原生 title 会让宿主自己弹一个浏览器 tooltip（P32）
+        content: '',
+        // 12 个方向，取值与 mc-popover 一致；默认在触发元素上方
+        placement: 'top',
+        // 怎么触发：hover（默认，hover 与 focus 都算）/ focus / click
+        trigger: 'hover',
+        // 显示 / 隐藏的延迟（ms）
+        delay: 100,
+      },
+
+      data: {
+        // 面板是否就绪（ready 之后才敢碰 popover API）
+        mounted: false,
+        // 当前是否显示 —— 只喂给面板的 aria-hidden，原生状态才是真相
+        shown: false,
+      },
+
+      ready() {
+        this._panelEl = this.ele.shadowRoot.querySelector('.mc-panel');
+        // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 packages/boot/scroll-pin.js）
+        this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panelEl);
+        // 老浏览器没有 popover API 时不炸：面板由 UA 的 display:none 兜着，交互一律不动
+        this.popoverOk = typeof this._panelEl?.showPopover === 'function';
+        // 点击外部关闭（trigger="click"）：P20 —— 跨 shadow 判定必须看 composedPath
+        this._onPointerDown = (event) => this.onDocumentPointerDown(event);
+        document.addEventListener('pointerdown', this._onPointerDown, true);
+        this.mounted = true;
+      },
+
+      detached() {
+        clearTimeout(this._showTimer);
+        clearTimeout(this._hideTimer);
+        document.removeEventListener('pointerdown', this._onPointerDown, true);
+        this._scrollGuard?.dispose();
+      },
+
+      proto: {
+        /** 触发方式：读属性而不是 this.trigger（attrs 的默认值会反射到宿主，但别依赖那一拍） */
+        effectiveTrigger() {
+          return this.ele.getAttribute('trigger') || 'hover';
+        },
+
+        /** 延迟显示 / 延迟隐藏各自一个定时器；两个方向互相取消 */
+        scheduleShow() {
+          clearTimeout(this._showTimer);
+          this._showTimer = setTimeout(() => this.showTip(), Number(this.delay) || 0);
+        },
+
+        scheduleHide() {
+          clearTimeout(this._hideTimer);
+          this._hideTimer = setTimeout(() => this.hideTip(), Number(this.delay) || 0);
+        },
+
+        showTip() {
+          if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
+          if (this._panelEl.matches(':popover-open')) return;
+          /* 显式显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动
+             （见 packages/boot/scroll-pin.js） */
+          this._scrollGuard.run(() => this._panelEl.showPopover());
+          this.shown = true;
+        },
+
+        hideTip() {
+          if (this._panelEl.matches(':popover-open')) {
+            this._scrollGuard.run(() => this._panelEl.hidePopover());
+          }
+          this.shown = false;
+        },
+
+        /* hover 与 focus 都触发显示（键盘可达靠 focus）；trigger="click" 时那两条都不响应 */
+
+        onAnchorEnter() {
+          if (this.effectiveTrigger() !== 'hover') return;
+          clearTimeout(this._hideTimer);
+          this.scheduleShow();
+        },
+
+        onAnchorLeave() {
+          if (this.effectiveTrigger() !== 'hover') return;
+          clearTimeout(this._showTimer);
+          this.scheduleHide();
+        },
+
+        onAnchorFocus() {
+          if (this.effectiveTrigger() === 'click') return;
+          clearTimeout(this._hideTimer);
+          this.scheduleShow();
+        },
+
+        onAnchorBlur() {
+          if (this.effectiveTrigger() === 'click') return;
+          clearTimeout(this._showTimer);
+          this.scheduleHide();
+        },
+
+        onAnchorClick() {
+          if (this.effectiveTrigger() !== 'click') return;
+          clearTimeout(this._showTimer);
+          clearTimeout(this._hideTimer);
+          if (this._panelEl.matches(':popover-open')) this.hideTip();
+          else this.showTip();
+        },
+
+        /**
+         * trigger="click" 时点面板外收起。
+         * ⚠️ P20：composedPath 而不是 contains(e.target) —— 后者拿到的是重定向后的宿主。
+         */
+        onDocumentPointerDown(event) {
+          if (this.effectiveTrigger() !== 'click') return;
+          if (!this._panelEl.matches(':popover-open')) return;
+          if (event.composedPath().includes(this.ele)) return;
+          this.hideTip();
+        },
+      },
+    });
+    /* @unocss-skip-end */
+  </script>
+</template>

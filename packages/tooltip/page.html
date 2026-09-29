@@ -1,0 +1,122 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button
+         与页首的 mc-alert 都要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./tooltip.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/placement.html"></l-m>
+    <l-m src="./demos/trigger.html"></l-m>
+    <l-m src="./demos/delay.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Tooltip <code>mc-tooltip</code></h1>
+    <p class="doc-lead">
+      提示气泡：悬停或聚焦触发元素时弹出一句纯文本，非模态、不抢焦点、不拦交互。
+    </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>需要原生 <code>popover</code> 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ /
+          Firefox 125+）：没有这些能力的浏览器上气泡不会弹 —— 不报错，也没有替代路径。
+        </li>
+        <li>
+          <strong>只放纯文本</strong>：内容走 <code>content</code>；要按钮、链接这类可交互内容请换
+          <code>mc-popover</code>。
+        </li>
+        <li>
+          <strong>键盘可达靠聚焦</strong>：触发元素本身要能聚焦（原生 <code>button</code> /
+          <code>a</code>，或项目里的 <code>mc-button</code>）； 组件不会给你的元素加
+          <code>tabindex</code>。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        触发元素写进默认插槽；<code>content</code> 是气泡里的那句话，悬停与聚焦都会显示。
+      </p>
+      <demo-tooltip-basic></demo-tooltip-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>方位</h3>
+      <p class="doc-hint">
+        <code>placement</code> 与 <code>mc-popover</code> 同一套取值（12 个方向，不写后缀 = 居中）；
+        默认在触发元素<strong>上方</strong>，空间不够时浏览器自动翻到另一侧。
+      </p>
+      <demo-tooltip-placement></demo-tooltip-placement>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/placement.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>触发方式</h3>
+      <p class="doc-hint">
+        <code>trigger</code> 三选一：<code>hover</code>（默认，悬停与聚焦都算）/
+        <code>focus</code> / <code>click</code>（再点一下或点空白收起）。
+      </p>
+      <demo-tooltip-trigger></demo-tooltip-trigger>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/trigger.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>延迟</h3>
+      <p class="doc-hint">
+        <code>delay</code> 是显示与隐藏共用的延迟（ms）：<code>0</code> 立刻弹，
+        大一点就不会划过一串图标时到处乱冒。
+      </p>
+      <demo-tooltip-delay></demo-tooltip-delay>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/delay.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">气泡本体是从外面唯一够得到的节点：<code>::part(panel)</code>。</p>
+      <demo-tooltip-part></demo-tooltip-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

@@ -1,0 +1,40 @@
+<template component>
+  <!-- 上下两行必须整行铺开：气泡会伸出行高，挤在一格里会盖住下一行的按钮 -->
+  <div class="flex flex-col items-center gap-12">
+    <div class="flex flex-wrap items-center justify-center gap-8">
+      <mc-tooltip content="top-start" placement="top-start">
+        <mc-button variant="outline">top-start</mc-button>
+      </mc-tooltip>
+      <mc-tooltip content="top（默认）" placement="top">
+        <mc-button variant="outline">top</mc-button>
+      </mc-tooltip>
+      <mc-tooltip content="top-end" placement="top-end">
+        <mc-button variant="outline">top-end</mc-button>
+      </mc-tooltip>
+    </div>
+
+    <div class="flex w-full items-center justify-between gap-8">
+      <mc-tooltip content="left" placement="left">
+        <mc-button variant="outline">left</mc-button>
+      </mc-tooltip>
+      <mc-tooltip content="right" placement="right">
+        <mc-button variant="outline">right</mc-button>
+      </mc-tooltip>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-8">
+      <mc-tooltip content="bottom-start" placement="bottom-start">
+        <mc-button variant="outline">bottom-start</mc-button>
+      </mc-tooltip>
+      <mc-tooltip content="bottom（默认）" placement="bottom">
+        <mc-button variant="outline">bottom</mc-button>
+      </mc-tooltip>
+      <mc-tooltip content="bottom-end" placement="bottom-end">
+        <mc-button variant="outline">bottom-end</mc-button>
+      </mc-tooltip>
+    </div>
+  </div>
+  <script>
+    export default async () => ({ tag: 'demo-tooltip-placement' });
+  </script>
+</template>

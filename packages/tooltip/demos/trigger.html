@@ -1,0 +1,13 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-tooltip content="聚焦才显示" trigger="focus">
+      <mc-button variant="outline">trigger="focus"</mc-button>
+    </mc-tooltip>
+    <mc-tooltip content="点一下显示、再点一下收起" trigger="click">
+      <mc-button variant="outline">trigger="click"</mc-button>
+    </mc-tooltip>
+  </div>
+  <script>
+    export default async () => ({ tag: 'demo-tooltip-trigger' });
+  </script>
+</template>

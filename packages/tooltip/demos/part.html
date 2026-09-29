@@ -1,0 +1,20 @@
+<template component>
+  <style>
+    /* 气泡内部封在 shadow 里，只有 part="panel" 能从外面改 */
+    mc-tooltip::part(panel) {
+      background-color: rgb(var(--mc-color-primary));
+      color: rgb(var(--mc-color-primary-fg));
+      border-radius: var(--mc-radius-full);
+      font-weight: var(--mc-weight-medium);
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-tooltip content="换底色 / 圆角 / 字重">
+      <mc-button variant="outline">改 ::part(panel)</mc-button>
+    </mc-tooltip>
+  </div>
+  <script>
+    export default async () => ({ tag: 'demo-tooltip-part' });
+  </script>
+</template>

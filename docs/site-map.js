@@ -269,6 +269,7 @@ export const SITE = [
             order: 30,
             label: 'Tooltip',
             zh: '提示气泡',
+            path: 'packages/tooltip/page.html',
             tagName: 'mc-tooltip',
             stage: 'M3',
             summary: '提示气泡。',
