@@ -185,11 +185,27 @@ check(
   onButton.h1?.startsWith('Button') && onButton.hash === ALL[0].path,
   `hash=${onButton.hash} · h1=${onButton.h1}`,
 );
+/* 「待建不给死链」这条不变量在**没有待建项**时是空真的（组件全部实现后就是这种状态），
+   所以两种状态各断言一句：没有待建项 → 左栏每个组件项都指向自己的文档页；
+   还有待建项 → 它们指向规范文档（外链、新窗口）。 */
+const navLinks = await page.evaluate(() => {
+  const links = window.__inside('doc-nav', 'a.doc-nav-comp');
+  const planned = links.filter((a) => a.getAttribute('data-status') === 'planned');
+  const status = (a) => a.getAttribute('data-status');
+  return {
+    total: links.length,
+    planned: planned.length,
+    plannedOk: planned.every((a) => a.href.includes('api/README.md') && a.target === '_blank'),
+    readyToPages: links
+      .filter((a) => status(a) === 'ready')
+      .every((a) => (a.getAttribute('href') || '').includes('/page.html')),
+  };
+});
 check(
-  '未实现的组件不给死链（指向规范文档）',
-  await page.evaluate(() => {
-    const a = window.__inside('doc-nav', 'a.doc-nav-comp[data-status="planned"]')[0];
-    return a?.href.includes('api/README.md') && a?.target === '_blank';
-  }),
+  navLinks.planned === 0
+    ? '组件全部已实现：左栏没有「待建」外链，每个组件项都指向自己的文档页'
+    : '未实现的组件不给死链（指向规范文档）',
+  navLinks.readyToPages && navLinks.plannedOk,
+  JSON.stringify(navLinks),
 );
 }
