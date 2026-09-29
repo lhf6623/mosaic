@@ -215,6 +215,7 @@ export const SITE = [
             order: 20,
             label: 'Progress',
             zh: '进度条',
+            path: 'packages/progress/page.html',
             tagName: 'mc-progress',
             stage: 'M2',
             summary: '进度条。支持不确定态。',

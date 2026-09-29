@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-col gap-4">
+    <!-- 轨道高、圆角、轨道底色都是宿主上的令牌（或一句 style="…"） -->
+    <mc-progress value="60" style="--mc-progress-h: 1rem"></mc-progress>
+    <mc-progress
+      value="60"
+      color="success"
+      style="--mc-progress-radius: 0; --mc-progress-track: var(--mc-color-border)"
+    ></mc-progress>
+    <!-- 不确定态的转速也在这里：慢下来看得清 -->
+    <mc-progress indeterminate style="--mc-progress-duration: 3s"></mc-progress>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-progress-customize' });
+  </script>
+</template>

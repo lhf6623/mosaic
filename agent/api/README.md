@@ -175,7 +175,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Switch](../../packages/switch/api.md)             | `mc-switch`                            | `switch/`     | M2     | ✅ 已实现 |
 | [Select](../../packages/select/api.md)             | `mc-select` / `mc-option`              | `select/`     | M2     | ✅ 已实现 |
 | [Alert](../../packages/alert/api.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
-| Progress                                           | `mc-progress`                          | `progress/`   | M2     | 待建      |
+| [Progress](../../packages/progress/api.md)         | `mc-progress`                          | `progress/`   | M2     | ✅ 已实现 |
 | [Message](../../packages/message/api.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
 | [Popover](../../packages/popover/api.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
 | Dialog                                             | `mc-dialog`                            | `dialog/`     | M3     | 待建      |

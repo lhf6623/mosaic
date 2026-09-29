@@ -1,0 +1,138 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./progress.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/max.html"></l-m>
+    <l-m src="./demos/indeterminate.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Progress <code>mc-progress</code></h1>
+    <p class="doc-lead">进度条：一条轨道 + 一条填充，确定态给比例，不确定态只说「还在跑」。</p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong><code>value</code> / <code>max</code> 也是 property</strong>：运行时直接写
+          <code>el.value = 50</code>，当次就生效（不必等属性反射那一拍）。
+        </li>
+        <li>
+          <strong>不确定态不要再写 <code>value</code></strong
+          >：比例交给 CSS 动画，此时读屏拿到的只有 <code>aria-busy="true"</code>。
+        </li>
+        <li>
+          <strong>宽度由父容器决定</strong>：宿主是 <code>display: block</code>， 行内 / flex
+          布局里想让它铺满就给它一个能撑开的容器。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <demo-progress-basic></demo-progress-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>数值上限</h3>
+      <p class="doc-hint">
+        默认 <code>max="100"</code>；比例 = <code>value / max</code>，超出上限会被夹到 100%。
+      </p>
+      <demo-progress-max></demo-progress-max>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/max.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>不确定态</h3>
+      <p class="doc-hint">
+        <code>indeterminate</code> 打开后填充条自己滑：不知道还要多久时用它，不要编一个假比例。
+      </p>
+      <demo-progress-indeterminate></demo-progress-indeterminate>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/indeterminate.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>语义色</h3>
+      <p class="doc-hint">默认 <code>primary</code>；颜色只往填充槽里填值，所以换色不用动结构。</p>
+      <demo-progress-colors></demo-progress-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <p class="doc-hint">只有 <code>sm</code> / <code>md</code> 两档轨道高：4 / 8px。</p>
+      <demo-progress-sizes></demo-progress-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        轨道高、圆角、轨道底色、不确定态的转速都在宿主上（L3 令牌或一句 <code>style="…"</code>）。
+      </p>
+      <demo-progress-customize></demo-progress-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        填充条是组件内部唯一的元素，标了 <code>part</code>：从外面用
+        <code>::part(bar)</code> 就能改它（下面第二条没改，作对照）。
+      </p>
+      <demo-progress-part></demo-progress-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

@@ -1,0 +1,14 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <!-- 不写 max 就是 100 -->
+    <mc-progress value="30"></mc-progress>
+    <!-- 150 / 200 = 75% -->
+    <mc-progress value="150" max="200" color="success"></mc-progress>
+    <!-- 超过上限会被夹到 100% -->
+    <mc-progress value="400" max="200" color="warning"></mc-progress>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-progress-max' });
+  </script>
+</template>

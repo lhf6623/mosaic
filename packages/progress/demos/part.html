@@ -1,0 +1,19 @@
+<template component>
+  <style>
+    /* 填充条是内部元素：只有标了 part 的节点才改得动。
+       选择器带上 .part-probe —— 否则这一页的两条都会被改，就没有对照了。 */
+    .part-probe::part(bar) {
+      border-radius: 0;
+      background-color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <div class="flex flex-col gap-4">
+    <mc-progress class="part-probe" value="60"></mc-progress>
+    <mc-progress value="60"></mc-progress>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-progress-part' });
+  </script>
+</template>

@@ -1,0 +1,186 @@
+<!--
+  mc-progress — 进度条
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。宿主本身就是轨道：底色、圆角、裁剪都写在它身上，
+          使用者的 style="height:…" 与 ::part(bar) 两条定制路都不用跨 shadow 找容器 */
+    :host {
+      display: block;
+      position: relative; /* 内部绝对定位元素的包含块（P21） */
+      box-sizing: border-box;
+      overflow: hidden; /* 不确定态那条滑出轨道时由它裁掉 */
+      height: var(--mc-progress-h);
+      border-radius: var(--mc-progress-radius);
+      background-color: rgb(var(--mc-progress-track));
+
+      /* L3 组件令牌：默认引用 L2 令牌。按实例覆盖写在宿主 style 上 */
+      --mc-progress-h: 0.5rem;
+      --mc-progress-radius: var(--mc-radius-full);
+      --mc-progress-track: var(--mc-color-surface-sunken);
+      /* 时长必须走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
+         不确定态那条动画就自动停下来 */
+      --mc-progress-duration: calc(var(--mc-duration-slow) * 4);
+
+      /* 色槽：进度条只有一条填充（fill），文字色用不上，但接线器按约定会一起写 on-fill */
+      --mc-progress-fill: var(--mc-color-primary);
+    }
+
+    /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
+    :host([color='info']) {
+      --mc-progress-fill: var(--mc-color-info);
+    }
+    :host([color='success']) {
+      --mc-progress-fill: var(--mc-color-success);
+    }
+    :host([color='warning']) {
+      --mc-progress-fill: var(--mc-color-warning);
+    }
+    :host([color='danger']) {
+      --mc-progress-fill: var(--mc-color-danger);
+    }
+
+    /* 3. 维度二 size：两档轨道高（进度条不是控件，不借 --mc-control-h-*） */
+    :host([size='sm']) {
+      --mc-progress-h: 0.25rem;
+    }
+
+    /* 4. 状态：不确定态的宽度与位移交给 CSS —— 内联 width 会盖掉这条规则（P15），
+          所以脚本在不确定态下**不写**内联宽度 */
+    :host([indeterminate]) .mc-fill {
+      width: 40%;
+      animation: mc-progress-slide var(--mc-progress-duration) var(--mc-ease-standard) infinite;
+    }
+
+    /* 5. 内部元素：填充条。宽度是运行时算的（脚本写内联 width），所以只放过渡 */
+    .mc-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background-color: rgb(var(--mc-progress-fill));
+      transition: width var(--mc-duration-base) var(--mc-ease-standard);
+    }
+    /* 一条 40% 宽的填充从左滑到右：位移按自身宽度算（40% × 250% = 一整条轨道） */
+    @keyframes mc-progress-slide {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(250%);
+      }
+    }
+  </style>
+
+  <div class="mc-fill" part="bar"></div>
+
+  <script>
+    /* color 也收 hex（`<mc-progress color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器，
+        填的还是那条 --mc-progress-fill 色槽 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill'] });
+
+    export default async () => ({
+      tag: 'mc-progress',
+
+      attrs: {
+        /* 当前值。attr 是字符串，paint 里自己 parse；没写 = 0%（不确定态用 indeterminate 显式打开） */
+        value: null,
+        max: 100,
+        // 布尔属性默认值必须是 null（P1）
+        indeterminate: null,
+        color: 'primary',
+        size: 'md',
+      },
+
+      ready() {
+        this._fill = this.ele.shadowRoot.querySelector('.mc-fill');
+
+        /* 运行时状态走 property（规范 1.4）：setter 写宿主属性并**立刻**重绘 ——
+           不等 ofa 把属性同步回 data 的那一拍（P4）。attr 是唯一真相，所以这里读 attribute */
+        for (const name of ['value', 'max']) {
+          Object.defineProperty(this.ele, name, {
+            configurable: true,
+            get: () => {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null) return null;
+              const parsed = Number(raw);
+              return Number.isFinite(parsed) ? parsed : raw;
+            },
+            set: (next) => {
+              if (next === null || next === undefined) this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, String(next));
+              this.paint();
+            },
+          });
+        }
+      },
+
+      attached() {
+        this._live = true;
+        // 宿主属性 / style 等构造期结束再写（P31）
+        color.sync(this.ele, this.color);
+        this.paint();
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5），paint 里的 _live / _fill 守卫把它挡掉
+        value() {
+          this.paint();
+        },
+        max() {
+          this.paint();
+        },
+        indeterminate() {
+          this.paint();
+        },
+        // color 收 hex：首次触发落在构造期，跳过由 colorAttr 内部处理
+        color(value) {
+          color.change(this.ele, value);
+        },
+      },
+
+      proto: {
+        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+        readNumber(name, fallback) {
+          const raw = this.ele.getAttribute(name);
+          const parsed = raw === null ? NaN : Number(raw);
+          return Number.isFinite(parsed) ? parsed : fallback;
+        },
+
+        /** 唯一入口：写填充宽度 + 同步宿主上的 aria。确定态的进度对读屏是一个数值 */
+        paint() {
+          if (!this._fill) return;
+          const el = this.ele;
+          const max = this.readNumber('max', 100);
+          const value = this.readNumber('value', 0);
+          const indeterminate = el.hasAttribute('indeterminate');
+
+          if (indeterminate) {
+            this._fill.style.removeProperty('width');
+          } else {
+            const ratio = max > 0 ? Math.min(Math.max(value / max, 0), 1) : 0;
+            /* 归一化掉 40.0000% 这种尾巴：属性 setter 里那句「立刻生效」要能逐字断言 */
+            this._fill.style.width = `${Number((ratio * 100).toFixed(4))}%`;
+          }
+
+          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
+          el.setAttribute('role', 'progressbar');
+          el.setAttribute('aria-valuemin', '0');
+          el.setAttribute('aria-valuemax', String(max));
+          if (indeterminate) {
+            /* 不确定态没有数值可播报：不留 aria-valuenow，改用 aria-busy 表示「还在跑」 */
+            el.removeAttribute('aria-valuenow');
+            el.setAttribute('aria-busy', 'true');
+          } else {
+            el.setAttribute('aria-valuenow', String(value));
+            el.removeAttribute('aria-busy');
+          }
+        },
+      },
+    });
+  </script>
+</template>
