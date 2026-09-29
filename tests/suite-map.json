@@ -8,10 +8,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
@@ -19,18 +21,23 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
       "packages/card/card.html",
@@ -49,10 +56,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/components.html",
       "docs/pages/guide.html",
       "docs/pages/home.html",
@@ -64,18 +73,23 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
       "packages/card/card.html",
@@ -106,10 +120,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/components.html",
       "docs/pages/home.html",
       "docs/routes.js",
@@ -120,35 +136,44 @@
       "docs/theme-boot.js",
       "index.html",
       "packages/alert/alert.html",
+      "packages/alert/api.md",
       "packages/alert/demos/closable.html",
       "packages/alert/demos/colors.html",
       "packages/alert/demos/customize.html",
       "packages/alert/demos/heading.html",
+      "packages/alert/demos/hex.html",
       "packages/alert/demos/icon-custom.html",
       "packages/alert/demos/icon.html",
       "packages/alert/demos/part.html",
       "packages/alert/demos/variants.html",
       "packages/alert/page.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
       "packages/card/card.html",
+      "packages/code/api.md",
       "packages/code/code.html",
       "packages/code/demos/attribute.html",
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
+      "packages/code/demos/hljs-base.html",
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
@@ -171,10 +196,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
@@ -184,35 +211,56 @@
       "docs/theme-boot.js",
       "index.html",
       "packages/alert/alert.html",
+      "packages/alert/api.md",
       "packages/alert/demos/closable.html",
       "packages/alert/demos/colors.html",
       "packages/alert/demos/customize.html",
       "packages/alert/demos/heading.html",
+      "packages/alert/demos/hex.html",
       "packages/alert/demos/icon-custom.html",
       "packages/alert/demos/icon.html",
       "packages/alert/demos/part.html",
       "packages/alert/demos/variants.html",
       "packages/alert/page.html",
+      "packages/badge/api.md",
+      "packages/badge/badge.html",
+      "packages/badge/demos/basic.html",
+      "packages/badge/demos/colors.html",
+      "packages/badge/demos/dot.html",
+      "packages/badge/demos/hex.html",
+      "packages/badge/demos/max.html",
+      "packages/badge/demos/sizes.html",
+      "packages/badge/demos/variants.html",
+      "packages/badge/page.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/breadcrumb/api.md",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
       "packages/breadcrumb/demos/basic.html",
       "packages/breadcrumb/demos/customize.html",
+      "packages/breadcrumb/demos/label.html",
       "packages/breadcrumb/demos/long.html",
+      "packages/breadcrumb/demos/part.html",
       "packages/breadcrumb/demos/separator.html",
       "packages/breadcrumb/page.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
+      "packages/card/api.md",
       "packages/card/card.html",
       "packages/card/demos/basic.html",
       "packages/card/demos/customize.html",
@@ -221,11 +269,22 @@
       "packages/card/demos/sections.html",
       "packages/card/demos/variants.html",
       "packages/card/page.html",
+      "packages/checkbox/api.md",
+      "packages/checkbox/checkbox.html",
+      "packages/checkbox/demos/basic.html",
+      "packages/checkbox/demos/disabled.html",
+      "packages/checkbox/demos/indeterminate.html",
+      "packages/checkbox/demos/part.html",
+      "packages/checkbox/demos/sizes.html",
+      "packages/checkbox/demos/validation.html",
+      "packages/checkbox/page.html",
+      "packages/code/api.md",
       "packages/code/code.html",
       "packages/code/demos/attribute.html",
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
+      "packages/code/demos/hljs-base.html",
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
@@ -234,6 +293,7 @@
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
       "packages/code/page.html",
+      "packages/collapse/api.md",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/collapse/demos/accordion.html",
@@ -246,18 +306,60 @@
       "packages/collapse/demos/size.html",
       "packages/collapse/demos/style-override.html",
       "packages/collapse/page.html",
+      "packages/dialog/api.md",
+      "packages/dialog/demos/basic.html",
+      "packages/dialog/demos/controlled.html",
+      "packages/dialog/demos/mask.html",
+      "packages/dialog/demos/part.html",
+      "packages/dialog/demos/sizes.html",
+      "packages/dialog/demos/slots.html",
+      "packages/dialog/dialog.html",
+      "packages/dialog/page.html",
+      "packages/dropdown/api.md",
+      "packages/dropdown/demos/basic.html",
+      "packages/dropdown/demos/controlled.html",
+      "packages/dropdown/demos/hover.html",
+      "packages/dropdown/demos/part.html",
+      "packages/dropdown/demos/placement.html",
+      "packages/dropdown/dropdown.html",
+      "packages/dropdown/page.html",
+      "packages/grid/api.md",
+      "packages/grid/demos/basic.html",
+      "packages/grid/demos/cols.html",
+      "packages/grid/demos/gap.html",
+      "packages/grid/demos/min-width.html",
+      "packages/grid/demos/span.html",
+      "packages/grid/grid-item.html",
+      "packages/grid/grid.html",
+      "packages/grid/page.html",
+      "packages/icon/api.md",
       "packages/icon/demos/basic.html",
       "packages/icon/demos/builtins.html",
       "packages/icon/demos/colors.html",
+      "packages/icon/demos/hex.html",
       "packages/icon/demos/label.html",
       "packages/icon/demos/part.html",
       "packages/icon/demos/remote.html",
       "packages/icon/demos/sizes.html",
       "packages/icon/demos/slot.html",
+      "packages/icon/demos/source.html",
       "packages/icon/demos/src.html",
       "packages/icon/demos/styles.html",
       "packages/icon/icon.html",
       "packages/icon/page.html",
+      "packages/input/api.md",
+      "packages/input/demos/basic.html",
+      "packages/input/demos/clearable.html",
+      "packages/input/demos/maxlength.html",
+      "packages/input/demos/part.html",
+      "packages/input/demos/sizes.html",
+      "packages/input/demos/slots.html",
+      "packages/input/demos/states.html",
+      "packages/input/demos/type.html",
+      "packages/input/demos/value.html",
+      "packages/input/input.html",
+      "packages/input/page.html",
+      "packages/menu/api.md",
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
@@ -268,29 +370,116 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/menu/page.html",
+      "packages/message/api.md",
       "packages/message/demos/basic.html",
       "packages/message/demos/closable.html",
       "packages/message/demos/duration.html",
       "packages/message/demos/key.html",
       "packages/message/message.js",
       "packages/message/page.html",
+      "packages/popover/api.md",
       "packages/popover/demos/arrow.html",
       "packages/popover/demos/controlled.html",
+      "packages/popover/demos/customize.html",
       "packages/popover/demos/flip.html",
       "packages/popover/demos/menu.html",
+      "packages/popover/demos/part.html",
       "packages/popover/demos/placement.html",
       "packages/popover/demos/trigger.html",
       "packages/popover/page.html",
       "packages/popover/popover.html",
+      "packages/progress/api.md",
+      "packages/progress/demos/basic.html",
+      "packages/progress/demos/colors.html",
+      "packages/progress/demos/customize.html",
+      "packages/progress/demos/indeterminate.html",
+      "packages/progress/demos/max.html",
+      "packages/progress/demos/part.html",
+      "packages/progress/demos/sizes.html",
+      "packages/progress/page.html",
+      "packages/progress/progress.html",
+      "packages/radio/api.md",
+      "packages/radio/demos/basic.html",
+      "packages/radio/demos/direction.html",
+      "packages/radio/demos/disabled.html",
+      "packages/radio/demos/events.html",
+      "packages/radio/demos/part.html",
+      "packages/radio/demos/sizes.html",
+      "packages/radio/page.html",
+      "packages/radio/radio-group.html",
+      "packages/radio/radio.html",
+      "packages/select/api.md",
+      "packages/select/demos/basic.html",
+      "packages/select/demos/clearable.html",
+      "packages/select/demos/events.html",
+      "packages/select/demos/multiple.html",
+      "packages/select/demos/part.html",
+      "packages/select/demos/sizes.html",
+      "packages/select/demos/states.html",
+      "packages/select/option.html",
+      "packages/select/page.html",
+      "packages/select/select.html",
+      "packages/spinner/api.md",
+      "packages/spinner/demos/basic.html",
+      "packages/spinner/demos/colors.html",
+      "packages/spinner/demos/customize.html",
+      "packages/spinner/demos/sizes.html",
+      "packages/spinner/page.html",
+      "packages/spinner/spinner.html",
+      "packages/switch/api.md",
+      "packages/switch/demos/basic.html",
+      "packages/switch/demos/disabled.html",
+      "packages/switch/demos/part.html",
+      "packages/switch/demos/sizes.html",
+      "packages/switch/page.html",
+      "packages/switch/switch.html",
+      "packages/table/api.md",
+      "packages/table/demos/basic.html",
+      "packages/table/demos/empty.html",
+      "packages/table/demos/hoverable.html",
+      "packages/table/demos/loading.html",
+      "packages/table/demos/part.html",
+      "packages/table/demos/slots.html",
+      "packages/table/demos/striped.html",
+      "packages/table/page.html",
+      "packages/table/table.html",
+      "packages/tabs/api.md",
+      "packages/tabs/demos/basic.html",
+      "packages/tabs/demos/disabled.html",
+      "packages/tabs/demos/events.html",
+      "packages/tabs/demos/part.html",
+      "packages/tabs/page.html",
+      "packages/tabs/tab.html",
+      "packages/tabs/tabs.html",
+      "packages/tag/api.md",
       "packages/tag/demos/checkable.html",
       "packages/tag/demos/closable.html",
       "packages/tag/demos/colors.html",
       "packages/tag/demos/customize.html",
+      "packages/tag/demos/hex.html",
       "packages/tag/demos/part.html",
       "packages/tag/demos/sizes.html",
       "packages/tag/demos/variants.html",
       "packages/tag/page.html",
       "packages/tag/tag.html",
+      "packages/textarea/api.md",
+      "packages/textarea/demos/auto-resize.html",
+      "packages/textarea/demos/basic.html",
+      "packages/textarea/demos/counter.html",
+      "packages/textarea/demos/part.html",
+      "packages/textarea/demos/rows.html",
+      "packages/textarea/demos/sizes.html",
+      "packages/textarea/demos/states.html",
+      "packages/textarea/page.html",
+      "packages/textarea/textarea.html",
+      "packages/tooltip/api.md",
+      "packages/tooltip/demos/basic.html",
+      "packages/tooltip/demos/delay.html",
+      "packages/tooltip/demos/part.html",
+      "packages/tooltip/demos/placement.html",
+      "packages/tooltip/demos/trigger.html",
+      "packages/tooltip/page.html",
+      "packages/tooltip/tooltip.html",
       "tests/site/05-doc-pages.mjs"
     ],
     "tests/site/06-boot-palette.mjs": [
@@ -300,10 +489,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/components.html",
       "docs/pages/guide.html",
       "docs/pages/home.html",
@@ -314,9 +505,12 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
+      "packages/boot/tone.js",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
       "packages/button/button.html",
@@ -329,6 +523,7 @@
       "packages/icon/icon.html",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/tag/tag.html",
       "tests/site/06-boot-palette.mjs"
     ],
     "tests/site/07-inject-server.mjs": [
@@ -338,10 +533,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
@@ -350,15 +547,19 @@
       "docs/theme-boot.js",
       "index.html",
       "packages/alert/alert.html",
+      "packages/alert/api.md",
       "packages/alert/demos/closable.html",
       "packages/alert/demos/colors.html",
       "packages/alert/demos/customize.html",
       "packages/alert/demos/heading.html",
+      "packages/alert/demos/hex.html",
       "packages/alert/demos/icon-custom.html",
       "packages/alert/demos/icon.html",
       "packages/alert/demos/part.html",
       "packages/alert/demos/variants.html",
       "packages/alert/page.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
@@ -381,10 +582,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/components.html",
       "docs/pages/guide.html",
       "docs/pages/home.html",
@@ -395,22 +598,29 @@
       "docs/snippets/quick-start.html",
       "docs/state/route.js",
       "docs/theme-boot.js",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
       "packages/card/card.html",
       "packages/code/code.html",
+      "packages/collapse/api.md",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/collapse/demos/accordion.html",
@@ -436,14 +646,19 @@
       "docs/pages/components.html",
       "docs/pages/guide.html",
       "docs/snippets/quick-start.html",
+      "packages/alert/alert.html",
+      "packages/button/api.md",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
+      "packages/menu/api.md",
       "packages/menu/demos/basic.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
@@ -459,6 +674,7 @@
       "tests/site/10-nav-data.mjs"
     ],
     "tests/site/11-no-class-components.mjs": [
+      "docs/site-map.js",
       "tests/site/11-no-class-components.mjs"
     ],
     "tests/site/12-affected.mjs": [
@@ -467,6 +683,15 @@
       "tests/select.mjs",
       "tests/site/12-affected.mjs"
     ],
+    "tests/site/13-docs-drift.mjs": [
+      "docs/site-map.js",
+      "tests/lib/suites.mjs",
+      "tests/site/13-docs-drift.mjs",
+      "tools/doc-drift.config.mjs",
+      "tools/doc-drift/drift.mjs",
+      "tools/doc-drift/lib/parse.mjs",
+      "tools/doc-drift/lib/version.mjs"
+    ],
     "packages/button/test/button.test.mjs": [
       "app-config.js",
       "docs/components/cards.html",
@@ -474,28 +699,35 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/api.md",
       "packages/button/button.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
       "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
       "packages/button/test/button.test.mjs",
@@ -514,10 +746,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/pages/guide.html",
       "docs/pages/home.html",
       "docs/routes.js",
@@ -528,6 +762,9 @@
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
@@ -535,11 +772,13 @@
       "packages/breadcrumb/breadcrumb.html",
       "packages/button/button.html",
       "packages/card/card.html",
+      "packages/code/api.md",
       "packages/code/code.html",
       "packages/code/demos/attribute.html",
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
+      "packages/code/demos/hljs-base.html",
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
@@ -563,35 +802,41 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/pages/home.html",
+      "docs/lib/md-spec.mjs",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/icon/api.md",
       "packages/icon/demos/basic.html",
       "packages/icon/demos/builtins.html",
       "packages/icon/demos/colors.html",
+      "packages/icon/demos/hex.html",
       "packages/icon/demos/label.html",
       "packages/icon/demos/part.html",
       "packages/icon/demos/remote.html",
       "packages/icon/demos/sizes.html",
       "packages/icon/demos/slot.html",
+      "packages/icon/demos/source.html",
       "packages/icon/demos/src.html",
       "packages/icon/demos/styles.html",
       "packages/icon/icon.html",
@@ -609,22 +854,29 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
       "packages/button/button.html",
+      "packages/card/api.md",
       "packages/card/card.html",
       "packages/card/demos/basic.html",
       "packages/card/demos/customize.html",
@@ -648,135 +900,12 @@
       "docs/components/nav.html",
       "docs/components/pager.html",
       "docs/components/palette.html",
+      "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
       "docs/layout.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/icon/icon.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/tag/demos/checkable.html",
-      "packages/tag/demos/closable.html",
-      "packages/tag/demos/colors.html",
-      "packages/tag/demos/customize.html",
-      "packages/tag/demos/part.html",
-      "packages/tag/demos/sizes.html",
-      "packages/tag/demos/variants.html",
-      "packages/tag/page.html",
-      "packages/tag/tag.html",
-      "packages/tag/test/tag.test.mjs"
-    ],
-    "packages/menu/test/menu.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/icon/icon.html",
-      "packages/menu/demos/basic.html",
-      "packages/menu/demos/customize.html",
-      "packages/menu/demos/groups.html",
-      "packages/menu/demos/part.html",
-      "packages/menu/demos/size.html",
-      "packages/menu/demos/states.html",
-      "packages/menu/demos/surface.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/menu/page.html",
-      "packages/menu/test/menu.test.mjs"
-    ],
-    "packages/breadcrumb/test/breadcrumb.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/pages/components.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/breadcrumb/demos/basic.html",
-      "packages/breadcrumb/demos/customize.html",
-      "packages/breadcrumb/demos/long.html",
-      "packages/breadcrumb/demos/separator.html",
-      "packages/breadcrumb/page.html",
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
-      "packages/button/button.html",
-      "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
-      "packages/button/demos/override.html",
-      "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
-      "packages/button/demos/states.html",
-      "packages/button/demos/variants.html",
-      "packages/button/page.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/icon/icon.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
-    ],
-    "packages/alert/test/alert.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -784,53 +913,13 @@
       "docs/theme-boot.js",
       "index.html",
       "packages/alert/alert.html",
-      "packages/alert/demos/closable.html",
-      "packages/alert/demos/colors.html",
-      "packages/alert/demos/customize.html",
-      "packages/alert/demos/heading.html",
-      "packages/alert/demos/icon-custom.html",
-      "packages/alert/demos/icon.html",
-      "packages/alert/demos/part.html",
-      "packages/alert/demos/variants.html",
-      "packages/alert/page.html",
-      "packages/alert/test/alert.test.mjs",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
       "packages/boot/mosaic.css",
       "packages/boot/mosaic.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/icon/icon.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
-    ],
-    "packages/message/test/message.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
@@ -838,106 +927,18 @@
       "packages/icon/icon.html",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/message/demos/basic.html",
-      "packages/message/demos/closable.html",
-      "packages/message/demos/duration.html",
-      "packages/message/demos/key.html",
-      "packages/message/message.html",
-      "packages/message/message.js",
-      "packages/message/page.html",
-      "packages/message/test/message.test.mjs"
-    ],
-    "packages/popover/test/popover.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/scroll-pin.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/icon/icon.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/popover/demos/arrow.html",
-      "packages/popover/demos/controlled.html",
-      "packages/popover/demos/flip.html",
-      "packages/popover/demos/menu.html",
-      "packages/popover/demos/placement.html",
-      "packages/popover/demos/trigger.html",
-      "packages/popover/page.html",
-      "packages/popover/popover.html",
-      "packages/popover/test/popover.test.mjs"
-    ],
-    "packages/collapse/test/collapse.test.mjs": [
-      "app-config.js",
-      "docs/components/cards.html",
-      "docs/components/crumb.html",
-      "docs/components/nav.html",
-      "docs/components/pager.html",
-      "docs/components/palette.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/mosaic.css",
-      "packages/boot/mosaic.js",
-      "packages/boot/shadow-base.css",
-      "packages/breadcrumb/breadcrumb-item.html",
-      "packages/breadcrumb/breadcrumb.html",
-      "packages/card/card.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/collapse/demos/accordion.html",
-      "packages/collapse/demos/basic.html",
-      "packages/collapse/demos/disabled.html",
-      "packages/collapse/demos/events.html",
-      "packages/collapse/demos/nested.html",
-      "packages/collapse/demos/part.html",
-      "packages/collapse/demos/rich-header.html",
-      "packages/collapse/demos/size.html",
-      "packages/collapse/demos/style-override.html",
-      "packages/collapse/page.html",
-      "packages/collapse/test/collapse.test.mjs",
-      "packages/icon/icon.html",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
-    ],
-    "tests/site/13-docs-drift.mjs": [
-      "docs/site-map.js",
-      "tests/lib/suites.mjs",
-      "tests/site/13-docs-drift.mjs",
-      "tools/doc-drift.config.mjs",
-      "tools/doc-drift/drift.mjs",
-      "tools/doc-drift/lib/parse.mjs",
-      "tools/doc-drift/lib/version.mjs"
+      "packages/tag/api.md",
+      "packages/tag/demos/checkable.html",
+      "packages/tag/demos/closable.html",
+      "packages/tag/demos/colors.html",
+      "packages/tag/demos/customize.html",
+      "packages/tag/demos/hex.html",
+      "packages/tag/demos/part.html",
+      "packages/tag/demos/sizes.html",
+      "packages/tag/demos/variants.html",
+      "packages/tag/page.html",
+      "packages/tag/tag.html",
+      "packages/tag/test/tag.test.mjs"
     ],
     "packages/badge/test/badge.test.mjs": [
       "app-config.js",
@@ -1027,6 +1028,108 @@
       "packages/spinner/page.html",
       "packages/spinner/spinner.html",
       "packages/spinner/test/spinner.test.mjs"
+    ],
+    "packages/menu/test/menu.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/icon/icon.html",
+      "packages/menu/api.md",
+      "packages/menu/demos/basic.html",
+      "packages/menu/demos/customize.html",
+      "packages/menu/demos/groups.html",
+      "packages/menu/demos/part.html",
+      "packages/menu/demos/size.html",
+      "packages/menu/demos/states.html",
+      "packages/menu/demos/surface.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/menu/page.html",
+      "packages/menu/test/menu.test.mjs"
+    ],
+    "packages/breadcrumb/test/breadcrumb.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/pages/components.html",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/api.md",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/breadcrumb/demos/basic.html",
+      "packages/breadcrumb/demos/customize.html",
+      "packages/breadcrumb/demos/label.html",
+      "packages/breadcrumb/demos/long.html",
+      "packages/breadcrumb/demos/part.html",
+      "packages/breadcrumb/demos/separator.html",
+      "packages/breadcrumb/page.html",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/api.md",
+      "packages/button/button.html",
+      "packages/button/demos/block.html",
+      "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
+      "packages/button/demos/override.html",
+      "packages/button/demos/sizes.html",
+      "packages/button/demos/slots.html",
+      "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
+      "packages/button/demos/variants.html",
+      "packages/button/page.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/icon/icon.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html"
     ],
     "packages/input/test/input.test.mjs": [
       "app-config.js",
@@ -1181,7 +1284,6 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -1196,7 +1298,6 @@
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
-      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
@@ -1229,6 +1330,7 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -1243,6 +1345,7 @@
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/breadcrumb-item.html",
       "packages/breadcrumb/breadcrumb.html",
+      "packages/button/button.html",
       "packages/card/card.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
@@ -1307,6 +1410,53 @@
       "packages/select/select.html",
       "packages/select/test/select.test.mjs"
     ],
+    "packages/alert/test/alert.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/alert/api.md",
+      "packages/alert/demos/closable.html",
+      "packages/alert/demos/colors.html",
+      "packages/alert/demos/customize.html",
+      "packages/alert/demos/heading.html",
+      "packages/alert/demos/hex.html",
+      "packages/alert/demos/icon-custom.html",
+      "packages/alert/demos/icon.html",
+      "packages/alert/demos/part.html",
+      "packages/alert/demos/variants.html",
+      "packages/alert/page.html",
+      "packages/alert/test/alert.test.mjs",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/icon/icon.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html"
+    ],
     "packages/progress/test/progress.test.mjs": [
       "app-config.js",
       "docs/components/cards.html",
@@ -1352,6 +1502,102 @@
       "packages/progress/page.html",
       "packages/progress/progress.html",
       "packages/progress/test/progress.test.mjs"
+    ],
+    "packages/message/test/message.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/button/button.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/icon/icon.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/message/api.md",
+      "packages/message/demos/basic.html",
+      "packages/message/demos/closable.html",
+      "packages/message/demos/duration.html",
+      "packages/message/demos/key.html",
+      "packages/message/message.html",
+      "packages/message/message.js",
+      "packages/message/page.html",
+      "packages/message/test/message.test.mjs"
+    ],
+    "packages/popover/test/popover.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/scroll-pin.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/button/button.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/icon/icon.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/popover/api.md",
+      "packages/popover/demos/arrow.html",
+      "packages/popover/demos/controlled.html",
+      "packages/popover/demos/customize.html",
+      "packages/popover/demos/flip.html",
+      "packages/popover/demos/menu.html",
+      "packages/popover/demos/part.html",
+      "packages/popover/demos/placement.html",
+      "packages/popover/demos/trigger.html",
+      "packages/popover/page.html",
+      "packages/popover/popover.html",
+      "packages/popover/test/popover.test.mjs"
     ],
     "packages/dialog/test/dialog.test.mjs": [
       "app-config.js",
@@ -1492,6 +1738,53 @@
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tooltip/tooltip.html"
     ],
+    "packages/collapse/test/collapse.test.mjs": [
+      "app-config.js",
+      "docs/components/cards.html",
+      "docs/components/crumb.html",
+      "docs/components/nav.html",
+      "docs/components/pager.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/alert/alert.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/mosaic.css",
+      "packages/boot/mosaic.js",
+      "packages/boot/shadow-base.css",
+      "packages/breadcrumb/breadcrumb-item.html",
+      "packages/breadcrumb/breadcrumb.html",
+      "packages/card/card.html",
+      "packages/code/code.html",
+      "packages/collapse/api.md",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/collapse/demos/accordion.html",
+      "packages/collapse/demos/basic.html",
+      "packages/collapse/demos/disabled.html",
+      "packages/collapse/demos/events.html",
+      "packages/collapse/demos/nested.html",
+      "packages/collapse/demos/part.html",
+      "packages/collapse/demos/rich-header.html",
+      "packages/collapse/demos/size.html",
+      "packages/collapse/demos/style-override.html",
+      "packages/collapse/page.html",
+      "packages/collapse/test/collapse.test.mjs",
+      "packages/icon/icon.html",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html"
+    ],
     "packages/tabs/test/tabs.test.mjs": [
       "app-config.js",
       "docs/components/cards.html",
@@ -1576,6 +1869,7 @@
       "packages/table/demos/hoverable.html",
       "packages/table/demos/loading.html",
       "packages/table/demos/part.html",
+      "packages/table/demos/slots.html",
       "packages/table/demos/striped.html",
       "packages/table/page.html",
       "packages/table/table.html",
@@ -1839,12 +2133,22 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/components/spec.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -1852,8 +2156,16 @@
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs",
+      "tests/site/08-subpath.mjs"
     ],
     "docs/components/toc.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2000,12 +2312,22 @@
       "tests/site/08-subpath.mjs"
     ],
     "docs/lib/md-spec.mjs": [
+      "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -2013,8 +2335,16 @@
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs",
+      "tests/site/08-subpath.mjs"
     ],
     "docs/pages/components.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -2033,11 +2363,11 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "docs/pages/home.html": [
+      "packages/card/test/card.test.mjs",
       "packages/code/test/code.test.mjs",
-      "packages/icon/test/icon.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/radio/test/radio.test.mjs",
+      "packages/switch/test/switch.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
       "tests/site/04-nav-stability.mjs",
@@ -2156,6 +2486,7 @@
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs",
       "tests/site/10-nav-data.mjs",
+      "tests/site/11-no-class-components.mjs",
       "tests/site/12-affected.mjs",
       "tests/site/13-docs-drift.mjs"
     ],
@@ -2278,11 +2609,19 @@
     "packages/alert/alert.html": [
       "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -2290,8 +2629,17 @@
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs",
+      "tests/site/08-subpath.mjs",
+      "tests/site/09-doc-toc.mjs"
+    ],
+    "packages/alert/api.md": [
+      "packages/alert/test/alert.test.mjs",
       "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
       "tests/site/07-inject-server.mjs"
@@ -2315,6 +2663,12 @@
       "tests/site/07-inject-server.mjs"
     ],
     "packages/alert/demos/heading.html": [
+      "packages/alert/test/alert.test.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "packages/alert/demos/hex.html": [
       "packages/alert/test/alert.test.mjs",
       "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs",
@@ -2354,45 +2708,65 @@
       "packages/alert/test/alert.test.mjs"
     ],
     "packages/badge/api.md": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/badge.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/basic.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/colors.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/dot.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/hex.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/max.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/sizes.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/demos/variants.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/page.html": [
-      "packages/badge/test/badge.test.mjs"
+      "packages/badge/test/badge.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/badge/test/badge.test.mjs": [
       "packages/badge/test/badge.test.mjs"
     ],
     "packages/boot/color-attr.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -2400,16 +2774,34 @@
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs",
+      "tests/site/08-subpath.mjs"
     ],
     "packages/boot/color-math.js": [
+      "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -2417,8 +2809,16 @@
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs",
+      "tests/site/08-subpath.mjs"
     ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2533,6 +2933,13 @@
       "tests/site/07-inject-server.mjs",
       "tests/site/08-subpath.mjs"
     ],
+    "packages/boot/tone.js": [
+      "tests/site/06-boot-palette.mjs"
+    ],
+    "packages/breadcrumb/api.md": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/breadcrumb/breadcrumb-item.html": [
       "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
@@ -2611,7 +3018,15 @@
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
+    "packages/breadcrumb/demos/label.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/breadcrumb/demos/long.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/breadcrumb/demos/part.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
@@ -2626,6 +3041,16 @@
     "packages/breadcrumb/test/breadcrumb.test.mjs": [
       "packages/breadcrumb/test/breadcrumb.test.mjs"
     ],
+    "packages/button/api.md": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/08-subpath.mjs",
+      "tests/site/09-doc-toc.mjs"
+    ],
     "packages/button/button.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2633,11 +3058,10 @@
       "packages/code/test/code.test.mjs",
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
-      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/radio/test/radio.test.mjs",
+      "packages/switch/test/switch.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/02-routing.mjs",
@@ -2658,6 +3082,16 @@
       "tests/site/09-doc-toc.mjs"
     ],
     "packages/button/demos/colors.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/08-subpath.mjs",
+      "tests/site/09-doc-toc.mjs"
+    ],
+    "packages/button/demos/hex.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "tests/site/01-load-shell.mjs",
@@ -2707,6 +3141,16 @@
       "tests/site/08-subpath.mjs",
       "tests/site/09-doc-toc.mjs"
     ],
+    "packages/button/demos/type.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/02-routing.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/08-subpath.mjs",
+      "tests/site/09-doc-toc.mjs"
+    ],
     "packages/button/demos/variants.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2729,6 +3173,10 @@
     ],
     "packages/button/test/button.test.mjs": [
       "packages/button/test/button.test.mjs"
+    ],
+    "packages/card/api.md": [
+      "packages/card/test/card.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/card/card.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2797,34 +3245,48 @@
       "packages/card/test/card.test.mjs"
     ],
     "packages/checkbox/api.md": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/checkbox.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/basic.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/disabled.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/indeterminate.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/part.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/sizes.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/demos/validation.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/page.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/checkbox/test/checkbox.test.mjs": [
       "packages/checkbox/test/checkbox.test.mjs"
+    ],
+    "packages/code/api.md": [
+      "packages/code/test/code.test.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/code/code.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2881,6 +3343,11 @@
       "tests/site/04-nav-stability.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
+    "packages/code/demos/hljs-base.html": [
+      "packages/code/test/code.test.mjs",
+      "tests/site/04-nav-stability.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/code/demos/line-numbers.html": [
       "packages/code/test/code.test.mjs",
       "tests/site/04-nav-stability.mjs",
@@ -2923,6 +3390,11 @@
     ],
     "packages/code/test/code.test.mjs": [
       "packages/code/test/code.test.mjs"
+    ],
+    "packages/collapse/api.md": [
+      "packages/collapse/test/collapse.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/08-subpath.mjs"
     ],
     "packages/collapse/collapse-item.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3060,91 +3532,121 @@
       "tests/site/08-subpath.mjs"
     ],
     "packages/dialog/api.md": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/basic.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/controlled.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/mask.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/part.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/sizes.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/demos/slots.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/dialog.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/page.html": [
-      "packages/dialog/test/dialog.test.mjs"
+      "packages/dialog/test/dialog.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dialog/test/dialog.test.mjs": [
       "packages/dialog/test/dialog.test.mjs"
     ],
     "packages/dropdown/api.md": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/demos/basic.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/demos/controlled.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/demos/hover.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/demos/part.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/demos/placement.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/dropdown.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/page.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/dropdown/test/dropdown.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/dropdown/test/dropdown.test.mjs": [
       "packages/dropdown/test/dropdown.test.mjs"
     ],
     "packages/grid/api.md": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/demos/basic.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/demos/cols.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/demos/gap.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/demos/min-width.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/demos/span.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/grid-item.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/grid.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/page.html": [
-      "packages/grid/test/grid.test.mjs"
+      "packages/grid/test/grid.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/grid/test/grid.test.mjs": [
       "packages/grid/test/grid.test.mjs"
+    ],
+    "packages/icon/api.md": [
+      "packages/icon/test/icon.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/icon/demos/basic.html": [
       "packages/icon/test/icon.test.mjs",
@@ -3155,6 +3657,10 @@
       "tests/site/05-doc-pages.mjs"
     ],
     "packages/icon/demos/colors.html": [
+      "packages/icon/test/icon.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/icon/demos/hex.html": [
       "packages/icon/test/icon.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
@@ -3175,6 +3681,10 @@
       "tests/site/05-doc-pages.mjs"
     ],
     "packages/icon/demos/slot.html": [
+      "packages/icon/test/icon.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/icon/demos/source.html": [
       "packages/icon/test/icon.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
@@ -3229,43 +3739,60 @@
       "packages/icon/test/icon.test.mjs"
     ],
     "packages/input/api.md": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/basic.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/clearable.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/maxlength.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/part.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/sizes.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/slots.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/states.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/type.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/demos/value.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/input.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/page.html": [
-      "packages/input/test/input.test.mjs"
+      "packages/input/test/input.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/input/test/input.test.mjs": [
       "packages/input/test/input.test.mjs"
+    ],
+    "packages/menu/api.md": [
+      "packages/menu/test/menu.test.mjs",
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/09-doc-toc.mjs"
     ],
     "packages/menu/demos/basic.html": [
       "packages/menu/test/menu.test.mjs",
@@ -3380,6 +3907,10 @@
     "packages/menu/test/menu.test.mjs": [
       "packages/menu/test/menu.test.mjs"
     ],
+    "packages/message/api.md": [
+      "packages/message/test/message.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/message/demos/basic.html": [
       "packages/message/test/message.test.mjs",
       "tests/site/05-doc-pages.mjs"
@@ -3412,6 +3943,10 @@
     "packages/message/test/message.test.mjs": [
       "packages/message/test/message.test.mjs"
     ],
+    "packages/popover/api.md": [
+      "packages/popover/test/popover.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/popover/demos/arrow.html": [
       "packages/popover/test/popover.test.mjs",
       "tests/site/05-doc-pages.mjs"
@@ -3420,11 +3955,19 @@
       "packages/popover/test/popover.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
+    "packages/popover/demos/customize.html": [
+      "packages/popover/test/popover.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
     "packages/popover/demos/flip.html": [
       "packages/popover/test/popover.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
     "packages/popover/demos/menu.html": [
+      "packages/popover/test/popover.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/popover/demos/part.html": [
       "packages/popover/test/popover.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
@@ -3448,211 +3991,281 @@
       "packages/popover/test/popover.test.mjs"
     ],
     "packages/progress/api.md": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/basic.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/colors.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/customize.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/indeterminate.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/max.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/part.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/demos/sizes.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/page.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/progress.html": [
-      "packages/progress/test/progress.test.mjs"
+      "packages/progress/test/progress.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/progress/test/progress.test.mjs": [
       "packages/progress/test/progress.test.mjs"
     ],
     "packages/radio/api.md": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/basic.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/direction.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/disabled.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/events.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/part.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/demos/sizes.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/page.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/radio-group.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/radio.html": [
-      "packages/radio/test/radio.test.mjs"
+      "packages/radio/test/radio.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/radio/test/radio.test.mjs": [
       "packages/radio/test/radio.test.mjs"
     ],
     "packages/select/api.md": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/basic.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/clearable.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/events.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/multiple.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/part.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/sizes.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/demos/states.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/option.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/page.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/select.html": [
-      "packages/select/test/select.test.mjs"
+      "packages/select/test/select.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/select/test/select.test.mjs": [
       "packages/select/test/select.test.mjs"
     ],
     "packages/spinner/api.md": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/demos/basic.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/demos/colors.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/demos/customize.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/demos/sizes.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/page.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/spinner.html": [
-      "packages/spinner/test/spinner.test.mjs"
+      "packages/spinner/test/spinner.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/spinner/test/spinner.test.mjs": [
       "packages/spinner/test/spinner.test.mjs"
     ],
     "packages/switch/api.md": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/demos/basic.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/demos/disabled.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/demos/part.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/demos/sizes.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/page.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/switch.html": [
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/table/api.md": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/basic.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/empty.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/hoverable.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/loading.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/part.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/table/demos/slots.html": [
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/demos/striped.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/page.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/table.html": [
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/table/test/table.test.mjs": [
       "packages/table/test/table.test.mjs"
     ],
     "packages/tabs/api.md": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/demos/basic.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/demos/disabled.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/demos/events.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/demos/part.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/page.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/tab.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/tabs.html": [
-      "packages/tabs/test/tabs.test.mjs"
+      "packages/tabs/test/tabs.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tabs/test/tabs.test.mjs": [
       "packages/tabs/test/tabs.test.mjs"
+    ],
+    "packages/tag/api.md": [
+      "packages/tag/test/tag.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tag/demos/checkable.html": [
       "packages/tag/test/tag.test.mjs",
@@ -3667,6 +4280,10 @@
       "tests/site/05-doc-pages.mjs"
     ],
     "packages/tag/demos/customize.html": [
+      "packages/tag/test/tag.test.mjs",
+      "tests/site/05-doc-pages.mjs"
+    ],
+    "packages/tag/demos/hex.html": [
       "packages/tag/test/tag.test.mjs",
       "tests/site/05-doc-pages.mjs"
     ],
@@ -3688,70 +4305,89 @@
     ],
     "packages/tag/tag.html": [
       "packages/tag/test/tag.test.mjs",
-      "tests/site/05-doc-pages.mjs"
+      "tests/site/05-doc-pages.mjs",
+      "tests/site/06-boot-palette.mjs"
     ],
     "packages/tag/test/tag.test.mjs": [
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/textarea/api.md": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/auto-resize.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/basic.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/counter.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/part.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/rows.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/sizes.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/demos/states.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/page.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/textarea/test/textarea.test.mjs": [
       "packages/textarea/test/textarea.test.mjs"
     ],
     "packages/textarea/textarea.html": [
-      "packages/textarea/test/textarea.test.mjs"
+      "packages/textarea/test/textarea.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/api.md": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/demos/basic.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/demos/delay.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/demos/part.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/demos/placement.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/demos/trigger.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/page.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "packages/tooltip/test/tooltip.test.mjs": [
       "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/tooltip/tooltip.html": [
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/05-doc-pages.mjs"
     ],
     "tests/lib/harness.mjs": [
       "packages/code/test/code.test.mjs",

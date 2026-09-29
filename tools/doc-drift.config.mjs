@@ -412,13 +412,15 @@ const rules = [
     },
   },
   {
-    /* 「例子按 api.md 的属性来、内部样式按 part 来」—— 演示和接口不许脱节：
-       组件代码里有的属性，至少有一个演示真的用它；有的 part，至少有一个演示用 `::part()` 改它。
+    /* 「例子按 api.md 的属性来、内容按插槽来、内部样式按 part 来」—— 演示和接口不许脱节：
+       组件代码里有的属性 / 命名插槽 / part，都至少要有一个演示真的用到它。
+       ⚠️ 插槽也是**接口的一部分**（api.md 的表里承诺了），但这一面过去是盲区：属性与 part 有覆盖线、
+       插槽没有 —— `mc-table` 的 empty / loading 两个槽就一度零演示。
        ⚠️ 这是**最低覆盖线**，不是「一条演示只讲一个属性」：同一维度的变体（三档尺寸、六个颜色）
-       合一条照样算覆盖；反过来，加了属性 / part 却没有演示，这里就红。 */
+       合一条照样算覆盖；反过来，加了属性 / 插槽 / part 却没有演示，这里就红。 */
     type: 'custom',
     id: 'demo-covers-api',
-    title: '组件文档 · 演示覆盖 api.md 的属性与 part',
+    title: '组件文档 · 演示覆盖 api.md 的属性、插槽与 part',
     run: ({ io, components, problems }) => {
       for (const c of components) {
         if (c.imperative) continue; // 命令式组件没有标签属性，也没有 part
@@ -430,6 +432,20 @@ const rules = [
           const re = new RegExp('(?:^|[^\\w-])' + attr + '(?:[^\\w-]|$)');
           if (!re.test(text)) {
             problems.push(dir + '：属性 `' + attr + '` 在组件代码里有，演示里一次都没出现');
+          }
+        }
+        for (const slot of c.facts.union.slots) {
+          if (slot === '(默认)') continue; // 无名的默认插槽静态判不出来，也不值得判
+          const quoted = ['slot="' + slot + '"', "slot='" + slot + "'"];
+          if (!quoted.some((needle) => text.includes(needle))) {
+            problems.push(
+              dir +
+                '：插槽 `' +
+                slot +
+                '` 在组件代码里有，演示里一次都没往里面放东西（slot="' +
+                slot +
+                '"）',
+            );
           }
         }
         for (const part of c.facts.union.parts) {

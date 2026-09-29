@@ -10,6 +10,7 @@
     <l-m src="./demos/hoverable.html"></l-m>
     <l-m src="./demos/loading.html"></l-m>
     <l-m src="./demos/empty.html"></l-m>
+    <l-m src="./demos/slots.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
@@ -95,6 +96,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/empty.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>空态与加载插槽</h3>
+      <p class="doc-hint">
+        两个槽都有兜底内容（<code>empty-text</code> 与内置的「加载中…」）， 给了
+        <code>slot="empty"</code> / <code>slot="loading"</code> 就整块换成你的。
+      </p>
+      <demo-table-slots></demo-table-slots>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/slots.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

@@ -26,7 +26,11 @@ export default async function run({ page, visit, check }) {
       <mc-table id="p-table"></mc-table>
       <mc-table id="p-table-attr" columns='[{"key":"a","title":"A"}]' data='[{"a":"来自属性"}]'></mc-table>
       <mc-table id="p-table-state" striped hoverable></mc-table>
-      <mc-table id="p-table-preset"></mc-table>`;
+      <mc-table id="p-table-preset"></mc-table>
+      <mc-table id="p-table-slots">
+        <div slot="empty" id="p-slot-empty">自定义空态</div>
+        <div slot="loading" id="p-slot-loading">自定义加载中</div>
+      </mc-table>`;
     document.body.append(host);
 
     const table = document.getElementById('p-table');
@@ -51,6 +55,11 @@ export default async function run({ page, visit, check }) {
     const preset = document.getElementById('p-table-preset');
     preset.columns = [{ key: 'p', title: 'P' }];
     preset.data = [{ p: '预设' }];
+
+    /* 命名插槽：两个槽都放了东西，空态 / 加载态该显示它们而不是兜底文案 */
+    const slots = document.getElementById('p-table-slots');
+    slots.columns = [{ key: 'n', title: 'N' }];
+    slots.data = [];
   });
   await page
     .waitForFunction(
@@ -243,6 +252,43 @@ export default async function run({ page, visit, check }) {
     '单元格文本被转义：显示的是字面量，不生成标签',
     escaped.text === '<b>粗</b> & <script>' && escaped.boldTags === 0,
     JSON.stringify(escaped),
+  );
+
+  /* ---------- 命名插槽：给了内容就顶掉兜底（empty-text / 内置「加载中…」） ---------- */
+  const slotsUi = await page.evaluate(async () => {
+    const table = document.getElementById('p-table-slots');
+    const height = (id) => document.getElementById(id).getBoundingClientRect().height;
+    const assigned = (id) => !!document.getElementById(id).assignedSlot;
+
+    await new Promise((r) => setTimeout(r, 250));
+    const out = {
+      emptyVisible: height('p-slot-empty') > 0,
+      loadingVisible: height('p-slot-loading') > 0,
+      emptyAssigned: assigned('p-slot-empty'),
+      emptyText: document.getElementById('p-slot-empty').textContent.trim(),
+      fallbackText: table.shadowRoot.querySelector('.mc-empty').textContent.trim(),
+    };
+
+    table.setAttribute('loading', '');
+    await new Promise((r) => setTimeout(r, 250));
+    out.whileLoading = {
+      emptyVisible: height('p-slot-empty') > 0,
+      loadingVisible: height('p-slot-loading') > 0,
+      loadingText: document.getElementById('p-slot-loading').textContent.trim(),
+    };
+    table.removeAttribute('loading');
+    return out;
+  });
+  check(
+    '命名插槽接手空态 / 加载态：内容是你的，兜底文案让位（两个槽都真的投影进去了）',
+    slotsUi.emptyAssigned &&
+      slotsUi.emptyVisible &&
+      !slotsUi.loadingVisible &&
+      slotsUi.emptyText === '自定义空态' &&
+      !slotsUi.whileLoading.emptyVisible &&
+      slotsUi.whileLoading.loadingVisible &&
+      slotsUi.whileLoading.loadingText === '自定义加载中',
+    JSON.stringify(slotsUi),
   );
 
   /* ---------- 收摊 ---------- */
