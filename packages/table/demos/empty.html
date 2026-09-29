@@ -1,0 +1,16 @@
+<template component>
+  <mc-table id="t" empty-text="没有数据"></mc-table>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-table-empty',
+
+      /* 没有列、也没有行：空态用 empty-text 的文案（给了 empty 插槽就覆盖它） */
+      ready() {
+        const table = this.ele.shadowRoot.querySelector('#t');
+        table.columns = [{ key: 'name', title: '姓名' }];
+        table.data = [];
+      },
+    });
+  </script>
+</template>

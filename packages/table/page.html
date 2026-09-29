@@ -1,0 +1,129 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./table.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/striped.html"></l-m>
+    <l-m src="./demos/hoverable.html"></l-m>
+    <l-m src="./demos/loading.html"></l-m>
+    <l-m src="./demos/empty.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Table <code>mc-table</code></h1>
+    <p class="doc-lead">
+      数据表格。真 <code>&lt;table&gt;</code> 结构；列定义与行数据是对象数组，运行时用 property
+      传进去，改完立刻重渲染。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <code>columns</code> / <code>data</code>
+          <strong>必须用 property 传</strong>（对象写在标签属性上会被 JSON 序列化，见 P6）：<code
+            >t.columns = [{ key, title }]</code
+          >、<code>t.data = [{…}]</code>。
+        </li>
+        <li>单元格文本按纯文本渲染（组件自己转义），需要富内容就把整列的值当字符串拼好再传。</li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        演示里在它自己的 <code>ready()</code> 里把 <code>columns</code> / <code>data</code> 赋给这个
+        <code>mc-table</code>；页面里就是 <code>document.querySelector('#t').data = […]</code>。
+      </p>
+      <demo-table-basic></demo-table-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>条纹</h3>
+      <p class="doc-hint">偶数行换底色，长表格里更好找行。</p>
+      <demo-table-striped></demo-table-striped>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/striped.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>悬停</h3>
+      <p class="doc-hint">鼠标停在哪一行，哪一行亮起来。</p>
+      <demo-table-hoverable></demo-table-hoverable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hoverable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>加载中</h3>
+      <p class="doc-hint">
+        <code>loading</code> 期间表格带 <code>aria-busy="true"</code>，并显示
+        <code>loading</code> 插槽（不给就是一行「加载中…」）。
+      </p>
+      <demo-table-loading></demo-table-loading>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/loading.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>空态</h3>
+      <p class="doc-hint">
+        一行数据都没有时显示 <code>empty</code> 插槽；文案默认「暂无数据」，可以用
+        <code>empty-text</code> 换掉。
+      </p>
+      <demo-table-empty></demo-table-empty>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/empty.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（这里开了 <code>table</code> / <code>row</code> /
+        <code>cell</code>）。
+      </p>
+      <demo-table-part></demo-table-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

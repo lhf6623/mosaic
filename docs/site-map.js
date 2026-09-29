@@ -304,6 +304,7 @@ export const SITE = [
             order: 30,
             label: 'Table',
             zh: '表格',
+            path: 'packages/table/page.html',
             tagName: 'mc-table',
             stage: 'M3',
             summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',

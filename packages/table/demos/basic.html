@@ -1,0 +1,28 @@
+<template component>
+  <mc-table id="t"></mc-table>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-table-basic',
+
+      data: {},
+
+      /* columns / data 是对象数组，只能用 property 传（标签属性会被 JSON 序列化，见 P6）。
+         这里在 ready() 里赋给页面上那个 mc-table；写在组件之外的页面里就是
+         document.querySelector('#t').data = [...]。 */
+      ready() {
+        const table = this.ele.shadowRoot.querySelector('#t');
+        table.columns = [
+          { key: 'name', title: '姓名', width: '30%' },
+          { key: 'role', title: '角色' },
+          { key: 'city', title: '城市' },
+        ];
+        table.data = [
+          { name: '张三', role: '前端工程师', city: '杭州' },
+          { name: '李四', role: '后端工程师', city: '成都' },
+          { name: '王五', role: '产品经理', city: '北京' },
+        ];
+      },
+    });
+  </script>
+</template>

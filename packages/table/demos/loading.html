@@ -1,0 +1,16 @@
+<template component>
+  <mc-table id="t" loading></mc-table>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-table-loading',
+
+      /* loading 期间表格 aria-busy="true"，loading 插槽显示在表格下面 */
+      ready() {
+        const table = this.ele.shadowRoot.querySelector('#t');
+        table.columns = [{ key: 'name', title: '姓名' }];
+        table.data = [{ name: '张三' }];
+      },
+    });
+  </script>
+</template>
