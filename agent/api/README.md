@@ -171,7 +171,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Input](../../packages/input/api.md)               | `mc-input`                             | `input/`      | M2     | ✅ 已实现 |
 | [Textarea](../../packages/textarea/api.md)         | `mc-textarea`                          | `textarea/`   | M2     | ✅ 已实现 |
 | [Checkbox](../../packages/checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`   | M2     | ✅ 已实现 |
-| Radio                                              | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | 待建      |
+| [Radio](../../packages/radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | ✅ 已实现 |
 | Switch                                             | `mc-switch`                            | `switch/`     | M2     | 待建      |
 | Select                                             | `mc-select` / `mc-option`              | `select/`     | M2     | 待建      |
 | [Alert](../../packages/alert/api.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |

@@ -172,6 +172,7 @@ export const SITE = [
             order: 40,
             label: 'Radio',
             zh: '单选按钮',
+            path: 'packages/radio/page.html',
             tagName: 'mc-radio',
             stage: 'M2',
             summary: '单选按钮组。',

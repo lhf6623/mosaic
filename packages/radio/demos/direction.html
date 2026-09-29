@@ -1,0 +1,25 @@
+<template component>
+  <div class="flex flex-col gap-4">
+    <div>
+      <p class="mb-2 text-sm text-muted">direction="row"（默认）</p>
+      <mc-radio-group name="row" default-value="b">
+        <mc-radio value="a">选项 A</mc-radio>
+        <mc-radio value="b">选项 B</mc-radio>
+        <mc-radio value="c">选项 C</mc-radio>
+      </mc-radio-group>
+    </div>
+
+    <div>
+      <p class="mb-2 text-sm text-muted">direction="column"</p>
+      <mc-radio-group name="col" direction="column" default-value="b">
+        <mc-radio value="a">选项 A</mc-radio>
+        <mc-radio value="b">选项 B</mc-radio>
+        <mc-radio value="c">选项 C</mc-radio>
+      </mc-radio-group>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-radio-direction' });
+  </script>
+</template>

@@ -1,0 +1,235 @@
+<!--
+  mc-radio — 单选项（与 mc-radio-group 同目录，配合使用）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 自己的几何令牌。
+       ⚠️ 尺寸（--mc-radio-font / -line / -height / -pad-x）**不能在这里写默认值** ——
+       它们是 group 通过继承传下来的通道，这里写死就会盖掉组的值、size 永远不生效
+       （同 mc-collapse-item 那条）。没有组时靠 var() 的兜底。 */
+    :host {
+      display: inline-flex;
+      position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-radio-height, var(--mc-control-h-md));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-radio-font, var(--mc-text-sm));
+      line-height: var(--mc-radio-line, var(--mc-text-sm-lh));
+      color: rgb(var(--mc-color-fg));
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      /* 自己就能定的几何：跟 em 走，所以 size 一档就整体缩放 */
+      --mc-radio-gap: var(--mc-space-2);
+      --mc-radio-circle: 1.15em;
+      --mc-radio-dot: 0.55em;
+    }
+
+    /* 2. 状态。选中 = 圆环换主色 + 中心点放大进来；组禁用 / 自己禁用都走宿主属性
+       （组禁用的镜像见脚本，P33：宿主「看不到」孩子，CSS 只能从宿主上选） */
+    .mc-base:hover .mc-circle {
+      border-color: rgb(var(--mc-color-primary));
+    }
+    :host([checked]) .mc-circle {
+      border-color: rgb(var(--mc-color-primary));
+    }
+    :host([checked]) .mc-dot {
+      transform: scale(1);
+    }
+    :host([disabled]),
+    :host([data-group-disabled]) {
+      opacity: 0.5;
+    }
+    :host([disabled]) .mc-base,
+    :host([data-group-disabled]) .mc-base {
+      cursor: not-allowed;
+    }
+    /* 禁用态不响应 hover（设计规范第五节）—— 正向覆盖，不用 :not()（P14） */
+    :host([disabled]) .mc-base:hover .mc-circle,
+    :host([data-group-disabled]) .mc-base:hover .mc-circle {
+      border-color: rgb(var(--mc-color-border-strong));
+    }
+    :host([disabled][checked]) .mc-base:hover .mc-circle,
+    :host([data-group-disabled][checked]) .mc-base:hover .mc-circle {
+      border-color: rgb(var(--mc-color-primary));
+    }
+
+    /* 3. 内部结构。行盒子在这个原生 <label> 上：点圆圈、点文案都落在同一个原生 input 上。
+       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
+       不铺满就出现「点在行里但没点到文案」的死区 */
+    .mc-base {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      gap: var(--mc-radio-gap);
+      box-sizing: border-box;
+      height: 100%;
+      padding-inline: var(--mc-radio-pad-x, var(--mc-space-3));
+      cursor: pointer;
+    }
+    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
+    .mc-native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .mc-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-radio-circle);
+      height: var(--mc-radio-circle);
+      border: 1px solid rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-radius-full);
+      background-color: rgb(var(--mc-color-surface));
+      transition: border-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    /* 焦点环画在圆圈上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
+    .mc-native:focus-visible + .mc-circle {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+    .mc-dot {
+      width: var(--mc-radio-dot);
+      height: var(--mc-radio-dot);
+      border-radius: var(--mc-radius-full);
+      background-color: rgb(var(--mc-color-primary));
+      transform: scale(0);
+      transition: transform var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+
+    .mc-label {
+      min-width: 0;
+    }
+  </style>
+
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件，读屏也把文案算成控件名 -->
+  <label class="mc-base" part="base">
+    <!-- 原生 change 只到自己的 shadow 边界（P19 同族的坑）：向外由 group 转成 composed 的 change -->
+    <input class="mc-native" type="radio" on:change="onNativeChange()" />
+    <span class="mc-circle" part="circle" aria-hidden="true"><span class="mc-dot"></span></span>
+    <span class="mc-label" part="label"><slot></slot></span>
+  </label>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-radio',
+
+      attrs: {
+        // 这一项的值：group 拿它跟自己的 value 比对，决定谁选中
+        value: '',
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-radio disabled> 失效
+        disabled: null,
+      },
+
+      ready() {
+        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+        this._native = this.ele.shadowRoot.querySelector('.mc-native');
+
+        /* 选中状态是**组**的状态（组维护唯一真相）；这个 property 只是同一个状态的快捷读写，
+           setter 立刻同步内部原生 input，不等 ofa 那一拍（规范 1.4 / P4） */
+        Object.defineProperty(this.ele, 'checked', {
+          configurable: true,
+          get: () => this._native.checked,
+          set: (value) => {
+            this.ele.toggleAttribute('checked', !!value);
+            this.applyChecked();
+          },
+        });
+
+        /* group → 子项的两个宿主方法（刻意不是 attrs：组禁用不该写进子项自己的属性表）。
+           方向是单向的：组推状态、子项不反向读组的内部状态。
+           ⚠️ 必须带上 applyChecked —— 组改的是宿主属性，内部原生 input 得跟着走；
+           组件升级晚于组时属性已经在了，也不能只等初始化那一拍。 */
+        Object.defineProperty(this.ele, 'syncGroupState', {
+          configurable: true,
+          value: () => {
+            this.applyChecked();
+            this.applyGroupState();
+            this.mirrorGroupDisabled();
+          },
+        });
+        Object.defineProperty(this.ele, 'focusNative', {
+          configurable: true,
+          value: () => this._native.focus(),
+        });
+
+        this.applyChecked();
+        this.applyGroupState();
+      },
+
+      attached() {
+        this._mounted = true;
+        this.mirrorGroupDisabled();
+      },
+
+      watch: {
+        /* 首次触发落在构造期（P5）。applyGroupState 只写 shadow 内部的原生 input，
+           宿主镜像那一步自己带 _mounted 守卫（P31），所以这里不需要首次守卫。 */
+        disabled() {
+          this.applyGroupState();
+          this.mirrorGroupDisabled();
+        },
+      },
+
+      proto: {
+        /** 最近的 mc-radio-group（同一个 light DOM 树里，closest 走得到） */
+        groupEl() {
+          const group = this.ele.closest('mc-radio-group');
+          return group && group !== this.ele ? group : null;
+        },
+
+        /** 组的状态只读不缓存：组改名 / 禁用都由组自己推一次 syncGroupState() 过来 */
+        applyGroupState() {
+          const group = this.groupEl();
+          // 同一组共享 name：读屏与表单语义靠它（原生跨 shadow root 不成组，互斥由 group 做）
+          this._native.name = group?.getAttribute('name') ?? '';
+          this._native.disabled = this.isDisabled();
+        },
+
+        isDisabled() {
+          return this.ele.hasAttribute('disabled') || !!this.groupEl()?.hasAttribute('disabled');
+        },
+
+        /**
+         * 组禁用不是子项自己的 disabled，所以镜像成宿主上的 data-*（同 P33 的写法）。
+         * ⚠️ 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）。
+         */
+        mirrorGroupDisabled() {
+          if (!this._mounted) return;
+          const off = !!this.groupEl()?.hasAttribute('disabled');
+          if (off === this.ele.hasAttribute('data-group-disabled')) return;
+          this.ele.toggleAttribute('data-group-disabled', off);
+        },
+
+        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
+        applyChecked() {
+          const want = this.ele.hasAttribute('checked');
+          if (this._native.checked !== want) this._native.checked = want;
+        },
+
+        /**
+         * 原生 change → 只把「自己这一格」反射回宿主属性（CSS 的输入）。
+         * 组内互斥与对外的 change 由 group 在 click 阶段一并完成 —— 原生 radio 分居各自的
+         * shadow root，浏览器根本不认它们是一组，所以互斥没法白拿（见 README）。
+         */
+        onNativeChange() {
+          this.ele.toggleAttribute('checked', this._native.checked);
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,24 @@
+<template component>
+  <div class="flex flex-col gap-4">
+    <mc-radio-group name="plan" default-value="year" on:change="plan = $event.data.value">
+      <mc-radio value="month">月付</mc-radio>
+      <mc-radio value="year">年付（省两个月）</mc-radio>
+      <mc-radio value="once">一次性买断</mc-radio>
+    </mc-radio-group>
+
+    <mc-radio-group name="channel" default-value="web">
+      <mc-radio value="web">网页</mc-radio>
+      <mc-radio value="app">App</mc-radio>
+    </mc-radio-group>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">第一个组当前值：<strong>{{plan}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-radio-basic',
+
+      data: { plan: 'year' },
+    });
+  </script>
+</template>

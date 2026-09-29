@@ -1,0 +1,20 @@
+<template component>
+  <mc-radio-group name="fruit" default-value="apple" on:change="last = $event.data.value">
+    <mc-radio value="apple">苹果</mc-radio>
+    <mc-radio value="pear">梨</mc-radio>
+    <mc-radio value="plum">李子</mc-radio>
+  </mc-radio-group>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次 <code>change</code>：<strong>{{last}}</strong> —— 载荷是
+    <code>$event.data.value</code>；在组上监听一次就够，子项不会各自再发一遍。
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-radio-events',
+
+      data: { last: '（还没改过）' },
+    });
+  </script>
+</template>

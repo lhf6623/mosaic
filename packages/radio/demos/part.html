@@ -1,0 +1,30 @@
+<template component>
+  <style>
+    /* 组的 base 与子项的 base 是两个元素，选择器各自带上自己的类，免得互相串 */
+    .part-group::part(base) {
+      gap: var(--mc-space-2);
+    }
+    .part-radio::part(circle) {
+      --mc-radio-circle: 1.5em;
+      border-width: 2px;
+    }
+    .part-radio::part(label) {
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-medium);
+    }
+  </style>
+
+  <mc-radio-group class="part-group" name="styled" default-value="b">
+    <mc-radio class="part-radio" value="a">这一格用 ::part(circle) / ::part(label) 改过</mc-radio>
+    <mc-radio class="part-radio" value="b">这一格也一样</mc-radio>
+  </mc-radio-group>
+
+  <mc-radio-group name="plain" default-value="b">
+    <mc-radio value="a">默认对照</mc-radio>
+    <mc-radio value="b">默认对照</mc-radio>
+  </mc-radio-group>
+
+  <script>
+    export default async () => ({ tag: 'demo-radio-part' });
+  </script>
+</template>

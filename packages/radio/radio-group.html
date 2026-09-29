@@ -1,0 +1,237 @@
+<!--
+  mc-radio-group — 单选项组（与 mc-radio 同目录，容器 + 子项）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主 + 尺寸通道。子项住在**另一个 shadow root** 里，组的 CSS 选择器够不到它们，
+       只能靠自定义属性继承把尺寸送下去（同 mc-collapse 的做法）；
+       ⚠️ 这几条不能写进 radio.html 的 :host —— 那里写默认值就会盖掉继承来的值，size 永远不生效 */
+    :host {
+      display: block;
+      font-family: var(--mc-font-sans);
+
+      --mc-radio-font: var(--mc-text-sm);
+      --mc-radio-line: var(--mc-text-sm-lh);
+      --mc-radio-height: var(--mc-control-h-md);
+      --mc-radio-pad-x: var(--mc-space-3);
+      --mc-radio-group-gap: var(--mc-space-4);
+    }
+
+    /* 2. 尺寸：三档只改高度 / 内边距 / 字号 / 行距（口径见 agent/checklist.md 第二节） */
+    :host([size='sm']) {
+      --mc-radio-font: var(--mc-text-xs);
+      --mc-radio-line: var(--mc-text-xs-lh);
+      --mc-radio-height: var(--mc-control-h-sm);
+      --mc-radio-pad-x: var(--mc-space-2);
+      --mc-radio-group-gap: var(--mc-space-3);
+    }
+    :host([size='lg']) {
+      --mc-radio-font: var(--mc-text-base);
+      --mc-radio-line: var(--mc-text-base-lh);
+      --mc-radio-height: var(--mc-control-h-lg);
+      --mc-radio-pad-x: var(--mc-space-4);
+      --mc-radio-group-gap: var(--mc-space-5);
+    }
+
+    /* 3. 方向：默认 row（写 :host(:not([direction])) 会静默失效，P14） */
+    .mc-base {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--mc-radio-group-gap);
+    }
+    :host([direction='column']) .mc-base {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  </style>
+
+  <div class="mc-base" part="base"><slot></slot></div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-radio-group',
+
+      attrs: {
+        // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
+        defaultValue: '',
+        // 这一组的表单字段名，转发给每个子项内部的原生 radio
+        name: '',
+        direction: 'row',
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-radio-group disabled> 失效
+        disabled: null,
+        size: 'md',
+      },
+
+      ready() {
+        /* 运行时值走宿主 DOM property（规范 1.4 / P18）：真相是子项的 checked 属性，
+           这个 property 只是读写它的同一个口子 —— setter 立刻落脚，不等 ofa 那一拍（P4） */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => this.groupValue(),
+          set: (value) => this.selectValue(value),
+        });
+      },
+
+      attached() {
+        this._mounted = true; // 宿主属性只能在这之后写（P31）
+        // 读屏语义：原生 radio 分居各自的 shadow root，AT 不会自己把它们当成一组
+        if (!this.ele.hasAttribute('role')) this.ele.setAttribute('role', 'radiogroup');
+        this.applyA11y();
+
+        this._slot = this.ele.shadowRoot.querySelector('slot');
+        this._onSlotChange = () => this.onSlotChange();
+        this._onClick = (event) => this.onClick(event);
+        this._onKeydown = (event) => this.onKeydown(event);
+        this._slot.addEventListener('slotchange', this._onSlotChange);
+        // click / keydown 都是 composed：从子项 shadow 里的原生 radio 冒得上来
+        this.ele.addEventListener('click', this._onClick);
+        this.ele.addEventListener('keydown', this._onKeydown);
+
+        // 初始选中：给了 default-value 就选它，否则只把「已经带 checked 的子项」规范成唯一一个
+        const initial = (this.ele.getAttribute('default-value') ?? '').trim();
+        if (initial !== '')
+          this.applySelection((radio) => this.radioValue(radio) === initial, false);
+        else this.normalizeChecked();
+      },
+
+      loaded() {
+        // 子项可能比组晚升级（<l-m> 是异步的）：升级完再对一次账，name / disabled 才推得下去
+        this.syncChildren();
+      },
+
+      detached() {
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this.ele.removeEventListener('click', this._onClick);
+        this.ele.removeEventListener('keydown', this._onKeydown);
+      },
+
+      watch: {
+        /* ⚠️ 没有 watch.defaultValue：按规范 1.4，标签属性只是**初始值**，
+           挂载那一刻读一次就完（同 mc-input 的口径）。之后改属性不会回头覆盖运行时值 ——
+           否则模板重渲染一次就会把使用者刚点的选中冲掉；运行时改用宿主 property `value`。 */
+        name() {
+          this.syncChildren();
+        },
+        disabled() {
+          this.syncChildren();
+        },
+        direction() {
+          this.applyA11y();
+        },
+      },
+
+      proto: {
+        /** 组的成员 = 直接子项（嵌套组各管各的） */
+        radios() {
+          return [...this.ele.querySelectorAll(':scope > mc-radio')];
+        },
+
+        radioValue(radio) {
+          return radio.getAttribute('value') ?? '';
+        },
+
+        selectedRadio() {
+          return this.radios().find((radio) => radio.hasAttribute('checked')) ?? null;
+        },
+
+        groupValue() {
+          const hit = this.selectedRadio();
+          return hit ? this.radioValue(hit) : '';
+        },
+
+        /**
+         * 唯一真相 = 子项上的 checked 属性；value 只是它的投影。
+         * 组不伸手进子项的 shadow root，只调两个宿主方法：syncGroupState（重读组状态）、
+         * focusNative（把焦点交给内部原生 radio）。
+         */
+        applySelection(isSelected, emit) {
+          const before = this.selectedRadio();
+          for (const radio of this.radios()) {
+            const on = isSelected(radio);
+            if (on !== radio.hasAttribute('checked')) radio.toggleAttribute('checked', on);
+            radio.syncGroupState?.(); // 立刻同步内部原生 input，不等 ofa 那一拍（P4）
+          }
+          this.syncValueAttr();
+          const after = this.selectedRadio();
+          if (emit && after !== before) {
+            this.emit('change', {
+              data: { value: after ? this.radioValue(after) : '' },
+              bubbles: true,
+              composed: true,
+            });
+          }
+        },
+
+        /** 运行时值：空串 = 一个都不选（与 default-value 的口径一致） */
+        selectValue(value) {
+          const next = value == null ? '' : String(value);
+          this.applySelection((radio) => next !== '' && this.radioValue(radio) === next, false);
+        },
+
+        /** 初始对账：HTML 里可能手写了多个 checked，只留第一个 */
+        normalizeChecked() {
+          const checked = this.radios().filter((radio) => radio.hasAttribute('checked'));
+          if (checked.length > 1) this.applySelection((radio) => radio === checked[0], false);
+          else this.syncChildren();
+        },
+
+        syncChildren() {
+          for (const radio of this.radios()) radio.syncGroupState?.();
+        },
+
+        /** 宿主 value 属性跟着运行时值走，外部 getAttribute('value') 不会是陈的 */
+        syncValueAttr() {
+          if (!this._mounted) return;
+          const value = this.groupValue();
+          if (this.ele.getAttribute('value') !== value) this.ele.setAttribute('value', value);
+        },
+
+        applyA11y() {
+          if (!this._mounted) return;
+          this.ele.setAttribute(
+            'aria-orientation',
+            this.direction === 'column' ? 'vertical' : 'horizontal',
+          );
+        },
+
+        onSlotChange() {
+          const initial = (this.ele.getAttribute('default-value') ?? '').trim();
+          if (initial !== '' && !this.selectedRadio()) this.selectValue(initial);
+          else this.syncChildren();
+        },
+
+        /** 从事件路径里认成员：composedPath() 而不是 target（P20：target 到 shadow 边界已被重定向） */
+        radioFromEvent(event) {
+          const radio = event.composedPath().find((node) => node.localName === 'mc-radio');
+          if (!radio || radio.closest('mc-radio-group') !== this.ele) return null;
+          return radio.hasAttribute('disabled') ? null : radio;
+        },
+
+        onClick(event) {
+          if (this.ele.hasAttribute('disabled')) return;
+          const radio = this.radioFromEvent(event);
+          if (!radio) return;
+          this.applySelection((item) => item === radio, true);
+        },
+
+        /** 方向键在组内换选中并把焦点带过去（原生跨 shadow root 不成组，浏览器不会自己走） */
+        onKeydown(event) {
+          const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+          if (!step || this.ele.hasAttribute('disabled')) return;
+          const radio = this.radioFromEvent(event);
+          if (!radio) return;
+          const list = this.radios().filter((item) => !item.hasAttribute('disabled'));
+          const at = list.indexOf(radio);
+          if (at < 0) return;
+          event.preventDefault(); // 方向键在组内换选中，别顺带把页面滚走
+          const next = list[(at + step + list.length) % list.length];
+          this.applySelection((item) => item === next, true);
+          next.focusNative?.();
+        },
+      },
+    });
+  </script>
+</template>
