@@ -167,4 +167,205 @@ check(
   parentRefs.missing.length === 0,
   parentRefs.missing.join(' · ') || '全部已挂到布局页',
 );
+
+/* ------------------------------------------------------------------ *
+ * 12.4 任意色走令牌层（D8 · agent/howto/arbitrary-color.md）：
+ *      容器 / 实例上覆盖 L2 六件套就到达组件；:root 上写 L3 不生效。
+ *      组件一个都不用支持 hex —— 这就是 D8 的判据，钉住它。
+ * ------------------------------------------------------------------ */
+
+const TONE =
+  '--mc-color-primary: 255 240 0; --mc-color-primary-fg: 0 0 0;' +
+  ' --mc-color-primary-subtle: 255 252 224; --mc-color-primary-hover: 230 216 0;' +
+  ' --mc-color-primary-active: 204 192 0; --mc-color-ring: 60 67 77';
+
+/* 组件本体按需引入：index 首页本来就会引到 button，但别依赖"上一页留下的注册" */
+await page.evaluate(() => {
+  if (!customElements.get('mc-button')) {
+    const el = document.createElement('l-m');
+    el.setAttribute('src', '/packages/button/button.html');
+    document.head.append(el);
+  }
+});
+await page
+  .waitForFunction(() => !!customElements.get('mc-button'), { timeout: 8000 })
+  .catch(() => {});
+
+await page.evaluate((tone) => {
+  const box = document.createElement('div');
+  box.id = 'tone-probe';
+  box.innerHTML =
+    `<div style="${tone}"><mc-button id="tone-scoped" color="primary">子树</mc-button></div>` +
+    `<mc-button id="tone-instance" color="primary" style="${tone}">实例</mc-button>` +
+    `<mc-button id="tone-plain" color="primary">默认</mc-button>`;
+  document.body.append(box);
+
+  /* :root 上写 L3（--mc-button-fill）不该生效：组件 :host 自己声明过它，继承值打不过 */
+  const style = document.createElement('style');
+  style.id = 'tone-root-l3';
+  style.textContent = ':root { --mc-button-fill: 9 9 9; }';
+  document.head.append(style);
+}, TONE);
+
+await page
+  .waitForFunction(
+    () =>
+      ['tone-scoped', 'tone-instance', 'tone-plain'].every(
+        (id) => !!document.getElementById(id)?.shadowRoot,
+      ),
+    { timeout: 5000 },
+  )
+  .catch(() => {});
+
+const tone = await page.evaluate(() => {
+  const read = (id) => {
+    const cs = getComputedStyle(document.getElementById(id));
+    return { bg: cs.backgroundColor, fg: cs.color };
+  };
+  /* 默认按钮的期望值按当前主题算，别写死亮色值 */
+  const primary = getComputedStyle(document.documentElement)
+    .getPropertyValue('--mc-color-primary')
+    .trim()
+    .match(/\d+/g)
+    .slice(0, 3)
+    .join(', ');
+  const out = {
+    scoped: read('tone-scoped'),
+    instance: read('tone-instance'),
+    plain: read('tone-plain'),
+    themePrimary: `rgb(${primary})`,
+  };
+  document.getElementById('tone-root-l3')?.remove();
+  document.getElementById('tone-probe')?.remove();
+  return out;
+});
+check(
+  '任意色走令牌层：容器 / 实例上覆盖 L2 六件套就到达组件，:root 上写 L3 不生效（D8）',
+  tone.scoped.bg === 'rgb(255, 240, 0)' &&
+    tone.scoped.fg === 'rgb(0, 0, 0)' &&
+    tone.instance.bg === 'rgb(255, 240, 0)' &&
+    tone.instance.fg === 'rgb(0, 0, 0)' &&
+    tone.plain.bg === tone.themePrimary,
+  JSON.stringify({ ...tone, 期望任意色: 'rgb(255, 240, 0) / 字 rgb(0, 0, 0)' }),
+);
+
+/* ------------------------------------------------------------------ *
+ * 12.5 boot/tone.js —— 任意色的唯一实现（D8）：
+ *      命令式 / 声明式同一份实现、跨组件生效、切主题重算派生档、清除与非法值。
+ * ------------------------------------------------------------------ */
+
+/* tag 也引进来：要证明"一处实现、多个结构不同的组件一起受益" */
+await page.evaluate(() => {
+  if (!customElements.get('mc-tag')) {
+    const el = document.createElement('l-m');
+    el.setAttribute('src', '/packages/tag/tag.html');
+    document.head.append(el);
+  }
+});
+await page
+  .waitForFunction(() => !!customElements.get('mc-tag'), { timeout: 8000 })
+  .catch(() => {});
+
+const toneModule = await page.evaluate(async () => {
+  const { applyTone, clearTone } = await import('/packages/boot/tone.js');
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const cs = (el) => getComputedStyle(el);
+  const box = document.createElement('div');
+  box.id = 'tone2-probe';
+  box.innerHTML =
+    '<div id="tone2-scope"><mc-button id="tone2-btn" color="primary">按钮</mc-button>' +
+    '<mc-tag id="tone2-tag" color="primary">标签</mc-tag></div>' +
+    '<div id="tone2-decl" data-tone="#fff000"><mc-button id="tone2-dbtn" color="primary">声明式</mc-button></div>' +
+    '<mc-button id="tone2-plain" color="primary">默认</mc-button>';
+  document.body.append(box);
+  await wait(250); // 组件升级是异步的
+
+  const scope = document.getElementById('tone2-scope');
+  const btn = document.getElementById('tone2-btn');
+  const tag = document.getElementById('tone2-tag');
+  const decl = document.getElementById('tone2-decl');
+  const plain = document.getElementById('tone2-plain');
+  const inline = (el, name) => el.style.getPropertyValue(name).trim();
+  const asRgb = (el, name) => `rgb(${inline(el, name).split(/\s+/).join(', ')})`;
+
+  /* ① 命令式：选择器 + hex（tag 的底色有 120ms 过渡，读计算值前要等它走完） */
+  const applied = applyTone('#tone2-scope', '#fff000');
+  await wait(400);
+  const lightSubtle = inline(scope, '--mc-color-primary-subtle');
+  const legacyTheme = document.documentElement.getAttribute('data-theme');
+
+  /* ② 声明式：模块引入之后插入的 [data-tone] 要被观察器接住 */
+  const declared = { bg: cs(document.getElementById('tone2-dbtn')).backgroundColor };
+
+  /* ③ 切到相反的主题：hex 不变、派生档重算 */
+  const wasDark = legacyTheme === 'dark';
+  document.documentElement.setAttribute('data-theme', wasDark ? 'light' : 'dark');
+  await wait(120);
+  const flippedSubtle = inline(scope, '--mc-color-primary-subtle');
+  if (legacyTheme === null) document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', legacyTheme);
+  await wait(400); // 恢复主题后 tag 又走一次过渡，等它落定再快照
+
+  /* ③b 快照：必须在清除之前读 */
+  const painted = {
+    button: { bg: cs(btn).backgroundColor, fg: cs(btn).color },
+    tag: { bg: cs(tag).backgroundColor, subtle期望: asRgb(scope, '--mc-color-primary-subtle') },
+    brand: inline(scope, '--mc-color-primary'),
+  };
+
+  /* ④ 清除 + 非法值 */
+  const cleared = clearTone('#tone2-scope');
+  await wait(80);
+  const bad = document.createElement('mc-button');
+  box.append(bad);
+  const invalid = applyTone(bad, 'rgb(1,2,3)');
+  const missing = applyTone('#tone2-nope', '#fff000');
+
+  const out = {
+    applied,
+    declared,
+    cleared,
+    invalid,
+    missing,
+    '按钮（命令式）': painted.button,
+    '标签（命令式，4 槽）': painted.tag,
+    '派生档变化': { light: lightSubtle, flipped: flippedSubtle, 品牌色未变: painted.brand },
+    '默认按钮（同页对照）': cs(plain).backgroundColor,
+    '清除后 primary 令牌': inline(scope, '--mc-color-primary'),
+    '非法值没写令牌': bad.style.getPropertyValue('--mc-color-primary') === '',
+  };
+  document.getElementById('tone2-probe')?.remove();
+  return out;
+});
+
+check(
+  'tone.js：一处实现两种用法 —— 选择器 / 声明式都生效，跨组件（button + tag）一起变',
+  toneModule.applied === true &&
+    toneModule['按钮（命令式）'].bg === 'rgb(255, 240, 0)' &&
+    toneModule['按钮（命令式）'].fg === 'rgb(0, 0, 0)' &&
+    toneModule.declared.bg === 'rgb(255, 240, 0)',
+  JSON.stringify(toneModule),
+);
+check(
+  'tone.js：标签吃到同一份令牌（浅底 = 派生的 -subtle），切主题 hex 不变而派生档重算',
+  toneModule['标签（命令式，4 槽）'].bg === toneModule['标签（命令式，4 槽）'].subtle期望 &&
+    toneModule['派生档变化'].light !== toneModule['派生档变化'].flipped &&
+    toneModule['派生档变化']['品牌色未变'] === '255 240 0',
+  JSON.stringify(toneModule['派生档变化']),
+);
+check(
+  'tone.js：clearTone 清干净（回到语义色），非法值与没命中的选择器都只返回 false、不改任何令牌',
+  toneModule.cleared === true &&
+    toneModule['清除后 primary 令牌'] === '' &&
+    toneModule['默认按钮（同页对照）'].bg !== 'rgb(255, 240, 0)' &&
+    toneModule.invalid === false &&
+    toneModule.missing === false &&
+    toneModule['非法值没写令牌'] === true,
+  JSON.stringify({
+    cleared: toneModule.cleared,
+    invalid: toneModule.invalid,
+    missing: toneModule.missing,
+    '清除后 primary 令牌': toneModule['清除后 primary 令牌'],
+  }),
+);
 }

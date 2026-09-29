@@ -111,6 +111,11 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 
 - 内部 `await load('../icon/icon.html')`：左侧图形跟着 `color` 变，所以只引 `mc-alert` 的使用者会连带取一次 `icon.html`。
 
+**`color` 也收 hex**（`<mc-alert color="#1a7f5a">`）：六个语义名仍走 CSS，hex 走
+[`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-alert-fill` / `-on-fill` / `-accent` /
+`-subtle-fill`（浅底档按当前主题混，切主题会重算）。文字色按 WCAG 自动给；**极浅的牌子色在浅底上会读不清**
+（`#fff000` 1.16:1），接线器会就此发一条 `[mosaic]` 警告。只收 hex，非 hex 一条警告、不写槽。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

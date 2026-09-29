@@ -6,6 +6,7 @@
     <l-m src="../alert/alert.html"></l-m>
     <l-m src="./tag.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/hex.html"></l-m>
     <l-m src="./demos/variants.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/closable.html"></l-m>
@@ -47,6 +48,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>hex 颜色</h3>
+      <p class="doc-hint">
+        <code>color</code> 也直接收 hex（<code>#fff000</code> /
+        <code>#fc0</code>）：浅底按主题派生，
+        文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
+      </p>
+      <demo-tag-hex></demo-tag-hex>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hex.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

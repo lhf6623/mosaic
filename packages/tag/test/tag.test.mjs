@@ -82,6 +82,87 @@ export default async function run({ page, visit, check }) {
       });
     });
 
+    /** 任意色：令牌层覆盖 L2 六件套，浅底与强调色一起换（tag 一个 hex 都不用认 · D8） */
+    const six =
+      '--mc-color-primary: 255 240 0; --mc-color-primary-fg: 0 0 0;' +
+      ' --mc-color-primary-subtle: 255 252 224; --mc-color-primary-hover: 230 216 0;' +
+      ' --mc-color-primary-active: 204 192 0; --mc-color-ring: 60 67 77';
+    const two = '--mc-color-primary: 255 240 0; --mc-color-primary-fg: 0 0 0';
+    await page.evaluate(
+      ({ six, two }) => {
+        const box = document.createElement('div');
+        box.id = 'tag-tone-probe';
+        box.innerHTML =
+          `<div style="${six}"><mc-tag id="tag-tone-full" color="primary">六件套</mc-tag></div>` +
+          `<mc-tag id="tag-tone-partial" color="primary" style="${two}">只两个</mc-tag>`;
+        document.body.append(box);
+      },
+      { six, two },
+    );
+    await page
+      .waitForFunction(
+        () =>
+          ['tag-tone-full', 'tag-tone-partial'].every(
+            (id) => !!document.getElementById(id)?.shadowRoot,
+          ),
+        { timeout: 5000 },
+      )
+      .catch(() => {});
+    const tone = await page.evaluate(() => {
+      const read = (id) => {
+        const cs = getComputedStyle(document.getElementById(id));
+        return { bg: cs.backgroundColor, fg: cs.color };
+      };
+      const out = { full: read('tag-tone-full'), partial: read('tag-tone-partial') };
+      document.getElementById('tag-tone-probe')?.remove();
+      return out;
+    });
+
+    /** color 收 hex：浅底档按主题派生、实心档跟着走；非法值一个槽都不写 */
+    const hexColors = await (async () => {
+      await page.evaluate(() => {
+        const box = document.createElement('div');
+        box.id = 'tag-hex-probe';
+        box.innerHTML =
+          '<mc-tag id="tag-hex-subtle" color="#1a7f5a">hex</mc-tag>' +
+          '<mc-tag id="tag-hex-solid" variant="solid" color="#1a7f5a">hex</mc-tag>' +
+          '<mc-tag id="tag-hex-neutral" color="neutral">对照</mc-tag>' +
+          '<mc-tag id="tag-hex-bad" color="notahex">非法</mc-tag>';
+        document.body.append(box);
+      });
+      await page
+        .waitForFunction(
+          () =>
+            ['tag-hex-subtle', 'tag-hex-solid', 'tag-hex-neutral', 'tag-hex-bad'].every(
+              (id) => !!document.getElementById(id)?.shadowRoot,
+            ),
+          { timeout: 5000 },
+        )
+        .catch(() => {});
+      await page.waitForTimeout(320); // 底色有 120ms 过渡，等它落定再读
+      const out = await page.evaluate(() => {
+        const el = (id) => document.getElementById(id);
+        const cs = (id) => getComputedStyle(el(id));
+        const rgb = (id) => (cs(id).backgroundColor.match(/\d+/g) ?? []).slice(0, 3).join(',');
+        const fg = (id) => (cs(id).color.match(/\d+/g) ?? []).slice(0, 3).join(',');
+        return {
+          subtle: {
+            bg: rgb('tag-hex-subtle'),
+            fg: fg('tag-hex-subtle'),
+            subtleToken: el('tag-hex-subtle')
+              .style.getPropertyValue('--mc-tag-subtle-fill')
+              .trim()
+              .replace(/\s+/g, ','),
+          },
+          solid: { bg: rgb('tag-hex-solid'), fg: fg('tag-hex-solid') },
+          bad: { inline: el('tag-hex-bad').style.cssText, bg: rgb('tag-hex-bad') },
+          neutral: { bg: rgb('tag-hex-neutral') },
+        };
+      });
+      await page.evaluate(() => document.getElementById('tag-hex-probe')?.remove());
+      return out;
+    })();
+
     /** 外观：subtle / solid / outline 只换色槽贴到哪儿，1px 边框恒定 */
     const variants = await page.evaluate(() => {
       const box = window.__deepAll('demo-tag-variants')[0].shadowRoot;
@@ -400,6 +481,8 @@ export default async function run({ page, visit, check }) {
       tokens,
       overview,
       colors,
+      tone,
+      hexColors,
       variants,
       sizes,
       closable,
@@ -437,6 +520,28 @@ export default async function run({ page, visit, check }) {
       tag.colors[5].fg === tag.tokens.fgMuted &&
       tag.colors.every((c) => c.borderWidth === '1px'),
     JSON.stringify(tag.colors),
+  );
+
+  check(
+    'color 收 hex（tag）：浅底 = 按主题混出的 -subtle-fill，文字/描边是品牌色本身；实心档同理',
+    tag.hexColors.subtle.bg === tag.hexColors.subtle.subtleToken &&
+      tag.hexColors.subtle.fg === '26,127,90' &&
+      tag.hexColors.solid.bg === '26,127,90' &&
+      tag.hexColors.solid.fg === '255,255,255',
+    JSON.stringify(tag.hexColors),
+  );
+  check(
+    'color 收 hex（tag）：非 hex 一个槽都不写（与 color="neutral" 的对照表现一致）',
+    tag.hexColors.bad.inline === '' && tag.hexColors.bad.bg === tag.hexColors.neutral.bg,
+    JSON.stringify({ bad: tag.hexColors.bad, neutral: tag.hexColors.neutral }),
+  );
+  check(
+    '任意色走令牌层：容器上覆盖 L2 六件套 → 浅底与强调色一起换；只覆盖两个 → 浅底还是主题色（D8）',
+    tag.tone.full.bg === 'rgb(255, 252, 224)' &&
+      tag.tone.full.fg === 'rgb(255, 240, 0)' &&
+      tag.tone.partial.bg === tag.tokens.primarySubtle &&
+      tag.tone.partial.fg === 'rgb(255, 240, 0)',
+    JSON.stringify({ ...tag.tone, 主题浅底: tag.tokens.primarySubtle }),
   );
 
   check(

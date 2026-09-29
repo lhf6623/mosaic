@@ -236,6 +236,13 @@
   </button>
 
   <script>
+    /* color 也收 hex（`<mc-tag color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器。
+       标签默认是浅底外观（subtle），所以这里要接 subtle-fill —— 主题重算与"浅底上读不清"的
+       警告都在那个文件里 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
+
     export default async () => ({
       tag: 'mc-tag',
 
@@ -269,6 +276,9 @@
       },
 
       attached() {
+        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+        color.sync(this.ele, this.color);
+
         /* toggle 按钮是空的（内容在旁边的插槽里），无障碍名得跟着插槽文本走 ——
            slotchange 覆盖「内容变了」这一路，运行时不再盯子树 */
         this._onSlotChange = () => this.applyLabel();
@@ -278,6 +288,13 @@
 
       detached() {
         this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
+        color(value) {
+          color.change(this.ele, value);
+        },
       },
 
       proto: {

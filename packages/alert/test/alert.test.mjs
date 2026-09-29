@@ -415,12 +415,58 @@ export default async function run({ page, visit, check }) {
       return out;
     })();
 
+    /** color 收 hex：浅底档按主题派生、实心档跟着走；非法值一个槽都不写 */
+    const hexColors = await (async () => {
+      await page.evaluate(() => {
+        const box = document.createElement('div');
+        box.id = 'alert-hex-probe';
+        box.innerHTML =
+          '<mc-alert id="alert-hex-subtle" color="#1a7f5a">hex</mc-alert>' +
+          '<mc-alert id="alert-hex-solid" variant="solid" color="#1a7f5a">hex</mc-alert>' +
+          '<mc-alert id="alert-hex-control" color="primary">对照</mc-alert>' +
+          '<mc-alert id="alert-hex-bad" color="notahex">非法</mc-alert>';
+        document.body.append(box);
+      });
+      await page
+        .waitForFunction(
+          () =>
+            ['alert-hex-subtle', 'alert-hex-solid', 'alert-hex-control', 'alert-hex-bad'].every(
+              (id) => !!document.getElementById(id)?.shadowRoot,
+            ),
+          { timeout: 5000 },
+        )
+        .catch(() => {});
+      await page.waitForTimeout(320); // 底色有过渡，等它落定再读
+      const out = await page.evaluate(() => {
+        const el = (id) => document.getElementById(id);
+        const cs = (id) => getComputedStyle(el(id));
+        const rgb = (id) => (cs(id).backgroundColor.match(/\d+/g) ?? []).slice(0, 3).join(',');
+        const fg = (id) => (cs(id).color.match(/\d+/g) ?? []).slice(0, 3).join(',');
+        return {
+          subtle: {
+            bg: rgb('alert-hex-subtle'),
+            fg: fg('alert-hex-subtle'),
+            subtleToken: el('alert-hex-subtle')
+              .style.getPropertyValue('--mc-alert-subtle-fill')
+              .trim()
+              .replace(/\s+/g, ','),
+          },
+          solid: { bg: rgb('alert-hex-solid'), fg: fg('alert-hex-solid') },
+          bad: { inline: el('alert-hex-bad').style.cssText, bg: rgb('alert-hex-bad') },
+          control: { bg: rgb('alert-hex-control') },
+        };
+      });
+      await page.evaluate(() => document.getElementById('alert-hex-probe')?.remove());
+      return out;
+    })();
+
     page.off('response', onResponse);
     page.off('pageerror', onError);
     return {
       tokens,
       overview,
       colors,
+      hexColors,
       variants,
       titles,
       icons,
@@ -635,6 +681,20 @@ export default async function run({ page, visit, check }) {
       alert.parts.custom.bodyColor !== alert.parts.plain.bodyColor &&
       alert.parts.plain.titleSize === '14px',
     JSON.stringify(alert.parts),
+  );
+
+  check(
+    'color 收 hex（alert）：浅底 = 按主题混出的 -subtle-fill，文字是品牌色本身；实心档同理',
+    alert.hexColors.subtle.bg === alert.hexColors.subtle.subtleToken &&
+      alert.hexColors.subtle.fg === '26,127,90' &&
+      alert.hexColors.solid.bg === '26,127,90' &&
+      alert.hexColors.solid.fg === '255,255,255',
+    JSON.stringify(alert.hexColors),
+  );
+  check(
+    'color 收 hex（alert）：非 hex 一个槽都不写（与 color="primary" 的对照表现一致）',
+    alert.hexColors.bad.inline === '' && alert.hexColors.bad.bg === alert.hexColors.control.bg,
+    JSON.stringify({ bad: alert.hexColors.bad, control: alert.hexColors.control }),
   );
 
   check('mc-alert 文档页没有 404 / 运行时报错', alert.failed.length === 0, alert.failed.join(' | ') || '无');

@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-alert color="#1a7f5a" heading="hex 颜色" icon>品牌色写在 <code>color</code> 上。</mc-alert>
+    <mc-alert variant="solid" color="#1a7f5a" heading="hex 实心">实心外观同样跟着走。</mc-alert>
+    <mc-alert variant="outline" color="#ff6b35" heading="hex 描边">描边只换线与文字。</mc-alert>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-alert-hex' });
+  </script>
+</template>

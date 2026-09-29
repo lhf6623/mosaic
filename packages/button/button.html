@@ -194,6 +194,12 @@
   <slot name="suffix"></slot>
 
   <script>
+    /* color 也收 hex（`<mc-button color="#fff000">`）：语义名照旧交给 CSS，hex 走这一个接线器。
+       语义、边界与三条踩过的坑都在那个文件头里 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
+
     export default async () => ({
       tag: 'mc-button',
 
@@ -207,6 +213,18 @@
         loading: null,
         // 撑满父容器。声明进 attrs 才能让 :block 绑定与 el.block 生效（样式见 :host([block])）
         block: null,
+      },
+
+      attached() {
+        // 宿主 style 等构造期结束再写（P31），首次同步在这里
+        color.sync(this.ele, this.color);
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
+        color(value) {
+          color.change(this.ele, value);
+        },
       },
 
       proto: {

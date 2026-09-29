@@ -29,6 +29,12 @@ const SHARED = [
   { file: 'packages/boot/shadow-base.css', raw: 3 * 1024, gzip: 1.5 * 1024 },
   // 11.9 KB / 5.2 KB
   { file: 'packages/boot/scroll-pin.js', raw: 13 * 1024, gzip: 6 * 1024 },
+  // 2.0 KB / 1.3 KB（组件共用：颜色字面量的数学，color-attr 与 tone 都引它）
+  { file: 'packages/boot/color-math.js', raw: 2.5 * 1024, gzip: 1.75 * 1024 },
+  // 6.2 KB / 3.2 KB（组件共用：color 收 hex 的接线器，接了它的组件才下）
+  { file: 'packages/boot/color-attr.js', raw: 7 * 1024, gzip: 3.75 * 1024 },
+  // 9.5 KB / 4.4 KB（按需引入：整段子树要任意色才下；数学已抽到 color-math.js）
+  { file: 'packages/boot/tone.js', raw: 10.5 * 1024, gzip: 5.0 * 1024 },
   // 15.0 KB / 4.5 KB（已被 mosaic.css 包含，单列是为了盯住令牌的增长）
   { file: 'packages/color/tokens.css', raw: 16 * 1024, gzip: 5 * 1024 },
 ];

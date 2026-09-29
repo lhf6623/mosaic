@@ -6,6 +6,7 @@
     <l-m src="./button.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/variants.html"></l-m>
+    <l-m src="./demos/hex.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/type.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
@@ -39,6 +40,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/variants.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>hex 颜色</h3>
+      <p class="doc-hint">
+        <code>color</code> 也直接收 hex（<code>#fff000</code> /
+        <code>#fc0</code>）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
+      </p>
+      <demo-button-hex></demo-button-hex>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hex.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

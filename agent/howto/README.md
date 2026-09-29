@@ -10,14 +10,15 @@
 第一次做组件走 [`../tutorial.md`](../tutorial.md)（教程，保证能成）；
 做完了要改，回来这里。
 
-| 我要做什么                             | 食谱                                     |
-| -------------------------------------- | ---------------------------------------- |
-| **改了接口，要同步哪些地方**（最高频） | [`change-api.md`](./change-api.md)       |
-| 给已有组件加一个属性                   | [`add-attribute.md`](./add-attribute.md) |
-| 给组件加一个演示                       | [`add-demo.md`](./add-demo.md)           |
-| 给组件加一个令牌                       | [`add-token.md`](./add-token.md)         |
-| 给应用（站点 / 后台）统一换主题色      | [`theme.md`](./theme.md)                 |
-| 提交前自检                             | [`../checklist.md`](../checklist.md)     |
+| 我要做什么                             | 食谱                                         |
+| -------------------------------------- | -------------------------------------------- |
+| **改了接口，要同步哪些地方**（最高频） | [`change-api.md`](./change-api.md)           |
+| 给已有组件加一个属性                   | [`add-attribute.md`](./add-attribute.md)     |
+| 给组件加一个演示                       | [`add-demo.md`](./add-demo.md)               |
+| 给组件加一个令牌                       | [`add-token.md`](./add-token.md)             |
+| 给应用（站点 / 后台）统一换主题色      | [`theme.md`](./theme.md)                     |
+| 给一个 hex / 品牌色（实例或子树）      | [`arbitrary-color.md`](./arbitrary-color.md) |
+| 提交前自检                             | [`../checklist.md`](../checklist.md)         |
 
 **写新食谱的三条**：
 

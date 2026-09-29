@@ -37,6 +37,8 @@ export default async function run({ page, visit, check }) {
       <div><mc-icon id="i-local" name="search"></mc-icon></div>
       <div><mc-icon id="i-prefixed" name="lucide:search"></mc-icon></div>
       <div><mc-icon id="i-danger" name="trash" color="danger"></mc-icon></div>
+      <div><mc-icon id="i-hex" name="star" color="#ff6b35"></mc-icon></div>
+      <div><mc-icon id="i-current" name="star" color="current"></mc-icon></div>
       <div><mc-icon id="i-inline" name="search" style="font-size:32px;color:rgb(255,0,0)"></mc-icon></div>
       <div><mc-icon id="i-sm" name="search" size="sm"></mc-icon></div>
       <div><mc-icon id="i-lg" name="search" size="lg"></mc-icon></div>
@@ -83,6 +85,10 @@ export default async function run({ page, visit, check }) {
       prefixedClass: glyph('i-prefixed').className,
       dangerGlyphColor: rgb(css(glyph('i-danger')).color),
       dangerToken: token('--mc-color-danger'),
+      hexColor: rgb(css(glyph('i-hex')).color),
+      hexInline: document.getElementById('i-hex').style.cssText,
+      currentInline: document.getElementById('i-current').style.cssText,
+      primaryToken: token('--mc-color-primary'),
       inline: { w: Math.round(box('i-inline').width), color: rgb(css(glyph('i-inline')).color) },
       sizes: {
         sm: Math.round(box('i-sm').width),
@@ -134,6 +140,33 @@ export default async function run({ page, visit, check }) {
     state.dangerGlyphColor === state.dangerToken,
     `${state.dangerGlyphColor} vs ${state.dangerToken}`,
   );
+  check(
+    'color 收 hex：图标没有色槽，直接写宿主 color；current 交回 CSS、不留内联色',
+    state.hexColor === '255,107,53' &&
+      state.hexInline === 'color: rgb(255, 107, 53);' &&
+      state.currentInline === '',
+    JSON.stringify({ hexColor: state.hexColor, hexInline: state.hexInline, currentInline: state.currentInline }),
+  );
+  const backToSemantic = await page.evaluate(async () => {
+    const el = document.getElementById('i-hex');
+    el.setAttribute('color', 'primary');
+    await new Promise((r) => setTimeout(r, 80));
+    const glyph = el.shadowRoot.querySelector('.mc-glyph');
+    return {
+      inline: el.style.cssText,
+      color: (getComputedStyle(glyph).color.match(/\d+/g) ?? []).slice(0, 3).join(','),
+      primary: getComputedStyle(document.documentElement)
+        .getPropertyValue('--mc-color-primary')
+        .trim()
+        .replace(/\s+/g, ','),
+    };
+  });
+  check(
+    'color 收 hex：运行时改回语义名，内联色清干净、交回 CSS（--mc-color-primary）',
+    backToSemantic.inline === '' && backToSemantic.color === backToSemantic.primary,
+    JSON.stringify(backToSemantic),
+  );
+
   check(
     '尺寸 = font-size：size 三档 14 / 16 / 20px（16px 字号下），内联 style 能直接覆盖',
     state.sizes.sm === 14 && state.sizes.md === 16 && state.sizes.lg === 20 && state.inline.w === 32,

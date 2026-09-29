@@ -162,6 +162,15 @@ export default async function run({ check }) {
     JSON.stringify(picked),
   );
 
+  /* 地图里**录到过**的共享面文件（FAKE_MAP 把 mosaic.css 录给了 01）也必须全量：
+     地图是采样，运行时 / 令牌这种"改一处全体受影响"的东西不能交给采样决定。 */
+  const sharedRuntime = pick(['packages/boot/mosaic.css']);
+  check(
+    '共享面优先于地图：运行时 / 令牌即使被录到某个套件，也一律全量',
+    sharedRuntime.full === true && sharedRuntime.selected.length === FAKE_SUITES.length,
+    JSON.stringify(sharedRuntime.notes[0]),
+  );
+
   const unknown = pick(['some/new-thing.bin']);
   check(
     '未知路径 → 保守跑全部并在理由里说明',

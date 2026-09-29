@@ -74,6 +74,11 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 
 - 与 `mc-badge`（[草案](../../agent/api/badge.md)，目录还没建）的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），tag 是「内容本身」的标签 —— 它才有关闭与选中。
 
+**`color` 也收 hex**（`<mc-tag color="#1a7f5a">`）：六个语义名仍走 CSS，hex 走
+[`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-tag-fill` / `-on-fill` / `-accent` /
+`-subtle-fill`（浅底档按当前主题混，切主题会重算）。文字色按 WCAG 自动给；**极浅的牌子色在浅底上会读不清**
+（`#fff000` 1.16:1），接线器会就此发一条 `[mosaic]` 警告。只收 hex，非 hex 一条警告、不写槽。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

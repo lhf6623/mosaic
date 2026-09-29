@@ -127,12 +127,31 @@ export function importClosure(entryPath, { only = true } = {}) {
  * ② 兜底策略：地图没精确命中时按路径判。返回 { suites } / { all } / { none } + 理由
  * ------------------------------------------------------------------ */
 
-function fallback(file, suites, byFile) {
+/**
+ * 共享面：**改一处、全体受影响**的文件，永远全量跑，而且**优先于地图**。
+ *
+ * 为什么要优先：suite-map.json 是运行时**采样**（录制受懒加载时机影响：`<doc-spec>` 取 md、
+ * `<l-m>` 拉组件、路由默认页都可能落在这一轮、也可能落在下一轮 —— 实测连录两次就不一样）。
+ * 让采样结果来决定"运行时 / 令牌改了跑哪些套件"，等于把漏跑建立在录制运气上。
+ * 组件目录内的文件不受影响：那些走地图精确命中 + 目录兜底（见 fallback）。
+ */
+function sharedSurface(file) {
   // 测试基础设施：改了基座 / 跑器 / 地图本身，任何套件都可能受影响
   if (/^tests\/(lib\/|smoke\.mjs$|select\.mjs$|suite-map\.json$)/.test(file)) {
-    return { all: true, why: '测试基础设施 → 全部' };
+    return '测试基础设施 → 全部';
   }
+  // 构建配置、入口、文档站（外壳 / 布局 / 页面 / 内容样式）
+  if (/^(uno\.config\.ts|tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/)/.test(file)) {
+    return '共享面（构建 / 文档站）→ 全部';
+  }
+  // 运行时引导与令牌：所有组件的颜色 / 排布都从这里派生
+  if (/^packages\/(boot|color)\//.test(file)) {
+    return '共享面（运行时引导 / 令牌）→ 全部';
+  }
+  return null;
+}
 
+function fallback(file, suites, byFile) {
   // 套件文件自身：只跑它
   const own = suites.find((s) => s.path === file);
   if (own) return { suites: [own.path], why: '套件文件自身' };
@@ -152,11 +171,6 @@ function fallback(file, suites, byFile) {
       return { suites: [...touched], why: `组件目录 packages/${comp[1]}/ 的新文件 → 碰过它的套件` };
     }
     return { all: true, why: `packages/${comp[1]}/ 还没被任何套件碰过（新组件？）→ 全部` };
-  }
-
-  // 共享面：构建配置、运行时、令牌、文档站（外壳 / 布局 / 页面 / 内容样式）
-  if (/^(uno\.config\.ts|tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/)/.test(file)) {
-    return { all: true, why: '共享面（构建 / 运行时 / 文档站）→ 全部' };
   }
 
   // 纯文档与仓库配置：跑不了浏览器，也不影响运行
@@ -199,6 +213,14 @@ export function selectSuites({ changed, suites = allSuites(), map = loadMap() })
   for (const raw of changed ?? []) {
     const file = normalizePath(raw);
     if (!file) continue;
+
+    /* 共享面先判：它是"必然全体受影响"的硬事实，不该被一次采样式录制收窄 */
+    const shared = sharedSurface(file);
+    if (shared) {
+      full = true;
+      notes.push({ file, suites: 'all', why: shared });
+      continue;
+    }
 
     const exact = byFile[file];
     if (exact?.length) {

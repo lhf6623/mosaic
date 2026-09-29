@@ -20,6 +20,7 @@ export default async function run({ page, visit, check }) {
     host.innerHTML = [
       'row-colors',
       'row-variants',
+      'row-hex',
       'row-sizes',
       'row-states',
       'row-slots',
@@ -43,6 +44,13 @@ export default async function run({ page, visit, check }) {
     put('row-variants', 'v-outline', { variant: 'outline', color: 'primary' });
     put('row-variants', 'v-outline-danger', { variant: 'outline', color: 'danger' });
     put('row-variants', 'v-ghost', { variant: 'ghost', color: 'info' });
+
+    /* color 也能直接给 hex：语义名走 CSS，hex 走 color-attr（见 packages/boot/color-attr.js）。
+       hex-bad 用的不是 hex → 只该有一条控制台警告，一个槽都不写 */
+    put('row-hex', 'hex-filled', { color: '#fff000' });
+    put('row-hex', 'hex-outline', { variant: 'outline', color: '#fff000' });
+    put('row-hex', 'hex-short', { color: '#fc0' });
+    put('row-hex', 'hex-bad', { color: 'notahex' });
 
     put('row-sizes', 's-sm', { size: 'sm' });
     put('row-sizes', 's-md', {});
@@ -124,6 +132,60 @@ export default async function run({ page, visit, check }) {
     'ghost：透明底、透明描边、文字取强调色',
     variants.ghost.bg === '0,0,0' && variants.ghost.border === '0,0,0' && variants.ghost.fg === variants.ghost.info,
     JSON.stringify(variants.ghost),
+  );
+
+  /* ---------- color 收 hex：三个槽 + 自动文字色；非法值不写槽、不降级 ---------- */
+  const hex = await page.evaluate(async () => {
+    const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
+    const cs = (id) => getComputedStyle(document.getElementById(id));
+    const inline = (id) => document.getElementById(id).style.cssText;
+    const snap = {
+      filled: { bg: rgbOf(cs('hex-filled').backgroundColor), fg: rgbOf(cs('hex-filled').color) },
+      outline: {
+        bg: rgbOf(cs('hex-outline').backgroundColor),
+        fg: rgbOf(cs('hex-outline').color),
+        border: rgbOf(cs('hex-outline').borderTopColor),
+      },
+      short: { bg: rgbOf(cs('hex-short').backgroundColor), fg: rgbOf(cs('hex-short').color) },
+      bad: { inline: inline('hex-bad'), bg: rgbOf(cs('hex-bad').backgroundColor) },
+      primary: getComputedStyle(document.documentElement)
+        .getPropertyValue('--mc-color-primary')
+        .trim()
+        .replace(/\s+/g, ','),
+    };
+
+    /* 运行时改回语义名：我们写过的槽必须清干净，交回 CSS */
+    const el = document.getElementById('hex-filled');
+    el.setAttribute('color', 'danger');
+    await new Promise((r) => setTimeout(r, 80));
+    snap.afterBackToSemantic = {
+      inline: el.style.cssText,
+      bg: rgbOf(getComputedStyle(el).backgroundColor),
+      danger: getComputedStyle(document.documentElement)
+        .getPropertyValue('--mc-color-danger')
+        .trim()
+        .replace(/\s+/g, ','),
+    };
+    return snap;
+  });
+  check(
+    'color 收 hex：filled / outline 两个槽都跟上，三位 hex 也认，文字色按对比度自动给（#fff000 → 黑字）',
+    hex.filled.bg === '255,240,0' &&
+      hex.filled.fg === '0,0,0' &&
+      hex.outline.bg === '0,0,0' &&
+      hex.outline.fg === '255,240,0' &&
+      hex.outline.border === '255,240,0' &&
+      hex.short.bg === '255,204,0' &&
+      hex.short.fg === '0,0,0',
+    JSON.stringify(hex),
+  );
+  check(
+    'color 收 hex：非法值一个槽都不写（保持 CSS 默认），改回语义名时把写过的槽清干净',
+    hex.bad.inline === '' &&
+      hex.bad.bg === hex.primary &&
+      hex.afterBackToSemantic.inline === '' &&
+      hex.afterBackToSemantic.bg === hex.afterBackToSemantic.danger,
+    JSON.stringify({ bad: hex.bad, after: hex.afterBackToSemantic }),
   );
 
   /* ---------- 三档尺寸 / block / style 覆盖 ---------- */

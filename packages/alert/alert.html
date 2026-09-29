@@ -197,6 +197,12 @@
   </div>
 
   <script>
+    /* color 也收 hex（`<mc-alert color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器。
+       提示条默认也是浅底外观，所以接 subtle-fill —— 主题重算与"浅底上读不清"的警告都在那个文件里 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
+
     /**
      * 语义色 → 内置图标名（primary / info / neutral 共用信息圆）。
      * 图形本体住在 packages/icon/icons.generated.ts，构建期被编译成 CSS（零请求）；
@@ -235,6 +241,9 @@
         },
 
         attached() {
+          // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+          color.sync(this.ele, this.color);
+
           /* 标题/正文的空内容折叠只靠 slotchange 判定：分到节点一变就会响（同 mc-card）。
            icon 插槽也一样 —— 有自定义图标时内置图形让位。 */
           this._onSlotChange = () => this.applyState();
@@ -248,6 +257,11 @@
         },
 
         watch: {
+          // color 收 hex：首次触发落在构造期（P5），跳过由 colorAttr 内部处理
+          color(value) {
+            color.change(this.ele, value);
+          },
+
           /**
            * heading 变了要有标题块 —— 但首次触发落在构造期，那时往宿主写属性会抛
            * NotSupportedError（P5 + P31，实测踩过一回）。守卫之后这里就是纯粹的「文案变了」。

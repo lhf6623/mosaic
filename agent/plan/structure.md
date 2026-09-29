@@ -15,7 +15,10 @@ mosaic/
 │   │   ├── mosaic.js              # 手写：attachShadow 补丁 + adopt（唯一必需引入）
 │   │   ├── mosaic.css             # 生成并提交：令牌 + 工具类（可 <link>）
 │   │   ├── shadow-base.css        # 手写：只进 shadow root 的 reset（禁止 <link>）
-│   │   └── scroll-pin.js          # 手写：定住滚动条（跨组件共用，组件 import 它）
+│   │   ├── scroll-pin.js          # 手写：定住滚动条（组件 import 它）
+│   │   ├── color-math.js          # 手写：颜色字面量的数学（hex / 对比度 / 混色）
+│   │   ├── color-attr.js          # 手写：组件 color="#fff000" 的接线器（组件 import 它）
+│   │   └── tone.js                # 手写：任意色（hex → L2 六件套），使用者按需引 —— 见 D8
 │   ├── color/                     ← 组件单元的一种：只有 README + page.html，没有 api.md
 │   │   ├── tokens.css             # 生成并提交：三层令牌（层顺序也在这里声明）
 │   │   └── page.html              # 令牌文档页
@@ -79,10 +82,10 @@ mosaic/
 
 **没有 `dist/`**。`packages/**` 就是 CDN 上的东西。
 
-**组件共用的 JS 工具**放 `boot/`（分发时本来就必带这一层），组件用一行相对 `import` 引它
-（和文档站组件 `import '../site-map.js'` 同一条路，ofa 编译期会把说明符改写成绝对 URL）。
-现在只有一个：`scroll-pin.js` —— 做「不该改变滚动位置」的原生动作时把滚动条钉住
-（原生 popover 开合时浏览器会顺手滚页面，实测与上游链接写在该文件头）。
+**挂在 `boot/` 的 JS** 分两类：组件用相对 `import` 引的（`scroll-pin.js` 钉住滚动条；`color-math.js`
+
+- `color-attr.js` 让 `color` 属性收 hex）；使用者按需引的（`tone.js` —— 任意色 hex → L2 六件套）。
+  ofa 编译期会把相对说明符改写为绝对 URL。
 
 **产物与手写文件的分界**：
 
@@ -92,6 +95,9 @@ mosaic/
 | `boot/mosaic.css`      | **生成**    | ✅                         | ✅                   |
 | `boot/shadow-base.css` | 手写        | ❌                         | ✅                   |
 | `boot/scroll-pin.js`   | 手写        | —（模块）                  | 组件 `import` 用     |
+| `boot/color-math.js`   | 手写        | —（模块）                  | 组件 `import` 用     |
+| `boot/color-attr.js`   | 手写        | —（模块）                  | 组件 `import` 用     |
+| `boot/tone.js`         | 手写        | —（模块）                  | 使用者按需引         |
 | `color/tokens.css`     | **生成**    | ✅（已被 mosaic.css 包含） | ✅                   |
 
 ---

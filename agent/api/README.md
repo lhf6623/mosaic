@@ -55,6 +55,14 @@
 `mc-button` 用三个 —— `--mc-button-fill` / `--mc-button-on-fill` / `--mc-button-accent`，
 因为中性色需要一个单独的强调色。规则数量级因此是「颜色数 + 外观数」，不是两者相乘。
 
+**`color` 除语义名外还收 hex**（`color="#fff000"`，只收 `#fff000` / `#fc0` 这种写法）：
+语义名照旧走 CSS（也只有它们随主题翻转），hex 走**共享接线器**
+[`packages/boot/color-attr.js`](../../packages/boot/color-attr.js) —— 组件里 `attached()` +
+`watch.color` 各一行，填的还是上面那些槽，所以 `variant` 的组合关系一个字没变；文字色按 WCAG 自动算。
+已接：`button` / `tag` / `icon` / `alert`（四个声明了 `color` 的组件）。取舍见
+[`plan/decisions.md`](../plan/decisions.md) 的 D8，声明了 `color` 的组件漏接会被
+[`tests/site/11-no-class-components.mjs`](../../tests/site/11-no-class-components.mjs) 拦下。
+
 ### 1.3 尺寸：只有三档
 
 | `size`       | 控件高                     | 用途                                                                       |

@@ -277,4 +277,35 @@ export default async function run({ check }) {
       ? `${missingGuard.join(' / ')} —— 浮层开合会被浏览器滚走页面（火狐），接法见 packages/boot/scroll-pin.js`
       : '组件里都能看到 scroll-pin 的引用',
   );
+
+  /* ⑤ 语义色维度 ↔ 任意色接线器：声明了 `color` 属性的组件必须接 color-attr。
+        漏接的后果特别隐蔽 —— 使用者写 `color="#fff000"` 会被**静默**当成不认识的值，
+        回落到组件默认色、不报错（正是这个仓库最怕的那类失效）。
+        豁免表现在是空的 —— 四个声明了 color 的组件都接了。真要豁免某个，把它加进这张表并写清理由。 */
+  const NO_HEX = new Set();
+  const colorComponents = [];
+  const missingColorAttr = [];
+  for (const file of files) {
+    if (!file.endsWith('.html') || file.includes('/demos/')) continue;
+    const text = readFileSync(file, 'utf8');
+    if (!text.includes('<template component>')) continue;
+    /* attrs 里的 `color: 'primary'` —— 行首锚定，避免误判 --mc-*-color 这类 CSS 声明 */
+    if (!/^\s*color:\s*'/m.test(text)) continue;
+    const rel = file.replace(ROOT, '');
+    colorComponents.push(rel);
+    if (NO_HEX.has(rel)) continue;
+    /* 「接了」= 真的 import 了 color-attr **并且**用到 colorAttr（注释里提一句不算）*/
+    const imported = /from\s*['"][^'"]*color-attr\.js['"]/.test(text);
+    const used = /colorAttr\s*\(/.test(text);
+    if (!imported || !used) missingColorAttr.push(rel);
+  }
+  check(
+    `声明 color 的组件都接了任意色接线器（${colorComponents.length} 个：${colorComponents.join(' / ') || '—'}${
+      NO_HEX.size ? `；豁免 ${[...NO_HEX].map((f) => f.replace('packages/', '')).join(' / ')}` : '；无豁免'
+    }）`,
+    missingColorAttr.length === 0,
+    missingColorAttr.length
+      ? `${missingColorAttr.join(' / ')} —— color="#fff000" 会被静默当成不认识的值，接法见 packages/boot/color-attr.js`
+      : '组件里都能看到 color-attr 的引用',
+  );
 }

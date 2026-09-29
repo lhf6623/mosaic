@@ -74,6 +74,12 @@
   <slot></slot>
 
   <script>
+    /* color 也收 hex（`<mc-icon color="#ff6b35">`）：图标没有色槽，color 直接就是前景色，
+       所以用 fg 模式；'current' 是它自己的语义取值，一并交给 CSS */
+    import { colorAttr, FG_NAMES } from '../boot/color-attr.js';
+
+    const color = colorAttr({ mode: 'fg', names: FG_NAMES });
+
     /* 与 tools/icon-manifest.mjs 的 ICON_SOURCE 保持一致：裸名远程回退时用它当集名 */
     const DEFAULT_SET = 'lucide';
     const DEFAULT_BASE = 'https://api.iconify.design/';
@@ -151,6 +157,8 @@
       },
 
       attached() {
+        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+        color.sync(this.ele, this.color);
         this._live = true;
         this._onSlotChange = () => this.paint();
         this._slot?.addEventListener('slotchange', this._onSlotChange);
@@ -166,6 +174,10 @@
         // watch 在构造期也会触发一次，那时 ready 还没跑 —— paint / applyLabel 自己守卫
         name() {
           this.paint();
+        },
+        // color 收 hex：首次触发落在构造期（P5），跳过由 colorAttr 内部处理
+        color(value) {
+          color.change(this.ele, value);
         },
         src() {
           this.paint();

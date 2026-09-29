@@ -103,6 +103,10 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 
 - 被 [`mc-alert`](../alert/) 与 [`message()`](../message/) 在运行时 `load()`，被 `mc-button` 在模板里消费；`mc-icon-*` 类名也被 `mc-button` 的 loading 指示器、`mc-collapse-item` 的折叠箭头**直接当类名用**（零请求）。
 
+**`color` 也收 hex**（`<mc-icon color="#ff6b35">`）：图标没有色槽，`color` 本身就是前景色，
+所以走 [`../boot/color-attr.js`](../boot/color-attr.js) 的 fg 模式 —— 直接写宿主 `color`；
+`current` 与六个语义名照旧交给 CSS。只收 hex，非 hex 一条警告、不写内联色。
+
 <!-- hand:end -->
 
 ## 改这个单元之前

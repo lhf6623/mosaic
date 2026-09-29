@@ -60,6 +60,13 @@ mc-button — Mosaic 参考组件实现
 <mc-button block style="height: 48px; border-radius: 9999px">圆角大按钮</mc-button>
 ```
 
+**`color` 也收 hex**（`<mc-button color="#fff000">`）：六个语义名仍走 CSS（`color` 只往三个槽填值），
+hex 走 [`../boot/color-attr.js`](../boot/color-attr.js) —— 同样只填 `--mc-button-fill` / `-on-fill` /
+`-accent`，所以 `variant` 的组合关系一个字没变。文字色按 WCAG 自动给（`#fff000` 配白字只有 1.19:1，
+不该交给使用者定）。只收 hex：非 hex 值一条 `[mosaic]` 警告、一个槽都不写（不降级、不猜）。
+接入点是 `attached()` + `watch.color`（P31 / P5 都在那个文件里处理）；理由、代价与"为什么 alert 不做"
+见 [`agent/plan/decisions.md`](../../agent/plan/decisions.md) 的 D8。
+
 ## 为什么不发事件
 
 | 名称    | 类型                          | 说明                                         |
