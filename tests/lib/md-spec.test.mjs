@@ -81,6 +81,21 @@ test('表格渲染成站点口径的 .doc-table（thead + tbody，第一栏不�
   assert.doesNotMatch(html, /<td>---<\/td>/);
 });
 
+test('表格里的转义竖线不当列分隔：TS 联合类型能写进单元格', () => {
+  const md = [
+    '---',
+    '',
+    '## 属性',
+    '',
+    '| 名称 | 值 | 默认 | 说明 |',
+    '| --- | --- | --- | --- |',
+    "| `size` | `'sm' \\| 'md' \\| 'lg'` | `md` | 尺寸 |",
+  ].join('\n');
+  const { html } = parseSpecMd(md);
+  assert.match(html, /<td><code>'sm' \| 'md' \| 'lg'<\/code><\/td>/);
+  assert.match(html, /<td><code>md<\/code><\/td>/);
+});
+
 test('标签名与尖括号转义（<mc-button> 不能变成真标签）', () => {
   const md = ['---', '', '## 属性', '', '| 名称 | 说明 |', '| --- | --- |', '| `<mc-button>` | 按钮 |'].join('\n');
   const { html } = parseSpecMd(md);

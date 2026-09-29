@@ -8,8 +8,10 @@
     <l-m src="./breadcrumb-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/separator.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/label.html"></l-m>
     <l-m src="./demos/long.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Breadcrumb <code>mc-breadcrumb</code></h1>
@@ -69,6 +71,20 @@
     </section>
 
     <section class="doc-demo">
+      <h3>无障碍名</h3>
+      <p class="doc-hint">
+        <code>label</code> 是整条导航给读屏的名字；不写就是默认的「面包屑」， 英文站写
+        <code>label="Breadcrumb"</code>。
+      </p>
+      <demo-breadcrumb-label></demo-breadcrumb-label>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/label.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
         颜色、间距、分隔符各是一条令牌，覆盖在容器自己的 <code>style</code> 上，
@@ -91,6 +107,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/long.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        内层结构封在 shadow 里，只有 <code>::part(base)</code>（内层 <code>&lt;nav&gt;</code>）与
+        <code>::part(list)</code>（内层 <code>&lt;ol&gt;</code>）能从外面改。
+      </p>
+      <demo-breadcrumb-part></demo-breadcrumb-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

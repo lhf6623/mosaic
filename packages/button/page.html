@@ -7,6 +7,7 @@
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/variants.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/type.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/slots.html"></l-m>
     <l-m src="./demos/block.html"></l-m>
@@ -48,6 +49,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>表单类型</h3>
+      <p class="doc-hint">
+        <code>type</code> 转发给内部原生 <code>&lt;button&gt;</code>；放进
+        <code>&lt;form&gt;</code> 才生效 —— <code>submit</code> 提交、<code>reset</code> 还原，
+        不写默认 <code>button</code>（不会误提交）。
+      </p>
+      <demo-button-type></demo-button-type>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/type.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

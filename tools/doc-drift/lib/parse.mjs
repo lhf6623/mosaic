@@ -115,13 +115,31 @@ export const plain = (html) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const splitRow = (line) =>
-  line
-    .trim()
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
+/**
+ * `| a | b |` → ['a', 'b']（首尾的竖线不算单元格）。
+ * 支持 GFM 的转义竖线 `\|`：单元格里写 TS 联合类型（`'sm' \| 'md'`）时，
+ * 原来的 `split('|')` 会把它拆成两格、后面的列整体挤位。
+ */
+const splitRow = (line) => {
+  const cells = [];
+  let cell = '';
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\' && line[i + 1] === '|') {
+      cell += '|';
+      i += 1;
+    } else if (ch === '|') {
+      cells.push(cell);
+      cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  cells.push(cell);
+  if (cells.length && cells[0].trim() === '') cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+  return cells.map((item) => item.trim());
+};
 
 /** Markdown 表格：`| … |` 行 + 紧跟的分隔行才算一张表 */
 export function mdTables(text) {

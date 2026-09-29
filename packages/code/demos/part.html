@@ -1,8 +1,14 @@
 <template component>
   <style>
     /* 内部结构被 shadow 边界封住，只有标了 part 的节点能从外面改：mc-code 标了 body / pre / code / line。 */
+    mc-code::part(body) {
+      border-inline-start: 3px solid rgb(var(--mc-color-primary));
+    }
     mc-code::part(pre) {
       padding: var(--mc-space-4) var(--mc-space-5);
+    }
+    mc-code::part(code) {
+      background-color: rgb(var(--mc-color-surface-sunken));
     }
     mc-code::part(line) {
       color: rgb(var(--mc-color-fg-subtle));

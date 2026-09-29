@@ -1,0 +1,23 @@
+<template component>
+  <style>
+    /* panel 是面板本体、arrow 是小三角：内部结构封在 shadow 里，只有这两个 part 能从外面改。 */
+    mc-popover::part(panel) {
+      border: 2px solid rgb(var(--mc-color-primary));
+      background-color: rgb(var(--mc-color-surface-raised));
+    }
+    mc-popover::part(arrow) {
+      background-color: rgb(var(--mc-color-primary));
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-popover placement="bottom-start">
+      <mc-button variant="outline">改 ::part(panel) / ::part(arrow)</mc-button>
+      <div slot="panel">面板描边与三角颜色都写在 ::part() 上。</div>
+    </mc-popover>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-part' });
+  </script>
+</template>

@@ -13,15 +13,15 @@
 
 ## 属性
 
-| 名称       | 值                                                      | 默认      | 说明                          |
-| ---------- | ------------------------------------------------------- | --------- | ----------------------------- |
-| `color`    | `primary` `info` `success` `warning` `danger` `neutral` | `primary` | 语义色                        |
-| `variant`  | `filled` `outline` `ghost`                              | `filled`  | 外观样式                      |
-| `size`     | `sm` `md` `lg`                                          | `md`      | 尺寸                          |
-| `type`     | `button` `submit` `reset`                               | `button`  | 转发给内部原生 button         |
-| `disabled` | 布尔                                                    | —         | 禁用                          |
-| `loading`  | 布尔                                                    | —         | 加载中，显示 spinner 且不可点 |
-| `block`    | 布尔                                                    | —         | 撑满父容器宽度                |
+| 名称       | 值                                                                       | 默认      | 说明                          |
+| ---------- | ------------------------------------------------------------------------ | --------- | ----------------------------- |
+| `color`    | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger' \| 'neutral'` | `primary` | 语义色                        |
+| `variant`  | `'filled' \| 'outline' \| 'ghost'`                                       | `filled`  | 外观样式                      |
+| `size`     | `'sm' \| 'md' \| 'lg'`                                                   | `md`      | 尺寸                          |
+| `type`     | `'button' \| 'submit' \| 'reset'`                                        | `button`  | 转发给内部原生 button         |
+| `disabled` | `boolean`                                                                | —         | 禁用                          |
+| `loading`  | `boolean`                                                                | —         | 加载中，显示 spinner 且不可点 |
+| `block`    | `boolean`                                                                | —         | 撑满父容器宽度                |
 
 ## 插槽
 

@@ -1,0 +1,20 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-4">
+    <mc-popover
+      placement="bottom-start"
+      style="
+        --mc-popover-panel-bg: rgb(var(--mc-color-primary-subtle));
+        --mc-popover-panel-radius: var(--mc-radius-md);
+        --mc-popover-panel-pad: var(--mc-space-3);
+        --mc-popover-offset: var(--mc-space-3);
+      "
+    >
+      <mc-button variant="outline">宿主 style 里换令牌</mc-button>
+      <div slot="panel">面板底色、圆角、内边距、离触发元素的距离都从宿主的 --mc-popover-* 来。</div>
+    </mc-popover>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-customize' });
+  </script>
+</template>

@@ -1,0 +1,21 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-6">
+    <span class="inline-flex items-center gap-2">
+      <mc-icon name="home" icon-set="mdi" size="lg"></mc-icon>
+      <span class="text-xs">icon-set="mdi"：裸名回退到 mdi 集</span>
+    </span>
+    <span class="inline-flex items-center gap-2">
+      <mc-icon
+        name="home"
+        icon-set="mdi"
+        icon-base="https://api.iconify.design/"
+        size="lg"
+      ></mc-icon>
+      <span class="text-xs">icon-base：换镜像 / 自托管</span>
+    </span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-icon-source' });
+  </script>
+</template>

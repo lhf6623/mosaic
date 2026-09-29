@@ -16,6 +16,8 @@
     <l-m src="./demos/arrow.html"></l-m>
     <l-m src="./demos/flip.html"></l-m>
     <l-m src="./demos/menu.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
 
     <doc-crumb></doc-crumb>
     <h1>Popover <code>mc-popover</code></h1>
@@ -126,6 +128,34 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/menu.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        样式写在宿主上：面板底色、圆角、内边距、离触发元素的距离都是
+        <code>--mc-popover-*</code> 令牌。
+      </p>
+      <demo-popover-customize></demo-popover-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        内部结构封在 shadow 里，只有 <code>::part(panel)</code>（面板本体）与
+        <code>::part(arrow)</code>（小三角）能从外面改。
+      </p>
+      <demo-popover-part></demo-popover-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

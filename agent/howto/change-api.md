@@ -55,7 +55,7 @@ pnpm check:docs
 ## 验证（提交前跑）
 
 ```bash
-pnpm check:docs            # 16 组全绿
+pnpm check:docs            # 19 组全绿
 node tests/smoke.mjs <slug> # 只跑这次命中的组件
 npx prettier --write <改过的文件…>  # 改完随手跑：md 文档与组件代码都算
 ```

@@ -11,6 +11,7 @@
 import { dirname, posix } from 'node:path';
 import { READY, slugOf } from '../docs/site-map.js';
 import { componentSuites, siteSuites } from '../tests/lib/suites.mjs';
+import { mdTables } from './doc-drift/lib/parse.mjs';
 
 /** 组件清单的唯一真相源在 site-map：里程碑也从那里取，不另抄一份 */
 const stageOf = (slug) => READY.find((node) => slugOf(node) === slug)?.stage ?? null;
@@ -61,7 +62,7 @@ const apiSpec = {
     // ⚠️ 令牌表**不在这里** —— api.md 是页面参考区的渲染源，而令牌不进页面；
     // 令牌搬进了单元 README，由下面的 `unit-tokens` 面单独对账
     { header: ['名称', '类型', '说明'], facet: 'events', name: 0 },
-    // 插槽与 part 同一张表：裸名字按代码事实归类，省得猜错种类
+    // 插槽与 part 同一张表：`插槽 x` / `part="x"` 带前缀，或裸名字；都按代码事实归类
     { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'codeFacts' },
   ],
   // 命令式组件没有标签属性：改对账「方法」表与源码里的 DEFAULTS
@@ -368,6 +369,108 @@ const rules = [
           : src.replace(/^(\.\.\/)+/, '');
         if (!io.exists(rel)) {
           problems.push(`${page}：<doc-spec src="${src}"> 指向的 md 不存在（解析成 ${rel}）`);
+        }
+      }
+    },
+  },
+  {
+    /* 参考区搬到 md 之后，「插槽 / part 合成一节还是各自成节」没人守了：引擎里那条
+       `slotPartTitle` 只认 html 面（page.html 早就不放参考表了），等于死代码。约定落回配置：
+       代码里两种都有 → 一节 `插槽与 part`（混合表，名称加前缀 `插槽 header` / `part="header"`）；
+       只有插槽 → `插槽`；只有 part → `part`；都没有就整节省略。 */
+    type: 'custom',
+    id: 'api-slot-part-title',
+    title: '组件文档 · API 规范里插槽 / part 的节名与代码事实一致',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const api = `packages/${c.slug}/api.md`;
+        if (!io.exists(api)) continue;
+        const hasSlots = c.facts.union.slots.size > 0;
+        const hasParts = c.facts.union.parts.size > 0;
+        const want =
+          hasSlots && hasParts ? '插槽与 part' : hasSlots ? '插槽' : hasParts ? 'part' : null;
+        const present = [...io.read(api).matchAll(/^##\s+(.+?)\s*$/gm)]
+          .map((m) => m[1].replace(/`/g, '').trim())
+          .filter((name) => /^插槽|^part/.test(name));
+        if (!want) {
+          if (present.length) {
+            problems.push(
+              `${api}：代码里既没有插槽也没有 part，却写了「${present.join(' / ')}」节`,
+            );
+          }
+          continue;
+        }
+        if (present.length !== 1 || present[0] !== want) {
+          const actual = present.length ? `「${present.join(' / ')}」` : '（缺这一节）';
+          problems.push(
+            `${api}：这一段 <h2> 应为「${want}」（代码里${hasSlots ? '有插槽' : '没插槽'}、${
+              hasParts ? '有 part' : '没 part'
+            }），实际是 ${actual}`,
+          );
+        }
+      }
+    },
+  },
+  {
+    /* 「例子按 api.md 的属性来、内部样式按 part 来」—— 演示和接口不许脱节：
+       组件代码里有的属性，至少有一个演示真的用它；有的 part，至少有一个演示用 `::part()` 改它。
+       ⚠️ 这是**最低覆盖线**，不是「一条演示只讲一个属性」：同一维度的变体（三档尺寸、六个颜色）
+       合一条照样算覆盖；反过来，加了属性 / part 却没有演示，这里就红。 */
+    type: 'custom',
+    id: 'demo-covers-api',
+    title: '组件文档 · 演示覆盖 api.md 的属性与 part',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        if (c.imperative) continue; // 命令式组件没有标签属性，也没有 part
+        const dir = 'packages/' + c.slug + '/demos';
+        const files = io.listFiles(dir + '/*.html');
+        if (!files.length) continue;
+        const text = files.map((file) => io.read(file)).join('\n');
+        for (const attr of c.facts.union.attrs.keys()) {
+          const re = new RegExp('(?:^|[^\\w-])' + attr + '(?:[^\\w-]|$)');
+          if (!re.test(text)) {
+            problems.push(dir + '：属性 `' + attr + '` 在组件代码里有，演示里一次都没出现');
+          }
+        }
+        for (const part of c.facts.union.parts) {
+          if (!text.includes('::part(' + part + ')')) {
+            problems.push(
+              dir + '：part `' + part + '` 在组件代码里有，没有演示用 `::part(' + part + ')` 改它',
+            );
+          }
+        }
+      }
+    },
+  },
+  {
+    /* 「值」列 = TS 类型：不再写「布尔 / 字符串 / 数字」这类中文类型词，枚举写成字面量联合
+       `'sm' | 'md' | 'lg'`。联合里的竖线在 md 表格里按 GFM 转义（`\|`），引擎 1.0.3 起认得。
+       只查 `名称 | 值 | 默认` 这种表（属性 / 配置），别的表（状态 / 宿主钩子 / 内置集）不管。 */
+    type: 'custom',
+    id: 'api-value-ts',
+    title: '组件文档 · API 规范「值」列写 TS 类型',
+    run: ({ io, components, problems }) => {
+      const OK =
+        /^(?:boolean|string|number|number \| string|\(\) => void|'[^']*'(?: \| '[^']*')*)$/;
+      for (const c of components) {
+        const api = 'packages/' + c.slug + '/api.md';
+        if (!io.exists(api)) continue;
+        for (const table of mdTables(io.read(api))) {
+          if (table.header[0] !== '名称' || table.header[1] !== '值' || table.header[2] !== '默认')
+            continue;
+          for (const row of table.rows) {
+            const value = (row.cells[1] ?? '').replace(/[`*]/g, '').trim();
+            if (!OK.test(value)) {
+              problems.push(
+                api +
+                  ':' +
+                  row.line +
+                  '：值列「' +
+                  row.cells[1] +
+                  '」不是 TS 类型（boolean / string / number / 字面量联合）',
+              );
+            }
+          }
         }
       }
     },

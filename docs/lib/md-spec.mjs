@@ -68,14 +68,29 @@ export function inline(text, baseUrl = '') {
   return out;
 }
 
-/** `| a | b |` → ['a', 'b']（首尾的竖线不算单元格） */
+/**
+ * `| a | b |` → ['a', 'b']（首尾的竖线不算单元格）。
+ * 支持 GFM 的转义竖线 `\|`：单元格里的 TS 联合类型（`'sm' \| 'md'`）不会被拆成两格。
+ */
 export function splitRow(line) {
-  return line
-    .trim()
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
+  const cells = [];
+  let cell = '';
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\' && line[i + 1] === '|') {
+      cell += '|';
+      i += 1;
+    } else if (ch === '|') {
+      cells.push(cell);
+      cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  cells.push(cell);
+  if (cells.length && cells[0].trim() === '') cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+  return cells.map((item) => item.trim());
 }
 
 const isSeparator = (cells) => cells.length > 0 && cells.every((c) => RE_SEP_CELL.test(c));

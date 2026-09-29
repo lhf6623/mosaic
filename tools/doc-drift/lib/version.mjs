@@ -13,5 +13,9 @@
  *        ② `custom` 规则的调用签名 —— 调用方传的是展开后的字段，包装器却在取嵌套的 `api`，
  *           于是任何带 custom 规则的配置都会 `components is not iterable` 崩掉；
  *        ③ 目录树规则认得 CRLF（Windows autocrlf 下 `\r\n`，原来永远匹配不上那个代码块）。
+ *
+ * 1.0.3：Markdown 表格支持 GFM 的转义竖线 `\|`。`splitRow` 原来直接 `split('|')`，
+ *        单元格里的 TS 联合类型（`'sm' \| 'md'`）会被拆成两格、后面的列整体挤位 ——
+ *        文档里写不了联合类型。现在转义竖线算普通字符，只有未转义的 `|` 才分列。
  */
-export const ENGINE_VERSION = '1.0.2';
+export const ENGINE_VERSION = '1.0.3';
