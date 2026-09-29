@@ -1,0 +1,102 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./tabs.html"></l-m>
+    <l-m src="./tab.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/disabled.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Tabs <code>mc-tabs</code></h1>
+    <p class="doc-lead">
+      标签页。容器管标签条、面板显隐与键盘；标签就是那一颗能点的按钮，值走 property、变化走
+      <code>change</code>。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          面板要写 <code>slot="panel"</code> <strong>和</strong> <code>value</code>：容器按
+          <code>value</code> 与标签配对，非激活的面板挂 <code>hidden</code>（常驻 DOM，不删）。
+        </li>
+        <li>
+          初始值写 <code>default-value</code> 属性，运行时读写宿主 property
+          <code>value</code>（<code>el.value = 'b'</code>）—— <code>value</code> 不是属性。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        <code>default-value</code> 指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
+      </p>
+      <demo-tabs-basic></demo-tabs-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>禁用</h3>
+      <p class="doc-hint">点不动，方向键与 <kbd>Home</kbd> / <kbd>End</kbd> 也会跳过它。</p>
+      <demo-tabs-disabled></demo-tabs-disabled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/disabled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        <code>change</code> 只在激活项真的变了时发，载荷是 <code>$event.data.value</code>。
+      </p>
+      <demo-tabs-events></demo-tabs-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式（这里开了 <code>list</code> / <code>indicator</code> /
+        <code>panel</code>，标签自己的 <code>base</code> 也在）。
+      </p>
+      <demo-tabs-part></demo-tabs-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

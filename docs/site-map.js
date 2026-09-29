@@ -295,6 +295,7 @@ export const SITE = [
             order: 20,
             label: 'Tabs',
             zh: '标签页',
+            path: 'packages/tabs/page.html',
             tagName: 'mc-tabs',
             stage: 'M3',
             summary: '标签页。',

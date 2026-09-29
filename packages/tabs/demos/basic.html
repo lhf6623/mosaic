@@ -1,0 +1,18 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-tabs default-value="overview">
+      <mc-tab value="overview">概览</mc-tab>
+      <mc-tab value="members">成员</mc-tab>
+      <mc-tab value="settings">设置</mc-tab>
+      <div slot="panel" value="overview">
+        概览面板。初始值写在 <code>default-value</code> 上，面板靠 <code>value</code> 与标签配对。
+      </div>
+      <div slot="panel" value="members">成员面板：点上面的标签就能切过来。</div>
+      <div slot="panel" value="settings">设置面板：没有权限的项在下面那个例子里被禁用。</div>
+    </mc-tabs>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-tabs-basic' });
+  </script>
+</template>

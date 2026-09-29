@@ -1,0 +1,30 @@
+<template component>
+  <style>
+    mc-tabs::part(list) {
+      border-bottom-color: rgb(var(--mc-color-danger));
+    }
+    mc-tabs::part(indicator) {
+      height: 3px;
+      background-color: rgb(var(--mc-color-danger));
+    }
+    mc-tabs::part(panel) {
+      padding-block: var(--mc-space-2);
+    }
+    mc-tabs mc-tab::part(base) {
+      font-weight: var(--mc-weight-semibold);
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <mc-tabs default-value="a">
+      <mc-tab value="a">标签 A</mc-tab>
+      <mc-tab value="b">标签 B</mc-tab>
+      <div slot="panel" value="a">指示条、标签条、面板容器都从外面用 ::part() 改过。</div>
+      <div slot="panel" value="b">标签按钮的字重走 mc-tab 的 part="base"。</div>
+    </mc-tabs>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-tabs-part' });
+  </script>
+</template>

@@ -1,0 +1,23 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-tabs default-value="a" on:change="picked = $event.data.value">
+      <mc-tab value="a">标签 A</mc-tab>
+      <mc-tab value="b">标签 B</mc-tab>
+      <div slot="panel" value="a">切到 B 时，下面那行会变成 b。</div>
+      <div slot="panel" value="b">切回 A 时又会变回 a。</div>
+    </mc-tabs>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      最近一次 change：<strong>{{picked}}</strong>
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-tabs-events',
+
+      data: { picked: 'a' },
+
+      /* 只在激活项真的变了时发；property 写入不算 */
+    });
+  </script>
+</template>

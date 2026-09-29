@@ -1,0 +1,71 @@
+<!--
+  mc-tab — 一个标签（配合 mc-tabs 使用）。标签文案就是它的默认插槽。
+
+  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型。尺寸 / 色槽由容器通过 --mc-tabs-* 继承下来 ——
+          ⚠️ 这些变量不能在这里写默认值，否则会盖掉容器继承来的值 */
+    :host {
+      display: inline-flex;
+      box-sizing: border-box;
+    }
+
+    /* 2. 标签按钮 = 内部原生 button：点击、焦点、禁用语义都归它 */
+    .mc-base {
+      box-sizing: border-box;
+      height: var(--mc-tabs-tab-h, var(--mc-control-h-md));
+      padding-inline: var(--mc-tabs-pad-x, var(--mc-space-3));
+      border-radius: var(--mc-radius-md) var(--mc-radius-md) 0 0;
+      background-color: transparent;
+      color: rgb(var(--mc-tabs-fg, var(--mc-color-fg-muted)));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-tabs-font, var(--mc-text-sm));
+      font-weight: var(--mc-weight-medium);
+      white-space: nowrap;
+      transition:
+        color var(--mc-duration-fast) var(--mc-ease-standard),
+        background-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    .mc-base:hover {
+      background-color: rgb(var(--mc-tabs-bg-hover, var(--mc-color-surface-sunken)));
+      color: rgb(var(--mc-tabs-fg-hover, var(--mc-color-fg)));
+    }
+    .mc-base:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring)); /* 焦点环用 ring 令牌（P16） */
+      outline-offset: -2px;
+    }
+
+    /* 3. 状态：selected 由容器写（它不进 attrs，只当 CSS 钩子用） */
+    :host([selected]) .mc-base {
+      color: rgb(var(--mc-tabs-fg-selected, var(--mc-color-primary)));
+    }
+
+    /* 4. 禁用：光标留在宿主上（宿主写 pointer-events: none 会连 cursor 一起失效），
+          按钮自己 disabled —— 读屏可感知、点不动、Tab 也跳过 */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([disabled]) .mc-base {
+      cursor: not-allowed;
+    }
+  </style>
+
+  <button class="mc-base" part="base" type="button" role="tab" :disabled="disabled !== null">
+    <slot></slot>
+  </button>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-tab',
+
+      attrs: {
+        value: '',
+        disabled: null, // 布尔默认值必须是 null（P1）
+      },
+    });
+  </script>
+</template>

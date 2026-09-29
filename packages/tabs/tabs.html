@@ -1,0 +1,282 @@
+<!--
+  mc-tabs — 标签页容器（同目录还有 tab.html）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 尺寸通道 + 色槽（mc-tab 在另一个 shadow root 里，只能靠继承拿到） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans);
+      color: rgb(var(--mc-color-fg));
+
+      --mc-tabs-tab-h: var(--mc-control-h-md);
+      --mc-tabs-pad-x: var(--mc-space-3);
+      --mc-tabs-font: var(--mc-text-sm);
+      --mc-tabs-gap: var(--mc-space-1);
+      --mc-tabs-panel-pad: var(--mc-space-4);
+
+      --mc-tabs-fg: var(--mc-color-fg-muted);
+      --mc-tabs-fg-hover: var(--mc-color-fg);
+      --mc-tabs-fg-selected: var(--mc-color-primary);
+      --mc-tabs-bg-hover: var(--mc-color-surface-sunken);
+      --mc-tabs-border: var(--mc-color-border);
+      --mc-tabs-indicator: var(--mc-color-primary);
+      --mc-tabs-indicator-h: 2px;
+    }
+
+    /* 2. 标签条：指示条是它内部绝对定位的一层，位移 / 宽度由 JS 按激活项写（见 placeIndicator） */
+    .mc-list {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: var(--mc-tabs-gap);
+      border-bottom: 1px solid rgb(var(--mc-tabs-border));
+    }
+    .mc-indicator {
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      width: 0;
+      height: var(--mc-tabs-indicator-h);
+      border-radius: var(--mc-radius-full);
+      background-color: rgb(var(--mc-tabs-indicator));
+      transition:
+        transform var(--mc-duration-base) var(--mc-ease-standard),
+        width var(--mc-duration-base) var(--mc-ease-standard);
+      pointer-events: none;
+    }
+
+    /* 3. 面板：常驻 DOM，非激活的挂 hidden（不用 o-if，P10） */
+    .mc-panel {
+      padding-block: var(--mc-tabs-panel-pad);
+    }
+  </style>
+
+  <div class="mc-list" part="list" role="tablist" aria-orientation="horizontal">
+    <slot></slot>
+    <span class="mc-indicator" part="indicator" aria-hidden="true"></span>
+  </div>
+  <div class="mc-panel" part="panel"><slot name="panel"></slot></div>
+
+  <script>
+    /* aria 关联用的 id 要在文档里唯一（同一页可以有多个 mc-tabs），所以带一个实例序号 */
+    let instanceSeq = 0;
+
+    export default async () => ({
+      tag: 'mc-tabs',
+
+      attrs: {
+        // 初始值走 default-value；运行时值走宿主 property value（规范 1.4），value 不是 attrs 键
+        defaultValue: '',
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._list = root.querySelector('.mc-list');
+        this._indicator = root.querySelector('.mc-indicator');
+        this._seq = ++instanceSeq;
+
+        /* 运行时值：宿主 DOM property（P18）。这里只挂访问器，不写宿主属性（构造期写宿主会抛，P31） */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => this.activeValue(),
+          set: (value) => {
+            this._value = value == null ? '' : String(value);
+            this.applyState();
+          },
+        });
+
+        this._mounted = true; // 之后的 watch 才算真变化（P5）
+        this.applyState();
+      },
+
+      attached() {
+        this._onClick = (event) => this.handleClick(event);
+        this._onKeydown = (event) => this.handleKeydown(event);
+        this.ele.addEventListener('click', this._onClick);
+        this.ele.addEventListener('keydown', this._onKeydown);
+
+        /* 增删标签 / 改 value / 改 disabled 都要重新同步。我们自己写的 selected / hidden / aria-* / id
+           不在过滤表里，所以不会自激 */
+        this._mo = new MutationObserver(() => this.applyState());
+        this._mo.observe(this.ele, {
+          childList: true,
+          subtree: true,
+          attributeFilter: ['value', 'disabled', 'slot'],
+        });
+
+        /* 标签宽度随文案 / 字体 / 容器变，mc-tab 也可能比我们晚升级 —— 尺寸一变就重摆指示条 */
+        this._ro = new ResizeObserver(() => this.placeIndicator());
+        this.applyState();
+      },
+
+      watch: {
+        defaultValue() {
+          // 首次触发落在构造期（P5）；property 写过值就不再跟随初始值
+          if (this._mounted && this._value === undefined) this.applyState();
+        },
+      },
+
+      detached() {
+        this.ele.removeEventListener('click', this._onClick);
+        this.ele.removeEventListener('keydown', this._onKeydown);
+        this._mo?.disconnect();
+        this._ro?.disconnect();
+      },
+
+      proto: {
+        /** 标签 = 直接子项里的 mc-tab；只认直接子项，嵌套的 mc-tabs 才不会互相误伤 */
+        tabList() {
+          return [...this.ele.querySelectorAll(':scope > mc-tab')];
+        },
+
+        /** 面板 = 带 slot="panel" 的直接子项，按 value 匹配 */
+        panelList() {
+          return [...this.ele.querySelectorAll(':scope > [slot="panel"]')];
+        },
+
+        /** 当前激活值：property > default-value 属性 > 第一个可用项；指向禁用项时同样退到第一个可用项 */
+        activeValue() {
+          const tabs = this.tabList();
+          const usable = (tab) => !tab.hasAttribute('disabled');
+          const want =
+            this._value !== undefined
+              ? this._value
+              : (this.ele.getAttribute('default-value') ?? '');
+          const hit = tabs.find((tab) => usable(tab) && (tab.getAttribute('value') ?? '') === want);
+          if (hit) return hit.getAttribute('value') ?? '';
+          const first = tabs.find(usable);
+          return first ? (first.getAttribute('value') ?? '') : '';
+        },
+
+        /**
+         * 把「谁是激活项」同时落到四处：标签的 selected、内部原生 button 的 aria-selected / roving
+         * tabindex / aria-controls、面板的 role / hidden / aria-labelledby、指示条。
+         * 面板用 hidden 常驻 DOM（不删节点），切回来时内容与滚动位置都还在。
+         */
+        applyState() {
+          const active = this.activeValue();
+          const tabs = this.tabList().map((tab, index) => {
+            if (!tab.id) tab.id = `mc-tabs-${this._seq}-tab-${index}`;
+            return {
+              tab,
+              value: tab.getAttribute('value') ?? '',
+              base: tab.shadowRoot?.querySelector('.mc-base') ?? null,
+            };
+          });
+          const panels = this.panelList().map((panel, index) => {
+            if (!panel.id) panel.id = `mc-tabs-${this._seq}-panel-${index}`;
+            return { panel, value: panel.getAttribute('value') ?? '' };
+          });
+
+          for (const info of tabs) {
+            const on = info.value === active;
+            if (on) info.tab.setAttribute('selected', '');
+            else info.tab.removeAttribute('selected');
+            if (!info.base) continue; // 还没升级完：等 ResizeObserver 那一拍再补
+            info.base.id = `${info.tab.id}-btn`;
+            info.base.setAttribute('aria-selected', on ? 'true' : 'false');
+            info.base.tabIndex = on ? 0 : -1;
+            const hit = panels.find((panel) => panel.value === info.value);
+            if (hit) info.base.setAttribute('aria-controls', hit.panel.id);
+            else info.base.removeAttribute('aria-controls');
+          }
+
+          for (const info of panels) {
+            const on = info.value === active;
+            if (on) info.panel.removeAttribute('hidden');
+            else info.panel.setAttribute('hidden', '');
+            info.panel.setAttribute('role', 'tabpanel');
+            const label = tabs.find((tab) => tab.value === info.value);
+            info.panel.setAttribute('aria-labelledby', label ? label.tab.id : '');
+          }
+
+          this.observeSizes();
+          this.placeIndicator();
+        },
+
+        /** 观察标签条与每个标签的尺寸（重复 observe 同一个元素是空操作） */
+        observeSizes() {
+          if (!this._ro) return;
+          if (this._list) this._ro.observe(this._list);
+          for (const tab of this.tabList()) this._ro.observe(tab);
+        },
+
+        /** 指示条 = 激活标签内部那个 button 的宽度与左偏移（相对标签条）。没有标签时缩到 0 */
+        placeIndicator() {
+          const indicator = this._indicator;
+          if (!indicator) return;
+          const list = this._list;
+          const active = this.activeValue();
+          const tab = this.tabList().find((item) => (item.getAttribute('value') ?? '') === active);
+          const base = tab?.shadowRoot?.querySelector('.mc-base') ?? tab;
+          const rect = base?.getBoundingClientRect();
+          if (!list || !rect || !rect.width) {
+            indicator.style.width = '0';
+            indicator.style.transform = 'translateX(0)';
+            return;
+          }
+          const listRect = list.getBoundingClientRect();
+          indicator.style.width = `${rect.width}px`;
+          indicator.style.transform = `translateX(${rect.left - listRect.left}px)`;
+        },
+
+        /** 点击标签（原生 click 自带 composed，穿得出 mc-tab 的 shadow） */
+        handleClick(event) {
+          const path = event.composedPath();
+          const tab = this.tabList().find((item) => path.includes(item));
+          if (!tab || tab.hasAttribute('disabled')) return;
+          this.activate(tab.getAttribute('value') ?? '', tab);
+        },
+
+        /** 方向键 / Home / End：在可用标签之间移动**并激活**，焦点跟着走 */
+        handleKeydown(event) {
+          const path = event.composedPath();
+          const tabs = this.tabList();
+          const from = tabs.findIndex((tab) => path.includes(tab));
+          if (from < 0) return;
+
+          let next = null;
+          if (event.key === 'ArrowRight') next = this.step(from, 1);
+          else if (event.key === 'ArrowLeft') next = this.step(from, -1);
+          else if (event.key === 'Home') next = this.edge(tabs, 1);
+          else if (event.key === 'End') next = this.edge(tabs, -1);
+          if (!next) return;
+
+          event.preventDefault(); // 别让方向键滚动页面
+          this.activate(next.getAttribute('value') ?? '', next);
+        },
+
+        /** 从 from 出发按 dir 找下一个可用标签（绕回来），全禁用时返回 null */
+        step(from, dir) {
+          const tabs = this.tabList();
+          for (let i = 1; i <= tabs.length; i += 1) {
+            const at = (((from + dir * i) % tabs.length) + tabs.length) % tabs.length;
+            const tab = tabs[at];
+            if (tab && !tab.hasAttribute('disabled')) return tab;
+          }
+          return null;
+        },
+
+        /** 头 / 尾那个可用标签（dir > 0 从前往后找） */
+        edge(tabs, dir) {
+          const list = dir > 0 ? tabs : [...tabs].reverse();
+          return list.find((tab) => !tab.hasAttribute('disabled')) ?? null;
+        },
+
+        /** 选中某个标签：同步四处状态、把焦点交给它内部的 button，值真变了才发 change */
+        activate(value, tab) {
+          const changed = this.activeValue() !== value;
+          this._value = value;
+          this.applyState();
+          tab.shadowRoot?.querySelector('.mc-base')?.focus();
+          if (changed) this.emit('change', { data: { value }, bubbles: true, composed: true });
+        },
+      },
+    });
+  </script>
+</template>
