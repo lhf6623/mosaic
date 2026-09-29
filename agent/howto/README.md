@@ -16,6 +16,7 @@
 | 给已有组件加一个属性                   | [`add-attribute.md`](./add-attribute.md) |
 | 给组件加一个演示                       | [`add-demo.md`](./add-demo.md)           |
 | 给组件加一个令牌                       | [`add-token.md`](./add-token.md)         |
+| 给应用（站点 / 后台）统一换主题色      | [`theme.md`](./theme.md)                 |
 | 提交前自检                             | [`../checklist.md`](../checklist.md)     |
 
 **写新食谱的三条**：

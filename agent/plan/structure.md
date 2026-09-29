@@ -63,7 +63,7 @@ mosaic/
 ├── agent/
 │   ├── README.md                  # 导航：什么时候读哪一份（先读这份）
 │   ├── tutorial.md                # 教程：从零做一个组件（照着走一遍，保证能成）
-│   ├── howto/                     # 食谱（只写步骤与验证）：改接口 / 加属性 / 加演示 / 加令牌
+│   ├── howto/                     # 食谱（只写步骤与验证）：改接口 / 加属性 / 加演示 / 加令牌 / 换主题色
 │   ├── doc-site.md  doc-pages.md
 │   ├── authoring.md  authoring-style.md  checklist.md
 │   ├── design-spec.md  design-tokens.md

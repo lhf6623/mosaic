@@ -297,6 +297,8 @@ Mosaic 的颜色主题走令牌就够了，`match-var` 留给 M3 之后的复杂
 
 ## 六、换肤指南
 
+> 给整个应用统一换主题色的步骤（含亮 / 暗 / 跟随系统三态）见 [`howto/theme.md`](./howto/theme.md)（食谱）。
+
 ### 整体换品牌色
 
 改一个数字，重跑生成器：
@@ -332,16 +334,22 @@ pnpm build:css
 <mc-button style="--mc-button-fill: 220 38 38; border-radius: 9999px">删除</mc-button>
 ```
 
-### 结构化定制
+### 结构化定制（逐组件，不是全员）
 
-每个组件都暴露 `part`，可以精确命中内部元素：
+`part` **不是每个组件都有** —— 只有内部有结构性子元素、且确实需要定制的才开（见
+[`api/README.md`](./api/README.md) 的 1.7）。名录以该组件 `api.md` 的「插槽与 part」节为准：
 
 ```css
-mc-button::part(base) {
+/* mc-card 开了 base / header / body / footer */
+mc-card::part(header) {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 ```
+
+⚠️ `mc-button` 这类视觉在 `:host` 上的组件**一个 part 都没开** —— 写了也选不中（空规则、
+不报错），它的形状走宿主 `style`、颜色走 L3 令牌。`mc-code` 只有 part 没有插槽，
+`message()` 连宿主标签都没有。
 
 ---
 
