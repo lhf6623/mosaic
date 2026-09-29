@@ -1,0 +1,20 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-select size="sm" placeholder="sm">
+      <mc-option value="a">小号</mc-option>
+      <mc-option value="b">尺寸 A</mc-option>
+    </mc-select>
+    <mc-select placeholder="md（默认）">
+      <mc-option value="a">中号</mc-option>
+      <mc-option value="b">尺寸 B</mc-option>
+    </mc-select>
+    <mc-select size="lg" placeholder="lg">
+      <mc-option value="a">大号</mc-option>
+      <mc-option value="b">尺寸 C</mc-option>
+    </mc-select>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-sizes' });
+  </script>
+</template>

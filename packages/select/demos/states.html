@@ -1,0 +1,20 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-select disabled placeholder="禁用" default-value="bj">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+    </mc-select>
+    <mc-select readonly placeholder="只读" default-value="sh">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+    </mc-select>
+    <mc-select required invalid placeholder="必填（校验失败）">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+    </mc-select>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-states' });
+  </script>
+</template>

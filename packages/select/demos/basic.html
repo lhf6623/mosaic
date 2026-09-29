@@ -1,0 +1,14 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-select placeholder="选择城市" default-value="sh">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+      <mc-option value="sz" disabled>深圳（暂未开通）</mc-option>
+    </mc-select>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-basic' });
+  </script>
+</template>

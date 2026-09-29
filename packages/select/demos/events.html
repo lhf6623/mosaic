@@ -1,0 +1,46 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-select
+      name="city"
+      clearable
+      default-value="bj"
+      on:change="onChange($event)"
+      on:clear="onClear()"
+      on:open="onOpen()"
+      on:close="onClose()"
+    >
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+    </mc-select>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：<strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-select-events',
+
+      data: {
+        last: '（还没交互）',
+      },
+
+      proto: {
+        onChange(event) {
+          this.last = `change → ${JSON.stringify(event.data.value)}`;
+        },
+        onClear() {
+          this.last = 'clear';
+        },
+        onOpen() {
+          this.last = 'open';
+        },
+        onClose() {
+          this.last = 'close';
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,31 @@
+<template component>
+  <style>
+    /* 内部结构封在 shadow 里，只有标了 part 的节点能从外面改：
+       base（触发框）、panel（面板）、option（面板里每一行）。 */
+    #part-demo mc-select::part(base) {
+      border-color: rgb(var(--mc-color-primary));
+      border-radius: var(--mc-radius-full);
+    }
+    #part-demo mc-select::part(panel) {
+      border-radius: 0;
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+    #part-demo mc-select::part(option) {
+      border-radius: var(--mc-radius-full);
+      color: rgb(var(--mc-color-primary));
+      text-align: center;
+    }
+  </style>
+
+  <div id="part-demo" class="flex flex-wrap items-center gap-3">
+    <mc-select placeholder="改 ::part(base) / ::part(panel) / ::part(option)">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+    </mc-select>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-part' });
+  </script>
+</template>

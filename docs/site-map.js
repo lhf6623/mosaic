@@ -190,6 +190,7 @@ export const SITE = [
             order: 60,
             label: 'Select',
             zh: '下拉选择',
+            path: 'packages/select/page.html',
             tagName: 'mc-select',
             stage: 'M2',
             summary: '下拉选择。M2 里最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',

@@ -1,0 +1,770 @@
+<!--
+  mc-select — 下拉选择（表单控件 + 浮层）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。高度写在宿主上，style="height:…" 直接压得住 */
+    :host {
+      display: inline-flex;
+      position: relative; /* .mc-clear 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-control-h-md);
+      vertical-align: middle;
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
+      --mc-select-control-bg: var(--mc-color-surface);
+      --mc-select-control-border: var(--mc-color-border);
+      --mc-select-control-radius: var(--mc-radius-md);
+      --mc-select-control-pad-x: var(--mc-space-4);
+      --mc-select-offset: var(--mc-space-2);
+      --mc-select-panel-bg: var(--mc-color-surface-raised);
+      --mc-select-panel-border: var(--mc-color-border-strong);
+      --mc-select-panel-radius: var(--mc-radius-lg);
+      --mc-select-panel-pad: var(--mc-space-2);
+      --mc-select-option-color: var(--mc-color-fg);
+      --mc-select-option-bg-highlight: var(--mc-color-surface-sunken);
+      --mc-select-option-bg-selected: var(--mc-color-primary-subtle);
+      --mc-select-option-color-selected: var(--mc-color-primary);
+      --mc-select-placeholder-color: var(--mc-color-fg-subtle);
+      --mc-select-icon-color: var(--mc-color-fg-subtle);
+      --mc-select-clear-color: var(--mc-color-fg-muted);
+      --mc-select-clear-bg-hover: var(--mc-color-surface-sunken);
+    }
+
+    /* 2. 尺寸：三档只动宿主高度与字号，内部控件靠继承 / 100% 跟上 */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm);
+      font-size: var(--mc-text-xs);
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg);
+      font-size: var(--mc-text-base);
+    }
+
+    /* 3. 状态：禁用压暗、只读不改外观、invalid 只换边框色槽 */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([invalid]) {
+      --mc-select-control-border: var(--mc-color-danger);
+    }
+
+    /* 4. 触发框（part="base"）：视觉全在这里，使用者 style="…" 压得住宿主 */
+    .mc-control {
+      flex: 1 1 auto;
+      min-width: 0;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      padding-inline: var(--mc-select-control-pad-x);
+      border: 1px solid rgb(var(--mc-select-control-border));
+      border-radius: var(--mc-select-control-radius);
+      background-color: rgb(var(--mc-select-control-bg));
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      /* 锚点挂在这里（必须是自己 shadow 里的元素）：面板靠它做 CSS 锚点定位 */
+      anchor-name: --mc-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+    }
+    .mc-control:focus-visible {
+      /* 焦点环用 ring 令牌，不用 currentColor（P16） */
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+    :host([disabled]) .mc-control {
+      cursor: not-allowed;
+    }
+    :host([readonly]) .mc-control {
+      cursor: default;
+    }
+
+    .mc-value {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    /* 没有选中项时显示 placeholder，压暗一档（数据由脚本镜像成 data-empty） */
+    :host([data-empty]) .mc-value {
+      color: rgb(var(--mc-select-placeholder-color));
+    }
+    .mc-chevron {
+      flex: none;
+      color: rgb(var(--mc-select-icon-color));
+      transition: transform var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    :host([data-open]) .mc-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* 清除按钮：控制框的兄弟（不能嵌进 <button> 里），绝对定位压在右端 */
+    .mc-clear {
+      display: none;
+      position: absolute;
+      z-index: 1;
+      right: var(--mc-space-2);
+      top: 50%;
+      translate: 0 -50%;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: var(--mc-space-5);
+      height: var(--mc-space-5);
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
+      color: rgb(var(--mc-select-clear-color));
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mc-clear:hover {
+      background-color: rgb(var(--mc-select-clear-bg-hover));
+    }
+    .mc-clear:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+    /* 有值且开了 clearable 才出现；这时箭头让位给 × */
+    :host([clearable][data-filled]) .mc-clear {
+      display: inline-flex;
+    }
+    :host([clearable][data-filled]) .mc-chevron {
+      display: none;
+    }
+    :host([clearable][data-filled]) .mc-control {
+      padding-inline-end: var(--mc-space-8);
+    }
+
+    /* 5. 面板与选项 */
+    .mc-panel {
+      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，
+         否则那对 auto 会吃掉锚点定位（见 packages/popover/README.md 的实现约束） */
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      min-width: anchor-size(width);
+      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
+      max-height: min(16rem, calc(100vh - var(--mc-space-8)));
+      padding: var(--mc-select-panel-pad);
+      border: 0;
+      overflow-y: auto;
+      border-radius: var(--mc-select-panel-radius);
+      background-color: rgb(var(--mc-select-panel-bg));
+      font-family: var(--mc-font-sans);
+      font-size: inherit;
+      line-height: inherit;
+      /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-select-panel-border)))
+        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+
+      /* 锚点定位：锚是 shadow 内的 .mc-control（见文件头）。默认 bottom-start 写在基类里 ——
+         ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），默认态挂属性选择器会整体失效 */
+      position-anchor: --mc-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+      position-try-fallbacks: flip-block;
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-select-offset);
+    }
+
+    .mc-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-1);
+    }
+
+    .mc-option {
+      box-sizing: border-box;
+      min-height: var(--mc-control-h-md);
+      padding-inline: var(--mc-space-3);
+      border-radius: var(--mc-radius-md);
+      color: rgb(var(--mc-select-option-color));
+      line-height: var(--mc-control-h-md);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      user-select: none;
+    }
+    :host([size='sm']) .mc-option {
+      min-height: var(--mc-control-h-sm);
+      line-height: var(--mc-control-h-sm);
+    }
+    :host([size='lg']) .mc-option {
+      min-height: var(--mc-control-h-lg);
+      line-height: var(--mc-control-h-lg);
+    }
+    .mc-option:hover,
+    .mc-option[data-active] {
+      background-color: rgb(var(--mc-select-option-bg-highlight));
+    }
+    .mc-option[aria-selected='true'] {
+      background-color: rgb(var(--mc-select-option-bg-selected));
+      color: rgb(var(--mc-select-option-color-selected));
+      font-weight: var(--mc-weight-medium);
+    }
+    .mc-option[aria-disabled='true'] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    /* 正向覆盖，不用 :host(:not(...))（P14） */
+    .mc-option[aria-disabled='true']:hover,
+    .mc-option[aria-disabled='true'][data-active] {
+      background-color: transparent;
+    }
+
+    /* mc-option 只是数据：行由组件渲染进面板（part="option"），这一槽只用来接住它们 */
+    slot.mc-options {
+      display: none;
+    }
+  </style>
+
+  <button
+    class="mc-control"
+    part="base"
+    type="button"
+    aria-haspopup="listbox"
+    :disabled="disabled !== null"
+    on:click="onControlClick"
+    on:keydown="onKeyDown"
+  >
+    <span class="mc-value"></span>
+    <span class="mc-chevron mc-icon-chevron-down" aria-hidden="true"></span>
+  </button>
+
+  <button
+    class="mc-clear"
+    type="button"
+    aria-label="清除"
+    :disabled="disabled !== null"
+    on:click="onClear"
+  >
+    <span class="mc-icon-close" aria-hidden="true"></span>
+  </button>
+
+  <!-- 面板：原生 popover 进 top layer，位置全交给 CSS 锚点定位。
+       ⚠️ 刻意用 popover="manual"：auto 的 light dismiss 在 pointerdown 上先关、click 再开回来
+       （「点第二次关不掉」），开合一律由组件自己管 + composedPath 判外部（P20） -->
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="manual"
+    on:toggle="onNativeToggle"
+    on:click="onPanelClick"
+    on:mousedown="onPanelMouseDown"
+  >
+    <div class="mc-list" role="listbox"></div>
+  </div>
+
+  <slot class="mc-options"></slot>
+
+  <script>
+    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+
+    /** 实例计数：面板里每个选项都要一个全局唯一的 id（aria-activedescendant 按 id 指） */
+    let seq = 0;
+
+    export default async ({ load }) => {
+      /* mc-option 是这个单元的另一半（它只声明数据）：注册 mc-select 之前先把它就位，
+         这样 attached() 收集选项时它们已经升级好。路径相对本文件解析 */
+      await load('./option.html');
+
+      return {
+        tag: 'mc-select',
+
+        attrs: {
+          /* HTML 里的初始值（kebab 写作 default-value）。运行时值走宿主 DOM property `value`
+             （见 ready）—— 所以 `value` 不是 attrs 的键、也不进属性表 */
+          defaultValue: '',
+          /* 字段名；同时当内部 aria id 的前缀（选项 / 列表的 id 要唯一） */
+          name: '',
+          placeholder: '请选择',
+          /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-select multiple> 失效 */
+          multiple: null,
+          clearable: null,
+          disabled: null,
+          readonly: null,
+          required: null,
+          invalid: null,
+          size: 'md',
+        },
+
+        ready() {
+          const root = this.ele.shadowRoot;
+          this._control = root.querySelector('.mc-control');
+          this._valueEl = root.querySelector('.mc-value');
+          this._clearEl = root.querySelector('.mc-clear');
+          this._panel = root.querySelector('.mc-panel');
+          this._list = root.querySelector('.mc-list');
+          this._slot = root.querySelector('slot.mc-options');
+
+          this._items = [];
+          this._active = -1;
+          this._openState = false;
+          this._live = false;
+          this._initialized = false;
+          this._touched = false;
+          this._returnFocus = false;
+          this._seen = new Set();
+          this._uid = `${this.name || 'mc-select'}-${(seq += 1)}`;
+          this._list.id = `${this._uid}-list`;
+
+          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值（multiple 时是数组），
+             写 = 直接改选中态。刻意不反射成宿主属性 —— `value` 不是 attrs 的键。 */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this.readValue(),
+            set: (value) => this.writeValue(value),
+          });
+
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle，模板里不用为它加绑定。
+             显式显示 / 收起那两行再包一层 run()（见 packages/boot/scroll-pin.js） */
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+          this._popoverOk = typeof this._panel?.showPopover === 'function';
+        },
+
+        attached() {
+          this._onSlotChange = () => this.collectOptions();
+          this._slot.addEventListener('slotchange', this._onSlotChange);
+
+          /* 点外部关闭：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是
+             被重定向后的宿主，必然误判成「在外部」 */
+          this._onDocPointerDown = (event) => {
+            if (!this.isOpen()) return;
+            if (event.composedPath().includes(this.ele)) return;
+            this.closePanel();
+          };
+          document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+          /* 到这里构造期已结束，才允许往宿主写属性（P31） */
+          this._live = true;
+          this.collectOptions();
+          this.applyAria();
+        },
+
+        detached() {
+          document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+          this._slot?.removeEventListener('slotchange', this._onSlotChange);
+          this._scrollGuard?.dispose();
+        },
+
+        watch: {
+          /* ⚠️ ofa 初始化时会把每个 watch 空跑一遍（P5），而那次在构造期：写宿主属性会抛
+             NotSupportedError（P31）。所以每条分支都先跳过首触发 */
+          multiple() {
+            if (this.skipInit('multiple')) return;
+            this.collectOptions();
+          },
+          placeholder() {
+            if (this.skipInit('placeholder')) return;
+            this.syncDisplay();
+          },
+          defaultValue() {
+            if (this.skipInit('defaultValue')) return;
+            /* 使用者显式写过 value 之后，属性不再改写运行时值（同原生控件的 default-* 语义） */
+            if (this._touched) return;
+            this.applySelection(this.parseValues(this.ele.getAttribute('default-value') ?? ''));
+            this.syncDisplay();
+          },
+          disabled() {
+            if (this.skipInit('disabled')) return;
+            this.applyAria();
+          },
+          readonly() {
+            if (this.skipInit('readonly')) return;
+            this.applyAria();
+          },
+          required() {
+            if (this.skipInit('required')) return;
+            this.applyAria();
+          },
+          invalid() {
+            if (this.skipInit('invalid')) return;
+            this.applyAria();
+          },
+        },
+
+        proto: {
+          /** 每条 watch 的首次（构造期）触发都要跳过，但每条各跳一次（P5） */
+          skipInit(key) {
+            if (this._seen.has(key)) return false;
+            this._seen.add(key);
+            return true;
+          },
+
+          isMultiple() {
+            return this.ele.hasAttribute('multiple');
+          },
+
+          isOpen() {
+            return this._panel?.matches(':popover-open') ?? false;
+          },
+
+          /** placeholder 是声明过的字符串属性：ofa 可能把没写的它也反射成空串（P32），
+              所以「空 = 用默认文案」由这里兜 */
+          placeholderText() {
+            const own = this.ele.getAttribute('placeholder');
+            if (own) return own;
+            return this.placeholder || '请选择';
+          },
+
+          /* ---------- 选项收集与渲染 ---------- */
+
+          /**
+           * 从 light DOM 收 mc-option。用 querySelectorAll 而不是只看 slot 的 assignedElements：
+           * `o-fill` 渲染出来的条目住在它自己的 light DOM 里，assignedElements 只给到容器（P12）。
+           */
+          collectOptions() {
+            const previous = this._initialized
+              ? new Set(this.readValueArray())
+              : this.parseValues(this.ele.getAttribute('default-value') ?? '');
+            this._initialized = true;
+
+            this._items = [...this.ele.querySelectorAll('mc-option')].map((el) => ({
+              el,
+              value: (el.getAttribute('value') ?? '').trim(),
+              label: (el.textContent ?? '').replace(/\s+/g, ' ').trim(),
+              disabled: el.hasAttribute('disabled'),
+              row: null,
+            }));
+
+            this.renderRows();
+            this.applySelection(previous);
+            this.syncDisplay();
+            this.applyAria();
+            if (this._active >= this._items.length) this.setActive(-1);
+          },
+
+          /** 行由组件渲染进面板（P17：动态节点落在 shadow root 内部），每行一个 part="option" */
+          renderRows() {
+            this._list.textContent = '';
+            this._items.forEach((item, index) => {
+              const row = document.createElement('div');
+              row.className = 'mc-option';
+              row.setAttribute('part', 'option');
+              row.setAttribute('role', 'option');
+              row.id = `${this._uid}-opt-${index}`;
+              row.setAttribute('aria-selected', 'false');
+              if (item.disabled) row.setAttribute('aria-disabled', 'true');
+              row.textContent = item.label;
+              item.row = row;
+              this._list.append(row);
+            });
+          },
+
+          /* ---------- 值读写 ---------- */
+
+          /** 属性 / property 收到的一律规范化成「值集合」：`default-value` 是逗号分隔串，property 是数组 */
+          parseValues(raw) {
+            const list = Array.isArray(raw) ? raw : String(raw ?? '').split(',');
+            const out = new Set();
+            for (const value of list) {
+              const text = String(value ?? '').trim();
+              if (text === '') continue;
+              out.add(text);
+              if (!this.isMultiple()) break; /* 单选只认第一个 */
+            }
+            return out;
+          },
+
+          applySelection(values) {
+            let taken = false;
+            for (const item of this._items) {
+              const on = values.has(item.value) && (this.isMultiple() || !taken);
+              if (on) taken = true;
+              item.row.setAttribute('aria-selected', on ? 'true' : 'false');
+            }
+          },
+
+          readValueArray() {
+            return this._items
+              .filter((item) => item.row.getAttribute('aria-selected') === 'true')
+              .map((item) => item.value);
+          },
+
+          /** 运行时值的唯一出口：multiple 给数组、单选给字符串 */
+          readValue() {
+            const values = this.readValueArray();
+            return this.isMultiple() ? values : (values[0] ?? '');
+          },
+
+          writeValue(next) {
+            this._touched = true;
+            this.applySelection(this.parseValues(next));
+            this.syncDisplay();
+          },
+
+          /* ---------- 显示与无障碍 ---------- */
+
+          syncDisplay() {
+            const selected = this._items.filter(
+              (item) => item.row.getAttribute('aria-selected') === 'true',
+            );
+            const empty = selected.length === 0;
+            this.mirror('data-empty', empty);
+            this.mirror('data-filled', !empty);
+            if (this._valueEl) {
+              this._valueEl.textContent = empty
+                ? this.placeholderText()
+                : selected.map((item) => item.label).join(', ');
+            }
+          },
+
+          applyAria() {
+            const control = this._control;
+            if (!control) return;
+            const on = (name) => this.ele.hasAttribute(name);
+            control.setAttribute('aria-haspopup', 'listbox');
+            control.setAttribute('aria-expanded', this.isOpen() ? 'true' : 'false');
+            control.setAttribute('aria-controls', this._list.id);
+            control.setAttribute('aria-required', on('required') ? 'true' : 'false');
+            control.setAttribute('aria-invalid', on('invalid') ? 'true' : 'false');
+            control.setAttribute('aria-readonly', on('readonly') ? 'true' : 'false');
+            control.setAttribute('aria-disabled', on('disabled') ? 'true' : 'false');
+            this._list.setAttribute('aria-multiselectable', this.isMultiple() ? 'true' : 'false');
+          },
+
+          /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+          mirror(name, on) {
+            /* 构造期不许往宿主写属性（P31）：watch 的首触发已经跳过了，这里再兜一层 */
+            if (!this._live) return;
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+
+          /* ---------- 高亮 ---------- */
+
+          enabledIndexes() {
+            return this._items
+              .map((item, index) => (item.disabled ? -1 : index))
+              .filter((index) => index >= 0);
+          },
+
+          firstEnabledIndex() {
+            return this.enabledIndexes()[0] ?? -1;
+          },
+
+          lastEnabledIndex() {
+            const all = this.enabledIndexes();
+            return all[all.length - 1] ?? -1;
+          },
+
+          initialActiveIndex() {
+            const selected = this._items.findIndex(
+              (item) => item.row.getAttribute('aria-selected') === 'true' && !item.disabled,
+            );
+            return selected >= 0 ? selected : this.firstEnabledIndex();
+          },
+
+          setActive(index) {
+            this._active = index;
+            this._items.forEach((item, i) => {
+              if (i === index) {
+                item.row.setAttribute('data-active', '');
+                item.row.scrollIntoView({ block: 'nearest' });
+              } else {
+                item.row.removeAttribute('data-active');
+              }
+            });
+            const item = this._items[index];
+            if (item) this._control.setAttribute('aria-activedescendant', item.row.id);
+            else this._control.removeAttribute('aria-activedescendant');
+          },
+
+          clearActive() {
+            this.setActive(-1);
+          },
+
+          moveActive(delta) {
+            const all = this.enabledIndexes();
+            if (!all.length) return;
+            const current = all.indexOf(this._active);
+            const next =
+              current < 0
+                ? all[delta > 0 ? 0 : all.length - 1]
+                : all[(current + delta + all.length) % all.length];
+            this.setActive(next);
+          },
+
+          /* ---------- 开合 ---------- */
+
+          openPanel() {
+            if (!this._popoverOk || this.isOpen()) return;
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
+            this._scrollGuard.run(() => this._panel.showPopover());
+            this._control.focus({ preventScroll: true });
+            this.setActive(this.initialActiveIndex());
+            this.syncOpenUI(true);
+          },
+
+          closePanel() {
+            if (!this.isOpen()) return;
+            this._scrollGuard.run(() => this._panel.hidePopover());
+            this.clearActive();
+            this.syncOpenUI(false);
+          },
+
+          syncOpenUI(open) {
+            const changed = this._openState !== open;
+            this._openState = open;
+            this.mirror('data-open', open);
+            this._control?.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (!changed) return;
+            if (open) {
+              this.emit('open', { bubbles: true, composed: true });
+              return;
+            }
+            this.clearActive();
+            if (this._returnFocus) {
+              this._returnFocus = false;
+              this._control?.focus({ preventScroll: true });
+            }
+            this.emit('close', { bubbles: true, composed: true });
+          },
+
+          /**
+           * 原生 toggle：状态与事件**不靠它**（见 syncOpenUI —— 排队发的 toggle 在
+           * 「刚关就又开」那种连招里会丢事件），这里只当兜底同步：万一浏览器自己把面板
+           * 收掉了（节点被移除等），状态也收敛回来。
+           */
+          onNativeToggle(event) {
+            const nowOpen = event.newState === 'open';
+            if (nowOpen && this._active < 0) this.setActive(this.initialActiveIndex());
+            this.syncOpenUI(nowOpen);
+          },
+
+          /* ---------- 交互 ---------- */
+
+          onControlClick() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this.isOpen()) this.closePanel();
+            else this.openPanel();
+          },
+
+          onKeyDown(event) {
+            const key = event.key;
+            if (key === 'Escape') {
+              if (this.isOpen()) {
+                event.preventDefault();
+                this._returnFocus = true;
+                this.closePanel();
+              }
+              return;
+            }
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+
+            if (!this.isOpen()) {
+              if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End') {
+                event.preventDefault();
+                this.openPanel();
+                if (key === 'ArrowUp' || key === 'End') this.setActive(this.lastEnabledIndex());
+                else this.setActive(this.initialActiveIndex());
+              }
+              /* Enter / 空格不在这里管：原生 <button> 自己会发 click，走 onControlClick 那条路 */
+              return;
+            }
+
+            switch (key) {
+              case 'ArrowDown':
+                event.preventDefault();
+                this.moveActive(1);
+                break;
+              case 'ArrowUp':
+                event.preventDefault();
+                this.moveActive(-1);
+                break;
+              case 'Home':
+                event.preventDefault();
+                this.setActive(this.firstEnabledIndex());
+                break;
+              case 'End':
+                event.preventDefault();
+                this.setActive(this.lastEnabledIndex());
+                break;
+              case 'Enter':
+              case ' ':
+              case 'Spacebar':
+                /* 不 preventDefault 的话，开着的面板会被这次 click 又关掉 */
+                event.preventDefault();
+                if (this._active >= 0) this.selectIndex(this._active);
+                break;
+              default:
+                break;
+            }
+          },
+
+          /** 选中：单选选完就收面板；多选只切这一项，面板留着继续选 */
+          selectIndex(index) {
+            const item = this._items[index];
+            if (!item || item.disabled) return;
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+
+            if (this.isMultiple()) {
+              const on = item.row.getAttribute('aria-selected') === 'true';
+              item.row.setAttribute('aria-selected', on ? 'false' : 'true');
+            } else {
+              for (const other of this._items) {
+                other.row.setAttribute('aria-selected', other === item ? 'true' : 'false');
+              }
+            }
+            this.syncDisplay();
+            this.emitChange();
+            /* 单选：值先落定、change 先发，再收面板（事件顺序 change → close） */
+            if (!this.isMultiple()) {
+              this._returnFocus = true;
+              this.closePanel();
+            }
+          },
+
+          onPanelClick(event) {
+            const row = event.target?.closest?.('.mc-option');
+            if (!row) return;
+            this.selectIndex(this._items.findIndex((item) => item.row === row));
+          },
+
+          /** 面板里没有可聚焦元素：压掉 mousedown 的默认聚焦，焦点留在触发框上，键盘才继续管用 */
+          onPanelMouseDown(event) {
+            event.preventDefault();
+          },
+
+          onClear() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this.readValueArray().length === 0) return;
+            this._touched = true;
+            this.applySelection(new Set());
+            this.syncDisplay();
+            this.emit('clear', { bubbles: true, composed: true });
+            this.emitChange();
+            this._control.focus({ preventScroll: true });
+          },
+
+          emitChange() {
+            /* 内部原生 change 穿不出 shadow（P19），所以由组件自己转发成一个 composed 的 change */
+            this.emit('change', {
+              data: { value: this.readValue() },
+              bubbles: true,
+              composed: true,
+            });
+          },
+        },
+      };
+    };
+  </script>
+</template>

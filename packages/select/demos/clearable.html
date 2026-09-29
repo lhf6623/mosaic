@@ -1,0 +1,17 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-select clearable placeholder="可清除" default-value="bj">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+    </mc-select>
+    <mc-select name="city" placeholder="带字段名" style="width: 200px">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+    </mc-select>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-clearable' });
+  </script>
+</template>
