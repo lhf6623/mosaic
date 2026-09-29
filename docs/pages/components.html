@@ -87,6 +87,13 @@
       </tbody>
     </table>
 
+    <p class="doc-hint">
+      语义色除这六个名字，<code>color</code> 也直接收 hex（<code>#fff000</code> /
+      <code>#fc0</code>）： 此时文字色按对比度自动给，浅底档按当前主题派生并随主题重算。只收
+      hex，别的写法会有一条控制台警告。 已接的是 <code>mc-button</code> / <code>mc-tag</code> /
+      <code>mc-icon</code> / <code>mc-alert</code> 四个声明了 <code>color</code> 的组件。
+    </p>
+
     <h3>值的读写</h3>
     <p>标签属性是<strong>初始值</strong>，DOM property 是<strong>运行时状态</strong>。</p>
     <!-- prettier-ignore -->

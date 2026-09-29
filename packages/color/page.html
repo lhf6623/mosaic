@@ -257,6 +257,25 @@
       <code>--mc-*</code> 是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
     </p>
 
+    <h3>直接给 hex</h3>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+              &lt;mc-button color="#fff000"&gt;品牌按钮&lt;/mc-button&gt;
+              &lt;mc-tag color="#1a7f5a"&gt;标签&lt;/mc-tag&gt;
+            </mc-code>
+    <p class="doc-hint">
+      <code>mc-button</code> / <code>mc-tag</code> / <code>mc-icon</code> / <code>mc-alert</code> 的
+      <code>color</code> 也可以直接写 hex（<code>#fff000</code> /
+      <code>#fc0</code>）：组件只往自己的色槽填值，所以
+      <code>variant</code> 组合照旧；文字色按对比度自动给， 浅底档跟着主题走。hex 是品牌色，<strong
+        >不随主题翻转</strong
+      >
+      —— 要亮暗两套就各写一个值。 要整段子树一起换，用 <code>data-tone</code>（见
+      <a href="https://github.com/lhf6623/mosaic/blob/main/agent/howto/arbitrary-color.md"
+        >任意色食谱</a
+      >）。
+    </p>
+
     <h2>对比度自检</h2>
     <p>
       <code>pnpm tokens</code> 每次都会跑这 34 项，任何一项不达标就<strong>退出 1</strong>。
