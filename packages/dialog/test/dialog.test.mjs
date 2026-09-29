@@ -198,6 +198,32 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(a11y),
   );
 
+  /* 遮罩是「半透明灰压在页面上」还是「压在 UA 给 [popover] 的那张白纸上」，肉眼差别巨大：
+     后者整块屏一片均匀的灰、背后的页面一点不露（实测 computed 是 rgb(255,255,255)）。
+     两条一起断言，免得以后 UA 默认值变化时没人看得出来。 */
+  const overlayPaint = await page.evaluate(() => {
+    const dlg = document.getElementById('dlg');
+    const root = dlg.shadowRoot.querySelector('.mc-root');
+    const overlay = dlg.shadowRoot.querySelector('.mc-overlay');
+    const alpha = (color) => {
+      const m = color.match(/rgba?\(([^)]+)\)/);
+      const parts = m ? m[1].split(',').map((v) => Number(v.trim())) : [];
+      return parts.length === 4 ? parts[3] : 1;
+    };
+    return {
+      rootBg: getComputedStyle(root).backgroundColor,
+      rootAlpha: alpha(getComputedStyle(root).backgroundColor),
+      overlayAlpha: alpha(getComputedStyle(overlay).backgroundColor),
+    };
+  });
+  check(
+    '浮层本体透明、遮罩半透明：背后的页面要透出来（UA 给 [popover] 的 canvas 背景必须关掉）',
+    overlayPaint.rootAlpha === 0 &&
+      overlayPaint.overlayAlpha > 0 &&
+      overlayPaint.overlayAlpha < 1,
+    JSON.stringify(overlayPaint),
+  );
+
   /* ------------------------------------------------------------------ *
    * 3. 焦点：打开时进面板、Tab / Shift+Tab 在面板内循环
    *    正文里的控件写在**插槽（light DOM）**里 —— 陷阱按扁平树收元素才数得到它们

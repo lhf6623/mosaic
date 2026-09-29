@@ -48,6 +48,11 @@
       border: 0;
       padding: var(--mc-dialog-space);
       overflow: auto;
+      /* ⚠️ 必须显式关掉背景：UA 给 `[popover]` 的默认背景是 `canvas`（不透明白）。
+         留着它，遮罩就成了「半透明灰压在**一张白纸**上」—— 背后的页面一点不露，
+         整块屏是一片均匀的灰（实测 computed 是 rgb(255, 255, 255)）。
+         灰度只该由 .mc-overlay 那一层给，这里必须透明。 */
+      background-color: transparent;
     }
     .mc-root:popover-open {
       display: flex;
