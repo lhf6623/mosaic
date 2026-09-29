@@ -1,0 +1,13 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-dropdown trigger="hover">
+      <mc-button slot="trigger" variant="outline">悬停打开</mc-button>
+      <mc-menu-item><a href="#/packages/dropdown/page.html">指针移进来不会关</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/dropdown/page.html">移出去才关</a></mc-menu-item>
+    </mc-dropdown>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-dropdown-hover' });
+  </script>
+</template>

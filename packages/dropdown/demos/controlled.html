@@ -1,0 +1,25 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="toggle()">{{open ? '收起菜单' : '展开菜单'}}</mc-button>
+
+    <mc-dropdown attr:open="open ? '' : null" placement="bottom-start" on:close="open = false">
+      <mc-button slot="trigger" variant="outline">受控的触发元素</mc-button>
+      <mc-menu-item><a href="#/packages/dropdown/page.html">open 由外面的按钮控制</a></mc-menu-item>
+      <mc-menu-item><a href="#/packages/dropdown/page.html">Esc / 点空白关掉时同步回来</a></mc-menu-item>
+    </mc-dropdown>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-dropdown-controlled',
+
+      data: { open: false },
+
+      proto: {
+        toggle() {
+          this.open = !this.open;
+        },
+      },
+    });
+  </script>
+</template>

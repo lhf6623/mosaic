@@ -1,0 +1,128 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- ⚠️ 演示里用到的组件必须本页注册得到（外壳只注册 code / icon / collapse / menu /
+         breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）。
+         触发元素用 mc-button、菜单项复用 mc-menu-item，两个都在这里注册。 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="./dropdown.html"></l-m>
+    <l-m src="../menu/menu-item.html"></l-m>
+
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/placement.html"></l-m>
+    <l-m src="./demos/hover.html"></l-m>
+    <l-m src="./demos/controlled.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Dropdown <code>mc-dropdown</code></h1>
+    <p class="doc-lead">
+      下拉菜单：触发元素放 <code>trigger</code> 插槽，面板内容放默认插槽（通常是
+      <code>mc-menu-item</code>），面板进 top layer、贴边自动翻转。
+    </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong><code>open</code> 既是初始值也是运行时状态</strong>：属性与
+          <code>el.open</code> property 两条路都行，点触发元素时组件也会自己增删这个属性。
+        </li>
+        <li>
+          <strong>面板内容不自己收起</strong>：点菜单项不会关面板（面板里可以放表单 / 多级内容），
+          要「选完就关」就在菜单项上写 <code>on:click</code> 把 <code>open</code> 设回
+          <code>false</code>。
+        </li>
+        <li>
+          <strong>面板需要原生 popover 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox
+          125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        点触发元素开合；面板里 <kbd>Esc</kbd> 关闭并把焦点还回触发元素，点空白也关。
+      </p>
+      <demo-dropdown-basic></demo-dropdown-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>方位</h3>
+      <p class="doc-hint">
+        <code>placement</code> 取值与 <code>mc-popover</code> 一致：上下左右各带
+        <code>-start</code> / <code>-end</code> 后缀，不写后缀 = 居中；空间不够浏览器自动翻。
+      </p>
+      <demo-dropdown-placement></demo-dropdown-placement>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/placement.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>悬停触发</h3>
+      <p class="doc-hint">
+        <code>trigger="hover"</code>：指针移入开、移出关；中间那 120ms 的宽限让指针能挪到面板上
+        （面板是宿主的后代，不会误触移出）。
+      </p>
+      <demo-dropdown-hover></demo-dropdown-hover>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hover.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>受控开合</h3>
+      <p class="doc-hint">
+        <code>open</code> 由外面的状态驱动；被 Esc / 点空白关掉时组件会删掉这个属性并发
+        <code>close</code>，这里把状态同步回去。
+      </p>
+      <demo-dropdown-controlled></demo-dropdown-controlled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/controlled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部封在 shadow 里，只有 <code>::part(panel)</code>（面板本体）能从外面改；
+        菜单项的样式归它自己的单元（<code>mc-menu-item</code>）。
+      </p>
+      <demo-dropdown-part></demo-dropdown-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

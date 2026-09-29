@@ -1,0 +1,364 @@
+<!--
+  mc-dropdown — 下拉菜单（触发元素 + 面板）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值 */
+    :host {
+      display: inline-block;
+      position: relative;
+      vertical-align: middle;
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
+      --mc-dropdown-offset: var(--mc-space-2);
+      --mc-dropdown-panel-bg: var(--mc-color-surface-raised);
+      --mc-dropdown-panel-border: var(--mc-color-border-strong);
+      --mc-dropdown-panel-radius: var(--mc-radius-lg);
+      --mc-dropdown-panel-pad: var(--mc-space-2);
+      /* ⚠️ 必须写 `0px` 这类带单位的值：下面那句是 `max(var(…), anchor-size(width))`，
+         而 max() 里混不进无单位的 0（整句失效 → 面板只剩内容宽）。
+         ⚠️ 默认给 12rem 而不是 0：菜单项里的原生元素是绝对定位的（mc-menu-item 的形态），
+         它不撑开父级 → 面板的「内容宽」永远是 0，只给 anchor-size 的话窄触发元素上
+         标签会被裁掉（实测「面板居中」被裁成「面板…」）。 */
+      --mc-dropdown-panel-min-width: 12rem;
+    }
+
+    /* 2. 锚点容器：必须是自己 shadow 里的元素（把 anchor-name 设在 light DOM 的插槽元素上无效），
+       inline-flex 是为了盒高严丝合缝地等于触发元素（inline-block 会带 3px 基线缝隙） */
+    .mc-anchor {
+      display: inline-flex;
+      anchor-name: --mc-dropdown-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+    }
+
+    /* 3. 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位 */
+    .mc-panel {
+      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，
+         否则那对 auto 会吃掉锚点定位（见 packages/popover/README.md 的实现约束） */
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      min-width: max(var(--mc-dropdown-panel-min-width), anchor-size(width));
+      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
+      max-height: min(20rem, calc(100vh - var(--mc-space-8)));
+      padding: var(--mc-dropdown-panel-pad);
+      border: 0;
+      overflow-y: auto;
+      border-radius: var(--mc-dropdown-panel-radius);
+      background-color: rgb(var(--mc-dropdown-panel-bg));
+      font-family: var(--mc-font-sans);
+      font-size: inherit;
+      line-height: inherit;
+      /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-dropdown-panel-border)))
+        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+
+      /* 默认 bottom-start 写在基类里 —— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），
+         默认态一旦挂到属性选择器上就会整体失效（同 mc-popover 的 arrow） */
+      position-anchor: --mc-dropdown-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-dropdown-offset);
+    }
+
+    /* 4. 其余 11 个 placement：只写「面板哪条边贴锚点哪条边」，交叉轴的居中变体单独写 */
+    :host([placement='bottom']) .mc-panel {
+      left: anchor(center);
+      translate: -50% 0;
+    }
+    :host([placement='bottom-end']) .mc-panel {
+      left: auto;
+      right: anchor(right);
+    }
+    :host([placement='top']) .mc-panel {
+      top: auto;
+      bottom: anchor(top);
+      left: anchor(center);
+      translate: -50% 0;
+      margin-top: 0;
+      margin-bottom: var(--mc-dropdown-offset);
+    }
+    :host([placement='top-start']) .mc-panel {
+      top: auto;
+      bottom: anchor(top);
+      left: anchor(left);
+      margin-top: 0;
+      margin-bottom: var(--mc-dropdown-offset);
+    }
+    :host([placement='top-end']) .mc-panel {
+      top: auto;
+      bottom: anchor(top);
+      left: auto;
+      right: anchor(right);
+      margin-top: 0;
+      margin-bottom: var(--mc-dropdown-offset);
+    }
+    :host([placement='right']) .mc-panel {
+      top: anchor(center);
+      left: anchor(right);
+      translate: 0 -50%;
+      margin-top: 0;
+      margin-left: var(--mc-dropdown-offset);
+    }
+    :host([placement='right-start']) .mc-panel {
+      top: anchor(top);
+      left: anchor(right);
+      margin-top: 0;
+      margin-left: var(--mc-dropdown-offset);
+    }
+    :host([placement='right-end']) .mc-panel {
+      top: auto;
+      bottom: anchor(bottom);
+      left: anchor(right);
+      margin-top: 0;
+      margin-left: var(--mc-dropdown-offset);
+    }
+    :host([placement='left']) .mc-panel {
+      top: anchor(center);
+      left: auto;
+      right: anchor(left);
+      translate: 0 -50%;
+      margin-top: 0;
+      margin-right: var(--mc-dropdown-offset);
+    }
+    :host([placement='left-start']) .mc-panel {
+      top: anchor(top);
+      left: auto;
+      right: anchor(left);
+      margin-top: 0;
+      margin-right: var(--mc-dropdown-offset);
+    }
+    :host([placement='left-end']) .mc-panel {
+      top: auto;
+      bottom: anchor(bottom);
+      left: auto;
+      right: anchor(left);
+      margin-top: 0;
+      margin-right: var(--mc-dropdown-offset);
+    }
+
+    /* 5. 内部元素：面板内容归使用者（通常是 mc-menu-item），这里不为它们定样式 ——
+       行盒子在 mc-menu-item 自己的宿主上（P33） */
+  </style>
+
+  <!-- 触发元素：外面这层 .mc-anchor 是**锚点载体**，不能删 -->
+  <span class="mc-anchor" on:click="onAnchorClick">
+    <slot name="trigger"></slot>
+  </span>
+
+  <!-- 面板：原生 popover 进 top layer。
+       ⚠️ 刻意用 popover="manual"：auto 的 light dismiss 在 pointerdown 上先关、click 再开回来
+       （「点第二次关不掉」），开合一律由组件自己管 + composedPath 判外部（P20） -->
+  <div class="mc-panel" part="panel" popover="manual" on:toggle="onNativeToggle">
+    <slot></slot>
+  </div>
+
+  <script>
+    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+
+    /** hover 进出开合的宽限时间：够把指针从触发元素移到面板上（面板是宿主的后代，不会触发 leave） */
+    const HOVER_DELAY = 120;
+
+    export default async ({ load }) => {
+      /* 面板里通常放 mc-menu-item（菜单项）：注册 mc-dropdown 时把它一并就位。
+         菜单项是**复用**另一个单元的组件，不在这里改它。路径相对本文件解析 */
+      await load('../menu/menu-item.html');
+
+      return {
+        tag: 'mc-dropdown',
+
+        attrs: {
+          /* 单一属性**既是初始值也是运行时状态**（同 mc-collapse-item 的 open）：
+             `<mc-dropdown open>` 首屏就展开，点触发元素时组件也会增删它。
+             布尔属性默认值必须是 null（P1） */
+          open: null,
+          /* 12 个方向，取值与 mc-popover 的 placement 一致；默认 bottom-start 由 CSS 基类兜 */
+          placement: 'bottom-start',
+          /* click（默认）/ hover */
+          trigger: 'click',
+        },
+
+        ready() {
+          const root = this.ele.shadowRoot;
+          this._panel = root.querySelector('.mc-panel');
+          this._triggerSlot = root.querySelector('slot[name="trigger"]');
+          this._openState = false;
+          this._returnFocus = false;
+          this._hoverTimer = null;
+          this._seen = new Set();
+
+          /* 运行时状态走宿主 DOM property（规范 1.4）：写完立刻同步，不等属性反射那一拍 */
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            get: () => this.ele.hasAttribute('open'),
+            set: (value) => {
+              if (value) this.ele.setAttribute('open', '');
+              else this.ele.removeAttribute('open');
+              this.syncOpen();
+            },
+          });
+
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle，模板里不用为它加绑定。
+             显式显示 / 收起那两行再包一层 run()（见 packages/boot/scroll-pin.js） */
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+          this._popoverOk = typeof this._panel?.showPopover === 'function';
+          this.syncOpen();
+        },
+
+        attached() {
+          this._onKeyDown = (event) => this.onKeyDown(event);
+          this._onPointerEnter = () => this.onPointerEnter();
+          this._onPointerLeave = () => this.onPointerLeave();
+
+          /* 点外部关闭：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是
+             被重定向后的宿主，必然误判成「在外部」 */
+          this._onDocPointerDown = (event) => {
+            if (!this.isOpen()) return;
+            if (event.composedPath().includes(this.ele)) return;
+            this.closePanel();
+          };
+
+          this.ele.addEventListener('keydown', this._onKeyDown);
+          this.ele.addEventListener('pointerenter', this._onPointerEnter);
+          this.ele.addEventListener('pointerleave', this._onPointerLeave);
+          document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+          /* 构造期不碰 popover（P31）：首屏就带 open 的实例等到这里才真的展开 */
+          this.syncOpen();
+        },
+
+        detached() {
+          clearTimeout(this._hoverTimer);
+          this.ele.removeEventListener('keydown', this._onKeyDown);
+          this.ele.removeEventListener('pointerenter', this._onPointerEnter);
+          this.ele.removeEventListener('pointerleave', this._onPointerLeave);
+          document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+          this._scrollGuard?.dispose();
+        },
+
+        watch: {
+          /* ⚠️ ofa 初始化时会把 watch 空跑一遍（P5），而那次在构造期：这里跳过首触发 */
+          open() {
+            if (this._seen.has('open')) this.syncOpen();
+            else this._seen.add('open');
+          },
+        },
+
+        proto: {
+          isOpen() {
+            return this._panel?.matches(':popover-open') ?? false;
+          },
+
+          /** trigger 是声明过的字符串属性：ofa 可能把没写的它也反射成空串（P32），所以带兜底 */
+          triggerMode() {
+            const own = this.ele.getAttribute('trigger');
+            if (own === 'hover' || own === 'click') return own;
+            return this.trigger === 'hover' ? 'hover' : 'click';
+          },
+
+          /** 宿主 open 属性是唯一真相：属性 → 原生 popover 的同步都收在这一处 */
+          syncOpen() {
+            if (!this._popoverOk || !this.ele.isConnected) return;
+            const should = this.ele.hasAttribute('open');
+            if (should === this.isOpen()) return;
+            this._scrollGuard.run(() => {
+              if (should) this._panel.showPopover();
+              else this._panel.hidePopover();
+            });
+            this.syncOpenUI(should);
+          },
+
+          /**
+           * 开合状态与事件的**唯一出口**：显式开合直接走这里（同步、确定），
+           * 原生 toggle 也走这里兜底（重复时 changed 为 false，不会发两次）。
+           */
+          syncOpenUI(open) {
+            const changed = this._openState !== open;
+            this._openState = open;
+            if (!changed) return;
+            if (open) {
+              this.emit('open', { bubbles: true, composed: true });
+              return;
+            }
+            if (this._returnFocus) {
+              this._returnFocus = false;
+              this.focusTrigger();
+            }
+            this.emit('close', { bubbles: true, composed: true });
+          },
+
+          /** 原生 toggle：状态与事件不靠它（排队发的 toggle 在「刚关就又开」时会丢事件） */
+          onNativeToggle(event) {
+            this.syncOpenUI(event.newState === 'open');
+          },
+
+          openPanel() {
+            if (!this._popoverOk || this.isOpen() || !this.ele.isConnected) return;
+            this._scrollGuard.run(() => this._panel.showPopover());
+            this.syncOpenUI(true);
+            /* 非受控那条路：组件自己把状态写回属性，外部读 open 属性也能看到 */
+            if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
+          },
+
+          closePanel() {
+            if (!this.isOpen()) return;
+            this._scrollGuard.run(() => this._panel.hidePopover());
+            this.syncOpenUI(false);
+            if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
+          },
+
+          /** 焦点归还：触发元素是使用者的（light DOM），找它里面第一个能聚焦的元素 */
+          focusTrigger() {
+            const nodes = this._triggerSlot?.assignedElements({ flatten: true }) ?? [];
+            const first = nodes[0];
+            if (!first) return;
+            const target = first.matches?.('a, button, input, select, textarea, [tabindex]')
+              ? first
+              : first.querySelector?.('a, button, input, select, textarea, [tabindex]');
+            target?.focus?.({ preventScroll: true });
+          },
+
+          /* ---------- 触发方式 ---------- */
+
+          onAnchorClick() {
+            if (this.triggerMode() !== 'click') return;
+            if (this.isOpen()) this.closePanel();
+            else this.openPanel();
+          },
+
+          onPointerEnter() {
+            if (this.triggerMode() !== 'hover') return;
+            clearTimeout(this._hoverTimer);
+            this._hoverTimer = setTimeout(() => this.openPanel(), HOVER_DELAY);
+          },
+
+          onPointerLeave() {
+            if (this.triggerMode() !== 'hover') return;
+            clearTimeout(this._hoverTimer);
+            this._hoverTimer = setTimeout(() => this.closePanel(), HOVER_DELAY);
+          },
+
+          onKeyDown(event) {
+            if (event.key !== 'Escape' || !this.isOpen()) return;
+            /* 自己关（而不是让原生 close-watcher 关）：关完要把焦点还给触发元素 */
+            event.preventDefault();
+            this._returnFocus = true;
+            this.closePanel();
+          },
+        },
+      };
+    };
+  </script>
+</template>

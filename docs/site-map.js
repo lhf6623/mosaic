@@ -260,6 +260,7 @@ export const SITE = [
             order: 20,
             label: 'Dropdown',
             zh: '下拉菜单',
+            path: 'packages/dropdown/page.html',
             tagName: 'mc-dropdown',
             stage: 'M3',
             summary: '下拉菜单。',
