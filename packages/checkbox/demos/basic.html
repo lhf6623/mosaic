@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-checkbox value="terms" checked>同意用户协议</mc-checkbox>
+    <mc-checkbox value="email">接收邮件通知</mc-checkbox>
+    <mc-checkbox value="digest" checked>每周摘要</mc-checkbox>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-checkbox-basic' });
+  </script>
+</template>

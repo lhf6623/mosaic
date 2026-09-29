@@ -1,0 +1,264 @@
+<!--
+  mc-checkbox — 复选框
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 组件令牌。高度 / 字号直接写在宿主上，使用者 style="height:32px" 才压得住 */
+    :host {
+      display: inline-flex;
+      position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-control-h-md);
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
+      --mc-checkbox-gap: var(--mc-space-2);
+      --mc-checkbox-pad-x: var(--mc-space-3);
+      --mc-checkbox-box-size: 1.15em;
+      --mc-checkbox-mark-size: 0.75em;
+      --mc-checkbox-radius: var(--mc-radius-sm);
+    }
+
+    /* 2. 尺寸：三档只改高度 / 内边距 / 字号（口径见 agent/checklist.md 第二节） */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm);
+      font-size: var(--mc-text-xs);
+      --mc-checkbox-gap: var(--mc-space-1);
+      --mc-checkbox-pad-x: var(--mc-space-2);
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg);
+      font-size: var(--mc-text-base);
+      --mc-checkbox-pad-x: var(--mc-space-4);
+    }
+
+    /* 3. 状态。选中 / 半选都是「实心 + 反色勾」；invalid 换成危险色；
+       禁用用正向覆盖把 hover 归零（不用 :not()，P14） */
+    .mc-base:hover .mc-box {
+      border-color: rgb(var(--mc-color-primary));
+    }
+    :host([checked]) .mc-box,
+    :host([indeterminate]) .mc-box {
+      border-color: rgb(var(--mc-color-primary));
+      background-color: rgb(var(--mc-color-primary));
+      color: rgb(var(--mc-color-primary-fg));
+    }
+    :host([invalid]) .mc-box {
+      border-color: rgb(var(--mc-color-danger));
+    }
+    :host([invalid][checked]) .mc-box,
+    :host([invalid][indeterminate]) .mc-box {
+      border-color: rgb(var(--mc-color-danger));
+      background-color: rgb(var(--mc-color-danger));
+    }
+    :host([disabled]) {
+      opacity: 0.5;
+    }
+    :host([disabled]) .mc-base {
+      cursor: not-allowed;
+    }
+    :host([disabled]) .mc-base:hover .mc-box {
+      border-color: rgb(var(--mc-color-border-strong));
+    }
+    :host([disabled][checked]) .mc-base:hover .mc-box,
+    :host([disabled][indeterminate]) .mc-base:hover .mc-box {
+      border-color: rgb(var(--mc-color-primary));
+    }
+
+    /* 4. 内部结构。行盒子（高度 / 内边距 / 命中区）在这个原生 <label> 上：
+       点方框、点文案、键盘 <kbd>Space</kbd> 都落在同一个原生 input 上。
+       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
+       不铺满就出现「点在行里但没点到文案」的死区 */
+    .mc-base {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      gap: var(--mc-checkbox-gap);
+      box-sizing: border-box;
+      height: 100%;
+      padding-inline: var(--mc-checkbox-pad-x);
+      cursor: pointer;
+    }
+    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区），视觉全在宿主与 .mc-box 上。
+       用「视觉隐藏」而不是 display:none —— 后者会连焦点与键盘一起拿掉 */
+    .mc-native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .mc-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-checkbox-box-size);
+      height: var(--mc-checkbox-box-size);
+      border: 1px solid rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-checkbox-radius);
+      background-color: rgb(var(--mc-color-surface));
+      transition:
+        background-color var(--mc-duration-fast) var(--mc-ease-standard),
+        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+    }
+    /* 焦点环画在方框上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
+    .mc-native:focus-visible + .mc-box {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 2px;
+    }
+
+    /* 勾 / 横杠都是内置图标（类名直接吃 CSS，零请求）；两条交替显示，半选优先。
+       0.75em 是这一档的光学尺寸：图形本身带内边距，铺满方框会显得发胖 */
+    .mc-mark {
+      display: none;
+      font-size: var(--mc-checkbox-mark-size);
+    }
+    :host([checked]) .mc-mark-check {
+      display: block;
+    }
+    :host([indeterminate]) .mc-mark-dash {
+      display: block;
+    }
+    :host([indeterminate]) .mc-mark-check {
+      display: none;
+    }
+
+    .mc-label {
+      min-width: 0;
+    }
+  </style>
+
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件，读屏也把文案算成控件名 -->
+  <label class="mc-base" part="base">
+    <!-- 原生 change 穿不出 shadow（P19），由组件自己转成同名的 composed 事件 -->
+    <input
+      class="mc-native"
+      type="checkbox"
+      :disabled="disabled !== null"
+      attr:aria-required="required !== null ? 'true' : 'false'"
+      attr:aria-invalid="invalid !== null ? 'true' : 'false'"
+      on:change="onNativeChange()"
+    />
+    <span class="mc-box" part="box" aria-hidden="true">
+      <span class="mc-mark mc-mark-check mc-icon-check"></span>
+      <span class="mc-mark mc-mark-dash mc-icon-minus"></span>
+    </span>
+    <span class="mc-label" part="label"><slot></slot></span>
+  </label>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-checkbox',
+
+      attrs: {
+        // 表单值（跟原生 checkbox 的 value 一个意思）；文案走默认插槽
+        value: '',
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-checkbox checked> 失效
+        checked: null,
+        indeterminate: null,
+        disabled: null,
+        required: null,
+        invalid: null,
+        size: 'md',
+      },
+
+      ready() {
+        // 这里 shadow 已建好（同 mc-collapse-item）；宿主属性一律留到 attached 才写（P31）
+        this._native = this.ele.shadowRoot.querySelector('.mc-native');
+
+        // 运行时状态走 property（规范 1.4）：setter 立刻同步内部原生 input，不等 ofa 那一拍（P4）
+        Object.defineProperty(this.ele, 'checked', {
+          configurable: true,
+          get: () => this._native.checked,
+          set: (value) => {
+            this.ele.toggleAttribute('checked', !!value);
+            this.applyChecked();
+          },
+        });
+
+        // 半选也开一个同形访问器：原生就是这么读写的（el.indeterminate = true）
+        Object.defineProperty(this.ele, 'indeterminate', {
+          configurable: true,
+          get: () => this._native.indeterminate,
+          set: (value) => {
+            this.ele.toggleAttribute('indeterminate', !!value);
+            this.applyIndeterminate();
+          },
+        });
+
+        this.applyChecked();
+        this.applyIndeterminate();
+        this.applyDisabled();
+      },
+
+      watch: {
+        /* 首次触发落在构造期（P5）。这三个 apply 只写 shadow 内部的原生 input（幂等），
+           构造期调用也安全 —— 没有需要跳过的副作用，所以不装首次守卫。 */
+        checked() {
+          this.applyChecked();
+        },
+        indeterminate() {
+          this.applyIndeterminate();
+        },
+        disabled() {
+          this.applyDisabled();
+        },
+      },
+
+      proto: {
+        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
+        applyChecked() {
+          const want = this.ele.hasAttribute('checked');
+          if (this._native.checked !== want) this._native.checked = want;
+        },
+
+        /** indeterminate 是纯 JS 状态（原生没有这个属性），宿主属性只是给 CSS 的选择器输入 */
+        applyIndeterminate() {
+          const want = this.ele.hasAttribute('indeterminate');
+          if (this._native.indeterminate !== want) this._native.indeterminate = want;
+        },
+
+        applyDisabled() {
+          this._native.disabled = this.ele.hasAttribute('disabled');
+        },
+
+        /**
+         * 原生 change → 声明式状态 + 对外事件。
+         * 半选被点击后浏览器会清掉 .indeterminate，宿主属性要跟上（否则横杠还挂着）。
+         */
+        onNativeChange() {
+          const checked = this._native.checked;
+          /* 浏览器在派发 change **之前**就把 .indeterminate 清掉了，所以这里不能靠读它判断 ——
+             只要宿主还挂着 indeterminate 就一起收掉（点击清半选是原生 checkbox 的行为） */
+          if (this.ele.hasAttribute('indeterminate')) this.ele.removeAttribute('indeterminate');
+          this._native.indeterminate = false;
+          this.ele.toggleAttribute('checked', checked);
+          /* ⚠️ emit(...) 的括号里不许出现别的引号字符串（对账器把里面的字面量都当事件名），
+             所以 value 先取到变量里再进载荷 */
+          const value = this.value;
+          this.emit('change', {
+            data: { checked, value },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

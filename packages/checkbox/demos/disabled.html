@@ -1,0 +1,16 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-checkbox disabled>禁用（未选中）</mc-checkbox>
+    <mc-checkbox disabled checked>禁用（已选中）</mc-checkbox>
+    <mc-checkbox disabled indeterminate>禁用（半选）</mc-checkbox>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    禁用用的是内部原生 input 的 <code>disabled</code> —— <kbd>Tab</kbd> 会跳过、读屏读得出；
+    鼠标与键盘都改不动状态。
+  </p>
+
+  <script>
+    export default async () => ({ tag: 'demo-checkbox-disabled' });
+  </script>
+</template>

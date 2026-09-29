@@ -1,0 +1,26 @@
+<template component>
+  <style>
+    /* 三个 part 各自改一处；选择器带上 .part-custom —— 否则下面那条默认对照也会被改掉 */
+    .part-custom::part(base) {
+      padding-inline: var(--mc-space-2);
+    }
+    .part-custom::part(box) {
+      --mc-checkbox-box-size: 1.5em;
+      --mc-checkbox-radius: var(--mc-radius-full);
+      background-color: rgb(var(--mc-color-surface-sunken));
+    }
+    .part-custom::part(label) {
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-medium);
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <mc-checkbox class="part-custom" checked>这条用 ::part(base) / ::part(box) / ::part(label) 改过</mc-checkbox>
+    <mc-checkbox checked>默认对照</mc-checkbox>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-checkbox-part' });
+  </script>
+</template>

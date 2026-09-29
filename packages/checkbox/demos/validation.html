@@ -1,0 +1,18 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-checkbox required>必填：同意条款</mc-checkbox>
+    <mc-checkbox invalid>校验失败：请重新确认</mc-checkbox>
+    <mc-checkbox checked required>已勾选且必填</mc-checkbox>
+    <mc-checkbox checked invalid>已勾选但校验失败（方框换成危险色）</mc-checkbox>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">
+    <code>required</code> / <code>invalid</code> 只转发成 <code>aria-required</code> /
+    <code>aria-invalid</code> 与危险色，<strong>不替使用者做校验</strong> ——
+    什么时候算失败由表单那边决定。
+  </p>
+
+  <script>
+    export default async () => ({ tag: 'demo-checkbox-validation' });
+  </script>
+</template>

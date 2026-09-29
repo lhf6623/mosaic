@@ -1,0 +1,128 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./checkbox.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/indeterminate.html"></l-m>
+    <l-m src="./demos/disabled.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/validation.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+    <!-- mc-alert 不在站点外壳注册的那批里（见 agent/doc-pages.md §二），本页自己引 -->
+    <l-m src="../alert/alert.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Checkbox <code>mc-checkbox</code></h1>
+    <p class="doc-lead">
+      复选框。选中 / 半选 / 禁用 / 校验失败四个状态互不正交组合 —— 颜色只有
+      <code>invalid</code> 一条危险色介入。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong><code>indeterminate</code> 是纯视觉状态</strong>：原生 checkbox
+          没有这个属性，它只在内部原生 input 的 <code>.indeterminate</code> 上 —— 提交表单时按
+          <code>false</code> 算， 真正要提交的值还是靠 <code>checked</code> / <code>value</code>。
+        </li>
+        <li>
+          <strong>点一下就清掉半选</strong>：跟原生一致，点击后横杠消失、变成明确的选中 / 未选中。
+        </li>
+        <li>
+          <strong>文案写在标签里</strong>（默认插槽），别用 <code>aria-label</code> 兜：
+          文案里的链接会被正确当成链接，点文案则是切换选中。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        <code>checked</code> 既是初始值也是运行时状态；<code>value</code> 是提交时带出去的值。
+      </p>
+      <demo-checkbox-basic></demo-checkbox-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>半选</h3>
+      <p class="doc-hint">
+        <code>indeterminate</code> 用来表达「部分选中」；它和 <code>checked</code> 同时存在时，
+        横杠优先显示。
+      </p>
+      <demo-checkbox-indeterminate></demo-checkbox-indeterminate>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/indeterminate.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>禁用</h3>
+      <demo-checkbox-disabled></demo-checkbox-disabled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/disabled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-checkbox-sizes></demo-checkbox-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>校验态</h3>
+      <p class="doc-hint">
+        <code>required</code> / <code>invalid</code> 只声明「语义 + 颜色」，不做校验。
+      </p>
+      <demo-checkbox-validation></demo-checkbox-validation>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/validation.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式 —— 方框是 <code>box</code>、文案容器是
+        <code>label</code>、整行是 <code>base</code>。
+      </p>
+      <demo-checkbox-part></demo-checkbox-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

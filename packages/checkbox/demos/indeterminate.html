@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-checkbox indeterminate>全选（已选 2 / 5）</mc-checkbox>
+    <mc-checkbox checked indeterminate>同时带 checked 时，横杠优先</mc-checkbox>
+    <mc-checkbox>普通未选中</mc-checkbox>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-checkbox-indeterminate' });
+  </script>
+</template>

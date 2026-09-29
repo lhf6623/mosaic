@@ -163,6 +163,7 @@ export const SITE = [
             order: 30,
             label: 'Checkbox',
             zh: '复选框',
+            path: 'packages/checkbox/page.html',
             tagName: 'mc-checkbox',
             stage: 'M2',
             summary: '复选框。支持半选态。',
