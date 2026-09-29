@@ -1,0 +1,330 @@
+<!--
+  mc-input — 单行输入框
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。尺寸 / 内边距 / 底色 / 边框全写在这里，外部 style="…" 才压得住 */
+    :host {
+      display: inline-flex;
+      align-items: stretch;
+      box-sizing: border-box;
+      position: relative; /* 内部绝对定位元素的包含块（P21） */
+      height: var(--mc-control-h-md);
+      padding-inline: var(--mc-space-4);
+      border: 1px solid rgb(var(--mc-input-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-input-bg));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg));
+      transition: border-color var(--mc-duration-fast) var(--mc-ease-standard);
+
+      /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
+      --mc-input-bg: var(--mc-color-surface-sunken);
+      --mc-input-border: var(--mc-color-border-strong);
+      --mc-input-border-hover: var(--mc-color-fg-subtle);
+      --mc-input-placeholder: var(--mc-color-fg-subtle);
+      --mc-input-affix-color: var(--mc-color-fg-muted);
+      --mc-input-clear-color: var(--mc-color-fg-subtle);
+      --mc-input-gap: var(--mc-space-2);
+    }
+
+    /* 2. 尺寸：三档只改高度 / 内边距 / 字号（口径见 agent/checklist.md 第二节） */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm);
+      padding-inline: var(--mc-space-3);
+      font-size: var(--mc-text-xs);
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg);
+      padding-inline: var(--mc-space-5);
+      font-size: var(--mc-text-base);
+    }
+
+    /* 3. 状态。焦点环用 ring 令牌（P16）；错误色只有 --mc-color-danger 一处，不另开色板。
+       ⚠️ 顺序有意义：:host([disabled]) 排在 :host(:hover) 之后才压得住（同特异性，后者写在前） */
+    :host(:hover) {
+      border-color: rgb(var(--mc-input-border-hover));
+    }
+    :host(:focus-within) {
+      border-color: rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: -1px;
+    }
+    :host([invalid]) {
+      border-color: rgb(var(--mc-color-danger));
+    }
+    :host([disabled]) {
+      border-color: rgb(var(--mc-input-border));
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 4. 内部结构 */
+    .mc-base {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-input-gap);
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    /* 原生 input 只负责"输入"，视觉全在宿主上；撑满整行，点哪儿都能聚焦 */
+    .mc-input {
+      flex: 1 1 auto;
+      align-self: stretch;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background-color: transparent;
+      color: inherit;
+      font: inherit;
+      appearance: none;
+    }
+    .mc-input::placeholder {
+      color: rgb(var(--mc-input-placeholder));
+    }
+    .mc-input:focus {
+      outline: none;
+    } /* 焦点环画在宿主上（一条环包住前缀与 ×） */
+    .mc-input:disabled {
+      cursor: not-allowed;
+    }
+
+    /* 5. 前后缀 + 清除。三个 data-has-* 是 CSS 唯一的输入：空插槽不该占那一个 gap、
+       × 该不该出现（clearable + 有内容 + 没被禁用 / 只读），CSS 都看不见 ——
+       所以由脚本镜像成宿主属性（P10：常驻 DOM + 属性显隐） */
+    .mc-prefix,
+    .mc-suffix {
+      display: none;
+      flex: none;
+      align-items: center;
+      color: rgb(var(--mc-input-affix-color));
+    }
+    :host([data-has-prefix]) .mc-prefix,
+    :host([data-has-suffix]) .mc-suffix {
+      display: inline-flex;
+    }
+
+    .mc-clear {
+      display: none;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-space-6);
+      height: var(--mc-space-6);
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
+      color: rgb(var(--mc-input-clear-color));
+      font: inherit;
+      line-height: 1;
+      align-items: center;
+      justify-content: center;
+    }
+    :host([data-has-clear]) .mc-clear {
+      display: inline-flex;
+    }
+    .mc-clear:hover {
+      background-color: rgb(var(--mc-input-clear-color) / 0.12);
+    }
+    .mc-clear:active {
+      background-color: rgb(var(--mc-input-clear-color) / 0.2);
+    }
+    .mc-clear:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 1px;
+    }
+  </style>
+
+  <div part="base" class="mc-base">
+    <span class="mc-prefix" part="prefix"><slot name="prefix"></slot></span>
+    <input
+      class="mc-input"
+      part="input"
+      attr:type="type"
+      attr:name="name === '' ? null : name"
+      attr:placeholder="placeholder === '' ? null : placeholder"
+      :disabled="disabled !== null"
+      attr:readonly="readonly !== null ? '' : null"
+      attr:maxlength="maxlength === null ? null : maxlength"
+      attr:aria-required="required !== null ? 'true' : 'false'"
+      attr:aria-invalid="invalid !== null ? 'true' : 'false'"
+      on:input="onInput($event)"
+      on:change="onChange()"
+    />
+    <button
+      class="mc-clear"
+      type="button"
+      aria-label="清除"
+      :disabled="disabled !== null || readonly !== null"
+      on:click="onClear()"
+    >
+      ×
+    </button>
+    <span class="mc-suffix" part="suffix"><slot name="suffix"></slot></span>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-input',
+
+      attrs: {
+        // type 转发给内部原生 input
+        type: 'text',
+        // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
+        defaultValue: '',
+        placeholder: '',
+        // 表单字段名，转发给内部原生 input
+        name: '',
+        size: 'md',
+        // null 默认不查默认值；maxlength 只转发，不参与任何状态
+        maxlength: null,
+        // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-input clearable> 失效
+        clearable: null,
+        disabled: null,
+        readonly: null,
+        required: null,
+        invalid: null,
+      },
+
+      ready() {
+        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+        const root = this.ele.shadowRoot;
+        this._input = root.querySelector('.mc-input');
+        this._slots = [...root.querySelectorAll('slot')];
+        // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
+        this.applyDefaultValue();
+
+        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，
+           这样事件处理器里 e.target.value 读得到（P18），也不需要第二条属性反射通道 */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => this._input.value,
+          set: (v) => {
+            this._input.value = String(v ?? '');
+            this.applyState();
+          },
+        });
+      },
+
+      attached() {
+        this._mounted = true;
+        // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
+        this.applyDefaultValue();
+        this._defaultApplied = true;
+        this._onSlotChange = () => this.applyState();
+        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+        this.applyState();
+      },
+
+      detached() {
+        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      watch: {
+        // 三个都会改变"× 该不该在"，而首次触发落在构造期（P5）—— applyState 自己有守卫
+        clearable() {
+          this.applyState();
+        },
+        disabled() {
+          this.applyState();
+        },
+        readonly() {
+          this.applyState();
+        },
+      },
+
+      proto: {
+        /**
+         * 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。
+         * 两条路径都要接住 —— 声明式 HTML 在 ready() 时属性已在；createElement 之后再写属性的，
+         * 要等 attached()。所以由 _defaultApplied 记账，谁先到谁生效。
+         */
+        applyDefaultValue() {
+          if (this._defaultApplied === true || !this._input) return;
+          // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
+          const initial = this.ele.getAttribute('default-value');
+          if (initial === null || initial === '') return;
+          this._input.value = initial;
+          this._defaultApplied = true;
+        },
+
+        /** data-has-* 是 CSS 唯一的输入（slot 有没有内容、× 该不该出现只有 JS 看得见） */
+        applyState() {
+          // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
+          if (!this._mounted) return;
+          const value = this._input.value;
+          // × 是一个派生事实：可清 + 有内容 + 没被禁用 / 只读
+          this.mirror(
+            'data-has-clear',
+            this.clearable !== null &&
+              this.disabled === null &&
+              this.readonly === null &&
+              value !== '',
+          );
+          this.mirror('data-has-prefix', this.slotHasContent('prefix'));
+          this.mirror('data-has-suffix', this.slotHasContent('suffix'));
+        },
+
+        /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+        slotHasContent(name) {
+          const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
+          return (slot?.assignedNodes() ?? []).some(
+            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+          );
+        },
+
+        /** 只在真的变了的时候写宿主 —— 否则每次按键都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+
+        /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+        onInput(event) {
+          event.stopPropagation();
+          this.applyState();
+          this.emit('input', {
+            data: { value: this._input.value },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
+        onChange() {
+          this.applyState();
+          this.emit('change', {
+            data: { value: this._input.value },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 清空 + 三个事件：clear 说明"为什么变"，input / change 让绑定值的用法不用改 */
+        onClear() {
+          this._input.value = '';
+          this.applyState();
+          this._input.focus();
+          this.emit('clear', { bubbles: true, composed: true });
+          this.emit('input', {
+            data: { value: '' },
+            bubbles: true,
+            composed: true,
+          });
+          this.emit('change', {
+            data: { value: '' },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

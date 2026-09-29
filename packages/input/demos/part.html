@@ -1,0 +1,35 @@
+<template component>
+  <style>
+    /* 前后缀、输入区、行盒子都是内部元素：只有开了 part 的才改得动。
+       选择器带上 .part-custom —— 否则这一页的两条都会被改，就没有对照了。 */
+    .part-custom::part(base) {
+      gap: var(--mc-space-4);
+    }
+    .part-custom::part(input) {
+      letter-spacing: 0.08em;
+    }
+    .part-custom::part(prefix) {
+      padding-inline-end: var(--mc-space-1);
+      color: rgb(var(--mc-color-danger));
+    }
+    .part-custom::part(suffix) {
+      padding-inline-start: var(--mc-space-1);
+      color: rgb(var(--mc-color-info));
+    }
+  </style>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-input class="part-custom" placeholder="内部样式">
+      <span slot="prefix">¥</span>
+      <span slot="suffix">元</span>
+    </mc-input>
+    <mc-input placeholder="默认对照">
+      <span slot="prefix">¥</span>
+      <span slot="suffix">元</span>
+    </mc-input>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-input-part' });
+  </script>
+</template>

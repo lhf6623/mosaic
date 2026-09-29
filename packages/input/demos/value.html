@@ -1,0 +1,32 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-input id="value-target" placeholder="点右边的按钮改写我"></mc-input>
+    <mc-button size="sm" on:click="write()">写 value</mc-button>
+    <mc-button size="sm" variant="outline" on:click="read()">读 value</mc-button>
+  </div>
+
+  <p class="mt-3 text-sm">读到的值：<strong>{{shown}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-input-value',
+
+      data: {
+        shown: '（还没读）',
+      },
+
+      proto: {
+        target() {
+          return this.ele.shadowRoot.querySelector('#value-target');
+        },
+        write() {
+          this.target().value = '运行时写进来的';
+          this.shown = this.target().value;
+        },
+        read() {
+          this.shown = this.target().value || '（空）';
+        },
+      },
+    });
+  </script>
+</template>

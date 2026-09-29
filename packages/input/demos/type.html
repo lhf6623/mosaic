@@ -1,0 +1,15 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-input type="text" placeholder="text"></mc-input>
+    <mc-input type="password" default-value="secret"></mc-input>
+    <mc-input type="email" placeholder="email"></mc-input>
+    <mc-input type="number" placeholder="number"></mc-input>
+    <mc-input type="search" placeholder="search"></mc-input>
+    <mc-input type="tel" placeholder="tel"></mc-input>
+    <mc-input type="url" placeholder="url"></mc-input>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-input-type' });
+  </script>
+</template>

@@ -1,0 +1,36 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-input
+      clearable
+      placeholder="输入点东西，× 才会出现"
+      on:input="onInput($event)"
+      on:change="onChange($event)"
+      on:clear="onClear()"
+    ></mc-input>
+    <mc-input clearable default-value="带着初始值来的" on:clear="onClear()"></mc-input>
+  </div>
+
+  <p class="mt-3 text-sm">最近一次事件：<strong>{{lastEvent}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-input-clearable',
+
+      data: {
+        lastEvent: '（还没动过）',
+      },
+
+      proto: {
+        onInput(event) {
+          this.lastEvent = `input → ${event.data.value}`;
+        },
+        onChange(event) {
+          this.lastEvent = `change → ${event.data.value}`;
+        },
+        onClear() {
+          this.lastEvent = 'clear（值已清空，随后还会补发 input 与 change）';
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,178 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="./input.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/value.html"></l-m>
+    <l-m src="./demos/slots.html"></l-m>
+    <l-m src="./demos/clearable.html"></l-m>
+    <l-m src="./demos/type.html"></l-m>
+    <l-m src="./demos/maxlength.html"></l-m>
+    <l-m src="./demos/states.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+
+    <doc-crumb></doc-crumb>
+    <h1>Input <code>mc-input</code></h1>
+    <p class="doc-lead">
+      单行输入框。初始值写在 <code>default-value</code> 上，运行时读写走宿主 property
+      <code>value</code>。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong><code>value</code> 是 property 不是属性</strong>：标签上写
+          <code>value="…"</code> 不生效 —— 初始值用 <code>default-value</code>，运行时改值写
+          <code>el.value = '…'</code>。
+        </li>
+        <li>
+          <strong>事件里读 <code>$event.data.value</code></strong
+          >：<code>input</code> 与 <code>change</code> 都带 <code>data</code>，原生那条不带头 载荷的
+          <code>input</code> 已被组件拦掉，不会收到两次。
+        </li>
+        <li>
+          <strong>不参与原生 <code>&lt;form&gt;</code> 提交</strong>：shadow 里的原生控件不在表单的
+          提交范围内，<code>name</code> 只是转发给内部控件 —— 提交时自己取 <code>el.value</code>。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 agent/doc-pages.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        第二条的 <code>default-value</code> 是初始值，只读一次；之后改属性不会回头覆盖当前值。
+      </p>
+      <demo-input-basic></demo-input-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-input-sizes></demo-input-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>运行时值</h3>
+      <p class="doc-hint">
+        组件不把值反射成属性：读 <code>el.value</code>、写 <code>el.value = '…'</code>
+        都是立刻生效的内部原生控件。
+      </p>
+      <demo-input-value></demo-input-value>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/value.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>前后缀插槽</h3>
+      <p class="doc-hint">
+        <code>slot="prefix"</code> / <code>slot="suffix"</code> 放单位或图标；空着的那一侧不占位，
+        第三条就是没有前后缀时的间距。
+      </p>
+      <demo-input-slots></demo-input-slots>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/slots.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>可清除</h3>
+      <p class="doc-hint">
+        <code>clearable</code> 只在有内容时给 ×；点它会发 <code>clear</code>，并补发
+        <code>input</code> 与 <code>change</code>。
+      </p>
+      <demo-input-clearable></demo-input-clearable>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/clearable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>输入类型</h3>
+      <p class="doc-hint">
+        <code>type</code> 逐字转发给内部原生 <code>&lt;input&gt;</code>，键盘与输入法跟着它走。
+      </p>
+      <demo-input-type></demo-input-type>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/type.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>长度限制</h3>
+      <p class="doc-hint"><code>maxlength</code> 转发给内部原生控件，超出的字符根本输不进去。</p>
+      <demo-input-maxlength></demo-input-maxlength>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/maxlength.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>状态</h3>
+      <p class="doc-hint">
+        四个状态布尔都转发给内部原生控件：<code>disabled</code> 用原生
+        <code>disabled</code> （键盘与读屏都感知得到），<code>invalid</code> 只是把边框换成危险色。
+      </p>
+      <demo-input-states></demo-input-states>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
+        <code>::part(名字)</code> 改样式。
+      </p>
+      <demo-input-part></demo-input-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/part.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽与 part）由 api.md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份（见 agent/doc-render.md） -->
+    <doc-spec src="./api.md"></doc-spec>
+
+    <doc-pager></doc-pager>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

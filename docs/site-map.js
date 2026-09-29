@@ -145,6 +145,7 @@ export const SITE = [
             order: 10,
             label: 'Input',
             zh: '输入框',
+            path: 'packages/input/page.html',
             tagName: 'mc-input',
             stage: 'M2',
             summary: '单行输入框。可清除、前后缀插槽。',
