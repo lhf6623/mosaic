@@ -90,15 +90,11 @@
     }
 
     @media (max-width: 52rem) {
-      /* 窄屏放不下浮动侧栏：左栏回到文档流顶部（浮动会盖住半屏正文） */
+      /* 窄屏放不下浮动侧栏：左栏整个收进**头部那颗图标按钮的浮层**（外壳 layout.html 里，
+         复用同一个 <doc-nav> 组件）。这里只需要把它藏掉 —— 留着的话菜单会先在正文上面
+         顶一大块，那正是要换掉的那种展示。 */
       doc-nav {
-        position: static;
-        width: auto;
-        height: auto;
-        max-height: 45vh;
-        padding: var(--mc-space-4) var(--mc-space-5);
-        border-right: 0;
-        border-bottom: 1px solid rgb(var(--mc-color-border));
+        display: none;
       }
 
       .doc-split > .doc-content {

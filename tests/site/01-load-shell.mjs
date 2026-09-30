@@ -197,4 +197,76 @@ check('文档级令牌也切到了暗色', docSurface !== '255 255 255', `--mc-c
 await page.evaluate(() => delete document.documentElement.dataset.theme);
 await page.waitForTimeout(80);
 check('切回自动（亮色）后恢复', (await buttonBg()) === lightBg);
+
+/* ------------------------------------------------------------------ *
+ * 8. 窄屏：左栏收进头部那颗图标按钮的浮层；宽屏左栏常驻、按钮**不渲染**
+ *    （所以宽屏 DOM 里仍然只有一份 <doc-nav>，别的套件按老样子找得到它）
+ * ------------------------------------------------------------------ */
+const shellRoot = `(() => {
+  const shell = window.__deepAll('o-page').find(
+    (x) => (x.getAttribute('src') || '').endsWith('/docs/layout.html'),
+  );
+  return shell?.shadowRoot ?? null;
+})()`;
+const menuState = () =>
+  page.evaluate(`(() => {
+    const root = ${shellRoot};
+    const pop = root?.querySelector('.doc-menu');
+    const btn = pop?.querySelector('mc-button');
+    const navs = window.__deepAll('doc-nav');
+    const pageNav = navs.find((n) => !n.closest('.doc-menu-panel'));
+    const panel = pop?.shadowRoot?.querySelector('.mc-panel');
+    return {
+      有按钮: !!pop,
+      左栏在正文里: pageNav ? getComputedStyle(pageNav).display !== 'none' : null,
+      面板打开: !!panel?.matches(':popover-open'),
+      按钮名: btn?.shadowRoot?.querySelector('.mc-native')?.getAttribute('aria-label') ?? null,
+      浮层条目数:
+        root?.querySelector('.doc-menu-panel doc-nav')?.shadowRoot?.querySelectorAll('mc-menu-item')
+          .length ?? 0,
+    };
+  })()`);
+
+const wide = await menuState();
+check(
+  '宽屏：左栏常驻，头部不渲染菜单按钮（DOM 里也就不会多一份 <doc-nav>）',
+  wide.有按钮 === false && wide.左栏在正文里 === true,
+  JSON.stringify(wide),
+);
+
+await page.setViewportSize({ width: 480, height: 900 });
+await page.waitForTimeout(350);
+const narrow = await menuState();
+check(
+  '窄屏：左栏让位，头部出现菜单按钮（复用同一个 <doc-nav>，条目齐全、有名字）',
+  narrow.有按钮 === true &&
+    narrow.左栏在正文里 === false &&
+    narrow.按钮名 === '打开菜单' &&
+    narrow.浮层条目数 > 0,
+  JSON.stringify(narrow),
+);
+
+await page.evaluate(`(() => {
+  ${shellRoot}.querySelector('.doc-menu mc-button').shadowRoot.querySelector('.mc-native').click();
+})()`);
+await page.waitForTimeout(350);
+const opened = await menuState();
+check('窄屏：浮层点开就是这一页的菜单', opened.面板打开 === true, JSON.stringify(opened));
+
+/* 点条目 = 导航：路由一变就把浮层收起来（不能盖在新页面上） */
+await page.evaluate(`(() => {
+  const nav = ${shellRoot}.querySelector('.doc-menu-panel doc-nav');
+  [...nav.shadowRoot.querySelectorAll('a')].find((a) => a.textContent.includes('Code'))?.click();
+})()`);
+await page.waitForTimeout(800);
+const afterNav = await menuState();
+check(
+  '窄屏：点条目跳走之后浮层自动收起',
+  afterNav.面板打开 === false && (await page.evaluate(() => window.__deepAll('h1')[0]?.textContent ?? '')).startsWith('Code'),
+  JSON.stringify(afterNav),
+);
+
+// 复位视口，别把后面的断言（如果有）留在窄屏
+await page.setViewportSize({ width: 1280, height: 900 });
+await page.waitForTimeout(200);
 }

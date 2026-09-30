@@ -9,7 +9,7 @@
          · 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。
        两者都是「外壳的事」——滚的是外壳的正文带，接管的是外壳进出的两个浮动栏。 */
     import { hashOf } from './routes.js';
-    import { TOPBAR, firstPageOf, locate } from './site-map.js';
+    import { TOPBAR, firstPageOf, locate, menuOf } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
@@ -50,7 +50,15 @@
     }
 
     export default () => ({
-      data: { ...initialTheme(), menuOpen: false, links: [] },
+      data: {
+        ...initialTheme(),
+        menuOpen: false,
+        narrowMenuOpen: false,
+        hasMenu: false,
+        narrow: false,
+        showMenu: false,
+        links: [],
+      },
 
       ready() {
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
@@ -62,6 +70,18 @@
           return landing ? { path: landing, label: entry.label, aria: null } : null;
         }).filter(Boolean);
         this.syncTopNav();
+        this.syncMenuButton();
+
+        /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与
+           docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
+           宽屏下不渲染浮层 —— DOM 里就不会平白多出一份 <doc-nav>。 */
+        this._mq = window.matchMedia('(max-width: 52rem)');
+        this.narrow = this._mq.matches;
+        this._onMQ = (event) => {
+          this.narrow = event.matches;
+          this.syncShowMenu();
+        };
+        this._mq.addEventListener('change', this._onMQ);
 
         /* 侧栏滚到底后把滚轮接力给正文带。
            ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主
@@ -84,6 +104,8 @@
            04 套件盯着这条），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
+          this.syncMenuButton();
+          this.hideNarrowMenu();
           this.resetScroll();
         });
       },
@@ -92,6 +114,7 @@
         this._unwatch?.();
         document.removeEventListener('wheel', this._onWheel);
         this._topNav?.removeEventListener('click', this._onTopNavClick);
+        this._mq?.removeEventListener('change', this._onMQ);
       },
 
       proto: {
@@ -140,6 +163,33 @@
             const next = link.label === entryLabel ? 'page' : null;
             if (link.aria !== next) link.aria = next;
           }
+        },
+
+        /**
+         * 窄屏那颗菜单按钮露不露：看**当前分区有没有左栏菜单**（首页那种没有，就不该出现
+         * 一个点开是空的浮层）。与宽度无关 —— 宽度由 CSS 的媒体查询管。
+         */
+        syncMenuButton() {
+          const entry = locate(routeState().path)?.entry ?? null;
+          this.hasMenu = entry ? menuOf(entry).length > 0 : false;
+          this.syncShowMenu();
+        },
+
+        /** 露不露那颗按钮 = 这一页有菜单 **且** 处在窄屏 */
+        syncShowMenu() {
+          this.showMenu = this.hasMenu && this.narrow;
+        },
+
+        /**
+         * 路由一变就把窄屏菜单收起来 —— 点条目本质就是导航，收在这里比在点击上判路径稳：
+         * 面板内容是**插槽里的 light DOM**（在浮层 shadow 之外），在浮层上挂委托、或让 ofa 的
+         * `on:` 去接，都够不着里面那个 <a>（实测点完不收起）。
+         */
+        hideNarrowMenu() {
+          /* ⚠️ 组件方法在 ofa 的包装上，**裸元素上没有**：`$('.doc-menu')` 才有 hide()。
+             直接 `el.hide()` 抛 TypeError —— 而且在路由回调里抛会把后面的 resetScroll() 一起带崩。 */
+          const menu = this.ele.shadowRoot?.querySelector('.doc-menu');
+          if (menu) $(menu)?.hide();
         },
 
         /** 点菜单项：落主题 → 存起来 → 收起菜单（菜单不像 select 会自己收，得手动关） */
@@ -227,6 +277,18 @@
       --mc-button-accent: var(--mc-color-primary);
     }
 
+    /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条 ——
+       给个宽度下限 + 高度上限，超出部分在**面板内容**里滚（浮层自带的 padding 留在滚动区外，
+       滚动条不会压着内边距跑）。 */
+    .doc-menu {
+      --mc-popover-panel-min-width: 14rem;
+    }
+
+    .doc-menu-panel {
+      max-height: min(70vh, 32rem);
+      overflow-y: auto;
+    }
+
     .doc-brand {
       font-weight: var(--mc-weight-semibold);
       font-size: var(--mc-text-lg);
@@ -311,6 +373,7 @@
   <l-m src="../packages/menu/menu-item.html"></l-m>
   <!-- 顶栏右侧的主题切换：项目自己的下拉**菜单**（mc-dropdown；菜单项用已注册的 mc-menu-item） -->
   <l-m src="../packages/dropdown/dropdown.html"></l-m>
+  <l-m src="../packages/popover/popover.html"></l-m>
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
        渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
@@ -406,6 +469,32 @@
             </button></mc-menu-item
           >
         </mc-dropdown>
+
+        <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。
+             o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
+             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。
+             ⚠️ 它是 disclosure（按钮 + 展开区块），不是 ARIA menu —— 用 aria-expanded，不用 aria-haspopup。 -->
+        <o-if :value="showMenu">
+          <mc-popover
+            class="doc-menu"
+            placement="bottom-end"
+            arrow="none"
+            on:open="narrowMenuOpen = true"
+            on:close="narrowMenuOpen = false"
+          >
+            <mc-button
+              class="doc-menu-btn"
+              inline
+              aria-label="打开菜单"
+              attr:aria-expanded="narrowMenuOpen ? 'true' : 'false'"
+            >
+              <mc-icon name="menu"></mc-icon>
+            </mc-button>
+            <div slot="panel" class="doc-menu-panel">
+              <doc-nav></doc-nav>
+            </div>
+          </mc-popover>
+        </o-if>
       </div>
     </header>
 

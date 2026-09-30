@@ -16,9 +16,11 @@
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
+      "docs/snippets/highlight-demo.js",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
+      "packages/alert/alert.html",
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
@@ -38,7 +40,21 @@
       "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
       "packages/button/page.html",
+      "packages/code/api.md",
       "packages/code/code.html",
+      "packages/code/demos/attribute.html",
+      "packages/code/demos/basic.html",
+      "packages/code/demos/binding.html",
+      "packages/code/demos/box-model.html",
+      "packages/code/demos/hljs-base.html",
+      "packages/code/demos/line-numbers.html",
+      "packages/code/demos/markup.html",
+      "packages/code/demos/max-height.html",
+      "packages/code/demos/part.html",
+      "packages/code/demos/soft-wrap.html",
+      "packages/code/demos/src.html",
+      "packages/code/demos/theme.html",
+      "packages/code/page.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/dropdown/dropdown.html",
@@ -46,6 +62,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "tests/site/01-load-shell.mjs"
     ],
     "tests/site/06-boot-palette.mjs": [
@@ -86,6 +103,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/tag/tag.html",
       "tests/site/06-boot-palette.mjs"
     ],
@@ -134,6 +152,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "tests/site/07-inject-server.mjs"
     ],
     "tests/site/10-nav-data.mjs": [
@@ -203,7 +222,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/code/test/code.test.mjs": [
       "app-config.js",
@@ -257,6 +277,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "tests/lib/harness.mjs"
     ],
     "packages/icon/test/icon.test.mjs": [
@@ -307,7 +328,8 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/message/message.html",
-      "packages/message/message.js"
+      "packages/message/message.js",
+      "packages/popover/popover.html"
     ],
     "packages/card/test/card.test.mjs": [
       "app-config.js",
@@ -351,7 +373,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/tag/test/tag.test.mjs": [
       "app-config.js",
@@ -364,7 +387,6 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -378,7 +400,6 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
-      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -387,6 +408,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/tag/api.md",
       "packages/tag/demos/checkable.html",
       "packages/tag/demos/closable.html",
@@ -442,7 +464,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/spinner/test/spinner.test.mjs": [
       "app-config.js",
@@ -476,6 +499,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/spinner/api.md",
       "packages/spinner/demos/basic.html",
       "packages/spinner/demos/colors.html",
@@ -526,7 +550,8 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/menu/page.html",
-      "packages/menu/test/menu.test.mjs"
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/popover.html"
     ],
     "packages/breadcrumb/test/breadcrumb.test.mjs": [
       "app-config.js",
@@ -583,7 +608,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/input/test/input.test.mjs": [
       "app-config.js",
@@ -630,7 +656,8 @@
       "packages/input/page.html",
       "packages/input/test/input.test.mjs",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/textarea/test/textarea.test.mjs": [
       "app-config.js",
@@ -664,6 +691,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/textarea/api.md",
       "packages/textarea/demos/auto-resize.html",
       "packages/textarea/demos/basic.html",
@@ -717,7 +745,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/radio/test/radio.test.mjs": [
       "app-config.js",
@@ -751,6 +780,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/radio/api.md",
       "packages/radio/demos/basic.html",
       "packages/radio/demos/direction.html",
@@ -795,6 +825,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/switch/api.md",
       "packages/switch/demos/basic.html",
       "packages/switch/demos/disabled.html",
@@ -815,6 +846,7 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -828,6 +860,7 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -836,6 +869,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/select/api.md",
       "packages/select/demos/basic.html",
       "packages/select/demos/clearable.html",
@@ -892,7 +926,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/progress/test/progress.test.mjs": [
       "app-config.js",
@@ -926,6 +961,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/progress/api.md",
       "packages/progress/demos/basic.html",
       "packages/progress/demos/colors.html",
@@ -980,7 +1016,8 @@
       "packages/message/message.html",
       "packages/message/message.js",
       "packages/message/page.html",
-      "packages/message/test/message.test.mjs"
+      "packages/message/test/message.test.mjs",
+      "packages/popover/popover.html"
     ],
     "packages/popover/test/popover.test.mjs": [
       "app-config.js",
@@ -1071,7 +1108,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/dropdown/test/dropdown.test.mjs": [
       "app-config.js",
@@ -1113,7 +1151,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/tooltip/test/tooltip.test.mjs": [
       "app-config.js",
@@ -1148,6 +1187,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/tooltip/api.md",
       "packages/tooltip/demos/basic.html",
       "packages/tooltip/demos/delay.html",
@@ -1201,7 +1241,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ],
     "packages/tabs/test/tabs.test.mjs": [
       "app-config.js",
@@ -1235,6 +1276,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/tabs/api.md",
       "packages/tabs/demos/basic.html",
       "packages/tabs/demos/disabled.html",
@@ -1277,6 +1319,7 @@
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
+      "packages/popover/popover.html",
       "packages/table/api.md",
       "packages/table/demos/basic.html",
       "packages/table/demos/empty.html",
@@ -1330,7 +1373,8 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html"
+      "packages/menu/menu.html",
+      "packages/popover/popover.html"
     ]
   },
   "byFile": {
@@ -1652,7 +1696,7 @@
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/tag/test/tag.test.mjs",
+      "packages/select/test/select.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
@@ -1755,7 +1799,8 @@
       "tests/site/13-docs-drift.mjs"
     ],
     "docs/snippets/highlight-demo.js": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "docs/snippets/quick-start.html": [
       "packages/code/test/code.test.mjs",
@@ -1880,6 +1925,7 @@
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
       "tests/site/07-inject-server.mjs"
     ],
     "packages/alert/api.md": [
@@ -2199,7 +2245,7 @@
       "packages/input/test/input.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/tag/test/tag.test.mjs",
+      "packages/select/test/select.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
@@ -2324,7 +2370,8 @@
       "packages/checkbox/test/checkbox.test.mjs"
     ],
     "packages/code/api.md": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/code.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2358,43 +2405,56 @@
       "tests/site/07-inject-server.mjs"
     ],
     "packages/code/demos/attribute.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/basic.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/binding.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/box-model.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/hljs-base.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/line-numbers.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/markup.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/max-height.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/part.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/soft-wrap.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/src.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/theme.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/page.html": [
-      "packages/code/test/code.test.mjs"
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/code/test/code.test.mjs": [
       "packages/code/test/code.test.mjs"
@@ -2916,7 +2976,35 @@
       "packages/popover/test/popover.test.mjs"
     ],
     "packages/popover/popover.html": [
-      "packages/popover/test/popover.test.mjs"
+      "packages/alert/test/alert.test.mjs",
+      "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
+      "packages/dialog/test/dialog.test.mjs",
+      "packages/dropdown/test/dropdown.test.mjs",
+      "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/progress/test/progress.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/spinner/test/spinner.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/table/test/table.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
+      "packages/textarea/test/textarea.test.mjs",
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs"
     ],
     "packages/popover/test/popover.test.mjs": [
       "packages/popover/test/popover.test.mjs"
