@@ -595,7 +595,11 @@ const rules = [
   },
 ];
 
-/** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账 */
+/** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账。
+ *  ⚠️ **在上面加 / 删面或规则时，`tests/site/13-docs-drift.mjs` 的 `EXPECTED_GROUPS` 要同步** ——
+ *  那个常量是写死的，故意不从这里推（推出来那条守卫就恒成立、等于没有）；它专门抓「配置里少了
+ *  一整个面 / 一条规则」。漏跟的代价就是 13 号套件一路红着（踩过：`page-notes` 与
+ *  `page-single-fixed-bar` 这两条规则加进来时，常量还停在 16）。 */
 const GROUP_COUNT = [apiSpec, unitTokens, pageSkeleton, pageDemos].length + rules.length + 1;
 
 export default {
