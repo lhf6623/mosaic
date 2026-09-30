@@ -122,39 +122,6 @@ export default async function run({ check, newPage }) {
       JSON.stringify(card),
     );
 
-    /* ⑤ 面包屑链接能导航（页尾的翻页已删掉，这里只验面包屑） */
-    await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });
-    await settle();
-    // 面包屑是项目自己的 mc-breadcrumb 渲染的（<doc-crumb> 只负责派生），选择器顺带守住这条。
-    // ⚠️ <doc-crumb> 现在是 ofa 组件模板、自带 shadow root：它里面的 mc-breadcrumb 要经 shadowRoot 取
-    await p
-      .waitForFunction(
-        () => !!window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb')?.shadowRoot,
-        undefined,
-        { timeout: 5000 },
-      )
-      .catch(() => {});
-    const crumbHost = await p.evaluate(() => {
-      const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
-      return {
-        component: !!bar,
-        nav: bar?.shadowRoot?.querySelector('nav')?.tagName ?? null,
-        levels: bar?.querySelectorAll('mc-breadcrumb-item').length ?? 0,
-        current: bar?.querySelector('mc-breadcrumb-item[current]')?.textContent.trim() ?? null,
-      };
-    });
-    await click('mc-breadcrumb a', '组件');
-    await settle();
-    const crumb = await h1();
-    check('子路径：面包屑链接能导航', crumb === '组件', `面包屑→${crumb}`);
-    check(
-      '子路径：面包屑由 mc-breadcrumb 渲染（容器 + 每一级 + 当前项）',
-      crumbHost.component &&
-        crumbHost.nav === 'NAV' &&
-        crumbHost.levels === 2 &&
-        crumbHost.current === 'Collapse',
-      JSON.stringify(crumbHost),
-    );
 
     /* ⑥ 冷启动深链（地址栏里的 hash 是带前缀的形式） */
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });

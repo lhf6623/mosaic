@@ -112,7 +112,6 @@ const pageSkeleton = {
     root: '<template page>',
     link: 'docs/content.css',
     requireH1Code: true,
-    require: ['<doc-crumb>'],
     parentExport: 'doc-layout.html',
     firstH2: '例子',
     /* 「注意事项」是**可选尾节**：有值得提醒的才写，没有就整节省略（`mc-button` 就没有）。

@@ -1,7 +1,6 @@
 /**
  * mc-breadcrumb / mc-breadcrumb-item · 面包屑：语义（nav + ol + listitem）、分隔符两条通道、
- * 当前项与 aria-current、链接的悬停 / 焦点 / 导航、令牌定制、窄栏换行、
- * 以及文档站里 <doc-crumb> 确实换成这个组件渲染
+ * 当前项与 aria-current、链接的悬停 / 焦点 / 导航、令牌定制、窄栏换行
  */
 
 export default async function run({ page, visit, check }) {
@@ -27,11 +26,11 @@ const crumb = await (async () => {
       () => {
         const bars = window.__deepAll('mc-breadcrumb');
         const items = window.__deepAll('mc-breadcrumb-item');
-        // 4 个演示（5 个容器）+ 页面头部的 doc-crumb，全部升级完成
+        // 4 个演示（5 个容器）全部升级完成
         return (
-          bars.length >= 6 &&
+          bars.length >= 5 &&
           bars.every((b) => b.shadowRoot) &&
-          items.length >= 18 &&
+          items.length >= 16 &&
           items.every((i) => i.shadowRoot)
         );
       },
@@ -226,29 +225,11 @@ const crumb = await (async () => {
     return out;
   });
 
-  /** 文档站集成：页面头部的 <doc-crumb> 由 <mc-breadcrumb> 渲染（本页就是「组件 / Breadcrumb」）。
-      ⚠️ <doc-crumb> 是 ofa 组件模板、自带 shadow root，里面的 mc-breadcrumb 要经 shadowRoot 取 */
-  const docCrumb = await page.evaluate(() => {
-    const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
-    const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
-    return {
-      component: !!bar,
-      nav: bar?.shadowRoot?.querySelector('nav')?.tagName ?? null,
-      levels: items.length,
-      texts: items.map((i) => i.textContent.trim()),
-      href: items[0]?.querySelector('a')?.getAttribute('href') ?? null,
-      current: items.at(-1)?.getAttribute('aria-current') ?? null,
-      /* 每一级必须是 mc-breadcrumb 的**直接子元素**：分隔符走 ::slotted()，
-         一旦被 o-fill / o-if 包一层就静默消失（实测踩过，见 ofa-pitfalls P38） */
-      parents: items.map((i) => i.parentElement.tagName.toLowerCase()),
-      before: items.map((i) => getComputedStyle(i, '::before').content),
-    };
-  });
 
   /** 真实点击第二级链接（组件）：路由跟着走（原生 <a>，组件不拦）。
-      落到的 components.html 是站点页（本来就没有 doc-crumb），所以再从**左栏**切一次到组件页，
-      顺带验「三个消费方一起更新」——面包屑、顶栏、左栏各自订阅同一个 store；
-      若 docs/state/route.js 被实例化成两份（ESM 没去重），这里就会停在旧值 */
+      落到 components.html 之后再从**左栏**切一次到组件页，顺带验「顶栏与左栏一起更新」——
+      两者各自订阅同一个 store；若 docs/state/route.js 被实例化成两份（ESM 没去重），
+      这里就会停在旧值 */
   const hashBefore = await page.evaluate(() => location.hash);
   await page.locator('demo-breadcrumb-basic mc-breadcrumb-item a').nth(1).click();
   await page.waitForTimeout(900);
@@ -260,11 +241,8 @@ const crumb = await (async () => {
       .find((a) => a.textContent.includes('Button'))
       ?.click();
     await wait(1200);
-    const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
-    const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
     return {
       hash: location.hash,
-      crumb: items.map((i) => i.textContent.trim()),
       top:
         window.__deepAll('.doc-top-nav a')
           .find((a) => a.hasAttribute('aria-current'))
@@ -286,7 +264,6 @@ const crumb = await (async () => {
     customize,
     long,
     dynamic,
-    docCrumb,
     hashBefore,
     hashAfter,
     afterNav,
@@ -445,19 +422,6 @@ check(
   }),
 );
 
-check(
-  '文档站的 <doc-crumb> 已经换成 mc-breadcrumb 渲染（组件 / Breadcrumb）',
-  crumb.docCrumb.component &&
-    crumb.docCrumb.nav === 'NAV' &&
-    crumb.docCrumb.levels === 2 &&
-    JSON.stringify(crumb.docCrumb.texts) === JSON.stringify(['组件', 'Breadcrumb']) &&
-    (crumb.docCrumb.href ?? '').includes('docs/pages/components.html') &&
-    crumb.docCrumb.current === 'page' &&
-    // 每一级都是直接子元素，分隔符才画得出来（被 o-fill / o-if 包一层就没了，P38）
-    JSON.stringify(crumb.docCrumb.parents) === JSON.stringify(['mc-breadcrumb', 'mc-breadcrumb']) &&
-    JSON.stringify(crumb.docCrumb.before) === JSON.stringify(['none', '"/"']),
-  JSON.stringify(crumb.docCrumb),
-);
 
 check(
   '真实点击链接：路由跟着走（组件不拦原生 <a>）',
@@ -466,10 +430,9 @@ check(
 );
 
 check(
-  '客户端切页后三个消费方一起更新（route store 是同一份实例）',
-  JSON.stringify(crumb.afterNav.crumb) === JSON.stringify(['组件', 'Button']) &&
-    crumb.afterNav.top === '组件' &&
-    /* 左栏是「中文（英文）」对照（按钮（Button）），面包屑 / 顶栏仍用单语言 label ——
+  '客户端切页后顶栏与左栏一起更新（route store 是同一份实例）',
+  crumb.afterNav.top === '组件' &&
+    /* 左栏是「中文（英文）」对照（按钮（Button）），顶栏仍用单语言 label ——
        这里是两套显示名的交界处，所以左栏按 includes 判 */
     crumb.afterNav.nav?.includes('Button'),
   JSON.stringify(crumb.afterNav),

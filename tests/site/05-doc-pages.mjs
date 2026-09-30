@@ -13,7 +13,6 @@ export default async function run({ page, visit, check, newPage }) {
 const colocated = await (async () => {
   const p = await newPage();
   const bad = [];
-  const crumbBad = [];
   const specBad = [];
   for (const c of READY) {
     // 必须经由路由打开（page.html 是 <template page>，当独立网页打开会渲染成空白）；
@@ -27,22 +26,11 @@ const colocated = await (async () => {
     p.removeAllListeners('pageerror');
     p.on('pageerror', (e) => failed.push(String(e)));
     const res = await visit(p, url);
-    // 面包屑与组件都会稍晚一拍挂上（<l-m> 异步注册组件），等升级 + 当前项都就位再断言
+    // 左栏菜单与组件都是异步挂上的（<l-m> 异步注册组件），等菜单条目就位再断言
     await p
-      .waitForFunction(
-        () => {
-          const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
-          const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
-          return (
-            !!bar?.shadowRoot &&
-            items.length >= 2 &&
-            items.every((i) => !!i.shadowRoot) &&
-            items.at(-1).getAttribute('aria-current') === 'page'
-          );
-        },
-        undefined,
-        { timeout: 5000 },
-      )
+      .waitForFunction(() => window.__inside('doc-nav', 'a').length > 3, undefined, {
+        timeout: 5000,
+      })
       .catch(() => {});
     // 参考区是运行时渲染的（<doc-spec> 取 md 现解析），等它自己报 ready 再断言
     await p
@@ -55,17 +43,6 @@ const colocated = await (async () => {
     // 页面自己的二级菜单渲染出来 = 站点共享脚本与 <doc-nav> 组件都跑起来了（条目在组件 shadow 里）
     const ok = await p.evaluate(() => {
       const navOk = window.__inside('doc-nav', 'a').length > 3;
-      // 页面头部的面包屑必须是项目自己的 <mc-breadcrumb>（<doc-crumb> 只负责派生）：
-      // 至少两级（分区 + 本页），最后一级是当前页（aria-current="page" 且不是空文本）。
-      // ⚠️ <doc-crumb> 现在是 ofa 组件模板、自带 shadow root，要经 shadowRoot 查里面的 mc-breadcrumb
-      const bar = window.__deep('doc-crumb')?.shadowRoot?.querySelector('mc-breadcrumb');
-      const items = bar ? [...bar.querySelectorAll('mc-breadcrumb-item')] : [];
-      const last = items.at(-1);
-      const crumbOk =
-        !!bar &&
-        items.length >= 2 &&
-        last.getAttribute('aria-current') === 'page' &&
-        !!last.textContent.trim();
       /* 参考区：渲染出来的 h2/h3 必须与「同一份 md 经同一个解析器算出的结果」**逐条对上**。
          守的是渲染管线忠实（白名单改名、解析 bug、页面漏挂 doc-spec、md 取不到，都会红）。
          ⚠️ 它**不**守「这一节该不该有」—— 那两边同源、一起少也不会红；
@@ -77,7 +54,7 @@ const colocated = await (async () => {
             heads: [...spec.querySelectorAll('h2, h3')].map((h) => h.textContent.trim()),
           }
         : { state: 'no-doc-spec', heads: [] };
-      return { navOk, crumbOk, specOk };
+      return { navOk, specOk };
     });
 
     /* node 侧拿期望值：parseSpecMd 自己算「这份 md 会渲染出哪些节」，与浏览器同源 */
@@ -105,20 +82,14 @@ const colocated = await (async () => {
         `${c.path} — ${res?.status()}${failed.length ? ' · ' + failed.join(', ') : ''}${ok.navOk ? '' : ' · 二级菜单未渲染'}`,
       );
     }
-    if (!ok.crumbOk) crumbBad.push(c.path);
   }
   await p.close();
-  return { bad, crumbBad, specBad };
+  return { bad, specBad };
 })();
 check(
   `每个已实现组件的文档页都在它自己的目录里（${READY.length} 个）`,
   colocated.bad.length === 0,
   colocated.bad.join('\n        '),
-);
-check(
-  `每个组件页头部的面包屑都由 <mc-breadcrumb> 渲染（两级 + 当前项）`,
-  colocated.crumbBad.length === 0,
-  colocated.crumbBad.join('\n        ') || `${READY.length} 页全通过`,
 );
 check(
   `参考区渲染出来的节与 md 解析结果逐条对上（渲染管线忠实，${READY.length} 页）`,
