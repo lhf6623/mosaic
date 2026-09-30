@@ -59,9 +59,9 @@ mc-button {
 }
 ```
 
-**为什么必须这样**：UnoCSS 的 theme 会把值拼成
-`rgb(var(--mc-color-primary) / <alpha-value>)`。如果某一层存的是**完整颜色**，
-就会拼出 `rgb(rgb(114 70 237) / 1)` 这种**非法 CSS** —— 整条声明在计算值阶段被丢弃，
+**为什么必须这样**：令牌得能再叠透明度 —— `rgb(var(--mc-color-primary) / .5)`。
+如果某一层存的是**完整颜色**，就会拼出 `rgb(rgb(114 70 237) / 1)` 这种**非法 CSS** ——
+整条声明在计算值阶段被丢弃，
 表现为「类名在、规则在、就是不生效」，控制台零报错。这类 bug 极难反查。
 
 > 这不是假设：第一版里 L1 存三元组、L2 却存了完整颜色（`rgb(var(--mc-primary-600))`），
@@ -227,8 +227,9 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 | 缓动   | `--mc-ease-{standard,emphasized}`                              | `cubic-bezier(.2,0,0,1)` 等                       |
 | 层级   | `--mc-z-{dropdown,sticky,overlay,modal,popover,toast,tooltip}` | `1000` 起步，每级 +100                            |
 
-> **间距/圆角/字号刻意复用 UnoCSS 的默认标度**：`p-4 === --mc-space-4 === 1rem`。
-> 两边数值本来就一致，重映射成 `var()` 反而会让 `p-7`、`w-1/2` 这类非标度值消失。
+> **间距/圆角/字号沿用同一套固定标度**：`p-4 === --mc-space-4 === 1rem`。
+> 工具类子集（`packages/boot/utilities.css`）直接写死这些值，与令牌同源；
+> 两边本来就是一套数，重映射成 `var()` 反而会让它们对不上。
 
 ---
 
@@ -284,8 +285,8 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 `color-scheme` 会跟着一起切，所以原生控件（滚动条、`<select>` 弹出层）会同步变色。
 
-⚠️ **组件里禁止使用 UnoCSS 的 `dark:` 变体。**
-`dark: 'media'` 让它编译成 `@media (prefers-color-scheme: dark)`，在 shadow DOM 里确实生效，
+⚠️ **工具类子集里没有 `dark:` 变体，组件里也别自己写。**
+真要有它，编译出来就是 `@media (prefers-color-scheme: dark)`：在 shadow DOM 里确实生效，
 但它只跟系统偏好，跟不上站点 `<html data-theme>` 的三态切换。
 需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`），在文档根（`:root` / `[data-theme]`）上换值。
 

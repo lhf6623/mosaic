@@ -198,9 +198,6 @@
   </div>
 
   <script>
-    /* @unocss-skip-start */
-    /* 这段 JS 里的标识符（contents / hidden / static…）会被 UnoCSS 的候选提取器当成类名，
-       白产出工具类规则、让 check:drift 红。官方 skip 标记把整段排除（同 packages/code/code.html）。 */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
     /** 面板里可聚焦的原生元素，Tab 循环用它。用 `:disabled`（认 property）而不是 `[disabled]` */
@@ -449,6 +446,5 @@
         },
       },
     });
-    /* @unocss-skip-end */
   </script>
 </template>

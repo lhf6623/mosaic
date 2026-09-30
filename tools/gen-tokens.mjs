@@ -135,9 +135,10 @@ for (const [name, { hue, cmax }] of Object.entries(HUES)) {
 
 /* ---------- 4. 语义层：组件只能引用这一层 ---------- */
 
-/* 语义令牌引用原始色阶。颜色令牌一律存「R G B 通道三元组」、不加 rgb() 包装：UnoCSS 会拼成
- * `rgb(var(--x) / <alpha-value>)`，存完整颜色就拼出 `rgb(rgb(...) / 1)` 非法 CSS，整条声明被
- * 计算阶段丢弃 —— 表现为"类名在、规则在、就是不生效"，极难排查。 */
+/* 语义令牌引用原始色阶。颜色令牌一律存「R G B 通道三元组」、不加 rgb() 包装：
+ * 存完整颜色就没法再叠透明度 —— 使用者写 `rgb(var(--mc-color-primary) / .5)` 会拼出
+ * `rgb(rgb(...) / .5)` 这种非法 CSS，整条声明被计算阶段丢弃，表现为「类名在、规则在、
+ * 就是不生效」，极难排查。 */
 const ref = (family, step) => `var(--mc-${family}-${step})`;
 
 const THEMES = {
@@ -389,16 +390,14 @@ push(
   ' * 把 px-4 之类的规则压掉。显式声明让顺序与 adopt 顺序解耦。',
   ' *',
   ' * 预期顺序（从低到高）：',
-  ' *   mosaic.base < mosaic.tokens < mosaic.preflights < mosaic.icons <',
-  ' *   mosaic.components < mosaic.utilities',
+  ' *   mosaic.base < mosaic.tokens < mosaic.icons < mosaic.utilities',
   ' *   组件自己的 <style> 是未分层的 → 永远赢过全部上面这些层',
   ' *',
-  ' * mosaic.icons 装在 preflights 之上、components 之下（UnoCSS 的 icons 层，见 uno.config.ts',
-  ' * 的 outputToCssLayers）。**这一层必须在这里声明**：图标规则会写 color:inherit / width:1em，',
-  ' * 若靠 UnoCSS 产物自己引入这个层名，它会被追加到 utilities **之后** —— 实测 .mc-icon-x 会盖掉',
-  ' * text-primary（computed color 变成 rgb(0,0,0)）、w-full 也压不住 width:1em。',
+  ' * mosaic.icons 必须在这里声明、且排在 utilities 之前：图标规则会写 color:inherit / width:1em，',
+  ' * 一旦被排到 utilities 之后，实测 .mc-icon-x 会盖掉 text-primary（computed color 变成',
+  ' * rgb(0,0,0)）、w-full 也压不住 width:1em。tools/build-css.mjs 装配时会断言这条。',
   ' */',
-  '@layer mosaic.base, mosaic.tokens, mosaic.preflights, mosaic.icons, mosaic.components, mosaic.utilities;',
+  '@layer mosaic.base, mosaic.tokens, mosaic.icons, mosaic.utilities;',
   '',
   '/* 令牌只写在 :root 上，**刻意不写 :host**。',
   ' *',

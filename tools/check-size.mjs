@@ -21,8 +21,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** 共享产物：raw / gzip 两条线（注释里是写下预算时的现值） */
 const SHARED = [
-  // 69.2 KB / 11.1 KB —— 令牌 + 工具类 + 内置图标，使用者必下
-  { file: 'packages/boot/mosaic.css', raw: 76 * 1024, gzip: 12 * 1024 },
+  // 51.0 KB / 9.0 KB —— 令牌 + 图标 + 工具类，使用者必下（卸掉 UnoCSS 后从 69.2 降下来）
+  { file: 'packages/boot/mosaic.css', raw: 56 * 1024, gzip: 10 * 1024 },
   // 3.0 KB / 1.7 KB
   { file: 'packages/boot/mosaic.js', raw: 4 * 1024, gzip: 2.5 * 1024 },
   // 1.7 KB / 0.95 KB

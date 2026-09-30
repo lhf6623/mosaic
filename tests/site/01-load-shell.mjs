@@ -68,7 +68,9 @@ check(
   sheets?.adopted === 2,
   `adoptedStyleSheets.length = ${sheets?.adopted}`,
 );
-check('注入的样式表内容非空', (sheets?.rules ?? 0) > 300, `${sheets?.rules} 条规则`);
+/* 门槛随产物构成走：现在 = 50 条图标规则 + 43 条工具类 + 令牌层里的若干条 ≈ 110。
+   它只是一条「真的注进去了东西」的地板线，行为由下面 4 条断言逐个验。 */
+check('注入的样式表内容非空', (sheets?.rules ?? 0) > 80, `${sheets?.rules} 条规则`);
 
 /* ------------------------------------------------------------------ *
  * 4. 【D3 核心】工具类在 shadow root 内部真的生效（文档级 <link> 的规则进不了 shadow root）

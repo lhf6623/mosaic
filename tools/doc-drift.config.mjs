@@ -226,19 +226,20 @@ const rules = [
         actual: () => componentSuites().length,
       },
       {
-        /* 「370 个工具类」这种数字以前没人守：改了 uno.config 或加了图标它就悄悄过期。
-           口径写死成「mosaic.css 里以 . 开头的选择器行数」—— 与文档用词「N 条工具类规则」
-           一一对应；换口径（比如只算 utilities 层、不算图标）就要连文档用词一起改。 */
+        /* 「370 个工具类」这种数字以前没人守：改了 utilities.css 或换了图标它就悄悄过期。
+           口径写死成「mosaic.css 里 **mosaic.utilities 层**以 . 开头的选择器行数」——
+           与文档用词「N 条工具类规则」一一对应。⚠️ 必须限定在这一层：不限定的话
+           50 条图标规则（.mc-icon-*）会被一起算进来。 */
         label: '条工具类规则',
         // 只认「当前 / 现为 / 管线（N 条…」这种**报数**的写法；
         // 别处「实测白产出过 4 条工具类规则」讲的是另一件事，别误伤
         pattern: '(?<=当前 |现为 |管线（)(\\d+)\\s*条(?:精选)?工具类规则',
         files: ['README.md', 'docs/**/*.html'],
-        actual: ({ io }) =>
-          io
-            .read('packages/boot/mosaic.css')
-            .split('\n')
-            .filter((line) => /^\s*\.[a-zA-Z]/.test(line)).length,
+        actual: ({ io }) => {
+          const css = io.read('packages/boot/mosaic.css');
+          const layer = css.slice(css.indexOf('@layer mosaic.utilities {'));
+          return layer.split('\n').filter((line) => /^\s*\.[a-zA-Z]/.test(line)).length;
+        },
       },
       {
         label: '组（check:docs 对账组）',

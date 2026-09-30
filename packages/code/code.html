@@ -108,11 +108,6 @@
   </div>
 
   <script>
-    /* @unocss-skip-start */
-    /* 这段 JS 里的 indent / px / py / m-0 等标识符和模板字符串片段会被 UnoCSS 的候选字符串提取器
-       当成类名，白产出工具类规则（写着 class="indent" 的使用者还会莫名拿到 text-indent）。
-       官方 skip 标记把整段排除在提取之外（标记之间不得再出现这组标记字符串）；<style> 与模板照常扫描。 */
-
     /** highlight.js 来源，结尾是 build/ 目录（es/core.min.js · es/languages/<id>.min.js · styles/<theme>.min.css）。
         锁精确版本（jsDelivr 的版本别名有 7 天缓存，见 PLAN D1）；换镜像 / 自托管改 `hljs-base` 即可。 */
     const HLJS_BASE = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/';
@@ -708,6 +703,5 @@
         this._mq?.removeEventListener?.('change', this._onThemeChange);
       },
     });
-    /* @unocss-skip-end */
   </script>
 </template>

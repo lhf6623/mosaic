@@ -85,7 +85,8 @@
         <tr>
           <td>构建缺输入必须大声失败</td>
           <td>
-            实测 UnoCSS 会<strong>静默跳过</strong>缺失的输入文件，退出码 0， 产出没有令牌的坏 CSS
+            实测拼少一份输入会产出<strong>没有令牌的坏 CSS</strong>，退出码却还是 0 ——
+            <code>build-css.mjs</code> 因此先查输入存在、装配后再验图标齐全
           </td>
         </tr>
         <tr>
@@ -104,14 +105,16 @@
       packages/
         boot/
           mosaic.js          手写：attachShadow 补丁 + 样式 adopt（唯一必需引入的 JS）
-          mosaic.css         生成并提交：令牌 + 工具类（可 &lt;link&gt;）
+          mosaic.css         装配并提交：令牌 + 图标 + 工具类（可 &lt;link&gt;）
+          utilities.css      手写：工具类子集（43 条）
           shadow-base.css    手写：只进 shadow root 的 reset（禁止 &lt;link&gt;）
-        color/tokens.css     生成并提交：三层令牌
+        color/tokens.css     生成并提交：三层令牌 + 层顺序声明
+        icon/icons.generated.css  生成并提交：内置图标的 mask 规则
         button/button.html   组件本体（源 = 产物，构建不碰它）
       tools/
         gen-tokens.mjs       调色板生成 + WCAG 对比度自检
-        build-css.mjs        CSS 构建入口（含「缺输入大声失败」守卫）
-      uno.config.ts          UnoCSS 配置（纯声明式）
+        gen-icons.mjs        内置图标 → 运行时数据 + CSS
+        build-css.mjs        装配入口（含「缺输入大声失败」守卫）
       index.html             本站入口：只做引入（外壳在 docs/layout.html）
       docs/                  本站其余页面与资源
     </mc-code>
@@ -136,8 +139,8 @@
           <td>✅ 34 项全绿</td>
         </tr>
         <tr>
-          <td>UnoCSS 管线（430 条精选工具类规则）</td>
-          <td>✅ 67.7 KB raw / 11.0 KB gzip</td>
+          <td>手写工具类子集（43 条规则）</td>
+          <td>✅ 51.0 KB raw / 9.0 KB gzip</td>
         </tr>
         <tr>
           <td>运行时注入（<code>mosaic.js</code>）</td>

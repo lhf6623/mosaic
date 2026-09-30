@@ -140,8 +140,12 @@ function sharedSurface(file) {
   if (/^tests\/(lib\/|smoke\.mjs$|select\.mjs$|suite-map\.json$)/.test(file)) {
     return '测试基础设施 → 全部';
   }
-  // 构建配置、入口、文档站（外壳 / 布局 / 页面 / 内容样式）
-  if (/^(uno\.config\.ts|tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/)/.test(file)) {
+  // 构建配置、入口、文档站（外壳 / 布局 / 页面 / 内容样式）、图标产物
+  if (
+    /^(tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/|packages\/icon\/icons\.generated\.css)/.test(
+      file,
+    )
+  ) {
     return '共享面（构建 / 文档站）→ 全部';
   }
   // 运行时引导与令牌：所有组件的颜色 / 排布都从这里派生

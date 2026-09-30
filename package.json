@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "基于 ofa.js 的免安装、免构建 Web Components UI 框架（UnoCSS 原子化 + 三层 CSS 变量令牌）",
+  "description": "基于 ofa.js 的免安装、免构建 Web Components UI 框架（手写工具类子集 + 三层 CSS 变量令牌）",
   "scripts": {
     "icons": "node tools/gen-icons.mjs",
     "tokens": "node tools/gen-tokens.mjs",
@@ -30,11 +30,9 @@
     "@iconify-json/lucide": "^1.2.136",
     "@iconify/utils": "^3.1.7",
     "@types/node": "^26.6.1",
-    "@unocss/cli": "^66.10.5",
     "markdownlint-cli2": "^0.23.3",
     "playwright-core": "^1.63.0",
     "prettier": "^3.9.8",
-    "typescript": "^7.0.2",
-    "unocss": "^66.10.5"
+    "typescript": "^7.0.2"
   }
 }

@@ -1,6 +1,6 @@
 /* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
  *
- * 这份数据只被 uno.config.ts 在构建期读取（presetIcons 把它编译进 packages/boot/mosaic.css）。
+ * 运行时数据源：mc-icon 组件按名查它（本地查不到才走远程）。
  * 运行时从不请求它 —— 组件靠 CSS 类名 `mc-icon-<名字>` 命中本地图标。
  *
  * 上游：Lucide · ISC（ISC）

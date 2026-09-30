@@ -35,7 +35,7 @@ mc-icon — 图标
 2. src="URL" → 任意 SVG 文件（自托管 / 品牌多色图）
 3. name="…" → 先查本地，查不到再取远程
 
-「本地」= mosaic.css 里有没有对应那条图标类规则（内置集由 UnoCSS 的 presetIcons 编译成
+「本地」= mosaic.css 里有没有对应那条图标类规则（内置集由 `tools/gen-icons.mjs` 编译成
 data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一份名单，而是直接问 CSS：
 给图形槽挂上类名，再看 getComputedStyle().maskImage 是不是 none —— 于是「本地」的定义
 就是「你发出去的那份样式表里有什么」，扩了内置集自动生效。

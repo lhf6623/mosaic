@@ -152,7 +152,7 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
   ⚠️ 反过来不成立：ofa.js **不编译运行时注入的 HTML**（`innerHTML` 塞进去的
   `{{ }}` / `:prop` 全是死的），所以"纯片段 + 注入"那条路会让演示里的绑定静默失效。
 - 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** ——
-  例子内部一律用工具类（`flex flex-wrap items-center gap-3`，精选子集里有）。
+  例子内部一律用工具类（`flex flex-wrap items-center gap-3`，工具类子集里有）。
 - 抽屉就是**项目自己的折叠面板**，作者直接写在页面里（`content.css` 里那几条把容器
   的卡片外观压成一条分隔线，头部/内容区走 `::part()`）。它是站点级依赖，
   和 `mc-code` / `mc-collapse` 一起在 `docs/layout.html` 注册一次。

@@ -57,8 +57,7 @@ aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图
 之前，注入的 script 就变成 ofa 眼里的「第一个 script」，组件直接报「加载组件模块出错」（实测：
 VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
 tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
-（同理，path 数据里的小写指令会被 UnoCSS 当 margin 工具类扫走 —— 所以图标数据放
-packages/icon/icons.generated.ts，那份文件不在 UnoCSS 的扫描范围里。）
+（同理，图标数据放 `packages/icon/icons.generated.ts` —— 生成物，只有 tools/gen-icons.mjs 读它。）
 
 **不预设 role**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。需要播报的用法（动态插入的
 报错）由使用者在宿主上加 role="alert" / role="status"，组件不去覆盖它（同 mc-card 不做整卡可点）。

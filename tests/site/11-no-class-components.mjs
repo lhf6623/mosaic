@@ -1,5 +1,5 @@
 /**
- * 站点 · 写法守卫（node-only）：四条结构不变量，都在 `docs/` + `packages/` 里扫源码。
+ * 站点 · 写法守卫（node-only）：六条结构不变量，都在 `docs/` + `packages/` 里扫源码。
  *
  * ① **不允许手写 `class … extends HTMLElement`** —— 组件一律 `<template component>`
  *    （写法：`<template component>` + 一行 `tag`）。
@@ -27,6 +27,10 @@
  *    所以在这里静态拦：声明或显示原生浮层的组件文件，必须引用 scroll-pin（怎么接见那个文件头）。
  *
  * 不需要浏览器：直接读文件，跑得飞快。
+ *
+ * ⑥ **标记与工具类里不许出现原始色阶**（`bg-primary-600` 这类）—— 工具类子集是手写的，
+ *    命名只到语义层；写了就是「类名在、规则不在」的静默失效，而且不随主题翻转。
+ *    这条原先由 UnoCSS 的 blocklist 在构建期拦，卸掉框架后落到这里。
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -307,5 +311,30 @@ export default async function run({ check }) {
     missingColorAttr.length
       ? `${missingColorAttr.join(' / ')} —— color="#fff000" 会被静默当成不认识的值，接法见 packages/boot/color-attr.js`
       : '组件里都能看到 color-attr 的引用',
+  );
+
+  /* ⑥ 禁止原始色阶进工具类/标记：`bg-primary-600` 这类类名**永远不会有样式** —— 工具类子集是
+        手写的，命名只到语义层（`bg-primary` / `text-muted` / `border-border`）。写了就是静默失效，
+        而且原始色阶不随主题翻转，在某个主题下必然出现可读性问题。
+        以前这条由 UnoCSS 的 blocklist 在构建期拦；卸掉框架后落到这里守（规则一样，只是换了个执行者）。 */
+  const RAW_SCALE =
+    /^(?:bg|text|border|ring|fill|stroke)-(?:neutral|primary|info|success|warning|danger)-\d+$/;
+  const rawHits = [];
+  for (const file of files) {
+    const text = readFileSync(file, 'utf8');
+    for (const m of text.matchAll(/class=["']([^"']*)["']/g)) {
+      for (const cls of m[1].split(/\s+/)) {
+        if (RAW_SCALE.test(cls)) rawHits.push(`${file.replace(ROOT, '')}：class="${cls}"`);
+      }
+    }
+  }
+  const utilCss = readFileSync(`${ROOT}packages/boot/utilities.css`, 'utf8');
+  for (const m of utilCss.matchAll(/^\s*\.([a-z-]+-\d+)\s*[,{:]/gm)) {
+    if (RAW_SCALE.test(m[1])) rawHits.push(`packages/boot/utilities.css：.${m[1]}`);
+  }
+  check(
+    '工具类与标记里没有原始色阶（bg-primary-600 这类不会生效，且不随主题切换）',
+    rawHits.length === 0,
+    rawHits.join('\n        ') || '只有语义色类名',
   );
 }

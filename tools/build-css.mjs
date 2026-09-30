@@ -1,102 +1,127 @@
 #!/usr/bin/env node
-/* mosaic — CSS 构建入口。守卫必须放在 UnoCSS 之外：tokens.css 缺失时 UnoCSS 会**静默跳过**它，
- * 退出码 0，产出一份没有令牌定义的坏 CSS（所有 var(--mc-color-*) 变成悬空引用）—— 构建成功、颜色全失效。
- * 放 uno.config.ts 里则要引 node:fs，且 init 阶段异常会被配置加载器吞掉，只剩一个无信息的退出码 1。
- * 用法：node tools/build-css.mjs（通常经 `pnpm build:css` 调用） */
+/* mosaic — CSS 装配入口。跑：`node tools/build-css.mjs`（= `pnpm build:css`）。
+ *
+ * 产物只有一份：`packages/boot/mosaic.css` —— 使用者 `<link>` 的就是它，必须提交进仓库。
+ * 它按顺序拼三份源码，**没有任何 CSS 框架参与**：
+ *
+ *   packages/color/tokens.css            生成 · 令牌 + @layer 层顺序声明（tools/gen-tokens.mjs）
+ *   packages/icon/icons.generated.css    生成 · 内置图标的 mask 规则（tools/gen-icons.mjs）
+ *   packages/boot/utilities.css          手写 · 工具类子集
+ *
+ * 为什么守卫必须在这里：拼接少了一份输入，产出的是一份**坏 CSS 但退出码 0**
+ * （所有 var(--mc-*) 悬空、图标整片空白），构建"成功"、页面静默失效 —— 实测过。
+ *
+ * 加一条工具类：改 packages/boot/utilities.css（手写，不再有扫描器替你生成）。
+ */
 
-import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, watch, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ICONS } from './icon-manifest.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** 缺任何一个都不该继续构建 */
-const REQUIRED_INPUTS = [
-  'packages/color/tokens.css',
-  'packages/icon/icons.generated.ts',
-  'uno.config.ts',
+/** 缺任何一个都不该继续装配 */
+const SOURCES = [
+  { file: 'packages/color/tokens.css', by: 'tools/gen-tokens.mjs', cmd: 'pnpm tokens' },
+  { file: 'packages/icon/icons.generated.css', by: 'tools/gen-icons.mjs', cmd: 'pnpm icons' },
+  { file: 'packages/boot/utilities.css', by: '手写', cmd: '' },
 ];
 
-const missing = REQUIRED_INPUTS.filter((f) => !existsSync(resolve(ROOT, f)));
+const OUT = 'packages/boot/mosaic.css';
 
-if (missing.length) {
-  console.error(
-    `\n[mosaic] 构建中止：缺少输入\n` +
-      missing.map((f) => `         · ${f}\n`).join('') +
-      `\n         tokens.css 由 tools/gen-tokens.mjs 生成（pnpm tokens），\n` +
-      `         icons.generated.ts 由 tools/gen-icons.mjs 生成（pnpm icons）——\n` +
-      `         两者的产物都要提交进仓库，先执行 \`pnpm build\` 一次即可。\n` +
-      `         继续构建会产出一份没有令牌定义 / 没有图标规则的 CSS，且不会有任何报错。\n`,
-  );
-  process.exit(1);
+const BANNER = `/* 由 tools/build-css.mjs 装配 —— 勿手改；改源码后重跑 \`pnpm build:css\`（\`pnpm check:drift\` 会比对）。
+ * 来源（按序）：packages/color/tokens.css · packages/icon/icons.generated.css · packages/boot/utilities.css
+ * ========================================================================== */
+`;
+
+const read = (rel) => readFileSync(resolve(ROOT, rel), 'utf8');
+const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
+
+/** 装配 + 自检；返回 { css, problems } */
+function build() {
+  const missing = SOURCES.filter((s) => !existsSync(resolve(ROOT, s.file)));
+  if (missing.length) {
+    return {
+      css: null,
+      problems: [
+        ...missing.map(
+          (s) => `缺少输入 ${s.file}（由 ${s.by} 生成）` + (s.cmd ? ` —— 先执行 \`${s.cmd}\`` : ''),
+        ),
+        '继续装配会产出一份没有令牌 / 没有图标的坏 CSS，且不会有任何报错',
+      ],
+    };
+  }
+
+  const parts = SOURCES.map((s) => read(s.file));
+  const css = `${BANNER}\n${parts.join('\n')}`;
+  const problems = [];
+
+  /* 1. 层顺序：mosaic.icons 必须在声明里，且排在 utilities **之前**。
+   *    层顺序由「首次出现」决定；图标规则写着 color:inherit / width:1em，
+   *    一旦被排到 utilities 之后，实测会盖掉 text-primary（computed color 变成 rgb(0,0,0)）、
+   *    w-full 也压不住 width:1em。 */
+  const decl = /^@layer [^;]*;/m.exec(css)?.[0] ?? '';
+  const icons = decl.indexOf('mosaic.icons');
+  const utils = decl.indexOf('mosaic.utilities');
+  if (icons < 0) {
+    problems.push(
+      '`@layer` 声明里没有 mosaic.icons —— 层顺序声明在 packages/color/tokens.css（tools/gen-tokens.mjs）',
+    );
+  } else if (utils >= 0 && icons > utils) {
+    problems.push(
+      '`@layer` 声明里 mosaic.icons 排在 mosaic.utilities 之后 —— 图标规则会盖掉使用者的工具类',
+    );
+  }
+
+  /* 2. 内置图标一条都不能少：少了不会有任何提示，使用者看到的是「这个图标永久走远程、还慢」 */
+  const lost = Object.keys(ICONS).filter((name) => !css.includes(`.mc-icon-${name}{`));
+  if (lost.length) {
+    problems.push(`以下内置图标的类名不在产物里：${lost.join(' ')} —— 检查 tools/gen-icons.mjs`);
+  }
+
+  return { css, problems };
 }
 
-const bin = resolve(ROOT, 'node_modules/.bin/unocss');
-
-if (!existsSync(bin)) {
-  console.error('\n[mosaic] 找不到 unocss 可执行文件，请先执行 `pnpm install`。\n');
-  process.exit(1);
+/** 写出产物（内容不变就不动文件，免得 check:drift 报假过期） */
+function write(css) {
+  const outFile = resolve(ROOT, OUT);
+  if (existsSync(outFile) && readFileSync(outFile, 'utf8') === css) return false;
+  writeFileSync(outFile, css);
+  return true;
 }
 
-// Windows 下 .bin 里是 .cmd 要走 shell；透传额外参数（如 --watch）好让 dev:css 复用同一个守卫
-const result = spawnSync(bin, ['-c', 'uno.config.ts', ...process.argv.slice(2)], {
-  cwd: ROOT,
-  stdio: 'inherit',
-  shell: process.platform === 'win32',
-});
-
-if (result.status !== 0) process.exit(result.status ?? 1);
-
-/* ---------- 产物自检：两类静默失效都在这里变成构建失败 ----------
- * 1. 图标层顺序没声明 → mosaic.icons 被追加到 utilities 之后，图标规则里的 color:inherit
- *    会盖掉使用者的 text-primary（实测过：computed color 变成 rgb(0,0,0)）。
- * 2. 内置图标的类名没进产物 → presetIcons 默认不 warn，缺一个图标不会有任何提示，
- *    使用者看到的是「这个图标永久走远程、还慢」，非常难查。
- * ------------------------------------------------------------------ */
-
-const outFile = resolve(ROOT, 'packages/boot/mosaic.css');
-const css = existsSync(outFile) ? readFileSync(outFile, 'utf8') : '';
-
-/* ---------- 产物归一：抹掉「构建那台机器」的痕迹 ----------
- * UnoCSS 会给每个入口文件插一条 `/* Source: … *\/` 标记，标记内容与**位置**都跟机器有关：
- *   · 路径：Mac 上是 /Users/... 、Windows 上是 D:/...；
- *   · 位置：它落在第几行取决于 CLI 扫入口的先后（实测 macOS 与 Linux runner 不同）——
- *     CI 上 check:drift 必红，而且报的是「产物过期」，指向完全错误的方向。
- * 做法：把所有 Source 标记摘掉，只在**最前面**补一条固定的（内容来自 cli.entry.patterns
- * 的第一个入口，也就是令牌文件）。这样换平台、换机器，产物都逐字节一致。 */
-const SOURCE_MARKER = '/* Source: packages/color/tokens.css */';
-const withoutMarkers = css.replace(/^\/\* Source: .* \*\/\r?\n/gm, '');
-const normalized = withoutMarkers.includes('Mosaic Design Tokens')
-  ? `${SOURCE_MARKER}\n${withoutMarkers}`
-  : withoutMarkers;
-if (normalized !== css) writeFileSync(outFile, normalized);
-
-const problems = [];
-if (!/^@layer [^;]*\bmosaic\.icons\b/m.test(css)) {
-  problems.push(
-    '`@layer` 声明里没有 mosaic.icons —— 它会被追加到 mosaic.utilities 之后，' +
-      '图标规则会盖掉使用者的工具类（层声明在 packages/color/tokens.css，由 gen-tokens.mjs 生成）',
-  );
-}
-const lostIcons = Object.keys(ICONS).filter((name) => !css.includes(`.mc-icon-${name}{`));
-if (lostIcons.length) {
-  problems.push(
-    `以下内置图标的类名不在产物里：${lostIcons.join(' ')} —— ` +
-      '检查 uno.config.ts 的 safelist 是否由 icons.generated.ts 派生',
-  );
+function run({ quiet = false } = {}) {
+  const { css, problems } = build();
+  if (problems.length) {
+    console.error(
+      `\n[mosaic] CSS 装配中止：\n${problems.map((p) => `         · ${p}\n`).join('')}`,
+    );
+    return 1;
+  }
+  const changed = write(css);
+  if (!quiet) {
+    const sizes = SOURCES.map((s) => `${s.file.split('/').pop()} ${kb(read(s.file))}`).join(' · ');
+    console.log(
+      `\n[mosaic] ${OUT} 装配完成：${kb(css)} · ${Object.keys(ICONS).length} 个内置图标\n` +
+        `         来源：${sizes}${changed ? '' : '（内容无变化）'}\n`,
+    );
+  }
+  return 0;
 }
 
-if (problems.length) {
-  console.error(
-    `\n[mosaic] 产物自检未通过：\n${problems.map((p) => `         · ${p}\n`).join('')}`,
-  );
-  process.exit(1);
+if (process.argv.includes('--watch')) {
+  const code = run();
+  if (code !== 0) process.exit(code);
+  console.log(`[mosaic] 监听 ${SOURCES.map((s) => s.file).join(' · ')} —— 改动即重新装配`);
+  let timer = null;
+  for (const { file } of SOURCES) {
+    watch(resolve(ROOT, file), () => {
+      /* 编辑器保存常常连发几次事件，防抖一下免得重复写产物 */
+      clearTimeout(timer);
+      timer = setTimeout(() => run(), 50);
+    });
+  }
+} else {
+  process.exit(run());
 }
-
-console.log(
-  `[mosaic] mosaic.css 自检通过：${Object.keys(ICONS).length} 个内置图标 · 层顺序含 mosaic.icons`,
-);
-
-process.exit(0);

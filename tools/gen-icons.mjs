@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * mosaic — 内置图标生成器：清单 + 上游图标数据 → 两份提交进仓库的产物。
+ * mosaic — 内置图标生成器：清单 + 上游图标数据 → 三份提交进仓库的产物。
  *
  *   packages/icon/icons.generated.ts   我们的 mc 图标集合（IconifyJSON 形状，键 = 对外名）
- *                                      —— 只被 uno.config.ts 在**构建期**读取，运行时从不请求
+ *                                      —— 运行时数据源（mc-icon 组件按名查它），从不发请求
+ *   packages/icon/icons.generated.css  内置图标的 CSS（每条一个 data-URI mask，类名 mc-icon-<名字>）
+ *                                      —— 由 tools/build-css.mjs 装配进 packages/boot/mosaic.css
  *   packages/icon/icons.license.txt    来源与许可清单（署名义务、白名单核对结果）
  *
  * 三条守卫都是「缺输入必须大声失败」，而且是**构建期**就红，不留到浏览器里变成静默空白：
@@ -179,7 +181,7 @@ if (styledClashes.length) {
 const srcInfo = sets.get(ICON_SOURCE).info;
 const collectionTs = `/* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
  *
- * 这份数据只被 uno.config.ts 在构建期读取（presetIcons 把它编译进 packages/boot/mosaic.css）。
+ * 运行时数据源：mc-icon 组件按名查它（本地查不到才走远程）。
  * 运行时从不请求它 —— 组件靠 CSS 类名 \`mc-icon-<名字>\` 命中本地图标。
  *
  * 上游：${srcInfo.name} · ${srcInfo.license?.title ?? '?'}（${srcInfo.license?.spdx ?? '?'}）
@@ -244,12 +246,55 @@ licenseLines.push(
   '',
 );
 
+/* ---------- 图标 CSS：每条一个 data-URI mask ----------
+ * 以前这份由 UnoCSS 的 presetIcons 生成（uno.config.ts 已删）。它只有一个用途：让组件里的
+ * **静态**图标直接吃类名（`<span class="mc-icon-spinner">`），零 JS、零字体、零请求。
+ * 中转变量叫 --mc-icon-uri（原先是框架的 --un-icon）。 */
+const ICON_W = sets.get(ICON_SOURCE).data.width ?? 24;
+const ICON_H = sets.get(ICON_SOURCE).data.height ?? 24;
+
+/** data-URI 里 `<` `>` `#` 必须转义；属性引号换成单引号（外层 url() 用的是双引号） */
+const encodeSvg = (svg) =>
+  svg.replace(/</g, '%3C').replace(/>/g, '%3E').replace(/#/g, '%23').replace(/"/g, "'");
+
+const iconRule = (name, data) => {
+  const svg =
+    `<svg viewBox='0 0 ${data.width ?? ICON_W} ${data.height ?? ICON_H}' display='inline-block'` +
+    ` vertical-align='middle' width='1em' height='1em' xmlns='http://www.w3.org/2000/svg' >${data.body}</svg>`;
+  return (
+    `.mc-icon-${name}{--mc-icon-uri:url("data:image/svg+xml;utf8,${encodeSvg(svg)}");` +
+    `-webkit-mask:var(--mc-icon-uri) no-repeat;mask:var(--mc-icon-uri) no-repeat;` +
+    `-webkit-mask-size:100% 100%;mask-size:100% 100%;background-color:currentColor;color:inherit;` +
+    `display:inline-block;vertical-align:middle;width:1em;height:1em;}`
+  );
+};
+
+const iconCss = `/* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
+ *
+ * 内置图标的 CSS：每条一个 data-URI mask。类名 \`mc-icon-<名字>\`，盒子恒为 1em、颜色走
+ * currentColor —— 尺寸交给 font-size、颜色跟随文字（组件里的静态图标就靠这个，零请求）。
+ * ⚠️ \`--mc-icon-uri\` 是**生成出来的 mask 源**，不是可换肤的组件令牌，别在主题里覆盖它。
+ *
+ * 上游：${srcInfo.name} · ${srcInfo.license?.title ?? '?'}（${srcInfo.license?.spdx ?? '?'}）
+ * 署名与来源见同目录的 icons.license.txt；由 tools/build-css.mjs 装配进 packages/boot/mosaic.css
+ * 的 mosaic.icons 层（层顺序见 packages/color/tokens.css）。
+ * ========================================================================== */
+
+@layer mosaic.icons {
+${Object.entries(icons)
+  .map(([name, data]) => iconRule(name, data))
+  .join('\n')}
+}
+`;
+
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(resolve(OUT_DIR, 'icons.generated.ts'), collectionTs);
+writeFileSync(resolve(OUT_DIR, 'icons.generated.css'), iconCss);
 writeFileSync(resolve(OUT_DIR, 'icons.license.txt'), licenseLines.join('\n'));
 const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
 console.log(
   `\n[mosaic] 内置图标：${Object.keys(icons).length} 个 · 来源 ${usedSets.join(' + ')}\n` +
-    `         packages/icon/icons.generated.ts  ${kb(collectionTs)}\n` +
-    `         packages/icon/icons.license.txt   ${kb(licenseLines.join('\n'))}\n`,
+    `         packages/icon/icons.generated.ts   ${kb(collectionTs)}\n` +
+    `         packages/icon/icons.generated.css  ${kb(iconCss)}\n` +
+    `         packages/icon/icons.license.txt    ${kb(licenseLines.join('\n'))}\n`,
 );

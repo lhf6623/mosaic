@@ -150,9 +150,6 @@
   </div>
 
   <script>
-    /* @unocss-skip-start */
-    /* 这段 JS 里的标识符会被 UnoCSS 的候选提取器当成类名，白产出工具类规则、让 check:drift 红。
-       skip 标记把整段排除（同 packages/code/code.html）。 */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
     export default () => ({
@@ -274,6 +271,5 @@
         },
       },
     });
-    /* @unocss-skip-end */
   </script>
 </template>

@@ -26,6 +26,7 @@ const PRODUCTS = [
   'packages/color/tokens.css',
   'packages/boot/mosaic.css',
   'packages/icon/icons.generated.ts',
+  'packages/icon/icons.generated.css',
   'packages/icon/icons.license.txt',
 ];
 

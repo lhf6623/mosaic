@@ -30,22 +30,21 @@
                 .dim      { background-color: rgb(var(--mc-button-fill) / 0.5); }
               </mc-code>
       <p style="margin: 0.75rem 0 0">
-        混着来的话，UnoCSS 会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
+        混着来的话会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
         <strong>非法 CSS</strong>，整条声明在计算值阶段被丢弃 ——
         类名在、规则在、就是不生效，控制台零报错。
       </p>
     </div>
     <p>
       <strong>组件只允许消费 L2 和 L3，永远不碰 L1。</strong>
-      原始色阶不随主题切换，直接用它必然在某个主题下出现可读性问题。 这条由构建期的
-      <code>blocklist</code> 强制拦截。
+      原始色阶不随主题切换，直接用它必然在某个主题下出现可读性问题。 这条由 11
+      号套件的写法守卫拦着。
     </p>
 
     <div class="doc-note">
       <strong>为什么存通道三元组而不是 hex？</strong>
-      只有这样才能写 <code>rgb(var(--mc-primary-500) / 0.5)</code>， 也才能接上 UnoCSS 的
-      <code>&lt;alpha-value&gt;</code> 占位符 —— 于是
-      <code>bg-primary/50</code> 这类透明度语法直接可用。
+      只有这样才能在任意地方再叠一层透明度：<code>rgb(var(--mc-primary-500) / 0.5)</code>。
+      存完整颜色就没法再套 <code>rgb()</code>，这类用法直接不成立。
     </div>
 
     <h2>原始色阶</h2>

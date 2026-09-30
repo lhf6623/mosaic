@@ -102,16 +102,21 @@
 
     <h3>工具类不生效</h3>
     <p>
-      <code>mosaic.css</code> 自带的是一份<strong>预编译的精选子集</strong>（当前 430
+      <code>mosaic.css</code> 自带的是一份<strong>手写的工具类子集</strong>（当前 43
       条工具类规则），覆盖布局 / 间距 / 排版 / 语义色。子集之外的（<code>mt-7</code>、
       <code>bg-gradient-to-r</code>…）<strong>不存在</strong>，需要时请自己写 CSS。
     </p>
 
-    <h3>组件里为什么禁止 <code>dark:</code></h3>
+    <h3>为什么没有 <code>dark:</code> 这类变体</h3>
     <p>
-      <code>dark:</code> 编译出来是 <code>@media (prefers-color-scheme: dark)</code>， 在 shadow
-      树里<strong>能生效，但只跟随系统偏好</strong>，跟不了站点的
-      <code>&lt;html data-theme&gt;</code> 切换。所以组件里一律不用，暗色差异提升为令牌。
+      工具类子集是手写的，<strong>只有列在 packages/boot/utilities.css 里的那些</strong>， 没有
+      <code>dark:</code> / <code>md:</code> 这类变体。真要有 <code>dark:</code>，它编译出来会是
+      <code>@media (prefers-color-scheme: dark)</code> —— 在 shadow
+      树里<strong>只跟随系统偏好</strong>， 跟不了站点的
+      <code>&lt;html data-theme&gt;</code> 三态切换。 暗色差异一律提升为令牌，在文档根（<code
+        >:root</code
+      >
+      / <code>[data-theme]</code>）上换值。
     </p>
   </div>
   <script>

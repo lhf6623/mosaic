@@ -11,5 +11,5 @@
     "isolatedModules": true,
     "allowJs": false
   },
-  "include": ["uno.config.ts"]
+  "include": ["packages/icon/icons.generated.ts"]
 }
