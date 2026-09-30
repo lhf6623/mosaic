@@ -69,12 +69,13 @@
           const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
           return landing ? { path: landing, label: entry.label, aria: null } : null;
         }).filter(Boolean);
-        this.syncTopNav();
-        this.syncMenuButton();
-
         /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与
            docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
-           宽屏下不渲染浮层 —— DOM 里就不会平白多出一份 <doc-nav>。 */
+           宽屏下不渲染浮层 —— DOM 里就不会平白多出一份 <doc-nav>。
+           ⚠️ 这段必须排在 syncMenuButton() **之前**：showMenu = hasMenu && narrow，
+           而 narrow 是这里才有的。反过来的话窄屏**全新加载**时 narrow 还是初值 false，
+           showMenu 算成 false 且没人再算一次 —— 表现就是「窄屏刷新后按钮不见了，
+           resize 一下又出来」（实测复现过）。 */
         this._mq = window.matchMedia('(max-width: 52rem)');
         this.narrow = this._mq.matches;
         this._onMQ = (event) => {
@@ -82,6 +83,9 @@
           this.syncShowMenu();
         };
         this._mq.addEventListener('change', this._onMQ);
+
+        this.syncTopNav();
+        this.syncMenuButton();
 
         /* 侧栏滚到底后把滚轮接力给正文带。
            ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主

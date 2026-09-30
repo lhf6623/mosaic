@@ -246,6 +246,19 @@ check(
   JSON.stringify(narrow),
 );
 
+/* ⚠️ 再走一遍**窄屏 + 刷新**（全新加载），这条才是用户实际踩的路径：
+   showMenu = hasMenu && narrow，而 narrow 来自 matchMedia —— 如果它没在算 showMenu
+   之前就位，全新加载时按钮就是「不显示且没人重算」，只能靠跨断点 resize 把它碰出来。
+   上一版正好坏在这条上（resize 那条是绿的，所以守卫没抓住）。 */
+await visit(page, '/index.html#/packages/button/page.html');
+await page.waitForTimeout(900);
+const refreshed = await menuState();
+check(
+  '窄屏：刷新（全新加载）后菜单按钮依然在',
+  refreshed.有按钮 === true && refreshed.左栏在正文里 === false && refreshed.浮层条目数 > 0,
+  JSON.stringify(refreshed),
+);
+
 await page.evaluate(`(() => {
   ${shellRoot}.querySelector('.doc-menu mc-button').shadowRoot.querySelector('.mc-native').click();
 })()`);
