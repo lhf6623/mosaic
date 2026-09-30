@@ -524,6 +524,19 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(readonlyOpen),
   );
 
+  /* 无障碍名跨 shadow：宿主 aria-label → 触发按钮（组件里唯一能被命名的位置） */
+  const labelled = await page.evaluate(() => {
+    window.__make({ 'aria-label': '切换深浅色' }, '<mc-option value="bj">北京</mc-option>');
+    const named = window.__sel().control.getAttribute('aria-label');
+    window.__make({}, '<mc-option value="bj">北京</mc-option>');
+    return { named, plain: window.__sel().control.getAttribute('aria-label') };
+  });
+  check(
+    '无障碍名：宿主的 aria-label 转发到触发按钮（没写就不留残留）',
+    labelled.named === '切换深浅色' && labelled.plain === null,
+    JSON.stringify(labelled),
+  );
+
   const sizes = await page.evaluate(() => {
     const read = (size) => {
       window.__make(size ? { size } : {}, '<mc-option value="bj">北京</mc-option>');

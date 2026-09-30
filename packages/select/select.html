@@ -548,6 +548,12 @@
             control.setAttribute('aria-invalid', on('invalid') ? 'true' : 'false');
             control.setAttribute('aria-readonly', on('readonly') ? 'true' : 'false');
             control.setAttribute('aria-disabled', on('disabled') ? 'true' : 'false');
+            /* 无障碍名：触发按钮住在 shadow root 里，**外层给不了它名字**（跨 shadow 写不了
+               aria-label，IDREF 也解析不过去）—— 宿主上的 aria-label 是命名它的唯一入口，
+               转发过去。只转发 aria-label：aria-labelledby 跨 shadow 解析不到外层的元素。 */
+            const label = this.ele.getAttribute('aria-label');
+            if (label) control.setAttribute('aria-label', label);
+            else control.removeAttribute('aria-label');
             this._list.setAttribute('aria-multiselectable', this.isMultiple() ? 'true' : 'false');
           },
 

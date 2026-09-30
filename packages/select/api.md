@@ -46,6 +46,10 @@ dropdown 是**菜单**（触发元素 + 菜单项）；select 是**表单控件*
 | `invalid`       | `boolean`              | —        | 校验失败：边框换成 `--mc-color-danger`，并转发 `aria-invalid`            |
 | `size`          | `'sm' \| 'md' \| 'lg'` | `md`     | 控件高度 / 字号 / 行高（对外只动宿主高度，`style="height:…"` 也压得住）  |
 
+> ⚠️ **无障碍名写在宿主的 `aria-label` 上**（`<mc-select aria-label="选择城市">`）：触发按钮住在
+> shadow root 里，外层写不了它的 `aria-label`，组件会把宿主上那一个转发过去。
+> `aria-labelledby` **不转发** —— 它是 IDREF，跨 shadow 边界解析不到外层的元素，转发也只是个空引用。
+
 ### mc-option
 
 | 名称       | 值        | 默认 | 说明                                        |

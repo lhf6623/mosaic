@@ -14,7 +14,22 @@
 
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
-    const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
+
+    /**
+     * 存下来的三态主题（没有 / 非法 / 隐私模式读不了 → auto，跟随系统）。
+     * ⚠️ 在 data 里就算好、而不是等 ready()：下拉的初始值要在**第一次渲染**就带上，
+     * 否则会先画一个「自动」再跳成存下来的值（闪一下）。页面的 data-theme 由
+     * docs/theme-boot.js 在 head 里同步落好，是另一条路。
+     */
+    const storedTheme = () => {
+      try {
+        const v = localStorage.getItem(THEME_KEY);
+        if (THEMES.includes(v)) return v;
+      } catch {
+        /* 隐私模式读不了 localStorage */
+      }
+      return 'auto';
+    };
 
     /** 行高兜底：deltaMode 为「行」时的像素换算（同 packages/code 的滚轮接力） */
     const WHEEL_LINE = 16;
@@ -26,11 +41,9 @@
     }
 
     export default () => ({
-      data: { themeLabel: '自动', links: [] },
+      data: { theme: storedTheme(), links: [] },
 
       ready() {
-        this.readTheme();
-
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
            ⚠️ 链接一律用 hashOf() 生成、不走 olink：olink 是编译期指令，这份数据是运行时拼的 */
         this.links = TOPBAR.map((entry) => {
@@ -105,31 +118,23 @@
           }
         },
 
-        // 三态主题。首帧由 docs/theme-boot.js（head 里的同步经典脚本）应用
-        readTheme() {
-          let mode = 'auto';
+        /** mc-select 的 change：载荷里就是选中项的 value（auto / light / dark） */
+        onThemeChange(event) {
+          const next = String(event?.data?.value ?? 'auto');
+          this.applyTheme(THEMES.includes(next) ? next : 'auto');
           try {
-            const v = localStorage.getItem(THEME_KEY);
-            if (THEMES.includes(v)) mode = v;
-          } catch {
-            /* 隐私模式读不了，跟随系统 */
-          }
-          this._theme = mode;
-          this.themeLabel = THEME_LABELS[mode];
-        },
-
-        cycleTheme() {
-          const next = THEMES[(THEMES.indexOf(this._theme ?? 'auto') + 1) % THEMES.length];
-          if (next === 'auto') delete document.documentElement.dataset.theme;
-          else document.documentElement.dataset.theme = next;
-
-          this._theme = next;
-          this.themeLabel = THEME_LABELS[next];
-          try {
-            localStorage.setItem(THEME_KEY, next);
+            localStorage.setItem(THEME_KEY, this.theme);
           } catch {
             /* 写不了就算了 */
           }
+        },
+
+        /** 落主题：auto 就是不写 data-theme（跟随系统，交给 theme-boot.js 与媒体查询） */
+        applyTheme(mode) {
+          if (mode === 'auto') delete document.documentElement.dataset.theme;
+          else document.documentElement.dataset.theme = mode;
+
+          this.theme = mode;
         },
       },
     });
@@ -231,26 +236,33 @@
       color: rgb(var(--mc-color-fg));
     }
 
+    /* 主题切换：外壳里唯一的 mc-select。宽度**写死** —— 三个选项字数不同
+       （自动 / 亮色 / 暗色），不固定的话切一次顶栏就抖一下。
+       外形对齐它替换掉的那颗胶囊按钮：描边 + 全圆角 + 小字号。色槽直接用组件自己的
+       --mc-select-control-* 令牌（自定义属性写在宿主上，压得住组件 :host 里的默认值）。 */
     .doc-theme {
       flex: none;
-      height: var(--mc-control-h-sm);
-      padding-inline: var(--mc-space-3);
-      border: 1px solid rgb(var(--mc-color-border-strong));
-      border-radius: var(--mc-radius-full);
-      background-color: transparent;
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-xs);
-      cursor: pointer;
+      width: 6.5rem;
+      --mc-select-control-radius: var(--mc-radius-full);
+      --mc-select-control-border: var(--mc-color-border-strong);
+      --mc-select-control-pad-x: var(--mc-space-3);
     }
 
-    .doc-theme:hover {
+    .doc-theme::part(base) {
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-xs);
+    }
+
+    /* 悬停：组件在触发框上没有 hover 样式（只有 focus 与面板那套），补回原来那颗按钮的 */
+    .doc-theme::part(base):hover {
       background-color: rgb(var(--mc-color-surface-sunken));
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅） */
-    .doc-github:focus-visible,
-    .doc-theme:focus-visible {
+    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅）。
+       ⚠️ 主题切换的焦点环在 mc-select 内部那个 button 上，组件自带了同款（--mc-color-ring），
+       所以这里只管 GitHub 那颗。 */
+    .doc-github:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring));
       outline-offset: 2px;
     }
@@ -296,6 +308,9 @@
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
+  <!-- 顶栏右侧的主题切换：项目自己的下拉（mc-select + mc-option） -->
+  <l-m src="../packages/select/select.html"></l-m>
+  <l-m src="../packages/select/option.html"></l-m>
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
        渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
@@ -335,9 +350,20 @@
           </svg>
         </a>
 
-        <button class="doc-theme" type="button" on:click="cycleTheme" aria-label="切换深浅色">
-          <span>{{themeLabel}}</span>
-        </button>
+        <!-- 主题切换：三态下拉，用项目自己的 mc-select（顶栏里唯一的表单控件）。
+             aria-label 写在**宿主**上 —— 组件会转发给 shadow 里那个触发按钮，
+             否则读屏念不出这个控件叫什么。初始值走 default-value（见 storedTheme）。 -->
+        <mc-select
+          class="doc-theme"
+          size="sm"
+          aria-label="切换深浅色"
+          attr:default-value="theme"
+          on:change="onThemeChange"
+        >
+          <mc-option value="auto">自动</mc-option>
+          <mc-option value="light">亮色</mc-option>
+          <mc-option value="dark">暗色</mc-option>
+        </mc-select>
       </div>
     </header>
 
