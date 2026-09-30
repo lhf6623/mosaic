@@ -115,7 +115,8 @@
      *       sm 16+4×2 · md 20+2×2 · lg 24+0×2。ghost 下这层内边距看不见；
      *       filled / outline 会把底色描边一起撑到 24 高 —— inline 是为 ghost 设计的组合，
      *       另两种按「贴字的胶囊」理解即可。
-     *   · 悬停不用 .mc-layer：8% 底色贴着文字看像「文字被高亮」，改成下划线（链接那套反馈）。
+     *   · 悬停走按钮本来那套 state layer（8% 当前色）—— **不是下划线**：它是按钮不是链接。
+     *     0 左右内边距下叠层正好贴着文字，看着像「文字被选中」，所以左右各外扩 0.4em。
      * ⚠️ 这一段必须排在上面三档 size 规则**之后**：:host([inline]) 与 :host([size='sm']) 同为
      *     0-2-0，只能靠源码顺序分胜负（同 P14 那类「写法一换就静默失效」的坑）。 */
     :host([inline]) {
@@ -134,11 +135,8 @@
       line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
     }
     :host([inline]) .mc-layer {
-      display: none;
-    }
-    :host([inline]:hover) {
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
+      /* 外扩出来那一点是**反馈的形状**：贴着文字就成了文字高亮，不是按钮被点亮 */
+      inset: 0 -0.4em;
     }
 
     /* ---------- 布局模式 ---------- */

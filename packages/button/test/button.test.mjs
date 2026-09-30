@@ -254,17 +254,31 @@ export default async function run({ page, visit, check }) {
     inline.sm.高 >= 24 && inline.md.高 >= 24 && inline.lg.高 >= 24,
     `sm ${inline.sm.高} · md ${inline.md.高} · lg ${inline.lg.高}`
   );
-  await page.hover('#in-md');
+  /* ⚠️ 这里用显式坐标 mouse.move，不用 page.hover(selector)：探针挂在 fixed 的宿主里，
+     page.hover 的可交互检查在并行满载时会判定「收不到事件」而把鼠标停在别处 ——
+     实测 isHover=false、叠层 opacity 读到 0（假红）。 */
+  const inlineAt = await page.evaluate(() => {
+    const r = document.getElementById('in-md').getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.move(inlineAt.x, inlineAt.y);
+  await page.waitForTimeout(250); // 叠层有 transition，等它走完再读
   const inlineHover = await page.evaluate(() => {
     const el = document.getElementById('in-md');
+    const layer = el.shadowRoot.querySelector('.mc-layer');
     return {
+      悬停中: el.matches(':hover'),
       下划线: getComputedStyle(el).textDecorationLine,
-      叠层: getComputedStyle(el.shadowRoot.querySelector('.mc-layer')).display,
+      叠层透明度: getComputedStyle(layer).opacity,
+      叠层左: parseFloat(getComputedStyle(layer).left),
     };
   });
   check(
-    'inline 悬停改成下划线，不再用 .mc-layer 叠层（8% 底色贴着文字像「文字被高亮」）',
-    inlineHover.下划线 === 'underline' && inlineHover.叠层 === 'none',
+    'inline 悬停走按钮那套 state layer（不是下划线 —— 是按钮不是链接），叠层左右外扩',
+    inlineHover.悬停中 &&
+      inlineHover.下划线 === 'none' &&
+      inlineHover.叠层透明度 === '0.08' &&
+      inlineHover.叠层左 < 0,
     JSON.stringify(inlineHover),
   );
 
