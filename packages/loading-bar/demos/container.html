@@ -2,17 +2,15 @@
   <div class="flex flex-wrap items-center gap-3">
     <mc-button on:click="start()">开始</mc-button>
     <mc-button variant="outline" on:click="done()">完成</mc-button>
-    <mc-button variant="outline" on:click="fail()">出错</mc-button>
   </div>
 
   <div class="flex flex-col gap-3">
-    <!-- 放进卡片：它只占自己那 4px，表达「这一块在刷新」；出错时变红并停在满格 -->
+    <!-- 放进卡片：它只占自己那 4px，表达「这一块在刷新」（出错的样子见上一节「出错」） -->
     <div
       style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); overflow: hidden"
     >
       <mc-loading-bar
         attr:active="busy ? '' : null"
-        attr:error="failed ? '' : null"
         position="static"
         label="正在刷新列表"
       ></mc-loading-bar>
@@ -28,7 +26,6 @@
     >
       <mc-loading-bar
         attr:active="busy ? '' : null"
-        attr:error="failed ? '' : null"
         position="static"
         label="正在保存"
         style="position: absolute; inset-inline: 0; top: 0"
@@ -46,7 +43,7 @@
 
       /* ⚠️ 字段别叫 `on`：ofa 把 `on` 留给了自己，数据里出现同名键会让模块注册失败，
          外层只报「错误的模块地址」（实测 data: { on: false } 单独就能复现，改名即好） */
-      data: { busy: false, failed: false },
+      data: { busy: false },
 
       proto: {
         start() {
@@ -55,11 +52,6 @@
         },
         done() {
           this.busy = false;
-          this.failed = false;
-        },
-        fail() {
-          this.busy = false;
-          this.failed = true;
         },
       },
     });

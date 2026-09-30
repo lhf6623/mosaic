@@ -10,6 +10,7 @@
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/container.html"></l-m>
+    <l-m src="./demos/error.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <h1>Loading Bar <code>mc-loading-bar</code></h1>
     <p class="doc-lead">
@@ -60,6 +61,21 @@
     </section>
 
     <section class="doc-demo">
+      <h3>出错</h3>
+      <p class="doc-hint">
+        <code>error</code> 一开，条子转成出错色并停在满格 —— <strong>不会自己走</strong>，
+        直到你清掉它；重试前记得清（它压过 <code>active</code>）。出错色走
+        <code>--mc-loading-bar-error</code>，默认 danger，第二条把它换成了 warning。
+      </p>
+      <demo-loading-bar-error></demo-loading-bar-error>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/error.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
       <h3>颜色</h3>
       <p class="doc-hint">
         语义色只往填充色槽里填值，也可以直接给 hex。演示里把它们改成
@@ -92,7 +108,6 @@
       <p class="doc-hint">
         <code>position="static"</code>：就在它所在的容器里占 2 / 4px、通宽 —— 说「这一块在刷新」。
         想盖在容器上沿，给它一句内联 <code>position: absolute</code> 就行（组件不去猜容器）。
-        点「出错」看它转红停在满格。
       </p>
       <demo-loading-bar-container></demo-loading-bar-container>
       <mc-collapse class="doc-demo-code">

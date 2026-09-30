@@ -1,0 +1,50 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <!-- 演示里改成 static 才排得下（真实用法是钉在顶部，或放进容器里） -->
+    <mc-loading-bar error style="position: static" label="加载失败"></mc-loading-bar>
+    <mc-loading-bar
+      error
+      style="position: static; --mc-loading-bar-error: var(--mc-color-warning)"
+      label="校验未通过"
+    ></mc-loading-bar>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <mc-button variant="outline" on:click="fail()">出错</mc-button>
+      <mc-button variant="outline" on:click="retry()">重试</mc-button>
+      <mc-button variant="outline" on:click="reset()">清掉</mc-button>
+    </div>
+
+    <mc-loading-bar
+      attr:active="busy ? '' : null"
+      attr:error="failed ? '' : null"
+      style="position: static"
+      label="正在加载"
+    ></mc-loading-bar>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-loading-bar-error',
+
+      /* ⚠️ 字段别叫 `on`：ofa 把 `on` 留给了自己，数据里出现同名键会让模块注册失败，
+         外层只报「错误的模块地址」（实测 data: { on: false } 单独就能复现，改名即好） */
+      data: { busy: true, failed: false },
+
+      proto: {
+        fail() {
+          this.busy = false;
+          this.failed = true;
+        },
+        retry() {
+          /* ⚠️ 重试前**必须先清掉 error**：它压过 active，不清的话条子还停在出错态 */
+          this.failed = false;
+          this.busy = true;
+        },
+        reset() {
+          this.failed = false;
+          this.busy = false;
+        },
+      },
+    });
+  </script>
+</template>

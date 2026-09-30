@@ -1410,7 +1410,9 @@
       "packages/loading-bar/api.md",
       "packages/loading-bar/demos/basic.html",
       "packages/loading-bar/demos/colors.html",
+      "packages/loading-bar/demos/container.html",
       "packages/loading-bar/demos/customize.html",
+      "packages/loading-bar/demos/error.html",
       "packages/loading-bar/demos/sizes.html",
       "packages/loading-bar/loading-bar.html",
       "packages/loading-bar/page.html",
@@ -2976,7 +2978,13 @@
     "packages/loading-bar/demos/colors.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
+    "packages/loading-bar/demos/container.html": [
+      "packages/loading-bar/test/loading-bar.test.mjs"
+    ],
     "packages/loading-bar/demos/customize.html": [
+      "packages/loading-bar/test/loading-bar.test.mjs"
+    ],
+    "packages/loading-bar/demos/error.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/demos/sizes.html": [
