@@ -16,17 +16,17 @@
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
         <li>
-          <strong>高度（或宽度）由使用者给</strong>：组件只管滚与画条子，不猜你要多高。
-          不给高度时宿主跟着内容长，永远不溢出，也就永远不滚。
+          <strong>忘了给高度它就一直不滚</strong>：宿主跟着内容长，看着像坏了 ——
+          多高（或多宽）得你自己给，它不猜。
         </li>
         <li>
-          <strong>条子是覆盖式的</strong>：贴在内沿、不占内容宽度（所以溢出与否都不会让内容横跳），
-          代价是盖住最边上那 <code>--mc-scroll-bar-w</code> 宽的一条 —— 长代码块这类内容记得给自己的
+          <strong>贴边的内容会被压住</strong
+          >：条子是覆盖式的，长代码块这类内容的最后几个字符会被它盖住 —— 给自己的
           <code>part="viewport"</code> 加右内边距。
         </li>
         <li>
-          <strong>一次只滚一条轴</strong>：两条轴同时要的场合用普通 <code>overflow</code> 容器，
-          两个滑块互相影响、角落交叉，不值得为它把接口撑大一倍。
+          <strong>两条轴一起滚它做不到</strong>：那种场合用普通的 <code>overflow</code> 容器 ——
+          两个滑块互相影响、角落还要交叉，不值得为它把接口撑大一倍。
         </li>
       </ul>
     </mc-alert>

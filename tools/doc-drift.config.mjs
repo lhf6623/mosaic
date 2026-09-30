@@ -532,6 +532,36 @@ const rules = [
       }
     },
   },
+  {
+    /* 「注意事项」的口径见 packages/README.md §一：**只写使用者会踩的坑、每页 2～3 条**。
+       属性取值与用法是 api.md 的事（由参考区渲染），抄进这里就是第二份会漂移的副本 ——
+       这条踩过：`mc-loading-bar` 的注意事项一度写了 4 条，其中一条整段在讲 state 的取值。
+       条数可数、语义不可数，所以只钉条数：**超过 3 条，基本就是在往里塞别的东西**。 */
+    type: 'custom',
+    id: 'page-notes',
+    title: '组件文档 · 注意事项（只写坑、每页 2～3 条）',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const page = `packages/${c.slug}/page.html`;
+        if (!io.exists(page)) continue;
+        const text = io.read(page);
+        const block = text.match(/<mc-alert class="doc-notes"[\s\S]*?<\/mc-alert>/);
+        if (!block) continue; // 没有就整块省略 —— 这是允许的
+        const count = (block[0].match(/<li>/g) ?? []).length;
+        const line = text.slice(0, block.index).split('\n').length;
+        if (count === 0) {
+          problems.push(
+            `${page}:${line}：注意事项那一块里一条 <li> 都没有 —— 没有要提醒的就整块删掉`,
+          );
+        } else if (count > 3) {
+          problems.push(
+            `${page}:${line}：注意事项写了 ${count} 条。它只写**使用者会踩的坑**、每页 2～3 条；` +
+              `属性取值与用法归 api.md（参考区渲染），别写到这里来`,
+          );
+        }
+      }
+    },
+  },
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账 */

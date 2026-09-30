@@ -14,35 +14,9 @@
     <l-m src="./demos/customize.html"></l-m>
     <h1>Loading Bar <code>mc-loading-bar</code></h1>
     <p class="doc-lead">
-      全局加载条：钉在视口顶部的一条细线，在跑就缓慢爬升（永远到不了 100%），跑完滑满淡出。
+      加载条：默认钉在视口顶部（整页在忙），也可以放进容器里（那一块在忙）。在跑就缓慢爬升
+      （永远到不了 100%），收尾先滑到 100% 再淡出 —— 成功与出错走同一条路，只差一个填充色。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>默认那种（<code>position="fixed"</code>）一页只该有一条</strong>：它铺满视口宽度、
-          浮在所有东西之上，是「整体在忙」的信号。只表达<strong>某一小块</strong>在忙，就用
-          <code>position="static"</code> 放进那个容器里；要表达「跑到哪了」还是用
-          <code>mc-progress</code>。
-        </li>
-        <li>
-          <strong>它不吃指针</strong>（宿主写死 <code>pointer-events: none</code>）：钉在顶部 2~4px
-          上，能接收点击的话会把顶栏那一整条吞掉，而且视觉上看不出来。
-        </li>
-        <li>
-          <strong>状态只有一个入口 <code>state</code></strong
-          >：<code>idle</code> 不出现、 <code>loading</code> 在跑、<code>done</code> /
-          <code>error</code> 收尾。 出错没有单独的属性 —— 它和成功走的是同一条收尾（先滑到 100%
-          再淡出），只差一个填充色， 所以真正的失败提示要由页面自己的 <code>mc-message</code> /
-          <code>mc-alert</code> 留在屏幕上。
-        </li>
-        <li>
-          <strong>收尾不是即时的</strong>：<code>state</code> 换成 <code>done</code> /
-          <code>error</code> 之后先滑满、再淡出（时长走
-          <code>--mc-loading-bar-fade</code>，减弱动效偏好下会自动压到 1ms），
-          所以别用它当「进度」——它只表示开始与结束。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -66,10 +40,9 @@
     <section class="doc-demo">
       <h3>出错</h3>
       <p class="doc-hint">
-        出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：
-        <code>state="error"</code> 时 <code>color="auto"</code> 会走
-        <code>--mc-loading-bar-error</code>（默认 danger），写死 <code>color</code> 则一律听它的。
-        这一下很快，所以下面两条把淡出拉长到 60s 才看得住颜色（danger 与 warning）。
+        出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：出错时用出错色， 写死
+        <code>color</code> 则一律听它的。这一下很快，所以下面两条把淡出拉长到 60s
+        才看得住颜色（danger 与 warning）。
       </p>
       <demo-loading-bar-error></demo-loading-bar-error>
       <mc-collapse class="doc-demo-code">
@@ -96,8 +69,7 @@
     <section class="doc-demo">
       <h3>两档高度</h3>
       <p class="doc-hint">
-        <code>size="sm"</code> 是 2px，默认 4px —— 它不是控件，不借
-        <code>--mc-control-h-*</code>，长度永远铺满。
+        <code>size="sm"</code> 是 2px，默认 4px；长度永远铺满（它跟着容器走，与控件那套高度无关）。
       </p>
       <demo-loading-bar-sizes></demo-loading-bar-sizes>
       <mc-collapse class="doc-demo-code">
