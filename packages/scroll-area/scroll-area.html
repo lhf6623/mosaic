@@ -29,7 +29,10 @@
     .mc-viewport {
       width: 100%;
       height: 100%;
-      overscroll-behavior: contain;
+      /* ⚠️ 这里**不写** overscroll-behavior: contain：那会让滚轮在容器里「滚到底就锁住」，
+         鼠标停在容器上时整页都动不了（实测：容器滚到 602px 到底后再滚 300，页面纹丝不动）。
+         默认的 auto 会把到头的滚轮交给外层 —— 与外壳里「侧栏滚到底再接力给正文带」同一个口径。
+         真要「滚不出去」的场合（比如弹层里的内滚区），使用者自己给 ::part(viewport) 写 contain。 */
       /* 藏原生滚动条：两条路都写 —— Firefox 走 scrollbar-width，Chromium / Safari 走伪元素 */
       scrollbar-width: none;
     }
