@@ -41,8 +41,8 @@ ofa.js 是 MVVM，**模板只在组件定义期编译**；运行时 `innerHTML` 
 3. 之后一律 `$('mc-message')` 拿实例、原地改 `rows` —— 实测**从外部整体替换数组不会渲染**
    （`inst.rows = 外部数组` 之后 o-fill 一行动都不动），只能 push / splice。
 
-为什么挂到 body 上也拿得到设计令牌：mosaic.js 给每个 shadow root adopt 两份表，
-而令牌是自定义属性、从 :root 一路继承下来 —— 实测宿主上 `--mc-z-toast` 解析为 1500。
+为什么挂到 body 上也拿得到设计令牌：令牌是自定义属性，从 :root 一路继承进每个 shadow root
+—— 实测宿主上 `--mc-z-toast` 解析为 1500（页面没引令牌表时，组件自带的 --mc-def-* 兜底顶上）。
 
 与 mc-alert 的分工：alert 是**页内静态**的一块面（在文档流里、不抢焦点、不会自己消失）；
 message 是**命令式浮层**（自己进场自己走、不占版面）。两者都要「把状态告诉使用者」，

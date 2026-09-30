@@ -1,0 +1,109 @@
+/* 由 tools/gen-tokens.mjs 生成 —— 勿手改；令牌的真源在同一份脚本里。
+ *
+ * shadow 作用域内的**令牌默认值**（亮色）。名字刻意独立成 --mc-def-*：它不占 --mc-* 的位，
+ * 所以页面在 :root / [data-theme] / 宿主 style 上写的同名令牌照旧赢过它。组件的用法是两级回退：
+ *
+ *   padding-inline: var(--mc-space-2, var(--mc-def-space-2));
+ *
+ * 加载方式：由 tools/build-css.mjs 装配进 packages/boot/component-base.css，
+ * 每个组件在自己的模板里 <link> 那一份（shadow 作用域，不外溢到宿主页面）。
+ * 共 93 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
+ * ========================================================================== */
+
+@layer mosaic.tokens {
+  :host {
+    --mc-def-color-bg: 244 246 248;
+    --mc-def-color-surface: 255 255 255;
+    --mc-def-color-surface-raised: 255 255 255;
+    --mc-def-color-surface-sunken: 232 235 238;
+    --mc-def-color-fg: 60 67 77;
+    --mc-def-color-fg-muted: 101 113 131;
+    --mc-def-color-fg-subtle: 124 136 154;
+    --mc-def-color-fg-inverted: 255 255 255;
+    --mc-def-color-border: 213 218 224;
+    --mc-def-color-border-strong: 186 193 203;
+    --mc-def-color-ring: 134 102 255;
+    --mc-def-color-overlay: 15 18 30;
+    --mc-def-color-neutral: 213 218 224;
+    --mc-def-color-neutral-fg: 60 67 77;
+    --mc-def-color-overlay-alpha: 0.45;
+    --mc-def-color-primary: 114 70 237;
+    --mc-def-color-primary-hover: 97 58 206;
+    --mc-def-color-primary-active: 79 49 166;
+    --mc-def-color-primary-subtle: 245 245 255;
+    --mc-def-color-primary-fg: 255 255 255;
+    --mc-def-color-info: 0 116 193;
+    --mc-def-color-info-hover: 0 99 166;
+    --mc-def-color-info-active: 0 81 137;
+    --mc-def-color-info-subtle: 239 247 255;
+    --mc-def-color-info-fg: 255 255 255;
+    --mc-def-color-success: 0 116 57;
+    --mc-def-color-success-hover: 0 95 45;
+    --mc-def-color-success-active: 0 80 37;
+    --mc-def-color-success-subtle: 238 249 240;
+    --mc-def-color-success-fg: 255 255 255;
+    --mc-def-color-warning: 154 99 0;
+    --mc-def-color-warning-hover: 132 84 0;
+    --mc-def-color-warning-active: 108 68 0;
+    --mc-def-color-warning-subtle: 252 244 235;
+    --mc-def-color-warning-fg: 255 255 255;
+    --mc-def-color-danger: 208 23 35;
+    --mc-def-color-danger-hover: 180 12 27;
+    --mc-def-color-danger-active: 146 20 25;
+    --mc-def-color-danger-subtle: 255 242 241;
+    --mc-def-color-danger-fg: 255 255 255;
+    --mc-def-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mc-def-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --mc-def-text-xs: 0.75rem;
+    --mc-def-text-xs-lh: 1rem;
+    --mc-def-text-sm: 0.875rem;
+    --mc-def-text-sm-lh: 1.25rem;
+    --mc-def-text-base: 1rem;
+    --mc-def-text-base-lh: 1.5rem;
+    --mc-def-text-lg: 1.125rem;
+    --mc-def-text-lg-lh: 1.75rem;
+    --mc-def-text-xl: 1.25rem;
+    --mc-def-text-xl-lh: 1.75rem;
+    --mc-def-text-2xl: 1.5rem;
+    --mc-def-text-2xl-lh: 2rem;
+    --mc-def-text-3xl: 1.875rem;
+    --mc-def-text-3xl-lh: 2.25rem;
+    --mc-def-weight-normal: 400;
+    --mc-def-weight-medium: 500;
+    --mc-def-weight-semibold: 600;
+    --mc-def-weight-bold: 700;
+    --mc-def-space-0: 0;
+    --mc-def-space-1: 0.25rem;
+    --mc-def-space-2: 0.5rem;
+    --mc-def-space-3: 0.75rem;
+    --mc-def-space-4: 1rem;
+    --mc-def-space-5: 1.25rem;
+    --mc-def-space-6: 1.5rem;
+    --mc-def-space-8: 2rem;
+    --mc-def-space-10: 2.5rem;
+    --mc-def-space-12: 3rem;
+    --mc-def-space-16: 4rem;
+    --mc-def-radius-none: 0;
+    --mc-def-radius-sm: 0.25rem;
+    --mc-def-radius-md: 0.375rem;
+    --mc-def-radius-lg: 0.5rem;
+    --mc-def-radius-xl: 0.75rem;
+    --mc-def-radius-2xl: 1rem;
+    --mc-def-radius-full: 9999px;
+    --mc-def-control-h-sm: 1.75rem;
+    --mc-def-control-h-md: 2.25rem;
+    --mc-def-control-h-lg: 2.75rem;
+    --mc-def-duration-fast: 120ms;
+    --mc-def-duration-base: 180ms;
+    --mc-def-duration-slow: 280ms;
+    --mc-def-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --mc-def-ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+    --mc-def-z-dropdown: 1000;
+    --mc-def-z-sticky: 1100;
+    --mc-def-z-overlay: 1200;
+    --mc-def-z-modal: 1300;
+    --mc-def-z-popover: 1400;
+    --mc-def-z-toast: 1500;
+    --mc-def-z-tooltip: 1600;
+  }
+}

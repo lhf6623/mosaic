@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     :host {
       display: inline-block;
@@ -17,12 +18,12 @@
          ⚠️ 默认取 border-**strong** 而不是 border：那圈描边是 1px 模糊的 drop-shadow，实测比
          1px 实线淡一档（最暗像素 222 vs 旧边框 213），取 strong 才与旧观感相当；暗色下
          border 与面板底色同为 neutral-800（一圈看不见），也只有 strong 才有轮廓。 */
-      --mc-popover-offset: var(--mc-space-2);
+      --mc-popover-offset: var(--mc-space-2, var(--mc-def-space-2));
       --mc-popover-anchor: --mc-popover-anchor; /* @internal：给 anchor-name / position-anchor 用的标识，不是使用者覆盖点 */
-      --mc-popover-panel-bg: var(--mc-color-surface-raised);
-      --mc-popover-panel-border: var(--mc-color-border-strong);
-      --mc-popover-panel-radius: var(--mc-radius-lg);
-      --mc-popover-panel-pad: var(--mc-space-4);
+      --mc-popover-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-popover-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-popover-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-popover-panel-pad: var(--mc-space-4, var(--mc-def-space-4));
       /* 最小宽度：菜单类面板太窄会显得挤，也避免贴边翻转后宽度抖动 */
       --mc-popover-panel-min-width: 0;
     }
@@ -51,7 +52,7 @@
          那两个因为面板外面是空的，看起来又是好的，所以特别难发现）。 */
       overflow: visible;
       /* 贴边时别把面板压出视口：宽度上限跟着视口走，长内容自己折行 */
-      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
+      max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
       padding: var(--mc-popover-panel-pad);
       /* ⚠️ 必须显式把 UA 给 `[popover]` 的 `border: solid` 清成 0：那条只写了 style，
          宽度取 medium = **3px**、颜色取 currentColor —— 于是不给 border 就会得到一圈 3px 的
@@ -60,10 +61,10 @@
       border: 0;
       border-radius: var(--mc-popover-panel-radius);
       background-color: rgb(var(--mc-popover-panel-bg));
-      color: rgb(var(--mc-color-fg));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       /* ⚠️ 面板**不要写 border**：边框只长在面板的矩形上，三角没有边框 —— 于是轮廓在三角
          那条边上断掉，旁边的三角就成了「塌下去的一块」，存在感全靠它自己那点描边（很弱）。
          改成一整圈跟着**整体轮廓**（面板 + 三角）的 drop-shadow：第一层 1px 模糊 ≈ 1px 描边
@@ -170,8 +171,8 @@
       /* ⚠️ 钻到面板背景**之下**：否则三角贴面板那一侧的底边会落在面板边线内侧 1px 上，
          接缝处看得到一条错位的线。放到底下之后，露出来的部分正好是一个干净的三角。 */
       z-index: -1;
-      width: var(--mc-space-3);
-      height: var(--mc-space-3);
+      width: var(--mc-space-3, var(--mc-def-space-3));
+      height: var(--mc-space-3, var(--mc-def-space-3));
       background-color: rgb(var(--mc-popover-panel-bg));
     }
     :host([arrow='none']) .mc-arrow {
@@ -179,30 +180,30 @@
     }
 
     .mc-panel[data-side='bottom'] .mc-arrow {
-      top: calc(var(--mc-space-3) / -2);
+      top: calc(var(--mc-space-3, var(--mc-def-space-3)) / -2);
       left: calc(
-        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
+        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3, var(--mc-def-space-3)) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(50% 0, 100% 100%, 0 100%);
     }
     .mc-panel[data-side='top'] .mc-arrow {
-      bottom: calc(var(--mc-space-3) / -2);
+      bottom: calc(var(--mc-space-3, var(--mc-def-space-3)) / -2);
       left: calc(
-        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3) / 2
+        50% + var(--mc-popover-arrow-shift, 0px) - var(--mc-space-3, var(--mc-def-space-3)) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 0, 50% 100%);
     }
     .mc-panel[data-side='left'] .mc-arrow {
-      right: calc(var(--mc-space-3) / -2);
+      right: calc(var(--mc-space-3, var(--mc-def-space-3)) / -2);
       top: calc(
-        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
+        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3, var(--mc-def-space-3)) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(0 0, 100% 50%, 0 100%);
     }
     .mc-panel[data-side='right'] .mc-arrow {
-      left: calc(var(--mc-space-3) / -2);
+      left: calc(var(--mc-space-3, var(--mc-def-space-3)) / -2);
       top: calc(
-        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3) / 2
+        50% + var(--mc-popover-arrow-shift-y, 0px) - var(--mc-space-3, var(--mc-def-space-3)) / 2
       ); /* @internal：脚本按锚点几何算好写进来 */
       clip-path: polygon(100% 0, 0 50%, 100% 100%);
     }

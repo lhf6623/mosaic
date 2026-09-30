@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。徽标不是控件：高度用自己的 --mc-badge-h，不借 --mc-control-h-* */
     :host {
@@ -21,28 +22,31 @@
       border-radius: var(--mc-badge-radius);
       padding-inline: var(--mc-badge-pad-x);
       min-height: var(--mc-badge-h);
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-badge-font);
       line-height: 1;
-      font-weight: var(--mc-weight-medium);
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
       transition:
-        background-color var(--mc-duration-fast) var(--mc-ease-standard),
-        color var(--mc-duration-fast) var(--mc-ease-standard),
-        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
 
       /* L3 组件令牌：默认引用 L2 令牌。按实例覆盖写在宿主 style 上 */
       --mc-badge-h: 1.25rem;
-      --mc-badge-pad-x: var(--mc-space-2);
-      --mc-badge-font: var(--mc-text-xs);
-      --mc-badge-radius: var(--mc-radius-full);
+      --mc-badge-pad-x: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-badge-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-badge-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       --mc-badge-dot: 0.5rem;
 
       /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，subtle-fill 是浅底。
          徽标没有 neutral（草案如此）：它默认就是 primary，中性场景交给 mc-tag */
-      --mc-badge-fill: var(--mc-color-primary);
-      --mc-badge-on-fill: var(--mc-color-primary-fg);
-      --mc-badge-accent: var(--mc-color-primary);
-      --mc-badge-subtle-fill: var(--mc-color-primary-subtle);
+      --mc-badge-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-badge-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
+      --mc-badge-accent: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-badge-subtle-fill: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle));
 
       /* subtle 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
       background-color: rgb(var(--mc-badge-subtle-fill));
@@ -51,28 +55,28 @@
 
     /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
     :host([color='info']) {
-      --mc-badge-fill: var(--mc-color-info);
-      --mc-badge-on-fill: var(--mc-color-info-fg);
-      --mc-badge-accent: var(--mc-color-info);
-      --mc-badge-subtle-fill: var(--mc-color-info-subtle);
+      --mc-badge-fill: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-badge-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
+      --mc-badge-accent: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-badge-subtle-fill: var(--mc-color-info-subtle, var(--mc-def-color-info-subtle));
     }
     :host([color='success']) {
-      --mc-badge-fill: var(--mc-color-success);
-      --mc-badge-on-fill: var(--mc-color-success-fg);
-      --mc-badge-accent: var(--mc-color-success);
-      --mc-badge-subtle-fill: var(--mc-color-success-subtle);
+      --mc-badge-fill: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-badge-on-fill: var(--mc-color-success-fg, var(--mc-def-color-success-fg));
+      --mc-badge-accent: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-badge-subtle-fill: var(--mc-color-success-subtle, var(--mc-def-color-success-subtle));
     }
     :host([color='warning']) {
-      --mc-badge-fill: var(--mc-color-warning);
-      --mc-badge-on-fill: var(--mc-color-warning-fg);
-      --mc-badge-accent: var(--mc-color-warning);
-      --mc-badge-subtle-fill: var(--mc-color-warning-subtle);
+      --mc-badge-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-badge-on-fill: var(--mc-color-warning-fg, var(--mc-def-color-warning-fg));
+      --mc-badge-accent: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-badge-subtle-fill: var(--mc-color-warning-subtle, var(--mc-def-color-warning-subtle));
     }
     :host([color='danger']) {
-      --mc-badge-fill: var(--mc-color-danger);
-      --mc-badge-on-fill: var(--mc-color-danger-fg);
-      --mc-badge-accent: var(--mc-color-danger);
-      --mc-badge-subtle-fill: var(--mc-color-danger-subtle);
+      --mc-badge-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-badge-on-fill: var(--mc-color-danger-fg, var(--mc-def-color-danger-fg));
+      --mc-badge-accent: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-badge-subtle-fill: var(--mc-color-danger-subtle, var(--mc-def-color-danger-subtle));
     }
 
     /* 3. 维度二 variant：只决定色槽贴到哪儿 */
@@ -89,7 +93,7 @@
     /* 4. 尺寸与状态 */
     :host([size='sm']) {
       --mc-badge-h: 1rem;
-      --mc-badge-pad-x: var(--mc-space-1);
+      --mc-badge-pad-x: var(--mc-space-1, var(--mc-def-space-1));
       --mc-badge-font: 0.625rem;
       --mc-badge-dot: 0.375rem;
     }
@@ -109,7 +113,7 @@
       display: none;
       width: var(--mc-badge-dot);
       height: var(--mc-badge-dot);
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       /* 圆点跟着当前文字色走：subtle 是 accent、solid 是 on-fill，不引新色 */
       background-color: currentColor;
     }

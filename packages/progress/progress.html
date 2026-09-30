@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。宿主本身就是轨道：底色、圆角、裁剪都写在它身上，
           使用者的 style="height:…" 与 ::part(bar) 两条定制路都不用跨 shadow 找容器 */
@@ -19,28 +20,28 @@
 
       /* L3 组件令牌：默认引用 L2 令牌。按实例覆盖写在宿主 style 上 */
       --mc-progress-h: 0.5rem;
-      --mc-progress-radius: var(--mc-radius-full);
-      --mc-progress-track: var(--mc-color-surface-sunken);
+      --mc-progress-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      --mc-progress-track: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       /* 时长必须走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
          不确定态那条动画就自动停下来 */
-      --mc-progress-duration: calc(var(--mc-duration-slow) * 4);
+      --mc-progress-duration: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 4);
 
       /* 色槽：进度条只有一条填充（fill），文字色用不上，但接线器按约定会一起写 on-fill */
-      --mc-progress-fill: var(--mc-color-primary);
+      --mc-progress-fill: var(--mc-color-primary, var(--mc-def-color-primary));
     }
 
     /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
     :host([color='info']) {
-      --mc-progress-fill: var(--mc-color-info);
+      --mc-progress-fill: var(--mc-color-info, var(--mc-def-color-info));
     }
     :host([color='success']) {
-      --mc-progress-fill: var(--mc-color-success);
+      --mc-progress-fill: var(--mc-color-success, var(--mc-def-color-success));
     }
     :host([color='warning']) {
-      --mc-progress-fill: var(--mc-color-warning);
+      --mc-progress-fill: var(--mc-color-warning, var(--mc-def-color-warning));
     }
     :host([color='danger']) {
-      --mc-progress-fill: var(--mc-color-danger);
+      --mc-progress-fill: var(--mc-color-danger, var(--mc-def-color-danger));
     }
 
     /* 3. 维度二 size：两档轨道高（进度条不是控件，不借 --mc-control-h-*） */
@@ -52,7 +53,8 @@
           所以脚本在不确定态下**不写**内联宽度 */
     :host([indeterminate]) .mc-fill {
       width: 40%;
-      animation: mc-progress-slide var(--mc-progress-duration) var(--mc-ease-standard) infinite;
+      animation: mc-progress-slide var(--mc-progress-duration)
+        var(--mc-ease-standard, var(--mc-def-ease-standard)) infinite;
     }
 
     /* 5. 内部元素：填充条。宽度是运行时算的（脚本写内联 width），所以只放过渡 */
@@ -61,7 +63,8 @@
       height: 100%;
       border-radius: inherit;
       background-color: rgb(var(--mc-progress-fill));
-      transition: width var(--mc-duration-base) var(--mc-ease-standard);
+      transition: width var(--mc-duration-base, var(--mc-def-duration-base))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     /* 一条 40% 宽的填充从左滑到右：位移按自身宽度算（40% × 250% = 一整条轨道） */
     @keyframes mc-progress-slide {

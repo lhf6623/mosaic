@@ -1,15 +1,15 @@
 /**
- * mosaic.js — Mosaic 运行时引导
+ * adopt-styles.js — **文档站自己**的样式注入器（不是对外发布面的一部分）
  *
- * 唯一的职责：把两份样式表 adopt 进每一个 shadow root，这样组件模板里写的工具类
- * （`class="flex gap-2"`）才生效 —— 文档级 `<link>` 的规则进不去 shadow root。
+ * 为什么只留在站点里：库里的组件已经在自己的模板里 `<link>` 了
+ * `packages/boot/component-base.css`（shadow 作用域、不外溢到宿主页面），不需要谁来替它们 adopt。
+ * 但文档站自己的那些 shadow 组件（doc-nav / doc-toc / doc-spec …）吃的是**页面级**
+ * `mosaic.css` 里的工具类与令牌，而文档级 `<link>` 的规则进不去 shadow root —— 站点因此需要一个
+ * attachShadow 补丁把这两份表补进去。
  *
- * 令牌（`--mc-*`）是自定义属性，天然跨 shadow 边界继承，所以令牌不需要本文件做任何事；
- * 这里 adopt 的另一份 shadow-base.css 是只能进 shadow root 的元素级 reset。
- * 由此有个降级性质：本文件失效时组件的颜色 / 尺寸照常，只有排布退化。
- *
- * 打 attachShadow 补丁的时机是关键：必须在任何组件实例化之前装好（本模块顶层即执行），
- * 所以文档里要把它放在 ofa.js **之后**（见 docs/pages/guide.html 的「三条引入缺一不可」）。
+ * ⚠️ 它是**站点的资产**：住在 docs/ 下，不随组件一起发给使用者。
+ * 打补丁的时机是关键：必须在任何 shadow root 建起来之前装好（本模块顶层即执行），
+ * 所以 index.html 里要把它排在 ofa.js **之后**。
  */
 
 const HERE = new URL('.', import.meta.url);
@@ -19,7 +19,9 @@ const HERE = new URL('.', import.meta.url);
  *   mosaic.css        令牌 + 工具类；它顶部的 @layer 层序声明钉死整个层顺序
  *   shadow-base.css   元素级 reset + 减弱动效；绝不能 <link> 到宿主页面
  */
-const SHEETS = ['mosaic.css', 'shadow-base.css'].map((f) => new URL(f, HERE).href);
+const SHEETS = ['../packages/boot/mosaic.css', '../packages/boot/shadow-base.css'].map(
+  (f) => new URL(f, HERE).href,
+);
 
 /** 已加载的样式表；null 表示还在路上或加载失败 */
 let loaded = null;
@@ -57,7 +59,7 @@ try {
   // 刻意不 rethrow：样式加载失败不该让整页崩掉，只是退化为"有颜色无排布"
   console.error(
     '[mosaic] 样式表加载失败，组件将退化为"有颜色无排布"：\n' +
-      '        组件内部依赖的工具类不会生效，请检查 mosaic.js 与 mosaic.css 是否同目录。',
+      '        文档站的工具类不会生效，请检查 docs/adopt-styles.js 与 packages/boot/mosaic.css 的路径。',
     err,
   );
 }

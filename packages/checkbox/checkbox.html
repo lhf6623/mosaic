@@ -5,60 +5,62 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型 + 组件令牌。高度 / 字号直接写在宿主上，使用者 style="height:32px" 才压得住 */
     :host {
       display: inline-flex;
       position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
       box-sizing: border-box;
-      height: var(--mc-control-h-md);
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg));
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
       vertical-align: middle;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
       /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
-      --mc-checkbox-gap: var(--mc-space-2);
-      --mc-checkbox-pad-x: var(--mc-space-3);
+      --mc-checkbox-gap: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-checkbox-pad-x: var(--mc-space-3, var(--mc-def-space-3));
       --mc-checkbox-box-size: 1.15em;
       --mc-checkbox-mark-size: 0.75em;
-      --mc-checkbox-radius: var(--mc-radius-sm);
+      --mc-checkbox-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
     }
 
     /* 2. 尺寸：三档只改高度 / 内边距 / 字号 */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm);
-      font-size: var(--mc-text-xs);
-      --mc-checkbox-gap: var(--mc-space-1);
-      --mc-checkbox-pad-x: var(--mc-space-2);
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-checkbox-gap: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-checkbox-pad-x: var(--mc-space-2, var(--mc-def-space-2));
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg);
-      font-size: var(--mc-text-base);
-      --mc-checkbox-pad-x: var(--mc-space-4);
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-checkbox-pad-x: var(--mc-space-4, var(--mc-def-space-4));
     }
 
     /* 3. 状态。选中 / 半选都是「实心 + 反色勾」；invalid 换成危险色；
        禁用用正向覆盖把 hover 归零（不用 :not()，P14） */
     .mc-base:hover .mc-box {
-      border-color: rgb(var(--mc-color-primary));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([checked]) .mc-box,
     :host([indeterminate]) .mc-box {
-      border-color: rgb(var(--mc-color-primary));
-      background-color: rgb(var(--mc-color-primary));
-      color: rgb(var(--mc-color-primary-fg));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
+      background-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
+      color: rgb(var(--mc-color-primary-fg, var(--mc-def-color-primary-fg)));
     }
     :host([invalid]) .mc-box {
-      border-color: rgb(var(--mc-color-danger));
+      border-color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
     :host([invalid][checked]) .mc-box,
     :host([invalid][indeterminate]) .mc-box {
-      border-color: rgb(var(--mc-color-danger));
-      background-color: rgb(var(--mc-color-danger));
+      border-color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
+      background-color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
     :host([disabled]) {
       opacity: 0.5;
@@ -67,11 +69,11 @@
       cursor: not-allowed;
     }
     :host([disabled]) .mc-base:hover .mc-box {
-      border-color: rgb(var(--mc-color-border-strong));
+      border-color: rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
     }
     :host([disabled][checked]) .mc-base:hover .mc-box,
     :host([disabled][indeterminate]) .mc-base:hover .mc-box {
-      border-color: rgb(var(--mc-color-primary));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
     /* 4. 内部结构。行盒子（高度 / 内边距 / 命中区）在这个原生 <label> 上：
@@ -110,16 +112,18 @@
       box-sizing: border-box;
       width: var(--mc-checkbox-box-size);
       height: var(--mc-checkbox-box-size);
-      border: 1px solid rgb(var(--mc-color-border-strong));
+      border: 1px solid rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
       border-radius: var(--mc-checkbox-radius);
-      background-color: rgb(var(--mc-color-surface));
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
       transition:
-        background-color var(--mc-duration-fast) var(--mc-ease-standard),
-        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     /* 焦点环画在方框上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
     .mc-native:focus-visible + .mc-box {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
 

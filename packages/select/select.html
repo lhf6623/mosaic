@@ -5,47 +5,58 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。高度写在宿主上，style="height:…" 直接压得住 */
     :host {
       display: inline-flex;
       position: relative; /* .mc-clear 的包含块（P21） */
       box-sizing: border-box;
-      height: var(--mc-control-h-md);
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
       vertical-align: middle;
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
 
       /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
-      --mc-select-control-bg: var(--mc-color-surface);
-      --mc-select-control-border: var(--mc-color-border);
-      --mc-select-control-radius: var(--mc-radius-md);
-      --mc-select-control-pad-x: var(--mc-space-4);
-      --mc-select-offset: var(--mc-space-2);
-      --mc-select-panel-bg: var(--mc-color-surface-raised);
-      --mc-select-panel-border: var(--mc-color-border-strong);
-      --mc-select-panel-radius: var(--mc-radius-lg);
-      --mc-select-panel-pad: var(--mc-space-2);
-      --mc-select-option-color: var(--mc-color-fg);
-      --mc-select-option-bg-highlight: var(--mc-color-surface-sunken);
-      --mc-select-option-bg-selected: var(--mc-color-primary-subtle);
-      --mc-select-option-color-selected: var(--mc-color-primary);
-      --mc-select-placeholder-color: var(--mc-color-fg-subtle);
-      --mc-select-icon-color: var(--mc-color-fg-subtle);
-      --mc-select-clear-color: var(--mc-color-fg-muted);
-      --mc-select-clear-bg-hover: var(--mc-color-surface-sunken);
+      --mc-select-control-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-select-control-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-select-control-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      --mc-select-control-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-select-offset: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-select-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-select-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-select-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-select-panel-pad: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-select-option-color: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-select-option-bg-highlight: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+      --mc-select-option-bg-selected: var(
+        --mc-color-primary-subtle,
+        var(--mc-def-color-primary-subtle)
+      );
+      --mc-select-option-color-selected: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-select-placeholder-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-select-icon-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-select-clear-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-select-clear-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
     }
 
     /* 2. 尺寸：三档只动宿主高度与字号，内部控件靠继承 / 100% 跟上 */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm);
-      font-size: var(--mc-text-xs);
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg);
-      font-size: var(--mc-text-base);
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
     }
 
     /* 3. 状态：禁用压暗、只读不改外观、invalid 只换边框色槽 */
@@ -54,7 +65,7 @@
       cursor: not-allowed;
     }
     :host([invalid]) {
-      --mc-select-control-border: var(--mc-color-danger);
+      --mc-select-control-border: var(--mc-color-danger, var(--mc-def-color-danger));
     }
 
     /* 4. 触发框（part="base"）：视觉全在这里，使用者 style="…" 压得住宿主 */
@@ -64,7 +75,7 @@
       box-sizing: border-box;
       display: inline-flex;
       align-items: center;
-      gap: var(--mc-space-2);
+      gap: var(--mc-space-2, var(--mc-def-space-2));
       padding-inline: var(--mc-select-control-pad-x);
       border: 1px solid rgb(var(--mc-select-control-border));
       border-radius: var(--mc-select-control-radius);
@@ -79,7 +90,7 @@
     }
     .mc-control:focus-visible {
       /* 焦点环用 ring 令牌，不用 currentColor（P16） */
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
     :host([disabled]) .mc-control {
@@ -103,7 +114,8 @@
     .mc-chevron {
       flex: none;
       color: rgb(var(--mc-select-icon-color));
-      transition: transform var(--mc-duration-fast) var(--mc-ease-standard);
+      transition: transform var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     :host([data-open]) .mc-chevron {
       transform: rotate(180deg);
@@ -114,17 +126,17 @@
       display: none;
       position: absolute;
       z-index: 1;
-      right: var(--mc-space-2);
+      right: var(--mc-space-2, var(--mc-def-space-2));
       top: 50%;
       translate: 0 -50%;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      width: var(--mc-space-5);
-      height: var(--mc-space-5);
+      width: var(--mc-space-5, var(--mc-def-space-5));
+      height: var(--mc-space-5, var(--mc-def-space-5));
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
       color: rgb(var(--mc-select-clear-color));
       font-size: 1em;
@@ -135,7 +147,7 @@
       background-color: rgb(var(--mc-select-clear-bg-hover));
     }
     .mc-clear:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
     /* 有值且开了 clearable 才出现；这时箭头让位给 × */
@@ -146,7 +158,7 @@
       display: none;
     }
     :host([clearable][data-filled]) .mc-control {
-      padding-inline-end: var(--mc-space-8);
+      padding-inline-end: var(--mc-space-8, var(--mc-def-space-8));
     }
 
     /* 5. 面板与选项 */
@@ -158,14 +170,14 @@
       margin: 0;
       box-sizing: border-box;
       min-width: anchor-size(width);
-      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
-      max-height: min(16rem, calc(100vh - var(--mc-space-8)));
+      max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
+      max-height: min(16rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))));
       padding: var(--mc-select-panel-pad);
       border: 0;
       overflow-y: auto;
       border-radius: var(--mc-select-panel-radius);
       background-color: rgb(var(--mc-select-panel-bg));
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: inherit;
       line-height: inherit;
       /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
@@ -184,16 +196,16 @@
     .mc-list {
       display: flex;
       flex-direction: column;
-      gap: var(--mc-space-1);
+      gap: var(--mc-space-1, var(--mc-def-space-1));
     }
 
     .mc-option {
       box-sizing: border-box;
-      min-height: var(--mc-control-h-md);
-      padding-inline: var(--mc-space-3);
-      border-radius: var(--mc-radius-md);
+      min-height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      padding-inline: var(--mc-space-3, var(--mc-def-space-3));
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       color: rgb(var(--mc-select-option-color));
-      line-height: var(--mc-control-h-md);
+      line-height: var(--mc-control-h-md, var(--mc-def-control-h-md));
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -201,12 +213,12 @@
       user-select: none;
     }
     :host([size='sm']) .mc-option {
-      min-height: var(--mc-control-h-sm);
-      line-height: var(--mc-control-h-sm);
+      min-height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      line-height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
     }
     :host([size='lg']) .mc-option {
-      min-height: var(--mc-control-h-lg);
-      line-height: var(--mc-control-h-lg);
+      min-height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      line-height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
     }
     .mc-option:hover,
     .mc-option[data-active] {
@@ -215,7 +227,7 @@
     .mc-option[aria-selected='true'] {
       background-color: rgb(var(--mc-select-option-bg-selected));
       color: rgb(var(--mc-select-option-color-selected));
-      font-weight: var(--mc-weight-medium);
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
     .mc-option[aria-disabled='true'] {
       opacity: 0.5;

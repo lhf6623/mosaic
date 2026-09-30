@@ -24,7 +24,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const PRODUCTS = [
   'packages/color/tokens.css',
+  'packages/color/token-defaults.css',
   'packages/boot/mosaic.css',
+  'packages/boot/component-base.css',
   'packages/icon/icons.generated.ts',
   'packages/icon/icons.generated.css',
   'packages/icon/icons.license.txt',

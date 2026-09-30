@@ -15,35 +15,43 @@
     </p>
 
     <div class="doc-note">
-      <strong>三条引入缺一不可，顺序也不能换。</strong>
+      <strong>就两样：ofa.js 与你要用的组件。</strong>
       <ul>
-        <li><code>mosaic.css</code> 让<strong>你的页面</strong>能用工具类和令牌</li>
-        <li><code>ofa.js</code> 必须在 <code>mosaic.js</code> 之前 —— 模块按文档顺序求值</li>
         <li>
-          <code>mosaic.js</code> 让<strong>组件内部</strong>能用工具类（shadow root
-          拿不到文档级样式）
+          <code>ofa.js</code> 是唯一的运行时依赖 —— 一个
+          <code>&lt;script type="module"&gt;</code>
+        </li>
+        <li>
+          <code>&lt;l-m src="…"&gt;</code> 按需拉一个组件，<strong>一个组件一条</strong>；
+          样式由组件自己带进 shadow root
+        </li>
+        <li>
+          可选：<code>mosaic.css</code> 给<strong>你自己的页面</strong>提供工具类与完整令牌表
+          （含暗色 / 跟随系统三态），不引它组件照常
         </li>
       </ul>
     </div>
 
-    <h2>为什么需要 mosaic.js</h2>
+    <h2>为什么不用引 CSS</h2>
     <p>
       ofa.js 的组件渲染是 <code>attachShadow()</code> + <code>innerHTML</code>， 也就是<strong
         >组件必定有 shadow root</strong
       >，而文档级 <code>&lt;link&gt;</code>
-      里的规则进不去。所以只挂一份 CSS 的话，组件内部的
-      <code>class="flex gap-2"</code> 是不生效的。
+      里的规则进不去。所以「组件自带样式」不能让页面引一份 CSS —— 那份 CSS 到不了组件内部。
     </p>
     <p>
-      <code>mosaic.js</code> 做的事就一件：把样式表 <code>adopt</code> 进每一个 shadow root。 它是
-      83 行（含补扫已存在 shadow root 的 <code>walk()</code>），没有别的副作用。
+      组件的做法：在自己的模板里 <code>&lt;link&gt;</code> 一份
+      <code>packages/boot/component-base.css</code>（shadow reset + 令牌默认值）。 它<strong
+        >只作用于那个 shadow root</strong
+      >，一个字节都不改进你的页面。
     </p>
 
     <div class="doc-note doc-warn">
-      <strong>令牌其实不需要它。</strong>
-      自定义属性天然跨 shadow 边界继承，所以颜色、圆角、尺寸在 <code>mosaic.js</code>
-      失效时依然正确 —— 只有工具类提供的排布会退化。
-      <strong>故障是分级的，不是全有全无。</strong>
+      <strong>自带默认值不会盖掉你的换肤。</strong>
+      组件写的是两级回退：<code>var(--mc-color-primary, var(--mc-def-color-primary))</code> —— 你在
+      <code>:root</code> / <code>[data-theme]</code> / 元素
+      <code>style</code> 上给的令牌<strong>一定赢</strong>，只有没定义时才落到组件自带的亮色默认值。
+      暗色、跟随系统、<code>data-tone</code> 这些手段照旧有效。
     </div>
 
     <h2>本地开发</h2>
@@ -63,8 +71,7 @@
       <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
       它跑的是仓库自带的零依赖 <code>tools/serve.mjs</code>，响应头带
       <code>cache-control: no-store</code>。换成带缓存的静态服务器后， 改完
-      <code>page.html</code> 或 <code>mosaic.js</code> 浏览器会继续用旧模块，
-      表现为「改了没生效」，排查极耗时。
+      <code>page.html</code> 或组件本体浏览器会继续用旧模块， 表现为「改了没生效」，排查极耗时。
     </div>
 
     <h2>接入方式的几种变体</h2>
@@ -94,17 +101,19 @@
 
     <h2>常见问题</h2>
 
-    <h3>组件有颜色但排布不对</h3>
+    <h3>组件样式没生效</h3>
     <p>
-      <code>mosaic.js</code> 没加载成功，或者 <code>mosaic.css</code> 与它不在同一目录。
-      打开控制台会看到一条 <code>[mosaic] 样式表加载失败…</code> 的报错。
+      看网络面板里 <code>component-base.css</code> 是不是 404 —— 组件的样式基座由它自己
+      <code>&lt;link&gt;</code>，路径相对<strong>组件文件</strong>。自托管时只拷了组件目录、 没带上
+      <code>packages/boot/component-base.css</code>，就是这个现象。
     </p>
 
     <h3>工具类不生效</h3>
     <p>
-      <code>mosaic.css</code> 自带的是一份<strong>手写的工具类子集</strong>（当前 43
-      条工具类规则），覆盖布局 / 间距 / 排版 / 语义色。子集之外的（<code>mt-7</code>、
-      <code>bg-gradient-to-r</code>…）<strong>不存在</strong>，需要时请自己写 CSS。
+      工具类住在<strong>可选</strong>的 <code>mosaic.css</code> 里，它只服务你自己的页面
+      （组件不需要它）。里面是一份<strong>手写的工具类子集</strong>（当前 43 条），覆盖布局 / 间距 /
+      排版 / 语义色；子集之外的（<code>mt-7</code>、<code>bg-gradient-to-r</code>…）
+      <strong>不存在</strong>，需要时请自己写 CSS。
     </p>
 
     <h3>为什么没有 <code>dark:</code> 这类变体</h3>

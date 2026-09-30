@@ -5,43 +5,57 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型。尺寸由容器通过 --mc-collapse-* 继承下来 —— */
     /* ⚠️ 这些变量不能在这里写默认值，否则会盖掉容器继承来的值，size 永远不生效。 */
     :host {
       display: block;
-      font-family: var(--mc-font-sans);
-      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
     }
 
     /* 2. 头部 = 原生 <summary> */
     .mc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mc-space-3, var(--mc-def-space-3));
       box-sizing: border-box;
-      height: var(--mc-collapse-header-h, var(--mc-control-h-md));
-      padding-inline: var(--mc-collapse-pad-x, var(--mc-space-4));
-      font-size: var(--mc-collapse-font, var(--mc-text-sm));
-      font-weight: var(--mc-weight-medium);
+      height: var(--mc-collapse-header-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
+      padding-inline: var(--mc-collapse-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      font-size: var(--mc-collapse-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
       cursor: pointer;
       user-select: none;
       list-style: none; /* 用自己的 chevron；下面那条给老 Safari */
+    }
+    /* 头部文案：占满剩余宽度并省略（原先是 min-w-0 flex-1 truncate 三个工具类） */
+    .mc-header-text {
+      min-width: 0;
+      flex: 1 1 0%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .mc-header::-webkit-details-marker {
       display: none;
     }
     .mc-header:hover {
-      background-color: rgb(var(--mc-color-surface-sunken));
+      background-color: rgb(var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken)));
     }
     .mc-header:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring)); /* ring 令牌，不用 currentColor（P16） */
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring))); /* ring 令牌，不用 currentColor（P16） */
       outline-offset: -2px;
     }
 
     /* 3. 内容 */
     .mc-body {
-      padding: 0 var(--mc-collapse-pad-x, var(--mc-space-4))
-        var(--mc-collapse-body-pad, var(--mc-space-4));
-      font-size: var(--mc-collapse-font, var(--mc-text-sm));
-      color: rgb(var(--mc-color-fg-muted));
+      padding: 0 var(--mc-collapse-pad-x, var(--mc-space-4, var(--mc-def-space-4)))
+        var(--mc-collapse-body-pad, var(--mc-space-4, var(--mc-def-space-4)));
+      font-size: var(--mc-collapse-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
 
     /* 4. 状态。光标留在宿主上（宿主写 pointer-events:none 会连 cursor 一起失效） */
@@ -56,8 +70,9 @@
     /* 5. chevron：内置图标（mc-icon），开合只动 transform —— 收起 ▸ / 展开 ▾ */
     .mc-chevron {
       flex: none;
-      color: rgb(var(--mc-color-fg-subtle));
-      transition: transform var(--mc-duration-base) var(--mc-ease-standard);
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+      transition: transform var(--mc-duration-base, var(--mc-def-duration-base))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     :host([open]) .mc-chevron {
       transform: rotate(90deg);
@@ -65,8 +80,8 @@
   </style>
 
   <details class="mc-details" :open="open !== null">
-    <summary class="mc-header flex items-center justify-between gap-3" part="header">
-      <span class="min-w-0 flex-1 truncate"><slot name="header">{{header}}</slot></span>
+    <summary class="mc-header" part="header">
+      <span class="mc-header-text"><slot name="header">{{header}}</slot></span>
       <span class="mc-chevron mc-icon-chevron-right" aria-hidden="true"></span>
     </summary>
     <div class="mc-body" part="body"><slot></slot></div>

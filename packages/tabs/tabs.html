@@ -5,26 +5,27 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 尺寸通道 + 色槽（mc-tab 在另一个 shadow root 里，只能靠继承拿到） */
     :host {
       display: block;
       box-sizing: border-box;
-      font-family: var(--mc-font-sans);
-      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
 
-      --mc-tabs-tab-h: var(--mc-control-h-md);
-      --mc-tabs-pad-x: var(--mc-space-3);
-      --mc-tabs-font: var(--mc-text-sm);
-      --mc-tabs-gap: var(--mc-space-1);
-      --mc-tabs-panel-pad: var(--mc-space-4);
+      --mc-tabs-tab-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      --mc-tabs-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-tabs-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-tabs-gap: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-tabs-panel-pad: var(--mc-space-4, var(--mc-def-space-4));
 
-      --mc-tabs-fg: var(--mc-color-fg-muted);
-      --mc-tabs-fg-hover: var(--mc-color-fg);
-      --mc-tabs-fg-selected: var(--mc-color-primary);
-      --mc-tabs-bg-hover: var(--mc-color-surface-sunken);
-      --mc-tabs-border: var(--mc-color-border);
-      --mc-tabs-indicator: var(--mc-color-primary);
+      --mc-tabs-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-tabs-fg-hover: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-tabs-fg-selected: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-tabs-bg-hover: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-tabs-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-tabs-indicator: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-tabs-indicator-h: 2px;
     }
 
@@ -42,11 +43,13 @@
       bottom: -1px;
       width: 0;
       height: var(--mc-tabs-indicator-h);
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: rgb(var(--mc-tabs-indicator));
       transition:
-        transform var(--mc-duration-base) var(--mc-ease-standard),
-        width var(--mc-duration-base) var(--mc-ease-standard);
+        transform var(--mc-duration-base, var(--mc-def-duration-base))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        width var(--mc-duration-base, var(--mc-def-duration-base))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
       pointer-events: none;
     }
 

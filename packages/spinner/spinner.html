@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。图形恒为 1em，font-size 是唯一的尺寸入口 */
     :host {
@@ -15,36 +16,36 @@
       font-size: 1em;
       line-height: 0;
       vertical-align: middle;
-      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg) }`，
+      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg, var(--mc-def-color-fg)) }`，
          它本意是给组件一个确定的基线色，却会**掐断颜色继承** —— color="current"（默认）就再也
          跟不住周围的文字色。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行就够 */
       color: inherit;
 
       /* L3 组件令牌：动画时长与环的粗细。时长必须走 --mc-duration-*：
          shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，这里就自动变成静态 */
-      --mc-spinner-duration: calc(var(--mc-duration-slow) * 3);
+      --mc-spinner-duration: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 3);
       --mc-spinner-thickness: 0.125em;
     }
 
     /* 2. 维度一 color：只往 currentColor 里填值。current（默认）不写规则，直接继承 */
     :host([color='primary']) {
-      color: rgb(var(--mc-color-primary));
+      color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([color='info']) {
-      color: rgb(var(--mc-color-info));
+      color: rgb(var(--mc-color-info, var(--mc-def-color-info)));
     }
     :host([color='success']) {
-      color: rgb(var(--mc-color-success));
+      color: rgb(var(--mc-color-success, var(--mc-def-color-success)));
     }
     :host([color='warning']) {
-      color: rgb(var(--mc-color-warning));
+      color: rgb(var(--mc-color-warning, var(--mc-def-color-warning)));
     }
     :host([color='danger']) {
-      color: rgb(var(--mc-color-danger));
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
     /* 中性 = 次要文字色：和 mc-icon 一个口径，落在卡片 / 页面上才对得上 */
     :host([color='neutral']) {
-      color: rgb(var(--mc-color-fg-muted));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
 
     /* 3. 维度二 size：1em / 1.5em / 2em，随继承来的字号缩放（内联 style 优先级更高，能直接覆盖） */
@@ -65,7 +66,7 @@
       height: 1em;
       border: var(--mc-spinner-thickness) solid currentColor;
       border-right-color: transparent;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       animation: mc-spinner-rotate var(--mc-spinner-duration) linear infinite;
     }
     @keyframes mc-spinner-rotate {

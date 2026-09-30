@@ -509,5 +509,47 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, css, 'utf8');
 console.log(`\x1b[32m✓\x1b[0m 对比度全部达标`);
 console.log(
-  `\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(Buffer.byteLength(css, 'utf8') / 1024).toFixed(1)} KB)\n`,
+  `\x1b[32m✓\x1b[0m 已写入 ${OUT.replace(ROOT + '/', '')} (${(Buffer.byteLength(css, 'utf8') / 1024).toFixed(1)} KB)`,
+);
+
+/* ---------- 9. shadow 作用域的令牌默认值 ----------
+ * 组件要能「只引 ofa.js + 组件」就正常显示，而 shadow root 里的样式表**拿不到**文档级令牌：
+ *   · :root 上的令牌靠继承进来 —— 页面没引令牌表就没有；
+ *   · @property 的 initial-value 在 shadow 里**不会注册**（实测：规则解析得出来，但
+ *     getComputedStyle 读不到初始值；同一份 CSS 内联进文档就生效）；
+ *   · :host 上直接写 --mc-* 会变成「自己的声明」，把页面级换肤整个盖掉。
+ * 所以走独立命名 + 两级回退：这里给 --mc-def-*，组件里写
+ *   var(--mc-color-primary, var(--mc-def-color-primary))
+ * 页面定义了就用页面的（换肤 / 暗色 / data-tone 照旧），没定义才落到这份默认值。
+ * ⚠️ 只能给 L2 与标量：L1 原始色阶不许组件碰（由 11 号写法守卫拦）。 */
+const literalOf = (expr) => {
+  const m = /^var\(--mc-([a-z]+)-(\d+)\)$/.exec(expr);
+  return m ? PALETTE[m[1]][m[2]].channels : expr;
+};
+const defLines = [
+  ...Object.entries(THEMES.light).map(([k, v]) => `    --mc-def-${k}: ${literalOf(v)};`),
+  ...Object.entries(SCALARS).map(([k, v]) => `    --mc-def-${k}: ${v};`),
+];
+const defCss = `/* 由 tools/gen-tokens.mjs 生成 —— 勿手改；令牌的真源在同一份脚本里。
+ *
+ * shadow 作用域内的**令牌默认值**（亮色）。名字刻意独立成 --mc-def-*：它不占 --mc-* 的位，
+ * 所以页面在 :root / [data-theme] / 宿主 style 上写的同名令牌照旧赢过它。组件的用法是两级回退：
+ *
+ *   padding-inline: var(--mc-space-2, var(--mc-def-space-2));
+ *
+ * 加载方式：由 tools/build-css.mjs 装配进 packages/boot/component-base.css，
+ * 每个组件在自己的模板里 <link> 那一份（shadow 作用域，不外溢到宿主页面）。
+ * 共 ${defLines.length} 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
+ * ========================================================================== */
+
+@layer mosaic.tokens {
+  :host {
+${defLines.join('\n')}
+  }
+}
+`;
+const DEF_OUT = resolve(ROOT, 'packages/color/token-defaults.css');
+writeFileSync(DEF_OUT, defCss, 'utf8');
+console.log(
+  `\x1b[32m✓\x1b[0m 已写入 ${DEF_OUT.replace(ROOT + '/', '')} (${(Buffer.byteLength(defCss, 'utf8') / 1024).toFixed(1)} KB · ${defLines.length} 个默认值)\n`,
 );

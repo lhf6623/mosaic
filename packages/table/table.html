@@ -5,28 +5,29 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值 */
     :host {
       display: block;
       box-sizing: border-box;
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-table-font);
       color: rgb(var(--mc-table-fg));
 
       /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
-         <mc-table style="--mc-table-head-bg: var(--mc-color-primary-subtle)"> */
-      --mc-table-font: var(--mc-text-sm);
-      --mc-table-fg: var(--mc-color-fg);
-      --mc-table-border: var(--mc-color-border);
-      --mc-table-head-bg: var(--mc-color-surface-sunken);
-      --mc-table-head-fg: var(--mc-color-fg-muted);
-      --mc-table-stripe-bg: var(--mc-color-surface-sunken);
-      --mc-table-row-hover-bg: var(--mc-color-surface-sunken);
-      --mc-table-cell-pad-x: var(--mc-space-4);
-      --mc-table-cell-pad-y: var(--mc-space-2);
-      --mc-table-state-fg: var(--mc-color-fg-subtle);
-      --mc-table-state-pad: var(--mc-space-8);
+         <mc-table style="--mc-table-head-bg: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle))"> */
+      --mc-table-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-table-fg: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-table-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-table-head-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-table-head-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-table-stripe-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-table-row-hover-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-table-cell-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-table-cell-pad-y: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-table-state-fg: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-table-state-pad: var(--mc-space-8, var(--mc-def-space-8));
     }
 
     /* 2. 表格本体。分隔边框用初始值（separate）就够，只把间距归零 ——
@@ -45,7 +46,7 @@
     .mc-table th {
       background-color: rgb(var(--mc-table-head-bg));
       color: rgb(var(--mc-table-head-fg));
-      font-weight: var(--mc-weight-medium);
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
       white-space: nowrap;
     }
     .mc-table tbody tr:last-child td {

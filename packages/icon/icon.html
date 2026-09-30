@@ -6,6 +6,8 @@
 -->
 
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     :host {
       display: inline-flex;
@@ -16,7 +18,7 @@
       font-size: 1em;
       line-height: 0;
       vertical-align: middle;
-      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg) }`，
+      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg, var(--mc-def-color-fg)) }`，
          本意是给组件一个确定的基线色，但它会**掐断颜色继承** —— 图标被放进另一个组件的 shadow
          root 里时（mc-alert、doc-pager、使用者的组件），拿到的是 fg 而不是周围的文字色，压在
          实心底色上直接看不清。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行
@@ -37,23 +39,23 @@
 
     /* ---------- 语义色：只往 currentColor 里填值（默认 current 不写规则，直接继承） ---------- */
     :host([color='primary']) {
-      color: rgb(var(--mc-color-primary));
+      color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([color='info']) {
-      color: rgb(var(--mc-color-info));
+      color: rgb(var(--mc-color-info, var(--mc-def-color-info)));
     }
     :host([color='success']) {
-      color: rgb(var(--mc-color-success));
+      color: rgb(var(--mc-color-success, var(--mc-def-color-success)));
     }
     :host([color='warning']) {
-      color: rgb(var(--mc-color-warning));
+      color: rgb(var(--mc-color-warning, var(--mc-def-color-warning)));
     }
     :host([color='danger']) {
-      color: rgb(var(--mc-color-danger));
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
     /* 中性 = 次要文字色：图标落在卡片 / 页面上，用 muted 前景才对得上 */
     :host([color='neutral']) {
-      color: rgb(var(--mc-color-fg-muted));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
 
     /* 图形槽。min-* 让「取不到图标」时也占住 1em —— 不留空洞、不跳版。
@@ -262,8 +264,8 @@
 
         /**
          * 挂上类名 → 问 CSS。两条实测过的前提写在这里：
-         *   · 样式表还没 adopt 时（D3 的 pending 窗口期）maskImage 同样是 none，必须等
-         *     adoptedStyleSheets 非空才能下结论，否则会把内置图标误判成远程、白跑一次网络；
+         *   · 图标样式表是组件自己 <link> 进 shadow root 的、**异步**到达；没到位时 maskImage
+         *     同样是 none，必须等它可读了才能下结论，否则会把内置图标误判成远程、白跑一次网络；
          *   · 集名等于内置来源集时退化成裸名再探一次：`lucide:search` 不该白跑远程。
          */
         async probe(name) {
@@ -284,12 +286,36 @@
           return null;
         },
 
-        /** 就绪门：mosaic.js 把早于样式表加载完成的 shadow root 收进 pending 稍后补 adopt */
+        /**
+         * 就绪门：图标样式表由组件自己 <link> 进 shadow root，到达是**异步**的 —— 没解析出来时
+         * maskImage 同样是 none，直接下结论会把内置图标误判成远程、白跑一次网络（还 404）。
+         * 等那几张表真的可读再探：**走 link 的 load / error 事件**，不用 rAF 轮询 ——
+         * 后台页面里 rAF 会被节流甚至不触发，实测在录制模式下因此误判过一次。
+         */
         async sheetsReady(root) {
-          for (let i = 0; i < 20 && root.adoptedStyleSheets.length === 0; i++) {
-            await new Promise((resolve) => requestAnimationFrame(resolve));
-          }
-          return root.adoptedStyleSheets.length > 0;
+          const links = [...root.querySelectorAll('link[rel="stylesheet"]')];
+          /* 兜底：没有 <link>（被别处 adopt 的场合）仍旧看 adoptedStyleSheets */
+          if (!links.length) return root.adoptedStyleSheets.length > 0;
+          const ready = (link) => {
+            try {
+              return !!link.sheet && link.sheet.cssRules.length > 0;
+            } catch {
+              return false;
+            }
+          };
+          if (links.every(ready)) return true;
+          await Promise.all(
+            links.map(
+              (link) =>
+                new Promise((resolve) => {
+                  if (ready(link)) return resolve();
+                  link.addEventListener('load', resolve, { once: true });
+                  link.addEventListener('error', resolve, { once: true });
+                  setTimeout(resolve, 2000); // 事件已错过 / 网络卡住时的兜底
+                }),
+            ),
+          );
+          return links.every(ready);
         },
 
         /** 取回来内联成 <svg>。失败只留空位 + 一条警告，不影响排版（与 mc-code 的高亮降级同级） */

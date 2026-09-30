@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
     :host {
@@ -15,30 +16,33 @@
       border: 1px solid transparent;
       border-radius: var(--mc-alert-radius);
       padding: var(--mc-alert-pad-y) var(--mc-alert-pad-x);
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       transition:
-        background-color var(--mc-duration-fast) var(--mc-ease-standard),
-        color var(--mc-duration-fast) var(--mc-ease-standard),
-        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
 
       /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
-      --mc-alert-pad-x: var(--mc-space-4);
-      --mc-alert-pad-y: var(--mc-space-3);
-      --mc-alert-gap: var(--mc-space-3);
-      --mc-alert-radius: var(--mc-radius-md);
+      --mc-alert-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-alert-pad-y: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-alert-gap: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-alert-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       /* 正文色，以及 × 的 state layer：都是「相对当前配色」的叠加，不引新色。
          layer 是一个 0–1 的数（hover 用，active 乘 1.5），色随 variant 换。 */
-      --mc-alert-body-color: var(--mc-color-fg-muted);
-      --mc-alert-layer-color: var(--mc-color-fg);
+      --mc-alert-body-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-alert-layer-color: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-alert-layer: 0.08;
 
       /* 色槽：primary 是默认色（API 规范 1.2 的全局默认），已经填好 */
-      --mc-alert-fill: var(--mc-color-primary);
-      --mc-alert-on-fill: var(--mc-color-primary-fg);
-      --mc-alert-accent: var(--mc-color-primary);
-      --mc-alert-subtle-fill: var(--mc-color-primary-subtle);
+      --mc-alert-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-alert-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
+      --mc-alert-accent: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-alert-subtle-fill: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle));
 
       /* subtle 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
       background-color: rgb(var(--mc-alert-subtle-fill));
@@ -47,34 +51,34 @@
 
     /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
     :host([color='info']) {
-      --mc-alert-fill: var(--mc-color-info);
-      --mc-alert-on-fill: var(--mc-color-info-fg);
-      --mc-alert-accent: var(--mc-color-info);
-      --mc-alert-subtle-fill: var(--mc-color-info-subtle);
+      --mc-alert-fill: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-alert-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
+      --mc-alert-accent: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-alert-subtle-fill: var(--mc-color-info-subtle, var(--mc-def-color-info-subtle));
     }
     :host([color='success']) {
-      --mc-alert-fill: var(--mc-color-success);
-      --mc-alert-on-fill: var(--mc-color-success-fg);
-      --mc-alert-accent: var(--mc-color-success);
-      --mc-alert-subtle-fill: var(--mc-color-success-subtle);
+      --mc-alert-fill: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-alert-on-fill: var(--mc-color-success-fg, var(--mc-def-color-success-fg));
+      --mc-alert-accent: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-alert-subtle-fill: var(--mc-color-success-subtle, var(--mc-def-color-success-subtle));
     }
     :host([color='warning']) {
-      --mc-alert-fill: var(--mc-color-warning);
-      --mc-alert-on-fill: var(--mc-color-warning-fg);
-      --mc-alert-accent: var(--mc-color-warning);
-      --mc-alert-subtle-fill: var(--mc-color-warning-subtle);
+      --mc-alert-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-alert-on-fill: var(--mc-color-warning-fg, var(--mc-def-color-warning-fg));
+      --mc-alert-accent: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-alert-subtle-fill: var(--mc-color-warning-subtle, var(--mc-def-color-warning-subtle));
     }
     :host([color='danger']) {
-      --mc-alert-fill: var(--mc-color-danger);
-      --mc-alert-on-fill: var(--mc-color-danger-fg);
-      --mc-alert-accent: var(--mc-color-danger);
-      --mc-alert-subtle-fill: var(--mc-color-danger-subtle);
+      --mc-alert-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-alert-on-fill: var(--mc-color-danger-fg, var(--mc-def-color-danger-fg));
+      --mc-alert-accent: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-alert-subtle-fill: var(--mc-color-danger-subtle, var(--mc-def-color-danger-subtle));
     }
     :host([color='neutral']) {
-      --mc-alert-fill: var(--mc-color-neutral);
-      --mc-alert-on-fill: var(--mc-color-neutral-fg);
-      --mc-alert-accent: var(--mc-color-fg-muted);
-      --mc-alert-subtle-fill: var(--mc-color-surface-sunken);
+      --mc-alert-fill: var(--mc-color-neutral, var(--mc-def-color-neutral));
+      --mc-alert-on-fill: var(--mc-color-neutral-fg, var(--mc-def-color-neutral-fg));
+      --mc-alert-accent: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-alert-subtle-fill: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
     }
 
     /* 3. 维度二 variant：只决定色槽贴到哪儿 */
@@ -95,7 +99,10 @@
       display: none;
       flex: none;
       width: 1.25em;
-      height: var(--mc-text-sm-lh); /* 与标题行等高，图标视觉上贴在第一行 */
+      height: var(
+        --mc-text-sm-lh,
+        var(--mc-def-text-sm-lh)
+      ); /* 与标题行等高，图标视觉上贴在第一行 */
       align-items: center;
     }
     :host([icon]) .mc-icon {
@@ -111,7 +118,7 @@
 
     .mc-title {
       display: none;
-      font-weight: var(--mc-weight-medium);
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
     :host([data-has-title]) .mc-title {
       display: block;
@@ -125,12 +132,16 @@
       display: block;
     }
 
-    /* 5. 内部元素：只放工具类表达不了的 */
+    /* 5. 内部元素 */
     .mc-base {
+      display: flex;
+      align-items: flex-start;
       gap: var(--mc-alert-gap);
     }
     /* 长文本在窄容器里折行，不撑破宿主 */
     .mc-content {
+      flex: 1 1 0%;
+      min-width: 0;
       overflow-wrap: anywhere;
     }
     /* 内置图标：一个 mc-icon 实例，图形名跟着 color 走（见脚本的 GLYPH_NAMES）。
@@ -146,12 +157,18 @@
       position: relative;
       flex: none;
       box-sizing: border-box;
-      width: var(--mc-space-8);
-      height: var(--mc-space-8);
-      margin-block: calc((var(--mc-text-sm-lh) - var(--mc-space-8)) / 2);
+      width: var(--mc-space-8, var(--mc-def-space-8));
+      height: var(--mc-space-8, var(--mc-def-space-8));
+      margin-block: calc(
+        (
+            var(--mc-text-sm-lh, var(--mc-def-text-sm-lh)) -
+              var(--mc-space-8, var(--mc-def-space-8))
+          ) /
+          2
+      );
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
       color: inherit;
       font: inherit;
@@ -172,12 +189,12 @@
       background-color: rgb(var(--mc-alert-layer-color) / calc(var(--mc-alert-layer) * 1.5));
     }
     .mc-close:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
   </style>
 
-  <div part="base" class="mc-base flex items-start">
+  <div part="base" class="mc-base">
     <!-- 图标：内置图形来自 mc-icon（不给 label，所以它自己就是 aria-hidden 的装饰）；
          slot="icon" 是使用者的内容，不替它决定是否被朗读 -->
     <span class="mc-icon" part="icon">
@@ -185,7 +202,7 @@
       <slot name="icon"></slot>
     </span>
 
-    <div class="mc-content flex-1 min-w-0">
+    <div class="mc-content">
       <div class="mc-title" part="title"><slot name="title">{{heading}}</slot></div>
       <div class="mc-body" part="body"><slot></slot></div>
     </div>

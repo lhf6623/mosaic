@@ -5,39 +5,40 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* ---------- 容器：固定顶栏居中，一列消息 ---------- */
     :host {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--mc-space-2);
+      gap: var(--mc-space-2, var(--mc-def-space-2));
       pointer-events: none; /* 只有消息条本身可点，空白处不吃点击 */
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
     }
 
     /* ---------- 一条消息 ---------- */
     .mc-item {
       display: flex;
       align-items: center;
-      gap: var(--mc-space-2);
-      max-width: min(36rem, calc(100vw - var(--mc-space-8)));
-      padding: var(--mc-space-2) var(--mc-space-4);
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      max-width: min(36rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
+      padding: var(--mc-space-2, var(--mc-def-space-2)) var(--mc-space-4, var(--mc-def-space-4));
       /* 圆角用 full：消息条是浮起的一条胶囊，不是卡片 */
-      border-radius: var(--mc-radius-full);
-      border: 1px solid rgb(var(--mc-color-border));
-      background-color: rgb(var(--mc-color-surface));
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
       /* 浮层唯一的视觉依据。没有 --mc-shadow-* 令牌（全仓组件都没用阴影），
          这里给浮层一个专用阴影，明暗都压得住 */
       box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
-      color: rgb(var(--mc-color-fg));
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       pointer-events: auto;
       /* ⚠️ 必须 !important：shadow-base 的 mosaic.base 层把 :host 的 font-size 钉成
          --mc-text-base，而工具类在 mosaic.utilities 层 —— 层序是 base < utilities，
          所以 text-sm 工具类在这里赢不了 reset（实测 16px 压过 14px） */
-      font-size: var(--mc-text-sm) !important;
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm)) !important;
     }
 
     /* ---------- 关闭按钮：右侧一个明确的 ×（32×32 命中区，和 mc-alert 同一套）
@@ -47,17 +48,23 @@
       display: none;
       flex: none;
       box-sizing: border-box;
-      width: var(--mc-space-8);
-      height: var(--mc-space-8);
+      width: var(--mc-space-8, var(--mc-def-space-8));
+      height: var(--mc-space-8, var(--mc-def-space-8));
       /* 负外边距吃掉超出胶囊的部分：单行消息加不加 × 都一样高 */
-      margin-block: calc((var(--mc-text-sm-lh) - var(--mc-space-8)) / 2);
+      margin-block: calc(
+        (
+            var(--mc-text-sm-lh, var(--mc-def-text-sm-lh)) -
+              var(--mc-space-8, var(--mc-def-space-8))
+          ) /
+          2
+      );
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
       color: inherit;
       font: inherit;
-      font-size: var(--mc-text-lg);
+      font-size: var(--mc-text-lg, var(--mc-def-text-lg));
       line-height: 1;
       cursor: pointer;
       align-items: center;
@@ -68,10 +75,10 @@
       display: inline-flex;
     }
     .mc-close:hover {
-      background-color: rgb(var(--mc-color-fg) / 0.08);
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.08);
     }
     .mc-close:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
 
@@ -95,17 +102,17 @@
     .mc-glyph {
       flex: none;
       display: inline-flex;
-      font-size: var(--mc-text-lg);
-      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-lg, var(--mc-def-text-lg));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
     .mc-glyph[data-type='success'] {
-      color: rgb(var(--mc-color-success));
+      color: rgb(var(--mc-color-success, var(--mc-def-color-success)));
     }
     .mc-glyph[data-type='warning'] {
-      color: rgb(var(--mc-color-warning));
+      color: rgb(var(--mc-color-warning, var(--mc-def-color-warning)));
     }
     .mc-glyph[data-type='error'] {
-      color: rgb(var(--mc-color-danger));
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
 
     /* ---------- 进场：从上方落下来一点 + 淡入。
@@ -122,7 +129,8 @@
       }
     }
     .mc-item {
-      animation: mc-message-in var(--mc-duration-slow) var(--mc-ease-emphasized) both;
+      animation: mc-message-in var(--mc-duration-slow, var(--mc-def-duration-slow))
+        var(--mc-ease-emphasized, var(--mc-def-ease-emphasized)) both;
     }
 
     /* shadow-base 在 prefers-reduced-motion 下把所有 --mc-duration-* 归零，

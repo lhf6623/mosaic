@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* ---------- 1. 宿主盒模型 + 色槽默认值 ----------
        尺寸/圆角直接写在这里，使用者 `style="border-radius:0"` 才压得住（外部内联优先于 shadow root 规则）。 */
@@ -14,21 +15,21 @@
       min-width: 0;
       overflow: hidden;
       border: 1px solid rgb(var(--mc-code-border));
-      border-radius: var(--mc-radius-lg);
+      border-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
       background-color: rgb(var(--mc-code-fill));
       color: rgb(var(--mc-code-fg));
 
-      font-family: var(--mc-font-mono);
+      font-family: var(--mc-font-mono, var(--mc-def-font-mono));
       font-size: var(--mc-code-font-size);
       line-height: var(--mc-code-line-height);
       tab-size: 2;
 
       /* ---------- 色槽：L3 组件令牌，默认引用 L2 语义令牌（语法色归 highlight.js 主题管） ---------- */
-      --mc-code-fill: var(--mc-color-surface-sunken);
-      --mc-code-border: var(--mc-color-border);
-      --mc-code-fg: var(--mc-color-fg);
-      --mc-code-dim: var(--mc-color-fg-subtle);
-      --mc-code-font-size: var(--mc-text-sm);
+      --mc-code-fill: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-code-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-code-fg: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-code-dim: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-code-font-size: var(--mc-text-sm, var(--mc-def-text-sm));
       --mc-code-line-height: 1.7;
 
       /* 高度上限由 JS 按 max-height 属性写进内部容器；none 表示不设上限 */
@@ -43,12 +44,12 @@
          没超高」的情况也把滚动链掐断，表现就是「鼠标停在代码上页面完全不动」。默认 auto 才能续滚页面。 */
     }
     .mc-body:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: -2px;
     }
     .mc-pre {
       margin: 0;
-      padding: var(--mc-space-3) var(--mc-space-4);
+      padding: var(--mc-space-3, var(--mc-def-space-3)) var(--mc-space-4, var(--mc-def-space-4));
       font: inherit;
       white-space: pre;
     }
@@ -74,7 +75,7 @@
       flex: none;
       /* 列宽由 JS 按总行数写进 --mc-code-ln-w，三位数行号也不会挤 */
       width: var(--mc-code-ln-w, 2.5em); /* @internal：JS 按行数写入，不是使用者的覆盖点 */
-      padding-right: var(--mc-space-3);
+      padding-right: var(--mc-space-3, var(--mc-def-space-3));
       background-color: rgb(var(--mc-code-fill));
       color: rgb(var(--mc-code-dim));
       text-align: right;
@@ -604,7 +605,7 @@
             // 等待期间又切了主题 / 组件已经卸载，丢弃这次结果
             if (this._themeName !== name || !this.ele.isConnected) return;
             const root = this.ele.shadowRoot;
-            // 只换掉自己上次 adopt 的那张，mosaic.js 注入的共享表原样保留
+            // 只换掉自己上次 adopt 的那张，其余（组件基座 / 宿主带来的）原样保留
             root.adoptedStyleSheets = [
               ...root.adoptedStyleSheets.filter((s) => s !== this._themeSheet),
               sheet,

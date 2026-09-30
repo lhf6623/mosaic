@@ -5,18 +5,20 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     :host {
       display: inline-block;
 
       /* L3 令牌：面板到触发元素的距离、底色、圆角、内边距都由这里给，按实例覆盖写在宿主 style 上 */
-      --mc-tooltip-offset: var(--mc-space-2);
+      --mc-tooltip-offset: var(--mc-space-2, var(--mc-def-space-2));
       /* @internal：给 anchor-name / position-anchor 用的标识，不是使用者覆盖点 */
       --mc-tooltip-anchor: --mc-tooltip-anchor;
-      --mc-tooltip-panel-bg: var(--mc-color-surface-raised);
-      --mc-tooltip-panel-border: var(--mc-color-border-strong);
-      --mc-tooltip-panel-radius: var(--mc-radius-md);
-      --mc-tooltip-panel-pad: var(--mc-space-2) var(--mc-space-3);
+      --mc-tooltip-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-tooltip-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-tooltip-panel-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      --mc-tooltip-panel-pad: var(--mc-space-2, var(--mc-def-space-2))
+        var(--mc-space-3, var(--mc-def-space-3));
     }
 
     /* 锚点：必须是自己 shadow 里的元素（设在 light DOM 的 slot 元素上无效）。
@@ -34,16 +36,16 @@
       inset: auto;
       margin: 0;
       box-sizing: border-box;
-      max-width: min(20rem, calc(100vw - var(--mc-space-8)));
+      max-width: min(20rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
       padding: var(--mc-tooltip-panel-pad);
       /* UA 给 `[popover]` 的是 `border: solid`（宽度 medium = 3px、颜色 currentColor），不写就是一圈 3px */
       border: 0;
       border-radius: var(--mc-tooltip-panel-radius);
       background-color: rgb(var(--mc-tooltip-panel-bg));
-      color: rgb(var(--mc-color-fg));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-xs);
-      line-height: var(--mc-text-xs-lh);
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
       overflow-wrap: anywhere;
       /* 描边跟整体轮廓走（面板不画真 border）：两层里第一层是描边、第二层是投影 */
       filter: drop-shadow(0 0 1px rgb(var(--mc-tooltip-panel-border)))

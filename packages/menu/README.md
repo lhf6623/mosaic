@@ -49,10 +49,11 @@ aria-current、disabled / aria-disabled 都是浏览器给的，组件只读它�
 页面模板里的元素 —— 组件在 shadow root 里造的 <a> 用不上（docs/routes.js）。
 
 ⚠️ 行的视觉全在**宿主**上，插槽元素只铺满整行（position:absolute; inset:0）。
-原因是一条实测出来的层叠规则：插槽元素同时是**祖先 shadow 树**里的普通元素，而
-mosaic.js 把 shadow-base.css adopt 进了每一层 shadow root —— 那里面对 button 的
-`padding: 0 / background: none / cursor: pointer` 是「直接命中」，优先级压过本组件
-shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面）。
+原因是一条实测出来的层叠规则：插槽元素同时是**祖先 shadow 树**里的普通元素，而每一层
+shadow root 里都有一份 shadow-base.css（组件的由自己的 `<link>` 带进来、文档站的由
+docs/adopt-styles.js 注入）—— 那里面对 button 的 `padding: 0 / background: none /
+cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root 里的 `::slotted(button)`
+（封装上下文排在层叠顺序前面）。
 所以 padding / 底色 / 颜色一律写在宿主上，靠继承 + 「插槽元素铺满整行」来实现：
 
 · 左右缩进 → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）

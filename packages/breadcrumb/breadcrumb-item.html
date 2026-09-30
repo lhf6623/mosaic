@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道
        （同 mc-menu-item 的坑），消费一律带兜底值。
@@ -16,15 +17,17 @@
       min-width: 0;
       max-width: 100%;
       font: inherit;
-      color: rgb(var(--mc-breadcrumb-item-color, var(--mc-color-fg-muted)));
+      color: rgb(
+        var(--mc-breadcrumb-item-color, var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)))
+      );
     }
 
     /* 2. 维度 / 3. 尺寸：没有 variant 与 size（同容器） */
 
     /* 4. 当前项（最后一级）：字色更实 + 中等字重 */
     :host([current]) {
-      color: rgb(var(--mc-breadcrumb-current-color, var(--mc-color-fg)));
-      font-weight: var(--mc-weight-medium);
+      color: rgb(var(--mc-breadcrumb-current-color, var(--mc-color-fg, var(--mc-def-color-fg))));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
 
     /* 5. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。
@@ -33,17 +36,18 @@
     ::slotted(a) {
       color: inherit;
       text-decoration: none;
-      border-radius: var(--mc-radius-sm);
-      transition: color var(--mc-duration-fast) var(--mc-ease-standard);
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      transition: color var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     ::slotted(a:hover) {
-      color: rgb(var(--mc-breadcrumb-item-color-hover, var(--mc-color-fg)));
+      color: rgb(var(--mc-breadcrumb-item-color-hover, var(--mc-color-fg, var(--mc-def-color-fg))));
       text-decoration: underline;
       text-underline-offset: 0.25em;
     }
     /* 焦点环用 ring 令牌，不用 currentColor（P16） */
     ::slotted(a:focus-visible) {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
   </style>

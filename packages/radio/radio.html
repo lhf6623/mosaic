@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 自己的几何令牌。
        ⚠️ 尺寸（--mc-radio-font / -line / -height / -pad-x）**不能在这里写默认值** ——
@@ -14,17 +15,17 @@
       display: inline-flex;
       position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
       box-sizing: border-box;
-      height: var(--mc-radio-height, var(--mc-control-h-md));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-radio-font, var(--mc-text-sm));
-      line-height: var(--mc-radio-line, var(--mc-text-sm-lh));
-      color: rgb(var(--mc-color-fg));
+      height: var(--mc-radio-height, var(--mc-control-h-md, var(--mc-def-control-h-md)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-radio-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      line-height: var(--mc-radio-line, var(--mc-text-sm-lh, var(--mc-def-text-sm-lh)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
       vertical-align: middle;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
       /* 自己就能定的几何：跟 em 走，所以 size 一档就整体缩放 */
-      --mc-radio-gap: var(--mc-space-2);
+      --mc-radio-gap: var(--mc-space-2, var(--mc-def-space-2));
       --mc-radio-circle: 1.15em;
       --mc-radio-dot: 0.55em;
     }
@@ -32,10 +33,10 @@
     /* 2. 状态。选中 = 圆环换主色 + 中心点放大进来；组禁用 / 自己禁用都走宿主属性
        （组禁用的镜像见脚本，P33：宿主「看不到」孩子，CSS 只能从宿主上选） */
     .mc-base:hover .mc-circle {
-      border-color: rgb(var(--mc-color-primary));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([checked]) .mc-circle {
-      border-color: rgb(var(--mc-color-primary));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([checked]) .mc-dot {
       transform: scale(1);
@@ -51,11 +52,11 @@
     /* 禁用态不响应 hover（设计规范第五节）—— 正向覆盖，不用 :not()（P14） */
     :host([disabled]) .mc-base:hover .mc-circle,
     :host([data-group-disabled]) .mc-base:hover .mc-circle {
-      border-color: rgb(var(--mc-color-border-strong));
+      border-color: rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
     }
     :host([disabled][checked]) .mc-base:hover .mc-circle,
     :host([data-group-disabled][checked]) .mc-base:hover .mc-circle {
-      border-color: rgb(var(--mc-color-primary));
+      border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
     /* 3. 内部结构。行盒子在这个原生 <label> 上：点圆圈、点文案都落在同一个原生 input 上。
@@ -68,7 +69,7 @@
       gap: var(--mc-radio-gap);
       box-sizing: border-box;
       height: 100%;
-      padding-inline: var(--mc-radio-pad-x, var(--mc-space-3));
+      padding-inline: var(--mc-radio-pad-x, var(--mc-space-3, var(--mc-def-space-3)));
       cursor: pointer;
     }
     /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
@@ -92,23 +93,25 @@
       box-sizing: border-box;
       width: var(--mc-radio-circle);
       height: var(--mc-radio-circle);
-      border: 1px solid rgb(var(--mc-color-border-strong));
-      border-radius: var(--mc-radius-full);
-      background-color: rgb(var(--mc-color-surface));
-      transition: border-color var(--mc-duration-fast) var(--mc-ease-standard);
+      border: 1px solid rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
+      transition: border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     /* 焦点环画在圆圈上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
     .mc-native:focus-visible + .mc-circle {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
     .mc-dot {
       width: var(--mc-radio-dot);
       height: var(--mc-radio-dot);
-      border-radius: var(--mc-radius-full);
-      background-color: rgb(var(--mc-color-primary));
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
       transform: scale(0);
-      transition: transform var(--mc-duration-fast) var(--mc-ease-standard);
+      transition: transform var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
 
     .mc-label {

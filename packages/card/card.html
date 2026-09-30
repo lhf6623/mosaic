@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
     :host {
@@ -12,17 +13,17 @@
       position: relative; /* 使用者自己铺「整卡可点」那条 ::after 的包含块 —— 对外契约，别删 */
       box-sizing: border-box;
       border: var(--mc-card-border-w) solid rgb(var(--mc-card-border));
-      border-radius: var(--mc-radius-lg);
+      border-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
       background-color: rgb(var(--mc-card-bg));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-base);
-      line-height: var(--mc-text-base-lh);
-      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
 
       /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
-      --mc-card-bg: var(--mc-color-surface);
-      --mc-card-border: var(--mc-color-border);
-      --mc-card-pad: var(--mc-space-4);
+      --mc-card-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-card-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-card-pad: var(--mc-space-4, var(--mc-def-space-4));
       /* 边框宽度单独成变量：使用者的「铺满」伪元素要按它把边框那圈也算进去
          （绝对定位的包含块是宿主的内边距盒，inset:0 会漏掉边框） */
       --mc-card-border-w: 1px;
@@ -38,10 +39,10 @@
       --mc-card-pad: 0px;
     }
     :host([padding='sm']) {
-      --mc-card-pad: var(--mc-space-3);
+      --mc-card-pad: var(--mc-space-3, var(--mc-def-space-3));
     }
     :host([padding='lg']) {
-      --mc-card-pad: var(--mc-space-6);
+      --mc-card-pad: var(--mc-space-6, var(--mc-def-space-6));
     }
 
     /* 4. 状态：一个都没有。可点 / 悬停 / 光标都由使用者写在页面 CSS 里 ——
@@ -70,7 +71,7 @@
       /* 头部是一行：正文插槽占满左边，slot="suffix" 贴右边（徽标 / 状态 / 小按钮） */
       display: flex;
       align-items: center;
-      gap: var(--mc-space-2);
+      gap: var(--mc-space-2, var(--mc-def-space-2));
       margin-block: calc(var(--mc-card-pad) * -1) var(--mc-card-pad);
       border-bottom: 1px solid rgb(var(--mc-card-border));
       /* 朝向正文的两个角必须是直角（那里贴着正文，圆了会露出卡片底色） */

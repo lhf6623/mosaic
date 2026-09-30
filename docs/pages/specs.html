@@ -104,8 +104,8 @@
     <mc-code language="text">
       packages/
         boot/
-          mosaic.js          手写：attachShadow 补丁 + 样式 adopt（唯一必需引入的 JS）
-          mosaic.css         装配并提交：令牌 + 图标 + 工具类（可 &lt;link&gt;）
+          mosaic.css         装配并提交：令牌 + 图标 + 工具类（**可选**，只服务使用者的页面）
+          component-base.css 装配并提交：组件自带的基座（shadow reset + 令牌默认值）
           utilities.css      手写：工具类子集（43 条）
           shadow-base.css    手写：只进 shadow root 的 reset（禁止 &lt;link&gt;）
         color/tokens.css     生成并提交：三层令牌 + 层顺序声明
@@ -143,7 +143,7 @@
           <td>✅ 51.0 KB raw / 9.0 KB gzip</td>
         </tr>
         <tr>
-          <td>运行时注入（<code>mosaic.js</code>）</td>
+          <td>组件自带样式（<code>component-base.css</code>，不碰宿主页面）</td>
           <td>✅ 已实现</td>
         </tr>
         <tr>

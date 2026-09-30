@@ -5,26 +5,27 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值 */
     :host {
       display: block;
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg-muted));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
 
       /* 分隔符。separator 属性会在 attached() 里落到同一个变量上，所以两条路都通：
          <mc-breadcrumb separator=">"> 与 style="--mc-breadcrumb-sep: '·'" */
       --mc-breadcrumb-sep: '/';
 
       /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
-         <mc-breadcrumb style="--mc-breadcrumb-current-color: var(--mc-color-primary)"> */
-      --mc-breadcrumb-item-color: var(--mc-color-fg-muted);
-      --mc-breadcrumb-item-color-hover: var(--mc-color-fg);
-      --mc-breadcrumb-current-color: var(--mc-color-fg);
-      --mc-breadcrumb-sep-color: var(--mc-color-fg-subtle);
-      --mc-breadcrumb-gap: var(--mc-space-2);
+         <mc-breadcrumb style="--mc-breadcrumb-current-color: var(--mc-color-primary, var(--mc-def-color-primary))"> */
+      --mc-breadcrumb-item-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-breadcrumb-item-color-hover: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-breadcrumb-current-color: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-breadcrumb-sep-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-breadcrumb-gap: var(--mc-space-2, var(--mc-def-space-2));
     }
 
     /* 2. 维度 / 3. 尺寸：面包屑是**一行文字导航**，没有 variant 与 size ——

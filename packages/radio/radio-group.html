@@ -5,35 +5,36 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主 + 尺寸通道。子项住在**另一个 shadow root** 里，组的 CSS 选择器够不到它们，
        只能靠自定义属性继承把尺寸送下去（同 mc-collapse 的做法）；
        ⚠️ 这几条不能写进 radio.html 的 :host —— 那里写默认值就会盖掉继承来的值，size 永远不生效 */
     :host {
       display: block;
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
 
-      --mc-radio-font: var(--mc-text-sm);
-      --mc-radio-line: var(--mc-text-sm-lh);
-      --mc-radio-height: var(--mc-control-h-md);
-      --mc-radio-pad-x: var(--mc-space-3);
-      --mc-radio-group-gap: var(--mc-space-4);
+      --mc-radio-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-radio-line: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      --mc-radio-height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      --mc-radio-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-radio-group-gap: var(--mc-space-4, var(--mc-def-space-4));
     }
 
     /* 2. 尺寸：三档只改高度 / 内边距 / 字号 / 行距 */
     :host([size='sm']) {
-      --mc-radio-font: var(--mc-text-xs);
-      --mc-radio-line: var(--mc-text-xs-lh);
-      --mc-radio-height: var(--mc-control-h-sm);
-      --mc-radio-pad-x: var(--mc-space-2);
-      --mc-radio-group-gap: var(--mc-space-3);
+      --mc-radio-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-radio-line: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
+      --mc-radio-height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-radio-pad-x: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-radio-group-gap: var(--mc-space-3, var(--mc-def-space-3));
     }
     :host([size='lg']) {
-      --mc-radio-font: var(--mc-text-base);
-      --mc-radio-line: var(--mc-text-base-lh);
-      --mc-radio-height: var(--mc-control-h-lg);
-      --mc-radio-pad-x: var(--mc-space-4);
-      --mc-radio-group-gap: var(--mc-space-5);
+      --mc-radio-font: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-radio-line: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
+      --mc-radio-height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-radio-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-radio-group-gap: var(--mc-space-5, var(--mc-def-space-5));
     }
 
     /* 3. 方向：默认 row（写 :host(:not([direction])) 会静默失效，P14） */

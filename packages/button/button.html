@@ -5,6 +5,8 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     :host {
       /* ---------- 盒模型与尺寸：使用者最想覆盖的部分放最前 ---------- */
@@ -14,16 +16,16 @@
       box-sizing: border-box;
       position: relative; /* .mc-layer 和 .mc-native 的包含块（P21） */
       gap: 0.5em;
-      height: var(--mc-control-h-md);
-      padding-inline: var(--mc-space-4);
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      padding-inline: var(--mc-space-4, var(--mc-def-space-4));
       border: 1px solid transparent;
-      border-radius: var(--mc-radius-md);
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       vertical-align: middle;
 
       /* ---------- 排版 ---------- */
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      font-weight: var(--mc-weight-medium);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
       line-height: 1;
       white-space: nowrap;
       user-select: none;
@@ -31,9 +33,15 @@
       cursor: pointer;
 
       /* ---------- 色槽：color 只往这三个槽填值，variant 只管把它们贴到哪儿 ---------- */
-      --mc-button-fill: var(--mc-color-primary); /* filled 的底 */
-      --mc-button-on-fill: var(--mc-color-primary-fg); /* filled 上的文字 */
-      --mc-button-accent: var(--mc-color-primary); /* outline / ghost 的线与文字 */
+      --mc-button-fill: var(--mc-color-primary, var(--mc-def-color-primary)); /* filled 的底 */
+      --mc-button-on-fill: var(
+        --mc-color-primary-fg,
+        var(--mc-def-color-primary-fg)
+      ); /* filled 上的文字 */
+      --mc-button-accent: var(
+        --mc-color-primary,
+        var(--mc-def-color-primary)
+      ); /* outline / ghost 的线与文字 */
 
       /* ---------- 图标特调：按钮里的图标比文字大一档（14px 文字 → 17.5px 图标） ----------
        * 为什么按钮要单独调：图标集统一是「1em = 跟随字号」，在正文里正好；但按钮文字是
@@ -49,30 +57,30 @@
 
     /* ---------- 维度一：color（语义色） ---------- */
     :host([color='info']) {
-      --mc-button-fill: var(--mc-color-info);
-      --mc-button-on-fill: var(--mc-color-info-fg);
-      --mc-button-accent: var(--mc-color-info);
+      --mc-button-fill: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-button-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
+      --mc-button-accent: var(--mc-color-info, var(--mc-def-color-info));
     }
     :host([color='success']) {
-      --mc-button-fill: var(--mc-color-success);
-      --mc-button-on-fill: var(--mc-color-success-fg);
-      --mc-button-accent: var(--mc-color-success);
+      --mc-button-fill: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-button-on-fill: var(--mc-color-success-fg, var(--mc-def-color-success-fg));
+      --mc-button-accent: var(--mc-color-success, var(--mc-def-color-success));
     }
     :host([color='warning']) {
-      --mc-button-fill: var(--mc-color-warning);
-      --mc-button-on-fill: var(--mc-color-warning-fg);
-      --mc-button-accent: var(--mc-color-warning);
+      --mc-button-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-button-on-fill: var(--mc-color-warning-fg, var(--mc-def-color-warning-fg));
+      --mc-button-accent: var(--mc-color-warning, var(--mc-def-color-warning));
     }
     :host([color='danger']) {
-      --mc-button-fill: var(--mc-color-danger);
-      --mc-button-on-fill: var(--mc-color-danger-fg);
-      --mc-button-accent: var(--mc-color-danger);
+      --mc-button-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-button-on-fill: var(--mc-color-danger-fg, var(--mc-def-color-danger-fg));
+      --mc-button-accent: var(--mc-color-danger, var(--mc-def-color-danger));
     }
     /* 中性是特例：浅底深字 + 深字浅线，同一个值做不到，三个槽分别取令牌 */
     :host([color='neutral']) {
-      --mc-button-fill: var(--mc-color-neutral);
-      --mc-button-on-fill: var(--mc-color-neutral-fg);
-      --mc-button-accent: var(--mc-color-fg-muted);
+      --mc-button-fill: var(--mc-color-neutral, var(--mc-def-color-neutral));
+      --mc-button-on-fill: var(--mc-color-neutral-fg, var(--mc-def-color-neutral-fg));
+      --mc-button-accent: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
     }
 
     /* ---------- 维度二：variant（外观样式） ---------- */
@@ -89,14 +97,14 @@
 
     /* ---------- 尺寸 ---------- */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm);
-      padding-inline: var(--mc-space-3);
-      font-size: var(--mc-text-xs);
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      padding-inline: var(--mc-space-3, var(--mc-def-space-3));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg);
-      padding-inline: var(--mc-space-5);
-      font-size: var(--mc-text-base);
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      padding-inline: var(--mc-space-5, var(--mc-def-space-5));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
     }
 
     /* ---------- 布局模式 ---------- */
@@ -121,7 +129,8 @@
       background-color: currentColor;
       opacity: 0;
       pointer-events: none;
-      transition: opacity var(--mc-duration-fast) var(--mc-ease-standard);
+      transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     :host(:hover) .mc-layer {
       opacity: 0.08;
@@ -147,7 +156,7 @@
     }
     /* 焦点环用 ring 令牌，不用 currentColor：白圈画在浅色页面上看不见（P16） */
     .mc-native:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
 

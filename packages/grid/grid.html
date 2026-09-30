@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主 = 栅格容器。列数由 JS 写进内部变量（P31：宿主 style 只能在构造期之后写），
           没给 cols 时 CSS 的兜底就是 1 列 —— 与 applyTrack() 删变量的语义一致 */
@@ -12,17 +13,17 @@
       display: grid;
       box-sizing: border-box;
       grid-template-columns: repeat(var(--mc-grid-cols, 1), minmax(0, 1fr)); /* @internal */
-      gap: var(--mc-space-4);
-      font-family: var(--mc-font-sans);
-      color: rgb(var(--mc-color-fg));
+      gap: var(--mc-space-4, var(--mc-def-space-4));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
     }
 
     /* 2. gap 三档：只换间距，不动列 */
     :host([gap='sm']) {
-      gap: var(--mc-space-2);
+      gap: var(--mc-space-2, var(--mc-def-space-2));
     }
     :host([gap='lg']) {
-      gap: var(--mc-space-6);
+      gap: var(--mc-space-6, var(--mc-def-space-6));
     }
 
     /* 3. 最小子项宽度：列数交给 auto-fill，cols 让位（否定选择器在 :host 里静默失效，P14） */

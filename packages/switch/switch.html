@@ -5,25 +5,26 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 几何令牌。尺寸直接写在宿主上，使用者 style="height:32px" 才压得住 */
     :host {
       display: inline-flex;
       position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
       box-sizing: border-box;
-      height: var(--mc-control-h-md);
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg));
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
       vertical-align: middle;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
       /* L3 组件令牌：轨道 / 滑块 / 内边距都开成可覆盖点。轨道长宽一定是 2 倍关系吗？
          不是 —— 滑块行程由这三条算出来，改任何一个都不用跟着改第二条规则 */
-      --mc-switch-gap: var(--mc-space-2);
-      --mc-switch-pad-x: var(--mc-space-3);
+      --mc-switch-gap: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-switch-pad-x: var(--mc-space-3, var(--mc-def-space-3));
       --mc-switch-track-w: 2.25rem;
       --mc-switch-track-h: 1.25rem;
       --mc-switch-thumb: 1rem;
@@ -32,17 +33,17 @@
 
     /* 2. 尺寸：三档只改高度 / 内边距 / 字号 + 轨道三件套 */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm);
-      font-size: var(--mc-text-xs);
-      --mc-switch-pad-x: var(--mc-space-2);
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-switch-pad-x: var(--mc-space-2, var(--mc-def-space-2));
       --mc-switch-track-w: 1.75rem;
       --mc-switch-track-h: 1rem;
       --mc-switch-thumb: 0.75rem;
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg);
-      font-size: var(--mc-text-base);
-      --mc-switch-pad-x: var(--mc-space-4);
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-switch-pad-x: var(--mc-space-4, var(--mc-def-space-4));
       --mc-switch-track-w: 2.75rem;
       --mc-switch-track-h: 1.5rem;
       --mc-switch-thumb: 1.25rem;
@@ -50,13 +51,13 @@
 
     /* 3. 状态。顺序有意义：选中那条要排在 hover 之后（同特异性时后者赢） */
     .mc-track {
-      background-color: rgb(var(--mc-color-border-strong));
+      background-color: rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
     }
     .mc-base:hover .mc-track {
-      background-color: rgb(var(--mc-color-fg-subtle));
+      background-color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
     }
     :host([checked]) .mc-track {
-      background-color: rgb(var(--mc-color-primary));
+      background-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
     :host([disabled]) {
       opacity: 0.5;
@@ -66,10 +67,10 @@
     }
     /* 禁用态不响应 hover（设计规范第五节）—— 正向覆盖，不用 :not()（P14） */
     :host([disabled]) .mc-base:hover .mc-track {
-      background-color: rgb(var(--mc-color-border-strong));
+      background-color: rgb(var(--mc-color-border-strong, var(--mc-def-color-border-strong)));
     }
     :host([disabled][checked]) .mc-base:hover .mc-track {
-      background-color: rgb(var(--mc-color-primary));
+      background-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
     /* 4. 内部结构。行盒子在这个原生 <label> 上：点轨道、点文案都落在同一个原生 input 上。
@@ -106,12 +107,13 @@
       width: var(--mc-switch-track-w);
       height: var(--mc-switch-track-h);
       padding: var(--mc-switch-pad);
-      border-radius: var(--mc-radius-full);
-      transition: background-color var(--mc-duration-base) var(--mc-ease-standard);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      transition: background-color var(--mc-duration-base, var(--mc-def-duration-base))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     /* 焦点环画在轨道上（input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
     .mc-native:focus-visible + .mc-track {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
     .mc-thumb {
@@ -119,10 +121,11 @@
       box-sizing: border-box;
       width: var(--mc-switch-thumb);
       height: var(--mc-switch-thumb);
-      border-radius: var(--mc-radius-full);
-      background-color: rgb(var(--mc-color-surface));
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
       transform: translateX(0);
-      transition: transform var(--mc-duration-base) var(--mc-ease-standard);
+      transition: transform var(--mc-duration-base, var(--mc-def-duration-base))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     /* 行程 = 轨道宽 − 滑块宽 − 两侧内边距：改任何一条令牌它自己跟上 */
     :host([checked]) .mc-thumb {

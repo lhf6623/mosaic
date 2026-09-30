@@ -23,8 +23,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SHARED = [
   // 51.0 KB / 9.0 KB —— 令牌 + 图标 + 工具类，使用者必下（卸掉 UnoCSS 后从 69.2 降下来）
   { file: 'packages/boot/mosaic.css', raw: 56 * 1024, gzip: 10 * 1024 },
-  // 3.0 KB / 1.7 KB
-  { file: 'packages/boot/mosaic.js', raw: 4 * 1024, gzip: 2.5 * 1024 },
+  // 6.7 KB / 2.6 KB —— 组件自带的基座（shadow reset + 令牌默认值），
+  // 每个组件 <link> 它一次、浏览器共享缓存；只对**组件**生效，不进宿主页面
+  { file: 'packages/boot/component-base.css', raw: 8192, gzip: 3072 },
   // 1.7 KB / 0.95 KB
   { file: 'packages/boot/shadow-base.css', raw: 3 * 1024, gzip: 1.5 * 1024 },
   // 11.9 KB / 5.2 KB

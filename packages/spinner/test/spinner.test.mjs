@@ -51,8 +51,10 @@ export default async function run({ page, visit, check }) {
           role: el.getAttribute('role'),
           slots: root.querySelectorAll('slot').length,
           parts: root.querySelectorAll('[part]').length,
-          /* <style> 是 ofa 编译进来的，不算结构：只看真元素 */
-          children: [...root.children].filter((n) => n.tagName !== 'STYLE').map((n) => n.className),
+          /* <style> 与 <link> 都是样式资源（后者是组件自带的基座），不算渲染结构：只看真元素 */
+          children: [...root.children]
+            .filter((n) => n.tagName !== 'STYLE' && n.tagName !== 'LINK')
+            .map((n) => n.className),
           glyphHidden: glyph?.getAttribute('aria-hidden'),
           innerControls: root.querySelectorAll('button, a, input').length,
         };

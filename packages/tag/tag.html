@@ -5,6 +5,8 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
     :host {
@@ -18,24 +20,27 @@
       /* 三档外观都保留 1px 透明的线：切 variant / 切选中态时高度不抖 */
       border: 1px solid transparent;
       border-radius: var(--mc-tag-radius);
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      font-weight: var(--mc-weight-medium);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
       white-space: nowrap;
       vertical-align: middle;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition:
-        background-color var(--mc-duration-fast) var(--mc-ease-standard),
-        color var(--mc-duration-fast) var(--mc-ease-standard),
-        border-color var(--mc-duration-fast) var(--mc-ease-standard);
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
 
       /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
-      --mc-tag-pad-x: var(--mc-space-3);
-      --mc-tag-pad-y: var(--mc-space-1);
-      --mc-tag-gap: var(--mc-space-1);
-      --mc-tag-radius: var(--mc-radius-md);
+      --mc-tag-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-tag-pad-y: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-tag-gap: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-tag-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       /* 关闭图标的字号（命中区固定 24px，改这个只改图形大小）。
          1.25em 是按钮那一档同样的光学补偿：标签文字 14px + medium，同尺寸的描边图标看着偏轻 */
       --mc-tag-close-size: 1.25em;
@@ -44,10 +49,10 @@
 
       /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，
          subtle-fill 是浅底 —— 中性色没有 -subtle，用下沉面色 */
-      --mc-tag-fill: var(--mc-color-neutral);
-      --mc-tag-on-fill: var(--mc-color-neutral-fg);
-      --mc-tag-accent: var(--mc-color-fg-muted);
-      --mc-tag-subtle-fill: var(--mc-color-surface-sunken);
+      --mc-tag-fill: var(--mc-color-neutral, var(--mc-def-color-neutral));
+      --mc-tag-on-fill: var(--mc-color-neutral-fg, var(--mc-def-color-neutral-fg));
+      --mc-tag-accent: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-tag-subtle-fill: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
 
       /* subtle 是默认外观，直接写在 :host 上（:host(:not([variant])) 会静默失效，P14） */
       background-color: rgb(var(--mc-tag-subtle-fill));
@@ -56,34 +61,34 @@
 
     /* 2. 维度一 color：只往色槽里填值。neutral 是默认，已经写在上面 */
     :host([color='primary']) {
-      --mc-tag-fill: var(--mc-color-primary);
-      --mc-tag-on-fill: var(--mc-color-primary-fg);
-      --mc-tag-accent: var(--mc-color-primary);
-      --mc-tag-subtle-fill: var(--mc-color-primary-subtle);
+      --mc-tag-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-tag-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
+      --mc-tag-accent: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-tag-subtle-fill: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle));
     }
     :host([color='info']) {
-      --mc-tag-fill: var(--mc-color-info);
-      --mc-tag-on-fill: var(--mc-color-info-fg);
-      --mc-tag-accent: var(--mc-color-info);
-      --mc-tag-subtle-fill: var(--mc-color-info-subtle);
+      --mc-tag-fill: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-tag-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
+      --mc-tag-accent: var(--mc-color-info, var(--mc-def-color-info));
+      --mc-tag-subtle-fill: var(--mc-color-info-subtle, var(--mc-def-color-info-subtle));
     }
     :host([color='success']) {
-      --mc-tag-fill: var(--mc-color-success);
-      --mc-tag-on-fill: var(--mc-color-success-fg);
-      --mc-tag-accent: var(--mc-color-success);
-      --mc-tag-subtle-fill: var(--mc-color-success-subtle);
+      --mc-tag-fill: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-tag-on-fill: var(--mc-color-success-fg, var(--mc-def-color-success-fg));
+      --mc-tag-accent: var(--mc-color-success, var(--mc-def-color-success));
+      --mc-tag-subtle-fill: var(--mc-color-success-subtle, var(--mc-def-color-success-subtle));
     }
     :host([color='warning']) {
-      --mc-tag-fill: var(--mc-color-warning);
-      --mc-tag-on-fill: var(--mc-color-warning-fg);
-      --mc-tag-accent: var(--mc-color-warning);
-      --mc-tag-subtle-fill: var(--mc-color-warning-subtle);
+      --mc-tag-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-tag-on-fill: var(--mc-color-warning-fg, var(--mc-def-color-warning-fg));
+      --mc-tag-accent: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-tag-subtle-fill: var(--mc-color-warning-subtle, var(--mc-def-color-warning-subtle));
     }
     :host([color='danger']) {
-      --mc-tag-fill: var(--mc-color-danger);
-      --mc-tag-on-fill: var(--mc-color-danger-fg);
-      --mc-tag-accent: var(--mc-color-danger);
-      --mc-tag-subtle-fill: var(--mc-color-danger-subtle);
+      --mc-tag-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-tag-on-fill: var(--mc-color-danger-fg, var(--mc-def-color-danger-fg));
+      --mc-tag-accent: var(--mc-color-danger, var(--mc-def-color-danger));
+      --mc-tag-subtle-fill: var(--mc-color-danger-subtle, var(--mc-def-color-danger-subtle));
     }
 
     /* 3. 维度二 variant：只决定色槽贴到哪儿 */
@@ -99,14 +104,14 @@
 
     /* 4. 尺寸：只有字号与左右内边距两档变量，高度由行高撑（sm/md/lg = 26 / 30 / 34px） */
     :host([size='sm']) {
-      --mc-tag-pad-x: var(--mc-space-2);
-      font-size: var(--mc-text-xs);
-      line-height: var(--mc-text-xs-lh);
+      --mc-tag-pad-x: var(--mc-space-2, var(--mc-def-space-2));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
     }
     :host([size='lg']) {
-      --mc-tag-pad-x: var(--mc-space-4);
-      font-size: var(--mc-text-base);
-      line-height: var(--mc-text-base-lh);
+      --mc-tag-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
     }
 
     /* 状态 —— 选中：覆盖 variant，换成该色的实心。选中是状态，不是第三档外观 */
@@ -137,7 +142,8 @@
       background-color: currentColor;
       opacity: 0;
       pointer-events: none;
-      transition: opacity var(--mc-duration-fast) var(--mc-ease-standard);
+      transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
     :host(:hover) .mc-layer {
       opacity: var(--mc-tag-layer);
@@ -163,7 +169,7 @@
     }
     /* 焦点环用 ring 令牌，不用 currentColor：实心标签上白圈画在浅色页面里看不见（P16） */
     .mc-toggle:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
 
@@ -175,14 +181,14 @@
       z-index: 3;
       flex: none;
       box-sizing: border-box;
-      width: var(--mc-space-6);
-      height: var(--mc-space-6);
+      width: var(--mc-space-6, var(--mc-def-space-6));
+      height: var(--mc-space-6, var(--mc-def-space-6));
       /* 24px 的命中区不能反过来把标签撑高：负外边距把落在上下内边距里的那 8px 抵消掉，
          高度仍旧由字号决定（closable 与否、三档尺寸都一样高） */
       margin-block: calc(var(--mc-tag-pad-y) * -1);
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
       color: inherit;
       font: inherit;
@@ -196,10 +202,10 @@
       display: inline-flex;
     }
     .mc-close:hover {
-      background-color: rgb(var(--mc-color-fg) / 0.12);
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.12);
     }
     .mc-close:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
     .mc-close:disabled {

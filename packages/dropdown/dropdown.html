@@ -5,23 +5,24 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值 */
     :host {
       display: inline-block;
       position: relative;
       vertical-align: middle;
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
 
       /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
-      --mc-dropdown-offset: var(--mc-space-2);
-      --mc-dropdown-panel-bg: var(--mc-color-surface-raised);
-      --mc-dropdown-panel-border: var(--mc-color-border-strong);
-      --mc-dropdown-panel-radius: var(--mc-radius-lg);
-      --mc-dropdown-panel-pad: var(--mc-space-2);
+      --mc-dropdown-offset: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-dropdown-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-dropdown-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-dropdown-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-dropdown-panel-pad: var(--mc-space-2, var(--mc-def-space-2));
       /* ⚠️ 必须写 `0px` 这类带单位的值：下面那句是 `max(var(…), anchor-size(width))`，
          而 max() 里混不进无单位的 0（整句失效 → 面板只剩内容宽）。
          ⚠️ 默认给 12rem 而不是 0：菜单项里的原生元素是绝对定位的（mc-menu-item 的形态），
@@ -46,14 +47,14 @@
       margin: 0;
       box-sizing: border-box;
       min-width: max(var(--mc-dropdown-panel-min-width), anchor-size(width));
-      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
-      max-height: min(20rem, calc(100vh - var(--mc-space-8)));
+      max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
+      max-height: min(20rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))));
       padding: var(--mc-dropdown-panel-pad);
       border: 0;
       overflow-y: auto;
       border-radius: var(--mc-dropdown-panel-radius);
       background-color: rgb(var(--mc-dropdown-panel-bg));
-      font-family: var(--mc-font-sans);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: inherit;
       line-height: inherit;
       /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */

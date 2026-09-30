@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主 = 整行。⚠️ --mc-menu-* 不能在这里写默认值，会盖掉容器继承来的通道，
        消费一律带兜底值（同 mc-collapse-item 的坑） */
@@ -13,29 +14,42 @@
       display: block;
       box-sizing: border-box;
       min-width: 0;
-      height: var(--mc-menu-item-h, var(--mc-control-h-md));
-      padding-inline: var(--mc-menu-pad-x, var(--mc-space-4));
-      border-radius: var(--mc-menu-radius, var(--mc-radius-md));
-      text-indent: var(--mc-menu-pad-x, var(--mc-space-4));
-      line-height: var(--mc-menu-item-h, var(--mc-control-h-md));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-menu-font, var(--mc-text-sm));
-      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted)));
-      transition: background-color var(--mc-duration-fast) var(--mc-ease-standard);
+      height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
+      padding-inline: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      border-radius: var(--mc-menu-radius, var(--mc-radius-md, var(--mc-def-radius-md)));
+      text-indent: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      line-height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-menu-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted, var(--mc-def-color-fg-muted))));
+      transition: background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
 
     /* 2. 悬停整行：画在宿主上，<a> 与 <button> 才一致 */
     :host(:hover) {
-      background-color: rgb(var(--mc-menu-item-bg-hover, var(--mc-color-surface-sunken)));
-      color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg)));
+      background-color: rgb(
+        var(
+          --mc-menu-item-bg-hover,
+          var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken))
+        )
+      );
+      color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg, var(--mc-def-color-fg))));
     }
 
     /* 3. 状态。§5 的脚本把插槽元素上的 aria-current / disabled 读出来镜像到这里 ——
        ::slotted() 拿不到足够优先级，宿主才是唯一能稳定着色的地方 */
     :host([data-current]) {
-      background-color: rgb(var(--mc-menu-item-bg-current, var(--mc-color-primary-subtle)));
-      color: rgb(var(--mc-menu-item-color-current, var(--mc-color-primary)));
-      font-weight: var(--mc-weight-medium);
+      background-color: rgb(
+        var(
+          --mc-menu-item-bg-current,
+          var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle))
+        )
+      );
+      color: rgb(
+        var(--mc-menu-item-color-current, var(--mc-color-primary, var(--mc-def-color-primary)))
+      );
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
     :host([data-disabled]) {
       opacity: 0.5;
@@ -44,18 +58,22 @@
     /* 正向覆盖，不用 :host(:not(...))（P14 静默失效） */
     :host([data-disabled]:hover) {
       background-color: transparent;
-      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted)));
+      color: rgb(var(--mc-menu-item-color, var(--mc-color-fg-muted, var(--mc-def-color-fg-muted))));
     }
 
     /* 4. 分组标题：不可交互的纯文字行。pointer-events 顺带堵掉误放进来的链接 */
     :host([group]) {
       height: auto;
-      padding: var(--mc-space-4) var(--mc-menu-pad-x, var(--mc-space-4)) var(--mc-space-1);
+      padding: var(--mc-space-4, var(--mc-def-space-4))
+        var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)))
+        var(--mc-space-1, var(--mc-def-space-1));
       text-indent: 0;
       line-height: inherit;
-      color: rgb(var(--mc-menu-group-color, var(--mc-color-fg-subtle)));
-      font-size: var(--mc-text-xs);
-      font-weight: var(--mc-weight-semibold);
+      color: rgb(
+        var(--mc-menu-group-color, var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)))
+      );
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      font-weight: var(--mc-weight-semibold, var(--mc-def-weight-semibold));
       /* 字距保留、**不做 uppercase**：分组名可能是中英混排（左栏就是「基础（Basics）」），
          uppercase 只作用在拉丁字母上，会把括号里的英文变成 BASIC —— 和同一栏其它行不一致 */
       letter-spacing: 0.06em;
@@ -77,7 +95,7 @@
       text-overflow: ellipsis;
       /* ⚠️ 不能只靠宿主继承：UA 样式表给 <button> / <input> 写死了 text-indent:0（只有作者声明压得住），
          而 <a> 会正常继承宿主的值 —— 两种元素必须显式写一遍，否则 <button> 行的文字贴边 */
-      text-indent: var(--mc-menu-pad-x, var(--mc-space-4));
+      text-indent: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
       /* ⚠️ 不能省：<button> 的 UA 默认是 text-align:center，靠 text-indent 缩进的文字会被居中 */
       text-align: start;
       border-radius: inherit;
@@ -88,7 +106,7 @@
     /* 焦点环用 ring 令牌，不用 currentColor（P16）；画在铺满整行的交互层上 */
     ::slotted(a:focus-visible),
     ::slotted(button:focus-visible) {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: -2px;
     }
   </style>

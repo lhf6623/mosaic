@@ -5,6 +5,7 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 1. 宿主盒模型 + 色槽默认值。尺寸 / 内边距 / 底色 / 边框全写在这里，外部 style="…" 才压得住 */
     :host {
@@ -12,37 +13,38 @@
       align-items: stretch;
       box-sizing: border-box;
       position: relative; /* 内部绝对定位元素的包含块（P21） */
-      height: var(--mc-control-h-md);
-      padding-inline: var(--mc-space-4);
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      padding-inline: var(--mc-space-4, var(--mc-def-space-4));
       border: 1px solid rgb(var(--mc-input-border));
-      border-radius: var(--mc-radius-md);
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       background-color: rgb(var(--mc-input-bg));
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
-      color: rgb(var(--mc-color-fg));
-      transition: border-color var(--mc-duration-fast) var(--mc-ease-standard);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      transition: border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
 
       /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
-      --mc-input-bg: var(--mc-color-surface-sunken);
-      --mc-input-border: var(--mc-color-border-strong);
-      --mc-input-border-hover: var(--mc-color-fg-subtle);
-      --mc-input-placeholder: var(--mc-color-fg-subtle);
-      --mc-input-affix-color: var(--mc-color-fg-muted);
-      --mc-input-clear-color: var(--mc-color-fg-subtle);
-      --mc-input-gap: var(--mc-space-2);
+      --mc-input-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-input-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-input-border-hover: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-input-placeholder: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-input-affix-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-input-clear-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-input-gap: var(--mc-space-2, var(--mc-def-space-2));
     }
 
     /* 2. 尺寸：三档只改高度 / 内边距 / 字号 */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm);
-      padding-inline: var(--mc-space-3);
-      font-size: var(--mc-text-xs);
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      padding-inline: var(--mc-space-3, var(--mc-def-space-3));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg);
-      padding-inline: var(--mc-space-5);
-      font-size: var(--mc-text-base);
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      padding-inline: var(--mc-space-5, var(--mc-def-space-5));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
     }
 
     /* 3. 状态。焦点环用 ring 令牌（P16）；错误色只有 --mc-color-danger 一处，不另开色板。
@@ -51,12 +53,12 @@
       border-color: rgb(var(--mc-input-border-hover));
     }
     :host(:focus-within) {
-      border-color: rgb(var(--mc-color-ring));
-      outline: 2px solid rgb(var(--mc-color-ring));
+      border-color: rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: -1px;
     }
     :host([invalid]) {
-      border-color: rgb(var(--mc-color-danger));
+      border-color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
     :host([disabled]) {
       border-color: rgb(var(--mc-input-border));
@@ -114,11 +116,11 @@
       display: none;
       flex: none;
       box-sizing: border-box;
-      width: var(--mc-space-6);
-      height: var(--mc-space-6);
+      width: var(--mc-space-6, var(--mc-def-space-6));
+      height: var(--mc-space-6, var(--mc-def-space-6));
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
       color: rgb(var(--mc-input-clear-color));
       font: inherit;
@@ -136,7 +138,7 @@
       background-color: rgb(var(--mc-input-clear-color) / 0.2);
     }
     .mc-clear:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 1px;
     }
   </style>

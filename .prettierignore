@@ -7,13 +7,17 @@ pnpm-lock.yaml
 #   · packages/icon/icons.generated.ts  ← tools/gen-icons.mjs
 #   · packages/icon/icons.generated.css ← tools/gen-icons.mjs
 #   · packages/icon/icons.license.txt   ← tools/gen-icons.mjs
+#   · packages/color/token-defaults.css ← tools/gen-tokens.mjs
 #   · packages/boot/mosaic.css          ← tools/build-css.mjs（装配上面几份 + 手写工具类）
+#   · packages/boot/component-base.css  ← tools/build-css.mjs（组件自带的那份基座）
 # 手写的源码不在这里（packages/boot/utilities.css、shadow-base.css 照常格式化）。
 packages/color/tokens.css
+packages/color/token-defaults.css
 packages/icon/icons.generated.ts
 packages/icon/icons.generated.css
 packages/icon/icons.license.txt
 packages/boot/mosaic.css
+packages/boot/component-base.css
 
 # 测试代码：里面大量是对齐过的期望值 / 断言数据，重排后反而更难读，
 # 而且它们只被测试运行，不影响对外风格。

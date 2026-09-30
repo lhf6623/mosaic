@@ -5,6 +5,8 @@
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
 -->
 <template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型 + 令牌默认值。视觉全在 top layer 的面板里，宿主自己不生成盒子
           （display: contents：放在 flex 行里不会多占一个 gap） */
@@ -13,14 +15,14 @@
 
       /* L3 令牌：面板尺寸 / 底色 / 圆角 / 内边距与遮罩都由这里给，按实例覆盖写在宿主 style 上 */
       --mc-dialog-panel-width: 32rem;
-      --mc-dialog-panel-bg: var(--mc-color-surface-raised);
-      --mc-dialog-panel-border: var(--mc-color-border-strong);
-      --mc-dialog-panel-radius: var(--mc-radius-xl);
-      --mc-dialog-panel-pad: var(--mc-space-6);
-      --mc-dialog-overlay-bg: var(--mc-color-overlay);
-      --mc-dialog-overlay-alpha: var(--mc-color-overlay-alpha);
-      --mc-dialog-gap: var(--mc-space-4);
-      --mc-dialog-space: var(--mc-space-6);
+      --mc-dialog-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-dialog-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-dialog-panel-radius: var(--mc-radius-xl, var(--mc-def-radius-xl));
+      --mc-dialog-panel-pad: var(--mc-space-6, var(--mc-def-space-6));
+      --mc-dialog-overlay-bg: var(--mc-color-overlay, var(--mc-def-color-overlay));
+      --mc-dialog-overlay-alpha: var(--mc-color-overlay-alpha, var(--mc-def-color-overlay-alpha));
+      --mc-dialog-gap: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-dialog-space: var(--mc-space-6, var(--mc-def-space-6));
     }
 
     /* 2. 尺寸：三档只改面板宽度这一个槽（默认 md 写在 1 区） */
@@ -78,15 +80,15 @@
       border: 1px solid rgb(var(--mc-dialog-panel-border));
       border-radius: var(--mc-dialog-panel-radius);
       background-color: rgb(var(--mc-dialog-panel-bg));
-      color: rgb(var(--mc-color-fg));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
       box-shadow: 0 12px 32px rgb(0 0 0 / 0.24);
-      font-family: var(--mc-font-sans);
-      font-size: var(--mc-text-sm);
-      line-height: var(--mc-text-sm-lh);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
     }
     /* 焦点环用 ring 令牌，不用 currentColor（P16）：面板只在没有可聚焦元素时才自己拿焦点 */
     .mc-panel:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
 
@@ -96,10 +98,10 @@
       align-items: center;
       gap: var(--mc-dialog-gap);
       padding: var(--mc-dialog-panel-pad);
-      padding-bottom: var(--mc-space-3);
-      font-size: var(--mc-text-lg);
-      line-height: var(--mc-text-lg-lh);
-      font-weight: var(--mc-weight-semibold);
+      padding-bottom: var(--mc-space-3, var(--mc-def-space-3));
+      font-size: var(--mc-text-lg, var(--mc-def-text-lg));
+      line-height: var(--mc-text-lg-lh, var(--mc-def-text-lg-lh));
+      font-weight: var(--mc-weight-semibold, var(--mc-def-weight-semibold));
     }
     :host([data-has-header]) .mc-header {
       display: flex;
@@ -117,10 +119,10 @@
       overflow-wrap: anywhere;
     }
     :host([data-has-header]) .mc-body {
-      padding-top: var(--mc-space-3);
+      padding-top: var(--mc-space-3, var(--mc-def-space-3));
     }
     :host([data-has-footer]) .mc-body {
-      padding-bottom: var(--mc-space-3);
+      padding-bottom: var(--mc-space-3, var(--mc-def-space-3));
     }
 
     .mc-footer {
@@ -131,7 +133,7 @@
       justify-content: flex-end;
       gap: var(--mc-dialog-gap);
       padding: var(--mc-dialog-panel-pad);
-      padding-top: var(--mc-space-3);
+      padding-top: var(--mc-space-3, var(--mc-def-space-3));
     }
     :host([data-has-footer]) .mc-footer {
       display: flex;
@@ -142,15 +144,15 @@
       display: none;
       flex: none;
       box-sizing: border-box;
-      width: var(--mc-space-8);
-      height: var(--mc-space-8);
+      width: var(--mc-space-8, var(--mc-def-space-8));
+      height: var(--mc-space-8, var(--mc-def-space-8));
       margin-inline-start: auto;
       padding: 0;
       border: 0;
-      border-radius: var(--mc-radius-full);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: transparent;
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-base);
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
       line-height: 1;
       cursor: pointer;
       align-items: center;
@@ -161,13 +163,13 @@
       display: inline-flex;
     }
     .mc-close:hover {
-      background-color: rgb(var(--mc-color-fg) / 0.08);
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.08);
     }
     .mc-close:active {
-      background-color: rgb(var(--mc-color-fg) / 0.12);
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.12);
     }
     .mc-close:focus-visible {
-      outline: 2px solid rgb(var(--mc-color-ring));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
   </style>
