@@ -254,7 +254,9 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /* 出错态：转红 → 滑到满格 → **停在那儿**（不淡出、不自复位）；清掉 error 才回正常状态机 */
+    /* 出错：换成出错色 → 滑到 100% → 淡出消失（与正常收尾同一条路，差别只有那个色槽）。
+       探针条子在页面加载时就已经播完过一次，所以这里先 removeAttribute 复位、再重新置上，
+       才量得到这一次的脉搏。 */
     const errorState = await (async () => {
       const readError = () =>
         page.evaluate(() => {
@@ -263,33 +265,31 @@ export default async function run({ page, visit, check }) {
           return {
             dataError: el.hasAttribute('data-error'),
             dataOn: el.hasAttribute('data-on'),
-            busy: el.getAttribute('aria-busy'),
-            role: el.getAttribute('role'),
-            label: el.getAttribute('aria-label'),
+            attrs: ['data-on', 'data-done', 'data-error', 'role', 'aria-busy'].filter((a) =>
+              el.hasAttribute(a),
+            ),
             fill: getComputedStyle(bar).backgroundColor,
             width: Math.round(parseFloat(getComputedStyle(bar).width)),
             hostWidth: Math.round(el.getBoundingClientRect().width),
+            inline: bar.style.width,
             visibility: getComputedStyle(el).visibility,
+            opacity: Math.round(parseFloat(getComputedStyle(el).opacity) * 100) / 100,
           };
         });
-      const right = await readError();
-      await page.waitForTimeout(900); // 远超一个淡出周期：出错态不该在这段时间里自己走掉
-      const later = await readError();
 
-      /* 清掉 error，且此时没在跑 → 应当走一次收尾然后复位 */
       await page.evaluate(() => document.getElementById('lb-err').removeAttribute('error'));
-      await page.waitForTimeout(900);
-      const cleared = await page.evaluate(() => {
-        const el = document.getElementById('lb-err');
-        const bar = el.shadowRoot.querySelector('.mc-bar');
-        return {
-          attrs: ['data-on', 'data-done', 'data-error', 'role'].filter((a) => el.hasAttribute(a)),
-          inline: bar.style.width,
-          width: Math.round(parseFloat(getComputedStyle(bar).width)),
-        };
-      });
+      await page.waitForTimeout(150); // 复位
+      await page.evaluate(() => document.getElementById('lb-err').setAttribute('error', ''));
+      await page.waitForTimeout(80);
+      const pulse = await readError(); // 刚触发的这一下：已经换色、且宽度指令已经是 100%
+      /* +250ms 落在「滑满已结束（216ms）、淡出还没走完」那段窗口里：
+         这时它必须**已经到 100%** 且还看得见 —— 这就是「到 100% 然后消失」的「到」 */
+      await page.waitForTimeout(170);
+      const peak = await readError();
+      await page.waitForTimeout(1200); // 再过一个完整收尾周期：应当淡出并复位
+      const gone = await readError();
 
-      /* 另一边：error 清掉但 active 还在 → 回到爬升，色也回主色 */
+      /* 再开一次：清掉 error 并置 active → 回到爬升、色回主色 */
       await page.evaluate(() => document.getElementById('lb-err-active').removeAttribute('error'));
       await page.waitForTimeout(200);
       const resumed = await page.evaluate(() => {
@@ -302,7 +302,7 @@ export default async function run({ page, visit, check }) {
           fill: getComputedStyle(bar).backgroundColor,
         };
       });
-      return { right, later, cleared, resumed };
+      return { pulse, peak, gone, resumed };
     })();
 
     await page.evaluate(() => {
@@ -384,30 +384,32 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'error：转成 --mc-loading-bar-error（默认 danger）、滑到满格，并停在那儿（不淡出、不自复位）',
-    bar.errorState.right.dataError === true &&
-      bar.errorState.right.dataOn === true &&
-      bar.errorState.right.role === 'progressbar' &&
-      bar.errorState.right.busy === null && // 不再「在忙」
-      bar.errorState.right.label === '加载失败' &&
-      bar.errorState.right.fill === bar.tokens.danger &&
-      bar.errorState.right.width === bar.errorState.right.hostWidth &&
-      bar.errorState.later.visibility === 'visible' &&
-      bar.errorState.later.dataOn === true &&
-      bar.errorState.later.width === bar.errorState.right.width,
-    JSON.stringify({ right: bar.errorState.right, later: bar.errorState.later }),
+    'error：换成 --mc-loading-bar-error（默认 danger）→ **先滑到 100%** → 再淡出消失（与正常收尾同一条路）',
+    bar.errorState.pulse.dataError === true &&
+      bar.errorState.pulse.dataOn === true &&
+      bar.errorState.pulse.fill === bar.tokens.danger &&
+      bar.errorState.pulse.inline === '100%' &&
+      bar.errorState.pulse.visibility === 'visible' &&
+      /* 「到了 100%」：滑满那一段结束时宽度已经等于宿主宽，而且**还看得清**
+         （只断言 visibility 不够 —— 淡出只动 opacity，那时 visibility 仍然是 visible，
+           所以「两段同时开始」这种坏法照样能骗过它，实测过） */
+      bar.errorState.peak.width === bar.errorState.peak.hostWidth &&
+      bar.errorState.peak.visibility === 'visible' &&
+      bar.errorState.peak.opacity > 0.6 &&
+      /* 「然后消失」：再过一个淡出周期，属性与内联宽度全清、复位 */
+      bar.errorState.gone.attrs.length === 0 &&
+      bar.errorState.gone.inline === '' &&
+      bar.errorState.gone.width === 0,
+    JSON.stringify(bar.errorState),
   );
 
   check(
-    '清掉 error 才回正常状态机：没在跑 → 收尾复位；还在跑 → 重新爬且色回主色',
-    bar.errorState.cleared.attrs.length === 0 &&
-      bar.errorState.cleared.inline === '' &&
-      bar.errorState.cleared.width === 0 &&
-      bar.errorState.resumed.dataError === false &&
+    '重开一次（清掉 error + 置 active）回到爬升：色回主色、aria-busy 回来',
+    bar.errorState.resumed.dataError === false &&
       bar.errorState.resumed.dataOn === true &&
       bar.errorState.resumed.busy === 'true' &&
       bar.errorState.resumed.fill === bar.tokens.primary,
-    JSON.stringify({ cleared: bar.errorState.cleared, resumed: bar.errorState.resumed }),
+    JSON.stringify(bar.errorState.resumed),
   );
 
   check(

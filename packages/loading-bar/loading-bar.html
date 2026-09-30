@@ -31,6 +31,9 @@
          写死秒数会让「减弱动效」静默失效（同 mc-spinner） */
       --mc-loading-bar-creep: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 24);
       --mc-loading-bar-fade: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 1.2);
+      /* 收尾时「滑到 100%」用多久。它同时是淡出动画的延迟 —— 两段串起来才叫
+         「先到 100%，再消失」；同时开始的话条子会在半路上就淡没了（实测 212/694 就没了）。 */
+      --mc-loading-bar-finish: calc(var(--mc-duration-base, var(--mc-def-duration-base)) * 1.2);
       /* 爬升的终点：**到不了 100%** 才像「还在跑」，到了反而像卡住 */
       --mc-loading-bar-reach: 90%;
       /* 出错态的填充色。它**压过 color**：状态比配色强 —— 选了 info 的条子出错也该变红 */
@@ -89,15 +92,17 @@
     }
     :host([data-error]) .mc-bar {
       animation: none;
-      transition: width var(--mc-loading-bar-fade) ease-out;
+      transition: width var(--mc-loading-bar-finish) ease-out;
     }
     :host([data-done]) {
-      animation: mc-loading-bar-fade var(--mc-loading-bar-fade) linear forwards;
+      /* ⚠️ 延迟 = 滑满用时：先让填充走到 100%，再开始淡出 */
+      animation: mc-loading-bar-fade var(--mc-loading-bar-fade) linear var(--mc-loading-bar-finish)
+        forwards;
     }
     /* ⚠️ 收尾时必须把爬升动画停掉：动画值压得住内联宽度，不停的话脚本冻的那一帧不生效 */
     :host([data-done]) .mc-bar {
       animation: none;
-      transition: width var(--mc-loading-bar-fade) ease-out;
+      transition: width var(--mc-loading-bar-finish) ease-out;
     }
 
     @keyframes mc-loading-bar-creep {
@@ -180,8 +185,8 @@
       proto: {
         /**
          * 状态机（宿主属性是唯一真相）。三个输入合成一个状态：
-         *   error 在        → [data-error]：填充切到 error 色槽，冻住当前位置滑到 100%，
-         *                     **停在满格不淡出** —— 出错要看得见，直到使用者清掉 error。
+         *   error 在        → [data-error]：填充切到 error 色槽，然后**走一次收尾**
+         *                     （滑到 100% → 淡出消失）—— 和正常收尾同一套，差别只有色槽。
          *                     （error 压过 color，也压过 active：状态比配色、比「在跑」都强）
          *   否则 active 在  → [data-on]：出现 + 爬升，语义挂上（role / aria-busy / aria-label）
          *   否则且显示过    → [data-done]：冻住当前宽度 → 滑满 → 淡出，淡出播完才复位
@@ -195,12 +200,7 @@
           if (this.error !== null) return this.showError();
           if (this.active !== null) return this.showActive();
           if (immediate || !this.ele.hasAttribute('data-on')) return this.reset();
-          /* 收尾时**立刻**撤语义：已经没有「在忙」这回事了（淡出只是视觉上还没走完）。
-             ⚠️ 这一行在重构状态机时漏过一次 —— 收尾播完 role / aria-busy 还挂在宿主上，
-             是套件里「收尾不闪回 0」那条把它抓出来的。 */
-          this.finish();
-          this.clearSemantics();
-          return undefined;
+          return this.finish();
         },
 
         /** 在跑：出现 + 爬升（爬升是 CSS 动画，命中 :host([data-on]:not([data-done]):not([data-error]))） */
@@ -217,26 +217,21 @@
           if (bar) bar.style.width = '';
         },
 
-        /** 出错：换色（CSS）+ 冻住当前位置滑到满格，然后停在那儿 */
+        /**
+         * 出错：**换色 + 走一次收尾** —— 滑到 100%，然后淡出消失。
+         * 和正常收尾是同一套（连冻结宽度的顺序都一样），差别只有那个色槽：
+         * `[data-error]` 把填充换到 --mc-loading-bar-error，同时停掉爬升动画。
+         * ⚠️ 颜色要足够醒目：它是**一闪而过**的（这就是为什么默认给 danger，
+         *    而真正的失败提示该由页面自己的 message / alert 出）。
+         */
         showError() {
           const el = this.ele;
-          const bar = this.bar();
-          if (!bar) return;
-          /* 已经在显示的才需要「冻住当前位置」；首帧就出错时直接给 100%（首帧不会跑过渡） */
-          const at = el.hasAttribute('data-on') ? getComputedStyle(bar).width : null;
-
-          el.removeAttribute('data-done');
           el.setAttribute('data-error', '');
+          /* ⚠️ 必须显式置 data-on：可见性挂在它上面（`[data-on]` → visible / opacity 1），
+             而正常收尾那条路上它是从「在跑」阶段带过来的 —— 出错可能是**凭空发生**的
+             （首帧就 error、或上一轮已经复位过），不带这一笔整条收尾都是隐形的（实测踩过）。 */
           el.setAttribute('data-on', '');
-          /* 语义：不再是「在忙」（撤掉 aria-busy），但名字留着 ——
-             出错时请把 label 换成能说明失败的话（如「加载失败」） */
-          el.setAttribute('role', 'progressbar');
-          el.removeAttribute('aria-busy');
-          this.syncLabel();
-
-          if (at) bar.style.width = at;
-          void bar.offsetWidth; // 强制回流，让下面那次赋值真的产生过渡
-          bar.style.width = '100%';
+          this.finish();
         },
 
         /** 干净复位：没在跑、也没出错 */
@@ -264,6 +259,10 @@
         finish() {
           const bar = this.bar();
           if (!bar) return;
+          /* 收尾时**立刻**撤语义：已经没有「在忙」这回事了（淡出只是视觉上还没走完）。
+             ⚠️ 这一行在重构状态机时漏过一次 —— 收尾播完 role / aria-busy 还挂在宿主上，
+             是套件里「收尾不闪回 0」那条把它抓出来的。放这儿是为了让出错那条收尾也走到。 */
+          this.clearSemantics();
           const at = getComputedStyle(bar).width;
           this.ele.setAttribute('data-done', '');
           bar.style.width = at;

@@ -29,9 +29,9 @@
           上，能接收点击的话会把顶栏那一整条吞掉，而且视觉上看不出来。
         </li>
         <li>
-          <strong>出错态是「粘住」的</strong>：<code>error</code> 在的时候条子停在满格、
-          不淡出也不自己复位，清掉它才回到正常状态机 —— 错误提示一闪而过等于没提示。 清掉后按当时的
-          <code>active</code> 走：还在跑就重新爬，否则红着滑满淡出。
+          <strong>出错是「一闪而过」的</strong>：<code>error</code> 一开就换成出错色、滑到满格、
+          淡出消失 —— 和正常收尾同一条路。所以真正的失败提示要由页面自己的 <code>mc-message</code> /
+          <code>mc-alert</code> 留在屏幕上，这条子只负责那一下。
         </li>
         <li>
           <strong>收尾不是即时的</strong>：<code>active</code> 关掉后先滑满再淡出（时长走
@@ -63,9 +63,9 @@
     <section class="doc-demo">
       <h3>出错</h3>
       <p class="doc-hint">
-        <code>error</code> 一开，条子转成出错色并停在满格 —— <strong>不会自己走</strong>，
-        直到你清掉它；重试前记得清（它压过 <code>active</code>）。出错色走
-        <code>--mc-loading-bar-error</code>，默认 danger，第二条把它换成了 warning。
+        <code>error</code> 一开，条子转成出错色、滑到满格，然后<strong>淡出消失</strong>
+        （和正常收尾同一条路，只是颜色不同）。这一下很快，所以出错色默认给 danger；
+        下面两条把淡出拉长到 60s 才看得住颜色，第二条还把它换成了 warning。
       </p>
       <demo-loading-bar-error></demo-loading-bar-error>
       <mc-collapse class="doc-demo-code">
