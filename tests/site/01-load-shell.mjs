@@ -253,6 +253,46 @@ await page.waitForTimeout(350);
 const opened = await menuState();
 check('窄屏：浮层点开就是这一页的菜单', opened.面板打开 === true, JSON.stringify(opened));
 
+/* 面板里的 <doc-nav> **自己滚** —— 它就是外壳那段滚轮接力认的容器。
+   这条守的是一个真踩过的坑：滚动容器若写在面板包装层上，<doc-nav> 就没有盒子
+   （自定义元素默认 display:inline，clientHeight 恒为 0）→ 被判定「已在底部」→
+   滚轮被 preventDefault 转走：**面板纹丝不动、页面在滚**。 */
+const wheelAt = await page.evaluate(`(() => {
+  const r = ${shellRoot}.querySelector('.doc-menu-panel').getBoundingClientRect();
+  return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+})()`);
+const menuScroll = () =>
+  page.evaluate(`(() => {
+    const nav = ${shellRoot}.querySelector('.doc-menu-panel doc-nav');
+    return {
+      菜单: Math.round(nav.scrollTop),
+      可滚: nav.scrollHeight - nav.clientHeight,
+      正文: Math.round(window.__deep('.doc-main').scrollTop),
+    };
+  })()`);
+
+const beforeWheel = await menuScroll();
+await page.mouse.move(wheelAt.x, wheelAt.y);
+await page.mouse.wheel(0, 200);
+await page.waitForTimeout(300);
+const afterWheel = await menuScroll();
+check(
+  '窄屏：在浮层菜单上滚轮滚的是菜单，不是页面',
+  beforeWheel.可滚 > 0 && afterWheel.菜单 > 0 && afterWheel.正文 === beforeWheel.正文,
+  `${JSON.stringify(beforeWheel)} → ${JSON.stringify(afterWheel)}`,
+);
+
+await page.mouse.wheel(0, 4000); // 滚到菜单底
+await page.waitForTimeout(300);
+await page.mouse.wheel(0, 200); // 到底之后再滚：接力给正文带
+await page.waitForTimeout(300);
+const forwarded = await menuScroll();
+check(
+  '窄屏：菜单滚到底后滚轮接力给正文带（与宽屏左栏同一套行为）',
+  forwarded.菜单 === forwarded.可滚 && forwarded.正文 > 0,
+  JSON.stringify(forwarded),
+);
+
 /* 点条目 = 导航：路由一变就把浮层收起来（不能盖在新页面上） */
 await page.evaluate(`(() => {
   const nav = ${shellRoot}.querySelector('.doc-menu-panel doc-nav');

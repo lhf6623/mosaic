@@ -277,14 +277,22 @@
       --mc-button-accent: var(--mc-color-primary);
     }
 
-    /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条 ——
-       给个宽度下限 + 高度上限，超出部分在**面板内容**里滚（浮层自带的 padding 留在滚动区外，
-       滚动条不会压着内边距跑）。 */
+    /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条，
+       所以给它一个宽度下限 + 高度上限。
+       ⚠️ 滚动容器必须是**里面的 <doc-nav>**，不能是这层面板包装：外壳那段滚轮接力认的是
+       `doc-nav` / `doc-toc`，它按宿主的 scrollTop/scrollHeight 判「滚到底了没」。容器换成包装层，
+       <doc-nav> 自己就不滚（可滚高度恒为 0）→ 永远被判成「已经在底部」→ 滚轮被 preventDefault
+       转发给正文带：**面板纹丝不动、页面在滚**（实测面板 scrollTop 一直 0、正文 scrollTop 240）。
+       让 <doc-nav> 自己滚，同时也就拿到了和宽屏左栏一样的行为：栏内滚到底再把滚轮交给正文带。 */
     .doc-menu {
       --mc-popover-panel-min-width: 14rem;
     }
 
-    .doc-menu-panel {
+    .doc-menu-panel doc-nav {
+      /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），
+         下面的 max-height / overflow 全是空转，滚动更无从谈起（实测滚轮直接落到页面上）。
+         宽屏那份能滚是因为 doc-layout 给它写了 display:block，这份在外壳里，得自己来。 */
+      display: block;
       max-height: min(70vh, 32rem);
       overflow-y: auto;
     }
