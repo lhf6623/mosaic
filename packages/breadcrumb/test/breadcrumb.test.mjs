@@ -244,8 +244,8 @@ const crumb = await (async () => {
     return {
       hash: location.hash,
       top:
-        window.__deepAll('.doc-top-nav a')
-          .find((a) => a.hasAttribute('aria-current'))
+        window.__deepAll('.doc-top-nav mc-button')
+          .find((b) => b.hasAttribute('aria-current'))
           ?.textContent.trim() ?? null,
       nav:
         window.__inside('doc-nav', 'a')

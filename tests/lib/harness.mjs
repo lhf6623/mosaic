@@ -188,7 +188,7 @@ export async function createHarness() {
     const routerReady = (target = page) =>
       target
         .waitForFunction(
-          (want) => window.__deepAll('.doc-top-nav a').length >= want,
+          (want) => window.__deepAll('.doc-top-nav mc-button').length >= want,
           TOPBAR.length,
           { timeout: 10000 },
         )
@@ -198,16 +198,16 @@ export async function createHarness() {
     async function goTop(text) {
       await routerReady();
       await page.evaluate((label) => {
-        window.__deepAll('.doc-top-nav a')
-          .find((a) => a.textContent.trim() === label)
+        window.__deepAll('.doc-top-nav mc-button')
+          .find((b) => b.textContent.trim() === label)
           ?.click();
       }, text);
       // 高亮落上 = 路由真的换了（点早了会什么都没发生）
       await page
         .waitForFunction(
           (label) =>
-            window.__deepAll('.doc-top-nav a')
-              .find((a) => a.textContent.trim() === label)
+            window.__deepAll('.doc-top-nav mc-button')
+              .find((b) => b.textContent.trim() === label)
               ?.hasAttribute('aria-current'),
           text,
           { timeout: 10000 },
@@ -235,7 +235,7 @@ export async function createHarness() {
     const pageState = () =>
       page.evaluate(() => {
         const all = window.__deepAll;
-        const nav = all('.doc-top-nav a');
+        const nav = all('.doc-top-nav mc-button');
         return {
           probe: window.__mosaicProbe,
           hash: location.hash.replace(/^#\//, ''),

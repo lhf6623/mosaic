@@ -59,9 +59,7 @@
           /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，
              否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一。 */
           const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
-          return landing
-            ? { path: landing, label: entry.label, href: hashOf(landing), aria: null }
-            : null;
+          return landing ? { path: landing, label: entry.label, aria: null } : null;
         }).filter(Boolean);
         this.syncTopNav();
 
@@ -70,6 +68,17 @@
            （实测是 o-page），只能用 composedPath() 认 <doc-nav> / <doc-toc> */
         this._onWheel = (event) => this.forwardWheel(event);
         document.addEventListener('wheel', this._onWheel, { passive: false });
+
+        /* 顶栏入口的点击走**事件委托**：这些行是 o-fill 渲染出来的，而 ofa 的 `on:` 绑定
+           在 o-fill 模板里拿不到 `$data`（实测真实点击也不触发，仓库里没有先例）。
+           监听挂在外层 <nav> 上 —— 事件跨 shadow 冒泡到这里时 target 已被重定向成
+           <mc-button> 宿主，从它的 data-path 取路由。 */
+        this._topNav = this.ele.shadowRoot?.querySelector('.doc-top-nav');
+        this._onTopNavClick = (event) => {
+          const path = event.target?.closest?.('mc-button')?.dataset?.path;
+          if (path) this.openEntry(path);
+        };
+        this._topNav?.addEventListener('click', this._onTopNavClick);
 
         /* 路由变化：只改 links[i].aria 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，
            04 套件盯着这条），顺带把正文带滚回顶部 */
@@ -82,9 +91,15 @@
       detached() {
         this._unwatch?.();
         document.removeEventListener('wheel', this._onWheel);
+        this._topNav?.removeEventListener('click', this._onTopNavClick);
       },
 
       proto: {
+        /** 顶栏入口：改 hash 切页（不整页刷新）。hashOf 负责带上部署前缀（开发 / · Pages /mosaic/） */
+        openEntry(path) {
+          location.hash = hashOf(path);
+        },
+
         /** 正文带：页面上唯一的滚动容器，住在外壳自己的 shadow root 里（不用穿透查） */
         mainScroller() {
           return this.ele.shadowRoot.querySelector('.doc-main');
@@ -194,21 +209,22 @@
       display: none;
     }
 
-    .doc-top-nav a {
-      padding: var(--mc-space-1) var(--mc-space-3);
-      border-radius: var(--mc-radius-md);
-      color: rgb(var(--mc-color-fg-muted));
-      text-decoration: none;
-      font-size: var(--mc-text-sm);
-      white-space: nowrap;
+    /* 入口是 mc-button（inline 形态）：盒子 / 排版 / 悬停下划线都归组件，
+       这里只把强调色接到「次要前景 → 前景」这条线上，并给当前页加粗。
+       ⚠️ 色槽是**外层样式表**覆盖的（语义色名由 CSS 管，外层规则压得住 :host([color=…])）。 */
+    .doc-top-nav mc-button {
+      flex: none;
+      /* inline 形态左右是 0 内边距（盒子交给文字）；顶栏这里补一点 —— 当前页用 primary-subtle
+         的胶囊标出，贴着字不好看，也会让相邻两项的间距看着忽宽忽窄。 */
+      padding-inline: var(--mc-space-1);
+      --mc-button-accent: var(--mc-color-fg-muted);
     }
 
-    .doc-top-nav a:hover {
-      background-color: rgb(var(--mc-color-surface-sunken));
-      color: rgb(var(--mc-color-fg));
+    .doc-top-nav mc-button:hover {
+      --mc-button-accent: var(--mc-color-fg);
     }
 
-    .doc-top-nav a[aria-current='page'] {
+    .doc-top-nav mc-button[aria-current] {
       background-color: rgb(var(--mc-color-primary-subtle));
       color: rgb(var(--mc-color-primary));
       font-weight: var(--mc-weight-medium);
@@ -328,8 +344,19 @@
       <!-- 一级菜单就是页面本身（入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；
            二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
       <nav class="doc-top-nav">
+        <!-- 入口是 mc-button（inline 形态），不是 <a>：导航改由 openEntry() 改 hash。
+             ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），
+             换来的是「顶栏每一处都由项目自己的组件渲染」。改回锚点前先看提交记录里的取舍。
+             aria-current 由新增的 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
         <o-fill :value="links" fill-key="path">
-          <a attr:href="$data.href" attr:aria-current="$data.aria">{{$data.label}}</a>
+          <mc-button
+            variant="ghost"
+            inline
+            color="neutral"
+            attr:aria-current="$data.aria"
+            attr:data-path="$data.path"
+            >{{$data.label}}</mc-button
+          >
         </o-fill>
       </nav>
 

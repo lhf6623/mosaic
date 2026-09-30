@@ -79,7 +79,7 @@ const layoutState = await page.evaluate(() => {
     childParentTag: child?.parentElement?.tagName.toLowerCase() ?? null,
     topInShadow: !!layout?.shadowRoot?.querySelector('.doc-top'),
     mainInShadow: !!layout?.shadowRoot?.querySelector('.doc-main'),
-    navLinks: layout?.shadowRoot?.querySelectorAll('.doc-top-nav a').length ?? 0,
+    navLinks: layout?.shadowRoot?.querySelectorAll('.doc-top-nav mc-button').length ?? 0,
     themeBtn: !!layout?.shadowRoot?.querySelector('.doc-theme'),
     /* 顶栏右侧的仓库入口：外链 + 图标按钮（要有 aria-label，装饰 SVG 要 aria-hidden） */
     github: (() => {
@@ -145,7 +145,9 @@ const layoutIdentity = await (async () => {
     return {
       same: layout === window.__layoutBefore,
       child: srcOf(inner).split('/').slice(-2).join('/'),
-      active: layout?.shadowRoot?.querySelector('.doc-top-nav a[aria-current]')?.textContent?.trim() ?? null,
+      active:
+        layout?.shadowRoot?.querySelector('.doc-top-nav mc-button[aria-current]')?.textContent?.trim() ??
+        null,
     };
   });
 })();
