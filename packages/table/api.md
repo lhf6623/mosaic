@@ -1,6 +1,6 @@
 # mc-table
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./table.html` · M3 · **已实现**
 
 数据表格：真 `<table>` + `<th scope="col">`，列定义与行数据都是**对象数组**，运行时一律用 property 传。
@@ -35,7 +35,7 @@
 
 > ⚠️ **`data` 只做宿主 property，不进 `attrs`**：`data` 是 ofa.js 元素代理上的保留名
 > （`$.fn.data`），声明进 `attrs` 之后属性同步会往代理写 `data`，整个组件渲染不出来
-> （同族问题见 [P31](../../agent/pitfalls/01-props.md)）。属性写法 `data='[{…}]'` 仍然认，
+> （同族的保留名问题）。属性写法 `data='[{…}]'` 仍然认，
 > 由组件自己观察，但它只是初始值的兼容入口。
 
 ```js

@@ -13,7 +13,7 @@
     "build": "pnpm icons && pnpm tokens && pnpm build:css",
     "check:drift": "node tools/check-fresh.mjs",
     "check:size": "node tools/check-size.mjs",
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#agent/archive\" \"#agent/vendor\"",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "check": "pnpm typecheck && pnpm check:docs && pnpm check:drift && pnpm check:size && pnpm lint:md && pnpm format:check",
     "dev:css": "node tools/build-css.mjs --watch",
     "dev": "node tools/serve.mjs",

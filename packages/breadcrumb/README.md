@@ -17,7 +17,7 @@
 | `breadcrumb-item.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`            | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`               | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`               | 4 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`               | 6 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
 | `test/`                | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -62,7 +62,7 @@ olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/ro
 | `--mc-breadcrumb-item-color-hover` | `--mc-color-fg`        | 悬停文字                         |
 | `--mc-breadcrumb-current-color`    | `--mc-color-fg`        | 当前页文字                       |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 > ⚠️ `separator` 属性与 `--mc-breadcrumb-sep` 令牌走**两条通道**：属性落到宿主上一个内部变量
 > （`--mc-breadcrumb-sep-attr`），CSS 里是 `content: var(内部变量, var(--mc-breadcrumb-sep))`。
@@ -74,7 +74,7 @@ olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/ro
 
 ## 为什么不发事件
 
-> 页面上**没有**这一节：按 [`doc-pages.md`](../../agent/doc-pages.md) §一「有事件才写这一节」——
+> 页面上**没有**这一节：按 [`packages/README.md`](../README.md) §一「有事件才写这一节」——
 > 面包屑不 emit 任何事件（级里的链接是使用者自己的 `<a>`，点击就是原生导航）。
 > 这一行留给对账与改代码的人 —— 不渲染（README 不进页面）。
 
@@ -86,7 +86,4 @@ olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/ro
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

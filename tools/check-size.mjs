@@ -63,7 +63,10 @@ for (const item of SHARED) {
 }
 
 const bodies = [];
-for (const slug of readdirSync(join(ROOT, 'packages'))) {
+for (const entry of readdirSync(join(ROOT, 'packages'), { withFileTypes: true })) {
+  // ⚠️ `packages/` 下还住着**目录级文档**（`packages/README.md`）——只有目录才是组件单元
+  if (!entry.isDirectory()) continue;
+  const slug = entry.name;
   for (const name of readdirSync(join(ROOT, 'packages', slug))) {
     if (!name.endsWith('.html') || name === 'page.html') continue;
     const file = 'packages/' + slug + '/' + name;

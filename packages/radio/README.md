@@ -1,25 +1,22 @@
-# mc-radio（单选项）
+# mc-radio（单选按钮）
 
 > **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
 > 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
 > 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
-**状态**：已实现 · M2 · 标签 `mc-radio` / `mc-radio-group` · 目录 `packages/radio/`
+**状态**：已实现 · M2 · 标签 `mc-radio` · 目录 `packages/radio/`
 
-单选项。一个目录两个标签：`mc-radio-group` 是容器（互斥、方向、尺寸、事件），
-`mc-radio` 是一格（圆圈 + 文案）。**唯一真相是子项上的 `checked` 属性**，
-组是唯一改它的地方 —— 点、<kbd>方向键</kbd>、`default-value`、`group.value` 四条路都收敛到
-组里的同一段 `applySelection()`。
+单选按钮组。
 
 ## 单元里有什么
 
 | 文件               | 角色                                                                          |
 | ------------------ | ----------------------------------------------------------------------------- |
-| `radio-group.html` | **入口一**：容器（使用者 CDN 引入的本体，源 = 产物，构建不碰它）              |
-| `radio.html`       | **入口一**：子项（同上）                                                      |
+| `radio.html`       | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `radio-group.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`        | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md`           | 接口规范（两个标签的属性并集）—— 由 `<doc-spec>` 渲染进页面参考区             |
+| `api.md`           | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
 | `demos/`           | 6 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
 | `test/`            | 组件自己的冒烟套件（1 个文件）                                                |
 
@@ -34,12 +31,12 @@
 它们的原生 radio 分居不同树 —— 浏览器根本不认它们是一组：点一个不会取消另一个，
 <kbd>方向键</kbd>也不会走。所以组把这三件事全接过来：
 
-| 能力     | 谁做                            | 怎么做到                                                                             |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| 互斥     | `mc-radio-group`                | 点谁选谁：组在 `click` 里改所有子项的 `checked` 属性（`composedPath()` 认成员，P20） |
-| 方向键   | `mc-radio-group`                | `keydown`（composed，从子项 shadow 里冒上来）里算下一格、选中、把焦点交过去          |
-| 语义     | 内部原生 `<input type="radio">` | 宿主补 `role="radiogroup"` + `aria-orientation`；每个 input 带组的 `name`            |
-| 键鼠可达 | 内部原生 input + `<label>`      | <kbd>Space</kbd> 选中、<kbd>Tab</kbd> 聚焦、读屏读 role / checked 全白拿             |
+| 能力     | 谁做                            | 怎么做到                                                                        |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------- |
+| 互斥     | `mc-radio-group`                | 点谁选谁：组在 `click` 里改所有子项的 `checked` 属性（`composedPath()` 认成员） |
+| 方向键   | `mc-radio-group`                | `keydown`（composed，从子项 shadow 里冒上来）里算下一格、选中、把焦点交过去     |
+| 语义     | 内部原生 `<input type="radio">` | 宿主补 `role="radiogroup"` + `aria-orientation`；每个 input 带组的 `name`       |
+| 键鼠可达 | 内部原生 input + `<label>`      | <kbd>Space</kbd> 选中、<kbd>Tab</kbd> 聚焦、读屏读 role / checked 全白拿        |
 
 **组 ↔ 子项是单向的两个宿主方法，组不伸手进子项的 shadow root**：
 `radio.syncGroupState()`（重读组状态：`name` / 禁用 → 内部原生 input）与
@@ -47,7 +44,7 @@
 **不是 attrs** —— 组禁用不该写进子项自己的属性表。这个方向是刻意的：子项不反向读组的内部状态，
 组的真相（选中值）只从子项的 `checked` 属性投影出来。
 
-**`value` 是 property，`default-value` 是属性**（规范 1.4 / [P18](../../agent/pitfalls/04-dom-events.md)）：
+**`value` 是 property，`default-value` 是属性**（规范 1.4）：
 `default-value` 只在挂载那一刻读一次，之后 `group.value = 'c'` 立刻更新选中项并把
 宿主 `value` 属性同步成运行时值（`getAttribute('value')` 不会停在陈值上）。
 子项的 `checked` 是同一个状态的镜像，写它只影响这一格 —— 要改选中请走组。
@@ -82,7 +79,4 @@
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

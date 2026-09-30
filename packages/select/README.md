@@ -5,20 +5,20 @@
 > 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
-**状态**：已实现 · M2 · 标签 `mc-select` / `mc-option` · 目录 `packages/select/`
+**状态**：已实现 · M2 · 标签 `mc-select` · 目录 `packages/select/`
 
-下拉选择：表单控件 + 选项两个标签，面板是原生浮层（进 top layer），键盘 / Esc / 点外部关闭都齐。
+下拉选择。M2 里最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。
 
 ## 单元里有什么
 
-| 文件          | 角色                                                                             |
-| ------------- | -------------------------------------------------------------------------------- |
-| `select.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                       |
-| `option.html` | 同族的第二个标签 `mc-option`（只声明数据；`select.html` 里 `await load` 带进来） |
-| `page.html`   | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)）    |
-| `api.md`      | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                     |
-| `demos/`      | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）                  |
-| `test/`       | 组件自己的冒烟套件（1 个文件）                                                   |
+| 文件          | 角色                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| `select.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `option.html` | 同族子标签，随本体一起引入                                                    |
+| `page.html`   | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`      | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`      | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `test/`       | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
@@ -48,8 +48,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 
 - **面板用 `popover="manual"`，开合自己管**。`popover="auto"` 的 light dismiss 发生在
   **pointerdown** 上，等 click 到达时面板已经被浏览器关掉，再 `toggle()` 会把它**重新开回来**
-  （表现是「点第二次关不掉」）；而点外部判定又必须走 `e.composedPath()`（
-  [P20](../../agent/pitfalls/04-dom-events.md)：`contains(e.target)` 在 shadow 边界上拿到的是
+  （表现是「点第二次关不掉」）；而点外部判定又必须走 `e.composedPath()`（`contains(e.target)` 在 shadow 边界上拿到的是
   被重定向后的宿主，必然误判成外部）。所以这里选「自己管」这一条路：外部点击由
   `document` 上的 `pointerdown` + `composedPath` 判定，Esc 由触发框的 `keydown` 处理
   （顺手 `preventDefault`，避免和原生 close-watcher 抢），关闭后把焦点还给触发框。
@@ -57,7 +56,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
   `part="option"`（`::part()` 够不到插槽里的 light DOM 元素），行也才能跟着 `aria-selected` /
   `data-active` 走样式。代价是 `mc-option` 的默认插槽只被读文案、不直接显示 ——
   它自己 `:host { display: none }`。选项用 `o-fill` 生成时也能收到
-  （[P12](../../agent/pitfalls/02-template.md)：条目住在 `o-fill` 自己的 light DOM 里，
+  （条目住在 `o-fill` 自己的 light DOM 里，
   所以按宿主 `querySelectorAll('mc-option')` 收集，而不是只看 `slot.assignedElements()`）。
 
 **多选的不对称是有意的**：`default-value` 属性是逗号分隔字符串、`value` property 是
@@ -89,7 +88,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 | `--mc-select-clear-color`           | `--mc-color-fg-muted`       | × 按钮的颜色                                   |
 | `--mc-select-clear-bg-hover`        | `--mc-color-surface-sunken` | × 按钮悬停底色                                 |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示 —— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 > 还有一个 `--mc-select-anchor`（锚点标识）：它是组件内部的接线，不是使用者的覆盖点，在代码里标了 `@internal`。
 
 ## 相邻单元
@@ -101,7 +100,4 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

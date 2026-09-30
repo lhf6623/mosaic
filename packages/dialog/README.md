@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M3 · 标签 `mc-dialog` · 目录 `packages/dialog/`
 
-模态对话框：遮罩 + 居中面板，原生 `popover="manual"` 进 top layer，自己管焦点陷阱。
+对话框。遮罩、焦点陷阱、Esc 关闭。
 
 ## 单元里有什么
 
@@ -50,20 +50,19 @@
    `display: none`、只在 `.mc-root:popover-open` 里展开。
 3. **插槽内容不在 shadow 树里**：`panel.querySelectorAll()` 只看得到自己那个 ×，
    正文 / 底部里的按钮一个都数不到 —— 焦点陷阱必须走扁平树（见上）。
-4. **「点在面板里还是遮罩上」必须走 `composedPath()`**（[P20](../../agent/pitfalls/04-dom-events.md)）：
+4. **「点在面板里还是遮罩上」必须走 `composedPath()`**：
    composed 事件冒泡到组件时 `e.target` 已被沿途 shadow 边界重定向成宿主，`contains(e.target)` 必然误判。
 
 另外两条：`showPopover()` 对**还没连上文档**的元素会抛 `InvalidStateError`，所以
 `ready()` 里只在 `isConnected` 时同步一次、`attached()` 再补一次；
-`heading` 的空值判定要按属性值来 —— ofa 会把声明过的字符串属性以默认值（这里 `""`）写到宿主上
-（[P32](../../agent/pitfalls/01-props.md)），`:host([heading])` 这种写法对实例永远为真。
+`heading` 的空值判定要按属性值来 —— ofa 会把声明过的字符串属性以默认值（这里 `""`）写到宿主上，`:host([heading])` 这种写法对实例永远为真。
 
-### 与草案（[`agent/api/planned.md`](../../agent/api/planned.md) M3 表）的出入
+### 与草案（[`packages/README.md`](../README.md) M3 表）的出入
 
-| 草案                    | 实际            | 理由                                                                                                                                 |
-| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `title`                 | `heading`       | 声明 `title` 会让宿主弹出浏览器原生 tooltip（[P32](../../agent/pitfalls/01-props.md)）。`mc-alert` / `mc-collapse-item` 已是这个先例 |
-| `open` + `default-open` | 只有单一 `open` | 两个属性必然漂移：谁是真相源没有第三处能裁决。`mc-collapse-item` 已经用「单一 `open` 属性 + 宿主 property 访问器」解决了同一件事     |
+| 草案                    | 实际            | 理由                                                                                                                             |
+| ----------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                 | `heading`       | 声明 `title` 会让宿主弹出浏览器原生 tooltip。`mc-alert` / `mc-collapse-item` 已是这个先例                                        |
+| `open` + `default-open` | 只有单一 `open` | 两个属性必然漂移：谁是真相源没有第三处能裁决。`mc-collapse-item` 已经用「单一 `open` 属性 + 宿主 property 访问器」解决了同一件事 |
 
 ## 令牌
 
@@ -81,7 +80,7 @@
 | `--mc-dialog-gap`           | `--mc-space-4`              | 头部行 / 底部行内的间距                            |
 | `--mc-dialog-space`         | `--mc-space-6`              | 面板到视口边缘的最小距离（内容比视口高时靠它留白） |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 刻意不做的
 
@@ -101,7 +100,4 @@
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

@@ -3,30 +3,15 @@
   <div class="doc-body">
     <h1>规范</h1>
     <p class="doc-lead">
-      这几份文档各回答一个问题。都在仓库的 <code>agent/</code> 目录下，直接读 Markdown 即可。
+      这两份文档各回答一个问题，都在 <code>packages/</code> 下，直接读 Markdown 即可。
     </p>
 
     <div class="doc-grid">
       <div class="doc-card">
         <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/plan/README.md">规划总纲</a>
-        </h4>
-        <p>
-          定位、约束、八个关键决策（含被否决的备选及其理由）、目录结构、构建分发、里程碑、风险。
-        </p>
-      </div>
-      <div class="doc-card">
-        <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-spec.md">设计规范</a>
-        </h4>
-        <p>
-          <strong>怎么用令牌</strong
-          >：间距节奏、布局、响应式与断点、排版、交互状态、动效、层级、无障碍、文案。
-        </p>
-      </div>
-      <div class="doc-card">
-        <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/design-tokens.md">设计令牌</a>
+          <a href="https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md"
+            >设计令牌</a
+          >
         </h4>
         <p>
           <strong>有什么值</strong>：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG
@@ -35,42 +20,12 @@
       </div>
       <div class="doc-card">
         <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/api/README.md"
-            >组件 API 规范</a
-          >
+          <a href="https://github.com/lhf6623/mosaic/blob/main/packages/README.md">组件 API 规范</a>
         </h4>
         <p>
           <strong>有哪些组件、各自什么接口</strong>：四个正交维度、值读写规则、属性 / 事件 / 插槽与
           part、逐组件 API 表。
         </p>
-      </div>
-      <div class="doc-card">
-        <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/README.md">agent/ 导航</a>
-        </h4>
-        <p>
-          <strong>按任务挑模块读</strong>：造组件 / 样式与事件 / 交付检查清单 / 文档页规范， 外加
-          ofa.js 的踩坑清单。
-        </p>
-      </div>
-      <div class="doc-card">
-        <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/pitfalls/README.md"
-            >ofa.js 实战踩坑清单</a
-          >
-        </h4>
-        <p>
-          <strong>写组件前必读。</strong>44 条静默失效的坑 ——
-          不报错、表象像「绑定不生效」、反查成本极高。
-        </p>
-      </div>
-      <div class="doc-card">
-        <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/agent/archive/docs-refactor.md"
-            >文档站重构设计</a
-          >
-        </h4>
-        <p>class 组件改 ofa 组件模板 + <code>$.stanz</code> 路由状态。</p>
       </div>
     </div>
 
@@ -159,7 +114,6 @@
       uno.config.ts          UnoCSS 配置（纯声明式）
       index.html             本站入口：只做引入（外壳在 docs/layout.html）
       docs/                  本站其余页面与资源
-      agent/                  规范文档（Markdown）
     </mc-code>
 
     <div class="doc-note">

@@ -7,8 +7,7 @@
 
 **状态**：已实现 · M2 · 标签 `mc-checkbox` · 目录 `packages/checkbox/`
 
-复选框。一个原生 `<input type="checkbox">` 管语义，宿主管长相：勾选 / 半选 / 禁用 / 校验失败
-四个维度互不组合 —— 颜色只由一条 `--mc-color-danger` 介入（`invalid`），没有第二套色板。
+复选框。支持半选态。
 
 ## 单元里有什么
 
@@ -37,7 +36,7 @@
 
 **`checked` 是属性 + property 双通道，`indeterminate` 只有前者是属性。** `checked` 进 `attrs`
 （ofa 的观察通道，`:host([checked])` 才有得选）；宿主 DOM property 的 setter 额外立刻同步一次
-内部原生 input，不等 ofa 那一拍（[P4](../../agent/pitfalls/01-props.md)）。
+内部原生 input，不等 ofa 那一拍。
 `indeterminate` 在原生里根本没有 HTML 属性，所以它只是「宿主属性 → `.indeterminate` → CSS」的单向转发，
 点击后由组件把两边一起清掉 —— 这正是原生 checkbox 的行为。两个状态都开了同形宿主访问器
 （`el.checked = true` / `el.indeterminate = true`），读写方式跟原生元素一致。
@@ -65,7 +64,4 @@
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

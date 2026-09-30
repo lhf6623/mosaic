@@ -1,6 +1,6 @@
 # mc-code
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `packages/code/code.html` · **已实现**
 
 代码展示。代码文本可以贴在标签里，也可以用 `code` 属性 / `:code` 绑定传进来。
@@ -61,7 +61,7 @@
 
 > ⚠️ 折行属性叫 **`soft-wrap`** 而不是 `wrap`：`wrap` 是 ofa.js 的保留名，
 > 声明进 `attrs` 之后 `document.createElement('mc-code')` 会直接抛
-> `NotSupportedError`（见 [P31](../../agent/pitfalls/01-props.md)）。
+> `NotSupportedError`。
 
 ### 运行时读写
 
@@ -70,7 +70,7 @@
 | `el.code`（DOM property） | 读回当前原文（已 dedent）；写入等价于 `setAttribute('code', …)`，**立刻**重渲染 + 重新高亮 |
 
 ```js
-// 运行时两种写法等价，且立刻生效（内部不等 ofa 那一拍，见 P4）
+// 运行时两种写法等价，且立刻生效（内部不等 ofa 那一拍）
 el.code = 'const b = 2;';
 el.setAttribute('code', 'const b = 2;');
 ```

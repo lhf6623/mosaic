@@ -34,7 +34,7 @@ mc-menu — 垂直菜单容器
 
 **交互元素由使用者写在插槽里**（原生 <a> / <button>），组件既不造链接也不碰使用者的 DOM：
 站内链接要靠 ofa 的 olink 指令补部署前缀，而 olink 只作用于页面模板（light DOM）里的元素，
-组件在 shadow root 里造出来的 <a> 用不上（见 docs/routes.js 与 pitfalls/README.md 的 P28）。
+组件在 shadow root 里造出来的 <a> 用不上（见 `docs/routes.js`）。
 
 尺寸/颜色走 CSS 变量继承：子项在另一个 shadow root 里，容器选择器够不到它，
 只能像 mc-collapse 那样在 :host 上开一条通道，子项用 var() 带兜底值消费。
@@ -61,7 +61,7 @@ shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面
 · 底色 → 宿主 :host(:hover) / :host([data-current])
 
 状态同样从插槽元素读，但镜像到宿主上的 data-current / data-disabled —— 宿主没法用
-`:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类，同 P14）。
+`:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类）。
 
 ## 令牌
 
@@ -79,7 +79,7 @@ shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面
 | `--mc-menu-item-bg-current`    | `--mc-color-primary-subtle` | 当前项底色          |
 | `--mc-menu-group-color`        | `--mc-color-fg-subtle`      | 分组标题文字        |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 > ⚠️ 菜单项同样**不能**给 `--mc-menu-*` 写默认值，否则会盖掉容器继承来的通道
 > （和 `mc-collapse-item` 同一条坑），消费侧一律 `var(--mc-menu-x, 兜底)`。
@@ -88,8 +88,7 @@ shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面
 > 插槽元素同时是外层 shadow 树里的普通元素，`shadow-base.css` 对 `button` 的
 > `padding` / `background` / `cursor` reset 是「直接命中」，按封装上下文压过组件内的
 > `::slotted(button)`；`:host(:has(...))` 在 ofa.js 里又不生效，宿主「看不到孩子」。
-> 所以视觉留宿主、插槽元素只当铺满整行的交互层、状态靠 JS 镜像 —— 完整推演见
-> [P33](../../agent/pitfalls/03-style-scope.md)，实现见 `packages/menu/menu-item.html` 头部注释。
+> 所以视觉留宿主、插槽元素只当铺满整行的交互层、状态靠 JS 镜像 —— 实现见 `packages/menu/menu-item.html` 头部注释。
 > 副作用：禁用项若用 `<button>`，光标可能仍是手型（reset 那一条压不过），用 `<a>` 正常。
 
 ## 为什么不发事件
@@ -106,7 +105,4 @@ shadow root 里的 `::slotted(button)`（封装上下文排在层叠顺序前面
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

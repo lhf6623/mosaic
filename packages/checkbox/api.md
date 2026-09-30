@@ -1,6 +1,6 @@
 # mc-checkbox
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./checkbox.html` · M2 · **已实现**
 
 复选框：一行方框 + 文案，选中 / 半选 / 禁用 / 校验失败四个正交状态。
@@ -19,7 +19,7 @@ DOM property（`el.checked = true` / `el.indeterminate = true` 写完立刻生�
 `.indeterminate` 上，提交表单时按 `false` 算。
 
 > `disabled` / `required` / `invalid` 是状态布尔，改它们走 `setAttribute` / `removeAttribute`
-> （[`api/README.md`](../../agent/api/README.md) §1.4）。
+> （[`packages/README.md`](../README.md) §1.4）。
 
 ---
 

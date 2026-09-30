@@ -2,8 +2,8 @@
  * docs/lib/md-spec.mjs 的单测（纯 node，不进浏览器套件）：
  *   node tests/lib/md-spec.test.mjs
  *
- * 盯的是 doc-render.md §三 那三条边界规则 —— 它们是「哪些内容会被渲染出去」的唯一约定，
- * 错一条就是「agent 的内部说明被摊给了使用者」或「参考区少一节」。
+ * 盯的是 docs/lib/md-spec.mjs 的三条边界规则 —— 它们是「哪些内容会被渲染出去」的唯一约定，
+ * 错一条就是「内部说明被摊给了使用者」或「参考区少一节」。
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +13,7 @@ import { parseSpecMd, resolveLink, SECTIONS } from '../../docs/lib/md-spec.mjs';
 const SAMPLE = [
   '# mc-button',
   '',
-  '> 共用约定见 [api/README.md](./README.md)',
+  '> 共用约定见 [packages/README.md](../README.md)',
   '',
   '```html',
   '<mc-button color="danger">删除</mc-button>',
@@ -53,7 +53,7 @@ test('只渲染白名单四节', () => {
   assert.match(html, /<h2>插槽<\/h2>/);
 });
 
-test('第一个 --- 之上是 agent 开场白，不渲染', () => {
+test('第一个 --- 之上的开场白不渲染', () => {
   const { html } = parseSpecMd(SAMPLE);
   assert.doesNotMatch(html, /共用约定/);
   assert.doesNotMatch(html, /mc-button color/);
@@ -134,16 +134,16 @@ test('白名单节之外的 h3 / 段落一律丢弃', () => {
 });
 
 test('md 里的相对链接改写成 GitHub（站点上是 404）', () => {
-  // md 住在组件单元里（packages/<slug>/api.md），指向 agent/ 下的文档要往上两级
+  // md 住在组件单元里（packages/<slug>/api.md），指向仓库里其它文件要往上两级
   const base = 'http://localhost:8642/packages/button/api.md';
   assert.equal(
-    resolveLink('../../agent/pitfalls/01-props.md', base),
-    'https://github.com/lhf6623/mosaic/blob/main/agent/pitfalls/01-props.md',
+    resolveLink('../../packages/color/README.md', base),
+    'https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md',
   );
   // Pages 的 /mosaic 子路径前缀不算仓库路径
   assert.equal(
-    resolveLink('../../agent/api/README.md', 'https://lhf6623.github.io/mosaic/packages/button/api.md'),
-    'https://github.com/lhf6623/mosaic/blob/main/agent/api/README.md',
+    resolveLink('../../packages/README.md', 'https://lhf6623.github.io/mosaic/packages/button/api.md'),
+    'https://github.com/lhf6623/mosaic/blob/main/packages/README.md',
   );
   // 绝对链接与锚点原样
   assert.equal(resolveLink('https://ofajs.com', base), 'https://ofajs.com');

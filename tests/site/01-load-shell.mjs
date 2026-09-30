@@ -127,7 +127,7 @@ const tokenInherits = await page.evaluate(() => {
   host.remove();
   return value;
 });
-// 令牌存的是裸通道三元组（不是完整颜色），这是全局约定，见 agent/design-tokens.md
+// 令牌存的是裸通道三元组（不是完整颜色），这是全局约定，见 packages/color/README.md
 check(
   '令牌跨 shadow 边界继承',
   tokenInherits.trim() === '101 113 131',

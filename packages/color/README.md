@@ -3,9 +3,9 @@
 > 本文里的**每一个色值、每一个对比度数字都是 `tools/gen-tokens.mjs` 算出来并自检过的**，
 > 不是手写的。改调色板请改那个脚本，不要改 `tokens.css`（它会被覆盖）。
 >
-> **要动手而不是查规矩**：给某个组件加一个可覆盖的令牌走
-> [`howto/add-token.md`](./howto/add-token.md)（食谱）—— 那份讲清了为什么令牌写进
-> 单元 README 而不是 `api.md`，以及加了不写会被哪一面守卫抓住。
+> **要动手而不是查规矩**：给某个组件加一个可覆盖的令牌 —— 在单元 `README.md` 的令牌表里登记一行。
+> 为什么令牌写进单元 README 而不是 `api.md`：`api.md` 是页面参考区的渲染源（只渲染白名单七节），
+> 令牌不进文档页；加了不写会被 `pnpm check:docs` 的组件令牌面（`packages/*/README.md ↔ 组件代码`）抓住。
 
 ---
 
@@ -186,7 +186,7 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 
 > **语法高亮没有令牌**：`mc-code` 的 token 颜色直接来自 highlight.js 的官方主题
 > （默认 `github` / `github-dark`），原样 adopt，不经过令牌层 —— 见
-> [`mc-code` 的接口](../packages/code/api.md) 与 [D7](./plan/decisions.md#d7-代码高亮可选依赖--失败即降级)。
+> [`mc-code` 的接口](../code/api.md)。
 
 每个状态色族 `{primary, info, success, warning, danger}` 有五件套：
 
@@ -297,8 +297,6 @@ Mosaic 的颜色主题走令牌就够了，`match-var` 留给 M3 之后的复杂
 
 ## 六、换肤指南
 
-> 给整个应用统一换主题色的步骤（含亮 / 暗 / 跟随系统三态）见 [`howto/theme.md`](./howto/theme.md)（食谱）。
-
 ### 整体换品牌色
 
 改一个数字，重跑生成器：
@@ -337,7 +335,7 @@ pnpm build:css
 ### 结构化定制（逐组件，不是全员）
 
 `part` **不是每个组件都有** —— 只有内部有结构性子元素、且确实需要定制的才开（见
-[`api/README.md`](./api/README.md) 的 1.7）。名录以该组件 `api.md` 的「插槽与 part」节为准：
+[`packages/README.md`](../README.md) 的 1.7）。名录以该组件 `api.md` 的「插槽与 part」节为准：
 
 ```css
 /* mc-card 开了 base / header / body / footer */

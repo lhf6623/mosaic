@@ -1,7 +1,7 @@
 /**
  * color-attr.js —— 让组件的 `color` 属性**直接吃 hex**：`<mc-button color="#fff000">`。
  *
- * 组件里四行接线（button / tag / icon 各一处，alert 刻意不接 —— 见 agent/plan/decisions.md D8）：
+ * 组件里四行接线（button / tag / icon 各一处，alert 刻意不接）：
  *
  * ```js
  * import { colorAttr } from '../boot/color-attr.js';
@@ -35,7 +35,7 @@
 
 import { contrast, mix, parseHex, readToken, readableOn, triple, warnOnce } from './color-math.js';
 
-/** 六个语义名：和 `agent/api/README.md` 的 color 维度一致 */
+/** 六个语义名：和 `packages/README.md` 的 color 维度一致 */
 const SEMANTIC = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
 
 /** 我们已经为哪些宿主写过哪些属性（清的时候只清自己的） */

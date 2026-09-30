@@ -49,12 +49,12 @@ disabled 用 aria-disabled + tabindex=-1 + 头部 pointer-events:none 三件套�
 | `--mc-collapse-body-pad` | 内容区底部内边距                           |
 | `--mc-collapse-font`     | 头部 / 内容字号                            |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 > ⚠️ 子项**不能**给这些变量写默认值：在 `:host` 上定义会盖掉从容器继承来的值，
 > 容器上的 `size` 就永远不生效。子项侧一律写成 `var(--mc-collapse-header-h, 兜底)`。
 
-**运行时状态用 property**，立刻生效（内部不等 ofa 那一拍，见 P4）：
+**运行时状态用 property**，立刻生效（内部不等 ofa 那一拍）：
 
 ```js
 item.open = true;
@@ -69,7 +69,4 @@ item.setAttribute('open', ''); // 等价，但异步一拍
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

@@ -16,7 +16,7 @@
 | `alert.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`  | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`     | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`     | 8 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`     | 9 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
 | `test/`      | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -40,15 +40,15 @@ message 是命令式浮层（自己进场、自己走，不占版面）。两者
   于是 6 色 + 3 外观 = 9 条规则，而不是 18 条组合规则。
 
 标题属性叫 heading 不叫 title：title 是原生属性，挂上去浏览器会弹自己的 tooltip，而且
-ofa 会把声明过的字符串属性以空值写到宿主上（P32），"有没有给标题"只能看值、不能看属性在不在。
+ofa 会把声明过的字符串属性以空值写到宿主上，"有没有给标题"只能看值、不能看属性在不在。
 插槽名照旧叫 title（插槽名不产生属性）—— 和 mc-collapse-item 的 header 属性 + header 插槽同构。
 
 标题/正文的显隐只从宿主上的 data-has-title / data-has-body 选（同 mc-card 的 data-has-header）：
-空的标题块会白占一行、正文空了 gap 也还在。宿主属性只能在 attached() 之后写（P31），
+空的标题块会白占一行、正文空了 gap 也还在。宿主属性只能在 attached() 之后写，
 所以 ready() 里只做查询，判定统一走 applyState()。
 
 图标直接消费 **mc-icon**（4 个语义图形住在内置图标集里：info / success / warning / error），
-`:name` 跟着 color 走 —— 常驻 DOM、不用 o-if（P10）。装饰性由 mc-icon 自己保证（不给 label 即
+`:name` 跟着 color 走 —— 常驻 DOM、不用 o-if。装饰性由 mc-icon 自己保证（不给 label 即
 aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图形让位。
 
 ⚠️ **这个文件里没有任何 SVG 形状**（图标数据在 mc-icon 那边，构建期编译进 mosaic.css）。
@@ -65,7 +65,7 @@ packages/icon/icons.generated.ts，那份文件不在 UnoCSS 的扫描范围里�
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。
 关闭按钮是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，
-所以单行提示条不会因为它变高；焦点环用 --mc-color-ring（不用 currentColor，P16）。
+所以单行提示条不会因为它变高；焦点环用 --mc-color-ring（不用 currentColor）。
 
 ## 令牌
 
@@ -82,14 +82,14 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 | `--mc-alert-gap`          | `--mc-space-3`                     | 图标、正文、× 之间的间距                                           |
 | `--mc-alert-radius`       | `--mc-radius-md`                   | 圆角                                                               |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 **标题属性叫 `heading` 不是 `title`**：原生 `title` 会弹浏览器自己的 tooltip，而且 ofa 会把声明过的
-字符串属性以空值写到宿主上（[P32](../../agent/pitfalls/01-props.md)）。插槽名仍是 `title` —— 插槽名不产生属性。
+字符串属性以空值写到宿主上。插槽名仍是 `title` —— 插槽名不产生属性。
 和 `mc-collapse-item` 的「`header` 属性 + `header` 插槽」同构。
 
 **空内容靠宿主上的三个钩子折掉**：`data-has-title` / `data-has-body` / `data-has-icon`
-（slotchange + `heading` 的值一起判定，写宿主只能在 `attached()` 之后，[P31](../../agent/pitfalls/01-props.md)）。
+（slotchange + `heading` 的值一起判定，写宿主只能在 `attached()` 之后）。
 没有它们时空标题会白占一行、空正文会白留一个 gap。
 
 **图标来自 [mc-icon](../icon/api.md)**：按自己的 `color` 取内置图标集里的四个语义图形 —— 信息圆
@@ -115,12 +115,8 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 [`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-alert-fill` / `-on-fill` / `-accent` /
 `-subtle-fill`（浅底档按当前主题混，切主题会重算）。文字色按 WCAG 自动给；**极浅的牌子色在浅底上会读不清**
 （`#fff000` 1.16:1），接线器会就此发一条 `[mosaic]` 警告。只收 hex，非 hex 一条警告、不写槽。
-
 <!-- hand:end -->
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

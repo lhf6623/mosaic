@@ -1,6 +1,6 @@
 # mc-progress
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./progress.html` · M2 · **已实现**
 
 进度条：一条轨道 + 一条填充。确定态用 `value` / `max` 表示跑到哪了，不确定态只说「还在跑」。

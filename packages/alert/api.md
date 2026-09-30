@@ -1,6 +1,6 @@
 # mc-alert
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./alert.html` · **已实现**
 
 页内提示条：一块语义色的小面，带图标、标题与描述，可关。

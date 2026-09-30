@@ -5,8 +5,8 @@
  * 刻意不做一个通用 markdown 解析器 —— 页面只需要这几样，多认一种就多一种
  * 「作者随手写了、渲染出来很难看」的可能。
  *
- * **三条边界规则**（agent/doc-render.md §三）：
- *   1. 第一个独占一行的 `---` 之上不渲染（agent 开场白 + 用法片段）；
+ * **三条边界规则**：
+ *   1. 第一个独占一行的 `---` 之上不渲染（开场白 + 用法片段）；
  *   2. `<!-- agent-only -->` 之下不渲染（实现约束 / 刻意不做的 / 令牌）；
  *   3. 中间只有 **白名单七节** 渲染：属性 / 方法 / 事件 / 配置 / 插槽与 part / 插槽 / part。
  *      其余节名一律丢弃 —— 白名单是硬的，将来往 md 里加新节不会误渲染出去。
@@ -16,7 +16,7 @@
  * 跑单测：`node tests/lib/md-spec.test.mjs`
  */
 
-/** 渲染进页面的节名（顺序即页面参考区顺序，与 agent/doc-pages.md §一 一致） */
+/** 渲染进页面的节名（顺序即页面参考区顺序，与 packages/README.md §一 一致） */
 export const SECTIONS = ['属性', '方法', '事件', '配置', '插槽与 part', '插槽', 'part'];
 
 /** 仓库在 GitHub 上的浏览前缀（md 里的相对链接按 md 自身 URL 解析后指到这里） */
@@ -35,8 +35,8 @@ const escapeHtml = (text) =>
 
 /**
  * md 里的相对链接 → 站点上点得开的链接。
- * md 住在组件单元里（`packages/<slug>/api.md`），它指向 `agent/pitfalls/…` 的链接在站点上是 404 ——
- * 仓库外的读者该去 GitHub 看那份源文件（与 docs/pages/specs.html 同一口径）。
+ * md 住在组件单元里（`packages/<slug>/api.md`），它指向仓库内其它文件的相对链接在站点上是
+ * 404 —— 仓库外的读者该去 GitHub 看那份源文件（与 docs/pages/specs.html 同一口径）。
  */
 export function resolveLink(href, baseUrl) {
   const raw = String(href ?? '').trim();

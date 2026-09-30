@@ -140,7 +140,7 @@
 
 /* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：
  *   <section class="doc-demo">
- *     <h3>尺寸</h3>                              ← 标题：API 名中文，尽量短（取词规则见 agent/doc-pages.md）
+ *     <h3>尺寸</h3>                              ← 标题：API 名中文，尽量短（取词规则见 packages/README.md §二）
  *     <p class="doc-hint">三档头部高度…</p>       ← 说明：可选。导语，不是脚注
  *     <demo-collapse-size></demo-collapse-size>  ← 组件：活样例
  *     <mc-collapse class="doc-demo-code">…</mc-collapse>  ← 代码：默认收起的抽屉

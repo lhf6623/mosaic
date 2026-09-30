@@ -55,7 +55,7 @@ const NEIGHBORS = {
     "内部 `await load('../icon/icon.html')`：类型图标跟着 `type` 走。",
   ],
   popover: [
-    '与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`planned.md`](../../agent/api/planned.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。',
+    '与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`packages/README.md`](../README.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。',
     '图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。',
   ],
   tag: [
@@ -164,10 +164,7 @@ ${HAND_END}
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[\`authoring.md\`](../../agent/authoring.md) · [\`authoring-style.md\`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[\`pitfalls/README.md\`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[\`api/README.md\`](../../agent/api/README.md)
-- 文档页怎么排：[\`doc-pages.md\`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[\`packages/README.md\`](../README.md)
 `;
 
   /* ⚠️ 落盘前过一遍 prettier：模板里的 markdown 表是**不补空格**的，直接写出去这些 README

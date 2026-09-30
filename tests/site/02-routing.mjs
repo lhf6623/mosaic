@@ -195,7 +195,7 @@ const navLinks = await page.evaluate(() => {
   return {
     total: links.length,
     planned: planned.length,
-    plannedOk: planned.every((a) => a.href.includes('api/README.md') && a.target === '_blank'),
+    plannedOk: planned.every((a) => a.href.includes('packages/README.md') && a.target === '_blank'),
     readyToPages: links
       .filter((a) => status(a) === 'ready')
       .every((a) => (a.getAttribute('href') || '').includes('/page.html')),

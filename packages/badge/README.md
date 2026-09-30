@@ -49,7 +49,7 @@ mc-badge — 徽标
 
 **`max` 只认纯数字内容**：`/^\d+$/` 命中且大于上限才换成 `${max}+`。内容里混了文字
 （`v2`、`新`）说明它不是计数，截断只会给出错误信息。截断结果写在 shadow 里一个常驻的
-`span` 上（P17），显隐交给 `:host([data-overflow])` —— 运行时切状态不用 `o-if`（P10）。
+`span` 上，显隐交给 `:host([data-overflow])` —— 运行时切状态不用 `o-if`。
 判定入口只有一个（`applyMax`），`slotchange`、`max`、`dot` 三条路都走它，所以「点一下圆点
 模式」和「内容被换掉」不会各算一遍。
 
@@ -84,7 +84,4 @@ mc-badge — 徽标
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

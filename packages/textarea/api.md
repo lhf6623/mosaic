@@ -1,6 +1,6 @@
 # mc-textarea
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./textarea.html` · M2 · **已实现**
 
 多行输入框。和 [`mc-input`](../input/api.md) 的分工：高度由 `rows` 与内容决定（另有自动增高与字数
@@ -40,10 +40,10 @@ el.addEventListener('input', (e) => console.log(e.data.value));
 
 ## 事件
 
-| 名称     | 类型                                                   | 说明                                                                      |
-| -------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `input`  | `(event: Event & { data: { value: string } }) => void` | 每次输入；`$event.data.value` 是当前值，`$event.target.value` 也读得到    |
-| `change` | `(event: Event & { data: { value: string } }) => void` | 值确定变化（失焦 / 回车）；原生 `change` 穿不出 shadow，由组件转发（P19） |
+| 名称     | 类型                                                   | 说明                                                                   |
+| -------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `input`  | `(event: Event & { data: { value: string } }) => void` | 每次输入；`$event.data.value` 是当前值，`$event.target.value` 也读得到 |
+| `change` | `(event: Event & { data: { value: string } }) => void` | 值确定变化（失焦 / 回车）；原生 `change` 穿不出 shadow，由组件转发     |
 
 ## 插槽与 part
 

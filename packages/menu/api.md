@@ -1,13 +1,13 @@
 # mc-menu / mc-menu-item
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./menu.html` + `./menu-item.html` · **已实现**
 
 垂直菜单，**容器 + 菜单项**两个标签，够撑起文档站那种侧栏导航。
 
 **交互元素由使用者写在插槽里**（原生 `<a>` / `<button>`），组件不造链接、也不改使用者的
 DOM：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用于页面模板（light DOM）里的
-元素，shadow root 里造的 `<a>` 用不上（[P28](../../agent/pitfalls/07-layout.md)、[`docs/routes.js`](../../docs/routes.js)）。
+元素，shadow root 里造的 `<a>` 用不上（[`docs/routes.js`](../../docs/routes.js)）。
 代价是**状态也必须写在使用者的元素上**，组件只按属性给外观。
 
 ```html
@@ -31,7 +31,7 @@ DOM：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用
 | `variant` | `'plain' \| 'surface'` | `plain` | `surface` 加边框底色，当卡片用；`plain` 无外框      |
 
 列表语义在容器上：`.mc-list` 是 `role="list"`，菜单项的 `role="listitem"` 由
-**菜单项自己**补（`attached()` 里写，[P31](../../agent/pitfalls/01-props.md) 不允许在构造期往宿主写属性）；
+**菜单项自己**补（`attached()` 里写 —— 不允许在构造期往宿主写属性）；
 使用者自己给 `mc-menu-item` 写了 `role` 就不覆盖。
 
 ### mc-menu-item（菜单项）

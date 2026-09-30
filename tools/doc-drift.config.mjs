@@ -102,7 +102,7 @@ const unitTokens = {
   ],
 };
 
-/** 组件文档：页面骨架（doc-pages.md §一 的固定骨架） */
+/** 组件文档：页面骨架（packages/README.md §一 的固定骨架） */
 const pageSkeleton = {
   id: 'page-skeleton',
   title: '组件文档 · 页面骨架（packages/*/page.html）',
@@ -141,65 +141,12 @@ const pageDemos = {
  * 仓库特有的账（声明式规则）
  * ------------------------------------------------------------------ */
 
-/** 单任务必读闭包的**行数预算** —— agent/README.md 导航表里那一列。超了就是「做这件事要读的东西变多了」。 */
-const readBudget = { maxLines: 600 };
-
-/** markdown 链接目标（只认 `](…)` 这种；锚点原样带回来，调用方自己决定跳不跳） */
-function markdownLinks(text) {
-  const out = [];
-  let i = 0;
-  while ((i = text.indexOf('](', i)) >= 0) {
-    const end = text.indexOf(')', i + 2);
-    if (end < 0) break;
-    out.push(text.slice(i + 2, end));
-    i = end + 1;
-  }
-  return out;
-}
-
-/** 文档里的 `[P<n>](文件)` / `[P<n>–P<m>](文件)` 引用（自锚点 `[P1](#p1-…)` 也收，调用方跳过） */
-function pitfallRefs(text) {
-  const out = [];
-  let i = 0;
-  while ((i = text.indexOf('[P', i)) >= 0) {
-    let j = i + 2;
-    while (j < text.length && text[j] >= '0' && text[j] <= '9') j += 1;
-    if (j === i + 2) {
-      i = i + 2;
-      continue;
-    }
-    const first = Number(text.slice(i + 2, j));
-    let second = first;
-    let k = j;
-    const dash = text[k];
-    if (dash === '-' || dash === '–' || dash === '—') {
-      let m = k + 1;
-      if (text[m] === 'P') m += 1;
-      let n = m;
-      while (n < text.length && text[n] >= '0' && text[n] <= '9') n += 1;
-      if (n > m) {
-        second = Number(text.slice(m, n));
-        k = n;
-      }
-    }
-    if (text.slice(k, k + 2) !== '](') {
-      i = j;
-      continue;
-    }
-    const end = text.indexOf(')', k + 2);
-    if (end < 0) break;
-    out.push({ first: first, second: second, href: text.slice(k + 2, end), index: i });
-    i = end + 1;
-  }
-  return out;
-}
-
 const rules = [
   {
     type: 'index',
     id: 'api-index',
-    title: '开发文档 · 组件索引（agent/api/README.md ↔ packages/）',
-    file: 'agent/api/README.md',
+    title: '开发文档 · 组件索引（packages/README.md ↔ packages/）',
+    file: 'packages/README.md',
     single: true,
     header: ['组件', '标签', '目录', '里程碑', '状态'],
     columns: { name: 0, tag: 1, dir: 2, stage: 3, status: 4 },
@@ -211,23 +158,17 @@ const rules = [
   {
     type: 'paths',
     id: 'dev-paths',
-    title: '开发文档 · 路径与目录树（agent/** ↔ 仓库）',
-    files: ['agent/**/*.md', 'README.md'],
-    // 考古 / 外部原文：记录的是历史状态，出现已删除的文件是正常的
-    // ⚠️ 教程豁免：它讲的是「要创建什么」，正文里点名的 `packages/badge/*.html` 此刻就该不存在。
-    // 「路径面」的语义是「文档里点名的文件仓库里有吗」，对教程不成立 —— 教程里的**链接**
-    // 由 `doc-links` 那条 custom 规则守（它跳过代码块，所以只查真链接）。
-    skipFiles: ['agent/archive/**', 'agent/vendor/**', 'agent/tutorial.md'],
+    title: '开发文档 · 路径与目录树（packages/**/*.md ↔ 仓库）',
+    files: ['packages/**/*.md', 'docs/**/*.md', 'README.md'],
+    // 考古：记录的是历史状态，出现已删除的文件是正常的
     historyWords: '已删|删掉|删了|曾是|曾经|原来|以前|不再|去掉|旧版|history',
     placeholder: '[{}<>*…$|@=()!?#]',
     placeholderSegment: '^(?:x|y|z|n|xxx|yyy|name|slug|foo|bar|baz)$',
-    topDirs: ['packages', 'tools', 'docs', 'tests', 'agent'],
+    topDirs: ['packages', 'tools', 'docs', 'tests'],
     // 规范里给「还没实现的组件」写文件名，是在定接口，不算脱节。
-    // 两条：已实现的住在组件单元里（`packages/<slug>/api.md`），
-    // 未实现的草案还留在 `agent/api/<slug>.md`（badge / spinner，目录都还没建）
     plannedSpec: {
-      filePattern: '^(?:packages/([\\w-]+)/api\\.md|agent/api/([\\w-]+)\\.md)$',
-      group: 2,
+      filePattern: '^packages/([\\w-]+)/api\\.md$',
+      group: 1,
     },
     // 带行号的引用可能是上游源码（`packages/xhear/register.mjs:42` —— ofa.js 的包）
     foreignLineRef: {
@@ -236,18 +177,10 @@ const rules = [
     },
   },
   {
-    type: 'tree',
-    id: 'dev-tree',
-    title: '开发文档 · 目录树（agent/plan/structure.md）',
-    file: 'agent/plan/structure.md',
-    commentChars: '#←',
-    placeholder: '[{}<>*…$|@=()!?#]',
-  },
-  {
     type: 'commands',
     id: 'dev-commands',
     title: '开发文档 · 命令（pnpm / node ↔ 真实脚本）',
-    files: ['agent/**/*.md', 'README.md'],
+    files: ['packages/**/*.md', 'docs/**/*.md', 'README.md'],
     runner: 'pnpm',
     builtins: [
       'install',
@@ -278,28 +211,18 @@ const rules = [
   {
     type: 'counts',
     id: 'dev-facts',
-    title: '开发文档 · 数字与清单（踩坑条数 / 套件数）',
+    title: '开发文档 · 数字与清单（套件数 / 工具类 / 对账组）',
     claims: [
-      {
-        label: '条坑',
-        pattern: '(\\d+)\\s*条',
-        files: ['agent/README.md', 'agent/pitfalls/README.md'],
-        // 踩坑条数：`### P<n>` 的总数就是真相
-        actual: ({ io }) =>
-          io
-            .listFiles('agent/pitfalls/*.md')
-            .reduce((sum, file) => sum + [...io.read(file).matchAll(/^### P\d+/gm)].length, 0),
-      },
       {
         label: '个站点套件',
         pattern: '(\\d+)\\s*个?站点套件',
-        files: ['agent/**/*.md', 'README.md', 'tests/smoke.mjs', 'tests/select.mjs'],
+        files: ['README.md', 'tests/smoke.mjs', 'tests/select.mjs', 'docs/**/*.html'],
         actual: () => siteSuites().length,
       },
       {
         label: '个组件套件',
         pattern: '(\\d+)\\s*个?组件套件',
-        files: ['agent/**/*.md', 'README.md', 'tests/smoke.mjs', 'tests/select.mjs'],
+        files: ['README.md', 'tests/smoke.mjs', 'tests/select.mjs', 'docs/**/*.html'],
         actual: () => componentSuites().length,
       },
       {
@@ -308,9 +231,9 @@ const rules = [
            一一对应；换口径（比如只算 utilities 层、不算图标）就要连文档用词一起改。 */
         label: '条工具类规则',
         // 只认「当前 / 现为 / 管线（N 条…」这种**报数**的写法；
-        // decisions.md 里「实测白产出过 4 条工具类规则」讲的是另一件事，别误伤
+        // 别处「实测白产出过 4 条工具类规则」讲的是另一件事，别误伤
         pattern: '(?<=当前 |现为 |管线（)(\\d+)\\s*条(?:精选)?工具类规则',
-        files: ['README.md', 'agent/**/*.md', 'docs/**/*.html'],
+        files: ['README.md', 'docs/**/*.html'],
         actual: ({ io }) =>
           io
             .read('packages/boot/mosaic.css')
@@ -320,7 +243,7 @@ const rules = [
       {
         label: '组（check:docs 对账组）',
         pattern: '(\\d+)\\s*组(?:全绿|全部对齐)',
-        files: ['agent/**/*.md', 'README.md', 'docs/**/*.html'],
+        files: ['README.md', 'docs/**/*.html'],
         actual: () => GROUP_COUNT,
       },
     ],
@@ -573,19 +496,15 @@ const rules = [
       /* 文档里的 `[…](…)` 链接，目标不存在就是断链 —— 链接坏掉是**静默**的：
          没人报错，只是读者点了没反应，所以要有守卫。
 
-         两条豁免（缺一条就会误报）：
-         1. **代码块里的不算** —— 教程与规范里的示例路径（`packages/badge/badge.html`）
-            是给读者**复制到别处**用的，按当前文件解析必然不存在。
-         2. **归档目录不查** —— 里面是历史原文，记录的是当时状态。
+         一条豁免（缺了就会误报）：**代码块里的不算** —— 组件文档里的示例路径
+         （`packages/badge/badge.html`）是给读者**复制到别处**用的，按当前文件解析必然不存在。
          http(s) / mailto / 纯锚点本来就不查。 */
-      const SKIP = /^(?:agent\/archive|agent\/vendor)\//;
       /* ⚠️ `io.listFiles` 收**单个** glob 字符串，不收数组 —— 传数组会拿到空列表，
          这条规则就变成「什么都不查还全绿」。逐条 flatMap，和引擎里的写法保持一致。 */
-      const GLOBS = ['agent/**/*.md', 'packages/**/*.md', 'docs/**/*.md', 'README.md'];
+      const GLOBS = ['packages/**/*.md', 'docs/**/*.md', 'README.md'];
       const files = GLOBS.flatMap((g) => io.listFiles(g));
 
       for (const file of files) {
-        if (SKIP.test(file)) continue;
         const lines = io.read(file).split('\n');
         let fence = false;
         for (let i = 0; i < lines.length; i++) {
@@ -606,156 +525,6 @@ const rules = [
             if (target.startsWith('..') || !io.exists(target)) {
               problems.push(
                 `${file}:${i + 1}：链接指向 \`${href}\`（解析为 \`${target}\`），文件不存在`,
-              );
-            }
-          }
-        }
-      }
-    },
-  },
-  {
-    /* 「默认不读」得能验：导航表每一行都写清**必读闭包**（读完这些就能动手做这件事），
-       这里算它的总行数并卡预算。没有这条守卫，「读这份」会慢慢变回「相关文档若干」。 */
-    type: 'custom',
-    id: 'read-budget',
-    title: '开发文档 · 单任务必读闭包（agent/README.md ↔ 文件存在与行数预算）',
-    run: ({ io, problems }) => {
-      const NAV = 'agent/README.md';
-      let rows = 0;
-      io.read(NAV)
-        .split('\n')
-        .forEach((line, index) => {
-          const cells = line.split('|');
-          if (cells.length !== 5) return;
-          const task = cells[1].trim();
-          const cell = cells[2].trim();
-          const kind = cells[3].trim();
-          if (!task || task === '我要做什么' || task === '-'.repeat(task.length)) return;
-          if (kind.startsWith('工具')) return; // 工具行指向命令，没有文档闭包
-          const links = markdownLinks(cell);
-          if (!links.length) {
-            problems.push(
-              NAV +
-                ':' +
-                (index + 1) +
-                '：这一行的「读这份」没有文件链接 —— 必读闭包必须是文件清单',
-            );
-            return;
-          }
-          let total = 0;
-          for (const href of links) {
-            // 目录链接末尾的 `/` 要去掉：glob 拼出 `agent/howto//**` 匹配不上（会退化成读目录，EISDIR）
-            let base = href.split('#')[0];
-            while (base.endsWith('/')) base = base.slice(0, -1);
-            const target = posix.normalize(posix.join('agent', base));
-            if (!io.exists(target)) {
-              problems.push(NAV + ':' + (index + 1) + '：闭包里的 ' + href + ' 不存在');
-              continue;
-            }
-            const inside = io.listFiles(target + '/**/*.md');
-            for (const file of inside.length ? inside : target.endsWith('.md') ? [target] : []) {
-              total += io.read(file).split('\n').length;
-            }
-          }
-          rows += 1;
-          if (total > readBudget.maxLines) {
-            problems.push(
-              NAV +
-                ':' +
-                (index + 1) +
-                '：「' +
-                task +
-                '」的必读闭包 ' +
-                total +
-                ' 行，超预算 ' +
-                readBudget.maxLines +
-                '（配置 readBudget）—— 该拆文档，不是加预算',
-            );
-          }
-        });
-      if (rows === 0) problems.push(NAV + '：一行闭包都没解析到 —— 守卫会安静地全绿');
-    },
-  },
-  {
-    /* 做法的契约（agent/howto/README.md 自己写的那几条）得有人守：
-         ① 开篇一句「这是食谱」—— 读者要立刻知道这是步骤不是规矩；
-         ② 有「验证」节，节里有一条能跑的命令（「怎么知道自己做对了」）；
-         ③ 有「这一步最容易踩的」节。
-       顺带守**坑条目引用**：`[P<n>](文件)` 必须真的落在那个文件的 `### P<n>` 上 ——
-       引错编号比不引更坏（读者按编号反查会扑空）。 */
-    type: 'custom',
-    id: 'howto-contract',
-    title: '开发文档 · 食谱契约与坑条目引用（agent/howto/** ↔ pitfalls/）',
-    run: ({ io, problems }) => {
-      const lineOf = (text, index) => text.slice(0, index).split('\n').length;
-
-      for (const file of io.listFiles('agent/howto/*.md')) {
-        if (file.endsWith('README.md')) continue;
-        const lines = io.read(file).split('\n');
-        if (!lines.slice(0, 6).join('\n').includes('这是食谱')) {
-          problems.push(file + '：开头没有「这是食谱」—— 读者分不出这是步骤还是规矩');
-        }
-        const verifyAt = lines.findIndex(
-          (line) => line.startsWith('## ') && (line.includes('验证') || line.includes('做对了')),
-        );
-        if (verifyAt < 0) {
-          problems.push(file + '：缺「验证」节 —— 每份食谱都要有「怎么知道自己做对了」');
-        } else {
-          const body = [];
-          for (let i = verifyAt + 1; i < lines.length && !lines[i].startsWith('## '); i += 1) {
-            body.push(lines[i]);
-          }
-          const section = body.join('\n');
-          if (
-            !section.includes('```') ||
-            !(section.includes('pnpm ') || section.includes('node '))
-          ) {
-            problems.push(file + '：「验证」节里没有能跑的命令（pnpm / node）');
-          }
-        }
-        if (!lines.some((line) => line.startsWith('## ') && line.includes('最容易踩的'))) {
-          problems.push(file + '：缺「这一步最容易踩的」节 —— 见 agent/howto/README.md 的三条');
-        }
-      }
-
-      const files = io
-        .listFiles('agent/**/*.md')
-        .filter((file) => !file.startsWith('agent/archive/') && !file.startsWith('agent/vendor/'));
-      for (const file of files) {
-        const text = io.read(file);
-        for (const ref of pitfallRefs(text)) {
-          if (ref.href.startsWith('#')) continue;
-          const target = posix.normalize(posix.join(dirname(file), ref.href.split('#')[0]));
-          if (!io.exists(target)) {
-            problems.push(
-              file +
-                ':' +
-                lineOf(text, ref.index) +
-                '：P' +
-                ref.first +
-                ' 指向的 ' +
-                ref.href +
-                ' 不存在',
-            );
-            continue;
-          }
-          const entryLines = io.read(target).split('\n');
-          for (let n = ref.first; n <= ref.second; n += 1) {
-            const prefix = '### P' + n;
-            const hit = entryLines.some(
-              (line) =>
-                line.startsWith(prefix) && !'0123456789'.includes(line[prefix.length] || ''),
-            );
-            if (!hit) {
-              problems.push(
-                file +
-                  ':' +
-                  lineOf(text, ref.index) +
-                  '：' +
-                  ref.href +
-                  ' 里没有 P' +
-                  n +
-                  ' 这条 —— 引错编号会让人扑空',
               );
             }
           }

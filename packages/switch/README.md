@@ -7,8 +7,7 @@
 
 **状态**：已实现 · M2 · 标签 `mc-switch` · 目录 `packages/switch/`
 
-开关。一个原生 `<input type="checkbox" role="switch">` 承载语义（键盘、读屏、命中区），
-视觉是轨道 + 滑块两个内部元素。
+开关。
 
 ## 单元里有什么
 
@@ -61,7 +60,4 @@ ARIA 的 `switch` 角色让读屏读「开关，已打开」而不是「复选�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

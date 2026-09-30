@@ -1,6 +1,6 @@
 # mc-select / mc-option
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./select.html` + `./option.html` · M2 · **已实现**
 
 下拉选择，**表单控件 + 选项**两个标签：`mc-select` 管触发框与面板，`mc-option` 只声明一个个选项。
@@ -79,9 +79,9 @@ dropdown 是**菜单**（触发元素 + 菜单项）；select 是**表单控件*
 
 ## 插槽与 part
 
-| 名称          | 说明                                                   |
-| ------------- | ------------------------------------------------------ |
-| 插槽 （默认） | 选项 `mc-option`；`o-fill` 渲染出来的也会被收集（P12） |
-| part="base"   | 触发框（内部那个原生 `<button>`）                      |
-| part="panel"  | 面板本体（原生 popover，进 top layer）                 |
-| part="option" | 面板里每一行选项                                       |
+| 名称          | 说明                                            |
+| ------------- | ----------------------------------------------- |
+| 插槽 （默认） | 选项 `mc-option`；`o-fill` 渲染出来的也会被收集 |
+| part="base"   | 触发框（内部那个原生 `<button>`）               |
+| part="panel"  | 面板本体（原生 popover，进 top layer）          |
+| part="option" | 面板里每一行选项                                |

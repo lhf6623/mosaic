@@ -1,6 +1,6 @@
 # mc-breadcrumb / mc-breadcrumb-item
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./breadcrumb.html` + `./breadcrumb-item.html` · **已实现**
 
 ```html
@@ -35,7 +35,7 @@
 
 **没有 `size` / `variant`**：面包屑是一行文字导航，这两档不成立；改字号直接覆盖容器的
 `font-size`。**不承诺插槽里放 `<button>`** —— 页面 reset 对 `button` 的优先级压过组件内的
-`::slotted()`（[P33](../../agent/pitfalls/03-style-scope.md)），要可点的级就用 `<a>`。
+`::slotted()`，要可点的级就用 `<a>`。
 
 ## 插槽与 part
 

@@ -34,7 +34,7 @@ mc-progress — 进度条
 `--mc-control-h-*` 那三档（28/36/44）是给触控目标的，套上来会变成一根柱子。
 
 **`value` / `max` 既是 observed attribute，也是宿主 property**（同 `mc-collapse-item` 的
-`open`）：`el.value = 50` 写完**立刻**重绘，不等 ofa 把属性同步回 data 的那一拍（P4）。
+`open`）：`el.value = 50` 写完**立刻**重绘，不等 ofa 把属性同步回 data 的那一拍。
 所以 `paint()` 读的是 **attribute**（属性的唯一真相），不是 `this.value` ——
 否则同步那一瞬读到的还是旧值。
 
@@ -44,7 +44,7 @@ mc-progress — 进度条
 
 **确定态写内联宽度，不确定态把内联宽度清掉**：两个状态共用一个 `.mc-fill`，
 不确定态的宽度与位移由 `:host([indeterminate]) .mc-fill` 与 `@keyframes` 给 ——
-如果脚本在不确定态下也写内联 `width`，会**盖掉**那条 CSS 规则（P15），动画就只剩位移。
+如果脚本在不确定态下也写内联 `width`，会**盖掉**那条 CSS 规则，动画就只剩位移。
 所以 `paint()` 在不确定态下走的是 `style.removeProperty('width')`。
 
 **动效走令牌**：填充宽度的过渡用 `--mc-duration-base`，不确定态的滑动时长用
@@ -55,7 +55,7 @@ mc-progress — 进度条
 **无障碍**：宿主是 `role="progressbar"` + `aria-valuemin="0"` + `aria-valuemax`；
 确定态写 `aria-valuenow`，不确定态**不留** `aria-valuenow`（那是「有一个确切进度」的承诺）
 并加 `aria-busy="true"`。这些宿主属性都在 `attached()` 之后写（构造期写会抛
-`NotSupportedError`，P31），首次触发落在构造期的 watch 由 `_live` / `_fill` 守卫挡掉（P5）。
+`NotSupportedError`），首次触发落在构造期的 watch 由 `_live` / `_fill` 守卫挡掉。
 
 **没有事件**：进度条不接受点击，也不产生值变化 —— 使用者自己知道值什么时候变。
 `mc-progress` 也不消费插槽：它没有可以放内容的语义位置（要标题 / 文字，放在它旁边的容器里）。
@@ -82,7 +82,7 @@ mc-progress — 进度条
   （有 `value` / `max`）—— 两者不该出现在同一块 UI 上。
 - 与 [`mc-alert`](../alert/) 的分工：alert 是「把一件事的结论告诉使用者」，
   progress 是「把一件事的**进展**告诉使用者」；都不抢焦点、都不会自己消失。
-- 草案见 [`agent/api/planned.md`](../../agent/api/planned.md) 的 `mc-progress` 行：
+- 草案见 [`packages/README.md`](../README.md) 的 `mc-progress` 行：
   关键属性与 `bar` part 与实现一致，实现只多了一件事 —— `value` / `max` 的 property 访问器
   （规范 1.4 的「运行时状态走 property」在这里是硬要求，草案里没写）。
 
@@ -90,7 +90,4 @@ mc-progress — 进度条
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

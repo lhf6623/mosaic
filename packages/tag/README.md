@@ -16,7 +16,7 @@
 | `tag.html`  | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`    | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`    | 7 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`    | 8 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
 | `test/`     | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -40,7 +40,7 @@ tag 是「内容本身」的标签，可以做两件交互的事 —— 可关�
 交互一律落在**原生元素**上，但刻意不「包一层按钮」：checkable 是 shadow 里一个铺满宿主的
 透明 <button aria-pressed>，内容留在它旁边的默认插槽里（mc-button 同一种做法）。
 这样 closable 的关闭按钮能与它做**兄弟**而不是嵌套 —— HTML 不允许 button 里再放 button；
-关闭按钮靠 z-index 压在 toggle 层上面（P21），点它不会连带切换选中。
+关闭按钮靠 z-index 压在 toggle 层上面，点它不会连带切换选中。
 代价是那个透明按钮是空的，无障碍名要把插槽文本镜像成 aria-label（见 applyLabel）。
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM（同 mc-menu / mc-breadcrumb）：
@@ -60,7 +60,7 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 | `--mc-tag-layer`        | `0.08`                          | state layer 的 hover 叠加强度；`active` 是它的 1.5 倍（12%） |
 | `--mc-tag-radius`       | `--mc-radius-md`                | 圆角（全圆角写 `--mc-radius-full`）                          |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 **`closable` 只发 `close`，不删 DOM**（组件不改使用者的 DOM，同 `mc-menu` / `mc-breadcrumb`）：
 自己在事件里 `el.remove()` 或改数据。可关 + 可选同时开时，× 压在 toggle 层上面（z-index 分开），
@@ -78,12 +78,8 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 [`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-tag-fill` / `-on-fill` / `-accent` /
 `-subtle-fill`（浅底档按当前主题混，切主题会重算）。文字色按 WCAG 自动给；**极浅的牌子色在浅底上会读不清**
 （`#fff000` 1.16:1），接线器会就此发一条 `[mosaic]` 警告。只收 hex，非 hex 一条警告、不写槽。
-
 <!-- hand:end -->
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

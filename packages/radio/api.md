@@ -1,6 +1,6 @@
 # mc-radio / mc-radio-group
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./radio.html` + `./radio-group.html` · M2 · **已实现**
 
 单选项，**容器 + 子项**两个标签：`mc-radio-group` 管互斥、方向、尺寸与事件，`mc-radio` 只是

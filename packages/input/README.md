@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M2 · 标签 `mc-input` · 目录 `packages/input/`
 
-单行输入框。可清除、前后缀插槽；是 M2 里「值的读写」这条约定的第一个落地者。
+单行输入框。可清除、前后缀插槽。
 
 ## 单元里有什么
 
@@ -41,40 +41,38 @@ Object.defineProperty(this.ele, 'value', {
 ```
 
 - 宿主 property 是**取景器**不是副本：`el.value = 'x'` 直接写内部原生 `<input>`，读也读它 ——
-  所以 `e.target.value` 在事件处理器里读得到（[P18](../../agent/pitfalls/04-dom-events.md)），
+  所以 `e.target.value` 在事件处理器里读得到，
   不存在「property 与内部元素谁更新」的问题。
 - `value` **不声明进 `attrs`**：声明了 ofa 就会把它当 observed attribute，属性 / property 两条通道
   会互相覆盖（`<mc-input value="x">` 于是看起来"能设"，但那是初始值语义，与 `default-value` 撞车）。
 - **初始值由 `applyDefaultValue()` 读，不读 `this.defaultValue`**：`attrs` 的数据在 `ready()` 那一刻还
   没铺好（实测 `this.defaultValue === ''` 而宿主上明明写着属性），所以直接读宿主属性、并用
   `_defaultApplied` 记账只生效一次 —— `ready()` 接住声明式 HTML，`attached()` 接住
-  「createElement 之后再 `setAttribute`」那条路（P32：属性在不在不能当条件，要看值）。
+  「createElement 之后再 `setAttribute`」那条路（属性在不在不能当条件，要看值）。
 - 写宿主属性（`data-has-*`）一律走 `applyState()`，它不是只在 `attached()` 之后生效 ——
-  构造期写宿主会抛 `NotSupportedError`（[P31](../../agent/pitfalls/01-props.md)）。
+  构造期写宿主会抛 `NotSupportedError`。
 
 **`data-has-clear` / `data-has-prefix` / `data-has-suffix` 是 CSS 唯一的输入**：× 该不该出现、
 空插槽该不该占那一个 `gap`，CSS 都看不见（slot 有没有分到节点只有 JS 知道），
-所以由 `slotchange` + property 写入镜像成宿主属性，样式从宿主上选（[P10](../../agent/pitfalls/02-template.md)：
-常驻 DOM + 属性显隐，不用 `o-if`）。`data-has-clear` 是一个**派生事实**
+所以由 `slotchange` + property 写入镜像成宿主属性，样式从宿主上选（常驻 DOM + 属性显隐，不用 `o-if`）。`data-has-clear` 是一个**派生事实**
 （`clearable` + 有内容 + 没被禁用 / 只读），不给 CSS 留"两个条件相与"的差事 ——
 `:host([a][b])` 与 `:host([disabled])` 撞在一起时，特异性会把禁用态盖回可见。
 
 **原生 `input` 事件被拦掉了**：原生 `input` 自带 `composed: true`，不拦的话宿主上会先收到一条
 **没有 `data`** 的原生事件、再收到组件转发的那条，`on:input="v = $event.data.value"` 会先抛一次
 异常。所以 `onInput()` 先 `stopPropagation()`，对外**永远只有一条带 `data.value` 的 `input`**。
-`change` 本来就是 `composed: false`，不存在这个问题（[P19](../../agent/pitfalls/04-dom-events.md)）。
+`change` 本来就是 `composed: false`，不存在这个问题。
 
 **转发给内部原生元素：除了 `disabled` 一律用 `attr:`，不要用 `:prop`**（这是踩出来的：
 `<input>` 上的 `:placeholder` / `:type` / `:name` 生效，但同一份模板里的 `<textarea>` 上
 `:placeholder` / `:rows` **完全不生效**；`<input>` 上的 `:maxlength` / `:readonly` 只写成同名的
 expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属性）。`attr:` 对 `null` 是**移除属性**
-（空 `placeholder=""`、无上限的 `maxlength` 都靠这条），`disabled` 仍按
-[P2](../../agent/pitfalls/01-props.md) 用 `:disabled`（IDL 就是小写，且 `attr:` 会把 `false`
+（空 `placeholder=""`、无上限的 `maxlength` 都靠这条），`disabled` 仍用 `:disabled`（IDL 就是小写，且 `attr:` 会把 `false`
 序列化成 `"false"` 反而永远禁用）。
 
 **行盒子写在宿主上**：高度、内边距、底色、边框、焦点环全在 `:host`（外部 `style="…"` 就能覆盖），
 `::slotted()` 一个属性都没写 —— 插槽内容只承载语义，颜色从 `part="prefix"` / `part="suffix"`
-那两层的容器继承下去（[P33](../../agent/pitfalls/03-style-scope.md) 的边界）。
+那两层的容器继承下去。
 
 **没有 `color` / `variant` 维度**：输入框的语气由 `invalid` 一个布尔表达（错误色取
 `--mc-color-danger`），多一个色板只会让「校验失败」和「品牌色」两件事混在一起。
@@ -91,7 +89,7 @@ expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属�
 | `--mc-input-clear-color`  | `--mc-color-fg-subtle`      | × 的颜色（hover / active 是它的叠加） |
 | `--mc-input-gap`          | `--mc-space-2`              | 前后缀、输入区、× 之间的间距          |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示 —— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 相邻单元
 
@@ -103,7 +101,4 @@ expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

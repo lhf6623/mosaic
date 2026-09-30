@@ -52,7 +52,7 @@ mc-spinner — 加载指示
 模板里没有 `<l-m>`，也没有 `data()` 样式。
 
 **无障碍**：宿主 `role="status"` + `aria-label`（取 `label`），图形本身 `aria-hidden="true"`。
-`role` / `aria-label` 都在 `attached()` 里写（构造期写宿主属性会抛 `NotSupportedError`，P31）。
+`role` / `aria-label` 都在 `attached()` 里写（构造期写宿主属性会抛 `NotSupportedError`）。
 
 ## 令牌
 
@@ -76,7 +76,4 @@ mc-spinner — 加载指示
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

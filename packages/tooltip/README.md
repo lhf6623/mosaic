@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M3 · 标签 `mc-tooltip` · 目录 `packages/tooltip/`
 
-提示气泡：锚在触发元素上，原生 `popover` + CSS 锚点定位，悬停或聚焦时弹一句纯文本。
+提示气泡。
 
 ## 单元里有什么
 
@@ -32,8 +32,7 @@
 浏览器那套 light dismiss 只会添乱。开合时浏览器可能顺手滚页面，接的是同一个
 [`scroll-pin`](../boot/scroll-pin.js) 守卫（`attachFloatingScrollGuard` + 显式显示那一行包 `run()`）。
 
-**内容只有 `content` 一句纯文本**（不是 `title`）：声明 `title` 会让宿主自己弹出浏览器原生 tooltip
-（[P32](../../agent/pitfalls/01-props.md)），两套气泡会同时出现。
+**内容只有 `content` 一句纯文本**（不是 `title`）：声明 `title` 会让宿主自己弹出浏览器原生 tooltip，两套气泡会同时出现。
 
 **不给使用者的触发元素写任何属性**（不加 `aria-describedby`、不改 `tabindex`）：插槽里的 DOM 归使用者。
 键盘可达因此靠**聚焦触发** —— `trigger="hover"` 时 `focusin` / `focusout` 与鼠标一视同仁，
@@ -52,7 +51,7 @@
    跟整体轮廓做（同 `mc-popover`）。
 3. **面板不写 `display`**：关着靠 UA 的 `[popover]:not(:popover-open){display:none}` 收起来；
    作者一写 `display` 就压过它，关着的面板会一直挂在页面上。
-4. **`trigger="click"` 的「点外部」必须走 `composedPath()`**（[P20](../../agent/pitfalls/04-dom-events.md)）：
+4. **`trigger="click"` 的「点外部」必须走 `composedPath()`**：
    composed 事件冒泡到 document 时 `e.target` 已被重定向成宿主，`contains(e.target)` 必然误判。
 
 另外：`delay` 用一个 `setTimeout` 实现，`detached()` 里必须清掉 —— 组件被摘掉之后回调还跑，
@@ -70,7 +69,7 @@
 | `--mc-tooltip-panel-radius` | `--mc-radius-md`              | 气泡圆角                                               |
 | `--mc-tooltip-panel-pad`    | `--mc-space-2` `--mc-space-3` | 气泡内边距（上下 / 左右）                              |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 刻意不做的
 
@@ -91,7 +90,4 @@
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

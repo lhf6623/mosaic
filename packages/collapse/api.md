@@ -1,6 +1,6 @@
 # mc-collapse / mc-collapse-item
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`README.md`](../../agent/api/README.md)；踩坑见 [`../pitfalls/`](../../agent/pitfalls/README.md)。
+> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./collapse.html` + `./collapse-item.html` · **已实现**
 
 折叠面板，**容器 + 子项**两个标签：容器管外框、尺寸与互斥，子项管自己那格的开合。
@@ -38,7 +38,7 @@
 | `disabled` | `boolean` | —    | 点不动、<kbd>Tab</kbd> 跳过、读屏可感知（原生 `<details>` 没有 disabled） |
 
 > ⚠️ 属性叫 **`header`** 而不是 `title`：`title` 是全局 HTML 属性，
-> 写在宿主上浏览器会在悬停时弹一个原生 tooltip（[P32](../../agent/pitfalls/01-props.md) 还会把它反射出来）。
+> 写在宿主上浏览器会在悬停时弹一个原生 tooltip（还会把它反射出来）。
 
 ## 事件
 

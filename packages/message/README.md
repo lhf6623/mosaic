@@ -59,9 +59,8 @@ message 是**命令式浮层**（自己进场自己走、不占版面）。两�
 ⚠️ 两个 ofa 的坑（都实测踩过，注释留在原地免得后人再踩）：
 
 - `o-fill` 的模板只允许**一个**根子元素 —— 所以里面套了一层 `display: contents` 的 div
-  来同时挂「显隐 + 退场动画 + popover 语义」三件事（P42 的成对写法）。
-- 条目识别用 `$index`：`o-fill` 内**不能用 `attr:data-*` 绑 `$data`**（`data` 是保留字，
-  见 P39 一族），所以 DOM → 数据只能靠位置反查，而 `$index` 实测可用。
+  来同时挂「显隐 + 退场动画 + popover 语义」三件事（成对写法）。
+- 条目识别用 `$index`：`o-fill` 内**不能用 `attr:data-*` 绑 `$data`**（`data` 是 ofa 的保留字），所以 DOM → 数据只能靠位置反查，而 `$index` 实测可用。
 
 ## 令牌
 
@@ -117,7 +116,4 @@ message 是**命令式浮层**（自己进场自己走、不占版面）。两�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

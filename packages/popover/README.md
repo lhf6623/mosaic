@@ -16,7 +16,7 @@
 | `popover.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`    | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`       | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`       | 6 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`       | 8 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
 | `test/`        | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -60,7 +60,7 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 | `--mc-popover-panel-pad`       | `--mc-space-4`              | 面板内边距                                                                                          |
 | `--mc-popover-panel-min-width` | `0`                         | 最小宽度：菜单类面板太窄会显得挤，也避免贴边翻转后宽度抖动                                          |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 实现约束（改这个组件前必须知道）
 
@@ -108,7 +108,7 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 所以 `trigger="click"` 的判定是「按下去时是否开着」，而且这条只有**真机指针**验得出来：
 合成 `click` 不触发 light dismiss，套件里专门有一条走 `page.mouse` 的断言守着；
 **「默认就显示」的开关（`arrow`）要把默认态留在基类规则里**，属性只表达非默认那一档
-（`arrow="none"` 关掉）—— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），默认态一旦挂到属性
+（`arrow="none"` 关掉）—— ofa 里 `:host()` 嵌 `:not()` 静默失效，默认态一旦挂到属性
 选择器上就会整体失效（同 `mc-card` 的 `divider="none"`）。
 
 ## 刻意不做的
@@ -119,7 +119,7 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 
 ## 相邻单元
 
-- 与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`planned.md`](../../agent/api/planned.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。
+- 与将来那批浮层（`mc-dialog` / `mc-dropdown` / `mc-tooltip`，草案见 [`packages/README.md`](../README.md)）的分工：popover 是**通用容器**，那几个只是在它上面固定住内容形态与交互的预设 —— 共用同一套定位与层级。
 
 - 图层问题的结论在这里定型：**一律用原生 `popover` 进 top layer**，不挂 `document.body`、不用 `z-index` 令牌；开合时浏览器顺手滚页面那一下由 `packages/boot/scroll-pin.js` 钉住。
 
@@ -127,7 +127,4 @@ M3 浮层开工前先验图层）：面板用 `popover="auto"` 进 top layer，�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

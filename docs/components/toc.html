@@ -6,7 +6,7 @@
   页内后续渲染（示例、异步卡片）由 MutationObserver 兜。
     · 目录项不能用 `#id` 锚点：地址栏 hash 归 ofa 路由器所有（#/packages/…），
       而且页面正文在 shadow root 里、URL fragment 也进不去 —— 所以点击一律
-      preventDefault + 程序化滚动（见 agent/pitfalls/README.md 的 P28/P29 一带）；
+      preventDefault + 程序化滚动；
     · 滚动容器是外壳的 `.doc-main`（顶栏下面那一带，见 layout.html 的注释），scroll-spy 盯它；
       高亮仍旧走 mc-menu 那条路：给 <a> 写 aria-current，组件镜像成宿主的 data-current；
       滚到底时**单独收尾到最后一项** —— 判定带只覆盖顶部 30%（≤240px），页尾那几节够不着
@@ -18,7 +18,7 @@
     · h2 = 节、h3 = 节里的子项：缩进一档 + 颜色弱一档、节与节之间留一道空。
       缩进会吃掉可点宽度，所以右栏宽度按「最长标题放得下」定（见 <style> 里的注释）。
 
-  ⚠️ 只把「建 DOM」那一段交给模板（结构与数据同形）；扫描标题、**扁平树找滚动容器（P34）**、
+  ⚠️ 只把「建 DOM」那一段交给模板（结构与数据同形）；扫描标题、**扁平树找滚动容器**、
      签名守卫、滚动高亮、防抖全部留在 JS —— 那是这块的难点，不是模板能表达的。
   ⚠️ **高亮也走数据**：当前项 = `rows[i].aria`，模板负责渲染（阶段 0 实测：o-fill 局部改数据
      复用节点，所以不会把正在点的节点换掉）。只写真正变化的那一两行，滚动开销可以忽略；
@@ -27,7 +27,7 @@
      所以挂 MutationObserver，标题签名变了才重建目录（签名没变不碰 DOM，
      免得把正在点的节点换掉 —— 同 nav.html 那条「不重建 DOM」的教训）。
   ⚠️ **此元素自带 shadow root 了**：proto 里的 `this` 是 ofa 实例，所有元素 API 走 `this.ele`
-     （实测，见 agent/archive/research/state.md §6）——`contentRoot()` / `scroller()` 都踩在这条上。
+     （实测）——`contentRoot()` / `scroller()` 都踩在这条上。
 -->
 <template component>
   <style>

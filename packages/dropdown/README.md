@@ -5,9 +5,9 @@
 > 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
-**状态**：已实现 · M3 · 标签 `mc-dropdown`（面板内容复用 `mc-menu-item`） · 目录 `packages/dropdown/`
+**状态**：已实现 · M3 · 标签 `mc-dropdown` · 目录 `packages/dropdown/`
 
-下拉菜单：触发元素放 `trigger` 插槽、内容放默认插槽，面板是原生浮层（进 top layer），贴边自动翻转。
+下拉菜单。
 
 ## 单元里有什么
 
@@ -48,21 +48,18 @@ select 是**表单控件**（选项与 `value` 归它管），dropdown 是**菜�
 
 - **面板用 `popover="manual"`，开合自己管**。`popover="auto"` 的 light dismiss 发生在
   **pointerdown** 上，等 click 到达时面板已经被浏览器关掉，再开合会把它**重新开回来**
-  （表现是「点第二次关不掉」）；而点外部判定又必须走 `e.composedPath()`（
-  [P20](../../agent/pitfalls/04-dom-events.md)：`contains(e.target)` 在 shadow 边界上拿到的是
+  （表现是「点第二次关不掉」）；而点外部判定又必须走 `e.composedPath()`（`contains(e.target)` 在 shadow 边界上拿到的是
   被重定向后的宿主，必然误判成外部）。所以外部点击由 `document` 上的 `pointerdown` +
   `composedPath` 判定，Esc 由宿主上的 `keydown` 处理（顺手 `preventDefault`，避免和原生
   close-watcher 抢），关闭后把焦点还给触发元素里第一个能聚焦的元素。
 - **`open` 是唯一真相，属性与 property 两个方向都收敛到原生 popover 状态**。事件与 UI 状态
   从 `syncOpenUI()` 这一个出口发（`open` / `close` 各一次）：显式开合**同步**走它，
   原生 `toggle` 只当兜底 —— 排队发的 `toggle` 在「刚关就又开」的连招里会丢事件
-  （实测：Esc 后立刻再开，`open` 事件收不到）。首触发照例跳过
-  （[P5](../../agent/pitfalls/01-props.md)），构造期不碰 popover（
-  [P31](../../agent/pitfalls/01-props.md)）。
+  （实测：Esc 后立刻再开，`open` 事件收不到）。首触发照例跳过，构造期不碰 popover。
 - **面板内容不自己收起**。面板里可能是表单、多级内容或不希望关的说明 —— 关不关由使用者决定
   （在菜单项上写 `on:click="open = false"`）。这条也进文档页的「注意事项」。
 - **复用 `mc-menu-item` 而不是自己造一套菜单项**：行盒子、当前项 / 禁用态的镜像都在那个
-  单元里（[P33](../../agent/pitfalls/03-style-scope.md) 的推演也在那儿），这里只
+  单元里，这里只
   `await load('../menu/menu-item.html')` 把它带进来，**不改 menu 目录**。
   `--mc-menu-*` 通道没有 `mc-menu` 容器时走各自的兜底值，所以单放菜单项也是完整的行。
 
@@ -84,7 +81,7 @@ select 是**表单控件**（选项与 `value` 归它管），dropdown 是**菜�
 「内容宽」永远是 0，只给 `anchor-size(width)` 的话窄触发元素上标签会被裁掉（实测
 「面板居中」被裁成「面板…」）。要贴着触发元素的宽度就自己把它写成 `0px`。
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示 —— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 > 还有一个 `--mc-dropdown-anchor`（锚点标识）：它是组件内部的接线，不是使用者的覆盖点，在代码里标了 `@internal`。
 
 ## 相邻单元
@@ -97,7 +94,4 @@ select 是**表单控件**（选项与 `value` 归它管），dropdown 是**菜�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

@@ -1,13 +1,13 @@
-# mc-tabs / mc-tab（标签页）
+# mc-tabs（标签页）
 
 > **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
 > 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
 > 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
-**状态**：已实现 · M3 · 标签 `mc-tabs` / `mc-tab` · 目录 `packages/tabs/`
+**状态**：已实现 · M3 · 标签 `mc-tabs` · 目录 `packages/tabs/`
 
-标签页。容器管标签条、面板显隐与键盘；标签是一颗原生按钮，值走 property、变化走 `change`。
+标签页。
 
 ## 单元里有什么
 
@@ -29,9 +29,9 @@
 ### 标签与面板都是使用者的 light DOM
 
 标签（`mc-tab`）与面板（`slot="panel"`）都由使用者写在容器里，容器一个节点都不造、也不搬。
-所以：**面板用 `hidden` 常驻 DOM**（[P10](../../agent/pitfalls/02-template.md)），不用 `o-if` / `o-fill` 去渲染 ——
+所以：**面板用 `hidden` 常驻 DOM**，不用 `o-if` / `o-fill` 去渲染 ——
 一旦用 `o-fill` 包一层，容器自己的 `:scope > mc-tab` / `:scope > [slot="panel"]` 收集就会失配
-（[P38](../../agent/pitfalls/09-control-flow.md) 那一族），而且切回来时内容与滚动位置会丢。
+（那一族），而且切回来时内容与滚动位置会丢。
 
 容器只认**直接子项**：嵌套的 `mc-tabs` 各自算各自的，不会互相误伤（同 `mc-collapse` 的容器策略）。
 
@@ -39,7 +39,7 @@
 
 `default-value` 只决定首屏（`attrs` 里声明，所以它是 observed attribute）；运行时读写宿主
 property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、也不反射成属性
-（规范 1.4 / [P18](../../agent/pitfalls/04-dom-events.md)）。`el.value = 'b'` 是同步生效的，
+（规范 1.4）。`el.value = 'b'` 是同步生效的，
 且**不发 `change`**：事件只表示"使用者改了它"。
 
 指向禁用项、或指向一个不存在的 `value` 时都退到第一个可用项 —— 面板与标签因此不会同时空着。
@@ -47,7 +47,7 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 ### 键盘与 aria
 
 - 可交互元素是 `mc-tab` 内部那颗**原生 `<button>`**（`part="base"`，`role="tab"`），禁用直接走
-  `:disabled`（[P2](../../agent/pitfalls/01-props.md)）：指针、键盘、读屏三条路一起堵住。
+  `:disabled`：指针、键盘、读屏三条路一起堵住。
 - roving tabindex 写在这颗 button 上：只有激活项 `tabindex="0"`，其余 `-1`；方向键 /
   <kbd>Home</kbd> / <kbd>End</kbd> 移动**并激活**（焦点也跟着走），跳过禁用项、到头绕回。
 - `aria-controls` 指向面板 id、面板的 `aria-labelledby` 指回标签宿主。⚠️ 前者跨了
@@ -74,7 +74,7 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 | `--mc-tabs-indicator`   | `--mc-color-primary`        | 指示条颜色                                |
 | `--mc-tabs-indicator-h` | `2px`                       | 指示条粗细                                |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 > ⚠️ `mc-tab` 侧一律写成 `var(--mc-tabs-x, 兜底)`：在子项 `:host` 上写默认值会盖掉容器继承来的值，
 > 容器的尺寸通道就永远不生效（同 `mc-collapse-item` 那条）。
@@ -89,7 +89,4 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M2 · 标签 `mc-textarea` · 目录 `packages/textarea/`
 
-多行输入框。自动增高、字数统计；值读写约定与 [`mc-input`](../input/) 同一套。
+多行输入框。支持自动增高与字数统计。
 
 ## 单元里有什么
 
@@ -30,7 +30,7 @@
 `data.value`、原生 `input` 先 `stopPropagation()` 再转发（否则宿主上会多一条没有 `data` 的）。
 那一份的注释更细，这里不重复 —— 改这里时先把 [`../input/README.md`](../input/README.md) 读一遍。
 
-**转发给内部原生元素一律用 `attr:`**（除了按 P2 用 `:disabled`）：这一条在 textarea 上不是风格问题
+**转发给内部原生元素一律用 `attr:`**（除了 `disabled` 用 `:disabled`）：这一条在 textarea 上不是风格问题
 而是生死问题 —— 实测 `<textarea :placeholder="…">` / `<textarea :rows="…">` **完全不生效**
 （同一个仓库里 `<input :placeholder>` 却生效），所以 `placeholder` / `rows` / `name` /
 `maxlength` / `readonly` / `aria-*` 全部走 `attr:`，`null` 表示移除属性。细节与证据见
@@ -40,7 +40,7 @@
 把 `height` 写死会让 `rows` 失效。三档改的是 `min-height`（`--mc-control-h-*`）、内边距
 （`--mc-space-*`）、字号与行高（`--mc-text-*`，行高直接决定一行多高），口径与其余组件一致。
 
-**`auto-resize` 只写 shadow 内部元素**（[P31](../../agent/pitfalls/01-props.md)）：
+**`auto-resize` 只写 shadow 内部元素**：
 
 ```js
 el.style.height = `${el.scrollHeight}px`; // scrollHeight 本身就是内容高度，不用先归零
@@ -55,11 +55,11 @@ el.style.height = `${el.scrollHeight}px`; // scrollHeight 本身就是内容高�
   `cancelAnimationFrame`。
 - 打开时额外压掉原生拖拽把手与滚动条（`:host([auto-resize]) .mc-input { overflow: hidden; resize: none }`）——
   高度既然由脚本写死，手动拖拽只会被下一次输入覆盖，滚动条则会污染 `scrollHeight`。
-- 句柄存在 `_onAutoResize` 上，**不叫 `resize`**：那会盖掉同名的 proto 方法（[P43](../../agent/pitfalls/01-props.md)）。
+- 句柄存在 `_onAutoResize` 上，**不叫 `resize`**：那会盖掉同名的 proto 方法。
 
 **字数统计只在给了 `maxlength` 时显示**，内容就是 `当前/上限`（长度用 `value.length`，
 与原生 `maxlength` 数的 UTF-16 单元保持同一口径）。它写在 `part="counter"` 的常驻元素里，
-显隐走宿主上的 `data-has-maxlength`（同 input 的 `data-has-*`，[P10](../../agent/pitfalls/02-template.md)）。
+显隐走宿主上的 `data-has-maxlength`（同 input 的 `data-has-*`）。
 
 **没有 `color` / `variant` 维度**：语气由 `invalid` 一个布尔表达（错误色取 `--mc-color-danger`）。
 
@@ -75,7 +75,7 @@ el.style.height = `${el.scrollHeight}px`; // scrollHeight 本身就是内容高�
 | `--mc-textarea-counter-color` | `--mc-color-fg-subtle`      | 字数统计的颜色                     |
 | `--mc-textarea-gap`           | `--mc-space-2`              | 前后缀与输入区之间的间距           |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示 —— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 相邻单元
 
@@ -85,7 +85,4 @@ el.style.height = `${el.scrollHeight}px`; // scrollHeight 本身就是内容高�
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

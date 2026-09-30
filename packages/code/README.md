@@ -16,7 +16,7 @@
 | `code.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`    | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`    | 11 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
+| `demos/`    | 12 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
 | `test/`     | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -42,7 +42,7 @@ mc-code — 代码展示组件。三条主线：
 | `--mc-code-font-size` / `--mc-code-line-height`        | 排版                                 |
 | `--mc-code-max-h`                                      | 高度上限（一般写 `max-height` 属性） |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 **语法配色不是令牌**：它来自 highlight.js 的官方主题样式表
 （`styles/<theme>.min.css`），取回来**原样 `adopt`** 进组件的 shadow root，
@@ -60,7 +60,7 @@ mc-code — 代码展示组件。三条主线：
 
 ## 为什么不发事件
 
-> 页面上**没有**这一节：按 [`doc-pages.md`](../../agent/doc-pages.md) §一「有事件才写这一节；一个都没有就整节省略」——
+> 页面上**没有**这一节：按 [`packages/README.md`](../README.md) §一「有事件才写这一节；一个都没有就整节省略」——
 > `mc-code` 是纯展示组件，没有自定义事件，也不 `emit` 任何东西。
 > 这一行留给对账与改代码的人 —— 不渲染（README 不进页面）。
 
@@ -72,7 +72,4 @@ mc-code — 代码展示组件。三条主线：
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

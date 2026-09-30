@@ -1,4 +1,4 @@
-# mc-table（数据表格）
+# mc-table（表格）
 
 > **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
 > 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M3 · 标签 `mc-table` · 目录 `packages/table/`
 
-数据表格。真 `<table>` 结构；`columns` / `data` 是对象数组，运行时只能走 property。
+数据表格。columns / data 通过 property 传入（对象不能走标签属性）。
 
 ## 单元里有什么
 
@@ -39,7 +39,7 @@ HTML 解析器有 **foster parenting**：`<table>` 里出现非表格元素（`o
 3. 单元格数量由 `columns` 动态决定，逐格写模板做不到，行模板用 `:html="$host.cellsHtml($data)"`
    填 —— 单元格文本在 `cellsHtml()` 里**自己转义**（`:html` 是 HTML 通道，不能直接拼原文）。
 
-### 数据链路（P6 就在这一步）
+### 数据链路
 
 `columns` / `data` 的运行时入口是宿主 property，规范化结果写进 `data.cols` / `data.rows`
 （**非 attrs 键**），模板只读这两个字段：
@@ -53,7 +53,7 @@ data 属性(JSON)     ─┴─→ applyData()    ─→ this.rows ─→ <o-fil
                                                             └→ $host.cellsHtml($data) 逐格
 ```
 
-- `watch.columns` 收到的是 **JSON 字符串**（[P6](../../agent/pitfalls/01-props.md)），`toArray()` 负责 `JSON.parse`；
+- `watch.columns` 收到的是 **JSON 字符串**，`toArray()` 负责 `JSON.parse`；
 - 规范化后的值**绝不写回 attrs 声明的键**（写回去会被 ofa 再次序列化）；`rows` / `cols` 这类
   非 attrs 键才是渲染源，所以不存在"对象 → 字符串 → 对象"的来回丢失；
 - 每行补一个 `rowKey`（优先 `rowKey` / `id`，否则下标）当 `fill-key`，增删时行节点才能正确复用。
@@ -62,8 +62,7 @@ data 属性(JSON)     ─┴─→ applyData()    ─→ this.rows ─→ <o-fil
 
 `data` 是 ofa.js **元素代理上的保留名**（`$.fn.data`）。把它声明进 `attrs` 之后，每次属性同步都会
 往代理写一次 `data`，抛 `TypeError: 'set' on proxy: trap returned falsish`，
-整个组件渲染不出来（连 shadow root 都没有）—— 与 [P31](../../agent/pitfalls/01-props.md)
-（`wrap`）/ [P7](../../agent/pitfalls/01-props.md) 同一族。所以：
+整个组件渲染不出来（连 shadow root 都没有）—— 与 `wrap` 同一族。所以：
 
 - `data` 只做**宿主 property** + 组件自己听的属性观察（`MutationObserver`，属性写法只作初始值兼容）；
 - `api.md` 的属性表里因此没有 `data`，它单独列在「宿主 property」表里 —— 那张表就是这件事的事实源。
@@ -71,8 +70,8 @@ data 属性(JSON)     ─┴─→ applyData()    ─→ this.rows ─→ <o-fil
 ### 空态 / 加载态常驻 DOM
 
 `empty` / `loading` 两个插槽的内容常驻，靠**内部容器上的 `data-empty`** 与宿主 `[loading]`
-切显隐（[P10](../../agent/pitfalls/02-template.md)）。`data-empty` 写在 `.mc-wrap` 上而不是宿主上：
-构造期（`ready()`）不能往宿主写属性（[P31](../../agent/pitfalls/01-props.md)）。
+切显隐。`data-empty` 写在 `.mc-wrap` 上而不是宿主上：
+构造期（`ready()`）不能往宿主写属性。
 
 ### 表格不合并边框
 
@@ -96,7 +95,7 @@ CSS 里只写 `border-spacing: 0`，靠 `border-collapse` 的初始值 `separate
 | `--mc-table-state-fg`     | `--mc-color-fg-subtle`      | 空态 / 加载态的文字色  |
 | `--mc-table-state-pad`    | `--mc-space-8`              | 空态 / 加载态的内边距  |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 ## 相邻单元
 
@@ -108,7 +107,4 @@ CSS 里只写 `border-spacing: 0`，靠 `border-collapse` 的初始值 `separate
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)

@@ -2,7 +2,7 @@
  * 站点 · 写法守卫（node-only）：四条结构不变量，都在 `docs/` + `packages/` 里扫源码。
  *
  * ① **不允许手写 `class … extends HTMLElement`** —— 组件一律 `<template component>`
- *    （理由与逐条对照见 agent/authoring.md §四「ofa.js 组件骨架」）。
+ *    （写法：`<template component>` + 一行 `tag`）。
  *    背景：`docs/` 下曾经有四个手写元素（doc-nav / doc-crumb / doc-pager / doc-toc），
  *    它们各自重做了框架已经给的东西：el() 建 DOM、自己挂 hashchange/router-change、
  *    自己维护「内容没变就别重建」的守卫、自己在 disconnectedCallback 里摘监听。
@@ -210,7 +210,7 @@ export default async function run({ check }) {
     `没有手写 class 组件（扫了 ${files.length} 个文件：组件一律 <template component>）`,
     classHits.length === 0,
     classHits.join('\n        ') ||
-      `docs/ 与 packages/ 均为 0 处 —— 写法见 agent/authoring.md §四（迁移配方见 docs-refactor.md §4.0）`,
+      `docs/ 与 packages/ 均为 0 处 —— 组件一律 <template component>`,
   );
 
   check(
@@ -252,7 +252,7 @@ export default async function run({ check }) {
     `演示区用到的项目组件都在那一页注册得到（${READY.length} 页逐演示对账）`,
     unregistered.length === 0,
     unregistered.join('\n        ') ||
-      `站点外壳注册：${[...shellTags].sort().join(' / ')} —— 其余靠各页自己的 <l-m>，见 agent/doc-pages.md §二`,
+      `站点外壳注册：${[...shellTags].sort().join(' / ')} —— 其余靠各页自己的 <l-m>，见 packages/README.md §二`,
   );
 
   /* ④ 原生浮层 ↔ 滚动守卫：声明或显示 popover 的**组件**必须引用 scroll-pin。

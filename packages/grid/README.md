@@ -1,13 +1,13 @@
-# mc-grid / mc-grid-item（栅格）
+# mc-grid（栅格）
 
 > **这是单元开发文档，不是接口文档。** 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part）
 > 的唯一手写源是 [`api.md`](./api.md) —— 它由 `<doc-spec>` 渲染进 [`page.html`](./page.html) 的参考区。
 > 这份回答「这个目录里有什么、各自什么关系、现在什么状态、为什么这么设计」，
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
-**状态**：已实现 · M3 · 标签 `mc-grid` / `mc-grid-item` · 目录 `packages/grid/`
+**状态**：已实现 · M3 · 标签 `mc-grid` · 目录 `packages/grid/`
 
-栅格。容器只决定列与间距（`display: grid`），子项决定自己跨几列。
+栅格。
 
 ## 单元里有什么
 
@@ -49,13 +49,12 @@
 ```
 
 - **只能在 `attached()` 之后写宿主**：`ready()` 还在构造期，往宿主写 style 会抛
-  `NotSupportedError`（[P31](../../agent/pitfalls/01-props.md)），所以 `watch` 一律先过 `_mounted` 守卫
-  （顺带把 [P5](../../agent/pitfalls/01-props.md) 的首次触发也挡掉）。
+  `NotSupportedError`，所以 `watch` 一律先过 `_mounted` 守卫
+  （顺带把首次触发也挡掉）。
 - 回到默认值（`cols` 删掉、`min-item-width` 空）时**删掉变量**而不是写兜底值：
   写同一个变量会把使用者写在 `style` 上的覆盖抹掉。
-- `min-item-width` 的开关走属性选择器（`[min-item-width]`）—— 否定选择器在 `:host` 里会静默失效
-  （[P14](../../agent/pitfalls/03-style-scope.md)）；它是 `null` 默认的字符串属性，
-  没写就**不会**被 ofa 反射出来（[P32](../../agent/pitfalls/01-props.md) 那条只对非空默认值成立）。
+- `min-item-width` 的开关走属性选择器（`[min-item-width]`）—— 否定选择器在 `:host` 里会静默失效；它是 `null` 默认的字符串属性，
+  没写就**不会**被 ofa 反射出来（那条规则只对非空默认值成立）。
 
 ### `span` 同样只是一条 CSS 变量
 
@@ -75,7 +74,7 @@
 | `--mc-grid-min-w` | `12rem` | 最小子项宽度（`/* @internal */`：JS 按 `min-item-width` 写） |
 | `--mc-grid-span`  | `1`     | 跨列数（`/* @internal */`：JS 按 `span` 写）                 |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示—— 依据 [`doc-render.md`](../../agent/doc-render.md) §三。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
 
 > 三条都是**内部变量**：值是 JS 按属性算出来的，使用者要改列 / 间距应该改属性，
 > 而不是直接覆盖它们（`api.md` 的属性表才是接口面）。
@@ -89,7 +88,4 @@
 
 ## 改这个单元之前
 
-- 造组件 / 改样式：[`authoring.md`](../../agent/authoring.md) · [`authoring-style.md`](../../agent/authoring-style.md)
-- 写组件前必读的踩坑清单：[`pitfalls/README.md`](../../agent/pitfalls/README.md)
-- 跨组件约定与组件索引：[`api/README.md`](../../agent/api/README.md)
-- 文档页怎么排：[`doc-pages.md`](../../agent/doc-pages.md)
+- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
