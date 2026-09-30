@@ -97,7 +97,10 @@ const beforeSwitch = await page.evaluate(() => {
   return {
     navMax: nav.scrollHeight - nav.clientHeight,
     navScrollTop: Math.round(nav.scrollTop),
-    tocFirst: (toc?.shadowRoot ?? toc).querySelector('a')?.textContent?.trim() ?? null,
+    /* 比**整份目录**：组件页的第一节都叫「例子」，只比首项判别不出换了页 */
+    tocItems: [...(toc?.shadowRoot ?? toc).querySelectorAll('a')]
+      .map((a) => a.textContent.trim())
+      .join('|'),
   };
 });
 
@@ -122,7 +125,9 @@ const afterSwitch = await page.evaluate(() => {
     navScrollTop: Math.round(nav?.scrollTop ?? -1),
     navCurrent:
       window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim() ?? null,
-    tocFirst: toc?.shadowRoot?.querySelector('a')?.textContent?.trim() ?? null,
+    tocItems: [...(toc?.shadowRoot ?? toc).querySelectorAll('a')]
+      .map((a) => a.textContent.trim())
+      .join('|'),
   };
 });
 
@@ -138,9 +143,9 @@ check(
 check(
   '切页后左栏高亮与右栏目录都跟着换了页',
   afterSwitch.navCurrent?.includes('Code') &&
-    afterSwitch.tocFirst !== null &&
-    afterSwitch.tocFirst !== beforeSwitch.tocFirst,
-  `当前项=${afterSwitch.navCurrent} · 目录首项 ${beforeSwitch.tocFirst} → ${afterSwitch.tocFirst}`,
+    afterSwitch.tocItems.length > 0 &&
+    afterSwitch.tocItems !== beforeSwitch.tocItems,
+  `当前项=${afterSwitch.navCurrent} · 目录 ${beforeSwitch.tocItems.split('|').length} → ${afterSwitch.tocItems.split('|').length} 项`,
 );
 
 /* ------------------------------------------------------------------ *
@@ -173,8 +178,10 @@ await page.evaluate(() => {
   setTimeout(() => clearInterval(timer), 1500);
 });
 await page.evaluate(() => {
+  /* ⚠️ 不能点当前页：「组件」入口落到第一个组件页（Button），再点 Button 就是原地不动，
+     采样不到换页（h1 不变）。点另一个组件才有内容高度的变化。 */
   window.__inside('doc-nav', 'a')
-    .find((a) => a.textContent.includes('Button'))
+    .find((a) => a.textContent.includes('Code'))
     ?.click();
 });
 await page.waitForTimeout(1800);

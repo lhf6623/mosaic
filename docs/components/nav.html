@@ -163,7 +163,7 @@
      * 左栏显示名，三种节点三种写法：
      *   · 分组 → `基础（9）`：括号里是**这一组渲染出来的子项数**（隐藏项已在 menuOf 里剔除）
      *   · 组件 → `按钮（Button）`：中文 + 括号里的 API 名（英文名 = label，中文名 = zh）
-     *   · 其余 → 原样的 label（站点页 / 总览不做中英对照）
+     *   · 其余 → 原样的 label（站点页 / 分组不做中英对照）
      */
     const displayName = (node) => {
       if (node.children) return `${node.label}（${node.children.length}）`;

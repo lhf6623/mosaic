@@ -112,17 +112,14 @@ export default async function run({ check }) {
     missing.join('\n        ') || `无死链`,
   );
 
-  /* ④ 路由不重复。例外是「分区入口 = 它 children 里的总览」：同一条 path 出现两次是有意的 */
+  /* ④ 路由不重复。分区入口不再复用子节点的 path（落到子树第一页，见 site-map 的 firstPageOf），所以没有例外 */
   const routes = pageNodes.map(({ node }) => node.path);
   const counts = new Map();
   for (const path of routes) counts.set(path, (counts.get(path) ?? 0) + 1);
 
-  const sectionEntries = new Set(NAV.filter((entry) => entry.children).map((entry) => entry.path));
-  const dupes = [...counts]
-    .filter(([path, n]) => n > 1 && !(n === 2 && sectionEntries.has(path)))
-    .map(([path, n]) => `${path}（${n} 次）`);
+  const dupes = [...counts].filter(([, n]) => n > 1).map(([path, n]) => `${path}（${n} 次）`);
 
-  check('NAV 里没有重复路由（分区入口与它的「总览」重合除外）', dupes.length === 0, dupes.join(' / ') || '无重复');
+  check('NAV 里没有重复路由', dupes.length === 0, dupes.join(' / ') || '无重复');
 
   /* ⑤ 结构自身的规矩：order / 空分组 / hidden / 组件字段 */
   const structural = [];

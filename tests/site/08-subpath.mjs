@@ -104,25 +104,6 @@ export default async function run({ check, newPage }) {
       JSON.stringify(side),
     );
 
-    /* ④ 总览页的组件卡片能进组件页 */
-    await p.goto(`${base}#${PREFIX}/docs/pages/components.html`, { waitUntil: 'load' });
-    await settle();
-    await p.evaluate(() => {
-      // 卡片本体是 <mc-card>，链接是它内部的标题（铺满卡片的链接）—— 按 href 找才准，
-      // 卡片文本是「Button 已实现 mc-button 按钮。…」
-      window.__deepAll('.doc-comp-card a')
-        .find((a) => (a.getAttribute('href') || '').includes('packages/button/page.html'))
-        ?.click();
-    });
-    await settle();
-    const card = { h1: await h1(), top: await active() };
-    check(
-      '子路径：总览卡片能进组件页（卡片链接也带前缀）',
-      card.h1?.startsWith('Button') && card.top === '组件',
-      JSON.stringify(card),
-    );
-
-
     /* ⑥ 冷启动深链（地址栏里的 hash 是带前缀的形式） */
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });
     await settle();

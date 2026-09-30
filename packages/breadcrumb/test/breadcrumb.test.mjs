@@ -227,7 +227,7 @@ const crumb = await (async () => {
 
 
   /** 真实点击第二级链接（组件）：路由跟着走（原生 <a>，组件不拦）。
-      落到 components.html 之后再从**左栏**切一次到组件页，顺带验「顶栏与左栏一起更新」——
+      落到链接目标（第一个组件页）之后再从**左栏**切一次，顺带验「顶栏与左栏一起更新」——
       两者各自订阅同一个 store；若 docs/state/route.js 被实例化成两份（ESM 没去重），
       这里就会停在旧值 */
   const hashBefore = await page.evaluate(() => location.hash);
@@ -425,7 +425,7 @@ check(
 
 check(
   '真实点击链接：路由跟着走（组件不拦原生 <a>）',
-  crumb.hashBefore !== crumb.hashAfter && crumb.hashAfter.includes('docs/pages/components.html'),
+  crumb.hashBefore !== crumb.hashAfter && crumb.hashAfter.includes('packages/button/page.html'),
   `${crumb.hashBefore} → ${crumb.hashAfter}`,
 );
 

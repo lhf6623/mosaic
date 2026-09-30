@@ -9,7 +9,7 @@
          · 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。
        两者都是「外壳的事」——滚的是外壳的正文带，接管的是外壳进出的两个浮动栏。 */
     import { hashOf } from './routes.js';
-    import { TOPBAR, locate } from './site-map.js';
+    import { TOPBAR, firstPageOf, locate } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
@@ -33,12 +33,14 @@
 
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
            ⚠️ 链接一律用 hashOf() 生成、不走 olink：olink 是编译期指令，这份数据是运行时拼的 */
-        this.links = TOPBAR.map((entry) => ({
-          path: entry.path,
-          label: entry.label,
-          href: hashOf(entry.path),
-          aria: null,
-        }));
+        this.links = TOPBAR.map((entry) => {
+          /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，
+             否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一。 */
+          const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
+          return landing
+            ? { path: landing, label: entry.label, href: hashOf(landing), aria: null }
+            : null;
+        }).filter(Boolean);
         this.syncTopNav();
 
         /* 侧栏滚到底后把滚轮接力给正文带。
@@ -92,11 +94,13 @@
         },
 
         /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
-           不再需要那条 packages/<slug>/page.html 的兜底正则 */
+           不再需要那条 packages/<slug>/page.html 的兜底正则。
+           ⚠️ 按**分区的 label** 比，不按 path：分区自己可能没有落地页（path 是落到的子页），
+           按 path 比的话「组件」这一支永远点不亮。 */
         syncTopNav() {
-          const entryPath = locate(routeState().path)?.entry?.path ?? null;
+          const entryLabel = locate(routeState().path)?.entry?.label ?? null;
           for (const link of this.links) {
-            const next = link.path === entryPath ? 'page' : null;
+            const next = link.label === entryLabel ? 'page' : null;
             if (link.aria !== next) link.aria = next;
           }
         },
@@ -296,11 +300,8 @@
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
        渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
   <l-m src="./components/spec.html"></l-m>
-  <!-- 两个「页面占位」也是组件（原来在 layout 的脚本里手搓 DOM）：组件总览的卡片墙、设计令牌的色板 -->
-  <l-m src="./components/cards.html"></l-m>
+  <!-- 页面占位也是组件（原来在 layout 的脚本里手搓 DOM）：设计令牌的色板 -->
   <l-m src="./components/palette.html"></l-m>
-  <!-- 卡片墙的卡片本体：站点第一次真的用项目自己的组件搭页面（doc-cards 是它的使用者） -->
-  <l-m src="../packages/card/card.html"></l-m>
 
   <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->
   <div class="doc-shell">

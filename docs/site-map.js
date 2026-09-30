@@ -5,25 +5,25 @@
  *   · 有 path     → 有页面、可点
  *   · 没有 path   → 待建：左栏指向规范文档，卡片上显示 stage 徽标
  *
- * 左栏 = children 逐条渲染。分区的顶栏入口与它 children 里的「总览」是同一页，
- * 所以那条 path 写两次 —— 这是有意的（测试放行这一处重合）。
+ * 左栏 = children 逐条渲染。分区自己可以没有落地页（「组件」就是），这时它的顶栏入口
+ * 落到子树里第一个有页面的节点 —— 见 firstPageOf。
  *
  * 显示顺序由 order 说了算（同层唯一），加载时递归排好，消费端一次都不用 sort；
  * 数组也按 order 写 —— 打开文件看到的顺序就是页面上的顺序，测试对账这两者一致。
  *
- * hidden 只管展示：顶栏 / 左栏 / 面包屑 / 翻页 / 总览卡片都不出现，子树上继承；
+ * hidden 只管展示：顶栏 / 左栏 / 翻页都不出现，子树上继承；
  * 页面文件、组件套件、文档页检查照旧（藏起来 ≠ 不维护），直链仍然能访问。
  *
  * 字段约定：
- *   label     显示名（顶栏入口 / 分组标题 / 页面名）。**单语言**，各消费方（顶栏 / 面包屑 /
- *             翻页 / 总览卡片）都用它
+ *   label     显示名（顶栏入口 / 分组标题 / 页面名）。**单语言**，各消费方（顶栏 / 翻页）都用它
  *   zh        中文名 —— **只有组件**需要补（组件的 label 是它的 API 名）：左栏菜单把组件渲染成
- *             「中文（英文）」，其余节点（站点页 / 分组 / 总览）照旧只显示 label
+ *             「中文（英文）」，其余节点（站点页 / 分组）照旧只显示 label
  *   order     同层显示顺序（10 / 20 / 30…，留出插队空间）
- *   path      站内路由（仓库相对路径）。**有 path 才算已实现**，所以没有 status 之类的兼职字段
+ *   path      站内路由（仓库相对路径）。**有 path 才算已实现**，所以没有 status 之类的兼职字段；
+ *             分区可以没有 path（没有独立落地页，如「组件」）—— 顶栏入口落到子树第一页（firstPageOf）
  *   children  子节点
  *   hidden    从展示面隐藏（缺省 false）
- *   summary   一句话说明：左栏 tooltip、总览页卡片、首页组件区块都用它
+ *   summary   一句话说明：左栏 tooltip、首页组件区块都用它
  *   tagName   自定义元素标签（组件）
  *   stage     里程碑 M1 / M2 / M3（组件）
  *
@@ -38,10 +38,7 @@ export const SITE = [
   {
     order: 50,
     label: '组件',
-    path: 'docs/pages/components.html',
     children: [
-      // 分区入口自己那一页也是左栏第一项：它的 path 与上面重复是有意的
-      { order: 0, label: '总览', path: 'docs/pages/components.html' },
       {
         order: 10,
         label: '基础',
@@ -353,6 +350,20 @@ export const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/packages/RE
 /** 顶栏一级入口。顶层没有祖先，所以这里的 hidden 不需要继承 */
 export const TOPBAR = NAV.filter((entry) => entry.hidden !== true);
 
+/**
+ * 子树里第一个有页面的条目（按左栏顺序，跳过 hidden）—— 分区自己没落地页时，顶栏入口落到这里。
+ * ⚠️ **不能**把子节点的 path 直接抄到分区上：那会造出重复路由（10 号套件明令禁止），
+ * 而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
+ */
+export function firstPageOf(node) {
+  if (hasPage(node)) return node;
+  for (const child of menuOf(node)) {
+    const hit = firstPageOf(child);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 /** 过滤 hidden（沿树继承）；隐藏后空掉的分组整条去掉 */
 function prune(nodes, inherited = false) {
   const out = [];
@@ -390,7 +401,7 @@ export const READY = (() => {
   return out;
 })();
 
-/** **渲染面**：组件分组（hidden 的整组 / 整条不出现，空分组不出现）→ 总览卡片与首页卡片 */
+/** **渲染面**：组件分组（hidden 的整组 / 整条不出现，空分组不出现）→ 首页卡片 */
 export const GROUPS = (() => {
   const out = [];
   walk(NAV, (node, { hidden }) => {

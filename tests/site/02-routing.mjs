@@ -10,7 +10,6 @@ export default async function run({ page, visit, goTop, goHash, pageState, check
 
 const ROUTES = [
   { to: 'docs/pages/guide.html', h1: '快速开始', page: '快速开始' },
-  { to: 'docs/pages/components.html', h1: '组件', page: '组件' },
   { to: 'packages/button/page.html', h1: 'Button', page: '组件' },
   { to: 'packages/color/page.html', h1: '设计令牌', page: '设计令牌' },
   { to: 'docs/pages/specs.html', h1: '规范', page: '规范' },
@@ -78,7 +77,7 @@ const wrongSection = visits.filter((v, i) => v.page !== ROUTES[i].page);
 check(
   '顶部一级导航在每个路由上都高亮正确',
   wrongSection.length === 0,
-  wrongSection.map((v) => `${v.route} → ${v.page}`).join('\n        ') || '6 条路由的归属全部正确',
+  wrongSection.map((v) => `${v.route} → ${v.page}`).join('\n        ') || `${visits.length} 条路由的归属全部正确`,
 );
 
 /* ------------------------------------------------------------------ *
@@ -97,81 +96,18 @@ check(
 
 await goTop('组件');
 const compState = await pageState();
-check('点「组件」切到组件总览', compState.h1 === '组件');
-check(`组件总览渲染出全部 ${ALL.length} 张卡片`, compState.cards === ALL.length, `实际 ${compState.cards} 张`);
+/* 「组件」分区没有自己的落地页：顶栏入口落到子树里第一个组件页（基础 → Button） */
+check('点「组件」进到第一个组件页', compState.h1?.startsWith('Button'), `h1=${compState.h1}`);
 
-/* 卡片是 <doc-cards> 模板渲染的：标签名走 {{$data.tagName}}。
-   ⚠️ 曾经写在 <code> 里 —— ofa 不编译 <code> 的内容（P8），页面直接显示字面量 {{$data.tagName}} */
-const cardTags = await page.evaluate(() => {
-  const all = (query, root = document, acc = []) => {
-    for (const el of root.querySelectorAll(query)) acc.push(el);
-    for (const el of root.querySelectorAll('*')) if (el.shadowRoot) all(query, el.shadowRoot, acc);
-    return acc;
-  };
-  return all('.doc-comp-card-tag').map((el) => el.textContent.trim());
-});
 check(
-  '卡片里的标签名真的渲染了（不是字面量 {{…}}）',
-  // 形状：mc-xxx，或 toast() 这种命令式组件的写法（登记表里就是这么写的）
-  cardTags.length === ALL.length && cardTags.every((t) => /^[a-z][a-z0-9-]*(\(\))?$/.test(t)),
-  `首张=${cardTags[0]} · 末张=${cardTags.at(-1)} · 含字面量=${cardTags.filter((t) => t.includes('{{')).length} 张`,
-);
-
-/* 卡片墙的卡片本体是**项目自己的 <mc-card>**（站点第一次拿组件搭页面）。
-   卡片是面不是行为：它自己不参与交互（没有 interactive / 镜像属性、宿主不可聚焦、
-   内部也没有控件），可点的是卡内那个「查看文档」真链接；待建的没有操作入口。 */
-const cardImpl = await page.evaluate(() => {
-  const host = window.__deepAll('doc-cards')[0];
-  const cards = [...host.shadowRoot.querySelectorAll('mc-card.doc-comp-card')];
-  const ready = cards.filter((c) => c.getAttribute('data-status') === 'ready');
-  const planned = cards.filter((c) => c.getAttribute('data-status') === 'planned');
-  const actions = ready.map((c) => c.querySelector('a.doc-comp-card-action'));
-  return {
-    total: cards.length,
-    upgraded: cards.every((c) => !!c.shadowRoot),
-    ready: ready.length,
-    planned: planned.length,
-    /** 卡片自己不参与交互 */
-    inert: cards.every(
-      (c) =>
-        !c.hasAttribute('interactive') &&
-        !c.hasAttribute('data-cover') &&
-        !c.hasAttribute('data-stretch') &&
-        c.tabIndex === -1 &&
-        !c.shadowRoot.querySelector('a, button, input, [tabindex]'),
-    ),
-    /** 操作入口是卡内那个原生 <a>，href 带部署前缀（hashOf 给的） */
-    actionsOk:
-      actions.length === ready.length &&
-      actions.every(
-        (a) => a?.tagName === 'A' && (a.getAttribute('href') || '').includes('packages/'),
-      ),
-    /** 待建的连操作入口都没有（不给死链） */
-    plannedStatic: planned.every((c) => !c.querySelector('a')),
-    /** 没有任何铺满用的伪元素规则落在链接上（整卡可点已经拿掉了） */
-    noStretch: actions.every((a) => getComputedStyle(a, '::after').position !== 'absolute'),
-  };
-});
-check(
-  '卡片墙用项目自己的 <mc-card>：卡片自己不参与交互，操作入口是卡内那个真链接，待建的没有入口',
-  cardImpl.total === ALL.length &&
-    cardImpl.upgraded &&
-    cardImpl.ready > 0 &&
-    cardImpl.inert &&
-    cardImpl.actionsOk &&
-    cardImpl.plannedStatic &&
-    cardImpl.noStretch,
-  JSON.stringify(cardImpl),
+  '组件页自带二级菜单：全部组件',
+  compState.split === true && compState.navLinks === ALL.length,
+  `分栏=${compState.split} · 左栏 ${compState.navLinks} 项（${ALL.length} 个组件）`,
 );
 check(
-  '组件页自带二级菜单：总览 + 全部组件',
-  compState.split === true && compState.navLinks === ALL.length + 1,
-  `分栏=${compState.split} · 左栏 ${compState.navLinks} 项（${ALL.length} 个组件 + 总览）`,
-);
-check(
-  '二级菜单里当前页高亮（总览）',
+  '二级菜单里当前页高亮（落到第一个组件页 → Button）',
   await page.evaluate(() =>
-    window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim() === '总览',
+    window.__inside('doc-nav', 'a[aria-current]')[0]?.textContent?.trim()?.includes('Button'),
   ),
 );
 

@@ -1,7 +1,7 @@
 /**
  * 站点 · 启动与色板（第 12.x 节）：色板回读 tokens.css、冷启动占位、入口与布局页
  */
-import { ALL, READY } from '../../docs/site-map.js';
+import { READY } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, goHash, pageState, check, BASE, newPage }) {
 /* ------------------------------------------------------------------ *
@@ -20,10 +20,7 @@ check('色板渲染出 66 个色块（6 色族 × 11 档）', tokensState.palett
 const freshLoads = await (async () => {
   const p = await newPage();
   const out = [];
-  for (const [url, sel] of [
-    ['/index.html#/docs/pages/components.html', '.doc-comp-card'],
-    ['/index.html#/packages/color/page.html', '.doc-palette-row'],
-  ]) {
+  for (const [url, sel] of [['/index.html#/packages/color/page.html', '.doc-palette-row']]) {
     await visit(p, url);
     await p.waitForTimeout(1500);
     const count = await p.evaluate((s) => {
@@ -42,8 +39,8 @@ const freshLoads = await (async () => {
   return out;
 })();
 check(
-  '直接带 hash 冷启动也渲染页面占位（卡片 / 色板）',
-  freshLoads[0].count === ALL.length && freshLoads[1].count === 6,
+  '直接带 hash 冷启动也渲染页面占位（色板）',
+  freshLoads[0].count === 6,
   freshLoads.map((f) => `${f.url} → ${f.sel} ${f.count} 个`).join(' · '),
 );
 
@@ -151,7 +148,6 @@ const parentRefs = await (async () => {
     'docs/pages/home.html',
     'docs/pages/guide.html',
     'docs/pages/specs.html',
-    'docs/pages/components.html',
     'packages/color/page.html', // 令牌文档页不是组件，但它同样是页面模块
     ...READY.map((c) => c.path),
   ];

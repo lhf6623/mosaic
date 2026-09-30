@@ -200,9 +200,14 @@ check(
   longPage.mainOver > 100 && longPage.globalOver <= 1 && longPage.lastTop !== null,
   `正文带可滚 ${longPage.mainOver}px · 全局可滚 ${longPage.globalOver}px`,
 );
+/* 判据是「滚到底之后最后一块的**底部**确实够得着」：这一块可能比一屏还高
+   （组件页最后一块是 <doc-spec> 渲染的参考区，实测 710px），这时 top 为负是正常的 ——
+   真正的失效模式是底部被裁在视口外（历史 bug 是 o-router 的 overflow:hidden 静默截断）。 */
 check(
-  '滚到底后长页面的最后一块内容可见（没被裁掉）',
-  longPage.lastTop >= 0 && longPage.lastBottom <= longPage.viewH + 1,
+  '滚到底后长页面的最后一块内容够得着（底部没被裁掉）',
+  longPage.lastBottom !== null &&
+    longPage.lastBottom <= longPage.viewH + 1 &&
+    longPage.lastBottom > 0,
   `最后元素 ${longPage.lastTop}–${longPage.lastBottom}px · 可视区 0–${longPage.viewH}px`,
 );
 
