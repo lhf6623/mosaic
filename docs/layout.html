@@ -219,11 +219,12 @@
       --mc-button-accent: var(--mc-color-fg-muted);
     }
 
-    /* 当前页：**只换文字色 + 加粗** —— 文字按钮没有底色（给它补一颗胶囊，就跟
-       inline「无底无框」自相矛盾了）。悬停也不在这里写：组件统一压深文字色。 */
+    /* 当前页用**主色**：与左栏、主题下拉里「选中项」同一个约定（`mc-menu-item[data-current]`
+       就是主色 + primary-subtle 底）—— 不然头部是前景灰、菜单是主色紫，两处「当前」对不上。
+       这里**只给颜色不给底色**（文字按钮不补底色，见上一条注释）；字重也不用写：
+       组件默认就是 medium，正好是选中项那一档。 */
     .doc-top-nav mc-button[aria-current] {
-      --mc-button-accent: var(--mc-color-fg);
-      font-weight: var(--mc-weight-semibold);
+      --mc-button-accent: var(--mc-color-primary);
     }
 
     .doc-brand {
