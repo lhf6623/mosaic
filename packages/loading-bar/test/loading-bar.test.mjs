@@ -261,6 +261,199 @@ export default async function run({ page, visit, check }) {
     };
   })();
 
+  /* ------------------------------------------------------------------ *
+   * 函数入口（loading-bar.js）：懒挂载 + start / done / error / idle 与 state 一一对应。
+   *
+   * ⚠️ 必须换到**没有注册过 mc-loading-bar** 的页面再 import —— 「页面里没有标签 → l-m 懒注册
+   * → 等 ofa 实例就绪 → 造一条挂 body」整条分支，只有在文档页之外才走得到（文档页自己注册过）。
+   * 模块的宿主没有 id，所以用 `body > mc-loading-bar:not([id])` 认它，不会撞上探针那几条。
+   * ------------------------------------------------------------------ */
+  const imperative = await (async () => {
+    const failed = [];
+    const onResponse = (r) => {
+      if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
+    };
+    const onError = (e) => failed.push(String(e));
+    page.on('response', onResponse);
+    page.on('pageerror', onError);
+
+    await visit(page, '/index.html?loading-bar-imperative=1#/packages/button/page.html');
+    const definedBefore = await page.evaluate(() => !!customElements.get('mc-loading-bar'));
+
+    /* 懒挂载发生在 import 之后、第一次调用时：先 import，宿主还不该存在 */
+    await page.evaluate(async () => {
+      window.__lb = (await import('/packages/loading-bar/loading-bar.js')).default;
+    });
+    const beforeStart = await page.evaluate(
+      () => !!document.querySelector('body > mc-loading-bar'),
+    );
+
+    /* 默认那条还没出现过时，模块级收尾是 no-op：不该凭空在视口顶部闪一条 */
+    await page.evaluate(() => window.__lb.done());
+    await page.waitForTimeout(150);
+    const noopDone = await page.evaluate(() => !!document.querySelector('body > mc-loading-bar'));
+
+    /** 模块那一条当下的样子（宿主 + 内部填充） */
+    const readHost = () =>
+      page.evaluate(() => {
+        const el = [...document.body.children].find(
+          (n) => n.tagName === 'MC-LOADING-BAR' && !n.id,
+        );
+        if (!el) return null;
+        const inner = el.shadowRoot?.querySelector('.mc-bar');
+        const rect = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        return {
+          state: el.getAttribute('state'),
+          role: el.getAttribute('role'),
+          busy: el.getAttribute('aria-busy'),
+          label: el.getAttribute('aria-label'),
+          top: Math.round(rect.top),
+          width: Math.round(rect.width),
+          viewport: window.innerWidth,
+          visibility: cs.visibility,
+          opacity: Math.round(parseFloat(cs.opacity) * 100) / 100,
+          barWidth: inner ? Math.round(parseFloat(getComputedStyle(inner).width)) : null,
+          fill: inner ? getComputedStyle(inner).backgroundColor : null,
+        };
+      });
+
+    const waitVisible = () =>
+      page
+        .waitForFunction(
+          () => {
+            const el = [...document.body.children].find(
+              (n) => n.tagName === 'MC-LOADING-BAR' && !n.id,
+            );
+            return (
+              !!el?.shadowRoot?.querySelector('.mc-bar') &&
+              getComputedStyle(el).visibility === 'visible'
+            );
+          },
+          { timeout: 8000 },
+        )
+        .then(() => true)
+        .catch(() => false);
+
+    /* ① start({ label })：出现 + 语义三连 */
+    await page.evaluate(() => window.__lb.start({ label: '命令式驱动' }));
+    const started = await waitVisible();
+    const running = await readHost();
+
+    /* ② done：滑满 → 淡出，state=done */
+    await page.evaluate(() => window.__lb.done());
+    const faded = await page
+      .waitForFunction(
+        () => {
+          const el = [...document.body.children].find(
+            (n) => n.tagName === 'MC-LOADING-BAR' && !n.id,
+          );
+          return el && parseFloat(getComputedStyle(el).opacity) === 0;
+        },
+        { timeout: 4000 },
+      )
+      .then(() => true)
+      .catch(() => false);
+    const finished = await readHost();
+
+    /* ③ start('字符串')：label 走字符串这一种写法；再 error() 收尾 —— 填充色应当是主题 danger */
+    await page.evaluate(() => window.__lb.start('出错样式'));
+    await waitVisible();
+    await page.waitForTimeout(80);
+    const stringLabel = (await readHost())?.label;
+    await page.evaluate(() => window.__lb.error());
+    await page.waitForTimeout(260); // 落在「滑满已结束、淡出还没走完」的窗口里
+    const errored = await readHost();
+
+    /* ④ idle：立刻收掉（不播收尾） */
+    await page.evaluate(() => window.__lb.start());
+    await page.waitForTimeout(80);
+    await page.evaluate(() => window.__lb.idle());
+    await page.waitForTimeout(80);
+    const idled = await readHost();
+
+    /* ⑤ target：条子落进那个容器的最上沿（prepend、static、通宽、占自己那 4px） */
+    await page.evaluate(() => {
+      const panel = document.createElement('div');
+      panel.id = 'lb-panel';
+      panel.style.cssText = 'position: fixed; left: 0; top: 200px; width: 260px; z-index: 1';
+      panel.innerHTML = '<span>这一块</span>';
+      document.body.append(panel);
+      window.__lbTask = window.__lb.start({ target: '#lb-panel', label: '这一块在忙' });
+    });
+    await page
+      .waitForFunction(
+        () =>
+          !!document
+            .querySelector('#lb-panel > mc-loading-bar')
+            ?.shadowRoot?.querySelector('.mc-bar'),
+        { timeout: 8000 },
+      )
+      .catch(() => {});
+
+    const scoped = await page.evaluate(() => {
+      const panel = document.getElementById('lb-panel');
+      const el = panel.querySelector(':scope > mc-loading-bar');
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      return {
+        isFirstChild: panel.firstElementChild === el,
+        position: getComputedStyle(el).position,
+        topOffset: Math.round(rect.top - panelRect.top),
+        width: Math.round(rect.width),
+        panelWidth: Math.round(panelRect.width),
+        height: Math.round(rect.height),
+        role: el.getAttribute('role'),
+        label: el.getAttribute('aria-label'),
+        state: el.getAttribute('state'),
+        visible: getComputedStyle(el).visibility,
+      };
+    });
+
+    /* 句柄是收它的入口（模块级 done() 只管默认那条） */
+    await page.evaluate(() => window.__lbTask.done());
+    await page.waitForTimeout(80);
+    const scopedAfterDone = await page.evaluate(
+      () => document.querySelector('#lb-panel > mc-loading-bar')?.getAttribute('state') ?? null,
+    );
+
+    /* target 给错要**当场抛**，不能静默落到默认那条上 */
+    const badTarget = await page.evaluate(() => {
+      try {
+        window.__lb.start({ target: '#lb-nope' });
+        return 'no-throw';
+      } catch (err) {
+        return err instanceof Error && /选择器/.test(err.message) ? 'threw' : `threw-other`;
+      }
+    });
+
+    /* 整场只该有一条：模块自己那条不会随调用次数增加 */
+    const hostCount = await page.evaluate(
+      () => [...document.body.children].filter((n) => n.tagName === 'MC-LOADING-BAR' && !n.id).length,
+    );
+
+    page.off('response', onResponse);
+    page.off('pageerror', onError);
+    return {
+      definedBefore,
+      beforeStart,
+      noopDone,
+      started,
+      running,
+      faded,
+      finished,
+      stringLabel,
+      errored,
+      idled,
+      scoped,
+      scopedAfterDone,
+      badTarget,
+      hostCount,
+      failed,
+    };
+  })();
+
   check(
     'idle（默认）什么都不做：不出现、宽度 0、也不留语义三连 —— 否则每次打开页面都会闪一下',
     bar.probe.idle.attrs.length === 0 &&
@@ -363,4 +556,83 @@ export default async function run({ page, visit, check }) {
   );
 
   check('加载条文档页没有 404 / 运行时报错', bar.failed.length === 0, bar.failed.join(' | ') || '无');
+
+  /* ---------------- 函数入口（loading-bar.js） ---------------- */
+
+  check(
+    '函数入口懒挂载：页面没注册过 mc-loading-bar，import 之后还不该有宿主；start() 才出现一条挂在 body 上的条子（铺满、贴顶、语义三连）',
+    imperative.definedBefore === false &&
+      imperative.beforeStart === false &&
+      imperative.started === true &&
+      imperative.running.state === 'loading' &&
+      imperative.running.role === 'progressbar' &&
+      imperative.running.busy === 'true' &&
+      imperative.running.label === '命令式驱动' &&
+      imperative.running.visibility === 'visible' &&
+      imperative.running.top === 0 &&
+      imperative.running.width === imperative.running.viewport,
+    JSON.stringify(imperative.running ?? { started: imperative.started }),
+  );
+
+  check(
+    '函数与 state 一一对应：done() 收尾后淡出到看不见；error() 收尾的填充色 = 主题 danger；idle() 立刻回到不出现',
+    imperative.faded === true &&
+      imperative.finished?.state === 'done' &&
+      imperative.finished?.opacity === 0 &&
+      imperative.errored?.state === 'error' &&
+      imperative.errored?.fill === bar.tokens.danger &&
+      imperative.idled?.state === 'idle' &&
+      imperative.idled?.visibility === 'hidden',
+    JSON.stringify({
+      finished: imperative.finished,
+      errored: imperative.errored,
+      idled: imperative.idled,
+    }),
+  );
+
+  check(
+    'start() 两种写法都收：{ label } 与字符串；反复调用只会复用同一条（不叠第二条）',
+    imperative.running?.label === '命令式驱动' &&
+      imperative.stringLabel === '出错样式' &&
+      imperative.finished?.width === imperative.finished?.viewport &&
+      imperative.hostCount === 1,
+    JSON.stringify({
+      object: imperative.running?.label,
+      string: imperative.stringLabel,
+      hostCount: imperative.hostCount,
+    }),
+  );
+
+  check(
+    '函数入口这一页没有 404 / 运行时报错（覆盖 loading-bar.html 的懒注册）',
+    imperative.failed.length === 0,
+    imperative.failed.join(' | ') || '无',
+  );
+
+  check(
+    'target：条子落进那个容器的最上沿（第一个子元素、static、通宽、占自己那 4px），语义照旧；宿主还只多这一条',
+    imperative.scoped?.isFirstChild === true &&
+      imperative.scoped.position === 'static' &&
+      imperative.scoped.topOffset === 0 &&
+      imperative.scoped.width === imperative.scoped.panelWidth &&
+      imperative.scoped.height === 4 &&
+      imperative.scoped.role === 'progressbar' &&
+      imperative.scoped.label === '这一块在忙' &&
+      imperative.scoped.state === 'loading' &&
+      imperative.scoped.visible === 'visible' &&
+      imperative.hostCount === 1,
+    JSON.stringify(imperative.scoped),
+  );
+
+  check(
+    'target 那条只能靠 start() 返回的句柄收（done() 生效）；选择器没命中要当场抛，不落到默认那条上；默认那条还没出现过时模块级收尾是 no-op',
+    imperative.scopedAfterDone === 'done' &&
+      imperative.badTarget === 'threw' &&
+      imperative.noopDone === false,
+    JSON.stringify({
+      scopedAfterDone: imperative.scopedAfterDone,
+      badTarget: imperative.badTarget,
+      noopDone: imperative.noopDone,
+    }),
+  );
 }

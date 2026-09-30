@@ -1400,7 +1400,19 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/api.md",
       "packages/button/button.html",
+      "packages/button/demos/block.html",
+      "packages/button/demos/colors.html",
+      "packages/button/demos/hex.html",
+      "packages/button/demos/inline.html",
+      "packages/button/demos/override.html",
+      "packages/button/demos/sizes.html",
+      "packages/button/demos/slots.html",
+      "packages/button/demos/states.html",
+      "packages/button/demos/type.html",
+      "packages/button/demos/variants.html",
+      "packages/button/page.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -1412,8 +1424,10 @@
       "packages/loading-bar/demos/container.html",
       "packages/loading-bar/demos/customize.html",
       "packages/loading-bar/demos/error.html",
+      "packages/loading-bar/demos/imperative.html",
       "packages/loading-bar/demos/sizes.html",
       "packages/loading-bar/loading-bar.html",
+      "packages/loading-bar/loading-bar.js",
       "packages/loading-bar/page.html",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/menu-item.html",
@@ -2364,6 +2378,7 @@
     "packages/button/api.md": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/button.html": [
@@ -2386,56 +2401,67 @@
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/colors.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/hex.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/inline.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/override.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/sizes.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/slots.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/states.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/type.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/demos/variants.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/page.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
     "packages/button/test/button.test.mjs": [
@@ -2983,10 +3009,16 @@
     "packages/loading-bar/demos/error.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
+    "packages/loading-bar/demos/imperative.html": [
+      "packages/loading-bar/test/loading-bar.test.mjs"
+    ],
     "packages/loading-bar/demos/sizes.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.html": [
+      "packages/loading-bar/test/loading-bar.test.mjs"
+    ],
+    "packages/loading-bar/loading-bar.js": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/page.html": [

@@ -7,6 +7,7 @@
     <l-m src="../button/button.html"></l-m>
     <l-m src="./loading-bar.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/imperative.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/container.html"></l-m>
     <l-m src="./demos/error.html"></l-m>
@@ -15,7 +16,27 @@
     <p class="doc-lead">
       加载条：默认钉在视口顶部（整页在忙），也可以放进容器里（那一块在忙）。在跑就缓慢爬升
       （永远到不了 100%），收尾先滑到 100% 再淡出 —— 成功与出错走同一条路，只差一个填充色。
+      整页那一种还可以由函数驱动：<code>loadingBar.start()</code> / <code>done()</code>。
     </p>
+
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>钉在视口顶部那一种一页只该有一条</strong>：函数入口自己会造一条挂到 body 上，
+          页面里就别再写一个默认（<code>fixed</code>）的标签 —— 两条会互相盖住。
+          容器里那一种（<code>position="static"</code>）不受影响。
+        </li>
+        <li>
+          <strong>函数入口不做计数</strong>：两件事同时在忙时，先结束的那一次
+          <code>done()</code> 就会把条子收掉。「还有几件事没完」得由调用方自己记账。
+        </li>
+        <li>
+          <code>target</code> 那一种<strong>占它自己那 2 / 4px</strong
+          >（就在容器最上沿、把内容往下压 一点）。要「盖在容器上沿、不占布局」，得给条子写内联
+          <code>position: absolute</code> —— 那是标签入口的事（模块不替使用者写内联样式）。
+        </li>
+      </ul>
+    </mc-alert>
 
     <h2>例子</h2>
 
@@ -32,6 +53,23 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>函数调用</h3>
+      <p class="doc-hint">
+        整页在忙那一根通常由 JS 驱动：引 <code>loading-bar.js</code>，然后 <code>start()</code> /
+        <code>done()</code> / <code>error()</code> ——
+        <strong>函数与 <code>state</code> 一一对应</strong>，只是不用自己找元素、写属性。 给
+        <code>start()</code> 一个 <code>target</code>（元素或选择器），条子就落进那一块的
+        <strong>最上沿</strong>、和标签那一种同义；不给就是钉在视口顶部那条。
+      </p>
+      <demo-loading-bar-imperative></demo-loading-bar-imperative>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/imperative.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

@@ -1,0 +1,57 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-2">
+    <mc-button on:click="begin()">整页：开始</mc-button>
+    <mc-button color="success" variant="outline" on:click="finish()">完成</mc-button>
+    <mc-button color="danger" variant="outline" on:click="fail()">出错</mc-button>
+    <mc-button variant="ghost" on:click="hide()">立刻收掉</mc-button>
+  </div>
+
+  <!-- target 那一种：条子进到这一块的最上沿（只占自己那 4px，不动上面的按钮） -->
+  <div
+    class="mc-panel"
+    style="margin-top: 0.75rem; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); overflow: hidden"
+  >
+    <div class="flex flex-col gap-1 p-3">
+      <span>成员列表</span>
+      <span class="text-xs text-muted">下面那两个按钮把条子放进这一块里</span>
+    </div>
+  </div>
+  <div class="flex flex-wrap items-center gap-2" style="margin-top: 0.75rem">
+    <mc-button size="sm" on:click="beginPanel()">这一块：开始</mc-button>
+    <mc-button size="sm" variant="outline" on:click="finishPanel()">这一块：完成</mc-button>
+  </div>
+
+  <script>
+    import loadingBar from '../../loading-bar/loading-bar.js';
+
+    export default async () => ({
+      tag: 'demo-loading-bar-imperative',
+
+      proto: {
+        /* 默认那条：模块自己挂到 body 上、钉在**视口顶部** */
+        begin() {
+          loadingBar.start({ label: '正在加载页面' });
+        },
+        finish() {
+          loadingBar.done();
+        },
+        fail() {
+          loadingBar.error();
+        },
+        hide() {
+          loadingBar.idle();
+        },
+
+        /* target 那条：在**这一块**的最上沿 —— 收它只能靠 start() 返回的句柄 */
+        beginPanel() {
+          const panel = this.ele.shadowRoot.querySelector('.mc-panel');
+          this.panelTask = loadingBar.start({ target: panel, label: '正在刷新列表' });
+        },
+        finishPanel() {
+          this.panelTask?.done();
+          this.panelTask = null;
+        },
+      },
+    });
+  </script>
+</template>

@@ -23,6 +23,20 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 <mc-loading-bar state="loading" position="static" label="正在刷新列表"></mc-loading-bar>
 ```
 
+整页在忙那一根多半由 JS 驱动，所以同一个单元还有一个**函数入口**（懒挂载一条钉在视口顶部的
+条子；函数与状态 1:1）：
+
+```js
+import loadingBar from '../../loading-bar/loading-bar.js';
+
+loadingBar.start({ label: '正在保存' });
+loadingBar.done(); // 成功收尾；出错走 loadingBar.error()
+
+// 某一整块在忙：给它容器，条子落在那一块的最上沿（句柄是收它的入口）
+const task = loadingBar.start({ target: '#list', label: '正在刷新列表' });
+task.done();
+```
+
 ---
 
 ## 属性
@@ -33,6 +47,19 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 | `size`     | `'sm' \| 'md'`                             | `md`     | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                  |
 | `position` | `'fixed' \| 'static'`                      | `fixed`  | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽     |
 | `label`    | `string`                                   | `加载中` | 只给屏幕阅读器的文案：`loading` 时宿主是 `role="progressbar"` + `aria-busy` + 这个名字                 |
+
+## 方法
+
+| 名称                                                             | 说明                                                                                                              |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `loadingBar.start(config?)`                                      | 开始：条子出现并缓慢爬升，返回**这一条**的句柄。`config` = `{ target?, label? }`；也可以直接给字符串（= `label`） |
+| `handle.done()` / `handle.error()` / `handle.idle()`             | 收掉 `start({ target })` 那一条：`done` 滑满再淡出、`error` 同上只是换成 danger、`idle` 立刻收掉（不播收尾）      |
+| `loadingBar.done()` / `loadingBar.error()` / `loadingBar.idle()` | 收掉**默认那条**（挂 `document.body`、钉在视口顶部）；它还没出现过就什么都不做                                    |
+
+> `target` 收元素或选择器：给了它，条子就落在那个容器的**最上沿**、`position="static"`
+> （占自己那 2 / 4px、通宽），与标签那一种同义；不给就用默认那条（视口顶部）。
+> 「盖在容器上沿、不占布局」得给条子写内联 `position: absolute` —— 那是使用者给元素写样式的活，
+> 走标签入口（模块没法替人写内联样式）。
 
 ## part
 
