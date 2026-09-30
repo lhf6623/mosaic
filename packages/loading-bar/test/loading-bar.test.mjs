@@ -197,7 +197,22 @@ export default async function run({ page, visit, check }) {
     const doneEnd = await readBar('lb-done');
     const errorEnd = await readBar('lb-error');
 
-    /* 中途切状态：先跑起来，再在爬升途中换成 error —— 宽度必须从当前位置接着走 */
+    /* 中途切状态：先跑起来，再在爬升途中换成 error —— 宽度必须从当前位置接着走。
+       ⚠️ 「到 100%」与「淡完」都**等事实发生**（轮询），不按固定延时采样：
+       慢一帧就会把中间态当成终态，实测偶发红过一次。 */
+    const sample = () =>
+      page.evaluate(() => {
+        const el = document.getElementById('lb-loading');
+        const inner = el.shadowRoot.querySelector('.mc-bar');
+        return {
+          width: Math.round(parseFloat(getComputedStyle(inner).width)),
+          hostWidth: Math.round(el.getBoundingClientRect().width),
+          opacity: Math.round(parseFloat(getComputedStyle(el).opacity) * 100) / 100,
+        };
+      });
+    const waitFor = (fn, timeout = 4000) =>
+      page.waitForFunction(fn, { timeout }).then(() => true).catch(() => false);
+
     const handoff = await (async () => {
       await page.evaluate(() => {
         const el = document.getElementById('lb-loading');
@@ -206,13 +221,17 @@ export default async function run({ page, visit, check }) {
       await page.waitForTimeout(300);
       const before = await readBar('lb-loading');
       await page.evaluate(() => document.getElementById('lb-loading').setAttribute('state', 'error'));
-      await page.waitForTimeout(60);
-      const right = await readBar('lb-loading');
-      await page.waitForTimeout(190);
-      const reached = await readBar('lb-loading');
-      await page.waitForTimeout(1200);
-      const end = await readBar('lb-loading');
-      return { before, right, reached, end };
+      const right = await sample(); // 切换的那一刻：必须从当前位置起步（不小于切换前）
+      const hasReached = await waitFor(() => {
+        const el = document.getElementById('lb-loading');
+        const inner = el.shadowRoot.querySelector('.mc-bar');
+        const w = parseFloat(getComputedStyle(inner).width);
+        return w >= el.getBoundingClientRect().width - 1;
+      });
+      const reached = await sample(); // 到 100% 的那一刻（此时 fade 才刚开始）
+      const hasFaded = await waitFor(() => getComputedStyle(document.getElementById('lb-loading')).opacity === '0');
+      const end = await sample();
+      return { before, right, hasReached, reached, hasFaded, end };
     })();
 
     /* 复位之后再 loading：必须从 0 重新爬（不是停在上一轮的 100%） */
@@ -329,8 +348,10 @@ export default async function run({ page, visit, check }) {
     bar.handoff.before.width > 0 &&
       bar.handoff.before.width < bar.handoff.before.hostWidth &&
       bar.handoff.right.width >= bar.handoff.before.width - 2 &&
-      bar.handoff.reached.width === bar.handoff.reached.hostWidth &&
+      bar.handoff.hasReached === true &&
+      bar.handoff.reached.width >= bar.handoff.reached.hostWidth - 1 &&
       bar.handoff.reached.opacity > 0.6 &&
+      bar.handoff.hasFaded === true &&
       bar.handoff.end.opacity === 0,
     JSON.stringify(bar.handoff),
   );

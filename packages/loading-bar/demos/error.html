@@ -6,19 +6,23 @@
       <mc-button variant="outline" on:click="fail()">出错</mc-button>
     </div>
 
-    <!-- 成功与出错是**同一个收尾**（先滑到 100% 再淡出），只差填充色 -->
-    <mc-loading-bar attr:state="phase" label="正在加载"></mc-loading-bar>
+    <!-- 成功与出错是**同一个收尾**（先滑到 100% 再淡出），只差填充色。
+         ⚠️ 这条必须 position="static"：默认那种钉在**视口顶部**，而一个文档页会把所有演示
+         一起渲染出来 —— 留一条 fixed 的就会永远压在整页顶上（别的演示的条子都被它盖住）。 -->
+    <mc-loading-bar attr:state="phase" position="static" label="正在加载"></mc-loading-bar>
 
-    <!-- 演示专用：把淡出拉到 60s 才看得住那一下的颜色。
-         state="error" 用的是主题的 danger；第二条把这个色槽覆盖成了 warning。 -->
+    <!-- 演示专用：把淡出拉到 60s 才看得住那一下的颜色。state="error" 用的是主题的 danger；
+         第二条把这个色槽覆盖成 warning。 -->
     <mc-loading-bar
       state="error"
-      style="position: static; --mc-loading-bar-fade: 60s"
+      position="static"
+      style="--mc-loading-bar-fade: 60s"
       label="加载失败"
     ></mc-loading-bar>
     <mc-loading-bar
       state="error"
-      style="position: static; --mc-loading-bar-fade: 60s; --mc-loading-bar-error: var(--mc-color-warning)"
+      position="static"
+      style="--mc-loading-bar-fade: 60s; --mc-loading-bar-error: var(--mc-color-warning)"
       label="校验未通过"
     ></mc-loading-bar>
   </div>
@@ -28,7 +32,7 @@
       tag: 'demo-loading-bar-error',
 
       /* data 的字段别叫 `on`：那是 ofa 自己的名字（见 basic 演示的注释） */
-      data: { phase: 'loading' },
+      data: { phase: 'idle' },
 
       proto: {
         start() {

@@ -1,7 +1,8 @@
 <template component>
+  <!-- 演示里放进演示区（position="static"）才排得下：默认那种是钉在视口顶部的 -->
   <div class="flex flex-col gap-3">
-    <mc-loading-bar state="loading" size="sm" style="position: static"></mc-loading-bar>
-    <mc-loading-bar state="loading" style="position: static"></mc-loading-bar>
+    <mc-loading-bar state="loading" size="sm" position="static"></mc-loading-bar>
+    <mc-loading-bar state="loading" position="static"></mc-loading-bar>
   </div>
 
   <script>

@@ -562,6 +562,37 @@ const rules = [
       }
     },
   },
+  {
+    /* `mc-loading-bar` 默认**钉在视口顶部**，而一个组件文档页会把它的演示**一起渲染出来** ——
+       所以除了那一条（通常就在「开始与完成」那个演示里），其余每一条都必须 `position="static"`
+       放进演示区。留两条 fixed 的就会永远压在整页顶上、还互相盖住：踩过一次
+       （出错演示里那条交互条子默认 fixed 且一上来就 loading，整页顶部常驻一条，
+       看起来就像「点了完成也不消失」——其实是另一条）。 */
+    type: 'custom',
+    id: 'page-single-fixed-bar',
+    title: '组件文档 · 钉在视口顶部的加载条最多一条',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        /* ⚠️ `c.facts.files` 只有组件本体（页面与演示不在里面）—— 页面按约定、演示走 glob */
+        const files = [
+          `packages/${c.slug}/page.html`,
+          ...io.listFiles(`packages/${c.slug}/demos/*.html`),
+        ].filter((f) => io.exists(f));
+        const fixed = [];
+        for (const file of files) {
+          for (const tag of io.read(file).matchAll(/<mc-loading-bar\b[^>]*>/g)) {
+            if (!/position="static"/.test(tag[0])) fixed.push(file);
+          }
+        }
+        if (fixed.length > 1) {
+          problems.push(
+            `packages/${c.slug}：钉在视口顶部的加载条有 ${fixed.length} 条 —— 一页只该有一条，` +
+              `其余写 \`position="static"\` 放进演示区（涉及 ${[...new Set(fixed)].join('、')}）`,
+          );
+        }
+      }
+    },
+  },
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账 */
