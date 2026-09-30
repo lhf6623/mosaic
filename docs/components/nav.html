@@ -11,7 +11,9 @@
   ⚠️ 组件模板必然带 shadow root：content.css 只能落在宿主标签本身（sticky / padding / border
      那几条照旧生效），够不到这里渲染出来的 <a>，所以条目自己的样式写在下面 <style> 里。
   ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区内切页不重建列表 ——
-     真人点击的 mousedown→click 必须落在同一个节点上（tests/site/04-nav-stability.mjs 盯着这条）。
+     真人点击的 mousedown→click 必须落在同一个节点上。
+     ⚠️ 原来由 tests/site/04-nav-stability.mjs 盯着这条，该套件已随站点测试一起删掉 ——
+     改这里时请手动验一次「切换同分区的两页，菜单不会被重建」。
   ⚠️ mc-menu / mc-menu-item 由外壳 docs/layout.html 统一 <l-m> 进来，这里不再引一遍。
 -->
 <template component>

@@ -85,14 +85,14 @@ export default async function run({ check }) {
 
   const FAKE_SUITES = [
     { kind: 'site', label: '01', path: 'tests/site/01-load-shell.mjs' },
-    { kind: 'site', label: '05', path: 'tests/site/05-doc-pages.mjs' },
+    { kind: 'site', label: '06', path: 'tests/site/06-boot-palette.mjs' },
     { kind: 'component', slug: 'tag', label: 'Tag', path: 'packages/tag/test/tag.test.mjs' },
   ];
   const FAKE_MAP = {
     version: 1,
     suites: {
       'tests/site/01-load-shell.mjs': ['docs/layout.html', 'packages/boot/mosaic.css'],
-      'tests/site/05-doc-pages.mjs': ['packages/tag/page.html', 'docs/layout.html'],
+      'tests/site/06-boot-palette.mjs': ['packages/tag/page.html', 'docs/layout.html'],
       'packages/tag/test/tag.test.mjs': [
         'packages/tag/tag.html',
         'packages/tag/page.html',
@@ -103,10 +103,10 @@ export default async function run({ check }) {
       'docs/layout.html': [
         'packages/tag/test/tag.test.mjs',
         'tests/site/01-load-shell.mjs',
-        'tests/site/05-doc-pages.mjs',
+        'tests/site/06-boot-palette.mjs',
       ],
       'packages/boot/mosaic.css': ['tests/site/01-load-shell.mjs'],
-      'packages/tag/page.html': ['packages/tag/test/tag.test.mjs', 'tests/site/05-doc-pages.mjs'],
+      'packages/tag/page.html': ['packages/tag/test/tag.test.mjs', 'tests/site/06-boot-palette.mjs'],
       'packages/tag/tag.html': ['packages/tag/test/tag.test.mjs'],
     },
   };
@@ -124,15 +124,15 @@ export default async function run({ check }) {
   check(
     '组件目录的新文件（地图里没有）→ 该组件的套件 + 地图里碰过这个目录的套件',
     newInDir.selected.includes('packages/tag/test/tag.test.mjs') &&
-      newInDir.selected.includes('tests/site/05-doc-pages.mjs') &&
+      newInDir.selected.includes('tests/site/06-boot-palette.mjs') &&
       newInDir.selected.length === 2,
     JSON.stringify(newInDir.selected),
   );
 
-  const ownSuite = pick(['tests/site/05-doc-pages.mjs']);
+  const ownSuite = pick(['tests/site/06-boot-palette.mjs']);
   check(
     '改了套件文件自己 → 只跑它',
-    JSON.stringify(ownSuite.selected) === JSON.stringify(['tests/site/05-doc-pages.mjs']),
+    JSON.stringify(ownSuite.selected) === JSON.stringify(['tests/site/06-boot-palette.mjs']),
     JSON.stringify(ownSuite.selected),
   );
 

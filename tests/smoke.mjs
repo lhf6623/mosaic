@@ -9,7 +9,7 @@
  *                            ⚠️ 所以别在干净工作区上跑裸 `pnpm test`（等于自己起了全量）：
  *                            除非对方明确要求，要验就带筛选（`pnpm test popover`）
  *   pnpm test origin/main    跟某个 ref 比（提交之后想验自己这批就用这条；显式 ref 照常选测）
- *   pnpm test:all            全量：13 个站点套件 + 每个 READY 组件的套件（**只在明确要求时**跑这条）
+ *   pnpm test:all            全量：7 个站点套件 + 每个 READY 组件的套件（**只在明确要求时**跑这条）
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）
  *   node tests/smoke.mjs --jobs 6        临时加大并行度（可用 JOBS=6 代替）
  *   pnpm test --list         只列出会跑哪些套件（可与其它参数组合预览），不启动浏览器
