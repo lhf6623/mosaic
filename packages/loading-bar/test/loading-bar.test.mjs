@@ -3,8 +3,8 @@
  * idle 什么都不做、loading 出现并爬升且挂语义三连、done 与 error 是**同一条收尾**
  * （先滑到 100% 再淡出，只有填充色不同）、中途切状态不闪回 0、复位后能重新爬；
  * 另有：铺满视口 / 贴在顶上、两档条高、容器里那一种落在容器内、
- * **pointer-events 必须是 none**（跨 shadow 真命中测试 + 伪证）、语义色 == 令牌 与 hex、
- * `color="auto"` 跟着状态走而显式 color 一律赢。
+ * **pointer-events 必须是 none**（跨 shadow 真命中测试 + 伪证）、
+ * 填充色跟着主题走（没有 color 属性，要换色是覆盖令牌）。
  */
 
 export default async function run({ page, visit, check }) {
@@ -43,8 +43,8 @@ export default async function run({ page, visit, check }) {
         '<mc-loading-bar id="lb-idle"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-loading" state="loading" label="正在加载"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-sm" state="loading" size="sm"></mc-loading-bar>' +
-          '<mc-loading-bar id="lb-info" state="loading" color="info"></mc-loading-bar>' +
-          '<mc-loading-bar id="lb-hex" state="loading" color="#ff6b00"></mc-loading-bar>' +
+          /* 换色走令牌（没有 color 属性）：这条把出错色槽覆盖成 warning */
+          '<mc-loading-bar id="lb-tone" state="error" style="--mc-loading-bar-error: var(--mc-color-warning)"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-done" state="done"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-error" state="error"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-error-custom" state="error" color="warning"></mc-loading-bar>',
@@ -74,7 +74,7 @@ export default async function run({ page, visit, check }) {
     await page
       .waitForFunction(
         () =>
-          ['lb-idle', 'lb-loading', 'lb-sm', 'lb-info', 'lb-hex', 'lb-inline', 'lb-done'].every(
+          ['lb-idle', 'lb-loading', 'lb-sm', 'lb-tone', 'lb-inline', 'lb-done'].every(
             (id) => !!document.getElementById(id)?.shadowRoot,
           ),
         { timeout: 5000 },
@@ -110,10 +110,8 @@ export default async function run({ page, visit, check }) {
           height: Math.round(rect('lb-loading').height),
           smHeight: Math.round(rect('lb-sm').height),
         },
-        colors: {
-          primary: inner('lb-loading').backgroundColor,
-          info: inner('lb-info').backgroundColor,
-          hex: inner('lb-hex').backgroundColor,
+        fill: {
+          loading: inner('lb-loading').backgroundColor,
           pointerEvents: cs('lb-loading').pointerEvents,
         },
         inline: {
@@ -194,7 +192,7 @@ export default async function run({ page, visit, check }) {
     await page.waitForTimeout(250); // 落在「滑满已结束、淡出还没走完」的窗口里
     const doneMid = await readBar('lb-done');
     const errorMid = await readBar('lb-error');
-    const errorCustomMid = await readBar('lb-error-custom');
+    const toneMid = await readBar('lb-tone');
     await page.waitForTimeout(1200);
     const doneEnd = await readBar('lb-done');
     const errorEnd = await readBar('lb-error');
@@ -235,7 +233,7 @@ export default async function run({ page, visit, check }) {
       underClicks,
       doneMid,
       errorMid,
-      errorCustomMid,
+      toneMid,
       doneEnd,
       errorEnd,
       handoff,
@@ -276,7 +274,7 @@ export default async function run({ page, visit, check }) {
 
   check(
     '宿主 pointer-events: none —— 跨 shadow 真命中测试：那一点上接指针的不是条子，底下那颗按钮点得到',
-    bar.probe.colors.pointerEvents === 'none' &&
+    bar.probe.fill.pointerEvents === 'none' &&
       bar.hit.reachedBar === false &&
       bar.hit.forcedReachedBar === true &&
       bar.hit.tag === 'button' &&
@@ -285,14 +283,12 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'color：语义色 == 各自令牌、hex 写进同一个色槽；结构与约定一致（part="bar"、图形 aria-hidden、无插槽）',
-    bar.probe.colors.primary === bar.tokens.primary &&
-      bar.probe.colors.info === bar.tokens.info &&
-      bar.probe.colors.hex === 'rgb(255, 107, 0)' &&
+    '填充色跟着主题走（没有 color 属性）：在跑就是主题主色；结构与约定一致（part="bar"、图形 aria-hidden、无插槽）',
+    bar.probe.fill.loading === bar.tokens.primary &&
       JSON.stringify(bar.probe.structure.parts) === JSON.stringify(['bar']) &&
       bar.probe.structure.barHidden === 'true' &&
       bar.probe.structure.slots === 0,
-    JSON.stringify({ ...bar.probe.colors, ...bar.probe.structure }),
+    JSON.stringify({ ...bar.probe.fill, ...bar.probe.structure }),
   );
 
   check(
@@ -310,7 +306,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'done 与 error 是**同一条收尾**：宽度 / 可见性 / 语义处处一样，只有填充色不同（auto 时 error 走出错色）',
+    'done 与 error 是**同一条收尾**：宽度 / 可见性 / 语义处处一样，只有填充色不同（出错走主题的 danger）',
     bar.doneMid.width === bar.doneMid.hostWidth &&
       bar.errorMid.width === bar.errorMid.hostWidth &&
       bar.doneMid.width === bar.errorMid.width &&
@@ -319,13 +315,13 @@ export default async function run({ page, visit, check }) {
       JSON.stringify(bar.doneMid.attrs) === JSON.stringify(bar.errorMid.attrs) &&
       bar.doneMid.fill === bar.tokens.primary &&
       bar.errorMid.fill === bar.tokens.danger &&
-      /* 显式写了 color 就一律听它的（auto 才跟着状态走） */
-      bar.errorCustomMid.fill === bar.tokens.warning &&
+      /* 要换色是覆盖令牌（没有 color 属性）：把出错色槽换成 warning */
+      bar.toneMid.fill === bar.tokens.warning &&
       /* 收尾之后：淡出到看不见、不留语义 */
       bar.doneEnd.opacity === 0 &&
       bar.errorEnd.opacity === 0 &&
       bar.errorEnd.attrs.length === 0,
-    JSON.stringify({ doneMid: bar.doneMid, errorMid: bar.errorMid, custom: bar.errorCustomMid }),
+    JSON.stringify({ doneMid: bar.doneMid, errorMid: bar.errorMid, tone: bar.toneMid }),
   );
 
   check(

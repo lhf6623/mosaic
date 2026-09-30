@@ -1409,7 +1409,6 @@
       "packages/icon/icons.generated.css",
       "packages/loading-bar/api.md",
       "packages/loading-bar/demos/basic.html",
-      "packages/loading-bar/demos/colors.html",
       "packages/loading-bar/demos/container.html",
       "packages/loading-bar/demos/customize.html",
       "packages/loading-bar/demos/error.html",
@@ -2973,9 +2972,6 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/demos/basic.html": [
-      "packages/loading-bar/test/loading-bar.test.mjs"
-    ],
-    "packages/loading-bar/demos/colors.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/demos/container.html": [

@@ -13,7 +13,7 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 
 ```html
 <mc-loading-bar state="loading"></mc-loading-bar>
-<mc-loading-bar state="loading" color="success" size="sm" label="正在保存"></mc-loading-bar>
+<mc-loading-bar state="loading" size="sm" label="正在保存"></mc-loading-bar>
 
 <!-- 收尾：成功与出错走同一条路（先滑到 100% 再淡出），只差一个填充色 -->
 <mc-loading-bar state="done"></mc-loading-bar>
@@ -27,13 +27,12 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 
 ## 属性
 
-| 名称       | 值                                                                    | 默认     | 说明                                                                                                                  |
-| ---------- | --------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `state`    | `'idle' \| 'loading' \| 'done' \| 'error'`                            | `idle`   | 状态：`idle` 不出现；`loading` 在跑（爬升）；`done` / `error` 收尾（先滑到 100% 再淡出）。**唯一入口**                |
-| `color`    | `'auto' \| 'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `auto`   | 填充色。`auto` 跟着 `state` 走（在跑 / 成功用 primary，出错用 `--mc-loading-bar-error`）；写语义色或 hex 就一律听它的 |
-| `size`     | `'sm' \| 'md'`                                                        | `md`     | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                                 |
-| `position` | `'fixed' \| 'static'`                                                 | `fixed`  | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽                    |
-| `label`    | `string`                                                              | `加载中` | 只给屏幕阅读器的文案：`loading` 时宿主是 `role="progressbar"` + `aria-busy` + 这个名字                                |
+| 名称       | 值                                         | 默认     | 说明                                                                                                   |
+| ---------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------ |
+| `state`    | `'idle' \| 'loading' \| 'done' \| 'error'` | `idle`   | 状态：`idle` 不出现；`loading` 在跑（爬升）；`done` / `error` 收尾（先滑到 100% 再淡出）。**唯一入口** |
+| `size`     | `'sm' \| 'md'`                             | `md`     | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                  |
+| `position` | `'fixed' \| 'static'`                      | `fixed`  | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽     |
+| `label`    | `string`                                   | `加载中` | 只给屏幕阅读器的文案：`loading` 时宿主是 `role="progressbar"` + `aria-busy` + 这个名字                 |
 
 ## part
 

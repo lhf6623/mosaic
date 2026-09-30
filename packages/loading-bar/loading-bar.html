@@ -25,9 +25,9 @@
       visibility: hidden;
       opacity: 0;
 
-      /* L3 色槽：color 只往这里填值（同 mc-progress 的 --mc-progress-fill） */
+      /* L3 色槽：**默认就取主题色**（在跑 / 成功用主色）；要换就覆盖这个令牌 */
       --mc-loading-bar-fill: var(--mc-color-primary, var(--mc-def-color-primary));
-      /* 出错收尾用的色（color="auto" 时它说了算）；换主题色只改这一个令牌 */
+      /* 出错那一下的色：主题的 danger。它只用在收尾，换主题色照旧只改令牌 */
       --mc-loading-bar-error: var(--mc-color-danger, var(--mc-def-color-danger));
       /* 时长都走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
          写死秒数会让「减弱动效」静默失效（同 mc-spinner） */
@@ -46,30 +46,18 @@
       opacity: 1;
     }
 
-    /* 3. 维度二 color：显式写了就一律听它的（语义名或 hex）；没写 / auto 时跟着 state 走 */
-    :host([color='info']) {
-      --mc-loading-bar-fill: var(--mc-color-info, var(--mc-def-color-info));
-    }
-    :host([color='success']) {
-      --mc-loading-bar-fill: var(--mc-color-success, var(--mc-def-color-success));
-    }
-    :host([color='warning']) {
-      --mc-loading-bar-fill: var(--mc-color-warning, var(--mc-def-color-warning));
-    }
-    :host([color='danger']) {
-      --mc-loading-bar-fill: var(--mc-color-danger, var(--mc-def-color-danger));
-    }
-    :host([state='error']:not([color])),
-    :host([state='error'][color='auto']) {
+    /* 3. 出错：只换色槽（其余全跟「在跑 / 收尾」一样）——**没有 color 维度**，
+          颜色直接取自主题，要改走令牌（见 README 的令牌表） */
+    :host([state='error']) {
       --mc-loading-bar-fill: var(--mc-loading-bar-error);
     }
 
-    /* 4. 维度三 size：它不是控件，不借 --mc-control-h-*（同 mc-progress） */
+    /* 4. 维度二 size：它不是控件，不借 --mc-control-h-*（同 mc-progress） */
     :host([size='sm']) {
       height: 2px;
     }
 
-    /* 5. 维度四 position：static = 就在它所在的容器里，块级、通宽、占自己那 2~4px */
+    /* 5. 维度三 position：static = 就在它所在的容器里，块级、通宽、占自己那 2~4px */
     :host([position='static']) {
       position: static;
     }
@@ -117,10 +105,6 @@
   <div class="mc-bar" part="bar" aria-hidden="true"></div>
 
   <script>
-    /* color 也收 hex（`<mc-loading-bar color="#ff6b35">`）：语义名与 auto 交给 CSS，hex 走这一个接线器 */
-    import { colorAttr } from '../boot/color-attr.js';
-
-    const color = colorAttr({ slots: ['fill'] });
     const RUNNING = 'loading';
 
     export default async () => ({
@@ -130,8 +114,6 @@
         /* 状态：唯一入口。idle = 不出现；loading = 在跑（爬升）；
            done / error = 收尾（先滑到 100% 再淡出）—— 两者只差填充色 */
         state: 'idle',
-        /* 填充色：auto（默认）跟着 state 走；写语义色或 hex 就一律听它的 */
-        color: 'auto',
         size: 'md',
         /** 钉在哪儿：fixed = 视口顶部（全局在忙）；static = 就在它所在的容器里（那一块在忙） */
         position: 'fixed',
@@ -141,8 +123,6 @@
 
       attached() {
         this._live = true;
-        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
-        color.sync(this.ele, this.color);
         this.syncState();
       },
 
@@ -153,10 +133,6 @@
         },
         label() {
           if (this._live && this.state === RUNNING) this.syncLabel();
-        },
-        // color 收 hex：首次触发落在构造期，跳过由 colorAttr 内部处理
-        color(value) {
-          color.change(this.ele, value);
         },
       },
 

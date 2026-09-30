@@ -7,7 +7,6 @@
     <l-m src="../button/button.html"></l-m>
     <l-m src="./loading-bar.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/container.html"></l-m>
     <l-m src="./demos/error.html"></l-m>
@@ -40,28 +39,13 @@
     <section class="doc-demo">
       <h3>出错</h3>
       <p class="doc-hint">
-        出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：出错时用出错色， 写死
-        <code>color</code> 则一律听它的。这一下很快，所以下面两条把淡出拉长到 60s
-        才看得住颜色（danger 与 warning）。
+        出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：在跑用主题主色、
+        出错用主题的 danger。这一下很快，所以下面两条把淡出拉长到 60s 才看得住颜色。
       </p>
       <demo-loading-bar-error></demo-loading-bar-error>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/error.html"></mc-code
-        ></mc-collapse-item>
-      </mc-collapse>
-    </section>
-
-    <section class="doc-demo">
-      <h3>颜色</h3>
-      <p class="doc-hint">
-        语义色只往填充色槽里填值，也可以直接给 hex。演示里把它们改成
-        <code>position: static</code> 才排得下 —— 真实用法是全局一条、钉在顶部。
-      </p>
-      <demo-loading-bar-colors></demo-loading-bar-colors>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/colors.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

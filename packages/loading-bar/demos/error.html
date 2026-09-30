@@ -9,8 +9,8 @@
     <!-- 成功与出错是**同一个收尾**（先滑到 100% 再淡出），只差填充色 -->
     <mc-loading-bar attr:state="phase" label="正在加载"></mc-loading-bar>
 
-    <!-- 演示专用：把淡出拉到 60s 才看得住那一下的颜色。state="error" 时
-         color="auto" 会走 --mc-loading-bar-error（默认 danger）；写死 color 则一律听它的。 -->
+    <!-- 演示专用：把淡出拉到 60s 才看得住那一下的颜色。
+         state="error" 用的是主题的 danger；第二条把这个色槽覆盖成了 warning。 -->
     <mc-loading-bar
       state="error"
       style="position: static; --mc-loading-bar-fade: 60s"
@@ -18,8 +18,7 @@
     ></mc-loading-bar>
     <mc-loading-bar
       state="error"
-      color="warning"
-      style="position: static; --mc-loading-bar-fade: 60s"
+      style="position: static; --mc-loading-bar-fade: 60s; --mc-loading-bar-error: var(--mc-color-warning)"
       label="校验未通过"
     ></mc-loading-bar>
   </div>

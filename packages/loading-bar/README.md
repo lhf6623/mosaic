@@ -38,7 +38,8 @@ mc-loading-bar — 加载条
 
 **为什么是字符串枚举，而不是两个布尔**：一个状态维度里混着「布尔 + 字符串」两种类型
 （`active=false` 配 `color='danger'`），用起来既不对称、又要靠顺序去猜；枚举则是一处写清
-「现在是什么状态」。`color` 退成纯粹的**外观**维度（`auto` 跟着状态走，写死就一律听它的）。
+「现在是什么状态」。**颜色不再是维度**：它直接跟着主题走（在跑 / 成功 = 主色，出错 = danger），
+要换色就覆盖令牌 —— 少一个属性，也少一套「显式和默认谁压谁」的规矩。
 
 **视觉全由 `[state]` 派生**：CSS 里没有第二个标记（没有 `[data-on]` / `[data-done]` 那种
 JS 写的中间属性），换状态就是换选择器命中。脚本只剩两件 CSS 做不到的事：进 `loading` 时把
@@ -102,14 +103,14 @@ loading-bar 由「开始 / 结束」两个事件驱动（路由切换、一次�
 
 | 令牌                      | 默认                                  | 作用                                                                             |
 | ------------------------- | ------------------------------------- | -------------------------------------------------------------------------------- |
-| `--mc-loading-bar-fill`   | `--mc-color-primary`                  | 填充色槽（`color` 的语义名与 hex 都往这里填）                                    |
+| `--mc-loading-bar-fill`   | `--mc-color-primary`                  | 在跑 / 成功的填充色：**默认就取主题的主色**，要换色覆盖它                        |
 | `--mc-loading-bar-track`  | `transparent`                         | 轨道底色（深色主题下想露一条底就给它）                                           |
 | `--mc-loading-bar-z`      | `--mc-z-toast`（1500）                | 层级。默认压在顶栏 / 弹层之上，低于 tooltip                                      |
 | `--mc-loading-bar-creep`  | `calc(var(--mc-duration-slow) * 24)`  | 从 0 爬到 `reach` 的时长；减弱动效下自动压到 1ms                                 |
 | `--mc-loading-bar-finish` | `calc(var(--mc-duration-base) * 1.2)` | 「滑到 100%」用多久。**同时是淡出的延迟** —— 两段串起来才是「先到 100%，再消失」 |
 | `--mc-loading-bar-fade`   | `calc(var(--mc-duration-slow) * 1.2)` | 淡出用多久（在滑满**之后**才开始）                                               |
 | `--mc-loading-bar-reach`  | `90%`                                 | 爬升的终点。**别写 100%** —— 那就成了「卡住」                                    |
-| `--mc-loading-bar-error`  | `--mc-color-danger`                   | 出错收尾用的色（`color="auto"` 时它说了算）                                      |
+| `--mc-loading-bar-error`  | `--mc-color-danger`                   | 出错收尾用的色：主题的 danger                                                    |
 
 **`color` 也收 hex**（`<mc-loading-bar color="#ff6b35">`）：语义名仍走 CSS，hex 走
 [`../boot/color-attr.js`](../boot/color-attr.js) 写 `--mc-loading-bar-fill`。只收 hex，
