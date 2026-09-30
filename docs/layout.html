@@ -220,14 +220,11 @@
       --mc-button-accent: var(--mc-color-fg-muted);
     }
 
-    .doc-top-nav mc-button:hover {
-      --mc-button-accent: var(--mc-color-fg);
-    }
-
+    /* 当前页：**只换文字色 + 加粗** —— 文字按钮没有底色（给它补一颗胶囊，就跟
+       inline「无底无框」自相矛盾了）。悬停也不用在这里写：组件统一压深文字色。 */
     .doc-top-nav mc-button[aria-current] {
-      background-color: rgb(var(--mc-color-primary-subtle));
-      color: rgb(var(--mc-color-primary));
-      font-weight: var(--mc-weight-medium);
+      --mc-button-accent: var(--mc-color-fg);
+      font-weight: var(--mc-weight-semibold);
     }
 
     .doc-brand {
@@ -270,9 +267,7 @@
       --mc-button-accent: var(--mc-color-fg-muted);
     }
 
-    .doc-theme:hover {
-      --mc-button-accent: var(--mc-color-fg);
-    }
+    /* 悬停不在这里写：组件对 inline 统一压深文字色 */
 
     .doc-theme mc-icon {
       opacity: 0.7;
@@ -350,7 +345,6 @@
              aria-current 由新增的 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
         <o-fill :value="links" fill-key="path">
           <mc-button
-            variant="ghost"
             inline
             color="neutral"
             attr:aria-current="$data.aria"
@@ -395,7 +389,6 @@
           <mc-button
             slot="trigger"
             class="doc-theme"
-            variant="ghost"
             inline
             color="neutral"
             aria-haspopup="menu"

@@ -58,9 +58,10 @@ export default async function run({ page, visit, check }) {
     put('row-sizes', 's-md', {});
     put('row-sizes', 's-lg', { size: 'lg' });
 
-    put('row-inline', 'in-sm', { variant: 'ghost', inline: true, size: 'sm' }, '小字');
-    put('row-inline', 'in-md', { variant: 'ghost', inline: true }, '常规');
-    put('row-inline', 'in-lg', { variant: 'ghost', inline: true, size: 'lg' }, '大字');
+    /* inline 探针**故意不写 variant**：它要证明形态压过默认的 filled（底色 / 描边都让掉） */
+    put('row-inline', 'in-sm', { inline: true, size: 'sm' }, '小字');
+    put('row-inline', 'in-md', { inline: true }, '常规');
+    put('row-inline', 'in-lg', { inline: true, size: 'lg' }, '大字');
     put('row-inline', 'in-plain', { variant: 'ghost' }, '对照');
 
     put('row-aria', 'ar-forward', {}, '转发');
@@ -229,13 +230,18 @@ export default async function run({ page, visit, check }) {
         左内边距: parseFloat(cs.paddingLeft),
         行高: Math.round(parseFloat(cs.lineHeight)),
         对齐: cs.verticalAlign,
+        底色: cs.backgroundColor,
+        描边: cs.borderTopColor,
       };
     };
     return { sm: row('in-sm'), md: row('in-md'), lg: row('in-lg'), plain: row('in-plain') };
   });
   check(
-    'inline 形态：盒子交给文字（无控制高度 / 左右无内边距），size 只换字号与配对行高',
-    inline.sm.左内边距 === 0 &&
+    'inline 形态：盒子交给文字、无底无框（压过默认 filled），size 只换字号与配对行高',
+    inline.sm.底色 === 'rgba(0, 0, 0, 0)' &&
+      inline.md.底色 === 'rgba(0, 0, 0, 0)' &&
+      inline.lg.底色 === 'rgba(0, 0, 0, 0)' &&
+      inline.sm.左内边距 === 0 &&
       inline.md.左内边距 === 0 &&
       inline.lg.左内边距 === 0 &&
       inline.sm.字 === 12 &&
@@ -261,25 +267,28 @@ export default async function run({ page, visit, check }) {
     const r = document.getElementById('in-md').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
+  const restColor = await page.evaluate(() => getComputedStyle(document.getElementById('in-md')).color);
   await page.mouse.move(inlineAt.x, inlineAt.y);
-  await page.waitForTimeout(250); // 叠层有 transition，等它走完再读
+  await page.waitForTimeout(250);
   const inlineHover = await page.evaluate(() => {
     const el = document.getElementById('in-md');
     const layer = el.shadowRoot.querySelector('.mc-layer');
     return {
       悬停中: el.matches(':hover'),
+      文字色: getComputedStyle(el).color,
+      底色: getComputedStyle(el).backgroundColor,
       下划线: getComputedStyle(el).textDecorationLine,
-      叠层透明度: getComputedStyle(layer).opacity,
-      叠层左: parseFloat(getComputedStyle(layer).left),
+      状态层: getComputedStyle(layer).display,
     };
   });
   check(
-    'inline 悬停走按钮那套 state layer（不是下划线 —— 是按钮不是链接），叠层左右外扩',
+    'inline 悬停只压深文字色：不加底色、不下划线、状态层整条关掉',
     inlineHover.悬停中 &&
+      inlineHover.文字色 !== restColor &&
+      inlineHover.底色 === 'rgba(0, 0, 0, 0)' &&
       inlineHover.下划线 === 'none' &&
-      inlineHover.叠层透明度 === '0.08' &&
-      inlineHover.叠层左 < 0,
-    JSON.stringify(inlineHover),
+      inlineHover.状态层 === 'none',
+    `${restColor} → ${JSON.stringify(inlineHover)}`,
   );
 
   /* ---------- 无障碍名：可见文字是插槽内容，与原生 button 是兄弟 ---------- */

@@ -115,8 +115,10 @@
      *       sm 16+4×2 · md 20+2×2 · lg 24+0×2。ghost 下这层内边距看不见；
      *       filled / outline 会把底色描边一起撑到 24 高 —— inline 是为 ghost 设计的组合，
      *       另两种按「贴字的胶囊」理解即可。
-     *   · 悬停走按钮本来那套 state layer（8% 当前色）—— **不是下划线**：它是按钮不是链接。
-     *     0 左右内边距下叠层正好贴着文字，看着像「文字被选中」，所以左右各外扩 0.4em。
+     *   · **无底、无框、无下划线**：它是按钮，但长得像文字。所以 `variant` 在这一形态下不参与
+     *     （三种外观都渲染成文字，文字色一律取强调色）—— 写 `variant="ghost"` 不会错，但没必要。
+     *   · 悬停不加底色、不下划线，只把文字**压深一档**（color-mix 对语义色与 hex 一视同仁，
+     *     与 --mc-color-*-hover 实测差 3/255）；叠层因此整条关掉。
      * ⚠️ 这一段必须排在上面三档 size 规则**之后**：:host([inline]) 与 :host([size='sm']) 同为
      *     0-2-0，只能靠源码顺序分胜负（同 P14 那类「写法一换就静默失效」的坑）。 */
     :host([inline]) {
@@ -125,6 +127,10 @@
       padding-block: 2px;
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       vertical-align: baseline;
+      /* 纯文字：底色与描边都让掉（形态压过 variant），文字取强调色 */
+      background-color: transparent;
+      border-color: transparent;
+      color: rgb(var(--mc-button-accent));
     }
     :host([inline][size='sm']) {
       padding-block: 4px;
@@ -134,9 +140,14 @@
       padding-block: 0;
       line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
     }
+    /* 悬停只压深文字色：不加底色（那就成了文字高亮）、也不下划线（那是链接的语汇） */
+    :host([inline]:hover) {
+      color: color-mix(in oklab, rgb(var(--mc-button-accent)) 88%, black);
+    }
+
+    /* 文字按钮整条关掉状态层 —— 它没有盒子，叠层只会变成一块贴在字后的底色 */
     :host([inline]) .mc-layer {
-      /* 外扩出来那一点是**反馈的形状**：贴着文字就成了文字高亮，不是按钮被点亮 */
-      inset: 0 -0.4em;
+      display: none;
     }
 
     /* ---------- 布局模式 ---------- */
