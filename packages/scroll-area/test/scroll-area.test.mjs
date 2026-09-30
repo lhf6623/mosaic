@@ -223,13 +223,107 @@ export default async function run({ page, visit, check }) {
       return { at, base, scrolled, bottom, after };
     })();
 
+    /* 拖拽被**取消**（触控手势、OS 接管、窗口失焦）时只会来 pointercancel，不会来 pointerup。
+       不处理的话监听会残留 —— 之后鼠标**一动内容就跟着跑**（实测 scrollTop 从 150 被拖到 600），
+       使用者感受就是「滚动卡住了 / 时好时坏」。
+       ⚠️ 这一段必须用**合成事件**：Playwright 的 mouse.up() 一定会补一个 pointerup，
+       那就把要测的路径给抹平了（实测过：用真鼠标 API 测，删掉修复也是绿的）。 */
+    const cancel = await (async () => {
+      const log = await page.evaluate(() => {
+        const el = document.getElementById('sa-over');
+        const root = el.shadowRoot;
+        const vp = root.querySelector('.mc-viewport');
+        const thumb = root.querySelector('.mc-thumb');
+        const steps = [];
+        const snap = (tag) => steps.push({ tag, top: Math.round(vp.scrollTop) });
+        const startDrag = () => {
+          vp.scrollTop = 120;
+          const t = thumb.getBoundingClientRect();
+          const x = t.x + t.width / 2;
+          const y = t.y + t.height / 2;
+          const opts = {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true,
+            button: 0,
+            buttons: 1,
+            clientX: x,
+            clientY: y,
+          };
+          thumb.dispatchEvent(new PointerEvent('pointerdown', opts));
+          window.dispatchEvent(new PointerEvent('pointermove', { ...opts, clientY: y + 20 }));
+          return { opts, y };
+        };
+
+        /* ① 手势被系统取消：只来 pointercancel，没有 pointerup */
+        snap('① 初始');
+        const first = startDrag();
+        snap('① 按住移动');
+        thumb.dispatchEvent(new PointerEvent('pointercancel', { ...first.opts, buttons: 0 }));
+        snap('① pointercancel');
+        window.dispatchEvent(
+          new PointerEvent('pointermove', { ...first.opts, buttons: 0, clientY: first.y + 90 }),
+        );
+        snap('① 仅移动鼠标');
+
+        /* ② 事件整个丢了：pointerup 与 pointercancel 都没有 —— 只靠「按键还按着吗」兜底 */
+        snap('② 初始');
+        const second = startDrag();
+        snap('② 按住移动');
+        window.dispatchEvent(
+          new PointerEvent('pointermove', { ...second.opts, buttons: 0, clientY: second.y + 90 }),
+        );
+        snap('② 仅移动鼠标');
+        return steps;
+      });
+      await page.waitForTimeout(150);
+      const after = await page.evaluate(() =>
+        Math.round(document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').scrollTop),
+      );
+      return { log, after };
+    })();
+
+    /* 落点差异：条子是 viewport 的**兄弟**节点、盖在最右边那 10px 上 ——
+       它若吃指针，滚轮到不了 viewport，鼠标停在滚动条上就「滚不动」（实测：条子上 scrollTop 一直是 0，
+       旁边一格就正常滚）—— 使用者感受就是「时好时坏、不够灵敏」。 */
+    const spots = await (async () => {
+      const at = await page.evaluate(() => {
+        const el = document.getElementById('sa-over');
+        const bar = el.shadowRoot.querySelector('.mc-bar').getBoundingClientRect();
+        const vp = el.shadowRoot.querySelector('.mc-viewport').getBoundingClientRect();
+        return {
+          y: Math.round(bar.y + bar.height / 2),
+          content: Math.round(vp.x + 40),
+          strip: Math.round(bar.x + bar.width / 2),
+        };
+      });
+      const one = async (x) => {
+        await page.evaluate(() => {
+          document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').scrollTop = 0;
+        });
+        await page.waitForTimeout(80);
+        await page.mouse.move(x, at.y);
+        await page.mouse.wheel(0, 150);
+        await page.waitForTimeout(220);
+        return page.evaluate(() =>
+          Math.round(
+            document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').scrollTop,
+          ),
+        );
+      };
+      return { at, content: await one(at.content), strip: await one(at.strip) };
+    })();
+
     await page.evaluate(() => {
       document.getElementById('sa-probe')?.remove();
     });
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { probe, scrolled, drag, grown, wheel, failed };
+    return { probe, scrolled, drag, grown, wheel, cancel, spots, failed };
   })();
 
   check(
@@ -314,6 +408,21 @@ export default async function run({ page, visit, check }) {
     area.wheel.bottom.inner === area.wheel.bottom.max &&
       area.wheel.after.page > area.wheel.bottom.page,
     JSON.stringify({ bottom: area.wheel.bottom, after: area.wheel.after }),
+  );
+
+  check(
+    '拖拽被取消（pointercancel）或 pointerup 整个丢失之后：只移动鼠标不再拖动内容（监听不残留）',
+    ['① 仅移动鼠标', '② 仅移动鼠标'].every((tag, i) => {
+      const at = area.cancel.log.findIndex((s) => s.tag === tag);
+      return at > 0 && area.cancel.log[at].top === area.cancel.log[at - 1].top;
+    }) && area.cancel.after === area.cancel.log.at(-1).top,
+    JSON.stringify(area.cancel),
+  );
+
+  check(
+    '滚轮落在右侧条子上也要滚容器（条子不吃指针）—— 否则就是「时好时坏、不够灵敏」',
+    area.spots.content > 0 && area.spots.strip > 0,
+    JSON.stringify(area.spots),
   );
 
   check('滚动容器文档页没有 404 / 运行时报错', area.failed.length === 0, area.failed.join(' | ') || '无');

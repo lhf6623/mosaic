@@ -59,6 +59,12 @@
     .mc-bar {
       position: absolute;
       opacity: 0;
+      /* ⚠️ 条子**不能吃指针**：它是 viewport 的**兄弟**节点、盖在最右边那 10px 上，
+         命中它时滚轮到不了 viewport —— 表现就是「鼠标停在滚动条那条上滚不动」，
+         而滚动条恰恰是大家最自然会去悬停的地方（实测：落在条子上 scrollTop 纹丝不动，
+         落在旁边一格就滚）。这里关掉指针，让滚轮穿透到底下的 viewport；
+         滑块自己再打开（它要能拖），并在它上面单独把滚轮转过去。 */
+      pointer-events: none;
       transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
         var(--mc-ease-standard);
     }
@@ -68,6 +74,7 @@
 
     .mc-thumb {
       position: absolute;
+      pointer-events: auto;
       background-color: rgb(var(--mc-scroll-area-thumb));
       border-radius: var(--mc-scroll-area-radius);
     }
@@ -130,6 +137,21 @@
         };
         this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
 
+        /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去同样到不了 viewport —— 就地转过去。
+           只为这一小块（约 10×40px）挂非 passive 监听，代价可以忽略；
+           条子其余部分靠 CSS 的 pointer-events: none 让滚轮原生穿透。 */
+        this._onThumbWheel = (event) => {
+          const vp = this._viewport;
+          const horizontal = this.axis === 'x';
+          const before = horizontal ? vp.scrollLeft : vp.scrollTop;
+          const delta = horizontal ? event.deltaX || event.deltaY : event.deltaY;
+          if (horizontal) vp.scrollLeft += delta;
+          else vp.scrollTop += delta;
+          /* 真的滚动了才拦：滚不动就放行，让浏览器继续往外交接（不然就把它锁在容器里了） */
+          if ((horizontal ? vp.scrollLeft : vp.scrollTop) !== before) event.preventDefault();
+        };
+        this._thumb.addEventListener('wheel', this._onThumbWheel, { passive: false });
+
         this._slot.addEventListener('slotchange', () => this.observeContent());
         /* 视口本身变大变小（比如宿主高度变了）要重算；内容变高变矮同样要重算 ——
            后者 ResizeObserver 不会替我们看，得盯住被塞进来的那些元素 */
@@ -147,10 +169,12 @@
       detached() {
         this._viewport?.removeEventListener('scroll', this._onScroll);
         this._thumb?.removeEventListener('pointerdown', this._onThumbDown);
+        this._thumb?.removeEventListener('wheel', this._onThumbWheel);
         this._ro?.disconnect();
         this._contentRO?.disconnect();
         window.removeEventListener('pointermove', this._onDragMove);
         window.removeEventListener('pointerup', this._onDragEnd);
+        window.removeEventListener('pointercancel', this._onDragEnd);
       },
 
       watch: {
@@ -236,6 +260,7 @@
         startDrag(event) {
           if (event.button != null && event.button !== 0) return;
           event.preventDefault();
+          this.endDrag(); // 上一轮若没干净收尾（取消 / 丢事件），先收掉，别叠监听
           const vp = this._viewport;
           const vertical = this.axis !== 'x';
           const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
@@ -254,18 +279,31 @@
           this._thumb.setPointerCapture?.(event.pointerId);
 
           this._onDragMove = (move) => {
+            /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管、触屏手势被系统收走…）就别再拖着
+               内容跑 —— 那之后鼠标**一动内容就跟着跑**，使用者感受是「滚动卡住了/时好时坏」
+               （实测：pointercancel 之后仅移动鼠标，scrollTop 从 150 一路被拖到 600）。 */
+            if (!move.buttons) {
+              this.endDrag();
+              return;
+            }
             const now = this._drag.vertical ? move.clientY : move.clientX;
             const next = this._drag.from + (now - this._drag.start) * this._drag.ratio;
             if (this._drag.vertical) vp.scrollTop = next;
             else vp.scrollLeft = next;
           };
-          this._onDragEnd = () => {
-            window.removeEventListener('pointermove', this._onDragMove);
-            window.removeEventListener('pointerup', this._onDragEnd);
-            this._drag = null;
-          };
+          this._onDragEnd = () => this.endDrag();
           window.addEventListener('pointermove', this._onDragMove);
           window.addEventListener('pointerup', this._onDragEnd);
+          /* pointercancel：手势被系统取消（触控、OS 接管、失焦）时只有它，没有 pointerup */
+          window.addEventListener('pointercancel', this._onDragEnd);
+        },
+
+        /** 收掉这一次拖拽（重复调用无害：拖拽结束时三条路都会走到这里） */
+        endDrag() {
+          window.removeEventListener('pointermove', this._onDragMove);
+          window.removeEventListener('pointerup', this._onDragEnd);
+          window.removeEventListener('pointercancel', this._onDragEnd);
+          this._drag = null;
         },
       },
     });
