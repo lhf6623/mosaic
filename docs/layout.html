@@ -209,19 +209,18 @@
       display: none;
     }
 
-    /* 入口是 mc-button（inline 形态）：盒子 / 排版 / 悬停下划线都归组件，
-       这里只把强调色接到「次要前景 → 前景」这条线上，并给当前页加粗。
-       ⚠️ 色槽是**外层样式表**覆盖的（语义色名由 CSS 管，外层规则压得住 :host([color=…])）。 */
-    .doc-top-nav mc-button {
+    /* 顶栏四处（三个入口 + 主题触发框）都是 mc-button 的 inline 形态：盒子 / 排版 / 悬停 /
+       焦点环全归组件，页面只剩一件它表达不了的事 —— **次要文字色**（`color` 维度里最接近的
+       `neutral` 是填充档 213 218 224，当文字用浅得看不见），所以把强调色接到前景族上。
+       ⚠️ 色槽由**外层样式表**覆盖：语义色名走 CSS，外层规则压得住 :host([color=…])。 */
+    .doc-top-nav mc-button,
+    .doc-top-actions mc-button {
       flex: none;
-      /* inline 形态左右是 0 内边距（盒子交给文字）；顶栏这里补一点 —— 当前页用 primary-subtle
-         的胶囊标出，贴着字不好看，也会让相邻两项的间距看着忽宽忽窄。 */
-      padding-inline: var(--mc-space-1);
       --mc-button-accent: var(--mc-color-fg-muted);
     }
 
     /* 当前页：**只换文字色 + 加粗** —— 文字按钮没有底色（给它补一颗胶囊，就跟
-       inline「无底无框」自相矛盾了）。悬停也不用在这里写：组件统一压深文字色。 */
+       inline「无底无框」自相矛盾了）。悬停也不在这里写：组件统一压深文字色。 */
     .doc-top-nav mc-button[aria-current] {
       --mc-button-accent: var(--mc-color-fg);
       font-weight: var(--mc-weight-semibold);
@@ -258,19 +257,6 @@
     .doc-github:hover {
       background-color: rgb(var(--mc-color-surface-sunken));
       color: rgb(var(--mc-color-fg));
-    }
-
-    /* 主题切换的触发元素是 mc-button（inline 形态）：盒子 / 配色 / 焦点环都归组件，
-       这里只剩两处页面级微调 —— 触发框不吃 flex 伸缩，后缀图标压一档透明度。 */
-    .doc-theme {
-      flex: none;
-      --mc-button-accent: var(--mc-color-fg-muted);
-    }
-
-    /* 悬停不在这里写：组件对 inline 统一压深文字色 */
-
-    .doc-theme mc-icon {
-      opacity: 0.7;
     }
 
     /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅）。
@@ -344,11 +330,7 @@
              换来的是「顶栏每一处都由项目自己的组件渲染」。改回锚点前先看提交记录里的取舍。
              aria-current 由新增的 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
         <o-fill :value="links" fill-key="path">
-          <mc-button
-            inline
-            color="neutral"
-            attr:aria-current="$data.aria"
-            attr:data-path="$data.path"
+          <mc-button inline attr:aria-current="$data.aria" attr:data-path="$data.path"
             >{{$data.label}}</mc-button
           >
         </o-fill>
@@ -388,15 +370,12 @@
                mc-button 的可访问名来自插槽文字，所以可见文字与隐藏文字要一起给。 -->
           <mc-button
             slot="trigger"
-            class="doc-theme"
             inline
-            color="neutral"
             aria-haspopup="menu"
             attr:aria-expanded="menuOpen ? 'true' : 'false'"
           >
             <span class="sr-only">切换深浅色：</span>
             <span>{{themeLabel}}</span>
-            <mc-icon slot="suffix" name="chevron-down"></mc-icon>
           </mc-button>
           <mc-menu-item
             ><button

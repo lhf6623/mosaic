@@ -168,7 +168,7 @@ const PICK_THEMED = `(() => {
   return (
     window.__deepAll('mc-button').find(
       (b) =>
-        !b.classList.contains('doc-theme') &&
+        !b.closest('.doc-top-actions') &&
         getComputedStyle(b).backgroundColor !== 'rgba(0, 0, 0, 0)',
     ) ?? null
   );

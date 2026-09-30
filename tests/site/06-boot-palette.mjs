@@ -80,7 +80,7 @@ const layoutState = await page.evaluate(() => {
     topInShadow: !!layout?.shadowRoot?.querySelector('.doc-top'),
     mainInShadow: !!layout?.shadowRoot?.querySelector('.doc-main'),
     navLinks: layout?.shadowRoot?.querySelectorAll('.doc-top-nav mc-button').length ?? 0,
-    themeBtn: !!layout?.shadowRoot?.querySelector('.doc-theme'),
+    themeBtn: !!layout?.shadowRoot?.querySelector('.doc-top-actions mc-button'),
     /* 顶栏右侧的仓库入口：外链 + 图标按钮（要有 aria-label，装饰 SVG 要 aria-hidden） */
     github: (() => {
       const a = layout?.shadowRoot?.querySelector('.doc-github');
