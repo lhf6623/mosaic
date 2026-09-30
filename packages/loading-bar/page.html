@@ -29,12 +29,15 @@
           上，能接收点击的话会把顶栏那一整条吞掉，而且视觉上看不出来。
         </li>
         <li>
-          <strong>出错是「一闪而过」的</strong>：<code>error</code> 一开就换成出错色、滑到满格、
-          淡出消失 —— 和正常收尾同一条路。所以真正的失败提示要由页面自己的 <code>mc-message</code> /
-          <code>mc-alert</code> 留在屏幕上，这条子只负责那一下。
+          <strong>状态只有一个入口 <code>state</code></strong
+          >：<code>idle</code> 不出现、 <code>loading</code> 在跑、<code>done</code> /
+          <code>error</code> 收尾。 出错没有单独的属性 —— 它和成功走的是同一条收尾（先滑到 100%
+          再淡出），只差一个填充色， 所以真正的失败提示要由页面自己的 <code>mc-message</code> /
+          <code>mc-alert</code> 留在屏幕上。
         </li>
         <li>
-          <strong>收尾不是即时的</strong>：<code>active</code> 关掉后先滑满再淡出（时长走
+          <strong>收尾不是即时的</strong>：<code>state</code> 换成 <code>done</code> /
+          <code>error</code> 之后先滑满、再淡出（时长走
           <code>--mc-loading-bar-fade</code>，减弱动效偏好下会自动压到 1ms），
           所以别用它当「进度」——它只表示开始与结束。
         </li>
@@ -63,9 +66,10 @@
     <section class="doc-demo">
       <h3>出错</h3>
       <p class="doc-hint">
-        <code>error</code> 一开，条子转成出错色、滑到满格，然后<strong>淡出消失</strong>
-        （和正常收尾同一条路，只是颜色不同）。这一下很快，所以出错色默认给 danger；
-        下面两条把淡出拉长到 60s 才看得住颜色，第二条还把它换成了 warning。
+        出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：
+        <code>state="error"</code> 时 <code>color="auto"</code> 会走
+        <code>--mc-loading-bar-error</code>（默认 danger），写死 <code>color</code> 则一律听它的。
+        这一下很快，所以下面两条把淡出拉长到 60s 才看得住颜色（danger 与 warning）。
       </p>
       <demo-loading-bar-error></demo-loading-bar-error>
       <mc-collapse class="doc-demo-code">

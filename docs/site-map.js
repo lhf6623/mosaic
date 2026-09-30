@@ -242,7 +242,7 @@ export const SITE = [
             tagName: 'mc-loading-bar',
             stage: 'M3',
             summary:
-              '加载条。默认钉在视口顶部（全局在忙），也可放进容器（position="static"）；在跑就缓慢爬升（到不了 100%），跑完滑满淡出，出错就是换个颜色走完同一套；不吃指针。',
+              '加载条。state 一个入口（idle / loading / done / error）：在跑就缓慢爬升（到不了 100%），收尾先滑到 100% 再淡出，成功与出错同一条路、只差色；默认钉在视口顶部，也可放进容器；不吃指针。',
           },
         ],
       },

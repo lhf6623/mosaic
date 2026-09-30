@@ -3,37 +3,37 @@
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./loading-bar.html` · M3 · **已实现**
 
-全局加载条：钉在视口顶部的一条细线，`active` 时出现并一路缓慢爬升（**永远到不了 100%**，
-所以看着不像卡住），关掉时滑满 → 淡出 → 复位。
+加载条。默认钉在视口顶部，也可以在容器里。**状态只有一个入口 `state`**：
+`idle` 不出现、`loading` 出现并一路缓慢爬升（**永远到不了 100%**，所以看着不像卡住）、
+`done` / `error` 是收尾 —— 先滑到 100%，再淡出消失，两者只差填充色。
 
 和 `mc-progress` 的分工：progress 是**内容里**的状态展示（「这一块跑到哪了」，有 `value` / `max`），
-loading-bar 是**全局**的「整页 / 整路由在忙」—— 它铺满视口宽度、浮在所有内容之上，
-通常由路由切换或一次全局请求驱动，一个页面同时只有一个。
+loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块在忙**（`position="static"`）——
+它只有一个状态入口，没有数值。
 
 ```html
-<mc-loading-bar active></mc-loading-bar>
-<mc-loading-bar active color="success" size="sm" label="正在保存"></mc-loading-bar>
-<mc-loading-bar active color="#ff6b35"></mc-loading-bar>
+<mc-loading-bar state="loading"></mc-loading-bar>
+<mc-loading-bar state="loading" color="success" size="sm" label="正在保存"></mc-loading-bar>
 
-<!-- 放进容器：就在它所在的那一块里当一条细线（卡片 / 面板的「这一块在刷新」） -->
-<mc-loading-bar active position="static" label="正在刷新列表"></mc-loading-bar>
+<!-- 收尾：成功与出错走同一条路（先滑到 100% 再淡出），只差一个填充色 -->
+<mc-loading-bar state="done"></mc-loading-bar>
+<mc-loading-bar state="error"></mc-loading-bar>
 
-<!-- 出错：转成 error 色（默认 danger），滑到满格后淡出消失 -->
-<mc-loading-bar error label="加载失败"></mc-loading-bar>
+<!-- 放进容器：就在它所在的那一块里当一条细线 -->
+<mc-loading-bar state="loading" position="static" label="正在刷新列表"></mc-loading-bar>
 ```
 
 ---
 
 ## 属性
 
-| 名称       | 值                                                          | 默认      | 说明                                                                                                                                           |
-| ---------- | ----------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `active`   | `boolean`                                                   | —         | 正在加载。`true` 出现并爬升；`false` 滑满 → 淡出 → 复位（再 `true` 从 0 重来）                                                                 |
-| `color`    | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `primary` | 语义色，只往填充色槽里填值；也可以是 hex（`#ff6b35`）**出错时被 `error` 压过**                                                                 |
-| `size`     | `'sm' \| 'md'`                                              | `md`      | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                                                          |
-| `position` | `'fixed' \| 'static'`                                       | `fixed`   | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽                                             |
-| `label`    | `string`                                                    | `加载中`  | 只给屏幕阅读器的文案：在跑时宿主是 `role="progressbar"` + `aria-busy` + 这个名字，不显示在界面上                                               |
-| `error`    | `boolean`                                                   | —         | 出错态：填充换成 `--mc-loading-bar-error`（默认 danger），滑到满格后**淡出消失**（与正常收尾同一条路，只是颜色不同）。压过 `color` 与 `active` |
+| 名称       | 值                                                                    | 默认     | 说明                                                                                                                  |
+| ---------- | --------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `state`    | `'idle' \| 'loading' \| 'done' \| 'error'`                            | `idle`   | 状态：`idle` 不出现；`loading` 在跑（爬升）；`done` / `error` 收尾（先滑到 100% 再淡出）。**唯一入口**                |
+| `color`    | `'auto' \| 'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `auto`   | 填充色。`auto` 跟着 `state` 走（在跑 / 成功用 primary，出错用 `--mc-loading-bar-error`）；写语义色或 hex 就一律听它的 |
+| `size`     | `'sm' \| 'md'`                                                        | `md`     | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                                 |
+| `position` | `'fixed' \| 'static'`                                                 | `fixed`  | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽                    |
+| `label`    | `string`                                                              | `加载中` | 只给屏幕阅读器的文案：`loading` 时宿主是 `role="progressbar"` + `aria-busy` + 这个名字                                |
 
 ## part
 
@@ -41,15 +41,10 @@ loading-bar 是**全局**的「整页 / 整路由在忙」—— 它铺满视口
 | ---------- | ------------------------------- |
 | part="bar" | 内部填充条；换色 / 换形状都改它 |
 
-> **无障碍**：在跑时宿主是 `role="progressbar"` + `aria-busy="true"` + `aria-label`（取 `label`），
-> 不确定态**不写** `aria-valuenow`（和 `mc-progress` 的不确定态一个口径）；
-> 没在跑时三个属性一起撤掉，不留语义痕迹。图形本身 `aria-hidden="true"`。
->
-> **出错 = 换个颜色走完同一套收尾**：`error` 一开就滑到 100% 再淡出消失，
-> 与 `active` 关掉时走的是同一条路，只有色槽不同（`--mc-loading-bar-error`）。
-> 它**一闪而过**，所以默认给 danger、并且请把 `label` 写成能说明失败的话（如「加载失败」）；
-> 真正需要留在屏幕上的失败提示交给页面自己的 `mc-message` / `mc-alert` ——
-> 这条子只负责「刚才那次失败了」这个瞬时信号。
+> **没有单独的「出错」属性**：出错和成功走的是**同一条收尾**（先滑到 100%，再淡出消失），
+> 差别只有填充色 —— 所以它由 `state="error"` 表达，不需要第二个布尔属性。
+> 它**一闪而过**，所以请把 `label` 写成能说明失败的话（如「加载失败」），
+> 而真正需要留在屏幕上的失败提示交给页面自己的 `mc-message` / `mc-alert`。
 >
 > **容器里怎么放**：`position="static"` 只是把定位交回文档流（块级、通宽、占 2 / 4px），
 > 组件**不去猜容器** —— 不套 `absolute`、也不要求容器 `position: relative`。要让它盖在容器

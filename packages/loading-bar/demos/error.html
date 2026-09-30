@@ -2,26 +2,24 @@
   <div class="flex flex-col gap-3">
     <div class="flex flex-wrap items-center gap-3">
       <mc-button on:click="start()">开始</mc-button>
+      <mc-button variant="outline" on:click="finish()">成功</mc-button>
       <mc-button variant="outline" on:click="fail()">出错</mc-button>
     </div>
 
-    <!-- 真实行为：出错 = 换成出错色，滑到 100%，然后淡出消失（和正常收尾同一条路） -->
-    <mc-loading-bar
-      attr:active="busy ? '' : null"
-      attr:error="failed ? '' : null"
-      style="position: static"
-      label="正在加载"
-    ></mc-loading-bar>
+    <!-- 成功与出错是**同一个收尾**（先滑到 100% 再淡出），只差填充色 -->
+    <mc-loading-bar attr:state="phase" label="正在加载"></mc-loading-bar>
 
-    <!-- 演示专用：把淡出拉到 60s，才看得住那一下的**颜色**；第二条把色换成了 warning -->
+    <!-- 演示专用：把淡出拉到 60s 才看得住那一下的颜色。state="error" 时
+         color="auto" 会走 --mc-loading-bar-error（默认 danger）；写死 color 则一律听它的。 -->
     <mc-loading-bar
-      error
+      state="error"
       style="position: static; --mc-loading-bar-fade: 60s"
       label="加载失败"
     ></mc-loading-bar>
     <mc-loading-bar
-      error
-      style="position: static; --mc-loading-bar-fade: 60s; --mc-loading-bar-error: var(--mc-color-warning)"
+      state="error"
+      color="warning"
+      style="position: static; --mc-loading-bar-fade: 60s"
       label="校验未通过"
     ></mc-loading-bar>
   </div>
@@ -30,19 +28,18 @@
     export default async () => ({
       tag: 'demo-loading-bar-error',
 
-      /* ⚠️ 字段别叫 `on`：ofa 把 `on` 留给了自己，数据里出现同名键会让模块注册失败，
-         外层只报「错误的模块地址」（实测 data: { on: false } 单独就能复现，改名即好） */
-      data: { busy: true, failed: false },
+      /* data 的字段别叫 `on`：那是 ofa 自己的名字（见 basic 演示的注释） */
+      data: { phase: 'loading' },
 
       proto: {
         start() {
-          /* 重新开一次：先清掉 error（它压过 active），再让它爬 */
-          this.failed = false;
-          this.busy = true;
+          this.phase = 'loading';
+        },
+        finish() {
+          this.phase = 'done';
         },
         fail() {
-          this.busy = false;
-          this.failed = true;
+          this.phase = 'error';
         },
       },
     });
