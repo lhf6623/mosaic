@@ -5,7 +5,7 @@
  *   · 有 path     → 有页面、可点
  *   · 没有 path   → 待建：左栏指向规范文档，卡片上显示 stage 徽标
  *
- * 左栏 = children 逐条渲染。分区自己可以没有落地页（「组件」就是），这时它的顶栏入口
+ * 左栏 = children 逐条渲染。分区自己可以没有落地页（「文档」「组件」都是），这时它的顶栏入口
  * 落到子树里第一个有页面的节点 —— 见 firstPageOf。
  *
  * 显示顺序由 order 说了算（同层唯一），加载时递归排好，消费端一次都不用 sort；
@@ -32,11 +32,17 @@
 
 export const SITE = [
   { order: 10, label: '首页', path: 'docs/pages/home.html' },
-  { order: 20, label: '快速开始', path: 'docs/pages/guide.html' },
-  { order: 30, label: '设计令牌', path: 'packages/color/page.html' },
-  { order: 40, label: '规范', path: 'docs/pages/specs.html' },
   {
-    order: 50,
+    order: 20,
+    label: '文档',
+    children: [
+      { order: 10, label: '快速开始', path: 'docs/pages/guide.html' },
+      { order: 20, label: '设计令牌', path: 'packages/color/page.html' },
+      { order: 30, label: '规范', path: 'docs/pages/specs.html' },
+    ],
+  },
+  {
+    order: 30,
     label: '组件',
     children: [
       {

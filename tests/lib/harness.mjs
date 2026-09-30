@@ -12,6 +12,7 @@ import { readdirSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { TOPBAR } from '../../docs/site-map.js';
 
 export const BASE = (process.env.BASE_URL ?? 'http://127.0.0.1:8642').replace(/\/$/, '');
 export const CHANNEL = process.env.CHANNEL ?? 'chrome';
@@ -181,10 +182,16 @@ export async function createHarness() {
     }
 
     /* 路由就绪 = 顶栏入口已经渲染出来（layout 的 ready 跑完）。冷启动时 ofa.js 还在从 CDN 下来，
-       这之前点顶栏、改 hash 都是空操作 —— 筛着单跑某条站点套件就会踩到（没有前面的套件把它带热）。 */
+       这之前点顶栏、改 hash 都是空操作 —— 筛着单跑某条站点套件就会踩到（没有前面的套件把它带热）。
+       ⚠️ 数量以 docs/site-map.js 的 TOPBAR 为准，别写死数字：2026-09 顶栏从 5 条收成 3 条，
+       写死的那版就一直等满 10s 然后被 .catch 静默吞掉（守卫等于失效，还白等 10 秒）。 */
     const routerReady = (target = page) =>
       target
-        .waitForFunction(() => window.__deepAll('.doc-top-nav a').length >= 5, { timeout: 10000 })
+        .waitForFunction(
+          (want) => window.__deepAll('.doc-top-nav a').length >= want,
+          TOPBAR.length,
+          { timeout: 10000 },
+        )
         .catch(() => {});
 
     /** 用顶部一级导航切页（真实点击）；顶栏在布局页的 shadow root 里 */

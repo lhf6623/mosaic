@@ -53,6 +53,7 @@
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
+      "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/pages/guide.html",
@@ -611,6 +612,7 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -623,6 +625,7 @@
       "packages/boot/component-base.css",
       "packages/boot/mosaic.css",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -1521,6 +1524,7 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
+      "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
     ],
     "docs/layout.html": [
@@ -1593,6 +1597,7 @@
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
+      "packages/textarea/test/textarea.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
@@ -2115,6 +2120,7 @@
       "packages/input/test/input.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
+      "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",

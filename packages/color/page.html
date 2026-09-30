@@ -283,8 +283,10 @@
     </p>
   </div>
   <script>
-    // 挂到布局页（ofa.js 嵌套路由的父页面）：顶栏 + 正文带 + <slot>；相对本页面文件解析
-    export const parent = '../../docs/layout.html';
+    /* 挂到**分区布局页**（ofa.js 嵌套路由的父页面），相对本页面文件解析：
+       「设计令牌」属于「文档」分区 → 三栏（左栏菜单「文档」那三项 + 正文 + 右栏本页目录）；
+       只有单栏的站点页（首页）才挂 '../../docs/layout.html'。 */
+    export const parent = '../../docs/doc-layout.html';
 
     export default () => ({ data: {} });
   </script>

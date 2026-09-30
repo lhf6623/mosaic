@@ -1,7 +1,7 @@
 /**
  * 站点 · 启动与色板（第 12.x 节）：色板回读 tokens.css、冷启动占位、入口与布局页
  */
-import { READY } from '../../docs/site-map.js';
+import { READY, TOPBAR, locate } from '../../docs/site-map.js';
 
 export default async function run({ page, visit, goHash, pageState, check, BASE, newPage }) {
 /* ------------------------------------------------------------------ *
@@ -66,10 +66,15 @@ check(
 
 const layoutState = await page.evaluate(() => {
   const pages = [...document.querySelectorAll('o-page')];
-  const layout = pages.find((p) => (p.getAttribute('src') || '').endsWith('/docs/layout.html'));
+  const srcOf = (p) => p.getAttribute('src') || '';
+  const layout = pages.find((p) => srcOf(p).endsWith('/docs/layout.html'));
   const child = pages.find((p) => p !== layout);
   return {
     count: pages.length,
+    /* 分区页是三层：外壳 → 分区布局页 → 页面。两个「层数」都记下来做结构化断言，
+       免得再写死总层数（2026-09 顶栏收成三条、文档三页改挂分区布局页时踩过）。 */
+    shellCount: pages.filter((p) => srcOf(p).endsWith('/docs/layout.html')).length,
+    sectionCount: pages.filter((p) => srcOf(p).endsWith('/docs/doc-layout.html')).length,
     layoutSrc: layout?.getAttribute('src')?.split('/').slice(-2).join('/') ?? null,
     childParentTag: child?.parentElement?.tagName.toLowerCase() ?? null,
     topInShadow: !!layout?.shadowRoot?.querySelector('.doc-top'),
@@ -95,18 +100,22 @@ const layoutState = await page.evaluate(() => {
 });
 check(
   '外壳由布局页 docs/layout.html 提供（子页面嵌在它的 o-page 里，外壳在它的 shadow root 里）',
-  layoutState.count === 2 &&
+  /* 此刻在设计令牌页（「文档」分区）→ 三层：外壳 → 分区布局页 → 页面。
+     外壳与分区布局页各只有一层 —— 漏挂 / 重复挂都会在这里红。 */
+  layoutState.count === 3 &&
+    layoutState.shellCount === 1 &&
+    layoutState.sectionCount === 1 &&
     layoutState.layoutSrc === 'docs/layout.html' &&
     layoutState.childParentTag === 'o-page' &&
     layoutState.topInShadow &&
     layoutState.mainInShadow &&
-    layoutState.navLinks === 5 &&
+    layoutState.navLinks === TOPBAR.length &&
     layoutState.themeBtn,
   JSON.stringify(layoutState),
 );
 
 check(
-  '顶栏右侧有仓库入口：外链 + aria-label，图标是装饰性 SVG，且不混进一级菜单（nav 仍是 5 条）',
+  `顶栏右侧有仓库入口：外链 + aria-label，图标是装饰性 SVG，且不混进一级菜单（nav 仍是 ${TOPBAR.length} 条）`,
   layoutState.github?.href === 'https://github.com/lhf6623/mosaic' &&
     layoutState.github?.target === '_blank' &&
     layoutState.github?.rel === 'noreferrer' &&
@@ -127,18 +136,25 @@ const layoutIdentity = await (async () => {
   await goHash('docs/pages/guide.html');
   return page.evaluate(() => {
     const pages = [...document.querySelectorAll('o-page')];
-    const layout = pages.find((p) => (p.getAttribute('src') || '').endsWith('/docs/layout.html'));
-    const child = pages.find((p) => p !== layout);
+    const srcOf = (p) => p.getAttribute('src') || '';
+    const isLayout = (p) =>
+      srcOf(p).endsWith('/docs/layout.html') || srcOf(p).endsWith('/docs/doc-layout.html');
+    const layout = pages.find((p) => srcOf(p).endsWith('/docs/layout.html'));
+    /* 最里层那个才是页面本身（分区页是三层） */
+    const inner = pages.filter((p) => !isLayout(p)).at(-1);
     return {
       same: layout === window.__layoutBefore,
-      child: (child?.getAttribute('src') || '').split('/').slice(-2).join('/'),
+      child: srcOf(inner).split('/').slice(-2).join('/'),
       active: layout?.shadowRoot?.querySelector('.doc-top-nav a[aria-current]')?.textContent?.trim() ?? null,
     };
   });
 })();
 check(
   '切页时布局页不重建（顶栏 / 主题按钮不闪，高亮跟着路由走）',
-  layoutIdentity.same === true && layoutIdentity.active === '快速开始',
+  /* 顶栏只到**分区**这一级：快速开始属于「文档」分区，所以高亮的是「文档」。
+     期望值从 site-map 算（locate 命中哪一支），不写死页面名或分区名。 */
+  layoutIdentity.same === true &&
+    layoutIdentity.active === locate('docs/pages/guide.html').entry.label,
   `子页面=${layoutIdentity.child} · 顶栏高亮=${layoutIdentity.active}`,
 );
 
