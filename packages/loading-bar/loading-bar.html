@@ -33,6 +33,8 @@
       --mc-loading-bar-fade: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 1.2);
       /* 爬升的终点：**到不了 100%** 才像「还在跑」，到了反而像卡住 */
       --mc-loading-bar-reach: 90%;
+      /* 出错态的填充色。它**压过 color**：状态比配色强 —— 选了 info 的条子出错也该变红 */
+      --mc-loading-bar-error: var(--mc-color-danger, var(--mc-def-color-danger));
     }
 
     /* 1b. position="static"：不钉视口，就在容器里占自己那 2 / 4px、通宽（块级，宽度跟着容器）。
@@ -75,9 +77,19 @@
       visibility: visible;
       opacity: 1;
     }
-    :host([data-on]:not([data-done])) .mc-bar {
+    :host([data-on]:not([data-done]):not([data-error])) .mc-bar {
       animation: mc-loading-bar-creep var(--mc-loading-bar-creep) cubic-bezier(0.1, 0.6, 0.2, 1)
         forwards;
+    }
+
+    /* 5b. 出错态：只换色槽，位置交给脚本（冻住当前位置再滑满）。**不停留一会儿再走** ——
+           它停在满格不淡出，直到使用者清掉 error，否则错误一闪而过等于没提示。 */
+    :host([data-error]) {
+      --mc-loading-bar-fill: var(--mc-loading-bar-error);
+    }
+    :host([data-error]) .mc-bar {
+      animation: none;
+      transition: width var(--mc-loading-bar-fade) ease-out;
     }
     :host([data-done]) {
       animation: mc-loading-bar-fade var(--mc-loading-bar-fade) linear forwards;
@@ -122,6 +134,9 @@
         /* 正在加载：true = 出现并爬升；false = 滑满 → 淡出 → 复位（再 true 就从 0 重来）。
            布尔属性默认值必须是 null（P1）：用 false 会让 <mc-loading-bar active> 失效 */
         active: null,
+        /* 出错：填充换成 --mc-loading-bar-error，滑到满格后**停在那儿**（不淡出），
+           直到清掉它。error 压过 color 与 active —— 状态比配色、比「在跑」都强 */
+        error: null,
         color: 'primary',
         size: 'md',
         /* 钉在哪儿：fixed = 视口顶部（全局在忙，默认）；static = 就在它所在的容器里，
@@ -138,7 +153,7 @@
         /* 首帧：只认「现在是不是在跑」，**不播收尾动画** —— 否则每次加载页面都会闪一下 */
         /* ⚠️ 用 `!== null` 而不是 `!!`：布尔属性声明成 null 之后，裸写 `active` 拿到的是
          **空串**（与 mc-button 的 `disabled !== null` 同一个道理，P1），`!!''` 是 false */
-        this.syncActive(this.active !== null, true);
+        this.syncState(true);
       },
 
       detached() {
@@ -148,7 +163,10 @@
       watch: {
         // watch 在构造期也会触发一次（P5），_live 守卫把它挡在挂载前
         active() {
-          if (this._live) this.syncActive(this.active !== null);
+          if (this._live) this.syncState();
+        },
+        error() {
+          if (this._live) this.syncState();
         },
         label() {
           if (this._live && this.ele.hasAttribute('data-on')) this.syncLabel();
@@ -161,36 +179,80 @@
 
       proto: {
         /**
-         * 状态机（宿主属性是唯一真相）：
-         *   on  → [data-on]：出现 + 爬升，同时把语义挂上（role / aria-busy / aria-label）；
-         *   off → [data-done]：冻住当前宽度 → 滑满 → 淡出，**淡出播完**才复位。
+         * 状态机（宿主属性是唯一真相）。三个输入合成一个状态：
+         *   error 在        → [data-error]：填充切到 error 色槽，冻住当前位置滑到 100%，
+         *                     **停在满格不淡出** —— 出错要看得见，直到使用者清掉 error。
+         *                     （error 压过 color，也压过 active：状态比配色、比「在跑」都强）
+         *   否则 active 在  → [data-on]：出现 + 爬升，语义挂上（role / aria-busy / aria-label）
+         *   否则且显示过    → [data-done]：冻住当前宽度 → 滑满 → 淡出，淡出播完才复位
+         *   首帧且没在跑    → 干净复位，什么都不播（否则每次打开页面都会闪一下）
          * ⚠️ 复位靠 animationend 而不是定时器：时长是令牌（还能被 prefers-reduced-motion 压到 1ms），
          *    定时器必然对不上 —— 要么提前切断淡出、要么空等一段看不见的时间。
          */
-        syncActive(on, immediate = false) {
-          const el = this.ele;
-          el.removeEventListener('animationend', this._onFadeEnd);
-
-          if (on) {
-            // 上一轮的收尾还没播完就又开了：从当前位置继续爬（去掉 data-done 即可）
-            el.removeAttribute('data-done');
-            el.setAttribute('data-on', '');
-            el.setAttribute('role', 'progressbar');
-            el.setAttribute('aria-busy', 'true');
-            this.syncLabel();
-            return;
-          }
-
-          /* 首帧就是「没在跑」、或者本来就没显示过 → 干净复位，不播任何动画 */
-          if (immediate || !el.hasAttribute('data-on')) {
-            el.removeAttribute('data-on');
-            el.removeAttribute('data-done');
-            this.clearSemantics();
-            return;
-          }
-
+        syncState(immediate = false) {
+          this.ele.removeEventListener('animationend', this._onFadeEnd);
+          /* ⚠️ 布尔属性一律 `!== null` 判：裸写拿到的是**空串**，`!!''` 是 false（P1） */
+          if (this.error !== null) return this.showError();
+          if (this.active !== null) return this.showActive();
+          if (immediate || !this.ele.hasAttribute('data-on')) return this.reset();
+          /* 收尾时**立刻**撤语义：已经没有「在忙」这回事了（淡出只是视觉上还没走完）。
+             ⚠️ 这一行在重构状态机时漏过一次 —— 收尾播完 role / aria-busy 还挂在宿主上，
+             是套件里「收尾不闪回 0」那条把它抓出来的。 */
           this.finish();
           this.clearSemantics();
+          return undefined;
+        },
+
+        /** 在跑：出现 + 爬升（爬升是 CSS 动画，命中 :host([data-on]:not([data-done]):not([data-error]))） */
+        showActive() {
+          const el = this.ele;
+          el.removeAttribute('data-done');
+          el.removeAttribute('data-error');
+          el.setAttribute('data-on', '');
+          el.setAttribute('role', 'progressbar');
+          el.setAttribute('aria-busy', 'true');
+          this.syncLabel();
+          /* 清掉上一次留下的内联宽度：不然它会一直压着爬升动画的起手位置 */
+          const bar = this.bar();
+          if (bar) bar.style.width = '';
+        },
+
+        /** 出错：换色（CSS）+ 冻住当前位置滑到满格，然后停在那儿 */
+        showError() {
+          const el = this.ele;
+          const bar = this.bar();
+          if (!bar) return;
+          /* 已经在显示的才需要「冻住当前位置」；首帧就出错时直接给 100%（首帧不会跑过渡） */
+          const at = el.hasAttribute('data-on') ? getComputedStyle(bar).width : null;
+
+          el.removeAttribute('data-done');
+          el.setAttribute('data-error', '');
+          el.setAttribute('data-on', '');
+          /* 语义：不再是「在忙」（撤掉 aria-busy），但名字留着 ——
+             出错时请把 label 换成能说明失败的话（如「加载失败」） */
+          el.setAttribute('role', 'progressbar');
+          el.removeAttribute('aria-busy');
+          this.syncLabel();
+
+          if (at) bar.style.width = at;
+          void bar.offsetWidth; // 强制回流，让下面那次赋值真的产生过渡
+          bar.style.width = '100%';
+        },
+
+        /** 干净复位：没在跑、也没出错 */
+        reset() {
+          const el = this.ele;
+          el.removeAttribute('data-on');
+          el.removeAttribute('data-done');
+          el.removeAttribute('data-error');
+          this.clearSemantics();
+          const bar = this.bar();
+          if (bar) bar.style.width = '';
+        },
+
+        /** 内部那条填充（状态机每次都要用） */
+        bar() {
+          return this.ele.shadowRoot?.querySelector('.mc-bar') ?? null;
         },
 
         /**
@@ -200,7 +262,7 @@
          *    CSS 读不到动画值，这一步只能在脚本里做（除非去 registerProperty，那是全局副作用，不做）。
          */
         finish() {
-          const bar = this.ele.shadowRoot?.querySelector('.mc-bar');
+          const bar = this.bar();
           if (!bar) return;
           const at = getComputedStyle(bar).width;
           this.ele.setAttribute('data-done', '');
@@ -214,6 +276,8 @@
             this.ele.removeEventListener('animationend', this._onFadeEnd);
             this.ele.removeAttribute('data-done');
             this.ele.removeAttribute('data-on');
+            /* data-error 留到这时候才摘：出错之后被清掉时，那条子应当**红着**淡出，不是先变回主色 */
+            this.ele.removeAttribute('data-error');
             bar.style.width = '';
           };
           this.ele.addEventListener('animationend', this._onFadeEnd);

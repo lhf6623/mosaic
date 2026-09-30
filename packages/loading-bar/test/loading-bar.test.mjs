@@ -71,11 +71,30 @@ export default async function run({ page, visit, check }) {
         '<mc-loading-bar id="lb-inline" active position="static" label="这一块在忙"></mc-loading-bar>' +
         '<mc-loading-bar id="lb-inline-sm" active position="static" size="sm"></mc-loading-bar>';
       document.body.append(box);
+
+      /* 出错态：一条只有 error（清掉后应当走收尾复位），一条 error + active（清掉后应当回到爬升） */
+      const errBox = document.createElement('div');
+      errBox.id = 'lb-err-box';
+      errBox.style.cssText = 'position:fixed;left:0;top:300px;width:300px;z-index:1';
+      errBox.innerHTML =
+        '<mc-loading-bar id="lb-err" error label="加载失败"></mc-loading-bar>' +
+        '<mc-loading-bar id="lb-err-active" active error label="保存失败"></mc-loading-bar>';
+      document.body.append(errBox);
     });
     await page
       .waitForFunction(
         () =>
-          ['lb-idle', 'lb-md', 'lb-sm', 'lb-info', 'lb-hex', 'lb-label', 'lb-inline'].every(
+          [
+            'lb-idle',
+            'lb-md',
+            'lb-sm',
+            'lb-info',
+            'lb-hex',
+            'lb-label',
+            'lb-inline',
+            'lb-err',
+            'lb-err-active',
+          ].every(
             (id) => !!document.getElementById(id)?.shadowRoot,
           ),
         { timeout: 5000 },
@@ -235,15 +254,67 @@ export default async function run({ page, visit, check }) {
       };
     });
 
+    /* 出错态：转红 → 滑到满格 → **停在那儿**（不淡出、不自复位）；清掉 error 才回正常状态机 */
+    const errorState = await (async () => {
+      const readError = () =>
+        page.evaluate(() => {
+          const el = document.getElementById('lb-err');
+          const bar = el.shadowRoot.querySelector('.mc-bar');
+          return {
+            dataError: el.hasAttribute('data-error'),
+            dataOn: el.hasAttribute('data-on'),
+            busy: el.getAttribute('aria-busy'),
+            role: el.getAttribute('role'),
+            label: el.getAttribute('aria-label'),
+            fill: getComputedStyle(bar).backgroundColor,
+            width: Math.round(parseFloat(getComputedStyle(bar).width)),
+            hostWidth: Math.round(el.getBoundingClientRect().width),
+            visibility: getComputedStyle(el).visibility,
+          };
+        });
+      const right = await readError();
+      await page.waitForTimeout(900); // 远超一个淡出周期：出错态不该在这段时间里自己走掉
+      const later = await readError();
+
+      /* 清掉 error，且此时没在跑 → 应当走一次收尾然后复位 */
+      await page.evaluate(() => document.getElementById('lb-err').removeAttribute('error'));
+      await page.waitForTimeout(900);
+      const cleared = await page.evaluate(() => {
+        const el = document.getElementById('lb-err');
+        const bar = el.shadowRoot.querySelector('.mc-bar');
+        return {
+          attrs: ['data-on', 'data-done', 'data-error', 'role'].filter((a) => el.hasAttribute(a)),
+          inline: bar.style.width,
+          width: Math.round(parseFloat(getComputedStyle(bar).width)),
+        };
+      });
+
+      /* 另一边：error 清掉但 active 还在 → 回到爬升，色也回主色 */
+      await page.evaluate(() => document.getElementById('lb-err-active').removeAttribute('error'));
+      await page.waitForTimeout(200);
+      const resumed = await page.evaluate(() => {
+        const el = document.getElementById('lb-err-active');
+        const bar = el.shadowRoot.querySelector('.mc-bar');
+        return {
+          dataError: el.hasAttribute('data-error'),
+          dataOn: el.hasAttribute('data-on'),
+          busy: el.getAttribute('aria-busy'),
+          fill: getComputedStyle(bar).backgroundColor,
+        };
+      });
+      return { right, later, cleared, resumed };
+    })();
+
     await page.evaluate(() => {
       document.getElementById('lb-probe')?.remove();
       document.getElementById('lb-under')?.remove();
       document.getElementById('lb-inline-box')?.remove();
+      document.getElementById('lb-err-box')?.remove();
     });
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { tokens, probe, hit, underClicks, finish, restart, failed };
+    return { tokens, probe, hit, underClicks, finish, restart, errorState, failed };
   })();
 
   check(
@@ -310,6 +381,33 @@ export default async function run({ page, visit, check }) {
       bar.probe.inline.label === '这一块在忙' &&
       bar.probe.inline.visibility === 'visible',
     JSON.stringify(bar.probe.inline),
+  );
+
+  check(
+    'error：转成 --mc-loading-bar-error（默认 danger）、滑到满格，并停在那儿（不淡出、不自复位）',
+    bar.errorState.right.dataError === true &&
+      bar.errorState.right.dataOn === true &&
+      bar.errorState.right.role === 'progressbar' &&
+      bar.errorState.right.busy === null && // 不再「在忙」
+      bar.errorState.right.label === '加载失败' &&
+      bar.errorState.right.fill === bar.tokens.danger &&
+      bar.errorState.right.width === bar.errorState.right.hostWidth &&
+      bar.errorState.later.visibility === 'visible' &&
+      bar.errorState.later.dataOn === true &&
+      bar.errorState.later.width === bar.errorState.right.width,
+    JSON.stringify({ right: bar.errorState.right, later: bar.errorState.later }),
+  );
+
+  check(
+    '清掉 error 才回正常状态机：没在跑 → 收尾复位；还在跑 → 重新爬且色回主色',
+    bar.errorState.cleared.attrs.length === 0 &&
+      bar.errorState.cleared.inline === '' &&
+      bar.errorState.cleared.width === 0 &&
+      bar.errorState.resumed.dataError === false &&
+      bar.errorState.resumed.dataOn === true &&
+      bar.errorState.resumed.busy === 'true' &&
+      bar.errorState.resumed.fill === bar.tokens.primary,
+    JSON.stringify({ cleared: bar.errorState.cleared, resumed: bar.errorState.resumed }),
   );
 
   check(

@@ -7,7 +7,7 @@
 
 **状态**：已实现 · M3 · 标签 `mc-loading-bar` · 目录 `packages/loading-bar/`
 
-加载条。默认钉在视口顶部（全局在忙），也可以放进容器（那一块在忙）；在跑就缓慢爬升、跑完滑满淡出。
+加载条。默认钉在视口顶部（全局在忙），也可以放进容器（那一块在忙）；在跑就缓慢爬升、跑完滑满淡出，出错则转红并停在满格。
 
 ## 单元里有什么
 
@@ -26,6 +26,12 @@
 ## 设计取舍
 
 mc-loading-bar — 加载条
+
+**出错态刻意「粘住」**：`error` 在的时候条子停在满格、不淡出、也不自己复位，直到使用者清掉它 ——
+一闪而过的错误提示等于没提示（要「看一眼就知道刚才那次失败了」）。它**压过 `color` 与 `active`**：
+状态比配色强（选了 `info` 的条子出错也该变红），也比「在跑」强（出错之后就别再假装在爬了）。
+清掉 `error` 之后才回到正常状态机：还在跑就重新爬，否则红着滑满再淡出。
+无障碍上撤掉 `aria-busy`（不再「在忙」）但保留名字 —— 出错时请把 `label` 换成能说明失败的话。
 
 **两种落点，一个组件**：默认 `position="fixed"` 钉在视口顶部，表达「整个应用 / 整条路由在忙」——
 那种场景下**一页只能有一个**；`position="static"` 则把定位交回文档流：它就在你放它的那个容器里
@@ -78,6 +84,7 @@ loading-bar 由「开始 / 结束」两个事件驱动（路由切换、一次�
 | `--mc-loading-bar-creep` | `calc(var(--mc-duration-slow) * 24)`  | 从 0 爬到 `reach` 的时长；减弱动效下自动压到 1ms |
 | `--mc-loading-bar-fade`  | `calc(var(--mc-duration-slow) * 1.2)` | 收尾（滑满 + 淡出）的时长                        |
 | `--mc-loading-bar-reach` | `90%`                                 | 爬升的终点。**别写 100%** —— 那就成了「卡住」    |
+| `--mc-loading-bar-error` | `--mc-color-danger`                   | 出错态的填充色（`error` 压过 `color`）           |
 
 **`color` 也收 hex**（`<mc-loading-bar color="#ff6b35">`）：语义名仍走 CSS，hex 走
 [`../boot/color-attr.js`](../boot/color-attr.js) 写 `--mc-loading-bar-fill`。只收 hex，
