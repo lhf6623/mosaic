@@ -425,28 +425,3 @@ function findIn(node, route, hidden = false) {
   }
   return null;
 }
-
-/** 一个分区里可见、有页面的条目（按左栏顺序，递归展开分组） */
-const collectPages = (nodes, out) => {
-  for (const node of nodes) {
-    if (hasChildren(node)) collectPages(node.children, out);
-    else if (hasPage(node)) out.push(node);
-  }
-  return out;
-};
-
-/**
- * 一个分区里会出现在翻页链上的页面（按左栏顺序），隐藏页不在里面 ——
- * 直链打开隐藏页时不该把它塞回翻页链。
- */
-export const pagesOf = (entry) => collectPages(menuOf(entry), []);
-
-/** 同一分区里相邻的上一页 / 下一页（没有、或当前是隐藏页就是 null） */
-export function siblingsOf(route) {
-  const { entry } = locate(route) ?? {};
-  const pages = pagesOf(entry);
-  const index = pages.findIndex((page) => page.path === route);
-  if (index < 0) return { prev: null, next: null };
-
-  return { prev: pages[index - 1] ?? null, next: pages[index + 1] ?? null };
-}

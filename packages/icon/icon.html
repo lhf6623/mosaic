@@ -20,7 +20,7 @@
       vertical-align: middle;
       /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg, var(--mc-def-color-fg)) }`，
          本意是给组件一个确定的基线色，但它会**掐断颜色继承** —— 图标被放进另一个组件的 shadow
-         root 里时（mc-alert、doc-pager、使用者的组件），拿到的是 fg 而不是周围的文字色，压在
+         root 里时（mc-alert、mc-button、使用者的组件），拿到的是 fg 而不是周围的文字色，压在
          实心底色上直接看不清。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行
          就能把继承拿回来。font-size 同理（reset 会把宿主字号钉成 --mc-text-base）。 */
       color: inherit;

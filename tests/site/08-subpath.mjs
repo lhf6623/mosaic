@@ -122,11 +122,7 @@ export default async function run({ check, newPage }) {
       JSON.stringify(card),
     );
 
-    /* ⑤ 面包屑与分页链接。⚠️ 翻页箭头现在是 mc-icon（不再是一个 → 字符），
-       链接的可见文本只剩页面名 —— 这条顺带守住「图标不往文本里塞字符」 */
-    await click('.doc-pager-prev', '总览');
-    await settle();
-    const crumbBack = await h1();
+    /* ⑤ 面包屑链接能导航（页尾的翻页已删掉，这里只验面包屑） */
     await p.goto(`${base}#${PREFIX}/packages/collapse/page.html`, { waitUntil: 'load' });
     await settle();
     // 面包屑是项目自己的 mc-breadcrumb 渲染的（<doc-crumb> 只负责派生），选择器顺带守住这条。
@@ -150,11 +146,7 @@ export default async function run({ check, newPage }) {
     await click('mc-breadcrumb a', '组件');
     await settle();
     const crumb = await h1();
-    check(
-      '子路径：面包屑 / 分页链接都能导航',
-      crumbBack === '组件' && crumb === '组件',
-      `分页→${crumbBack} · 面包屑→${crumb}`,
-    );
+    check('子路径：面包屑链接能导航', crumb === '组件', `面包屑→${crumb}`);
     check(
       '子路径：面包屑由 mc-breadcrumb 渲染（容器 + 每一级 + 当前项）',
       crumbHost.component &&

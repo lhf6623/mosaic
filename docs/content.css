@@ -6,7 +6,7 @@
  *   · 只有一个使用者的：住在那个页面 / 组件的 <style> 里
  *       首页海报 + 马赛克图案 → docs/pages/home.html
  *       两栏宿主 + 中栏留位 + 两条断点 → docs/doc-layout.html
- *       组件内部样式 → docs/components/*.html（nav / toc / crumb / pager / cards / palette）
+ *       组件内部样式 → docs/components/*.html（nav / toc / crumb / cards / palette）
  *   · 多个页面共用的正文块（标题 / 段落 / 提示条 / 演示区 / 卡片 / 表格 / 徽标 / <l-m> 占位）
  *       → 就是本文件
  * ⚠️ 往这里加规则前先问一句：是不是只有一个页面在用？是的话放那个文件里。
@@ -266,13 +266,13 @@
 }
 
 /* ---------- 组件里的东西：样式不在这里 ----------
- * 色板 / 组件卡片 / 翻页（docs/components/ 下的 palette / cards / pager.html）都是组件，
+ * 色板 / 组件卡片（docs/components/ 下的 palette / cards.html）都是组件，
  * 自带 shadow root —— 内部样式住在各自的 <style> 里，这里只留指路牌，别再往回加：
- *   · 页面里写的是 <doc-palette> / <doc-cards> / <doc-pager> 标签；
+ *   · 页面里写的是 <doc-palette> / <doc-cards> 标签；
  *   · 左栏（nav）与面包屑（crumb）只暴露宿主，宿主级的定位 / 间距仍留在本文件。 */
 
 /* ---------- 组件页头部 ----------
- * 面包屑 / 翻页都是组件（docs/components/crumb.html、pager.html），宿主间距也在各自的
+ * 面包屑是组件（docs/components/crumb.html），宿主间距也在它自己的
  * :host 里；这里只剩页面自己的头部元素。 */
 
 .doc-body h1 code {

@@ -292,12 +292,10 @@
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
-  <!-- 组件页头部的面包屑 / 页尾的翻页：都从导航数据派生、订阅 docs/state/route.js；
-       页面里只写 <doc-crumb> / <doc-pager> -->
+  <!-- 组件页头部的面包屑：从导航数据派生、订阅 docs/state/route.js；页面里只写 <doc-crumb> -->
   <l-m src="../packages/breadcrumb/breadcrumb.html"></l-m>
   <l-m src="../packages/breadcrumb/breadcrumb-item.html"></l-m>
   <l-m src="./components/crumb.html"></l-m>
-  <l-m src="./components/pager.html"></l-m>
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
        渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
   <l-m src="./components/spec.html"></l-m>
