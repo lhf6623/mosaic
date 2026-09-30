@@ -246,6 +246,39 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(escaped),
   );
 
+  /* 触发元素是**另一个组件**时，可聚焦的原生按钮住在它的 shadow root 里（还常被包一层） */
+  await page.evaluate(() =>
+    window.__make({}, '<mc-button variant="outline">打开菜单</mc-button>'),
+  );
+  const compTriggerAt = await page.evaluate(() => {
+    const r = window.__dd().host.querySelector('mc-button').getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.click(compTriggerAt.x, compTriggerAt.y);
+  await waitOpen(true);
+  await page.evaluate(() => {
+    document.activeElement?.blur?.();
+    window.__dd().root.querySelector('.mc-panel').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }),
+    );
+  });
+  await waitOpen(false);
+  const escapedComp = await page.evaluate(() => {
+    const mb = window.__dd().host.querySelector('mc-button');
+    return {
+      宿主拿到焦点: document.activeElement === mb,
+      内部按钮拿到焦点: mb?.shadowRoot?.activeElement?.className === 'mc-native',
+    };
+  });
+  check(
+    '触发元素是组件（mc-button）时，Esc 也要把焦点还到它内部那个原生按钮',
+    escapedComp.宿主拿到焦点 && escapedComp.内部按钮拿到焦点,
+    JSON.stringify(escapedComp),
+  );
+
+  /* ⚠️ 还原夹具：后面几节的用例都假设触发元素里有原生 button */
+  await page.evaluate(() => window.__make({}));
+
   /* ------------------------------------------------------------------ *
    * 4. open 受控：property 与 attribute 两条路都收敛到同一个原生状态
    * ------------------------------------------------------------------ */

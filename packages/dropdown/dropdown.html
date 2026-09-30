@@ -320,15 +320,29 @@
             if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
           },
 
-          /** 焦点归还：触发元素是使用者的（light DOM），找它里面第一个能聚焦的元素 */
+          /**
+           * 焦点归还：触发元素是使用者的（light DOM），找它里面第一个能聚焦的元素。
+           * ⚠️ 触发元素常常是**另一个组件**（如 <mc-button slot="trigger">），甚至被包了一层
+           * （<span slot="trigger"><mc-button>）：可聚焦的那个原生 button 住在组件的 shadow root 里，
+           * light DOM 的 querySelector 找不到 —— 三层都找一遍，否则 Esc 关掉后焦点掉在 body 上。
+           */
           focusTrigger() {
             const nodes = this._triggerSlot?.assignedElements({ flatten: true }) ?? [];
             const first = nodes[0];
             if (!first) return;
-            const target = first.matches?.('a, button, input, select, textarea, [tabindex]')
-              ? first
-              : first.querySelector?.('a, button, input, select, textarea, [tabindex]');
-            target?.focus?.({ preventScroll: true });
+            const FOCUSABLE = 'a, button, input, select, textarea, [tabindex]';
+            const pick = (el) => {
+              if (!el) return null;
+              if (el.matches?.(FOCUSABLE)) return el;
+              const inLight = el.querySelector?.(FOCUSABLE);
+              if (inLight) return inLight;
+              for (const child of el.querySelectorAll?.('*') ?? []) {
+                const inShadow = child.shadowRoot?.querySelector?.(FOCUSABLE);
+                if (inShadow) return inShadow;
+              }
+              return first.shadowRoot?.querySelector?.(FOCUSABLE) ?? null;
+            };
+            pick(first)?.focus?.({ preventScroll: true });
           },
 
           /* ---------- 触发方式 ---------- */

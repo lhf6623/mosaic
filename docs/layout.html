@@ -247,37 +247,25 @@
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 主题切换：mc-dropdown 的触发元素是**我们自己写的按钮**（组件只管开合与面板），
-       样式因此落在它身上 —— 描边 + 全圆角 + 小字号，与 GitHub 那颗图标按钮同高。
-       三个选项都是两个字，宽度天然一致，不用像下拉框那样写死宽度。 */
+    /* 主题切换的触发元素是 mc-button（inline 形态）：盒子 / 配色 / 焦点环都归组件，
+       这里只剩两处页面级微调 —— 触发框不吃 flex 伸缩，后缀图标压一档透明度。 */
     .doc-theme {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--mc-space-1);
       flex: none;
-      height: var(--mc-control-h-sm);
-      padding-inline: var(--mc-space-3);
-      border: 1px solid rgb(var(--mc-color-border-strong));
-      border-radius: var(--mc-radius-full);
-      background-color: transparent;
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-xs);
-      cursor: pointer;
+      --mc-button-accent: var(--mc-color-fg-muted);
     }
 
     .doc-theme:hover {
-      background-color: rgb(var(--mc-color-surface-sunken));
-      color: rgb(var(--mc-color-fg));
+      --mc-button-accent: var(--mc-color-fg);
     }
 
-    /* 触发框右端那支小箭头：图标来自 mosaic.css 的 mc-icon-* 那套（mask + currentColor） */
-    .doc-theme-caret {
+    .doc-theme mc-icon {
       opacity: 0.7;
     }
 
-    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅） */
-    .doc-github:focus-visible,
-    .doc-theme:focus-visible {
+    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅）。
+       ⚠️ 主题切换的焦点环在 mc-button 内部那个原生按钮上，组件自带了同款（--mc-color-ring），
+       所以这里只管 GitHub 那颗。 */
+    .doc-github:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring));
       outline-offset: 2px;
     }
@@ -374,17 +362,22 @@
           on:open="menuOpen = true"
           on:close="menuOpen = false"
         >
-          <button
+          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件，不再手写一颗。
+               无障碍名由 .sr-only 那半句 + 当前值拼出来（「切换深浅色：自动」）——
+               mc-button 的可访问名来自插槽文字，所以可见文字与隐藏文字要一起给。 -->
+          <mc-button
             slot="trigger"
             class="doc-theme"
-            type="button"
-            aria-label="切换深浅色"
+            variant="ghost"
+            inline
+            color="neutral"
             aria-haspopup="menu"
             attr:aria-expanded="menuOpen ? 'true' : 'false'"
           >
+            <span class="sr-only">切换深浅色：</span>
             <span>{{themeLabel}}</span>
-            <span class="doc-theme-caret mc-icon-chevron-down" aria-hidden="true"></span>
-          </button>
+            <mc-icon slot="suffix" name="chevron-down"></mc-icon>
+          </mc-button>
           <mc-menu-item
             ><button
               type="button"

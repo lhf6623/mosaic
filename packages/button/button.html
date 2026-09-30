@@ -227,14 +227,25 @@
     }
   </style>
 
-  <!-- 交互语义层：透明原生 button，盖满宿主 -->
-  <button class="mc-native" :type="type" :disabled="disabled !== null || loading !== null"></button>
+  <!-- 交互语义层：透明原生 button，盖满宿主。
+       ⚠️ aria-labelledby 指向**下面那三个 slot**：按钮的可见文字是插槽内容，与原生 button 是
+       **兄弟**而不是父子 —— 不指的话无障碍树里就是个无名按钮（实测 40 个按钮 39 个没名字，
+       链接 45 个全有名字）。IDREF 在同一棵 shadow tree 内解析得到，slot 的子树就是分配进来的
+       那些节点，所以名字跟着可见文字走（prefix/suffix 里的图标是 SVG，不贡献名字）。 -->
+  <button
+    class="mc-native"
+    :type="type"
+    :disabled="disabled !== null || loading !== null"
+    aria-labelledby="mc-btn-prefix mc-btn-label mc-btn-suffix"
+  ></button>
+  <!-- ⚠️ 上面那个 aria-labelledby 由 syncAria() 维护：宿主给了 aria-label 时它会换成 mc-btn-label
+       （否则按 accname 的优先级 labelledby 仍然赢，显式的名字会被无视）。 -->
 
   <span class="mc-layer" aria-hidden="true"></span>
   <span class="mc-loader mc-icon-spinner" aria-hidden="true"></span>
-  <slot name="prefix"></slot>
-  <slot></slot>
-  <slot name="suffix"></slot>
+  <slot id="mc-btn-prefix" name="prefix"></slot>
+  <slot id="mc-btn-label"></slot>
+  <slot id="mc-btn-suffix" name="suffix"></slot>
 
   <script>
     /* color 也收 hex（`<mc-button color="#fff000">`）：语义名照旧交给 CSS，hex 走这一个接线器。
@@ -242,6 +253,17 @@
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
+
+    /** 宿主上这几个 aria 转发给内部那个原生 button（**它才是无障碍节点**，写在宿主上它看不到）。
+     *  `aria-label` 单独处理：宿主显式给了就用它，否则回落插槽文字（见 syncAria）。 */
+    const ARIA_FORWARD = [
+      'aria-haspopup',
+      'aria-expanded',
+      'aria-controls',
+      'aria-pressed',
+      'aria-current',
+    ];
+    const SLOT_LABEL_IDS = 'mc-btn-prefix mc-btn-label mc-btn-suffix';
 
     export default async () => ({
       tag: 'mc-button',
@@ -263,6 +285,18 @@
       attached() {
         // 宿主 style 等构造期结束再写（P31），首次同步在这里
         color.sync(this.ele, this.color);
+        this.syncAria();
+        /* 宿主上的 aria-* 是运行时变的（菜单触发框的 aria-expanded 就是），
+           属性一变就重新镜像 —— 不做的话「展开/收起」对读屏是静默的 */
+        this._ariaObserver = new MutationObserver(() => this.syncAria());
+        this._ariaObserver.observe(this.ele, {
+          attributes: true,
+          attributeFilter: [...ARIA_FORWARD, 'aria-label'],
+        });
+      },
+
+      detached() {
+        this._ariaObserver?.disconnect();
       },
 
       watch: {
@@ -274,6 +308,28 @@
 
       proto: {
         // 原生 click 自带 composed，会穿透 shadow 冒泡；禁用态由 .mc-native 的 :disabled 兜住
+
+        /**
+         * 宿主 → 内部原生 button 的 aria 转发。无障碍节点是那个 button：
+         * 写在宿主上的 aria-haspopup / aria-expanded / aria-current 它一个都看不到，
+         * 菜单按钮、当前页这类语义就静默丢了（实测无障碍树里 hasPopup=null）。
+         * ⚠️ 名字单独走一条：宿主给了 `aria-label` 就用它（**必须摘掉模板上的 aria-labelledby**，
+         * 否则按 accname 的优先级 labelledby 仍然赢）；没给就回落插槽文字。
+         * `aria-labelledby` 不转发 —— 它是 IDREF，跨 shadow 边界解析不到外层的元素。
+         */
+        syncAria() {
+          const native = this.ele.shadowRoot?.querySelector('.mc-native');
+          if (!native) return;
+          for (const name of ARIA_FORWARD) {
+            const value = this.ele.getAttribute(name);
+            if (value === null) native.removeAttribute(name);
+            else native.setAttribute(name, value);
+          }
+          const label = this.ele.getAttribute('aria-label');
+          if (label) native.setAttribute('aria-label', label);
+          else native.removeAttribute('aria-label');
+          native.setAttribute('aria-labelledby', label ? 'mc-btn-label' : SLOT_LABEL_IDS);
+        },
       },
     });
   </script>

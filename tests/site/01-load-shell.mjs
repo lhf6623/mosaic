@@ -158,15 +158,26 @@ check(
  * 7. 【关键】主题切换能穿过 shadow 边界（曾坏过：`:root, :host` 让 shadow 内的 :host 重赋亮色值）
  * ------------------------------------------------------------------ */
 /* 读颜色前先等实例在：并行跑时页面挂载更慢，不等就会读到 null，
-   而 getComputedStyle(null) 会直接把整个套件抛掉（实测 4 并行时红在这条） */
+   而 getComputedStyle(null) 会直接把整个套件抛掉（实测 4 并行时红在这条）。
+   挑「第一颗实心底按钮」：它的底就是 --mc-color-primary，跟着主题走。两条踩过的坑：
+     · 别赌「第一个 mc-button」—— 第 2 节把页面切到了 Button 文档页，而**外壳顶栏现在也有
+       一个 mc-button**（主题下拉，ghost 透明底），它会先被命中，透明底切主题前后一模一样；
+     · 别写「容器 + 后代」的复合选择器（如 'demo-button-colors mc-button'）—— __deep 是在
+       每棵树里**单独**匹配的，跨不过 shadow 边界，只会一路等到超时。 */
+const PICK_THEMED = `(() => {
+  return (
+    window.__deepAll('mc-button').find(
+      (b) =>
+        !b.classList.contains('doc-theme') &&
+        getComputedStyle(b).backgroundColor !== 'rgba(0, 0, 0, 0)',
+    ) ?? null
+  );
+})()`;
 const buttonBg = async () => {
-  await page
-    .waitForFunction(() => !!window.__deep('mc-button')?.shadowRoot, { timeout: 15000 })
-    .catch(() => {});
-  return page.evaluate(() => {
-    const button = window.__deep('mc-button');
-    return button ? getComputedStyle(button).backgroundColor : null;
-  });
+  await page.waitForFunction(`!!(${PICK_THEMED})?.shadowRoot`, { timeout: 15000 }).catch(() => {});
+  return page.evaluate(
+    `(() => { const b = ${PICK_THEMED}; return b ? getComputedStyle(b).backgroundColor : null; })()`,
+  );
 };
 
 const lightBg = await buttonBg();

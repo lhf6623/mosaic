@@ -23,6 +23,7 @@ export default async function run({ page, visit, check }) {
       'row-hex',
       'row-sizes',
       'row-inline',
+      'row-aria',
       'row-states',
       'row-slots',
     ]
@@ -61,6 +62,8 @@ export default async function run({ page, visit, check }) {
     put('row-inline', 'in-md', { variant: 'ghost', inline: true }, '常规');
     put('row-inline', 'in-lg', { variant: 'ghost', inline: true, size: 'lg' }, '大字');
     put('row-inline', 'in-plain', { variant: 'ghost' }, '对照');
+
+    put('row-aria', 'ar-forward', {}, '转发');
 
     put('row-states', 'st-default', {});
     put('row-states', 'st-disabled', { disabled: true, id: 'st-disabled' });
@@ -263,6 +266,55 @@ export default async function run({ page, visit, check }) {
     'inline 悬停改成下划线，不再用 .mc-layer 叠层（8% 底色贴着文字像「文字被高亮」）',
     inlineHover.下划线 === 'underline' && inlineHover.叠层 === 'none',
     JSON.stringify(inlineHover),
+  );
+
+  /* ---------- 无障碍名：可见文字是插槽内容，与原生 button 是兄弟 ---------- */
+  const axSession = await page.context().newCDPSession(page);
+  await axSession.send('Accessibility.enable');
+  const { nodes: axNodes } = await axSession.send('Accessibility.getFullAXTree');
+  await axSession.detach();
+  const axButtons = axNodes
+    .filter((n) => n.role?.value === 'button' && !n.ignored)
+    .map((n) => n.name?.value ?? '');
+  check(
+    '无障碍名：插槽里的文字真正成为原生 button 的名字（修之前 40 个按钮 39 个无名）',
+    axButtons.length > 0 &&
+      axButtons.every((name) => name) &&
+      axButtons.includes('按钮') &&
+      axButtons.includes('A'),
+    `命名 ${axButtons.filter((n) => n).length}/${axButtons.length} · 例：${[...new Set(axButtons)].slice(0, 6).join(' / ')}`,
+  );
+
+  /* ---------- aria 转发：宿主上的 aria-* 要落到内部那个原生 button 上 ---------- */
+  const ariaFwd = await page.evaluate(async () => {
+    const b = document.getElementById('ar-forward');
+    b.setAttribute('aria-haspopup', 'menu');
+    b.setAttribute('aria-expanded', 'true');
+    b.setAttribute('aria-current', 'page');
+    await new Promise((r) => setTimeout(r, 60));
+    const native = b.shadowRoot.querySelector('.mc-native');
+    const before = {
+      haspopup: native.getAttribute('aria-haspopup'),
+      expanded: native.getAttribute('aria-expanded'),
+      current: native.getAttribute('aria-current'),
+      labelledby: native.getAttribute('aria-labelledby'),
+    };
+    b.setAttribute('aria-label', '显式名字');
+    await new Promise((r) => setTimeout(r, 60));
+    const after = { label: native.getAttribute('aria-label'), labelledby: native.getAttribute('aria-labelledby') };
+    return { before, after };
+  });
+  check(
+    '宿主上的 aria-* 转发给内部原生 button（无障碍节点是它，写在宿主上它看不到）',
+    ariaFwd.before.haspopup === 'menu' &&
+      ariaFwd.before.expanded === 'true' &&
+      ariaFwd.before.current === 'page',
+    JSON.stringify(ariaFwd.before),
+  );
+  check(
+    '宿主显式给了 aria-label 就用它（并摘掉模板上的 aria-labelledby，否则按优先级它仍然赢）',
+    ariaFwd.after.label === '显式名字' && ariaFwd.after.labelledby === 'mc-btn-label',
+    JSON.stringify(ariaFwd.after),
   );
 
   /* ---------- 状态：转发给内部原生 button ---------- */
