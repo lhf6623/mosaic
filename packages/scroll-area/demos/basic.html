@@ -1,0 +1,25 @@
+<template component>
+  <!-- 高度由使用者给：不给高度宿主就跟着内容长，永远不溢出、也就永远不滚 -->
+  <mc-scroll-area
+    label="成员列表"
+    style="height: 10rem; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
+  >
+    <div class="flex flex-col gap-2 p-3">
+      <o-fill :value="rows" fill-key="$key">
+        <div class="flex items-center justify-between">
+          <span>{{$data}}</span>
+          <span class="text-xs text-muted">在线</span>
+        </div>
+      </o-fill>
+    </div>
+  </mc-scroll-area>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-scroll-area-basic',
+      data: {
+        rows: Array.from({ length: 24 }, (_, i) => `成员 ${String(i + 1).padStart(2, '0')}`),
+      },
+    });
+  </script>
+</template>

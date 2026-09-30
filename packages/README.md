@@ -398,6 +398,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | M2     | ✅ 已实现 |
 | [Message](./message/api.md)（命令式） | `message()`                            | `message/`     | M2     | ✅ 已实现 |
 | [Loading Bar](./loading-bar/api.md)   | `mc-loading-bar`                       | `loading-bar/` | M3     | ✅ 已实现 |
+| [Scroll Area](./scroll-area/api.md)   | `mc-scroll-area`                       | `scroll-area/` | M3     | ✅ 已实现 |
 | [Popover](./popover/api.md)           | `mc-popover`                           | `popover/`     | M3     | ✅ 已实现 |
 | [Dialog](./dialog/api.md)             | `mc-dialog`                            | `dialog/`      | M3     | ✅ 已实现 |
 | [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`    | M3     | ✅ 已实现 |

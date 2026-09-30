@@ -1,0 +1,270 @@
+<!--
+  mc-scroll-area — 滚动容器（自带滚动条）
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主只负责「尺寸 + 裁切」，滚动全在里面那个 .mc-viewport 上 ——
+          原生滚动留着（键盘、触屏惯性、锚点、find-in-page 全都照旧），只是把原生滚动条藏掉，
+          位置与长度交给我们自己画的条子。 */
+    :host {
+      display: block;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+
+      /* L3 组件令牌：条子的一切外观都从这里改 */
+      --mc-scroll-area-w: 10px;
+      --mc-scroll-area-min-thumb: 2rem;
+      --mc-scroll-area-gutter: 2px;
+      --mc-scroll-area-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      /* 默认用边框色：亮暗两套主题下都看得见，又不抢内容 */
+      --mc-scroll-area-thumb: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-scroll-area-thumb-hover: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+    }
+
+    .mc-viewport {
+      width: 100%;
+      height: 100%;
+      overscroll-behavior: contain;
+      /* 藏原生滚动条：两条路都写 —— Firefox 走 scrollbar-width，Chromium / Safari 走伪元素 */
+      scrollbar-width: none;
+    }
+    .mc-viewport::-webkit-scrollbar {
+      display: none;
+    }
+    /* 可滚动区域必须键盘可达（用方向键滚），焦点环贴着内容内沿画 */
+    .mc-viewport:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: -2px;
+    }
+
+    /* 2. 维度 axis：一次只画一条轴（两条轴同时要的场合用普通 overflow 容器，见 README） */
+    :host([data-axis='y']) .mc-viewport {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    :host([data-axis='x']) .mc-viewport {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    /* 3. 条子：**覆盖式**贴在宿主内沿（不占内容宽度，所以溢出与否都不会让内容跳一下） */
+    .mc-bar {
+      position: absolute;
+      opacity: 0;
+      transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard);
+    }
+    :host([data-overflow]) .mc-bar {
+      opacity: 1;
+    }
+
+    .mc-thumb {
+      position: absolute;
+      background-color: rgb(var(--mc-scroll-area-thumb));
+      border-radius: var(--mc-scroll-area-radius);
+    }
+    :host(:hover) .mc-thumb {
+      background-color: rgb(var(--mc-scroll-area-thumb-hover));
+    }
+
+    /* 竖轴：条子贴右沿通高，滑块左右各让开 gutter；横轴：贴底沿通宽 */
+    :host([data-axis='y']) .mc-bar {
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: var(--mc-scroll-area-w);
+    }
+    :host([data-axis='y']) .mc-thumb {
+      left: var(--mc-scroll-area-gutter);
+      right: var(--mc-scroll-area-gutter);
+    }
+    :host([data-axis='x']) .mc-bar {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--mc-scroll-area-w);
+    }
+    :host([data-axis='x']) .mc-thumb {
+      top: var(--mc-scroll-area-gutter);
+      bottom: var(--mc-scroll-area-gutter);
+    }
+  </style>
+
+  <div class="mc-viewport" part="viewport"><slot></slot></div>
+
+  <!-- 条子对读屏隐藏：滚动这件事由 viewport 的 role="region" + 键盘本身表达 -->
+  <div class="mc-bar" part="bar" aria-hidden="true">
+    <div class="mc-thumb" part="thumb"></div>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-scroll-area',
+
+      attrs: {
+        /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器（见 README） */
+        axis: 'y',
+        /** 可滚动区域的读屏名（只在真的溢出时挂到 viewport 上） */
+        label: '可滚动区域',
+      },
+
+      attached() {
+        const root = this.ele.shadowRoot;
+        this._viewport = root.querySelector('.mc-viewport');
+        this._bar = root.querySelector('.mc-bar');
+        this._thumb = root.querySelector('.mc-thumb');
+        this._slot = root.querySelector('slot');
+
+        this._onScroll = () => {
+          this.sync();
+          /* 原生 scroll 事件不冒泡、viewport 又在 shadow 里 —— 外面够不着，所以从宿主上再发一次 */
+          this.ele.dispatchEvent(new CustomEvent('scroll', { bubbles: true, composed: true }));
+        };
+        this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
+
+        this._slot.addEventListener('slotchange', () => this.observeContent());
+        /* 视口本身变大变小（比如宿主高度变了）要重算；内容变高变矮同样要重算 ——
+           后者 ResizeObserver 不会替我们看，得盯住被塞进来的那些元素 */
+        this._ro = new ResizeObserver(() => this.sync());
+        this._ro.observe(this._viewport);
+
+        this._onThumbDown = (event) => this.startDrag(event);
+        this._thumb.addEventListener('pointerdown', this._onThumbDown);
+
+        this.syncAxis();
+        this.observeContent();
+        this.sync();
+      },
+
+      detached() {
+        this._viewport?.removeEventListener('scroll', this._onScroll);
+        this._thumb?.removeEventListener('pointerdown', this._onThumbDown);
+        this._ro?.disconnect();
+        this._contentRO?.disconnect();
+        window.removeEventListener('pointermove', this._onDragMove);
+        window.removeEventListener('pointerup', this._onDragEnd);
+      },
+
+      watch: {
+        axis() {
+          if (this._viewport) {
+            this.syncAxis();
+            this.sync();
+          }
+        },
+        label() {
+          if (this._viewport) this.sync();
+        },
+      },
+
+      proto: {
+        /** axis → 宿主属性：样式挂在 [data-axis] 上（不写属性时也有默认那条） */
+        syncAxis() {
+          this.ele.setAttribute('data-axis', this.axis === 'x' ? 'x' : 'y');
+        },
+
+        /** 盯住插槽里的内容：它长高了 / 变宽了，滑块长度就得跟着重算 */
+        observeContent() {
+          this._contentRO?.disconnect();
+          this._contentRO = new ResizeObserver(() => this.sync());
+          for (const node of this._slot?.assignedElements() ?? []) {
+            this._contentRO.observe(node);
+          }
+        },
+
+        /**
+         * 把滚动事实同步成三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、
+         * viewport 的无障碍三连（只有真溢出才该是个可 Tab 的 region）。
+         */
+        sync() {
+          const vp = this._viewport;
+          if (!vp) return;
+
+          const vertical = this.axis !== 'x';
+          const size = vertical ? vp.clientHeight : vp.clientWidth;
+          const total = vertical ? vp.scrollHeight : vp.scrollWidth;
+          const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
+          const over = total > size + 1;
+
+          this.ele.toggleAttribute('data-overflow', over);
+          this.syncA11y(over);
+          if (!over) return;
+
+          /* 滑块长度按比例，但不小于 --mc-scroll-area-min-thumb：
+             长列表里 1% 的滑块只有半个像素，看不见也抓不住 */
+          const minThumb = parseFloat(
+            getComputedStyle(this.ele).getPropertyValue('--mc-scroll-area-min-thumb'),
+          );
+          const length = Math.max(minThumb || 0, (size / total) * bar);
+          const free = bar - length;
+          const pos =
+            free * (total > size ? (vertical ? vp.scrollTop : vp.scrollLeft) / (total - size) : 0);
+
+          if (vertical) {
+            this._thumb.style.height = `${length}px`;
+            this._thumb.style.top = `${pos}px`;
+          } else {
+            this._thumb.style.width = `${length}px`;
+            this._thumb.style.left = `${pos}px`;
+          }
+        },
+
+        /** 只有真的溢出时才让它 Tab 得到、有名字 —— 否则就是个没用的 tab 停靠点 */
+        syncA11y(over) {
+          const vp = this._viewport;
+          if (over) {
+            vp.setAttribute('tabindex', '0');
+            vp.setAttribute('role', 'region');
+            vp.setAttribute('aria-label', (this.label || '').trim() || '可滚动区域');
+            return;
+          }
+          for (const name of ['tabindex', 'role', 'aria-label']) vp.removeAttribute(name);
+        },
+
+        /**
+         * 拖滑块：按位移比例换算回滚动量。用 pointer capture 而不是 window 上的监听 ——
+         * 指针移出窗口、移出宿主都不会丢事件。
+         */
+        startDrag(event) {
+          if (event.button != null && event.button !== 0) return;
+          event.preventDefault();
+          const vp = this._viewport;
+          const vertical = this.axis !== 'x';
+          const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
+          const length = vertical ? this._thumb.offsetHeight : this._thumb.offsetWidth;
+          const free = bar - length;
+          if (free <= 0) return;
+
+          this._drag = {
+            vertical,
+            start: vertical ? event.clientY : event.clientX,
+            from: vertical ? vp.scrollTop : vp.scrollLeft,
+            ratio:
+              (vertical ? vp.scrollHeight - vp.clientHeight : vp.scrollWidth - vp.clientWidth) /
+              free,
+          };
+          this._thumb.setPointerCapture?.(event.pointerId);
+
+          this._onDragMove = (move) => {
+            const now = this._drag.vertical ? move.clientY : move.clientX;
+            const next = this._drag.from + (now - this._drag.start) * this._drag.ratio;
+            if (this._drag.vertical) vp.scrollTop = next;
+            else vp.scrollLeft = next;
+          };
+          this._onDragEnd = () => {
+            window.removeEventListener('pointermove', this._onDragMove);
+            window.removeEventListener('pointerup', this._onDragEnd);
+            this._drag = null;
+          };
+          window.addEventListener('pointermove', this._onDragMove);
+          window.addEventListener('pointerup', this._onDragEnd);
+        },
+      },
+    });
+  </script>
+</template>

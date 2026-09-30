@@ -1,0 +1,51 @@
+<template component>
+  <style>
+    /* 三个 part：viewport = 内容（内边距要留出来，覆盖式条子会压住最边上一条） */
+    .mc-area::part(viewport) {
+      padding: var(--mc-space-3);
+    }
+    /* bar = 轨道：加粗、给底色 */
+    .mc-area::part(bar) {
+      background-color: var(--mc-color-surface-sunken);
+    }
+    /* thumb = 滑块：颜色与圆角 */
+    .mc-area::part(thumb) {
+      background-color: var(--mc-color-primary);
+      border-radius: var(--mc-radius-sm);
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <!-- 令牌：条子更粗、滑块更长、留白更大 -->
+    <mc-scroll-area
+      class="mc-area"
+      label="自定义外观"
+      style="height: 9rem; --mc-scroll-area-w: 14px; --mc-scroll-area-min-thumb: 4rem; --mc-scroll-area-gutter: 3px"
+    >
+      <div class="flex flex-col gap-2">
+        <o-fill :value="lines" fill-key="$key">
+          <div>{{$data}}</div>
+        </o-fill>
+      </div>
+    </mc-scroll-area>
+
+    <!-- 只换滑块颜色 -->
+    <mc-scroll-area
+      label="自定义滑块"
+      style="height: 6rem; --mc-scroll-area-thumb: var(--mc-color-success); --mc-scroll-area-thumb-hover: var(--mc-color-success)"
+    >
+      <div class="flex flex-col gap-2 p-3">
+        <o-fill :value="lines" fill-key="$key">
+          <div>{{$data}}</div>
+        </o-fill>
+      </div>
+    </mc-scroll-area>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-scroll-area-customize',
+      data: { lines: Array.from({ length: 14 }, (_, i) => `第 ${i + 1} 行内容`) },
+    });
+  </script>
+</template>

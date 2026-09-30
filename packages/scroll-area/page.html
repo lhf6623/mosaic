@@ -1,0 +1,85 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="./scroll-area.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/horizontal.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <h1>Scroll Area <code>mc-scroll-area</code></h1>
+    <p class="doc-lead">
+      滚动容器：内容自己给高度，滚动条由组件画（覆盖式、跟着主题走），滚动本身仍是原生的 ——
+      键盘、触屏惯性、锚点、页内查找全都照旧。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>高度（或宽度）由使用者给</strong>：组件只管滚与画条子，不猜你要多高。
+          不给高度时宿主跟着内容长，永远不溢出，也就永远不滚。
+        </li>
+        <li>
+          <strong>条子是覆盖式的</strong>：贴在内沿、不占内容宽度（所以溢出与否都不会让内容横跳），
+          代价是盖住最边上那 <code>--mc-scroll-area-w</code> 宽的一条 ——
+          长代码块这类内容记得给自己的 <code>part="viewport"</code> 加右内边距。
+        </li>
+        <li>
+          <strong>一次只滚一条轴</strong>：两条轴同时要的场合用普通 <code>overflow</code> 容器，
+          两个滑块互相影响、角落交叉，不值得为它把接口撑大一倍。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 packages/README.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>竖向滚动</h3>
+      <p class="doc-hint">鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。</p>
+      <demo-scroll-area-basic></demo-scroll-area-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>横向滚动</h3>
+      <p class="doc-hint"><code>axis="x"</code>：宽表格、时间轴这类内容用它，条子贴在底沿。</p>
+      <demo-scroll-area-horizontal></demo-scroll-area-horizontal>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/horizontal.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        三个 part（<code>viewport</code> / <code>bar</code> / <code>thumb</code>）分别对应
+        「内容」「轨道」「滑块」，粗细与颜色各有令牌。
+      </p>
+      <demo-scroll-area-customize></demo-scroll-area-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

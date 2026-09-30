@@ -1,0 +1,25 @@
+<template component>
+  <mc-scroll-area
+    axis="x"
+    label="横向内容"
+    style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
+  >
+    <div class="flex gap-3 p-3" style="width: max-content">
+      <o-fill :value="cards" fill-key="$key">
+        <div
+          class="flex items-center justify-center"
+          style="width: 8rem; height: 4rem; background-color: rgb(var(--mc-color-surface-sunken)); border-radius: var(--mc-radius-md)"
+        >
+          {{$data}}
+        </div>
+      </o-fill>
+    </div>
+  </mc-scroll-area>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-scroll-area-horizontal',
+      data: { cards: Array.from({ length: 12 }, (_, i) => `卡片 ${i + 1}`) },
+    });
+  </script>
+</template>
