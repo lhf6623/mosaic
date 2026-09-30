@@ -376,34 +376,35 @@ item.open = true; // 组件提供了访问器时同样可以
 逐一列出全部单元：标签、目录、里程碑、状态。**标签名 = `mc-` + 目录名**；
 改了组件 API 先改该单元的 `api.md`，再改文档页。
 
-| 组件                                  | 标签                                   | 目录          | 里程碑 | 状态      |
-| ------------------------------------- | -------------------------------------- | ------------- | ------ | --------- |
-| [Button](./button/api.md)             | `mc-button`                            | `button/`     | M1     | ✅ 已实现 |
-| [Code](./code/api.md)                 | `mc-code`                              | `code/`       | M1     | ✅ 已实现 |
-| [Collapse](./collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`   | M1     | ✅ 已实现 |
-| [Menu](./menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`       | M1     | ✅ 已实现 |
-| [Breadcrumb](./breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/` | M1     | ✅ 已实现 |
-| [Icon](./icon/api.md)                 | `mc-icon`                              | `icon/`       | M1     | ✅ 已实现 |
-| [Card](./card/api.md)                 | `mc-card`                              | `card/`       | M1     | ✅ 已实现 |
-| [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`        | M1     | ✅ 已实现 |
-| [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`      | M1     | ✅ 已实现 |
-| [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`    | M1     | ✅ 已实现 |
-| [Input](./input/api.md)               | `mc-input`                             | `input/`      | M2     | ✅ 已实现 |
-| [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`   | M2     | ✅ 已实现 |
-| [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`   | M2     | ✅ 已实现 |
-| [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`      | M2     | ✅ 已实现 |
-| [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`     | M2     | ✅ 已实现 |
-| [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`     | M2     | ✅ 已实现 |
-| [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`      | M2     | ✅ 已实现 |
-| [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`   | M2     | ✅ 已实现 |
-| [Message](./message/api.md)（命令式） | `message()`                            | `message/`    | M2     | ✅ 已实现 |
-| [Popover](./popover/api.md)           | `mc-popover`                           | `popover/`    | M3     | ✅ 已实现 |
-| [Dialog](./dialog/api.md)             | `mc-dialog`                            | `dialog/`     | M3     | ✅ 已实现 |
-| [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`   | M3     | ✅ 已实现 |
-| [Tooltip](./tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`    | M3     | ✅ 已实现 |
-| [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`       | M3     | ✅ 已实现 |
-| [Table](./table/api.md)               | `mc-table`                             | `table/`      | M3     | ✅ 已实现 |
-| [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`       | M3     | ✅ 已实现 |
+| 组件                                  | 标签                                   | 目录           | 里程碑 | 状态      |
+| ------------------------------------- | -------------------------------------- | -------------- | ------ | --------- |
+| [Button](./button/api.md)             | `mc-button`                            | `button/`      | M1     | ✅ 已实现 |
+| [Code](./code/api.md)                 | `mc-code`                              | `code/`        | M1     | ✅ 已实现 |
+| [Collapse](./collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`    | M1     | ✅ 已实现 |
+| [Menu](./menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`        | M1     | ✅ 已实现 |
+| [Breadcrumb](./breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/`  | M1     | ✅ 已实现 |
+| [Icon](./icon/api.md)                 | `mc-icon`                              | `icon/`        | M1     | ✅ 已实现 |
+| [Card](./card/api.md)                 | `mc-card`                              | `card/`        | M1     | ✅ 已实现 |
+| [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | M1     | ✅ 已实现 |
+| [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | M1     | ✅ 已实现 |
+| [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | M1     | ✅ 已实现 |
+| [Input](./input/api.md)               | `mc-input`                             | `input/`       | M2     | ✅ 已实现 |
+| [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | M2     | ✅ 已实现 |
+| [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | M2     | ✅ 已实现 |
+| [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | M2     | ✅ 已实现 |
+| [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | M2     | ✅ 已实现 |
+| [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | M2     | ✅ 已实现 |
+| [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | M2     | ✅ 已实现 |
+| [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | M2     | ✅ 已实现 |
+| [Message](./message/api.md)（命令式） | `message()`                            | `message/`     | M2     | ✅ 已实现 |
+| [Loading Bar](./loading-bar/api.md)   | `mc-loading-bar`                       | `loading-bar/` | M3     | ✅ 已实现 |
+| [Popover](./popover/api.md)           | `mc-popover`                           | `popover/`     | M3     | ✅ 已实现 |
+| [Dialog](./dialog/api.md)             | `mc-dialog`                            | `dialog/`      | M3     | ✅ 已实现 |
+| [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`    | M3     | ✅ 已实现 |
+| [Tooltip](./tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`     | M3     | ✅ 已实现 |
+| [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | M3     | ✅ 已实现 |
+| [Table](./table/api.md)               | `mc-table`                             | `table/`       | M3     | ✅ 已实现 |
+| [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`        | M3     | ✅ 已实现 |
 
 ---
 

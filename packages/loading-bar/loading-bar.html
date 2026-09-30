@@ -1,0 +1,224 @@
+<!--
+  mc-loading-bar — 全局顶部加载条
+
+  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）见同目录 README.md 的「设计取舍」。
+  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
+-->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 钉在视口顶部的一条轨道。状态机在脚本里，样式只读宿主属性
+          （[data-on] 出现并爬升 / [data-done] 收尾）—— 所以「首帧自己播一遍收尾动画」不会发生。 */
+    :host {
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      z-index: var(--mc-loading-bar-z, var(--mc-def-z-toast));
+      display: block;
+      box-sizing: border-box;
+      height: 4px;
+      background-color: var(--mc-loading-bar-track, transparent);
+      /* ⚠️ 必须 none：它钉在视口顶部、横跨整个宽度，不写这一行就会挡住顶栏 / 弹层 / 按钮的点击 */
+      pointer-events: none;
+      visibility: hidden;
+      opacity: 0;
+
+      /* L3 色槽：color 只往这里填值（同 mc-progress 的 --mc-progress-fill） */
+      --mc-loading-bar-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+      /* 时长走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
+         写死秒数会让「减弱动效」静默失效（同 mc-spinner） */
+      --mc-loading-bar-creep: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 24);
+      --mc-loading-bar-fade: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 1.2);
+      /* 爬升的终点：**到不了 100%** 才像「还在跑」，到了反而像卡住 */
+      --mc-loading-bar-reach: 90%;
+    }
+
+    /* 2. 维度一 color：只往色槽里填值（primary 是默认，直接写在 :host 上 —— 写 :host(:not([color])) 会静默失效，P14） */
+    :host([color='info']) {
+      --mc-loading-bar-fill: var(--mc-color-info, var(--mc-def-color-info));
+    }
+    :host([color='success']) {
+      --mc-loading-bar-fill: var(--mc-color-success, var(--mc-def-color-success));
+    }
+    :host([color='warning']) {
+      --mc-loading-bar-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+    }
+    :host([color='danger']) {
+      --mc-loading-bar-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+    }
+
+    /* 3. 维度二 size：全局条不是控件，不借 --mc-control-h-*（同 mc-progress） */
+    :host([size='sm']) {
+      height: 2px;
+    }
+
+    /* 4. 填充条：宽度是唯一的进度表达 */
+    .mc-bar {
+      height: 100%;
+      width: 0;
+      background-color: rgb(var(--mc-loading-bar-fill));
+    }
+
+    /* 5. 状态：出现 → 一路爬向 reach（缓出，永不抵达）；收尾 → 由脚本冻住当前宽度再滑满 */
+    :host([data-on]) {
+      visibility: visible;
+      opacity: 1;
+    }
+    :host([data-on]:not([data-done])) .mc-bar {
+      animation: mc-loading-bar-creep var(--mc-loading-bar-creep) cubic-bezier(0.1, 0.6, 0.2, 1)
+        forwards;
+    }
+    :host([data-done]) {
+      animation: mc-loading-bar-fade var(--mc-loading-bar-fade) linear forwards;
+    }
+    /* ⚠️ 收尾时必须把爬升动画停掉：动画值压得住内联宽度，不停的话脚本冻的那一帧不生效 */
+    :host([data-done]) .mc-bar {
+      animation: none;
+      transition: width var(--mc-loading-bar-fade) ease-out;
+    }
+
+    @keyframes mc-loading-bar-creep {
+      from {
+        width: 0;
+      }
+      to {
+        width: var(--mc-loading-bar-reach);
+      }
+    }
+    @keyframes mc-loading-bar-fade {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+  </style>
+
+  <!-- 纯装饰：语义在宿主上（role="progressbar" + aria-busy + aria-label），图形对读屏隐藏 -->
+  <div class="mc-bar" part="bar" aria-hidden="true"></div>
+
+  <script>
+    /* color 也收 hex（`<mc-loading-bar color="#ff6b35">`）：语义名照旧交给 CSS，hex 走这一个接线器 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill'] });
+
+    export default async () => ({
+      tag: 'mc-loading-bar',
+
+      attrs: {
+        /* 正在加载：true = 出现并爬升；false = 滑满 → 淡出 → 复位（再 true 就从 0 重来）。
+           布尔属性默认值必须是 null（P1）：用 false 会让 <mc-loading-bar active> 失效 */
+        active: null,
+        color: 'primary',
+        size: 'md',
+        /** 屏幕阅读器文案。它不显示在界面上，所以默认值就是它的全部内容 */
+        label: '加载中',
+      },
+
+      attached() {
+        this._live = true;
+        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+        color.sync(this.ele, this.color);
+        /* 首帧：只认「现在是不是在跑」，**不播收尾动画** —— 否则每次加载页面都会闪一下 */
+        /* ⚠️ 用 `!== null` 而不是 `!!`：布尔属性声明成 null 之后，裸写 `active` 拿到的是
+         **空串**（与 mc-button 的 `disabled !== null` 同一个道理，P1），`!!''` 是 false */
+        this.syncActive(this.active !== null, true);
+      },
+
+      detached() {
+        this.ele.removeEventListener('animationend', this._onFadeEnd);
+      },
+
+      watch: {
+        // watch 在构造期也会触发一次（P5），_live 守卫把它挡在挂载前
+        active() {
+          if (this._live) this.syncActive(this.active !== null);
+        },
+        label() {
+          if (this._live && this.ele.hasAttribute('data-on')) this.syncLabel();
+        },
+        // color 收 hex：首次触发落在构造期，跳过由 colorAttr 内部处理
+        color(value) {
+          color.change(this.ele, value);
+        },
+      },
+
+      proto: {
+        /**
+         * 状态机（宿主属性是唯一真相）：
+         *   on  → [data-on]：出现 + 爬升，同时把语义挂上（role / aria-busy / aria-label）；
+         *   off → [data-done]：冻住当前宽度 → 滑满 → 淡出，**淡出播完**才复位。
+         * ⚠️ 复位靠 animationend 而不是定时器：时长是令牌（还能被 prefers-reduced-motion 压到 1ms），
+         *    定时器必然对不上 —— 要么提前切断淡出、要么空等一段看不见的时间。
+         */
+        syncActive(on, immediate = false) {
+          const el = this.ele;
+          el.removeEventListener('animationend', this._onFadeEnd);
+
+          if (on) {
+            // 上一轮的收尾还没播完就又开了：从当前位置继续爬（去掉 data-done 即可）
+            el.removeAttribute('data-done');
+            el.setAttribute('data-on', '');
+            el.setAttribute('role', 'progressbar');
+            el.setAttribute('aria-busy', 'true');
+            this.syncLabel();
+            return;
+          }
+
+          /* 首帧就是「没在跑」、或者本来就没显示过 → 干净复位，不播任何动画 */
+          if (immediate || !el.hasAttribute('data-on')) {
+            el.removeAttribute('data-on');
+            el.removeAttribute('data-done');
+            this.clearSemantics();
+            return;
+          }
+
+          this.finish();
+          this.clearSemantics();
+        },
+
+        /**
+         * 收尾：把**爬升动画的当前位置**冻成内联宽度，再交给 transition 滑满。
+         * ⚠️ 顺序不能换：先读（此时动画还在跑，computed 拿到的才是真实位置）→ 写内联值 →
+         *    才摘掉动画（摘早了动画值就没了，会闪回 0）→ 强制回流 → 最后写 100%。
+         *    CSS 读不到动画值，这一步只能在脚本里做（除非去 registerProperty，那是全局副作用，不做）。
+         */
+        finish() {
+          const bar = this.ele.shadowRoot?.querySelector('.mc-bar');
+          if (!bar) return;
+          const at = getComputedStyle(bar).width;
+          this.ele.setAttribute('data-done', '');
+          bar.style.width = at;
+          void bar.offsetWidth; // 强制回流：不加这行，下面那次赋值会和上面合并成「没有过渡」
+          bar.style.width = '100%';
+
+          this._onFadeEnd = (event) => {
+            /* 只有宿主自己那条淡出动画算数：爬升动画在 .mc-bar 上，它的 animationend 会冒泡上来 */
+            if (event.target !== this.ele) return;
+            this.ele.removeEventListener('animationend', this._onFadeEnd);
+            this.ele.removeAttribute('data-done');
+            this.ele.removeAttribute('data-on');
+            bar.style.width = '';
+          };
+          this.ele.addEventListener('animationend', this._onFadeEnd);
+        },
+
+        /** label → 宿主的 aria-label（空值就不写，避免出现没有名字的 progressbar） */
+        syncLabel() {
+          const label = (this.label || '').trim();
+          if (label) this.ele.setAttribute('aria-label', label);
+          else this.ele.removeAttribute('aria-label');
+        },
+
+        /** 没在跑的时候不留任何语义痕迹（role / aria-busy / aria-label 一起撤） */
+        clearSemantics() {
+          for (const name of ['role', 'aria-busy', 'aria-label']) {
+            this.ele.removeAttribute(name);
+          }
+        },
+      },
+    });
+  </script>
+</template>

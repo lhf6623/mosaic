@@ -1,0 +1,37 @@
+<template component>
+  <!-- 演示专用：static 才排得下（真实用法钉在视口顶部） -->
+  <style>
+    /* part="bar" = 内部那条填充：圆角、渐变、加高都行 */
+    .mc-custom::part(bar) {
+      border-radius: var(--mc-radius-full);
+      background-image: linear-gradient(
+        90deg,
+        rgb(var(--mc-color-primary)),
+        rgb(var(--mc-color-info))
+      );
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <!-- 令牌：爬升终点改成 40%，一眼看清「它停在 reach 上」 -->
+    <mc-loading-bar
+      class="mc-custom"
+      active
+      style="position: static; height: 8px; --mc-loading-bar-reach: 40%"
+    ></mc-loading-bar>
+    <!-- 只改色槽（语义色与 hex 都往这里填） -->
+    <mc-loading-bar
+      active
+      style="position: static; --mc-loading-bar-fill: var(--mc-color-warning)"
+    ></mc-loading-bar>
+    <!-- 轨道底色：默认 transparent，想露一条底就给它 -->
+    <mc-loading-bar
+      active
+      style="position: static; --mc-loading-bar-track: var(--mc-color-surface-sunken)"
+    ></mc-loading-bar>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-loading-bar-customize' });
+  </script>
+</template>

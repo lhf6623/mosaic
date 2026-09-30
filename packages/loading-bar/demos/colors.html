@@ -1,0 +1,17 @@
+<template component>
+  <!-- 演示专用：把它从 fixed 改回 static，五条才排得下（真实用法是全局一条、钉在顶部）。
+       active 让它们停在爬升态，好看清各档颜色。 -->
+  <div class="flex flex-col gap-2">
+    <mc-loading-bar active style="position: static" color="primary"></mc-loading-bar>
+    <mc-loading-bar active style="position: static" color="info"></mc-loading-bar>
+    <mc-loading-bar active style="position: static" color="success"></mc-loading-bar>
+    <mc-loading-bar active style="position: static" color="warning"></mc-loading-bar>
+    <mc-loading-bar active style="position: static" color="danger"></mc-loading-bar>
+    <!-- color 也收 hex -->
+    <mc-loading-bar active style="position: static" color="#ff6b00"></mc-loading-bar>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-loading-bar-colors' });
+  </script>
+</template>

@@ -1,0 +1,28 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="start()">开始加载</mc-button>
+    <mc-button variant="outline" on:click="done()">完成</mc-button>
+
+    <!-- 全局一条：真实用法是页面顶层放一个，由路由切换或一次全局请求驱动 active。
+         ⚠️ 这个字段**不能叫 `on`**：ofa 把 `on` 留给了自己，数据里出现同名键会让模块注册失败，
+         而外层只报「错误的模块地址」—— 实测 `data: { on: false }` 单独就能复现（字段换名即好）。 -->
+    <mc-loading-bar attr:active="busy ? '' : null" label="正在加载页面"></mc-loading-bar>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-loading-bar-basic',
+
+      data: { busy: false },
+
+      proto: {
+        start() {
+          this.busy = true;
+        },
+        done() {
+          this.busy = false;
+        },
+      },
+    });
+  </script>
+</template>

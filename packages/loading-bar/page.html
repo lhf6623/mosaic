@@ -1,0 +1,106 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="../alert/alert.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="./loading-bar.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/colors.html"></l-m>
+    <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <h1>Loading Bar <code>mc-loading-bar</code></h1>
+    <p class="doc-lead">
+      全局顶部加载条：钉在视口顶部的一条细线，在跑就缓慢爬升（永远到不了 100%），跑完滑满淡出。
+    </p>
+    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
+      <ul>
+        <li>
+          <strong>一个页面只该有一条</strong>：它铺满视口宽度、浮在所有东西之上，是「整体在忙」的
+          信号 —— 要表达「这一块跑到哪了」用 <code>mc-progress</code>。
+        </li>
+        <li>
+          <strong>它不吃指针</strong>（宿主写死 <code>pointer-events: none</code>）：钉在顶部 2~4px
+          上，能接收点击的话会把顶栏那一整条吞掉，而且视觉上看不出来。
+        </li>
+        <li>
+          <strong>收尾不是即时的</strong>：<code>active</code> 关掉后先滑满再淡出（时长走
+          <code>--mc-loading-bar-fade</code>，减弱动效偏好下会自动压到 1ms），
+          所以别用它当「进度」——它只表示开始与结束。
+        </li>
+      </ul>
+    </mc-alert>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
+         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
+         取词规则见 packages/README.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>开始与完成</h3>
+      <p class="doc-hint">
+        条子在<strong>视口顶部</strong>（不在演示区里）：点「开始加载」看它爬升，
+        点「完成」看它滑满淡出。
+      </p>
+      <demo-loading-bar-basic></demo-loading-bar-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>颜色</h3>
+      <p class="doc-hint">
+        语义色只往填充色槽里填值，也可以直接给 hex。演示里把它们改成
+        <code>position: static</code> 才排得下 —— 真实用法是全局一条、钉在顶部。
+      </p>
+      <demo-loading-bar-colors></demo-loading-bar-colors>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/colors.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>两档高度</h3>
+      <p class="doc-hint">
+        <code>size="sm"</code> 是 2px，默认 4px —— 它不是控件，不借
+        <code>--mc-control-h-*</code>，长度永远铺满。
+      </p>
+      <demo-loading-bar-sizes></demo-loading-bar-sizes>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        填充条是 <code>part="bar"</code>，圆角 / 渐变直接改它；颜色、轨道底色、爬升终点 各有令牌 ——
+        下面三条分别演示这三件事。
+      </p>
+      <demo-loading-bar-customize></demo-loading-bar-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/customize.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
+         唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>
