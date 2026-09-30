@@ -14,18 +14,22 @@ loading-bar 是**全局**的「整页 / 整路由在忙」—— 它铺满视口
 <mc-loading-bar active></mc-loading-bar>
 <mc-loading-bar active color="success" size="sm" label="正在保存"></mc-loading-bar>
 <mc-loading-bar active color="#ff6b35"></mc-loading-bar>
+
+<!-- 放进容器：就在它所在的那一块里当一条细线（卡片 / 面板的「这一块在刷新」） -->
+<mc-loading-bar active position="static" label="正在刷新列表"></mc-loading-bar>
 ```
 
 ---
 
 ## 属性
 
-| 名称     | 值                                                          | 默认      | 说明                                                                                             |
-| -------- | ----------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------ |
-| `active` | `boolean`                                                   | —         | 正在加载。`true` 出现并爬升；`false` 滑满 → 淡出 → 复位（再 `true` 从 0 重来）                   |
-| `color`  | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `primary` | 语义色，只往填充色槽里填值；也可以是 hex（`#ff6b35`）                                            |
-| `size`   | `'sm' \| 'md'`                                              | `md`      | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                            |
-| `label`  | `string`                                                    | `加载中`  | 只给屏幕阅读器的文案：在跑时宿主是 `role="progressbar"` + `aria-busy` + 这个名字，不显示在界面上 |
+| 名称       | 值                                                          | 默认      | 说明                                                                                               |
+| ---------- | ----------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------- |
+| `active`   | `boolean`                                                   | —         | 正在加载。`true` 出现并爬升；`false` 滑满 → 淡出 → 复位（再 `true` 从 0 重来）                     |
+| `color`    | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `primary` | 语义色，只往填充色槽里填值；也可以是 hex（`#ff6b35`）                                              |
+| `size`     | `'sm' \| 'md'`                                              | `md`      | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                              |
+| `position` | `'fixed' \| 'static'`                                       | `fixed`   | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽 |
+| `label`    | `string`                                                    | `加载中`  | 只给屏幕阅读器的文案：在跑时宿主是 `role="progressbar"` + `aria-busy` + 这个名字，不显示在界面上   |
 
 ## part
 
@@ -37,6 +41,10 @@ loading-bar 是**全局**的「整页 / 整路由在忙」—— 它铺满视口
 > 不确定态**不写** `aria-valuenow`（和 `mc-progress` 的不确定态一个口径）；
 > 没在跑时三个属性一起撤掉，不留语义痕迹。图形本身 `aria-hidden="true"`。
 >
-> **`pointer-events: none` 写在宿主上，不是默认值而是定义**：它横跨整个视口顶部，
+> **容器里怎么放**：`position="static"` 只是把定位交回文档流（块级、通宽、占 2 / 4px），
+> 组件**不去猜容器** —— 不套 `absolute`、也不要求容器 `position: relative`。要让它盖在容器
+> 上沿，自己写 `style="position: absolute; inset-inline: 0; top: 0"`（内联优先级更高）。
+>
+> **`pointer-events: none` 写在宿主上，不是默认值而是定义**：默认那一种横跨整个视口顶部，
 > 若默认能接收指针，顶栏 / 弹层 / 按钮在那 2~4px 高度上的点击会被整条吞掉 ——
 > 而且这种坏法在视觉上完全看不出来。要改请显式覆盖。

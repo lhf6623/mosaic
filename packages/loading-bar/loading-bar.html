@@ -7,7 +7,8 @@
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主 = 钉在视口顶部的一条轨道。状态机在脚本里，样式只读宿主属性
+    /* 1. 宿主 = 一条轨道。默认钉在视口顶部（全局在忙）；position="static" 时就在它所在的
+          容器里当一条普通块级细线（那一块在忙）。状态机在脚本里，样式只读宿主属性
           （[data-on] 出现并爬升 / [data-done] 收尾）—— 所以「首帧自己播一遍收尾动画」不会发生。 */
     :host {
       position: fixed;
@@ -18,7 +19,8 @@
       box-sizing: border-box;
       height: 4px;
       background-color: var(--mc-loading-bar-track, transparent);
-      /* ⚠️ 必须 none：它钉在视口顶部、横跨整个宽度，不写这一行就会挡住顶栏 / 弹层 / 按钮的点击 */
+      /* ⚠️ 必须 none：默认那一种是钉在视口顶部、横跨整个宽度的，不写这一行就会挡住
+         顶栏 / 弹层 / 按钮的点击（容器里那一种同样不该截走自己那 4px 上的指针） */
       pointer-events: none;
       visibility: hidden;
       opacity: 0;
@@ -31,6 +33,15 @@
       --mc-loading-bar-fade: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 1.2);
       /* 爬升的终点：**到不了 100%** 才像「还在跑」，到了反而像卡住 */
       --mc-loading-bar-reach: 90%;
+    }
+
+    /* 1b. position="static"：不钉视口，就在容器里占自己那 2 / 4px、通宽（块级，宽度跟着容器）。
+           ⚠️ 这里刻意**不替使用者猜容器**：不套 absolute、也不去找最近的定位祖先 ——
+           那会让容器凭空多一条「必须 position: relative」的约束。想让它盖在容器上沿，
+           自己写 style="position: absolute; inset-inline: 0; top: 0" 即可（内联优先级更高）。
+           静态定位下 inset / z-index 本来就不生效，所以这一条只改 position。 */
+    :host([position='static']) {
+      position: static;
     }
 
     /* 2. 维度一 color：只往色槽里填值（primary 是默认，直接写在 :host 上 —— 写 :host(:not([color])) 会静默失效，P14） */
@@ -113,6 +124,9 @@
         active: null,
         color: 'primary',
         size: 'md',
+        /* 钉在哪儿：fixed = 视口顶部（全局在忙，默认）；static = 就在它所在的容器里，
+           占自己那 2 / 4px 高、通宽（那一块在忙）。纯 CSS 切换，状态机两边一样 */
+        position: 'fixed',
         /** 屏幕阅读器文案。它不显示在界面上，所以默认值就是它的全部内容 */
         label: '加载中',
       },

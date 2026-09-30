@@ -9,6 +9,7 @@
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
+    <l-m src="./demos/container.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <h1>Loading Bar <code>mc-loading-bar</code></h1>
     <p class="doc-lead">
@@ -17,8 +18,10 @@
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
       <ul>
         <li>
-          <strong>一个页面只该有一条</strong>：它铺满视口宽度、浮在所有东西之上，是「整体在忙」的
-          信号 —— 要表达「这一块跑到哪了」用 <code>mc-progress</code>。
+          <strong>默认那种（<code>position="fixed"</code>）一页只该有一条</strong>：它铺满视口宽度、
+          浮在所有东西之上，是「整体在忙」的信号。只表达<strong>某一小块</strong>在忙，就用
+          <code>position="static"</code> 放进那个容器里；要表达「跑到哪了」还是用
+          <code>mc-progress</code>。
         </li>
         <li>
           <strong>它不吃指针</strong>（宿主写死 <code>pointer-events: none</code>）：钉在顶部 2~4px
@@ -75,6 +78,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/sizes.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>容器内</h3>
+      <p class="doc-hint">
+        <code>position="static"</code>：就在它所在的容器里占 2 / 4px、通宽 —— 说「这一块在刷新」。
+        想盖在容器上沿，给它一句内联 <code>position: absolute</code> 就行（组件不去猜容器）。
+      </p>
+      <demo-loading-bar-container></demo-loading-bar-container>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/container.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

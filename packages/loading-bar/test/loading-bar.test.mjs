@@ -61,11 +61,21 @@ export default async function run({ page, visit, check }) {
       under.addEventListener('click', () => {
         window.__lbUnderClicks++;
       });
+
+      /* 容器里那一种（position="static"）：整盒 260px 宽、贴在顶 200px 处 ——
+         条子应当落在盒子里（通宽 260、占自己那 2 / 4px），而不是铺满视口 */
+      const box = document.createElement('div');
+      box.id = 'lb-inline-box';
+      box.style.cssText = 'position:fixed;left:0;top:200px;width:260px;z-index:1';
+      box.innerHTML =
+        '<mc-loading-bar id="lb-inline" active position="static" label="这一块在忙"></mc-loading-bar>' +
+        '<mc-loading-bar id="lb-inline-sm" active position="static" size="sm"></mc-loading-bar>';
+      document.body.append(box);
     });
     await page
       .waitForFunction(
         () =>
-          ['lb-idle', 'lb-md', 'lb-sm', 'lb-info', 'lb-hex', 'lb-label'].every(
+          ['lb-idle', 'lb-md', 'lb-sm', 'lb-info', 'lb-hex', 'lb-label', 'lb-inline'].every(
             (id) => !!document.getElementById(id)?.shadowRoot,
           ),
         { timeout: 5000 },
@@ -113,6 +123,24 @@ export default async function run({ page, visit, check }) {
           reach: cs('lb-md').getPropertyValue('--mc-loading-bar-reach').trim(),
           creep: inner('lb-md').animationDuration,
           z: cs('lb-md').zIndex,
+        },
+        inline: {
+          position: getComputedStyle(el('lb-inline')).position,
+          width: Math.round(rect('lb-inline').width),
+          boxWidth: Math.round(
+            document.getElementById('lb-inline-box').getBoundingClientRect().width,
+          ),
+          topOffset: Math.round(
+            rect('lb-inline').top -
+              document.getElementById('lb-inline-box').getBoundingClientRect().top,
+          ),
+          height: Math.round(rect('lb-inline').height),
+          smHeight: Math.round(rect('lb-inline-sm').height),
+          dataOn: el('lb-inline').hasAttribute('data-on'),
+          role: el('lb-inline').getAttribute('role'),
+          label: el('lb-inline').getAttribute('aria-label'),
+          visibility: cs('lb-inline').visibility,
+          viewport: window.innerWidth,
         },
         structure: {
           parts: [...el('lb-md').shadowRoot.querySelectorAll('[part]')].map(
@@ -210,6 +238,7 @@ export default async function run({ page, visit, check }) {
     await page.evaluate(() => {
       document.getElementById('lb-probe')?.remove();
       document.getElementById('lb-under')?.remove();
+      document.getElementById('lb-inline-box')?.remove();
     });
 
     page.off('response', onResponse);
@@ -266,6 +295,21 @@ export default async function run({ page, visit, check }) {
       bar.probe.structure.barHidden === 'true' &&
       bar.probe.structure.slots === 0,
     JSON.stringify({ ...bar.probe.colors, ...bar.probe.structure }),
+  );
+
+  check(
+    'position="static"：就落在容器里（通宽 = 容器宽、占自己那 2 / 4px、不铺满视口），语义与在跑态照旧',
+    bar.probe.inline.position === 'static' &&
+      bar.probe.inline.width === bar.probe.inline.boxWidth &&
+      bar.probe.inline.width < bar.probe.inline.viewport &&
+      bar.probe.inline.topOffset === 0 &&
+      bar.probe.inline.height === 4 &&
+      bar.probe.inline.smHeight === 2 &&
+      bar.probe.inline.dataOn === true &&
+      bar.probe.inline.role === 'progressbar' &&
+      bar.probe.inline.label === '这一块在忙' &&
+      bar.probe.inline.visibility === 'visible',
+    JSON.stringify(bar.probe.inline),
   );
 
   check(
