@@ -237,12 +237,12 @@ export const SITE = [
           {
             order: 40,
             label: 'Loading Bar',
-            zh: '顶部加载条',
+            zh: '加载条',
             path: 'packages/loading-bar/page.html',
             tagName: 'mc-loading-bar',
             stage: 'M3',
             summary:
-              '全局顶部加载条。钉在视口顶部的一条细线，在跑就缓慢爬升（到不了 100%），跑完滑满淡出；不吃指针。',
+              '全局加载条。钉在视口顶部的一条细线，在跑就缓慢爬升（到不了 100%），跑完滑满淡出；不吃指针。',
           },
         ],
       },
