@@ -1,5 +1,5 @@
 <template component>
-  <mc-scroll-area
+  <mc-scroll-bar
     axis="x"
     label="横向内容"
     style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
@@ -14,11 +14,11 @@
         </div>
       </o-fill>
     </div>
-  </mc-scroll-area>
+  </mc-scroll-bar>
 
   <script>
     export default async () => ({
-      tag: 'demo-scroll-area-horizontal',
+      tag: 'demo-scroll-bar-horizontal',
       data: { cards: Array.from({ length: 12 }, (_, i) => `卡片 ${i + 1}`) },
     });
   </script>

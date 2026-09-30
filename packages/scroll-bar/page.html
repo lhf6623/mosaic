@@ -4,13 +4,13 @@
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="../alert/alert.html"></l-m>
-    <l-m src="./scroll-area.html"></l-m>
+    <l-m src="./scroll-bar.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/horizontal.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
-    <h1>Scroll Area <code>mc-scroll-area</code></h1>
+    <h1>Scroll Bar <code>mc-scroll-bar</code></h1>
     <p class="doc-lead">
-      滚动容器：内容自己给高度，滚动条由组件画（覆盖式、跟着主题走），滚动本身仍是原生的 ——
+      滚动条：内容自己给高度，条子由组件画（覆盖式、跟着主题走），滚动本身仍是原生的 ——
       键盘、触屏惯性、锚点、页内查找全都照旧。
     </p>
     <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
@@ -21,8 +21,8 @@
         </li>
         <li>
           <strong>条子是覆盖式的</strong>：贴在内沿、不占内容宽度（所以溢出与否都不会让内容横跳），
-          代价是盖住最边上那 <code>--mc-scroll-area-w</code> 宽的一条 ——
-          长代码块这类内容记得给自己的 <code>part="viewport"</code> 加右内边距。
+          代价是盖住最边上那 <code>--mc-scroll-bar-w</code> 宽的一条 —— 长代码块这类内容记得给自己的
+          <code>part="viewport"</code> 加右内边距。
         </li>
         <li>
           <strong>一次只滚一条轴</strong>：两条轴同时要的场合用普通 <code>overflow</code> 容器，
@@ -39,7 +39,7 @@
     <section class="doc-demo">
       <h3>竖向滚动</h3>
       <p class="doc-hint">鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。</p>
-      <demo-scroll-area-basic></demo-scroll-area-basic>
+      <demo-scroll-bar-basic></demo-scroll-bar-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
@@ -50,7 +50,7 @@
     <section class="doc-demo">
       <h3>横向滚动</h3>
       <p class="doc-hint"><code>axis="x"</code>：宽表格、时间轴这类内容用它，条子贴在底沿。</p>
-      <demo-scroll-area-horizontal></demo-scroll-area-horizontal>
+      <demo-scroll-bar-horizontal></demo-scroll-bar-horizontal>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/horizontal.html"></mc-code
@@ -64,7 +64,7 @@
         三个 part（<code>viewport</code> / <code>bar</code> / <code>thumb</code>）分别对应
         「内容」「轨道」「滑块」，粗细与颜色各有令牌。
       </p>
-      <demo-scroll-area-customize></demo-scroll-area-customize>
+      <demo-scroll-bar-customize></demo-scroll-bar-customize>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/customize.html"></mc-code

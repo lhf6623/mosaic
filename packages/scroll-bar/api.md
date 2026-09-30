@@ -1,9 +1,9 @@
-# mc-scroll-area
+# mc-scroll-bar
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./scroll-area.html` · M3 · **已实现**
+> 源码 `./scroll-bar.html` · M3 · **已实现**
 
-滚动容器：把内容包进来，滚动条由组件自己画（覆盖式，不占内容宽度），**滚动本身仍是原生的** ——
+滚动条：把内容包进来，条子由组件自己画（覆盖式，不占内容宽度），**滚动本身仍是原生的** ——
 键盘、触屏惯性、锚点、页内查找全都照旧，只是原生滚动条被藏起来、换成跟着主题走的那一条。
 
 和「直接给容器写 `overflow: auto`」的分工：原生滚动条的宽度、圆角、颜色、出现时机在各平台与
@@ -11,14 +11,14 @@
 出现 / 消失时会让内容横向跳一下**。要「滚得跟设计系统一致」，用它。
 
 ```html
-<mc-scroll-area style="height: 12rem">
+<mc-scroll-bar style="height: 12rem">
   <p>很长很长……</p>
-</mc-scroll-area>
+</mc-scroll-bar>
 
 <!-- 横向：宽表格、代码、时间轴 -->
-<mc-scroll-area axis="x" label="横向滚动的内容" style="height: 4rem">
+<mc-scroll-bar axis="x" label="横向滚动的内容" style="height: 4rem">
   <div style="width: 60rem">…</div>
-</mc-scroll-area>
+</mc-scroll-bar>
 ```
 
 > 高度（或宽度）**由使用者给**：组件只管滚动与画条子，不猜你要多高 ——

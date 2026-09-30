@@ -17,34 +17,34 @@
 
   <div class="flex flex-col gap-3">
     <!-- 令牌：条子更粗、滑块更长、留白更大 -->
-    <mc-scroll-area
+    <mc-scroll-bar
       class="mc-area"
       label="自定义外观"
-      style="height: 9rem; --mc-scroll-area-w: 14px; --mc-scroll-area-min-thumb: 4rem; --mc-scroll-area-gutter: 3px"
+      style="height: 9rem; --mc-scroll-bar-w: 14px; --mc-scroll-bar-min-thumb: 4rem; --mc-scroll-bar-gutter: 3px"
     >
       <div class="flex flex-col gap-2">
         <o-fill :value="lines" fill-key="$key">
           <div>{{$data}}</div>
         </o-fill>
       </div>
-    </mc-scroll-area>
+    </mc-scroll-bar>
 
     <!-- 只换滑块颜色 -->
-    <mc-scroll-area
+    <mc-scroll-bar
       label="自定义滑块"
-      style="height: 6rem; --mc-scroll-area-thumb: var(--mc-color-success); --mc-scroll-area-thumb-hover: var(--mc-color-success)"
+      style="height: 6rem; --mc-scroll-bar-thumb: var(--mc-color-success); --mc-scroll-bar-thumb-hover: var(--mc-color-success)"
     >
       <div class="flex flex-col gap-2 p-3">
         <o-fill :value="lines" fill-key="$key">
           <div>{{$data}}</div>
         </o-fill>
       </div>
-    </mc-scroll-area>
+    </mc-scroll-bar>
   </div>
 
   <script>
     export default async () => ({
-      tag: 'demo-scroll-area-customize',
+      tag: 'demo-scroll-bar-customize',
       data: { lines: Array.from({ length: 14 }, (_, i) => `第 ${i + 1} 行内容`) },
     });
   </script>

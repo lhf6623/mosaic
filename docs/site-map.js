@@ -334,13 +334,13 @@ export const SITE = [
           },
           {
             order: 50,
-            label: 'Scroll Area',
-            zh: '滚动容器',
-            path: 'packages/scroll-area/page.html',
-            tagName: 'mc-scroll-area',
+            label: 'Scroll Bar',
+            zh: '滚动条',
+            path: 'packages/scroll-bar/page.html',
+            tagName: 'mc-scroll-bar',
             stage: 'M3',
             summary:
-              '滚动容器。自带覆盖式滚动条（跟着主题走），滚动本身仍是原生的：键盘、触屏惯性、锚点都照旧。',
+              '滚动条。自带覆盖式滚动条（跟着主题走），滚动本身仍是原生的：键盘、触屏惯性、锚点都照旧。',
           },
         ],
       },

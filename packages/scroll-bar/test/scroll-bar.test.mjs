@@ -1,5 +1,5 @@
 /**
- * mc-scroll-area · 滚动容器：不溢出时「什么都没有」（无条子、无 tabindex / role，不占 tab 停靠点）、
+ * mc-scroll-bar · 滚动条：不溢出时「什么都没有」（无条子、无 tabindex / role，不占 tab 停靠点）、
  * 溢出时 a11y 三连 + 滑块比例与位置、原生滚动条被藏掉、条子是覆盖式（不占内容宽度）、
  * scroll 事件从宿主冒泡、拖滑块真的能滚、内容变高滑块跟着变短、axis="x" 横向
  */
@@ -14,9 +14,9 @@ export default async function run({ page, visit, check }) {
     page.on('response', onResponse);
     page.on('pageerror', onError);
 
-    await visit(page, '/index.html?scroll-area=1#/packages/scroll-area/page.html');
+    await visit(page, '/index.html?scroll-bar=1#/packages/scroll-bar/page.html');
     await page
-      .waitForFunction(() => !!customElements.get('mc-scroll-area'), { timeout: 8000 })
+      .waitForFunction(() => !!customElements.get('mc-scroll-bar'), { timeout: 8000 })
       .catch(() => {});
 
     /* 探针：一条不溢出的、一条溢出 3 倍的、一条横向的。都放进一个固定定位的盒子里量尺寸 */
@@ -25,12 +25,12 @@ export default async function run({ page, visit, check }) {
       box.id = 'sa-probe';
       box.style.cssText = 'position:fixed;left:0;top:0;width:300px;z-index:1200';
       box.innerHTML =
-        '<mc-scroll-area id="sa-fit" label="装得下" style="height:60px">' +
-        '<div style="height:40px">a</div></mc-scroll-area>' +
-        '<mc-scroll-area id="sa-over" label="装不下" style="height:100px">' +
-        '<div id="sa-content" style="height:400px">b</div></mc-scroll-area>' +
-        '<mc-scroll-area id="sa-x" axis="x" label="横向" style="height:60px">' +
-        '<div style="width:900px">c</div></mc-scroll-area>';
+        '<mc-scroll-bar id="sa-fit" label="装得下" style="height:60px">' +
+        '<div style="height:40px">a</div></mc-scroll-bar>' +
+        '<mc-scroll-bar id="sa-over" label="装不下" style="height:100px">' +
+        '<div id="sa-content" style="height:400px">b</div></mc-scroll-bar>' +
+        '<mc-scroll-bar id="sa-x" axis="x" label="横向" style="height:60px">' +
+        '<div style="width:900px">c</div></mc-scroll-bar>';
       document.body.append(box);
       /* scroll 事件是从宿主上重发的，挂在 document 上就说明它真的冒泡出来了 */
       window.__saScrolls = 0;
@@ -176,8 +176,8 @@ export default async function run({ page, visit, check }) {
           .__deep('.doc-body')
           .insertAdjacentHTML(
             'afterbegin',
-            '<mc-scroll-area id="sa-wheel" label="滚轮" style="height:120px">' +
-              '<div style="height:900px">w</div></mc-scroll-area>',
+            '<mc-scroll-bar id="sa-wheel" label="滚轮" style="height:120px">' +
+              '<div style="height:900px">w</div></mc-scroll-bar>',
           );
       });
       await page.waitForTimeout(250);
@@ -425,5 +425,5 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(area.spots),
   );
 
-  check('滚动容器文档页没有 404 / 运行时报错', area.failed.length === 0, area.failed.join(' | ') || '无');
+  check('滚动条文档页没有 404 / 运行时报错', area.failed.length === 0, area.failed.join(' | ') || '无');
 }

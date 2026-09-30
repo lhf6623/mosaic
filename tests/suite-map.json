@@ -1419,7 +1419,7 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html"
     ],
-    "packages/scroll-area/test/scroll-area.test.mjs": [
+    "packages/scroll-bar/test/scroll-bar.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
       "docs/components/nav.html",
@@ -1452,13 +1452,13 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
-      "packages/scroll-area/api.md",
-      "packages/scroll-area/demos/basic.html",
-      "packages/scroll-area/demos/customize.html",
-      "packages/scroll-area/demos/horizontal.html",
-      "packages/scroll-area/page.html",
-      "packages/scroll-area/scroll-area.html",
-      "packages/scroll-area/test/scroll-area.test.mjs"
+      "packages/scroll-bar/api.md",
+      "packages/scroll-bar/demos/basic.html",
+      "packages/scroll-bar/demos/customize.html",
+      "packages/scroll-bar/demos/horizontal.html",
+      "packages/scroll-bar/page.html",
+      "packages/scroll-bar/scroll-bar.html",
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ]
   },
   "byFile": {
@@ -1482,7 +1482,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1515,7 +1515,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1548,7 +1548,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1581,7 +1581,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1614,7 +1614,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1647,7 +1647,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1680,7 +1680,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1713,7 +1713,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1746,7 +1746,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1779,7 +1779,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1825,7 +1825,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1858,7 +1858,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1891,7 +1891,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1936,7 +1936,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -1969,7 +1969,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2002,7 +2002,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2034,7 +2034,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2146,7 +2146,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2179,7 +2179,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2212,7 +2212,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2245,7 +2245,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2278,7 +2278,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2311,7 +2311,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2524,7 +2524,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2615,7 +2615,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2648,7 +2648,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2768,7 +2768,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2876,7 +2876,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -2909,7 +2909,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -3035,7 +3035,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -3068,7 +3068,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -3166,7 +3166,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/progress/test/progress.test.mjs",
       "packages/radio/test/radio.test.mjs",
-      "packages/scroll-area/test/scroll-area.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
@@ -3248,26 +3248,26 @@
     "packages/radio/test/radio.test.mjs": [
       "packages/radio/test/radio.test.mjs"
     ],
-    "packages/scroll-area/api.md": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/api.md": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/demos/basic.html": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/demos/basic.html": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/demos/customize.html": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/demos/customize.html": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/demos/horizontal.html": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/demos/horizontal.html": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/page.html": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/page.html": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/scroll-area.html": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/scroll-bar.html": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
-    "packages/scroll-area/test/scroll-area.test.mjs": [
-      "packages/scroll-area/test/scroll-area.test.mjs"
+    "packages/scroll-bar/test/scroll-bar.test.mjs": [
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/select/api.md": [
       "packages/select/test/select.test.mjs"

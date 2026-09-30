@@ -1,5 +1,5 @@
 <!--
-  mc-scroll-area — 滚动容器（自带滚动条）
+  mc-scroll-bar — 滚动条
 
   设计取舍 / 实现约束（为什么这么定、踩过哪些坑）见同目录 README.md 的「设计取舍」。
   这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
@@ -17,13 +17,13 @@
       overflow: hidden;
 
       /* L3 组件令牌：条子的一切外观都从这里改 */
-      --mc-scroll-area-w: 10px;
-      --mc-scroll-area-min-thumb: 2rem;
-      --mc-scroll-area-gutter: 2px;
-      --mc-scroll-area-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      --mc-scroll-bar-w: 10px;
+      --mc-scroll-bar-min-thumb: 2rem;
+      --mc-scroll-bar-gutter: 2px;
+      --mc-scroll-bar-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       /* 默认用边框色：亮暗两套主题下都看得见，又不抢内容 */
-      --mc-scroll-area-thumb: var(--mc-color-border, var(--mc-def-color-border));
-      --mc-scroll-area-thumb-hover: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-scroll-bar-thumb: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-scroll-bar-thumb-hover: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
     }
 
     .mc-viewport {
@@ -75,11 +75,11 @@
     .mc-thumb {
       position: absolute;
       pointer-events: auto;
-      background-color: rgb(var(--mc-scroll-area-thumb));
-      border-radius: var(--mc-scroll-area-radius);
+      background-color: rgb(var(--mc-scroll-bar-thumb));
+      border-radius: var(--mc-scroll-bar-radius);
     }
     :host(:hover) .mc-thumb {
-      background-color: rgb(var(--mc-scroll-area-thumb-hover));
+      background-color: rgb(var(--mc-scroll-bar-thumb-hover));
     }
 
     /* 竖轴：条子贴右沿通高，滑块左右各让开 gutter；横轴：贴底沿通宽 */
@@ -87,21 +87,21 @@
       top: 0;
       bottom: 0;
       right: 0;
-      width: var(--mc-scroll-area-w);
+      width: var(--mc-scroll-bar-w);
     }
     :host([data-axis='y']) .mc-thumb {
-      left: var(--mc-scroll-area-gutter);
-      right: var(--mc-scroll-area-gutter);
+      left: var(--mc-scroll-bar-gutter);
+      right: var(--mc-scroll-bar-gutter);
     }
     :host([data-axis='x']) .mc-bar {
       left: 0;
       right: 0;
       bottom: 0;
-      height: var(--mc-scroll-area-w);
+      height: var(--mc-scroll-bar-w);
     }
     :host([data-axis='x']) .mc-thumb {
-      top: var(--mc-scroll-area-gutter);
-      bottom: var(--mc-scroll-area-gutter);
+      top: var(--mc-scroll-bar-gutter);
+      bottom: var(--mc-scroll-bar-gutter);
     }
   </style>
 
@@ -114,7 +114,7 @@
 
   <script>
     export default async () => ({
-      tag: 'mc-scroll-area',
+      tag: 'mc-scroll-bar',
 
       attrs: {
         /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器（见 README） */
@@ -222,10 +222,10 @@
           this.syncA11y(over);
           if (!over) return;
 
-          /* 滑块长度按比例，但不小于 --mc-scroll-area-min-thumb：
+          /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：
              长列表里 1% 的滑块只有半个像素，看不见也抓不住 */
           const minThumb = parseFloat(
-            getComputedStyle(this.ele).getPropertyValue('--mc-scroll-area-min-thumb'),
+            getComputedStyle(this.ele).getPropertyValue('--mc-scroll-bar-min-thumb'),
           );
           const length = Math.max(minThumb || 0, (size / total) * bar);
           const free = bar - length;
