@@ -5,10 +5,9 @@
  * 刻意不做一个通用 markdown 解析器 —— 页面只需要这几样，多认一种就多一种
  * 「作者随手写了、渲染出来很难看」的可能。
  *
- * **三条边界规则**：
+ * **两条边界规则**：
  *   1. 第一个独占一行的 `---` 之上不渲染（开场白 + 用法片段）；
- *   2. `<!-- agent-only -->` 之下不渲染（实现约束 / 刻意不做的 / 令牌）；
- *   3. 中间只有 **白名单七节** 渲染：属性 / 方法 / 事件 / 配置 / 插槽与 part / 插槽 / part。
+ *   2. 中间只有 **白名单七节** 渲染：属性 / 方法 / 事件 / 配置 / 插槽与 part / 插槽 / part。
  *      其余节名一律丢弃 —— 白名单是硬的，将来往 md 里加新节不会误渲染出去。
  *      「方法 / 配置」是给命令式组件留的（`message()` 没有标签属性，接口事实就是方法与配置），
  *      节序与 `doc-drift.config.mjs` 的 `referenceOrder` 一致。
@@ -25,7 +24,6 @@ export const GITHUB_BLOB = 'https://github.com/lhf6623/mosaic/blob/main';
 const RE_H2 = /^##\s+(.+?)\s*$/;
 const RE_H3 = /^###\s+(.+?)\s*$/;
 const RE_HR = /^\s*---+\s*$/;
-const RE_AGENT_ONLY = /^\s*<!--\s*agent-only\s*-->\s*$/;
 const RE_UL = /^\s*[-*]\s+(.*)$/;
 const RE_FENCE = /^\s*```/;
 const RE_SEP_CELL = /^:?-{1,}:?$/;
@@ -123,18 +121,9 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
     .replace(/\r\n?/g, '\n')
     .split('\n');
 
-  // ① 第一个 --- 之上：agent 开场白
+  // ① 第一个 --- 之上：开场白（用法片段，不渲染）
   let start = lines.findIndex((line) => RE_HR.test(line));
   start = start < 0 ? 0 : start + 1;
-
-  // ② agent-only 之下：不渲染
-  let stop = lines.length;
-  for (let k = start; k < lines.length; k++) {
-    if (RE_AGENT_ONLY.test(lines[k])) {
-      stop = k;
-      break;
-    }
-  }
 
   const out = [];
   const sections = [];
@@ -166,7 +155,7 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
     }
   };
 
-  for (let k = start; k < stop; k++) {
+  for (let k = start; k < lines.length; k++) {
     const line = lines[k];
 
     // 围栏代码块：整块原样收（公开区不该有，但收着比吞掉强）

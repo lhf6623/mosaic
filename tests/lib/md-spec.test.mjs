@@ -2,7 +2,7 @@
  * docs/lib/md-spec.mjs 的单测（纯 node，不进浏览器套件）：
  *   node tests/lib/md-spec.test.mjs
  *
- * 盯的是 docs/lib/md-spec.mjs 的三条边界规则 —— 它们是「哪些内容会被渲染出去」的唯一约定，
+ * 盯的是 docs/lib/md-spec.mjs 的两条边界规则 —— 它们是「哪些内容会被渲染出去」的唯一约定，
  * 错一条就是「内部说明被摊给了使用者」或「参考区少一节」。
  */
 import test from 'node:test';
@@ -39,8 +39,6 @@ const SAMPLE = [
   '| --- | --- |',
   '| `--mc-button-fill` | 底色 |',
   '',
-  '<!-- agent-only -->',
-  '',
   '## 实现约束',
   '',
   '- 内部令牌不要对外',
@@ -59,17 +57,17 @@ test('第一个 --- 之上的开场白不渲染', () => {
   assert.doesNotMatch(html, /mc-button color/);
 });
 
-test('agent-only 之下不渲染', () => {
+test('白名单外的节连它的内容一起丢（实现约束 / 内部令牌）', () => {
   const { html } = parseSpecMd(SAMPLE);
   assert.doesNotMatch(html, /实现约束/);
   assert.doesNotMatch(html, /内部令牌/);
 });
 
-test('白名单外的节（令牌）不渲染，但记进 skipped', () => {
+test('白名单外的节（令牌 / 实现约束）不渲染，但记进 skipped', () => {
   const { html, skipped } = parseSpecMd(SAMPLE);
   assert.doesNotMatch(html, /<h2>令牌<\/h2>/);
   assert.doesNotMatch(html, /mc-button-fill/);
-  assert.deepEqual(skipped, ['令牌']);
+  assert.deepEqual(skipped, ['令牌', '实现约束']);
 });
 
 test('表格渲染成站点口径的 .doc-table（thead + tbody，第一栏不加工）', () => {
@@ -150,7 +148,7 @@ test('md 里的相对链接改写成 GitHub（站点上是 404）', () => {
   assert.equal(resolveLink('#top', base), '#top');
 });
 
-test('没有 --- 也没有 agent-only 时，全文按白名单过滤（不整页吐出去）', () => {
+test('没有 --- 时，全文按白名单过滤（不整页吐出去）', () => {
   const md = ['## 属性', '', '| 名称 | 说明 |', '| --- | --- |', '| `size` | 尺寸 |'].join('\n');
   const { html } = parseSpecMd(md);
   assert.match(html, /<h2>属性<\/h2>/);
