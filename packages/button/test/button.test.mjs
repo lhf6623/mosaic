@@ -22,6 +22,7 @@ export default async function run({ page, visit, check }) {
       'row-variants',
       'row-hex',
       'row-sizes',
+      'row-inline',
       'row-states',
       'row-slots',
     ]
@@ -55,6 +56,11 @@ export default async function run({ page, visit, check }) {
     put('row-sizes', 's-sm', { size: 'sm' });
     put('row-sizes', 's-md', {});
     put('row-sizes', 's-lg', { size: 'lg' });
+
+    put('row-inline', 'in-sm', { variant: 'ghost', inline: true, size: 'sm' }, '小字');
+    put('row-inline', 'in-md', { variant: 'ghost', inline: true }, '常规');
+    put('row-inline', 'in-lg', { variant: 'ghost', inline: true, size: 'lg' }, '大字');
+    put('row-inline', 'in-plain', { variant: 'ghost' }, '对照');
 
     put('row-states', 'st-default', {});
     put('row-states', 'st-disabled', { disabled: true, id: 'st-disabled' });
@@ -207,6 +213,56 @@ export default async function run({ page, visit, check }) {
     'block 撑满父容器；style="height:48px" 精确覆盖属性给的默认值',
     Math.abs(geometry.blockWidth - geometry.parentWidth) <= 1 && geometry.overrideHeight === 48,
     `block ${geometry.blockWidth}/${geometry.parentWidth} · style 覆盖 ${geometry.overrideHeight}（默认 ${geometry.defaultHeight}）`,
+  );
+
+  /* ---------- inline 形态：盒子交给文字，size 只选字号 ---------- */
+  const inline = await page.evaluate(() => {
+    const row = (id) => {
+      const el = document.getElementById(id);
+      const cs = getComputedStyle(el);
+      return {
+        高: Math.round(el.getBoundingClientRect().height),
+        字: parseFloat(cs.fontSize),
+        左内边距: parseFloat(cs.paddingLeft),
+        行高: Math.round(parseFloat(cs.lineHeight)),
+        对齐: cs.verticalAlign,
+      };
+    };
+    return { sm: row('in-sm'), md: row('in-md'), lg: row('in-lg'), plain: row('in-plain') };
+  });
+  check(
+    'inline 形态：盒子交给文字（无控制高度 / 左右无内边距），size 只换字号与配对行高',
+    inline.sm.左内边距 === 0 &&
+      inline.md.左内边距 === 0 &&
+      inline.lg.左内边距 === 0 &&
+      inline.sm.字 === 12 &&
+      inline.md.字 === 14 &&
+      inline.lg.字 === 16 &&
+      inline.md.行高 === 20 &&
+      inline.sm.行高 === 16 &&
+      inline.lg.行高 === 24 &&
+      inline.md.高 < inline.plain.高 &&
+      Math.abs(inline.sm.高 - inline.lg.高) <= 1 &&
+      inline.md.对齐 === 'baseline',
+    JSON.stringify(inline),
+  );
+  check(
+    'inline 的命中区凑到 24px（行高 + 上下透明内边距，WCAG 2.5.8）',
+    inline.sm.高 >= 24 && inline.md.高 >= 24 && inline.lg.高 >= 24,
+    `sm ${inline.sm.高} · md ${inline.md.高} · lg ${inline.lg.高}`
+  );
+  await page.hover('#in-md');
+  const inlineHover = await page.evaluate(() => {
+    const el = document.getElementById('in-md');
+    return {
+      下划线: getComputedStyle(el).textDecorationLine,
+      叠层: getComputedStyle(el.shadowRoot.querySelector('.mc-layer')).display,
+    };
+  });
+  check(
+    'inline 悬停改成下划线，不再用 .mc-layer 叠层（8% 底色贴着文字像「文字被高亮」）',
+    inlineHover.下划线 === 'underline' && inlineHover.叠层 === 'none',
+    JSON.stringify(inlineHover),
   );
 
   /* ---------- 状态：转发给内部原生 button ---------- */

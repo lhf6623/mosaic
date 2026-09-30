@@ -6,6 +6,7 @@
     <l-m src="./button.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/variants.html"></l-m>
+    <l-m src="./demos/inline.html"></l-m>
     <l-m src="./demos/hex.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/type.html"></l-m>
@@ -15,7 +16,8 @@
     <l-m src="./demos/override.html"></l-m>
     <h1>Button <code>mc-button</code></h1>
     <p class="doc-lead">
-      按钮。语义色 × 外观样式是两个正交维度， 「描边样式的危险按钮」这种组合能直接写出来。
+      按钮。语义色 × 外观样式是两个正交维度， 「描边样式的危险按钮」这种组合能直接写出来。 另有
+      <code>inline</code> 形态：盒子交给文字的行内按钮（见下面「行内文字按钮」一节）。
     </p>
     <h2>例子</h2>
 
@@ -38,6 +40,24 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/variants.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>行内文字按钮</h3>
+      <p class="doc-hint">
+        <code>inline</code> 是<strong>形态</strong>（不是
+        <code>variant</code> 的取值）：盒子交给文字，
+        <code>size</code> 只选字号，所以它跟着正文基线走、三档高度一样。
+        <strong>别和实心按钮并排</strong> ——
+        它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
+        放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了 <code>size="lg"</code>。
+      </p>
+      <demo-button-inline></demo-button-inline>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/inline.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

@@ -1,6 +1,6 @@
 # mc-tag
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./tag.html` · **已实现**
 
 分类 / 状态标签。和 `mc-badge` 的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），

@@ -1,6 +1,6 @@
 # mc-dropdown
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./dropdown.html` · M3 · **已实现**
 
 下拉菜单：触发元素放在 `trigger` 插槽、面板内容放在默认插槽（通常是复用另一个单元的

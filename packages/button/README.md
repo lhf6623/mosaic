@@ -7,7 +7,8 @@
 
 **状态**：已实现 · M1 · 标签 `mc-button` · 目录 `packages/button/`
 
-按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合。
+按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；
+另有两档其它维度：尺寸三档（`size`）与**行内形态**（`inline`，盒子交给文字的按钮）。
 
 ## 单元里有什么
 
@@ -31,6 +32,8 @@ mc-button — Mosaic 参考组件实现
 
 1. 视觉全部定义在 :host 上 —— 外部 style="…" 优先级最高，能直接覆盖；
 2. color（语义色）× variant（外观样式）是两个正交维度，不是一维枚举；
+   而 `block`（布局）与 `inline`（形态）各自独立 —— `variant` 里塞不进「文字按钮」，
+   因为它要动的是盒子（那是 `size` 的地盘），见 packages/README.md §1.2；
 3. 交互语义交给内部透明的原生 <button>，宿主只管"长什么样"。
    hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
 

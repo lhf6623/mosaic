@@ -1,6 +1,6 @@
 # mc-spinner
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./spinner.html` · M1 · **已实现**
 
 加载中指示器：一个开口的环，跟着周围的文字色与字号走。

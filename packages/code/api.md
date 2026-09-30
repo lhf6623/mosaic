@@ -1,6 +1,6 @@
 # mc-code
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `packages/code/code.html` · **已实现**
 
 代码展示。代码文本可以贴在标签里，也可以用 `code` 属性 / `:code` 绑定传进来。

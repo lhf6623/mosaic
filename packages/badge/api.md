@@ -1,6 +1,6 @@
 # mc-badge
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./badge.html` · M1 · **已实现**
 
 徽标：挂在别的元素旁边的一块语义色小色片，可只留一个圆点，也可按上限截断数字。

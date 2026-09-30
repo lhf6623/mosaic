@@ -107,6 +107,40 @@
       font-size: var(--mc-text-base, var(--mc-def-text-base));
     }
 
+    /* ---------- 形态：行内文字按钮（inline） ----------
+     * 「形态」是与外观 / 尺寸正交的另一个面（见 packages/README.md §1.2）：盒子交给文字。
+     *   · size 在这一形态下**只选文字档位**（font-size + 配对行高），不碰 --mc-control-h-*
+     *     那一族控制高度；三档盒子一样高，只有字变大。
+     *   · 命中区 = 行高 + 上下透明内边距，凑到 24px（WCAG 2.5.8 最小目标），三档都正好：
+     *       sm 16+4×2 · md 20+2×2 · lg 24+0×2。ghost 下这层内边距看不见；
+     *       filled / outline 会把底色描边一起撑到 24 高 —— inline 是为 ghost 设计的组合，
+     *       另两种按「贴字的胶囊」理解即可。
+     *   · 悬停不用 .mc-layer：8% 底色贴着文字看像「文字被高亮」，改成下划线（链接那套反馈）。
+     * ⚠️ 这一段必须排在上面三档 size 规则**之后**：:host([inline]) 与 :host([size='sm']) 同为
+     *     0-2-0，只能靠源码顺序分胜负（同 P14 那类「写法一换就静默失效」的坑）。 */
+    :host([inline]) {
+      height: auto;
+      padding-inline: 0;
+      padding-block: 2px;
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      vertical-align: baseline;
+    }
+    :host([inline][size='sm']) {
+      padding-block: 4px;
+      line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
+    }
+    :host([inline][size='lg']) {
+      padding-block: 0;
+      line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
+    }
+    :host([inline]) .mc-layer {
+      display: none;
+    }
+    :host([inline]:hover) {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+
     /* ---------- 布局模式 ---------- */
     :host([block]) {
       display: flex;
@@ -216,6 +250,8 @@
         color: 'primary',
         variant: 'filled',
         size: 'md',
+        // 形态：行内文字按钮 —— 盒子交给文字，size 只选文字档位（样式见 :host([inline])）
+        inline: null,
         type: 'button',
         // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-button disabled> 失效
         disabled: null,

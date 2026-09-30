@@ -1,6 +1,6 @@
 # message()
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./message.js`（入口）+ `./message.html`（视图） · **已实现**
 
 浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。**没有标签入口** —— 它由 JS 调用，

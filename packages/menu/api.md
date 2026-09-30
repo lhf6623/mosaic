@@ -1,6 +1,6 @@
 # mc-menu / mc-menu-item
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./menu.html` + `./menu-item.html` · **已实现**
 
 垂直菜单，**容器 + 菜单项**两个标签，够撑起文档站那种侧栏导航。

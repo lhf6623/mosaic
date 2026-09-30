@@ -1,6 +1,6 @@
 # mc-icon
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./icon.html` · **已实现**
 
 图标。三种来源、一个入口，优先级从高到低：默认插槽 > `src` > `name`。

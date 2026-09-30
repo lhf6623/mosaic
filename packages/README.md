@@ -247,7 +247,7 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 
 标签名 = `mc-` + 目录名。同一个族的组件共用一个目录（目录名 = 主标签去掉 `mc-` 前缀）。
 
-### 1.2 属性：四个正交维度
+### 1.2 属性：五个正交维度
 
 **不要把这些混成一维枚举。** 混了就没法组合（`variant="danger"` 之后
 就没法再表达"我要描边样式的危险按钮"），而且 CSS 会退化成组合爆炸。
@@ -257,9 +257,12 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 | **语义色**   | `color`                                                      | `primary` / `info` / `success` / `warning` / `danger` / `neutral` | `primary` |
 | **外观样式** | `variant`                                                    | 约定：`filled` / `outline` / `ghost`（部分组件另有 `subtle`）     | `filled`  |
 | **尺寸**     | `size`                                                       | `sm` / `md` / `lg`                                                | `md`      |
+| **形态**     | `inline`                                                     | 缺省 = 控件盒 / `inline` = 行内文字（盒子交给文字）               | 缺省      |
 | **状态**     | `disabled` / `loading` / `readonly` / `invalid` / `selected` | 布尔，存在即真                                                    | 无        |
 
 组件**只声明它真正支持的维度**（`mc-card` 没有 `color`，`mc-spinner` 没有 `variant`）。
+**形态**目前只有 `mc-button` 声明（`inline`）：它跟 `variant` 分开，是因为文字按钮要动的是**盒子**
+（那是 `size` 的地盘），塞进 `variant` 会让 `size` 在那一档只剩半个轴。
 不支持的属性不要写进 `attrs` —— 写了就是承诺。
 
 `variant` 的取值是**约定**而不是全局枚举：每个组件只声明自己实际支持的取值，

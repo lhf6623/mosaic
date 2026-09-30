@@ -1,6 +1,6 @@
 # mc-tooltip
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./tooltip.html` · M3 · **已实现**
 
 提示气泡：鼠标悬停或键盘聚焦时，在触发元素旁弹出一句纯文本 —— 非模态、不抢焦点、不拦交互。

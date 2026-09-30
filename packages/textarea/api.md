@@ -1,6 +1,6 @@
 # mc-textarea
 
-> 共用约定（四个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
+> 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./textarea.html` · M2 · **已实现**
 
 多行输入框。和 [`mc-input`](../input/api.md) 的分工：高度由 `rows` 与内容决定（另有自动增高与字数

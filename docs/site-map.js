@@ -57,7 +57,8 @@ export const SITE = [
             path: 'packages/button/page.html',
             tagName: 'mc-button',
             stage: 'M1',
-            summary: '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合。',
+            summary:
+              '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；另有行内文字形态（inline）。',
           },
           {
             order: 20,
