@@ -40,12 +40,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "tests/site/01-load-shell.mjs"
     ],
     "tests/site/06-boot-palette.mjs": [
@@ -81,12 +80,11 @@
       "packages/collapse/collapse.html",
       "packages/color/page.html",
       "packages/color/tokens.css",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/tag/tag.html",
       "tests/site/06-boot-palette.mjs"
     ],
@@ -130,12 +128,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "tests/site/07-inject-server.mjs"
     ],
     "tests/site/10-nav-data.mjs": [
@@ -200,12 +197,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/code/test/code.test.mjs": [
       "app-config.js",
@@ -254,12 +250,11 @@
       "packages/code/test/code.test.mjs",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "tests/lib/harness.mjs"
     ],
     "packages/icon/test/icon.test.mjs": [
@@ -289,6 +284,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/api.md",
       "packages/icon/demos/basic.html",
       "packages/icon/demos/builtins.html",
@@ -309,9 +305,7 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/message/message.html",
-      "packages/message/message.js",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/message/message.js"
     ],
     "packages/card/test/card.test.mjs": [
       "app-config.js",
@@ -351,12 +345,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/tag/test/tag.test.mjs": [
       "app-config.js",
@@ -385,12 +378,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/tag/api.md",
       "packages/tag/demos/checkable.html",
       "packages/tag/demos/closable.html",
@@ -442,12 +434,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/spinner/test/spinner.test.mjs": [
       "app-config.js",
@@ -476,12 +467,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/spinner/api.md",
       "packages/spinner/demos/basic.html",
       "packages/spinner/demos/colors.html",
@@ -518,6 +508,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/api.md",
@@ -531,9 +522,7 @@
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/menu/page.html",
-      "packages/menu/test/menu.test.mjs",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/test/menu.test.mjs"
     ],
     "packages/breadcrumb/test/breadcrumb.test.mjs": [
       "app-config.js",
@@ -585,12 +574,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/input/test/input.test.mjs": [
       "app-config.js",
@@ -620,6 +608,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/input/api.md",
@@ -636,9 +625,7 @@
       "packages/input/page.html",
       "packages/input/test/input.test.mjs",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/textarea/test/textarea.test.mjs": [
       "app-config.js",
@@ -667,12 +654,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/textarea/api.md",
       "packages/textarea/demos/auto-resize.html",
       "packages/textarea/demos/basic.html",
@@ -722,12 +708,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/radio/test/radio.test.mjs": [
       "app-config.js",
@@ -756,6 +741,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
@@ -770,9 +756,7 @@
       "packages/radio/page.html",
       "packages/radio/radio-group.html",
       "packages/radio/radio.html",
-      "packages/radio/test/radio.test.mjs",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/radio/test/radio.test.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [
       "app-config.js",
@@ -785,7 +769,6 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -799,16 +782,14 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
-      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/switch/api.md",
       "packages/switch/demos/basic.html",
       "packages/switch/demos/disabled.html",
@@ -845,6 +826,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
@@ -901,12 +883,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/progress/test/progress.test.mjs": [
       "app-config.js",
@@ -935,6 +916,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
@@ -949,9 +931,7 @@
       "packages/progress/demos/sizes.html",
       "packages/progress/page.html",
       "packages/progress/progress.html",
-      "packages/progress/test/progress.test.mjs",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/progress/test/progress.test.mjs"
     ],
     "packages/message/test/message.test.mjs": [
       "app-config.js",
@@ -982,6 +962,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
@@ -994,9 +975,7 @@
       "packages/message/message.html",
       "packages/message/message.js",
       "packages/message/page.html",
-      "packages/message/test/message.test.mjs",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/message/test/message.test.mjs"
     ],
     "packages/popover/test/popover.test.mjs": [
       "app-config.js",
@@ -1027,6 +1006,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
@@ -1042,9 +1022,7 @@
       "packages/popover/demos/trigger.html",
       "packages/popover/page.html",
       "packages/popover/popover.html",
-      "packages/popover/test/popover.test.mjs",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/popover/test/popover.test.mjs"
     ],
     "packages/dialog/test/dialog.test.mjs": [
       "app-config.js",
@@ -1084,12 +1062,11 @@
       "packages/dialog/dialog.html",
       "packages/dialog/page.html",
       "packages/dialog/test/dialog.test.mjs",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/dropdown/test/dropdown.test.mjs": [
       "app-config.js",
@@ -1131,9 +1108,7 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/tooltip/test/tooltip.test.mjs": [
       "app-config.js",
@@ -1163,12 +1138,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/tooltip/api.md",
       "packages/tooltip/demos/basic.html",
       "packages/tooltip/demos/delay.html",
@@ -1218,12 +1192,11 @@
       "packages/collapse/demos/style-override.html",
       "packages/collapse/page.html",
       "packages/collapse/test/collapse.test.mjs",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ],
     "packages/tabs/test/tabs.test.mjs": [
       "app-config.js",
@@ -1252,12 +1225,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/tabs/api.md",
       "packages/tabs/demos/basic.html",
       "packages/tabs/demos/disabled.html",
@@ -1295,12 +1267,11 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html",
       "packages/table/api.md",
       "packages/table/demos/basic.html",
       "packages/table/demos/empty.html",
@@ -1340,6 +1311,7 @@
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
       "packages/grid/api.md",
       "packages/grid/demos/basic.html",
       "packages/grid/demos/cols.html",
@@ -1353,9 +1325,7 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/select/option.html",
-      "packages/select/select.html"
+      "packages/menu/menu.html"
     ]
   },
   "byFile": {
@@ -1677,7 +1647,6 @@
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/switch/test/switch.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
@@ -2224,7 +2193,6 @@
       "packages/input/test/input.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/switch/test/switch.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
@@ -2572,7 +2540,35 @@
       "packages/dropdown/test/dropdown.test.mjs"
     ],
     "packages/dropdown/dropdown.html": [
-      "packages/dropdown/test/dropdown.test.mjs"
+      "packages/alert/test/alert.test.mjs",
+      "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
+      "packages/collapse/test/collapse.test.mjs",
+      "packages/dialog/test/dialog.test.mjs",
+      "packages/dropdown/test/dropdown.test.mjs",
+      "packages/grid/test/grid.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/progress/test/progress.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/spinner/test/spinner.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/table/test/table.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs",
+      "packages/textarea/test/textarea.test.mjs",
+      "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs"
     ],
     "packages/dropdown/page.html": [
       "packages/dropdown/test/dropdown.test.mjs"
@@ -3004,69 +3000,13 @@
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/option.html": [
-      "packages/alert/test/alert.test.mjs",
-      "packages/badge/test/badge.test.mjs",
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
-      "packages/button/test/button.test.mjs",
-      "packages/card/test/card.test.mjs",
-      "packages/checkbox/test/checkbox.test.mjs",
-      "packages/code/test/code.test.mjs",
-      "packages/collapse/test/collapse.test.mjs",
-      "packages/dialog/test/dialog.test.mjs",
-      "packages/dropdown/test/dropdown.test.mjs",
-      "packages/grid/test/grid.test.mjs",
-      "packages/icon/test/icon.test.mjs",
-      "packages/input/test/input.test.mjs",
-      "packages/menu/test/menu.test.mjs",
-      "packages/message/test/message.test.mjs",
-      "packages/popover/test/popover.test.mjs",
-      "packages/progress/test/progress.test.mjs",
-      "packages/radio/test/radio.test.mjs",
-      "packages/select/test/select.test.mjs",
-      "packages/spinner/test/spinner.test.mjs",
-      "packages/switch/test/switch.test.mjs",
-      "packages/table/test/table.test.mjs",
-      "packages/tabs/test/tabs.test.mjs",
-      "packages/tag/test/tag.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/select/test/select.test.mjs"
     ],
     "packages/select/page.html": [
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/select.html": [
-      "packages/alert/test/alert.test.mjs",
-      "packages/badge/test/badge.test.mjs",
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
-      "packages/button/test/button.test.mjs",
-      "packages/card/test/card.test.mjs",
-      "packages/checkbox/test/checkbox.test.mjs",
-      "packages/code/test/code.test.mjs",
-      "packages/collapse/test/collapse.test.mjs",
-      "packages/dialog/test/dialog.test.mjs",
-      "packages/dropdown/test/dropdown.test.mjs",
-      "packages/grid/test/grid.test.mjs",
-      "packages/icon/test/icon.test.mjs",
-      "packages/input/test/input.test.mjs",
-      "packages/menu/test/menu.test.mjs",
-      "packages/message/test/message.test.mjs",
-      "packages/popover/test/popover.test.mjs",
-      "packages/progress/test/progress.test.mjs",
-      "packages/radio/test/radio.test.mjs",
-      "packages/select/test/select.test.mjs",
-      "packages/spinner/test/spinner.test.mjs",
-      "packages/switch/test/switch.test.mjs",
-      "packages/table/test/table.test.mjs",
-      "packages/tabs/test/tabs.test.mjs",
-      "packages/tag/test/tag.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/select/test/select.test.mjs"
     ],
     "packages/select/test/select.test.mjs": [
       "packages/select/test/select.test.mjs"

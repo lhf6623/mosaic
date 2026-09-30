@@ -31,6 +31,15 @@
       return 'auto';
     };
 
+    /** 三态的中文名：下拉触发框显示当前那一项 */
+    const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
+
+    /** data 的初始主题：theme（值）+ themeLabel（触发框文案），只读一次 localStorage */
+    const initialTheme = () => {
+      const theme = storedTheme();
+      return { theme, themeLabel: THEME_LABELS[theme] };
+    };
+
     /** 行高兜底：deltaMode 为「行」时的像素换算（同 packages/code 的滚轮接力） */
     const WHEEL_LINE = 16;
 
@@ -41,7 +50,7 @@
     }
 
     export default () => ({
-      data: { theme: storedTheme(), links: [] },
+      data: { ...initialTheme(), menuOpen: false, links: [] },
 
       ready() {
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
@@ -118,15 +127,16 @@
           }
         },
 
-        /** mc-select 的 change：载荷里就是选中项的 value（auto / light / dark） */
-        onThemeChange(event) {
-          const next = String(event?.data?.value ?? 'auto');
-          this.applyTheme(THEMES.includes(next) ? next : 'auto');
+        /** 点菜单项：落主题 → 存起来 → 收起菜单（菜单不像 select 会自己收，得手动关） */
+        pickTheme(mode) {
+          this.applyTheme(THEMES.includes(mode) ? mode : 'auto');
           try {
             localStorage.setItem(THEME_KEY, this.theme);
           } catch {
             /* 写不了就算了 */
           }
+          const menu = this.ele.shadowRoot?.querySelector('mc-dropdown');
+          if (menu) menu.open = false;
         },
 
         /** 落主题：auto 就是不写 data-theme（跟随系统，交给 theme-boot.js 与媒体查询） */
@@ -135,6 +145,7 @@
           else document.documentElement.dataset.theme = mode;
 
           this.theme = mode;
+          this.themeLabel = THEME_LABELS[mode];
         },
       },
     });
@@ -236,33 +247,37 @@
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 主题切换：外壳里唯一的 mc-select。宽度**写死** —— 三个选项字数不同
-       （自动 / 亮色 / 暗色），不固定的话切一次顶栏就抖一下。
-       外形对齐它替换掉的那颗胶囊按钮：描边 + 全圆角 + 小字号。色槽直接用组件自己的
-       --mc-select-control-* 令牌（自定义属性写在宿主上，压得住组件 :host 里的默认值）。 */
+    /* 主题切换：mc-dropdown 的触发元素是**我们自己写的按钮**（组件只管开合与面板），
+       样式因此落在它身上 —— 描边 + 全圆角 + 小字号，与 GitHub 那颗图标按钮同高。
+       三个选项都是两个字，宽度天然一致，不用像下拉框那样写死宽度。 */
     .doc-theme {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-1);
       flex: none;
-      width: 6.5rem;
-      --mc-select-control-radius: var(--mc-radius-full);
-      --mc-select-control-border: var(--mc-color-border-strong);
-      --mc-select-control-pad-x: var(--mc-space-3);
-    }
-
-    .doc-theme::part(base) {
+      height: var(--mc-control-h-sm);
+      padding-inline: var(--mc-space-3);
+      border: 1px solid rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-radius-full);
+      background-color: transparent;
       color: rgb(var(--mc-color-fg-muted));
       font-size: var(--mc-text-xs);
+      cursor: pointer;
     }
 
-    /* 悬停：组件在触发框上没有 hover 样式（只有 focus 与面板那套），补回原来那颗按钮的 */
-    .doc-theme::part(base):hover {
+    .doc-theme:hover {
       background-color: rgb(var(--mc-color-surface-sunken));
       color: rgb(var(--mc-color-fg));
     }
 
-    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅）。
-       ⚠️ 主题切换的焦点环在 mc-select 内部那个 button 上，组件自带了同款（--mc-color-ring），
-       所以这里只管 GitHub 那颗。 */
-    .doc-github:focus-visible {
+    /* 触发框右端那支小箭头：图标来自 mosaic.css 的 mc-icon-* 那套（mask + currentColor） */
+    .doc-theme-caret {
+      opacity: 0.7;
+    }
+
+    /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅） */
+    .doc-github:focus-visible,
+    .doc-theme:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring));
       outline-offset: 2px;
     }
@@ -308,9 +323,8 @@
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
-  <!-- 顶栏右侧的主题切换：项目自己的下拉（mc-select + mc-option） -->
-  <l-m src="../packages/select/select.html"></l-m>
-  <l-m src="../packages/select/option.html"></l-m>
+  <!-- 顶栏右侧的主题切换：项目自己的下拉**菜单**（mc-dropdown；菜单项用已注册的 mc-menu-item） -->
+  <l-m src="../packages/dropdown/dropdown.html"></l-m>
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
        渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
@@ -350,20 +364,55 @@
           </svg>
         </a>
 
-        <!-- 主题切换：三态下拉，用项目自己的 mc-select（顶栏里唯一的表单控件）。
-             aria-label 写在**宿主**上 —— 组件会转发给 shadow 里那个触发按钮，
-             否则读屏念不出这个控件叫什么。初始值走 default-value（见 storedTheme）。 -->
-        <mc-select
-          class="doc-theme"
-          size="sm"
-          aria-label="切换深浅色"
-          attr:default-value="theme"
-          on:change="onThemeChange"
+        <!-- 主题切换：项目自己的下拉**菜单**。触发元素是我们写的按钮，无障碍名直接写在它
+             身上（不用跨 shadow）；当前主题挂在菜单项的 aria-current 上 —— mc-menu-item 会
+             把它镜像成 [data-current] 换底色加粗（复用「当前页」那套状态机）。
+             placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
+        <mc-dropdown
+          trigger="click"
+          placement="bottom-end"
+          on:open="menuOpen = true"
+          on:close="menuOpen = false"
         >
-          <mc-option value="auto">自动</mc-option>
-          <mc-option value="light">亮色</mc-option>
-          <mc-option value="dark">暗色</mc-option>
-        </mc-select>
+          <button
+            slot="trigger"
+            class="doc-theme"
+            type="button"
+            aria-label="切换深浅色"
+            aria-haspopup="menu"
+            attr:aria-expanded="menuOpen ? 'true' : 'false'"
+          >
+            <span>{{themeLabel}}</span>
+            <span class="doc-theme-caret mc-icon-chevron-down" aria-hidden="true"></span>
+          </button>
+          <mc-menu-item
+            ><button
+              type="button"
+              attr:aria-current="theme === 'auto' ? 'true' : null"
+              on:click="pickTheme('auto')"
+            >
+              自动
+            </button></mc-menu-item
+          >
+          <mc-menu-item
+            ><button
+              type="button"
+              attr:aria-current="theme === 'light' ? 'true' : null"
+              on:click="pickTheme('light')"
+            >
+              亮色
+            </button></mc-menu-item
+          >
+          <mc-menu-item
+            ><button
+              type="button"
+              attr:aria-current="theme === 'dark' ? 'true' : null"
+              on:click="pickTheme('dark')"
+            >
+              暗色
+            </button></mc-menu-item
+          >
+        </mc-dropdown>
       </div>
     </header>
 
