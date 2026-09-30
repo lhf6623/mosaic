@@ -698,6 +698,4 @@ export default async function run({ page, visit, check }) {
       tag.runtime.cursorAfterAttr === 'pointer',
     JSON.stringify(tag.runtime),
   );
-
-  check('mc-tag 文档页没有 404 / 运行时报错', tag.failed.length === 0, tag.failed.join(' | ') || '无');
 }

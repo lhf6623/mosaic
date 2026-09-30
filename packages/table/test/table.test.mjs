@@ -294,6 +294,4 @@ export default async function run({ page, visit, check }) {
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => document.getElementById('table-probe')?.remove());
   page.off('response', onResponse);
-  page.off('pageerror', onError);
-  check('mc-table 文档页没有 404 / 运行时报错', failed.length === 0, failed.join(' | ') || '无');
-}
+  page.off('pageerror', onError);}

@@ -453,10 +453,4 @@ export default async function run({ page, visit, check }) {
       card.dynamic.spacedFooter === true,
     JSON.stringify(card.dynamic),
   );
-
-  check(
-    'mc-card 文档页没有 404 / 运行时报错',
-    card.failed.length === 0,
-    card.failed.join(' | ') || '无',
-  );
 }

@@ -406,6 +406,4 @@ export default async function run({ page, visit, check }) {
   );
 
   page.off('response', onResponse);
-  page.off('pageerror', onError);
-  check('dialog 相关页面没有 404 / 运行时报错', failed.length === 0, failed.join(' | ') || '无');
-}
+  page.off('pageerror', onError);}

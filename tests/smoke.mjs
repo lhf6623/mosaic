@@ -255,6 +255,13 @@ const worker = async () => {
       }
     }
 
+    /* 每个套件都统一断言「这一页没有 404 / console 报错」——
+       这条以前在 17 处组件套件里各写一遍（另外 9 个干脆没写），现在由跑器负责：
+       只在**出问题**时补一条失败，全绿时不占断言数（汇总仍在轮末打印）。 */
+    if (tally.problems.length) {
+      session.check(`${suite.label}：页面无 404 / 报错`, false, tally.problems.join('\n'));
+    }
+
     tally.ms = Date.now() - t0;
     tally.total = tally.checks.length;
     tally.failed = tally.checks.filter((r) => !r.ok).length;

@@ -442,10 +442,4 @@ check(
   menu.dynamic.ownRole === 'presentation',
   `own=${menu.dynamic.ownRole} · 使用者写了 role 时组件不补 listitem`,
 );
-
-check(
-  'mc-menu 文档页没有 404 / 运行时报错',
-  menu.failed.length === 0,
-  menu.failed.join(' | ') || '无',
-);
 }

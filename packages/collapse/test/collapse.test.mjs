@@ -362,10 +362,4 @@ check(
     JSON.stringify(collapse.nested.inner) === JSON.stringify([false, true]),
   JSON.stringify(collapse.nested),
 );
-
-check(
-  'mc-collapse 文档页没有 404 / 运行时报错',
-  collapse.failed.length === 0,
-  collapse.failed.join(' | ') || '无',
-);
 }

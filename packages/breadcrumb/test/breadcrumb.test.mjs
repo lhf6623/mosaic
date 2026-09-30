@@ -437,10 +437,4 @@ check(
     crumb.afterNav.nav?.includes('Button'),
   JSON.stringify(crumb.afterNav),
 );
-
-check(
-  'mc-breadcrumb 文档页没有 404 / 运行时报错',
-  crumb.failed.length === 0,
-  crumb.failed.join(' | ') || '无',
-);
 }

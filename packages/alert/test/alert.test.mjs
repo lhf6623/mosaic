@@ -696,6 +696,4 @@ export default async function run({ page, visit, check }) {
     alert.hexColors.bad.inline === '' && alert.hexColors.bad.bg === alert.hexColors.control.bg,
     JSON.stringify({ bad: alert.hexColors.bad, control: alert.hexColors.control }),
   );
-
-  check('mc-alert 文档页没有 404 / 运行时报错', alert.failed.length === 0, alert.failed.join(' | ') || '无');
 }

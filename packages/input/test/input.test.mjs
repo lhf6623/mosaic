@@ -299,6 +299,4 @@ export default async function run({ page, visit, check }) {
   await page.evaluate(() => document.getElementById('input-probe')?.remove());
 
   page.off('response', onResponse);
-  page.off('pageerror', onPageError);
-  check('mc-input 文档页没有 404 / 运行时报错', failed.length === 0, failed.join(' | ') || '无');
-}
+  page.off('pageerror', onPageError);}
