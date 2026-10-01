@@ -1,24 +1,11 @@
 /**
- * adopt-styles.js — **文档站自己**的样式注入器（不是对外发布面的一部分）
- *
- * 为什么只留在站点里：库里的组件已经在自己的模板里 `<link>` 了
- * `packages/boot/component-base.css`（shadow 作用域、不外溢到宿主页面），不需要谁来替它们 adopt。
- * 但文档站自己的那些 shadow 组件（doc-nav / doc-toc / doc-spec …）吃的是**页面级**
- * `mosaic.css` 里的工具类与令牌，而文档级 `<link>` 的规则进不去 shadow root —— 站点因此需要一个
- * attachShadow 补丁把这两份表补进去。
- *
- * ⚠️ 它是**站点的资产**：住在 docs/ 下，不随组件一起发给使用者。
- * 打补丁的时机是关键：必须在任何 shadow root 建起来之前装好（本模块顶层即执行），
- * 所以 index.html 里要把它排在 ofa.js **之后**。
+ * adopt-styles.js —— 文档站自己的样式注入器（站点资产，不随组件发布）：库里的组件自带 component-base.css，但文档站自己的 shadow 组件吃的是页面级 mosaic.css，而文档级 <link> 进不去 shadow root。
+ * ⚠️ 补丁必须在任何 shadow root 建起来之前装好（本模块顶层即执行），所以 index.html 里要排在 ofa.js 之后。
  */
 
 const HERE = new URL('.', import.meta.url);
 
-/**
- * 两份表的顺序有讲究：
- *   mosaic.css        令牌 + 工具类；它顶部的 @layer 层序声明钉死整个层顺序
- *   shadow-base.css   元素级 reset + 减弱动效；绝不能 <link> 到宿主页面
- */
+/** 顺序有讲究：mosaic.css 顶部的 @layer 层序声明钉死整个层顺序；shadow-base.css 绝不能 <link> 到宿主页面。 */
 const SHEETS = ['../packages/boot/mosaic.css', '../packages/boot/shadow-base.css'].map(
   (f) => new URL(f, HERE).href,
 );

@@ -1,10 +1,6 @@
 /**
- * Mosaic 的「文档 ↔ 代码」约定 —— 就是把仓库的规矩写成数据。
- *
- * 引擎在 `tools/doc-drift/`（从 skill 拷进来的通用副本，零仓库知识）。
- * **改这里的约定（文件放哪、表头叫什么、什么算豁免、哪些数字要对账）只动这份配置**；
- * 除非出现全新的代码写法，才需要动引擎（见 SKILL.md）。
- *
+ * Mosaic 的「文档 ↔ 代码」约定 —— 把仓库的规矩写成数据。引擎在 `tools/doc-drift/`（skill 拷来的通用副本）。
+ * **改这里的约定只动这份配置**；除非出现全新的代码写法，才需要动引擎（见 SKILL.md）。
  * 跑：`pnpm check:docs`（= `node tools/doc-drift/drift.mjs`）。
  */
 
@@ -16,22 +12,18 @@ import { mdTables } from './doc-drift/lib/parse.mjs';
 /** 组件清单的唯一真相源在 site-map：里程碑也从那里取，不另抄一份 */
 const stageOf = (slug) => READY.find((node) => slugOf(node) === slug)?.stage ?? null;
 
-/* ------------------------------------------------------------------ *
- * 代码侧：怎么从组件源码抽「接口事实」
- * ------------------------------------------------------------------ */
+/* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
 
 const code = {
   components: {
     roots: ['packages/*'],
-    // 组件本体：同目录下所有 .html（page.html 由引擎排除）——
-    // 一个目录可以有多个标签：collapse/ 里是 collapse.html + collapse-item.html
+    // 组件本体：同目录下所有 .html（page.html 由引擎排除）；一个目录可以有多个标签
     entry: ['*.html'],
-    // 命令式组件（没有标签属性，入口是函数）：packages/message/
+    // 命令式组件（没有标签属性，入口是函数）
     module: ['*.js'],
     imperative: ['message'],
     stageOf,
   },
-  // 标签名从组件模板里认
   tagPattern: "tag:\\s*'([\\w-]+)'",
   // 组件级令牌的命名约定与「内部令牌」标记
   tokenPrefix: '--mc-{slug}-',
@@ -46,11 +38,9 @@ const code = {
   },
 };
 
-/* ------------------------------------------------------------------ *
- * 文档侧：每个面（surface）对一次账
- * ------------------------------------------------------------------ */
+/* ---------- 文档侧：每个面（surface）对一次账 ---------- */
 
-/** 开发文档：组件 API 规范（packages/<slug>/api.md），每组件一份 —— 单元内聚，跟着组件走 */
+/** 开发文档：逐组件 API 规范（packages/<slug>/api.md）—— 单元内聚，跟着组件走 */
 const apiSpec = {
   id: 'api-spec',
   title: '开发文档 · 逐组件 API 规范（packages/*/api.md ↔ 组件代码）',
@@ -59,11 +49,10 @@ const apiSpec = {
   missing: '已实现的组件在 API 规范里必须逐组件一份',
   tables: [
     { header: ['名称', '值', '默认'], facet: 'attrs', name: 0, default: 2 },
-    // ⚠️ 令牌表**不在这里** —— api.md 是页面参考区的渲染源，而令牌不进页面；
-    // 令牌搬进了单元 README，由下面的 `unit-tokens` 面单独对账
-    // 事件与方法同一张表：带调用语法的行（`show()`）按方法对账，其余按事件（`callRows`，引擎 1.1.0）
+    // ⚠️ 令牌表**不在这里** —— api.md 是页面参考区的渲染源，令牌不进页面，搬进了单元 README
+    // （由下面的 `unit-tokens` 面对账）；事件与方法同一张表：带调用语法的行按方法对账（`callRows`）
     { header: ['名称', '类型', '说明'], facet: 'events', name: 0, callRows: true },
-    // 插槽与 part 各自一节、名字写裸的；归哪一类按代码事实判（`插槽与 part` 那个合并节名 2026-10 去掉）
+    // 插槽与 part 各自一节、名字写裸的；归哪一类按代码事实判
     { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'codeFacts' },
   ],
   // 命令式组件没有标签属性：`属性` 表对账模块的 DEFAULTS，`事件` 表对账模块里的可调用名
@@ -84,13 +73,8 @@ const apiSpec = {
   },
 };
 
-/**
- * 开发文档：单元 README 里的令牌表（packages/<slug>/README.md ↔ 组件代码）
- *
- * 令牌不进文档页（将来由主题编辑器展示），所以不住 api.md（那是页面渲染源）——
- * 但**对账不能跟着停**：代码里加了令牌而文档没写，以前靠 api-spec 面的 tokens facet 抓，
- * 现在那一列没了，这一面接过来。少一面守卫 = 静默失效。
- */
+/** 开发文档：单元 README 里的令牌表（packages/<slug>/README.md ↔ 组件代码）
+ * 令牌不进文档页，所以不住 api.md；但对账不能跟着停 —— 少一面守卫 = 静默失效。 */
 const unitTokens = {
   id: 'unit-tokens',
   title: '开发文档 · 组件令牌（packages/*/README.md ↔ 组件代码）',
@@ -114,9 +98,7 @@ const pageSkeleton = {
     requireH1Code: true,
     parentExport: 'doc-layout.html',
     firstH2: '例子',
-    /* 下表是参考区顺序，列的是当前用到的**全部**参考节名；顺序断言由引擎 1.0.1 起真正生效
-       （1.0.0 里它是恒成立的死断言）。
-       加新节名（比如将来由 md 渲染出来的「令牌」）时，按位置把名字补进这张表。 */
+    /* 下表是参考区顺序，列的是当前用到的**全部**参考节名；加新节名时按位置把名字补进这张表。 */
     referenceOrder: ['属性', '事件', '插槽', 'part'],
   },
 };
@@ -134,9 +116,7 @@ const pageDemos = {
   },
 };
 
-/* ------------------------------------------------------------------ *
- * 仓库特有的账（声明式规则）
- * ------------------------------------------------------------------ */
+/* ---------- 仓库特有的账（声明式规则） ---------- */
 
 const rules = [
   {
@@ -223,13 +203,10 @@ const rules = [
         actual: () => componentSuites().length,
       },
       {
-        /* 「370 个工具类」这种数字以前没人守：改了 utilities.css 或换了图标它就悄悄过期。
-           口径写死成「mosaic.css 里 **mosaic.utilities 层**以 . 开头的选择器行数」——
-           与文档用词「N 条工具类规则」一一对应。⚠️ 必须限定在这一层：不限定的话
-           50 条图标规则（.mc-icon-*）会被一起算进来。 */
+        /* 口径 = mosaic.css 里 **mosaic.utilities 层**以 . 开头的选择器行数，与文档用词
+           「N 条工具类规则」一一对应。⚠️ 必须限定在这一层：不限定的话 50 条图标规则会被一起算进来。 */
         label: '条工具类规则',
-        // 只认「当前 / 现为 / 管线（N 条…」这种**报数**的写法；
-        // 别处「实测白产出过 4 条工具类规则」讲的是另一件事，别误伤
+        // 只认「当前 / 现为 / 管线（N 条…」这种**报数**的写法；别处讲的是另一件事，别误伤
         pattern: '(?<=当前 |现为 |管线（)(\\d+)\\s*条(?:精选)?工具类规则',
         files: ['README.md', 'docs/**/*.html'],
         actual: ({ io }) => {
@@ -247,10 +224,7 @@ const rules = [
     ],
   },
   {
-    /* 参考区改由 md 渲染之后，这一面（页面手写表格 ↔ 代码）就没对象了 ——
-       接口事实改由上面的 `api-spec` 面（packages/<slug>/api.md ↔ 代码）守着，
-       「每页真的挂了 <doc-spec>、src 指向的 md 真的存在」由 rules 里的 `page-spec-ref` 守着。
-       留一个 custom 面兜住**反向**那条：页面里不许再手抄参考表格（防止回潮）。 */
+    /* 接口事实改由 `api-spec` 面守；留一个 custom 面兜住**反向**那条：页面里不许再手抄参考表格（防回潮）。 */
     type: 'custom',
     id: 'page-no-hand-table',
     title: '组件文档 · 页面不许再手抄参考表格（防回潮）',
@@ -295,11 +269,8 @@ const rules = [
     },
   },
   {
-    /* 参考区搬到 md 之后，「插槽 / part 合成一节还是各自成节」没人守了：引擎里那条
-       `slotPartTitle` 只认 html 面（page.html 早就不放参考表了），等于死代码。约定落回配置：
-       **插槽与 part 各自一节**（2026-10 收起节名：api.md 只认 属性 / 事件 / 插槽 / part 四个），
-       名字写裸的；代码里没有哪一类，就整节省略。
-       另外盯着「名字别串节」—— 裸名字之后，插槽写进 part 节（或反过来）光看表是看不出来的。 */
+    /* 「插槽 / part 各自成节还是合成一节」无人守（引擎那条只认 html 面）。约定落回配置：**各自一节、
+       名字写裸的**，代码里没有哪一类就整节省略；另外盯着「名字别串节」（裸名字之后光看表看不出来）。 */
     type: 'custom',
     id: 'api-slot-part-title',
     title: '组件文档 · API 规范里插槽 / part 的节名与代码事实一致',
@@ -311,8 +282,8 @@ const rules = [
         const hasSlots = c.facts.union.slots.size > 0;
         const hasParts = c.facts.union.parts.size > 0;
         const want = [hasSlots ? '插槽' : null, hasParts ? 'part' : null].filter(Boolean);
-        /* 按 h2 位置切块，别用 `(?=^##|...)` 那种正则 —— 多行模式下 `\s*$` 恒真，
-           切出来的节只有一行，整条守卫会安静地失效（写这条时踩过一次）。 */
+        /* 按 h2 位置切块，别用 `(?=^##|...)` 那种正则 —— 多行模式下 `\s*$` 恒真，切出来的节只有
+           一行，整条守卫会安静地失效（写这条时踩过一次）。 */
         const marks = [...text.matchAll(/^##\s+(.+?)\s*$/gm)];
         const sections = marks.map((mark, index) => ({
           title: mark[1].replace(/`/g, '').trim(),
@@ -360,15 +331,8 @@ const rules = [
     },
   },
   {
-    /* 「例子按 api.md 的属性来、内容按插槽来、内部样式按 part 来」—— 演示和接口不许脱节：
-       组件代码里有的属性 / 事件 / 命名插槽 / part，都至少要有一个演示真的用到它。
-       ⚠️ 插槽也是**接口的一部分**（api.md 的表里承诺了），但这一面过去是盲区：属性与 part 有覆盖线、
-       插槽没有 —— `mc-table` 的 empty / loading 两个槽就一度零演示。
-       ⚠️ 事件曾经也是盲区（2026-10 补上）：7 个组件有事件一次都没在演示里监听 ——
-       checkbox 的 change、textarea 的 input/change、scroll-bar 的 scroll、dialog / dropdown 的
-       open、popover 的 before-open/open；api.md 里承诺了却没人演，读者只能猜怎么用。
-       ⚠️ 这是**最低覆盖线**，不是「一条演示只讲一个属性」：同一维度的变体（三档尺寸、六个颜色）
-       合一条照样算覆盖；反过来，加了属性 / 事件 / 插槽 / part 却没有演示，这里就红。 */
+    /* 「例子按 api.md 的属性来、内容按插槽来、内部样式按 part 来」—— 代码里有的属性 / 事件 / 插槽 /
+       part 都至少要有一个演示用到它（插槽与事件过去是盲区）。同一维度的变体合一条照样算覆盖。 */
     type: 'custom',
     id: 'demo-covers-api',
     title: '组件文档 · 演示覆盖 api.md 的属性、事件、插槽与 part',
@@ -393,9 +357,8 @@ const rules = [
             );
           }
         }
-        /* 有事件的组件必须有一节「事件回调」：光在别的演示里顺带绑一下不算 ——
-           `mc-input` 的 input / change 一度只藏在「可清除」演示里，读者按目录找事件找不到。
-           事件的用法（载荷形状、什么时候发）得有一节自己的地方说。 */
+        /* 有事件的组件必须有一节「事件回调」：光在别的演示里顺带绑一下不算 —— 事件的用法（载荷形状、
+           什么时候发）得有一节自己的地方说（`mc-input` 的 input / change 一度只藏在「可清除」演示里）。 */
         if (c.facts.union.events.size) {
           const page = `packages/${c.slug}/page.html`;
           if (io.exists(page) && !/<h3>\s*事件回调\s*<\/h3>/.test(io.read(page))) {
@@ -433,8 +396,8 @@ const rules = [
   },
   {
     /* 「值」列 = TS 类型：不再写「布尔 / 字符串 / 数字」这类中文类型词，枚举写成字面量联合
-       `'sm' | 'md' | 'lg'`。联合里的竖线在 md 表格里按 GFM 转义（`\|`），引擎 1.0.3 起认得。
-       只查 `名称 | 值 | 默认` 这种表（属性 / 配置），别的表（宿主钩子 / 状态）不管。 */
+       `'sm' | 'md' | 'lg'`（竖线在 md 表格里按 GFM 转义 `\|`，引擎 1.0.3 起认得）。
+       只查 `名称 | 值 | 默认` 这种表（属性 / 配置），别的表不管。 */
     type: 'custom',
     id: 'api-value-ts',
     title: '组件文档 · API 规范「值」列写 TS 类型',
@@ -465,11 +428,8 @@ const rules = [
     },
   },
   {
-    /* 「参考节只有表」过去没有守卫（README 自己写着「解释句靠落笔时自查」）—— 2026-10 清点时
-       17 个文件在参考节里混了解释句 / 代码块（alert 的「没有 size」段、scroll-bar 的三条
-       blockquote、message 的两个 h3 段…），而且页面上真的渲染出来。现在把它变成机械口径：
-       四个参考节里只允许**表**，以及「后面跟着表的 h3」（多标签组件用它标哪张表属于哪个标签）。
-       解释句的正当去向：机制 → 单元 README / 组件文件头；事实 → 并进表里或写进演示导语。 */
+    /* 「参考节只有表」的机械口径：四个参考节里只允许**表**，以及「后面跟着表的 h3」（多标签组件用它
+       标哪张表属于哪个标签）。解释句的正当去向：机制 → 单元 README / 组件文件头；事实 → 并进表里。 */
     type: 'custom',
     id: 'api-tables-only',
     title: '组件文档 · API 规范的参考节里只有表',
@@ -522,11 +482,8 @@ const rules = [
     },
   },
   {
-    /* 多标签组件（`mc-collapse` + `mc-collapse-item` 这种）的 `属性` 节用 h3 分了标签，
-       但 `插槽` / `part` 两节没有 —— 而引擎的 api-spec 是对**并集**：两个标签各有默认插槽时，
-       名字会去重成一个 `（默认）`，于是「哪个标签有什么」在文档里说不清，整条漏掉也没人报
-       （collapse 容器的默认插槽、grid-item 的默认插槽、mc-option 的默认插槽都是这么丢的）。
-       这条要求：每个真有插槽 / part 的标签，都要在对应那节里被点到名。 */
+    /* 多标签组件的 `属性` 节用 h3 分了标签，`插槽` / `part` 两节没有 —— 而引擎的 api-spec 对的是**并集**：
+       两个标签各有默认插槽时名字会去重成一个 `（默认）`，整条漏掉也没人报。这条要求逐个标签点名。 */
     type: 'custom',
     id: 'api-multitag-slots-parts',
     title: '组件文档 · 多标签组件的插槽 / part 节要点名每个标签',
@@ -566,21 +523,14 @@ const rules = [
     },
   },
   {
-    /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。
-       三件事盯住它别越线、别烂：
-         ① 有 api.md 的单元必须有 README.md（反过来也一样）；
-         ② README 里不许出现任何接口节标题 —— 那些归 api.md，写了就是第二份会漂移的副本；
-         ③ 状态（M 几）与 site-map.js 对账 —— 这是 README 里唯一允许重复的「事实」。 */
+    /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。三件事：
+       ① 有 api.md 的单元必须有 README.md（反之亦然）；② README 里不许出现接口节标题；③ 状态与 site-map 对账。 */
     type: 'custom',
     id: 'unit-readme',
     title: '组件单元 · README 入口卡（存在 / 不写接口事实 / 状态对账）',
     run: ({ io, components, problems }) => {
-      /* ② README 里不许出现**接口**节标题 —— 属性 / 事件 / 插槽 / part 归 api.md（2026-10 起
-         只有这四个节名；`方法` / `配置` / `插槽与 part` 也一并拦着，那是旧节名或它们的别名），
-         写了就是第二份会漂移的副本。
-         ⚠️ **令牌是唯一例外**：按海风的定性，令牌不进文档页（将来由主题编辑器展示），
-         也不留在 api.md 里当「渲染源里没人渲染的半截」—— 它归 README，由 `unit-tokens` 面对账。
-         整行精确匹配：`## 为什么不发事件` 这种不算接口节。 */
+      /* ② README 里不许出现**接口**节标题 —— 属性 / 事件 / 插槽 / part 归 api.md（`方法` / `配置` /
+         `插槽与 part` 是旧节名或别名），写了就是第二份会漂移的副本。⚠️ **令牌是唯一例外**，归 README。 */
       const FORBIDDEN = /^(?:属性|方法|事件|配置|插槽(?:\s+与\s+part)?|part)$/;
       for (const c of components) {
         const readme = `packages/${c.slug}/README.md`;
@@ -615,9 +565,8 @@ const rules = [
         }
       }
 
-      /* ④ 组件本体不许再长篇大论：头注释只留一行定位 + 指针，设计说明归 README 的「设计取舍」。
-         这份文件是要经 CDN 发给使用者的产物，注释会一起发出去 —— 顺便也消掉「两处都写」的漂移源。
-         行内注释（`/* …`）不在其列：那些解释的是「这一行为什么这么写」，就该留在代码旁边。 */
+      /* ④ 组件本体不许再长篇大论：头注释只留一行定位 + 指针，设计说明归 README 的「设计取舍」——
+         这份文件是要经 CDN 发给使用者的产物，注释会一起发出去。行内注释不在其列（那些解释「这一行为什么这么写」）。 */
       const MAX_HEAD_COMMENT = 8;
       for (const c of components) {
         for (const file of c.facts.files.filter((f) => f.endsWith('.html'))) {
@@ -645,14 +594,9 @@ const rules = [
     id: 'doc-links',
     title: '文档 · 链接指向的文件都存在（md，跳过代码块与归档）',
     run: ({ io, problems }) => {
-      /* 文档里的 `[…](…)` 链接，目标不存在就是断链 —— 链接坏掉是**静默**的：
-         没人报错，只是读者点了没反应，所以要有守卫。
-
-         一条豁免（缺了就会误报）：**代码块里的不算** —— 组件文档里的示例路径
-         （`packages/badge/badge.html`）是给读者**复制到别处**用的，按当前文件解析必然不存在。
-         http(s) / mailto / 纯锚点本来就不查。 */
-      /* ⚠️ `io.listFiles` 收**单个** glob 字符串，不收数组 —— 传数组会拿到空列表，
-         这条规则就变成「什么都不查还全绿」。逐条 flatMap，和引擎里的写法保持一致。 */
+      /* 文档里的 `[…](…)` 链接，目标不存在就是断链 —— 坏链是**静默**的（读者点了没反应）。
+         一条豁免：**代码块里的不算**（示例路径是给读者复制到别处的）；http(s) / mailto / 锚点不查。 */
+      /* ⚠️ `io.listFiles` 收**单个** glob：传数组会拿到空列表 —— 规则变成「什么都不查还全绿」。 */
       const GLOBS = ['packages/**/*.md', 'docs/**/*.md', 'README.md'];
       const files = GLOBS.flatMap((g) => io.listFiles(g));
 
@@ -670,8 +614,8 @@ const rules = [
             if (/^(?:https?:|mailto:|#)/.test(href)) continue;
             const base = href.split('#')[0];
             if (!base) continue;
-            /* 走 posix，不用 `path.resolve`：后者在 Windows 上给了绝对路径（`D:\mosaic\…`），
-               再拿去 `io.exists` 拼一遍就变成 `D:\mosaic/D:\mosaic\…` —— 明明存在的链接全被报成断链。 */
+            /* 走 posix，不用 `path.resolve`：后者在 Windows 上给绝对路径（`D:\mosaic\…`），再拿去
+               `io.exists` 拼一遍就变成 `D:\mosaic/D:\mosaic\…` —— 存在的链接全被报成断链。 */
             const dir = dirname(file).split('\\').join('/');
             const target = posix.normalize(posix.join(dir, base));
             if (target.startsWith('..') || !io.exists(target)) {
@@ -685,11 +629,8 @@ const rules = [
     },
   },
   {
-    /* `mc-loading-bar` 默认**钉在视口顶部**，而一个组件文档页会把它的演示**一起渲染出来** ——
-       所以除了那一条（通常就在「开始与完成」那个演示里），其余每一条都必须 `position="static"`
-       放进演示区。留两条 fixed 的就会永远压在整页顶上、还互相盖住：踩过一次
-       （出错演示里那条交互条子默认 fixed 且一上来就 loading，整页顶部常驻一条，
-       看起来就像「点了完成也不消失」——其实是另一条）。 */
+    /* `mc-loading-bar` 默认**钉在视口顶部**，而组件文档页会把演示**一起渲染出来**：除了那一条，其余都
+       必须 `position="static"`，否则永远压在整页顶上、还互相盖住（踩过一次，像「点完成不消失」）。 */
     type: 'custom',
     id: 'page-single-fixed-bar',
     title: '组件文档 · 钉在视口顶部的加载条最多一条',
@@ -718,17 +659,12 @@ const rules = [
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账。
- *  ⚠️ **在上面加 / 删面或规则时，`tests/site/13-docs-drift.mjs` 的 `EXPECTED_GROUPS` 要同步** ——
- *  那个常量是写死的，故意不从这里推（推出来那条守卫就恒成立、等于没有）；它专门抓「配置里少了
- *  一整个面 / 一条规则」。漏跟的代价就是 13 号套件一路红着（踩过：`page-notes` 与
- *  `page-single-fixed-bar` 这两条规则加进来时，常量还停在 16）。 */
+ *  ⚠️ 加 / 删面或规则时，`tests/site/13-docs-drift.mjs` 的 `EXPECTED_GROUPS` 要同步（故意不从这里推）。 */
 const GROUP_COUNT = [apiSpec, unitTokens, pageSkeleton, pageDemos].length + rules.length + 1;
 
 export default {
   code,
-  // `page-api`（页面手写参考表格 ↔ 代码）已随 S3 一并删除：11 页全部改由 md 渲染，
-  // 那一面再留着就是「对 11 页全 skip」的空转 —— 接口事实由 `api-spec` 守，
-  // 「挂了 doc-spec / 不许再手抄表格」由 rules 里两条 custom 守。
+  // `page-api`（页面手写参考表格 ↔ 代码）已随 S3 删除；接口事实由 `api-spec` 守，防回潮由 rules 里两条 custom 守。
   surfaces: [apiSpec, unitTokens, pageSkeleton, pageDemos],
   rules,
 };

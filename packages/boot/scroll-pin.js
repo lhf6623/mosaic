@@ -1,82 +1,29 @@
 /**
- * scroll-pin —— **定住页面的滚动条**：做「不该改变滚动位置」的原生动作时把位置钉住。
+ * scroll-pin —— 定住页面的滚动条：做「不该改变滚动位置」的原生动作（浮层开合、往 top layer
+ * 插东西、浏览器自己做聚焦 / 布局调整）时把位置钉住。
  *
- * 用在哪：浮层开合（`mc-popover`）、任何会往 top layer 里插东西、或让浏览器自己做聚焦 /
- * 布局调整的动作。判据很简单 —— **这个动作不该让页面滚动，但浏览器可能顺手滚一下**。
+ * 为什么需要（实测，火狐 156）：原生 `showPopover()` 这个动作本身就会把正文带 `.doc-main`
+ * 从 1207 跳到 2057，而 fixed + top layer 的浮层开合不该改变页面滚动位置。二分结论 ——
+ * 面板整个不在 DOM / 在 DOM 但不显示都不跳，正常显示但摘掉锚点定位**照跳**。
+ * 这是上游问题的站点侧兜底，不是我们的缺陷；等最低支持版本都含修复后可以删掉：
+ *   · [CSSWG #10999] 已决议（fixed 元素首次布局按当前滚动偏移算位置区）
+ *   · [Firefox Bug 2009225] 147–149 已修；仍在推进 [#10858] / [#13067] / [#13353]
  *
- * ## 为什么需要它（实测，火狐 156）
+ * 三种形状（少覆盖一种就漏，都是在真机上被用户抓出来的）：
+ *   ① 位移可能落在同步 / 下一帧 / 更晚的 task → 按时间窗（`hold`）反复回滚，不能只回滚一次；
+ *   ② 手势之后、动作之前就被滚（「外部按钮改数据 → `attr:open` → 重渲染 → `showPopover()`」）→
+ *      只有手势那一刻的位置代表"用户看到的位置"，`createScrollPin()` 在 pointerdown / keydown 记锚点；
+ *   ③ 浏览器自己发起的关闭（light dismiss / Esc 不走组件的 `hide()`）→ 调用方在 `beforetoggle`
+ *      记锚点、`toggle` 里 `hold()`（`attachFloatingScrollGuard()` 已接好这两处）。
  *
- * 文档站 Popover 页点一下演示的触发按钮，正文带 `.doc-main` 会从 1207 跳到 2057。
- * 二分结论：触发点是原生 `showPopover()` 这个动作**本身** ——
- *   面板整个不在 DOM：不跳；面板在 DOM 但不显示：不跳；正常显示但摘掉锚点定位：**照跳**。
- * 而浮层是 `position: fixed` + top layer，开合它**不该**改变页面滚动位置。
- *
- * 这是**上游问题的站点侧兜底**，不是我们代码的缺陷。相关的规范 / 实现记录：
- *   · [CSSWG #10999] anchor 定位的 fixed 元素首次布局应按**当前滚动偏移**算位置区（2024-10 已决议）
- *   · [Firefox Bug 2009225] 这类元素不该按**初始滚动位置**贡献 scrollable overflow ——
- *     原文「this change causes the scroller to fluctuate as the positioned element moves around」
- *     （147/148/149 已修）
- *   · 仍在推进：[#10858] 定义清楚锚点定位与滚动的交互、[#13067] scrollable containing block、
- *     [#13353] anchor-center 与可滚动容器；Firefox [D276171] 锚点定位的 scroll-linked effects
- *
- * 等目标浏览器都修完、且 Mosaic 的最低支持版本都包含修复时，这层兜底可以删掉。
+ * 边界：只拦浏览器、不拦人 —— 用户自己滚（滚轮 / 触摸 / 在别处按下）当帧放手，不会黏住。
+ * 用法：浮层组件用 `attachFloatingScrollGuard(host, panel)`；其余见 `createScrollPin` 的 JSDoc。
  *
  * [CSSWG #10999]: https://github.com/w3c/csswg-drafts/issues/10999
  * [Firefox Bug 2009225]: https://bugzilla.mozilla.org/show_bug.cgi?id=2009225
  * [#10858]: https://github.com/w3c/csswg-drafts/issues/10858
  * [#13067]: https://github.com/w3c/csswg-drafts/issues/13067
  * [#13353]: https://github.com/w3c/csswg-drafts/issues/13353
- * [D276171]: https://phabricator.services.mozilla.com/D276171
- *
- * ## 三种形状（少覆盖一种就漏，三种都是在真机上被用户抓出来的）
- *
- * 1. **原生动作里滚**：位移可能落在同步、下一帧、或更晚的 task 里 —— 所以要按时间窗
- *    （`hold`）反复回滚，而不是只回滚一次。
- * 2. **手势之后、动作之前就被滚**：例如「外部按钮改数据 → `attr:open` → 模板重渲染 →
- *    watch → `showPopover()`」这条路，浏览器可能在重渲染那一下先滚过了。这时只有**手势那一刻**
- *    的位置能代表"用户看到的位置"，所以 `createScrollPin()` 会在 `pointerdown` / `keydown`
- *    上记一份锚点（见 `anchorOf`）。
- * 3. **浏览器自己发起的关闭**：点触发元素会让 `popover="auto"` 走 light dismiss ——
- *    **不经过组件的 `hide()`**，只能由调用方在 `beforetoggle` 记锚点、`toggle` 里 `hold()`。
- *
- * ## 边界：只拦浏览器，不拦人
- *
- * 用户自己滚（滚轮 / 触摸 / 在别处按下）时当帧就放手。所以 `hold` 的时间窗不会让页面
- * 「黏住」：开了浮层马上滚轮照样即时生效。
- *
- * ## 用法
- *
- * **浮层组件（推荐：一行接线）** —— 做 `mc-dropdown` / `mc-tooltip` / `mc-dialog` 这类组件时照抄：
- *
- * ```js
- * import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
- *
- * ready()    { this._scrollGuard = attachFloatingScrollGuard(this.ele, this.panel); }
- * detached() { this._scrollGuard.dispose(); }
- * ```
- *
- * 它自己监听面板的 `beforetoggle` / `toggle`（浏览器 light dismiss / Esc 也会发这两个事件），
- * 所以不用在模板里为守卫加绑定。唯一要额外包一层的是**显式显示 / 收起那一行**：
- *
- * ```js
- * this._scrollGuard.run(() => this.panel.showPopover());   // 同步动作里的位移要立刻回滚
- * ```
- *
- * 因为 `toggle` 事件是排队发的（晚一拍），只靠它挡不住同步那一瞬。
- *
- * **任意场景（手动接线）**：
- *
- * ```js
- * import { createScrollPin } from '../boot/scroll-pin.js';
- *
- * const pin = createScrollPin(el);
- * pin.run(() => doSomethingNative());   // 快照 → 动作 → 钉住
- * pin.remember();                       // 状态变化**之前**记锚点
- * pin.hold();                           // 状态变完钉回去
- * pin.dispose();
- * ```
- *
- * 再底层就用 `snapshotScroll(el)` 拿回滚函数、`holdScroll(restore, opts)` 钉住它。
  */
 
 /** 默认盯多久（ms）：够覆盖「原生动作 + 随后的模板重渲染」，又不至于黏手 */
@@ -114,9 +61,8 @@ export function snapshotScroll(el) {
     ) {
       add(node);
     }
-    /* 往上走三步：① 被 `<slot>` 投递 → 进投递它的那棵 shadow tree（`assignedSlot`）；
-       ② 同一棵树里继续 `parentElement`（**这一步不能省**：正文带就住在槽与宿主之间）；
-       ③ 走到 shadow tree 顶端才跨出去到宿主。 */
+    /* 往上走三步：`assignedSlot` 进投递它的 shadow tree → 树内 `parentElement`（不能省，
+       正文带就住在槽与宿主之间）→ 走到树顶才跨出去到宿主 */
     node =
       node.assignedSlot ??
       node.parentElement ??
@@ -291,9 +237,8 @@ export function attachFloatingScrollGuard(host, panel, options) {
   const remember = () => pin.remember();
   const hold = () => pin.hold();
 
-  /* beforetoggle 在状态**变化之前**触发，且浏览器的 light dismiss / Esc 也会发它 ——
-     关闭时的焦点归还、显示时的 top layer 插入都可能让浏览器顺手滚一下，
-     而那一刻已经从 toggle 里拿不到"原来的位置"了。 */
+  /* beforetoggle 在状态变化之前触发，浏览器的 light dismiss / Esc 也会发它 ——
+     那一刻才拿得到"原来的位置"，等 toggle 已经晚了 */
   panel.addEventListener('beforetoggle', remember);
   panel.addEventListener('toggle', hold);
 

@@ -1,9 +1,4 @@
-<!--
-  mc-icon — 图标
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-icon — 图标；设计取舍见 README.md「设计取舍」。 -->
 
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
@@ -18,15 +13,11 @@
       font-size: 1em;
       line-height: 0;
       vertical-align: middle;
-      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 里有 `:host { color: var(--mc-color-fg, var(--mc-def-color-fg)) }`，
-         本意是给组件一个确定的基线色，但它会**掐断颜色继承** —— 图标被放进另一个组件的 shadow
-         root 里时（mc-alert、mc-button、使用者的组件），拿到的是 fg 而不是周围的文字色，压在
-         实心底色上直接看不清。我们这份 <style> 未分层、赢过 reset 所在的 @layer，所以这一行
-         就能把继承拿回来。font-size 同理（reset 会把宿主字号钉成 --mc-text-base）。 */
+      /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 把宿主色钉成 --mc-color-fg，会掐断颜色继承 —— 图标进别的 shadow root 就拿到 fg 而非周围文字色；本 style 未分层、赢过 reset 的 @layer，所以这一行能拿回继承（font-size 同理） */
       color: inherit;
     }
 
-    /* ---------- 尺寸：只改 font-size（内联 style 优先级更高，能直接覆盖） ---------- */
+    /* ---------- 尺寸：只改 font-size ---------- */
     :host([size='sm']) {
       font-size: 0.875em;
     }
@@ -37,7 +28,7 @@
       font-size: 1.25em;
     }
 
-    /* ---------- 语义色：只往 currentColor 里填值（默认 current 不写规则，直接继承） ---------- */
+    /* ---------- 语义色：只往 currentColor 里填值 ---------- */
     :host([color='primary']) {
       color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
@@ -53,14 +44,12 @@
     :host([color='danger']) {
       color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
-    /* 中性 = 次要文字色：图标落在卡片 / 页面上，用 muted 前景才对得上 */
+    /* 中性 = 次要文字色：落在卡片 / 页面上用 muted 前景才对得上 */
     :host([color='neutral']) {
       color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
 
-    /* 图形槽。min-* 让「取不到图标」时也占住 1em —— 不留空洞、不跳版。
-       background-color 刻意不写在这里：那是内置图标类（.mc-icon-*）的职责，
-       写在这儿会让远程的品牌多色图标多出一个纯色底。 */
+    /* 图形槽。min-* 让「取不到图标」时也占住 1em，不留空洞、不跳版；background-color 刻意不写在这儿 —— 那是内置图标类（.mc-icon-*）的职责，写这儿会给远程品牌多色图标加一个纯色底。 */
     .mc-glyph {
       display: inline-flex;
       min-width: 1em;
@@ -76,8 +65,7 @@
   <slot></slot>
 
   <script>
-    /* color 也收 hex（`<mc-icon color="#ff6b35">`）：图标没有色槽，color 直接就是前景色，
-       所以用 fg 模式；'current' 是它自己的语义取值，一并交给 CSS */
+    /* color 也收 hex：图标没有色槽，color 直接是前景色，所以用 fg 模式；'current' 是语义取值，交给 CSS */
     import { colorAttr, FG_NAMES } from '../boot/color-attr.js';
 
     const color = colorAttr({ mode: 'fg', names: FG_NAMES });
@@ -100,7 +88,7 @@
       console.warn(`[mosaic] ${message}`);
     }
 
-    /** 拆名字：'mdi:home' → ['mdi','home']；'search' → ['','search']；多段（@provider:x:y）只取后两段 */
+    /** 拆名字：'mdi:home' → ['mdi','home']；'search' → ['','search']；多段只取后两段 */
     function splitName(value) {
       const parts = value.split(':');
       const icon = parts.pop() ?? '';
@@ -108,11 +96,7 @@
       return [set, icon];
     }
 
-    /**
-     * 归一化取回来的 svg：高度钉 1em、宽度按 viewBox 比例。
-     * 不能无脑 width=height=1em —— Iconify 对非方形图标会给出 width="1.16em" height="1em"
-     * （如 logos:vue 的 256×221），强行拉成正方形会把品牌图拉变形。
-     */
+    /** 归一化取回来的 svg：高度钉 1em、宽度按 viewBox 比例。不能无脑 width=height=1em —— Iconify 对非方形图标会给出 width="1.16em" height="1em"，强行拉成正方形会把品牌图拉变形。 */
     function normalize(svg) {
       const box = (svg.getAttribute('viewBox') ?? '')
         .trim()
@@ -136,7 +120,6 @@
       tag: 'mc-icon',
 
       attrs: {
-        /** 图标名：本地名（search）或「集名:图标名」（mdi:home） */
         name: '',
         /** 直接给一个 SVG 地址（相对路径按页面解析）；给了它就不再查本地 */
         src: '',
@@ -145,9 +128,7 @@
         size: 'md',
         /* 默认 current：图标 95% 是装饰，强制默认语义色会让所有内联图标变色 */
         color: 'current',
-        /** 远程取图标的 URL 前缀（自托管 / 镜像），留空用内置默认 */
         iconBase: '',
-        /** 裸名远程回退时用哪个图标集，留空用内置默认（lucide） */
         iconSet: '',
       },
 
@@ -198,14 +179,13 @@
           return ((this.iconBase || '').trim() || DEFAULT_BASE).replace(/\/?$/, '/');
         },
 
-        /** 具名插槽没有，这里只有一个默认插槽：元素即内容，纯文本非空白也算 */
         slotHasContent() {
           return (this._slot?.assignedNodes() ?? []).some(
             (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
           );
         },
 
-        /** 有 label 才是「有语义的图标」；否则整块（宿主一起）对读屏隐藏，图形本身永远 aria-hidden */
+        /** 有 label 才是有语义的图标；否则整块（宿主一起）对读屏隐藏，图形本身永远 aria-hidden */
         applyLabel() {
           if (!this._live) return; // P31：挂载前写宿主属性会抛 NotSupportedError
           const label = (this.label || '').trim();
@@ -220,7 +200,7 @@
           }
         },
 
-        /** 唯一入口：插槽 > src > name（先本地、再远程）。属性一变就走这里，用序号作废过期的那一轮 */
+        /** 唯一入口：插槽 > src > name（先本地、再远程）；属性一变就走这里，用序号作废过期的那一轮 */
         async paint() {
           const glyph = this._glyph;
           if (!glyph || !this._live) return;
@@ -252,7 +232,6 @@
           await this.load(glyph, `${this.base()}${set || this.setName()}/${icon}.svg`, sequence);
         },
 
-        /** 本地命中判定（按名字缓存）。结论不确定（样式表没到）时不写缓存 */
         async localClass(name) {
           const key = `${this.setName()}|${name}`;
           const cached = LOCAL.get(key);
@@ -262,12 +241,7 @@
           return result === UNKNOWN ? null : result;
         },
 
-        /**
-         * 挂上类名 → 问 CSS。两条实测过的前提写在这里：
-         *   · 图标样式表是组件自己 <link> 进 shadow root 的、**异步**到达；没到位时 maskImage
-         *     同样是 none，必须等它可读了才能下结论，否则会把内置图标误判成远程、白跑一次网络；
-         *   · 集名等于内置来源集时退化成裸名再探一次：`lucide:search` 不该白跑远程。
-         */
+        /** 挂上类名 → 问 CSS。⚠️ 图标样式表是组件自己 <link> 进 shadow root 的、**异步**到达，没到位时 maskImage 同样是 none，必须等可读才能下结论；集名等于内置来源集时退化成裸名再探一次。 */
         async probe(name) {
           const glyph = this._glyph;
           const root = this.ele.shadowRoot;
@@ -286,12 +260,7 @@
           return null;
         },
 
-        /**
-         * 就绪门：图标样式表由组件自己 <link> 进 shadow root，到达是**异步**的 —— 没解析出来时
-         * maskImage 同样是 none，直接下结论会把内置图标误判成远程、白跑一次网络（还 404）。
-         * 等那几张表真的可读再探：**走 link 的 load / error 事件**，不用 rAF 轮询 ——
-         * 后台页面里 rAF 会被节流甚至不触发，实测在录制模式下因此误判过一次。
-         */
+        /** 就绪门：等那几张样式表真的可读再探，**走 link 的 load / error 事件**，不用 rAF 轮询 —— 后台页面里 rAF 会被节流甚至不触发，实测在录制模式下因此误判过一次。 */
         async sheetsReady(root) {
           const links = [...root.querySelectorAll('link[rel="stylesheet"]')];
           /* 兜底：没有 <link>（被别处 adopt 的场合）仍旧看 adoptedStyleSheets */

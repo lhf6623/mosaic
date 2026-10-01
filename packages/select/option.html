@@ -1,14 +1,8 @@
-<!--
-  mc-option — 下拉选项（配合 mc-select 使用）
-
-  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md 的「设计取舍」里这一节。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-option — 下拉选项（配合 mc-select 使用）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 选项只是**数据**：显示文案是 mc-select 从这里的默认插槽读走的（textContent），
-       真正被渲染、能点的行由 mc-select 画进面板（每行一个 `option` part）。所以这里不占版面。 */
+    /* 选项只是数据：文案由 mc-select 读默认插槽的 textContent，能点的行也由它画进面板，所以这里不占版面。 */
     :host {
       display: none;
     }

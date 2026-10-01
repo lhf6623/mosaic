@@ -1,9 +1,4 @@
-<!--
-  mc-popover — 通用浮层（点击/悬停/手动触发，锚在触发元素上）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-popover — 通用浮层（点击/悬停/手动触发，锚在触发元素上）。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -11,13 +6,7 @@
       display: inline-block;
       position: relative;
 
-      /* L3 令牌：面板到触发元素的距离、面板与锚点的对应关系都由这里给。
-         ⚠️ `--mc-popover-panel-border` 现在只当**轮廓色**用：面板不画 `border`，整圈描边
-         是 drop-shadow 跟着「面板 + 三角」的整体轮廓做的（见 .mc-panel）。名字沿用不改，
-         免得已按文档覆盖它的使用方失效。
-         ⚠️ 默认取 border-**strong** 而不是 border：那圈描边是 1px 模糊的 drop-shadow，实测比
-         1px 实线淡一档（最暗像素 222 vs 旧边框 213），取 strong 才与旧观感相当；暗色下
-         border 与面板底色同为 neutral-800（一圈看不见），也只有 strong 才有轮廓。 */
+      /* L3 令牌：距离与锚点对应关系都在这里。⚠️ `--mc-popover-panel-border` 只当**轮廓色**用（面板不画 border，描边是 drop-shadow 做的），名字沿用不改 */
       --mc-popover-offset: var(--mc-space-2, var(--mc-def-space-2));
       --mc-popover-anchor: --mc-popover-anchor; /* @internal：给 anchor-name / position-anchor 用的标识，不是使用者覆盖点 */
       --mc-popover-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
@@ -28,11 +17,7 @@
       --mc-popover-panel-min-width: 0;
     }
 
-    /* 锚点：必须是自己 shadow 里的元素（见文件头第 3 条）。
-       ⚠️ 用 inline-flex 而不是 inline-block：inline-block 的盒子会带上行盒的基线缝隙
-       （实测锚点盒子比触发按钮高 3px），而**锚点的几何就是面板的定位基准** ——
-       结果就是 top/right-start/left-start 这几个方向整体偏 3px。inline-flex 让盒高
-       严丝合缝地等于触发元素，锚点几何 = 视觉几何。 */
+    /* 锚点：必须是自己 shadow 里的元素。⚠️ 用 inline-flex：inline-block 带行盒基线缝隙，而锚点几何就是定位基准 */
     .mc-anchor {
       display: inline-flex;
       anchor-name: --mc-popover-anchor;
@@ -40,24 +25,19 @@
 
     /* ---------- 面板 ---------- */
     .mc-panel {
-      /* ⚠️ inset/margin 必须清成 0/auto 之外的值，否则 UA 那对 auto 会吃掉锚点定位 */
+      /* ⚠️ inset / margin 必须显式写：UA 给 [popover] 的那对 auto 会吃掉锚点定位 */
       position: fixed;
       inset: auto;
       margin: 0;
 
       box-sizing: border-box;
       min-width: var(--mc-popover-panel-min-width);
-      /* ⚠️ 必须显式 overflow: visible：UA 给 `[popover]` 的默认样式里带 `overflow: auto`，
-         它会把**伸出面板的三角裁掉** —— 实测右侧那种三角完全看不见（而贴着上/下沿的
-         那两个因为面板外面是空的，看起来又是好的，所以特别难发现）。 */
+      /* ⚠️ 必须显式 overflow: visible：UA 给 [popover] 的 overflow: auto 会把伸出面板的三角裁掉 */
       overflow: visible;
       /* 贴边时别把面板压出视口：宽度上限跟着视口走，长内容自己折行 */
       max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
       padding: var(--mc-popover-panel-pad);
-      /* ⚠️ 必须显式把 UA 给 `[popover]` 的 `border: solid` 清成 0：那条只写了 style，
-         宽度取 medium = **3px**、颜色取 currentColor —— 于是不给 border 就会得到一圈 3px 的
-         「跟着文字颜色走」的边框（实测亮色下 rgb(60 67 77)、暗色下接近白）。它跟 inset/margin
-         一样属于「不写就被 UA 接管」那一类，以前是那行 `border: 1px solid …` 顺手盖住的。 */
+      /* ⚠️ 必须显式 border: 0：UA 给 [popover] 的 `border: solid` 宽度是 medium（3px）、颜色 currentColor */
       border: 0;
       border-radius: var(--mc-popover-panel-radius);
       background-color: rgb(var(--mc-popover-panel-bg));
@@ -65,12 +45,7 @@
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-text-sm, var(--mc-def-text-sm));
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
-      /* ⚠️ 面板**不要写 border**：边框只长在面板的矩形上，三角没有边框 —— 于是轮廓在三角
-         那条边上断掉，旁边的三角就成了「塌下去的一块」，存在感全靠它自己那点描边（很弱）。
-         改成一整圈跟着**整体轮廓**（面板 + 三角）的 drop-shadow：第一层 1px 模糊 ≈ 1px 描边
-         （它是描边，不是投影，所以别加大 blur），第二层才是投影。
-         ⚠️ 也别退回 box-shadow：box-shadow 画在**矩形边框盒**上，有三角时会在三角那条边
-         画出一条直边 —— 看起来就是「阴影凹进去一个口」（实测就是这样）。 */
+      /* ⚠️ 面板不要写 border：边框只长在矩形上，轮廓会在三角那条边断掉；改用跟着整体轮廓的 drop-shadow（第一层当描边） */
       filter: drop-shadow(0 0 1px rgb(var(--mc-popover-panel-border)))
         drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
 
@@ -116,9 +91,7 @@
       right: anchor(right);
       margin-bottom: var(--mc-popover-offset);
     }
-    /* ⚠️ 居中变体必须单独写：交叉轴上 anchor(center) + -50% 位移。
-       以前它和 -start 合并在一个选择器里（只设了 top: anchor(top)），
-       于是 right/left 两个「居中」的交叉轴是贴着顶边而不是居中（实测差 16.5px）。 */
+    /* ⚠️ 居中变体必须单独写：交叉轴要 anchor(center) + -50% 位移，和 -start 合并会贴着顶边 */
     :host([placement='right']) .mc-panel {
       left: anchor(right);
       top: anchor(center);
@@ -153,23 +126,12 @@
     }
 
     /* ---------- 小三角 ---------- */
-    /* 三角：贴哪条边 + 交叉轴位置。
-       交叉轴位置 = 面板的 50% + `--mc-popover-arrow-shift`（脚本算好 = 触发元素中心 − 面板中心）。
-
-       ⚠️ 试过三种写法，只有这个干净（都在浏览器里放大比过）：
-         · 旋转 45° 的方块 + 两条边框 → 面板那 1px 边线会横穿方块内部，看着是「套在边线上的方块」
-         · 外包一层描边三角（两层三角形）→ 内层缩边之后两个三角形状对不上，斜边会露出来
-         · 现在这个：**一个填充三角**（clip-path），描边不归它管 ——
-           面板那层 drop-shadow 跟的是「面板 + 三角」的整体轮廓，一圈描边自然连上。
-       ⚠️ 所以这里**别再给三角自己加 filter / border**：双层描边会在接缝处叠出一道深线。 */
+    /* 三角：贴哪条边 + 交叉轴位置（= 面板 50% + `--mc-popover-arrow-shift`，脚本算好）；⚠️ 描边交给面板那层 drop-shadow，别再加 filter / border */
     .mc-arrow {
-      /* ⚠️ **默认就是显示**：三角是基类状态，关掉才写属性值（`arrow="none"`）。
-         别改成「默认隐藏 + :host(:not([arrow])) 显示」—— ofa 里 `:host()` 嵌 `:not()`
-         静默失效（P14），那样三角根本不会出现。 */
+      /* ⚠️ 默认就是显示：别改成「默认隐藏 + :host(:not([arrow])) 显示」—— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14） */
       display: block;
       position: absolute;
-      /* ⚠️ 钻到面板背景**之下**：否则三角贴面板那一侧的底边会落在面板边线内侧 1px 上，
-         接缝处看得到一条错位的线。放到底下之后，露出来的部分正好是一个干净的三角。 */
+      /* ⚠️ 钻到面板背景之下：否则三角贴面板那侧的底边会在接缝处露出一条错位的线 */
       z-index: -1;
       width: var(--mc-space-3, var(--mc-def-space-3));
       height: var(--mc-space-3, var(--mc-def-space-3));
@@ -208,11 +170,10 @@
       clip-path: polygon(100% 0, 0 50%, 100% 100%);
     }
 
-    /* **不做进场/退场动画**（有意的）：浮层弹出的动效在连续操作时反而拖慢手感，
-       而且 top layer 里 transform 受限、能做出来的效果有限。要动画的使用者自己加。 */
+    /* 有意不做进场/退场动画：连续操作时反而拖慢手感，top layer 里 transform 也受限 */
   </style>
 
-  <!-- 触发元素：外面这层 .mc-anchor 是**锚点载体**，不能删（见文件头第 3 条） -->
+  <!-- 触发元素：外面这层 .mc-anchor 是锚点载体，不能删 -->
   <span
     class="mc-anchor"
     on:click="onAnchorClick"
@@ -223,15 +184,14 @@
     <slot></slot>
   </span>
 
-  <!-- 面板：top layer + light-dismiss + Esc 全由 popover="auto" 提供。
-       ⚠️ toggle 事件是**原生**事件，用它把「被 Esc / 点空白关掉」同步回 open 属性 -->
+  <!-- 面板：top layer + light-dismiss + Esc 由 popover="auto" 提供；原生 toggle 把外部关闭同步回 open -->
   <div class="mc-panel" part="panel" popover="auto" on:toggle="onNativeToggle">
     <span class="mc-arrow" part="arrow" aria-hidden="true"></span>
     <slot name="panel"></slot>
   </div>
 
   <script>
-    /* 定住滚动条的小工具（开合原生浮层时浏览器可能顺手滚页面，见那个文件头里的实测与上游链接） */
+    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（见该文件头的实测） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
     /** 面板贴的是「上下」还是「左右」——决定箭头要横向还是纵向对锚 */
@@ -256,8 +216,7 @@
         trigger: 'click',
         /* 受控开合：open 出现即开、移除即关。布尔属性默认必须是 null（P1） */
         open: null,
-        /* 箭头：**默认显示**，关掉写 `arrow="none"`。默认状态归 CSS 基类规则，
-           属性只表达「非默认」那一档（同 mc-card 的 divider="none"，理由见 P14） */
+        /* 箭头：默认显示，关掉写 `arrow="none"`（属性只表达「非默认」那一档，理由见 P14） */
         arrow: null,
       },
 
@@ -273,11 +232,9 @@
           if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
         };
         window.addEventListener('resize', this._onViewport, { passive: true });
-        /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（浏览器的 light dismiss、
-           Esc 也会发这两个事件），所以模板里不用为它加绑定（见 packages/boot/scroll-pin.js） */
+        /* 滚动守卫：它自己监听面板的 beforetoggle / toggle，模板里不用加绑定（见 boot/scroll-pin.js） */
         this._scrollGuard = attachFloatingScrollGuard(this.ele, panel);
-        /* 老浏览器没有 popover API 时不炸：整块功能降级为「面板常显」由 CSS 兜，
-           这里只标记不可用，交互一律不动 */
+        /* 老浏览器没有 popover API 时不炸：只标记不可用，功能降级由 CSS 兜 */
         this.popoverOk = typeof panel?.showPopover === 'function';
         this.mounted = true;
         this._hoverTimer = null;
@@ -291,11 +248,7 @@
       },
 
       watch: {
-        /**
-         * 受控开合：属性是**唯一真相**，改属性就同步到原生 popover。
-         * ⚠️ 首次触发要跳过（P5）：ofa 初始化时会空跑一遍 watch，而那次在**构造期**，
-         * 此时写宿主属性会抛 NotSupportedError（P31）。
-         */
+        /** 受控开合：属性是唯一真相。⚠️ 首次触发要跳过（P5）：watch 空跑在构造期，写属性会抛 NotSupportedError（P31）。 */
         open() {
           if (this._openWatchInit === undefined) {
             this._openWatchInit = true;
@@ -340,8 +293,7 @@
         hide(reason = 'api') {
           if (!this.popoverOk) return false;
           if (!this.panel.matches(':popover-open')) return true;
-          /* ⚠️ 事件不在这里发：hidePopover() 会触发原生 toggle，统一由 onNativeToggle 派发。
-             两处都发的话一次关闭会发两次 close（实测第一版就是这样）。 */
+          /* ⚠️ 事件不在这里发：hidePopover() 会触发原生 toggle，统一由 onNativeToggle 派发，否则一次关闭发两次 close */
           this._closingReason = reason;
           this.ele.removeAttribute('open');
           this.syncOpen();
@@ -349,28 +301,18 @@
         },
 
         toggle(reason = 'api') {
-          /* ⚠️ 和 show() / hide() 一样先看 popoverOk：面板不在（模板里被去掉、组件正在销毁）时
-             this.panel 是 null，直接读 .matches 会抛 TypeError —— 而 toggle 是被 .mc-anchor 的
-             on:click 直接调的，一点就炸。 */
+          /* ⚠️ 先看 popoverOk：面板不在时 this.panel 是 null，直接读 .matches 会抛 TypeError（on:click 一点就炸） */
           if (!this.popoverOk) return false;
           return this.panel.matches(':popover-open') ? this.hide(reason) : this.show(reason);
         },
 
         /* ---------- 触发 ---------- */
 
-        /**
-         * 记下这一下**按在触发元素上**时面板是否已经开着。
-         * ⚠️ 必须在 pointerdown 记：`popover="auto"` 的 light dismiss 就发生在 pointerdown 上，
-         * 等 click 到达时面板已经被浏览器关掉了 —— 那时再 toggle() 会把它**重新开回来**，
-         * 表现就是「点第二次关不掉」（实测 Chrome：面板一直开着，还又发了一次 open）。
-         * 合成 `MouseEvent('click')` 不经过 light dismiss，所以这条只有真机指针能验出来。
-         */
+        /** 记下 pointerdown 时面板是否已经开着。⚠️ 必须在 pointerdown 记：light dismiss 就发生在这一步，等 click 到达时再 toggle() 会把它重新开回来（「点第二次关不掉」） */
         onAnchorPointerDown() {
           if (!this.popoverOk) return;
           this._openAtPointerDown = this.panel.matches(':popover-open');
-          /* 这一下是「关」的意思：先把 close 的 reason 定成 trigger —— 浏览器发起的
-             light dismiss 走 onNativeToggle，那儿取的就是这个值（不设会报成 dismiss）。
-             按在**关着**的触发元素上时顺手清掉，免得残留的 reason 记到下一次关闭头上。 */
+          /* 这一下是「关」的意思：先把 close 的 reason 定成 trigger（light dismiss 走 onNativeToggle，取的就是这个值）；按在关着的元素上时清掉 */
           this._closingReason = this._openAtPointerDown ? 'trigger' : null;
         },
 
@@ -379,9 +321,7 @@
           if ((this.ele.getAttribute('trigger') ?? 'click') !== 'click') return;
           const wasOpen = this._openAtPointerDown === true;
           this._openAtPointerDown = false;
-          /* 按下去时开着 = 这一下是「关」：light dismiss 已经在 pointerdown 上关掉了，
-             这里不能再 toggle 回开（见 onAnchorPointerDown）。原生 toggle 会照常到达
-             onNativeToggle，属性清理与 close 事件都归它 —— 这里补发会变成一次关闭两条 close。 */
+          /* 按下去时开着 = 这一下是「关」：不能再 toggle 回开；属性清理与 close 事件都归 onNativeToggle，这里补发会变成两条 close */
           if (wasOpen) {
             /* 兜底：万一某版浏览器把 dismiss 推迟到 click 之后，面板这会儿还开着就自己补一次 */
             if (this.panel.matches(':popover-open')) this.hide('trigger');
@@ -402,15 +342,8 @@
           this._hoverTimer = setTimeout(() => this.hide('hover'), this.hoverDelay ?? 120);
         },
 
-        /**
-         * 原生 toggle：Esc / 点空白（light-dismiss）关掉时**只有原生状态变了**，
-         * 这里把宿主属性拉回来，两个方向才都收敛。
-         */
-        /**
-         * 把箭头的交叉轴位置对齐到**触发元素**的中心（而不是面板的中心）。
-         * 面板比触发元素宽时（如 bottom-start），对着面板居中会让箭头飘到很远的地方。
-         * 偏移用 CSS 变量交给样式算（`left: calc(50% + var(--mc-popover-arrow-shift) - 半宽)`）。
-         */
+        /** 原生 toggle：Esc / 点空白关掉时只有原生状态变了，这里把宿主属性拉回来 */
+        /** 箭头对齐触发元素中心：面板比它宽时，对着面板居中会让箭头飘很远 */
         syncArrowShift() {
           /* 箭头默认就显示，只有显式 arrow="none" 才跳过（省掉一次无关的测量） */
           if (this.ele.getAttribute('arrow') === 'none') return;
@@ -421,8 +354,7 @@
           const placement = this.ele.getAttribute('placement') ?? 'bottom';
           const axis = AXIS_OF(placement);
 
-          /* 1) 实际落在哪一侧：期望值可能被浏览器翻转，所以按几何反推。
-                主轴方向拿"有没有交叠"判断最稳（间距是 8px，交叠就说明还在同一块区域）。 */
+          /* 1) 实际落在哪一侧：期望值可能被浏览器翻转，按几何反推（交叠判断最稳） */
           const overlaps =
             axis === 'y'
               ? box.bottom > anchorEl.top && box.top < anchorEl.bottom
@@ -462,8 +394,7 @@
         },
 
         onNativeToggle(event) {
-          /* 滚动守卫在 beforetoggle 记锚点、在这个 toggle 上钉回位置（它自己监听着面板；
-             这条注释说明为什么这里看不到守卫的代码）。下面只做状态同步与事件派发。 */
+          /* 滚动守卫自己监听面板（beforetoggle 记锚点、toggle 钉回位置）；这里只做状态同步与派发 */
           const nowOpen = event.newState === 'open';
           if (nowOpen) {
             /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */
@@ -478,8 +409,7 @@
             );
             return;
           }
-          /* 关闭的**唯一出口**：不管是 Esc / 点空白（dismiss）还是 show()/hide() 那条路，
-             状态都收在这里，事件也只在这里发一次。 */
+          /* 关闭的唯一出口：Esc / 点空白 / show() / hide() 都收在这里，事件也只发一次 */
           if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
           const reason = this._closingReason ?? 'dismiss';
           this._closingReason = null;

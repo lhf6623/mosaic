@@ -17,7 +17,7 @@ const CHECK_ONLY = process.argv.includes('--check');
 
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
-// Ottosson 的 OKLab -> 线性 sRGB 合成矩阵，每行系数和为 1（a=b=0 得中性灰），漏掉中间 XYZ 会让整条色阶偏色
+// Ottosson 的 OKLab -> 线性 sRGB 合成矩阵；漏掉中间 XYZ 会让整条色阶偏色，每行系数和为 1（a=b=0 得中性灰）
 function oklabToLinearSrgb(L, a, b) {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
@@ -135,10 +135,8 @@ for (const [name, { hue, cmax }] of Object.entries(HUES)) {
 
 /* ---------- 4. 语义层：组件只能引用这一层 ---------- */
 
-/* 语义令牌引用原始色阶。颜色令牌一律存「R G B 通道三元组」、不加 rgb() 包装：
- * 存完整颜色就没法再叠透明度 —— 使用者写 `rgb(var(--mc-color-primary) / .5)` 会拼出
- * `rgb(rgb(...) / .5)` 这种非法 CSS，整条声明被计算阶段丢弃，表现为「类名在、规则在、
- * 就是不生效」，极难排查。 */
+/* 语义令牌引用原始色阶。颜色令牌一律存「R G B 通道三元组」、不加 rgb() 包装 —— 存完整颜色就没法再叠
+ * 透明度：`rgb(var(--mc-color-primary) / .5)` 会拼出非法 CSS，声明被静默丢弃（类名在、规则在、不生效）。 */
 const ref = (family, step) => `var(--mc-${family}-${step})`;
 
 const THEMES = {
@@ -158,7 +156,7 @@ const THEMES = {
     'color-ring': ref('primary', 500),
     'color-overlay': '15 18 30',
 
-    // 中性表面只作「次要按钮的填充底色」：它无法同时胜任填充和文字两个角色（填充要浅、文字要深），所以单独一套
+    // 中性表面只作「次要按钮的填充底色」：它无法同时胜任填充与文字两个角色，所以单独一套
     'color-neutral': ref('neutral', 200),
     'color-neutral-fg': ref('neutral', 900),
     'color-overlay-alpha': '0.45',
@@ -326,9 +324,8 @@ const hexToRgb = (hex) => {
 function resolveValue(expr, theme) {
   if (expr === '255 255 255') return [1, 1, 1];
   if (expr === '4 6 12') return hexToRgb('#04060c');
-  /* 把语义令牌的表达式解析回 rgb 算对比度。L2 现在写裸的 `var(--mc-<family>-<step>)`（通道三元组
-   * 由消费者包 rgb()），必须跟着改：早期匹配 `rgb(var(…))`，去掉包装后正则再也匹配不上，所有
-   * 规则被下面的 continue 静默跳过 —— 自检变空转。这里两种写法都收。 */
+  /* L2 写裸的 `var(--mc-<family>-<step>)`（通道三元组由消费者包 rgb()），解析必须跟着改：早期匹配
+   * `rgb(var(…))`，去掉包装后正则再也匹配不上，所有规则被下面的 continue 静默跳过 —— 自检变空转。 */
   const m = /^(?:rgb\()?var\(--mc-([a-z]+)-(\d+)\)\)?$/.exec(expr);
   if (!m) return null;
   const [, family, step] = m;
@@ -513,15 +510,10 @@ console.log(
 );
 
 /* ---------- 9. shadow 作用域的令牌默认值 ----------
- * 组件要能「只引 ofa.js + 组件」就正常显示，而 shadow root 里的样式表**拿不到**文档级令牌：
- *   · :root 上的令牌靠继承进来 —— 页面没引令牌表就没有；
- *   · @property 的 initial-value 在 shadow 里**不会注册**（实测：规则解析得出来，但
- *     getComputedStyle 读不到初始值；同一份 CSS 内联进文档就生效）；
- *   · :host 上直接写 --mc-* 会变成「自己的声明」，把页面级换肤整个盖掉。
- * 所以走独立命名 + 两级回退：这里给 --mc-def-*，组件里写
- *   var(--mc-color-primary, var(--mc-def-color-primary))
- * 页面定义了就用页面的（换肤 / 暗色 / data-tone 照旧），没定义才落到这份默认值。
- * ⚠️ 只能给 L2 与标量：L1 原始色阶不许组件碰（由 11 号写法守卫拦）。 */
+ * shadow root 里的样式表**拿不到**文档级令牌：:root 的令牌靠继承进来（页面没引令牌表就没有）；
+ * @property 的 initial-value 在 shadow 里**不会注册**（实测，内联进文档才生效）；:host 上直接写 --mc-*
+ * 会盖掉页面级换肤。所以走独立命名 + 两级回退 `var(--mc-color-primary, var(--mc-def-color-primary))`：
+ * 页面定义了就用页面的（换肤 / 暗色照旧），没定义才落到默认值；⚠️ 只能给 L2 与标量（L1 不许组件碰）。 */
 const literalOf = (expr) => {
   const m = /^var\(--mc-([a-z]+)-(\d+)\)$/.exec(expr);
   return m ? PALETTE[m[1]][m[2]].channels : expr;

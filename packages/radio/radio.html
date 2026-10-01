@@ -1,16 +1,9 @@
-<!--
-  mc-radio — 单选项（与 mc-radio-group 同目录，配合使用）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-radio — 单选项（与 mc-radio-group 同目录，配合使用）。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 自己的几何令牌。
-       ⚠️ 尺寸（--mc-radio-font / -line / -height / -pad-x）**不能在这里写默认值** ——
-       它们是 group 通过继承传下来的通道，这里写死就会盖掉组的值、size 永远不生效
-       （同 mc-collapse-item 那条）。没有组时靠 var() 的兜底。 */
+    /* 1. 宿主盒模型 + 自己的几何令牌。⚠️ 尺寸通道（--mc-radio-font / -line / -height / -pad-x）不能在这里写默认值：
+       那是 group 继承下来的，写死就会盖掉组的值、size 永远不生效（同 mc-collapse-item）。 */
     :host {
       display: inline-flex;
       position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
@@ -30,8 +23,7 @@
       --mc-radio-dot: 0.55em;
     }
 
-    /* 2. 状态。选中 = 圆环换主色 + 中心点放大进来；组禁用 / 自己禁用都走宿主属性
-       （组禁用的镜像见脚本，P33：宿主「看不到」孩子，CSS 只能从宿主上选） */
+    /* 2. 状态。选中 = 圆环换主色 + 中心点放大进来；组禁用的镜像见脚本（P33：宿主看不到孩子） */
     .mc-base:hover .mc-circle {
       border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
@@ -59,9 +51,7 @@
       border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
-    /* 3. 内部结构。行盒子在这个原生 <label> 上：点圆圈、点文案都落在同一个原生 input 上。
-       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
-       不铺满就出现「点在行里但没点到文案」的死区 */
+    /* 3. 内部结构。行盒子在这个原生 <label> 上：点圆圈、点文案都落在同一个 input 上；⚠️ `flex: 1 1 auto` 不能省，不铺满就有「点在行里却没点到文案」的死区 */
     .mc-base {
       display: flex;
       flex: 1 1 auto;
@@ -142,8 +132,7 @@
         // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
         this._native = this.ele.shadowRoot.querySelector('.mc-native');
 
-        /* 选中状态是**组**的状态（组维护唯一真相）；这个 property 只是同一个状态的快捷读写，
-           setter 立刻同步内部原生 input，不等 ofa 那一拍（规范 1.4 / P4） */
+        /* 选中状态是**组**的状态（组维护唯一真相）；这个 property 只是同一状态的快捷读写，setter 立刻同步原生 input（P4） */
         Object.defineProperty(this.ele, 'checked', {
           configurable: true,
           get: () => this._native.checked,
@@ -153,10 +142,7 @@
           },
         });
 
-        /* group → 子项的两个宿主方法（刻意不是 attrs：组禁用不该写进子项自己的属性表）。
-           方向是单向的：组推状态、子项不反向读组的内部状态。
-           ⚠️ 必须带上 applyChecked —— 组改的是宿主属性，内部原生 input 得跟着走；
-           组件升级晚于组时属性已经在了，也不能只等初始化那一拍。 */
+        /* group → 子项的两个宿主方法（刻意不是 attrs：组禁用不该写进子项自己的属性表）；⚠️ 必须带上 applyChecked，组件升级晚于组时属性已经在了 */
         Object.defineProperty(this.ele, 'syncGroupState', {
           configurable: true,
           value: () => {
@@ -180,8 +166,7 @@
       },
 
       watch: {
-        /* 首次触发落在构造期（P5）。applyGroupState 只写 shadow 内部的原生 input，
-           宿主镜像那一步自己带 _mounted 守卫（P31），所以这里不需要首次守卫。 */
+        /* 首次触发落在构造期（P5）。这里写的都是 shadow 内部，宿主镜像自带 _mounted 守卫（P31），不用首次守卫 */
         disabled() {
           this.applyGroupState();
           this.mirrorGroupDisabled();
@@ -207,10 +192,7 @@
           return this.ele.hasAttribute('disabled') || !!this.groupEl()?.hasAttribute('disabled');
         },
 
-        /**
-         * 组禁用不是子项自己的 disabled，所以镜像成宿主上的 data-*（同 P33 的写法）。
-         * ⚠️ 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）。
-         */
+        /** 组禁用镜像成宿主上的 data-*（同 P33）。⚠️ 宿主属性只能在 attached 之后写（P31） */
         mirrorGroupDisabled() {
           if (!this._mounted) return;
           const off = !!this.groupEl()?.hasAttribute('disabled');
@@ -224,11 +206,7 @@
           if (this._native.checked !== want) this._native.checked = want;
         },
 
-        /**
-         * 原生 change → 只把「自己这一格」反射回宿主属性（CSS 的输入）。
-         * 组内互斥与对外的 change 由 group 在 click 阶段一并完成 —— 原生 radio 分居各自的
-         * shadow root，浏览器根本不认它们是一组，所以互斥没法白拿（见 README）。
-         */
+        /** 原生 change → 只把「自己这一格」反射回宿主属性。互斥与对外的 change 由 group 在 click 阶段完成 */
         onNativeChange() {
           this.ele.toggleAttribute('checked', this._native.checked);
         },

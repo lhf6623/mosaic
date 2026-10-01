@@ -1,15 +1,9 @@
-<!--
-  mc-collapse-item — 折叠面板的子项（配合 mc-collapse 使用）
-
-  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-collapse-item — 折叠面板的子项（配合 mc-collapse 使用）；设计取舍见 README.md「设计取舍」。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
-    /* 1. 宿主盒模型。尺寸由容器通过 --mc-collapse-* 继承下来 —— */
-    /* ⚠️ 这些变量不能在这里写默认值，否则会盖掉容器继承来的值，size 永远不生效。 */
+    /* 1. 宿主盒模型。⚠️ 尺寸变量不能在这里写默认值，否则会盖掉容器继承来的值，size 永远不生效。 */
     :host {
       display: block;
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
@@ -31,7 +25,6 @@
       user-select: none;
       list-style: none; /* 用自己的 chevron；下面那条给老 Safari */
     }
-    /* 头部文案：占满剩余宽度并省略（原先是 min-w-0 flex-1 truncate 三个工具类） */
     .mc-header-text {
       min-width: 0;
       flex: 1 1 0%;
@@ -58,7 +51,7 @@
       color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
     }
 
-    /* 4. 状态。光标留在宿主上（宿主写 pointer-events:none 会连 cursor 一起失效） */
+    /* 4. 状态（光标留宿主上） */
     :host([disabled]) {
       opacity: 0.5;
       cursor: not-allowed;
@@ -67,7 +60,7 @@
       pointer-events: none; /* 鼠标堵死；键盘由 tabindex / click 拦截兜住 */
     }
 
-    /* 5. chevron：内置图标（mc-icon），开合只动 transform —— 收起 ▸ / 展开 ▾ */
+    /* 5. chevron */
     .mc-chevron {
       flex: none;
       color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
@@ -94,7 +87,6 @@
       attrs: {
         // 头部文案，富内容走同名插槽。叫 header 不叫 title —— title 会弹原生 tooltip（P32）
         header: '',
-        // 事件 $event.data.name 用它
         name: '',
         // 布尔默认值必须是 null（P1）；open 既是初始值也是运行时状态
         open: null,
@@ -152,7 +144,6 @@
           if (this._details.open !== want) this._details.open = want;
         },
 
-        /** 读屏 + 键盘：aria-disabled，并把 summary 移出焦点顺序 */
         applyDisabled() {
           const off = this.ele.hasAttribute('disabled');
           if (off) {
@@ -164,13 +155,8 @@
           }
         },
 
-        /**
-         * 头部点击：禁用时拦掉，否则**我们自己**同步完成开合。
-         *
-         * 浏览器的 summary 激活不一定在同一个任务里（Chrome 实测晚一拍），点完立刻读
-         * `el.open` 会是旧值。这里 preventDefault 后自己切 `details.open`，属性当次点击
-         * 就位；原生 toggle 照旧会来，容器互斥逻辑不受影响。
-         */
+        /** 头部点击：禁用时拦掉；否则 preventDefault 后自切 details.open —— 浏览器 summary
+         * 激活晚一拍，点完立刻读是旧值；原生 toggle 照旧会来，容器互斥不受影响。 */
         onHeaderClick(event) {
           if (this.ele.hasAttribute('disabled')) {
             event.preventDefault();
@@ -187,7 +173,6 @@
           this.reflectOpen();
         },
 
-        /** 原生 toggle → 反射回宿主属性，并发出 open / close */
         onToggle() {
           this.reflectOpen();
 
@@ -207,7 +192,6 @@
           });
         },
 
-        /** 内部 details 的当前状态 → 宿主 open 属性 */
         reflectOpen() {
           if (this._details.open) this.ele.setAttribute('open', '');
           else this.ele.removeAttribute('open');

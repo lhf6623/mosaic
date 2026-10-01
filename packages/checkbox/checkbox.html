@@ -1,14 +1,9 @@
-<!--
-  mc-checkbox — 复选框
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-checkbox — 复选框；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
-    /* 1. 宿主盒模型 + 组件令牌。高度 / 字号直接写在宿主上，使用者 style="height:32px" 才压得住 */
+    /* 1. 宿主盒模型 + 组件令牌；高度 / 字号直接写在宿主上，使用者 style="height:32px" 才压得住 */
     :host {
       display: inline-flex;
       position: relative; /* 内部那个绝对定位的原生 input 的包含块（P21） */
@@ -22,7 +17,6 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
       --mc-checkbox-gap: var(--mc-space-2, var(--mc-def-space-2));
       --mc-checkbox-pad-x: var(--mc-space-3, var(--mc-def-space-3));
       --mc-checkbox-box-size: 1.15em;
@@ -76,10 +70,8 @@
       border-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
-    /* 4. 内部结构。行盒子（高度 / 内边距 / 命中区）在这个原生 <label> 上：
-       点方框、点文案、键盘 <kbd>Space</kbd> 都落在同一个原生 input 上。
-       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
-       不铺满就出现「点在行里但没点到文案」的死区 */
+    /* 4. 内部结构。行盒子（高度 / 内边距 / 命中区）在这个原生 <label> 上：点方框、点文案、Space 都落在同一个 input。
+       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，不铺满就出现点不到文案的死区 */
     .mc-base {
       display: flex;
       flex: 1 1 auto;
@@ -90,8 +82,7 @@
       padding-inline: var(--mc-checkbox-pad-x);
       cursor: pointer;
     }
-    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区），视觉全在宿主与 .mc-box 上。
-       用「视觉隐藏」而不是 display:none —— 后者会连焦点与键盘一起拿掉 */
+    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；用「视觉隐藏」而不是 display:none，后者会连焦点一起拿掉 */
     .mc-native {
       position: absolute;
       width: 1px;
@@ -127,8 +118,7 @@
       outline-offset: 2px;
     }
 
-    /* 勾 / 横杠都是内置图标（类名直接吃 CSS，零请求）；两条交替显示，半选优先。
-       0.75em 是这一档的光学尺寸：图形本身带内边距，铺满方框会显得发胖 */
+    /* 勾 / 横杠都是内置图标（类名直接吃 CSS，零请求），半选优先；0.75em 是光学尺寸：图形自带内边距，铺满会发胖 */
     .mc-mark {
       display: none;
       font-size: var(--mc-checkbox-mark-size);
@@ -171,7 +161,6 @@
       tag: 'mc-checkbox',
 
       attrs: {
-        // 表单值（跟原生 checkbox 的 value 一个意思）；文案走默认插槽
         value: '',
         // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-checkbox checked> 失效
         checked: null,
@@ -196,7 +185,6 @@
           },
         });
 
-        // 半选也开一个同形访问器：原生就是这么读写的（el.indeterminate = true）
         Object.defineProperty(this.ele, 'indeterminate', {
           configurable: true,
           get: () => this._native.indeterminate,
@@ -212,8 +200,7 @@
       },
 
       watch: {
-        /* 首次触发落在构造期（P5）。这三个 apply 只写 shadow 内部的原生 input（幂等），
-           构造期调用也安全 —— 没有需要跳过的副作用，所以不装首次守卫。 */
+        /* 首次触发落在构造期（P5）。这三个 apply 只写 shadow 内部的原生 input（幂等），构造期调用也安全，不装首次守卫 */
         checked() {
           this.applyChecked();
         },
@@ -232,7 +219,6 @@
           if (this._native.checked !== want) this._native.checked = want;
         },
 
-        /** indeterminate 是纯 JS 状态（原生没有这个属性），宿主属性只是给 CSS 的选择器输入 */
         applyIndeterminate() {
           const want = this.ele.hasAttribute('indeterminate');
           if (this._native.indeterminate !== want) this._native.indeterminate = want;
@@ -242,19 +228,14 @@
           this._native.disabled = this.ele.hasAttribute('disabled');
         },
 
-        /**
-         * 原生 change → 声明式状态 + 对外事件。
-         * 半选被点击后浏览器会清掉 .indeterminate，宿主属性要跟上（否则横杠还挂着）。
-         */
+        /** 原生 change → 声明式状态 + 对外事件。半选被点击后浏览器会清掉 .indeterminate，宿主属性要跟上 */
         onNativeChange() {
           const checked = this._native.checked;
-          /* 浏览器在派发 change **之前**就把 .indeterminate 清掉了，所以这里不能靠读它判断 ——
-             只要宿主还挂着 indeterminate 就一起收掉（点击清半选是原生 checkbox 的行为） */
+          /* 浏览器在派发 change **之前**就清掉了 .indeterminate，不能靠读它判断 —— 只要宿主还挂着就一起收掉 */
           if (this.ele.hasAttribute('indeterminate')) this.ele.removeAttribute('indeterminate');
           this._native.indeterminate = false;
           this.ele.toggleAttribute('checked', checked);
-          /* ⚠️ emit(...) 的括号里不许出现别的引号字符串（对账器把里面的字面量都当事件名），
-             所以 value 先取到变量里再进载荷 */
+          /* ⚠️ emit(...) 括号里不许出现别的引号字符串（对账器把里面的字面量都当事件名），value 先取到变量里再进载荷 */
           const value = this.value;
           this.emit('change', {
             data: { checked, value },

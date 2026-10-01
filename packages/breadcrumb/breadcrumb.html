@@ -1,9 +1,4 @@
-<!--
-  mc-breadcrumb — 面包屑容器
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-breadcrumb — 面包屑容器；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -16,11 +11,9 @@
       color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
 
       /* 分隔符。separator 属性会在 attached() 里落到同一个变量上，所以两条路都通：
-         <mc-breadcrumb separator=">"> 与 style="--mc-breadcrumb-sep: '·'" */
+         separator=">" 与 style="--mc-breadcrumb-sep: '·'" */
       --mc-breadcrumb-sep: '/';
 
-      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
-         <mc-breadcrumb style="--mc-breadcrumb-current-color: var(--mc-color-primary, var(--mc-def-color-primary))"> */
       --mc-breadcrumb-item-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
       --mc-breadcrumb-item-color-hover: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-breadcrumb-current-color: var(--mc-color-fg, var(--mc-def-color-fg));
@@ -28,8 +21,7 @@
       --mc-breadcrumb-gap: var(--mc-space-2, var(--mc-def-space-2));
     }
 
-    /* 2. 维度 / 3. 尺寸：面包屑是**一行文字导航**，没有 variant 与 size ——
-       只声明真正支持的维度（规范 1.2）。要改字号就覆盖 :host 的 font-size 或直接用 style */
+    /* 2. 维度 / 3. 尺寸：面包屑是一行文字导航，没有 variant 与 size（规范 1.2） */
 
     /* 4. 状态：当前项在 mc-breadcrumb-item 上（current），容器不镜像状态 */
 
@@ -44,10 +36,8 @@
       list-style: none;
     }
 
-    /* 分隔符 = 每一项自己的 ::before（第一项没有），与文字之间的间距由同一条 gap 通道补上。
-       ::slotted() 只接受**复合选择器**，所以用 :not(:first-child) 而不是兄弟组合器。
-       ⚠️ 属性走 -attr 这个内部变量，不写 --mc-breadcrumb-sep：两者落在同一个内联属性上，
-       JS 覆盖 / 清理它会把使用者写在 style 上的令牌一起抹掉（实测踩过） */
+    /* 分隔符 = 每一项自己的 ::before（第一项没有），间距由同一条 gap 通道补上；::slotted() 只接受复合选择器。
+       ⚠️ 属性走 -attr 内部变量，不写 --mc-breadcrumb-sep：JS 覆盖 / 清理会把使用者的令牌一起抹掉 */
     ::slotted(mc-breadcrumb-item:not(:first-child))::before {
       content: var(
         --mc-breadcrumb-sep-attr,
@@ -93,11 +83,8 @@
       },
 
       proto: {
-        /**
-         * separator 属性 → --mc-breadcrumb-sep-attr（CSS 里 content 的兜底链的第一段）。
-         * content 只吃字符串，所以值要带引号；回到默认值时**删掉**这个内部变量，
-         * 而不是写 '/' —— 写同一族变量等于把「直接覆盖令牌」那条路堵死。
-         */
+        /** separator → --mc-breadcrumb-sep-attr（content 兜底链第一段）。⚠️ 回默认值要删掉这个内部变量而不是写 '/'，
+         *  否则写同一族变量会把「直接覆盖令牌」那条路堵死 */
         applySeparator() {
           const value = (this.ele.getAttribute('separator') ?? '').trim();
           if (!value || value === '/') this.ele.style.removeProperty('--mc-breadcrumb-sep-attr');

@@ -1,9 +1,4 @@
-<!--
-  mc-table — 数据表格。columns / data 是对象，运行时一律走 property（P6）。
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-table — 数据表格（columns / data 走 property，P6）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -15,8 +10,7 @@
       font-size: var(--mc-table-font);
       color: rgb(var(--mc-table-fg));
 
-      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
-         <mc-table style="--mc-table-head-bg: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle))"> */
+      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌；按实例覆盖 <mc-table style="--mc-table-head-bg: …"> */
       --mc-table-font: var(--mc-text-sm, var(--mc-def-text-sm));
       --mc-table-fg: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-table-border: var(--mc-color-border, var(--mc-def-color-border));
@@ -30,8 +24,7 @@
       --mc-table-state-pad: var(--mc-space-8, var(--mc-def-space-8));
     }
 
-    /* 2. 表格本体。分隔边框用初始值（separate）就够，只把间距归零 ——
-           "把相邻边框合成一条"那条声明本来也不需要 */
+    /* 2. 表格本体：分隔边框用初始值（separate）就够，只把间距归零 */
     .mc-table {
       width: 100%;
       border-spacing: 0;
@@ -83,8 +76,7 @@
     <table class="mc-table" part="table" attr:aria-busy="loading !== null ? 'true' : null">
       <thead>
         <tr>
-          <!-- 写在 <table> 里的自定义元素会被 HTML 解析器搬到表格外面（foster parenting），
-               所以这两个 o-fill 在 attached() 里被挪回 thead / tbody —— 见同目录 README -->
+          <!-- 写在 <table> 里的自定义元素会被 foster parenting 搬到表格外，所以 attached() 里把这两个 o-fill 挪回来 -->
           <o-fill id="mc-table-head" name="mc-table-head" :value="cols"></o-fill>
         </tr>
       </thead>
@@ -117,13 +109,9 @@
       tag: 'mc-table',
 
       attrs: {
-        /* 对象数组。属性写法只作 JSON 兼容（P6：走属性通道会被 JSON 序列化），
-           运行时一律用 property：el.columns = [{ key, title }] */
+        /* 对象数组。属性写法只作 JSON 兼容（P6：走属性通道会被 JSON 序列化），运行时一律用 property */
         columns: null,
-        /* ⚠️ 行数据**不能**像 columns 那样声明进 attrs：`data` 是 ofa 元素代理上的保留名
-           （$.fn.data），声明它会让每次属性同步都往代理写一次 `data` → TypeError，
-           整个组件渲染不出来（同 P7 / P31 那一族）。所以 data 只做宿主 property +
-           自己听的属性观察（见 attached 的 MutationObserver）。 */
+        /* ⚠️ 行数据**不能**声明进 attrs：`data` 是 ofa 元素代理上的保留名（$.fn.data），声明它会让属性同步往代理写 `data` → TypeError，组件整个渲染不出来（P7 / P31 那一族）。所以 data 只做宿主 property + 自己听的属性观察。 */
         striped: null,
         hoverable: null,
         loading: null,
@@ -131,8 +119,7 @@
       },
 
       data: {
-        /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。
-           ⚠️ 规范化结果绝不能写回 attrs 声明的键 —— 会被 ofa 再次 JSON 序列化（P6） */
+        /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。⚠️ 规范化结果绝不能写回 attrs 声明的键 —— 会被 ofa 再次 JSON 序列化（P6） */
         cols: [],
         rows: [],
       },
@@ -143,8 +130,7 @@
         this._rowFill = root.querySelector('#mc-table-rows');
         this._wrap = root.querySelector('.mc-wrap');
 
-        /* 挂载前就赋的 property（createElement 之后马上 el.data = …）落在宿主上只是普通属性，
-           这里先收下来；构造期不能往宿主写属性（P31），所以访问器只装在 this.ele 的 JS 属性上 */
+        /* 挂载前就赋的 property（createElement 之后马上 el.data = …）落在宿主上只是普通属性，这里先收下来；构造期不能往宿主写属性（P31） */
         const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
         this._presetColumns = hasOwn('columns') ? this.ele.columns : undefined;
         this._presetData = hasOwn('data') ? this.ele.data : undefined;
@@ -170,14 +156,11 @@
       },
 
       attached() {
-        /* 把被解析器搬出表格的 o-fill 挪回去。移动 DOM 节点不重新解析，所以行就是真 <tr>。
-           append 同一个节点是幂等的，反复挂载也安全 */
+        /* 把被解析器搬出表格的 o-fill 挪回去。移动 DOM 节点不重新解析，所以行就是真 <tr>；append 同一节点幂等 */
         this._headFill && this.ele.shadowRoot.querySelector('thead tr')?.append(this._headFill);
         this._rowFill && this.ele.shadowRoot.querySelector('tbody')?.append(this._rowFill);
 
-        /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，
-           构造期写进去的值会被它盖掉（实测 rows 恒为空）。顺序 = 属性（JSON 兼容）→
-           挂载前赋的 property（property 赢） */
+        /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的值会被它盖掉；顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
         if (!this._applied) {
           this._applied = true;
           if (this.ele.hasAttribute('columns')) this.applyColumns(this.ele.getAttribute('columns'));

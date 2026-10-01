@@ -2,7 +2,6 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="../button/button.html"></l-m>
     <l-m src="./input.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -23,9 +22,7 @@
 
     <h2>例子</h2>
 
-    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码。
-         标题只写中文名（尽量短），说明只在「看一眼看不出来」时才写；
-         取词规则见 packages/README.md「演示区四段」。 -->
+    <!-- 演示区四段：标题 → 说明（可选）→ 组件 → 组件代码；取词规则见 packages/README.md「演示区四段」 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
@@ -166,8 +163,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不在这里手抄 ——
-         唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>
   <script>

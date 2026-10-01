@@ -1,9 +1,4 @@
-<!--
-  mc-menu — 垂直菜单容器
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-menu — 垂直菜单容器。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -20,8 +15,7 @@
       --mc-menu-gap: var(--mc-space-1, var(--mc-def-space-1));
       --mc-menu-radius: var(--mc-radius-md, var(--mc-def-radius-md));
 
-      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌。按实例覆盖：
-         <mc-menu style="--mc-menu-item-bg-current: var(--mc-color-info-subtle, var(--mc-def-color-info-subtle))"> */
+      /* 色槽：L3 组件令牌，默认引用 L2 语义令牌；按实例覆盖（style 上写 --mc-menu-*） */
       --mc-menu-item-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
       --mc-menu-item-color-hover: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-menu-item-color-current: var(--mc-color-primary, var(--mc-def-color-primary));
@@ -30,7 +24,7 @@
       --mc-menu-group-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
     }
 
-    /* 2. 维度 variant：plain 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+    /* 2. 维度 variant：plain 是默认外观，直接写在 1 区（:host(:not([variant])) 会静默失效，P14） */
     :host([variant='surface']) {
       padding: var(--mc-space-2, var(--mc-def-space-2));
       border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
@@ -50,12 +44,9 @@
       --mc-menu-font: var(--mc-text-base, var(--mc-def-text-base));
     }
 
-    /* 4. 状态：容器自己一个都没有 —— 当前项 / 禁用都读插槽里原生元素自己的属性，
-       见 mc-menu-item。组件不替使用者改 DOM，也就不需要在这里镜像状态 */
+    /* 4. 状态：容器自己一个都没有 —— 当前项 / 禁用由 mc-menu-item 读插槽元素，组件不替使用者改 DOM */
 
-    /* 5. 内部结构：列表语义挂在真正包住子项的那层。
-       role=list 不能写宿主上指望 slot 投影出子项 —— 子项在 light DOM，两者的
-       listitem 由 mc-menu-item 自己声明，两边对不上时读屏看不到列表结构（实测过）。 */
+    /* 5. 内部结构：role=list 挂在真正包住子项的那层 —— 子项在 light DOM，槽投影不出列表结构 */
     .mc-list {
       display: flex;
       flex-direction: column;

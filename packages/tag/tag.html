@@ -1,9 +1,4 @@
-<!--
-  mc-tag — 分类 / 状态标签
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-tag — 分类 / 状态标签；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
@@ -41,14 +36,12 @@
       --mc-tag-pad-y: var(--mc-space-1, var(--mc-def-space-1));
       --mc-tag-gap: var(--mc-space-1, var(--mc-def-space-1));
       --mc-tag-radius: var(--mc-radius-md, var(--mc-def-radius-md));
-      /* 关闭图标的字号（命中区固定 24px，改这个只改图形大小）。
-         1.25em 是按钮那一档同样的光学补偿：标签文字 14px + medium，同尺寸的描边图标看着偏轻 */
+      /* 关闭图标的字号：命中区固定 24px；1.25em 与按钮同档的光学补偿（14px + medium 文字旁的描边图标偏轻） */
       --mc-tag-close-size: 1.25em;
       /* hover 反馈的强度：0 = 不响应（静态标签），checkable 才打开 */
       --mc-tag-layer: 0;
 
-      /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，
-         subtle-fill 是浅底 —— 中性色没有 -subtle，用下沉面色 */
+      /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，subtle-fill 是浅底（中性色没有 -subtle，用下沉面色） */
       --mc-tag-fill: var(--mc-color-neutral, var(--mc-def-color-neutral));
       --mc-tag-on-fill: var(--mc-color-neutral-fg, var(--mc-def-color-neutral-fg));
       --mc-tag-accent: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
@@ -152,9 +145,7 @@
       opacity: calc(var(--mc-tag-layer) * 1.5);
     }
 
-    /* toggle 层：透明原生 button 铺满宿主，点击/键盘/焦点环都是浏览器给的。
-       z-index 必须高于 .mc-layer，否则点击被叠层拦掉（P21）；
-       非 checkable 时 display:none —— 常驻 DOM 靠属性显隐（P10） */
+    /* toggle 层：透明原生 button 铺满宿主，点击/键盘/焦点环都是浏览器给的。z-index 必须高于 .mc-layer，否则点击被叠层拦掉（P21）；非 checkable 时 display:none（P10） */
     .mc-toggle {
       all: unset;
       display: none;
@@ -173,8 +164,6 @@
       outline-offset: 2px;
     }
 
-    /* × 按钮：24×24 命中区（WCAG 2.2 AA 的下限；行内小标签够不到 32px 那道线）。
-       它是 toggle 层的兄弟且 z-index 更高 —— 点 × 不会连带切换选中 */
     .mc-close {
       display: none;
       position: relative;
@@ -183,8 +172,7 @@
       box-sizing: border-box;
       width: var(--mc-space-6, var(--mc-def-space-6));
       height: var(--mc-space-6, var(--mc-def-space-6));
-      /* 24px 的命中区不能反过来把标签撑高：负外边距把落在上下内边距里的那 8px 抵消掉，
-         高度仍旧由字号决定（closable 与否、三档尺寸都一样高） */
+      /* 24px 的命中区不能反过来把标签撑高：负外边距抵消落在上下内边距里的那 8px，高度仍由字号决定 */
       margin-block: calc(var(--mc-tag-pad-y) * -1);
       padding: 0;
       border: 0;
@@ -217,7 +205,6 @@
 
   <span class="mc-layer" aria-hidden="true"></span>
 
-  <!-- 空的原生按钮只承载交互语义（名字靠 applyLabel 从插槽文本镜像过来） -->
   <button
     class="mc-toggle"
     type="button"
@@ -228,8 +215,7 @@
 
   <slot></slot>
 
-  <!-- 关闭：内置图标（静态图标直接用类，省一个组件请求）；无障碍名由 aria-label 给，
-       图形本身 mc-icon 那条规则不带语义，这里再显式 aria-hidden 一次 -->
+  <!-- 关闭：内置图标（静态图标直接用类，省一个组件请求）；无障碍名由 aria-label 给，图形本身要有语义就再 aria-hidden -->
   <button
     class="mc-close"
     part="close"
@@ -242,9 +228,6 @@
   </button>
 
   <script>
-    /* color 也收 hex（`<mc-tag color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器。
-       标签默认是浅底外观（subtle），所以这里要接 subtle-fill —— 主题重算与"浅底上读不清"的
-       警告都在那个文件里 */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
@@ -253,7 +236,6 @@
       tag: 'mc-tag',
 
       attrs: {
-        // 标签默认中性 —— 语义色是强调，不是默认
         color: 'neutral',
         variant: 'subtle',
         size: 'md',
@@ -266,7 +248,6 @@
       },
 
       ready() {
-        // 这里 shadow 已建好（同 mc-card / mc-collapse-item）
         this._toggle = this.ele.shadowRoot.querySelector('.mc-toggle');
         this._slot = this.ele.shadowRoot.querySelector('slot');
 
@@ -285,8 +266,7 @@
         // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
 
-        /* toggle 按钮是空的（内容在旁边的插槽里），无障碍名得跟着插槽文本走 ——
-           slotchange 覆盖「内容变了」这一路，运行时不再盯子树 */
+        /* slotchange 覆盖「插槽内容变了」这一路；运行时不再盯子树 */
         this._onSlotChange = () => this.applyLabel();
         this._slot.addEventListener('slotchange', this._onSlotChange);
         this.applyLabel();
@@ -324,7 +304,7 @@
           this.emit('change', { data: { selected }, bubbles: true, composed: true });
         },
 
-        /** 只发事件，不删 DOM —— 删不删由使用者决定 */
+        /** 只发事件，不删 DOM */
         onClose() {
           if (this.ele.hasAttribute('disabled')) return;
           this.emit('close', { bubbles: true, composed: true });

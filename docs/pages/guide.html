@@ -129,9 +129,8 @@
     </p>
   </div>
   <script>
-    /* 挂到布局页（ofa.js 嵌套路由父页面），相对**本页面文件**解析。
-     * 本页属于「文档」分区 → 挂**分区布局页**（三栏：左栏菜单 = 本分区的三项 + 正文 + 右栏本页目录），
-     * 与 packages/<slug>/page.html 同级；只有单栏的站点页（首页）才挂 '../layout.html'。 */
+    /* 挂到布局页（ofa.js 嵌套路由父页面），相对**本页面文件**解析。本页属于「文档」分区 → 挂**分区布局页**
+     * （三栏：左栏菜单 = 本分区的三项 + 正文 + 右栏本页目录），与 packages/<slug>/page.html 同级；只有单栏的站点页（首页）才挂 '../layout.html'。 */
     export const parent = '../doc-layout.html';
 
     export default () => ({ data: {} });

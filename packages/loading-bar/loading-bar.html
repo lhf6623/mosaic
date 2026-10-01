@@ -1,14 +1,8 @@
-<!--
-  mc-loading-bar — 加载条
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-loading-bar — 加载条。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主 = 一条轨道。**状态只有一个入口**：`state` 属性（idle / loading / done / error），
-          视觉全由它派生 —— CSS 里没有第二个标记，脚本只补 CSS 做不到的两件事（见脚本注释）。 */
+    /* 1. 宿主 = 一条轨道。状态只有一个入口：`state` 属性，视觉全由它派生。 */
     :host {
       position: fixed;
       inset-inline: 0;
@@ -18,27 +12,25 @@
       box-sizing: border-box;
       height: 4px;
       background-color: var(--mc-loading-bar-track, transparent);
-      /* ⚠️ 必须 none：默认那一种是钉在视口顶部、横跨整个宽度的，不写这一行会挡住
-         顶栏 / 弹层 / 按钮的点击（容器里那一种同样不该截走自己那 2~4px 上的指针） */
+      /* ⚠️ 必须 none：默认那种横跨视口顶部，不写会挡住顶栏 / 弹层 / 按钮的点击 */
       pointer-events: none;
-      /* 不出现是默认姿态：idle 不显示；收尾则靠 fade 动画走到 opacity 0 并停在那儿 */
+      /* 不出现是默认姿态：收尾靠 fade 走到 opacity 0 并停住 */
       visibility: hidden;
       opacity: 0;
 
-      /* L3 色槽：**默认就取主题色**（在跑 / 成功用主色）；要换就覆盖这个令牌 */
+      /* L3 色槽：默认取主题色，要换就覆盖这个令牌 */
       --mc-loading-bar-fill: var(--mc-color-primary, var(--mc-def-color-primary));
-      /* 出错那一下的色：主题的 danger。它只用在收尾，换主题色照旧只改令牌 */
+      /* 出错那一下的色：主题的 danger */
       --mc-loading-bar-error: var(--mc-color-danger, var(--mc-def-color-danger));
-      /* 时长都走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
-         写死秒数会让「减弱动效」静默失效（同 mc-spinner） */
+      /* 时长走 --mc-duration-*：写死秒数会让「减弱动效」静默失效 */
       --mc-loading-bar-creep: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 24);
       --mc-loading-bar-finish: calc(var(--mc-duration-base, var(--mc-def-duration-base)) * 1.2);
       --mc-loading-bar-fade: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 1.2);
-      /* 爬升的终点：**到不了 100%** 才像「还在跑」，到了反而像卡住 */
+      /* 爬升的终点：到不了 100% 才像「还在跑」 */
       --mc-loading-bar-reach: 90%;
     }
 
-    /* 2. 维度一 state：idle 一条规则都不用写（默认就是 :host 那副样子） */
+    /* 2. 维度一 state（idle 不用写规则，默认就是 :host 那副样子） */
     :host([state='loading']),
     :host([state='done']),
     :host([state='error']) {
@@ -46,8 +38,7 @@
       opacity: 1;
     }
 
-    /* 3. 出错：只换色槽（其余全跟「在跑 / 收尾」一样）——**没有 color 维度**，
-          颜色直接取自主题，要改走令牌（见 README 的令牌表） */
+    /* 3. 出错：只换色槽 —— 没有 color 维度，改颜色走令牌 */
     :host([state='error']) {
       --mc-loading-bar-fill: var(--mc-loading-bar-error);
     }
@@ -57,7 +48,7 @@
       height: 2px;
     }
 
-    /* 5. 维度三 position：static = 就在它所在的容器里，块级、通宽、占自己那 2~4px */
+    /* 5. 维度三 position：static = 就在所在容器里占自己那 2~4px */
     :host([position='static']) {
       position: static;
     }
@@ -69,17 +60,13 @@
       background-color: rgb(var(--mc-loading-bar-fill));
     }
 
-    /* 7. 在跑：一条长缓出，从 0 爬向 reach。
-          ⚠️ 用 transition 而不是 animation —— 中途被打断时，下一条 transition 会**从当前值**
-          接着走，收尾于是天然「不闪回 0」，也不必再去读动画值（CSS 读不到它）。 */
+    /* 7. 在跑：一条长缓出从 0 爬向 reach。⚠️ 用 transition 而不是 animation：中途被打断时下一条会从当前值接着走，收尾天然不闪回 0 */
     :host([state='loading']) .mc-bar {
       width: var(--mc-loading-bar-reach);
       transition: width var(--mc-loading-bar-creep) cubic-bezier(0.1, 0.6, 0.2, 1);
     }
 
-    /* 8. 收尾：成功与出错走**同一条路**，只有色槽不同。
-          先滑到 100%，再过同样长的时间才开始淡出 —— 那个延迟就是「先到 100%，再消失」的关键，
-          同时开始的话条子会在半路就淡没（实测：694px 的容器里只走到 212px 就没了）。 */
+    /* 8. 收尾：成功与出错走同一条路，只有色槽不同；淡出必须延迟同样时长，同时开始会在半路就淡没 */
     :host([state='done']) .mc-bar,
     :host([state='error']) .mc-bar {
       width: 100%;
@@ -101,7 +88,7 @@
     }
   </style>
 
-  <!-- 纯装饰：语义在宿主上（role="progressbar" + aria-busy + aria-label），图形对读屏隐藏 -->
+  <!-- 纯装饰：语义在宿主上（role / aria-busy / aria-label），图形对读屏隐藏 -->
   <div class="mc-bar" part="bar" aria-hidden="true"></div>
 
   <script>
@@ -111,13 +98,12 @@
       tag: 'mc-loading-bar',
 
       attrs: {
-        /* 状态：唯一入口。idle = 不出现；loading = 在跑（爬升）；
-           done / error = 收尾（先滑到 100% 再淡出）—— 两者只差填充色 */
+        /* 状态：唯一入口。idle 不出现；loading 爬升；done / error 收尾，只差填充色 */
         state: 'idle',
         size: 'md',
-        /** 钉在哪儿：fixed = 视口顶部（全局在忙）；static = 就在它所在的容器里（那一块在忙） */
+        /** 钉在哪儿：fixed = 视口顶部（全局在忙）；static = 就在所在容器里 */
         position: 'fixed',
-        /** 屏幕阅读器文案。它不显示在界面上，所以默认值就是它的全部内容 */
+        /** 屏幕阅读器文案：它不显示在界面上，默认值就是全部内容 */
         label: '加载中',
       },
 
@@ -127,7 +113,7 @@
       },
 
       watch: {
-        // watch 在构造期也会触发一次（P5），_live 守卫把它挡在挂载前
+        // watch 在构造期也会触发（P5），_live 守卫把它挡在挂载前
         state() {
           if (this._live) this.syncState();
         },
@@ -138,11 +124,8 @@
 
       proto: {
         /**
-         * 样式全由 `[state]` 驱动，脚本只补两件 CSS 做不到的事：
-         *   ① 进 loading：把上一轮收尾留下的宽度**瞬间**归零，再放开 transition 让它重新爬
-         *      （不归零的话它会从 100% 往回滑一下）；
-         *   ② 语义：只有「在跑」才挂 role / aria-busy / aria-label —— 收尾已经不是「在忙」了。
-         * 其余（出现、爬升、滑满、淡出）全是 CSS：换状态就是换选择器命中。
+         * 样式全由 `[state]` 驱动，脚本只补两件 CSS 做不到的事：① 进 loading 时把上一轮留下的宽度
+         * 瞬间归零再重新爬（不归零会从 100% 往回滑）；② 只有「在跑」才挂 role / aria-busy / aria-label。
          */
         syncState() {
           const bar = this.bar();
@@ -151,7 +134,7 @@
           this.syncSemantics();
         },
 
-        /** 让爬升从 0 开始：先关掉 transition 把宽度按到 0，再把它交回 CSS（目标 = reach） */
+        /** 让爬升从 0 开始：先关掉 transition 把宽度按到 0，再交回 CSS（目标 = reach） */
         restartCreep(bar) {
           bar.style.transition = 'none';
           bar.style.width = '0';

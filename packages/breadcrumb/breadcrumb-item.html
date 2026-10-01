@@ -1,16 +1,8 @@
-<!--
-  mc-breadcrumb-item — 面包屑的一级（配合 mc-breadcrumb 使用）
-
-  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-breadcrumb-item — 面包屑的一级（配合 mc-breadcrumb）；设计取舍见 README.md 的「设计取舍」。经 CDN 直发。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道
-       （同 mc-menu-item 的坑），消费一律带兜底值。
-       font 退回继承：shadow-base 的 :host 会给每个宿主重赋 font-* / line-height，
-       不退回就跟着 text-base 走，而不是跟着容器的字号 */
+    /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道；font 退回继承 */
     :host {
       display: inline-flex;
       align-items: center;
@@ -30,9 +22,8 @@
       font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
 
-    /* 5. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。
-       ⚠️ 颜色/下划线这两条写在 ::slotted(a) 上是安全的（祖先 shadow 树里没声明过），
-       但面包屑不承诺 <button> —— shadow-base 的 button reset 会赢过这里的声明（P33） */
+    /* 5. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。⚠️ ::slotted(a) 上的颜色/下划线安全
+       （祖先 shadow 树没声明过），但 <button> 不承诺 —— shadow-base 的 reset 会赢（P33） */
     ::slotted(a) {
       color: inherit;
       text-decoration: none;
@@ -81,16 +72,11 @@
       },
 
       proto: {
-        /** 列表语义：容器是 role=list，这一级就得是 listitem；使用者自己写了 role 就不覆盖 */
         applyRole() {
           if (!this.ele.hasAttribute('role')) this.ele.setAttribute('role', 'listitem');
         },
 
-        /**
-         * current → aria-current="page"：两个属性绑在一起，使用者不用记两遍。
-         * ⚠️ 只摘掉**组件自己写上去**的那个 —— 使用者手写的 aria-current 不动，
-         * 否则「组件不改使用者 DOM」这条承诺就不成立了（这里踩过一回）。
-         */
+        /** current → aria-current="page"。⚠️ 只摘掉组件自己写上去的那个，使用者手写的 aria-current 不动 */
         applyCurrent() {
           if (this.ele.hasAttribute('current')) {
             this.ele.setAttribute('aria-current', 'page');

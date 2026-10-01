@@ -1,9 +1,4 @@
-<!--
-  mc-switch — 开关
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-switch — 开关；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -21,8 +16,7 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
 
-      /* L3 组件令牌：轨道 / 滑块 / 内边距都开成可覆盖点。轨道长宽一定是 2 倍关系吗？
-         不是 —— 滑块行程由这三条算出来，改任何一个都不用跟着改第二条规则 */
+      /* L3 组件令牌：轨道 / 滑块 / 内边距都开成可覆盖点 —— 滑块行程由这几条算出来，改一条不用改第二条规则 */
       --mc-switch-gap: var(--mc-space-2, var(--mc-def-space-2));
       --mc-switch-pad-x: var(--mc-space-3, var(--mc-def-space-3));
       --mc-switch-track-w: 2.25rem;
@@ -73,9 +67,7 @@
       background-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
     }
 
-    /* 4. 内部结构。行盒子在这个原生 <label> 上：点轨道、点文案都落在同一个原生 input 上。
-       `flex: 1 1 auto` 不能省 —— 宿主在纵向 flex 容器里会被拉宽，
-       不铺满就出现「点在行里但没点到文案」的死区 */
+    /* 4. 内部结构。行盒子在原生 <label> 上：点轨道、点文案都落在同一个 input 上。`flex: 1 1 auto` 不能省 —— 不铺满就有点不到文案的死区 */
     .mc-base {
       display: flex;
       flex: 1 1 auto;
@@ -183,8 +175,7 @@
       },
 
       watch: {
-        /* 首次触发落在构造期（P5）。这两个 apply 只写 shadow 内部的原生 input（幂等），
-           构造期调用也安全 —— 没有需要跳过的副作用，所以不装首次守卫。 */
+        /* 首次触发落在构造期（P5）。这两个 apply 只写 shadow 内部的原生 input（幂等），构造期调用也安全，所以不装首次守卫 */
         checked() {
           this.applyChecked();
         },

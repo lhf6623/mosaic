@@ -1,9 +1,4 @@
-<!--
-  mc-select — 下拉选择（表单控件 + 浮层）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-select — 下拉选择（表单控件 + 浮层）；设计取舍与坑见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
@@ -107,7 +102,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
-    /* 没有选中项时显示 placeholder，压暗一档（数据由脚本镜像成 data-empty） */
     :host([data-empty]) .mc-value {
       color: rgb(var(--mc-select-placeholder-color));
     }
@@ -150,7 +144,6 @@
       outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: 2px;
     }
-    /* 有值且开了 clearable 才出现；这时箭头让位给 × */
     :host([clearable][data-filled]) .mc-clear {
       display: inline-flex;
     }
@@ -163,8 +156,7 @@
 
     /* 5. 面板与选项 */
     .mc-panel {
-      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，
-         否则那对 auto 会吃掉锚点定位（见 packages/popover/README.md 的实现约束） */
+      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，否则那对 auto 会吃掉锚点定位 */
       position: fixed;
       inset: auto;
       margin: 0;
@@ -184,8 +176,7 @@
       filter: drop-shadow(0 0 1px rgb(var(--mc-select-panel-border)))
         drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
 
-      /* 锚点定位：锚是 shadow 内的 .mc-control（见文件头）。默认 bottom-start 写在基类里 ——
-         ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），默认态挂属性选择器会整体失效 */
+      /* 锚点定位：锚是 shadow 内的 .mc-control。默认 bottom-start 写基类 —— ofa 里 `:host()` 嵌 `:not()` 会静默失效（P14） */
       position-anchor: --mc-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
       position-try-fallbacks: flip-block;
       top: anchor(bottom);
@@ -268,9 +259,7 @@
     <span class="mc-icon-close" aria-hidden="true"></span>
   </button>
 
-  <!-- 面板：原生 popover 进 top layer，位置全交给 CSS 锚点定位。
-       ⚠️ 刻意用 popover="manual"：auto 的 light dismiss 在 pointerdown 上先关、click 再开回来
-       （「点第二次关不掉」），开合一律由组件自己管 + composedPath 判外部（P20） -->
+  <!-- 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位；⚠️ 刻意用 popover="manual"：auto 的 light dismiss 会「点第二次关不掉」（P20） -->
   <div
     class="mc-panel"
     part="panel"
@@ -292,18 +281,15 @@
     let seq = 0;
 
     export default async ({ load }) => {
-      /* mc-option 是这个单元的另一半（它只声明数据）：注册 mc-select 之前先把它就位，
-         这样 attached() 收集选项时它们已经升级好。路径相对本文件解析 */
+      /* mc-option 是这个单元的另一半：先注册它，attached() 收选项时它们才已升级好（路径相对本文件） */
       await load('./option.html');
 
       return {
         tag: 'mc-select',
 
         attrs: {
-          /* HTML 里的初始值（kebab 写作 default-value）。运行时值走宿主 DOM property `value`
-             （见 ready）—— 所以 `value` 不是 attrs 的键、也不进属性表 */
+          /* 初始值在 HTML 属性 default-value；运行时值走宿主 DOM property `value`（见 ready），所以 `value` 不进 attrs */
           defaultValue: '',
-          /* 字段名；同时当内部 aria id 的前缀（选项 / 列表的 id 要唯一） */
           name: '',
           placeholder: '请选择',
           /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-select multiple> 失效 */
@@ -336,16 +322,14 @@
           this._uid = `${this.name || 'mc-select'}-${(seq += 1)}`;
           this._list.id = `${this._uid}-list`;
 
-          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值（multiple 时是数组），
-             写 = 直接改选中态。刻意不反射成宿主属性 —— `value` 不是 attrs 的键。 */
+          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值，写 = 直接改选中态；刻意不反射成宿主属性 */
           Object.defineProperty(this.ele, 'value', {
             configurable: true,
             get: () => this.readValue(),
             set: (value) => this.writeValue(value),
           });
 
-          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle，模板里不用为它加绑定。
-             显式显示 / 收起那两行再包一层 run()（见 packages/boot/scroll-pin.js） */
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run() */
           this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
           this._popoverOk = typeof this._panel?.showPopover === 'function';
         },
@@ -354,8 +338,7 @@
           this._onSlotChange = () => this.collectOptions();
           this._slot.addEventListener('slotchange', this._onSlotChange);
 
-          /* 点外部关闭：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是
-             被重定向后的宿主，必然误判成「在外部」 */
+          /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
           this._onDocPointerDown = (event) => {
             if (!this.isOpen()) return;
             if (event.composedPath().includes(this.ele)) return;
@@ -376,8 +359,7 @@
         },
 
         watch: {
-          /* ⚠️ ofa 初始化时会把每个 watch 空跑一遍（P5），而那次在构造期：写宿主属性会抛
-             NotSupportedError（P31）。所以每条分支都先跳过首触发 */
+          /* ⚠️ ofa 初始化会把每条 watch 空跑一遍（P5），那次在构造期写宿主属性会抛 NotSupportedError（P31） */
           multiple() {
             if (this.skipInit('multiple')) return;
             this.collectOptions();
@@ -427,8 +409,7 @@
             return this._panel?.matches(':popover-open') ?? false;
           },
 
-          /** placeholder 是声明过的字符串属性：ofa 可能把没写的它也反射成空串（P32），
-              所以「空 = 用默认文案」由这里兜 */
+          /** placeholder 是声明过的字符串属性：ofa 可能把没写的它也反射成空串（P32），「空 = 用默认文案」由这里兜 */
           placeholderText() {
             const own = this.ele.getAttribute('placeholder');
             if (own) return own;
@@ -437,10 +418,7 @@
 
           /* ---------- 选项收集与渲染 ---------- */
 
-          /**
-           * 从 light DOM 收 mc-option。用 querySelectorAll 而不是只看 slot 的 assignedElements：
-           * `o-fill` 渲染出来的条目住在它自己的 light DOM 里，assignedElements 只给到容器（P12）。
-           */
+          /** 用 querySelectorAll 而不是 slot.assignedElements：`o-fill` 渲染的条目住它自己 light DOM 里，后者只给到容器（P12） */
           collectOptions() {
             const previous = this._initialized
               ? new Set(this.readValueArray())
@@ -548,9 +526,7 @@
             control.setAttribute('aria-invalid', on('invalid') ? 'true' : 'false');
             control.setAttribute('aria-readonly', on('readonly') ? 'true' : 'false');
             control.setAttribute('aria-disabled', on('disabled') ? 'true' : 'false');
-            /* 无障碍名：触发按钮住在 shadow root 里，**外层给不了它名字**（跨 shadow 写不了
-               aria-label，IDREF 也解析不过去）—— 宿主上的 aria-label 是命名它的唯一入口，
-               转发过去。只转发 aria-label：aria-labelledby 跨 shadow 解析不到外层的元素。 */
+            /* 无障碍名：触发按钮住在 shadow root 里，外层给不了它名字（跨 shadow 写不了 aria-label，IDREF 也解析不过去）—— 转发宿主上的 aria-label 是唯一入口 */
             const label = this.ele.getAttribute('aria-label');
             if (label) control.setAttribute('aria-label', label);
             else control.removeAttribute('aria-label');
@@ -657,11 +633,7 @@
             this.emit('close', { bubbles: true, composed: true });
           },
 
-          /**
-           * 原生 toggle：状态与事件**不靠它**（见 syncOpenUI —— 排队发的 toggle 在
-           * 「刚关就又开」那种连招里会丢事件），这里只当兜底同步：万一浏览器自己把面板
-           * 收掉了（节点被移除等），状态也收敛回来。
-           */
+          /** 原生 toggle 只当兜底同步：状态与事件不靠它（排队发的 toggle 在「刚关就又开」的连招里会丢），浏览器自己把面板收掉时状态也收敛回来 */
           onNativeToggle(event) {
             const nowOpen = event.newState === 'open';
             if (nowOpen && this._active < 0) this.setActive(this.initialActiveIndex());

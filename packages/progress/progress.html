@@ -1,14 +1,8 @@
-<!--
-  mc-progress — 进度条
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-progress — 进度条。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。宿主本身就是轨道：底色、圆角、裁剪都写在它身上，
-          使用者的 style="height:…" 与 ::part(bar) 两条定制路都不用跨 shadow 找容器 */
+    /* 1. 宿主盒模型 + 色槽默认值。宿主本身就是轨道 —— 两条定制路都不用跨 shadow 找容器 */
     :host {
       display: block;
       position: relative; /* 内部绝对定位元素的包含块（P21） */
@@ -22,11 +16,10 @@
       --mc-progress-h: 0.5rem;
       --mc-progress-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       --mc-progress-track: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
-      /* 时长必须走 --mc-duration-*：shadow-base 在 prefers-reduced-motion 下把它们压到 1ms，
-         不确定态那条动画就自动停下来 */
+      /* 时长必须走 --mc-duration-*：prefers-reduced-motion 下会被压到 1ms，动画自动停 */
       --mc-progress-duration: calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 4);
 
-      /* 色槽：进度条只有一条填充（fill），文字色用不上，但接线器按约定会一起写 on-fill */
+      /* 色槽：只有一条填充（fill）；接线器按约定仍会写 on-fill */
       --mc-progress-fill: var(--mc-color-primary, var(--mc-def-color-primary));
     }
 
@@ -49,8 +42,7 @@
       --mc-progress-h: 0.25rem;
     }
 
-    /* 4. 状态：不确定态的宽度与位移交给 CSS —— 内联 width 会盖掉这条规则（P15），
-          所以脚本在不确定态下**不写**内联宽度 */
+    /* 4. 状态：不确定态宽度与位移交给 CSS —— 内联 width 会盖掉这条规则（P15），脚本不写它 */
     :host([indeterminate]) .mc-fill {
       width: 40%;
       animation: mc-progress-slide var(--mc-progress-duration)
@@ -80,8 +72,7 @@
   <div class="mc-fill" part="bar"></div>
 
   <script>
-    /* color 也收 hex（`<mc-progress color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器，
-        填的还是那条 --mc-progress-fill 色槽 */
+    /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-progress-fill 色槽 */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill'] });
@@ -90,7 +81,7 @@
       tag: 'mc-progress',
 
       attrs: {
-        /* 当前值。attr 是字符串，paint 里自己 parse；没写 = 0%（不确定态用 indeterminate 显式打开） */
+        /* 当前值。attr 是字符串，paint 里自己 parse；没写 = 0%（不确定态要显式打开） */
         value: null,
         max: 100,
         // 布尔属性默认值必须是 null（P1）
@@ -102,8 +93,7 @@
       ready() {
         this._fill = this.ele.shadowRoot.querySelector('.mc-fill');
 
-        /* 运行时状态走 property（规范 1.4）：setter 写宿主属性并**立刻**重绘 ——
-           不等 ofa 把属性同步回 data 的那一拍（P4）。attr 是唯一真相，所以这里读 attribute */
+        /* 运行时状态走 property（规范 1.4）：setter 写属性并**立刻**重绘，不等 ofa 同步那一拍（P4） */
         for (const name of ['value', 'max']) {
           Object.defineProperty(this.ele, name, {
             configurable: true,
@@ -154,7 +144,7 @@
           return Number.isFinite(parsed) ? parsed : fallback;
         },
 
-        /** 唯一入口：写填充宽度 + 同步宿主上的 aria。确定态的进度对读屏是一个数值 */
+        /** 唯一入口：写填充宽度 + 同步宿主上的 aria */
         paint() {
           if (!this._fill) return;
           const el = this.ele;

@@ -1,17 +1,9 @@
 #!/usr/bin/env node
 /**
  * 产物新鲜度守卫。跑：`node tools/check-fresh.mjs`（= `pnpm check:drift`）
- *
- * 守什么：`packages/color/tokens.css`、`packages/boot/mosaic.css`、`icons.generated.ts`、
- * `icons.license.txt` 这四份**是构建产物，但必须提交进仓库**（使用者侧零工具链，
- * CDN 直接取仓库里的文件）。于是有一种特有的脱节：**源码改了、产物没重新生成** ——
- * 构建成功、测试也绿（测试跑的是仓库里那份产物），只有使用者拿到的 CSS 是旧的。
- * 实测踩到过一次：`mosaic.css` 里缺了源码后来才用到的 `.visible` / `.resize` / `.px`，
- * 而且缺了不会有任何报错。
- *
- * 怎么判：重新跑一遍生成，比对前后。变了就说明仓库里那份是旧的。
- * ⚠️ 这个脚本**会改工作区**（重新生成产物）—— 这是故意的：报出来的同时已经修好了，
- *    使用者要做的只是把它提交上去。跑之前工作区干净，跑完要么没变、要么留下待提交的新产物。
+ * 守的这几份是构建产物、但必须提交进仓库（使用者侧零工具链，CDN 直取），于是有特有的脱节：源码改了、
+ * 产物没重新生成 —— 构建成功、测试也绿（测试跑的是仓库里那份），只有使用者拿到旧 CSS，且不报错。
+ * 怎么判：重新跑一遍生成再比对。⚠️ 脚本**会改工作区**（故意的：报出来时已经修好了，提交即可）。
  */
 
 import { spawnSync } from 'node:child_process';
@@ -59,7 +51,7 @@ for (const script of BUILD) {
 
 const stale = PRODUCTS.filter((f) => read(f) !== before.get(f));
 
-/** 内容指纹 + 头几条规则：CI 上只看到「哪份变了」定位不了，得能看出是重排还是真差异 */
+/** 内容指纹 + 头几条规则：只看到「哪份变了」定位不了，得能看出是重排还是真差异 */
 const fingerprint = (text) => {
   if (text === null) return '(缺失)';
   const rules = (text.match(/^[.\w][^\n{]*\{/gm) ?? []).slice(0, 3).join(' ');

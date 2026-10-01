@@ -1,14 +1,8 @@
-<!--
-  mc-tab — 一个标签（配合 mc-tabs 使用）。标签文案就是它的默认插槽。
-
-  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-tab — 一个标签（配合 mc-tabs 使用）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型。尺寸 / 色槽由容器通过 --mc-tabs-* 继承下来 ——
-          ⚠️ 这些变量不能在这里写默认值，否则会盖掉容器继承来的值 */
+    /* 1. 宿主盒模型。尺寸 / 色槽由容器通过 --mc-tabs-* 继承下来 —— ⚠️ 这里不能写默认值，否则会盖掉容器继承来的值 */
     :host {
       display: inline-flex;
       box-sizing: border-box;
@@ -49,8 +43,7 @@
       color: rgb(var(--mc-tabs-fg-selected, var(--mc-color-primary, var(--mc-def-color-primary))));
     }
 
-    /* 4. 禁用：光标留在宿主上（宿主写 pointer-events: none 会连 cursor 一起失效），
-          按钮自己 disabled —— 读屏可感知、点不动、Tab 也跳过 */
+    /* 4. 禁用：光标留在宿主上（宿主写 pointer-events: none 会连 cursor 一起失效），按钮自己 disabled */
     :host([disabled]) {
       opacity: 0.5;
       cursor: not-allowed;

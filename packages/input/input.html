@@ -1,13 +1,8 @@
-<!--
-  mc-input — 单行输入框
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-input — 单行输入框；设计取舍见 README.md「设计取舍」。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。尺寸 / 内边距 / 底色 / 边框全写在这里，外部 style="…" 才压得住 */
+    /* 1. 宿主盒模型 + 色槽默认值。尺寸 / 内边距 / 底色 / 边框全写在这里，外部 style 才压得住 */
     :host {
       display: inline-flex;
       align-items: stretch;
@@ -47,8 +42,7 @@
       font-size: var(--mc-text-base, var(--mc-def-text-base));
     }
 
-    /* 3. 状态。焦点环用 ring 令牌（P16）；错误色只有 --mc-color-danger 一处，不另开色板。
-       ⚠️ 顺序有意义：:host([disabled]) 排在 :host(:hover) 之后才压得住（同特异性，后者写在前） */
+    /* 3. 状态。焦点环用 ring 令牌（P16）；错误色只有 --mc-color-danger 一处。⚠️ 顺序有意义：:host([disabled]) 排在 :host(:hover) 之后才压得住（同特异性，后者写在前） */
     :host(:hover) {
       border-color: rgb(var(--mc-input-border-hover));
     }
@@ -74,7 +68,7 @@
       flex: 1 1 auto;
       min-width: 0;
     }
-    /* 原生 input 只负责"输入"，视觉全在宿主上；撑满整行，点哪儿都能聚焦 */
+    /* 原生 input 只管"输入"，视觉全在宿主上 */
     .mc-input {
       flex: 1 1 auto;
       align-self: stretch;
@@ -97,9 +91,7 @@
       cursor: not-allowed;
     }
 
-    /* 5. 前后缀 + 清除。三个 data-has-* 是 CSS 唯一的输入：空插槽不该占那一个 gap、
-       × 该不该出现（clearable + 有内容 + 没被禁用 / 只读），CSS 都看不见 ——
-       所以由脚本镜像成宿主属性（P10：常驻 DOM + 属性显隐） */
+    /* 5. 前后缀 + 清除。三个 data-has-* 是 CSS 唯一的输入：空插槽、× 该不该出现 CSS 都看不见，所以由脚本镜像成宿主属性（P10：常驻 DOM + 属性显隐）。 */
     .mc-prefix,
     .mc-suffix {
       display: none;
@@ -176,12 +168,10 @@
       tag: 'mc-input',
 
       attrs: {
-        // type 转发给内部原生 input
         type: 'text',
         // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
         defaultValue: '',
         placeholder: '',
-        // 表单字段名，转发给内部原生 input
         name: '',
         size: 'md',
         // null 默认不查默认值；maxlength 只转发，不参与任何状态
@@ -202,8 +192,7 @@
         // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
         this.applyDefaultValue();
 
-        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，
-           这样事件处理器里 e.target.value 读得到（P18），也不需要第二条属性反射通道 */
+        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件处理器里 e.target.value 读得到（P18） */
         Object.defineProperty(this.ele, 'value', {
           configurable: true,
           get: () => this._input.value,
@@ -242,11 +231,7 @@
       },
 
       proto: {
-        /**
-         * 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。
-         * 两条路径都要接住 —— 声明式 HTML 在 ready() 时属性已在；createElement 之后再写属性的，
-         * 要等 attached()。所以由 _defaultApplied 记账，谁先到谁生效。
-         */
+        /** 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached() —— 由 _defaultApplied 记账，谁先到谁生效。 */
         applyDefaultValue() {
           if (this._defaultApplied === true || !this._input) return;
           // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
@@ -256,7 +241,6 @@
           this._defaultApplied = true;
         },
 
-        /** data-has-* 是 CSS 唯一的输入（slot 有没有内容、× 该不该出现只有 JS 看得见） */
         applyState() {
           // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
           if (!this._mounted) return;
@@ -281,7 +265,7 @@
           );
         },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次按键都白触发一轮样式重算 */
+        /** 只在真的变了时才写宿主 —— 否则每次按键都白触发一轮样式重算 */
         mirror(name, on) {
           if (on === this.ele.hasAttribute(name)) return;
           if (on) this.ele.setAttribute(name, '');

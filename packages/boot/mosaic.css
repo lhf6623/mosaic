@@ -443,21 +443,14 @@
 }
 
 /* ============================================================================
- * Mosaic 工具类子集 —— **手写**，不经过任何 CSS 框架
+ * Mosaic 工具类子集 —— 手写（以前由 UnoCSS 生成 376 条，全仓真正引用到的只有 43 条）。
+ * 要加一条就来这里加一行；产物 `packages/boot/mosaic.css` 由 tools/build-css.mjs 装配。
  *
- * 这份子集以前由 UnoCSS 从 uno.config.ts 的精选数组生成：产出 376 条规则，而全仓真正
- * 引用到的只有 43 条（其余从来没被任何文件写过）。卸掉框架后只留用到的，
- * 要加一条新工具类就来这里加一行 —— 产物 `packages/boot/mosaic.css` 由 tools/build-css.mjs 装配。
- *
- * ⚠️ 加类名时记得搜一遍 `tests/`：测试会往页面里注入标记（例如 01 号套件用
- * `bg-surface` / `border-border` / `text-primary` 验语义色），只搜 docs/ 与 packages/ 会漏。
- *
- * 两条约束：
- *   · 颜色只走语义令牌（rgb(var(--mc-color-*))），**禁止原始色阶** —— 色阶不随主题切换，
- *     这条由 11 号套件的写法守卫拦着；
- *   · 组件本体里应该写真 CSS（见 packages/button/button.html），工具类是给"用页面写标记"的人用的。
- *
- * 层：mosaic.utilities（层顺序在 packages/color/tokens.css 里一次性钉死）
+ * ⚠️ 加类名前搜一遍 `tests/`：测试会往页面里注入标记（01 号套件用 `bg-surface` /
+ *    `border-border` / `text-primary` 验语义色），只搜 docs/ 与 packages/ 会漏。
+ * 两条约束：颜色只走语义令牌（**禁止原始色阶**，色阶不随主题切换，11 号套件拦着）；
+ * 组件本体应该写真 CSS，工具类是给"用页面写标记"的人用的。
+ * 层：mosaic.utilities（层顺序在 packages/color/tokens.css 里一次性钉死）。
  * ========================================================================== */
 
 @layer mosaic.utilities {

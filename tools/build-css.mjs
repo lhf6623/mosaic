@@ -1,21 +1,8 @@
 #!/usr/bin/env node
 /* mosaic — CSS 装配入口。跑：`node tools/build-css.mjs`（= `pnpm build:css`）。
- *
- * 装配出两份产物，都要提交进仓库（使用者侧零构建，CDN 直接取）：
- *
- *   packages/boot/mosaic.css          ← 使用者 `<link>` 的那份（可选：令牌 + 工具类）
- *       packages/color/tokens.css            生成 · 令牌 + @layer 层顺序声明
- *       packages/icon/icons.generated.css    生成 · 内置图标 mask
- *       packages/boot/utilities.css          手写 · 工具类子集
- *
- *   packages/boot/component-base.css  ← **组件自己** `<link>` 的那份（shadow 作用域，不外溢）
- *       packages/color/token-defaults.css    生成 · shadow 内的令牌默认值（--mc-def-*）
- *       packages/boot/shadow-base.css        手写 · 只进 shadow root 的元素级 reset
- *
- * 为什么守卫必须在这里：拼接少了一份输入，产出的是一份**坏 CSS 但退出码 0**
- * （var(--mc-*) 悬空、图标整片空白），构建"成功"、页面静默失效 —— 实测过。
- *
- * 加一条工具类：改 packages/boot/utilities.css（手写，没有扫描器替你生成）。
+ * 装配两份都要提交的产物（使用者侧零构建，CDN 直取）：packages/boot/mosaic.css = 令牌 + 图标 mask + 工具类；
+ * packages/boot/component-base.css = shadow 作用域内的 token-defaults + shadow-base。守卫必须在这里：
+ * 拼接少一份输入会产出**坏 CSS 但退出码 0**，页面静默失效。加工具类改 packages/boot/utilities.css（手写）。
  */
 
 import { existsSync, readFileSync, watch, writeFileSync } from 'node:fs';
@@ -67,7 +54,7 @@ function missingInputs() {
     .map((s) => `缺少输入 ${s.file}（由 ${s.by} 生成）` + (s.cmd ? ` —— 先执行 \`${s.cmd}\`` : ''));
 }
 
-/** 装配两份产物 + 自检；返回 { files: [{out, css}], problems } */
+/** 装配两份产物 + 自检 */
 function build() {
   const missing = missingInputs();
   if (missing.length) {
@@ -78,10 +65,8 @@ function build() {
   const baseCss = `${BASE_BANNER}\n${BASE_SOURCES.map((s) => read(s.file)).join('\n')}`;
   const problems = [];
 
-  /* 1. 层顺序：mosaic.icons 必须在声明里，且排在 utilities **之前**。
-   *    层顺序由「首次出现」决定；图标规则写着 color:inherit / width:1em，
-   *    一旦被排到 utilities 之后，实测会盖掉 text-primary（computed color 变成 rgb(0,0,0)）、
-   *    w-full 也压不住 width:1em。 */
+  /* 1. 层顺序：mosaic.icons 必须在声明里且排在 utilities **之前**——层顺序由「首次出现」决定，
+   *    一旦排到 utilities 之后，图标规则会盖掉 text-primary 与 w-full（实测）。 */
   const decl = /^@layer [^;]*;/m.exec(css)?.[0] ?? '';
   const icons = decl.indexOf('mosaic.icons');
   const utils = decl.indexOf('mosaic.utilities');
@@ -95,14 +80,14 @@ function build() {
     );
   }
 
-  /* 2. 内置图标一条都不能少：少了不会有任何提示，使用者看到的是「这个图标永久走远程、还慢」 */
+  /* 2. 内置图标一条都不能少：少了没有任何提示，表现为该图标永久走远程、还慢 */
   const lost = Object.keys(ICONS).filter((name) => !css.includes(`.mc-icon-${name}{`));
   if (lost.length) {
     problems.push(`以下内置图标的类名不在产物里：${lost.join(' ')} —— 检查 tools/gen-icons.mjs`);
   }
 
-  /* 3. 基座必须真的带上令牌默认值：少了它，组件里那条两级回退会静默落到「无值」，
-   *    表现为颜色 / 间距整片失效，而且只在「页面没引令牌表」时才复现 —— 正是最难查的那类。 */
+  /* 3. 基座必须真的带上令牌默认值：少了它，两级回退静默落到「无值」，颜色 / 间距整片失效，
+   *    而且只在「页面没引令牌表」时复现 —— 正是最难查的那类。 */
   if (!baseCss.includes('--mc-def-')) {
     problems.push(
       'component-base.css 里没有 --mc-def-* 默认值 —— 没引令牌表的页面上组件会整片失效（检查 packages/color/token-defaults.css）',

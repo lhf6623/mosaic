@@ -1,22 +1,14 @@
 /**
- * Mosaic 内置图标清单 —— **唯一真相源**。
- *
- * 左边是对外名（我们的稳定 API，写进使用者的 HTML，永不因上游改名而变），
- * 右边是上游「图标集:图标名」（会变：lucide 有 219 个别名、上游还会归档整个集）。
- *
- * 加一个内置图标 = 在这里加一行 + `pnpm icons`（生成物要提交）。使用者的 HTML 一个字都不用改。
- * 选名字时只有两条讲究：
- *   · 用语义名而不是上游名（`close` 而不是 lucide 的 `x`、`trash` 而不是 `trash-2`）；
- *   · 同一语义只留一个名字，别开同义词（别名会让文档与代码搜索都变难）。
- *
- * 许可：ALLOWED_SETS 是硬白名单，`tools/gen-icons.mjs` 会核对每一集的 license.spdx，
- * 不在名单里的集直接构建失败（GPL / CC-BY-NC / 需要署名的 CC-BY 一律进不来）。
+ * Mosaic 内置图标清单 —— **唯一真相源**：左边对外名（稳定 API，永不因上游改名而变），右边上游「图标集:图标名」。
+ * 加一个内置图标 = 加一行 + `pnpm icons`（生成物要提交）；选名字用语义名而非上游名，同一语义只留一个名字。
+ * 许可：ALLOWED_SETS 是硬白名单，`tools/gen-icons.mjs` 核对每一集的 license.spdx，不在名单里的集直接失败
+ * （GPL / CC-BY-NC / 需要署名的 CC-BY 一律进不来）。
  */
 
 /** 内置来源集。裸名（`name="search"`）查不到本地时，远程也按这个集拼 URL（可用 icon-set 覆盖）。 */
 export const ICON_SOURCE = 'lucide';
 
-/** 允许出现在内置集里的上游图标集（spdx 白名单在 gen-icons.mjs 里） */
+/** 允许出现在内置集里的上游图标集（spdx 白名单在 gen-icons.mjs） */
 export const ALLOWED_SETS = ['lucide', 'simple-icons'];
 
 export const ICONS = {
@@ -31,7 +23,7 @@ export const ICONS = {
   'arrow-left': 'lucide:arrow-left',
   'arrow-right': 'lucide:arrow-right',
 
-  // ---- 语义状态（mc-alert 的四个内置图形对应的就是这四个语义名）----
+  // ---- 语义状态（mc-alert 的四个内置图形）----
   info: 'lucide:info',
   warning: 'lucide:triangle-alert',
   success: 'lucide:circle-check',
@@ -102,11 +94,8 @@ export const ICONS = {
   'file-spreadsheet': 'lucide:file-spreadsheet',
 
   // ---- 品牌：开发与代码 ----
-  /* 品牌图标与语义图标同一条产物（都进 mosaic.css / icons.generated.css）。
-     ⚠️ 品牌 path 比 lucide 大一个量级（平均 1.4 KB CSS，淘宝 3.8 KB 最贵），
-     所以 mosaic.css 的预算跟着抬过一次 —— 加品牌前先看 tools/check-size.mjs。
-     ⚠️ 图形数据是 CC0（simple-icons），但**商标归各自公司所有**：只作「这是哪个平台」的标识，
-     别用来暗示合作或背书。署名与来源见 icons.license.txt。 */
+  /* 品牌图标与语义图标同一条产物（都进 mosaic.css）；品牌 path 大一个量级，预算跟着抬过。
+     图形数据是 CC0（simple-icons），但**商标归各自公司**：只作平台标识，别无暗示。见 icons.license.txt。 */
   github: 'simple-icons:github',
   gitlab: 'simple-icons:gitlab',
   gitee: 'simple-icons:gitee',

@@ -1,15 +1,7 @@
 /**
- * 生成组件单元的 README.md（跑：`node tools/gen-unit-readme.mjs`） —— **入口卡**，不是接口文档。
- *
- * 分工（硬边界，别越线）：
- *   api.md    = 接口事实（属性 / 方法 / 事件 / 配置 / 插槽 / part），唯一手写源 —— 会被渲染进文档页
- *   README.md = 单元开发文档：目录里有什么 + 设计取舍 + **不进文档页的东西**（令牌 / 实现约束 /
- *               刻意不做的 / 相邻单元分工）—— 改代码的人才要看，且**不随产物发给使用者**
- *   page.html = 文档页（演示 + 由 api.md 渲染出来的参考区）
- *
- * **两段式**：`<!-- hand:start/end -->` 之间是人写的设计取舍与相邻单元，脚本**只替换它外面的
- * 生成区**（状态 / 标签 / 一句话 / 文件清单 / demos 数都由仓库事实推）。手写区第一次由本脚本
- * 播下种子，之后原样保留 —— 否则重跑一次就把人写的东西冲掉了。
+ * 生成组件单元的 README.md（跑：`node tools/gen-unit-readme.mjs`）—— **入口卡**，不是接口文档：接口事实的
+ * 唯一手写源是 api.md；README 放目录里有什么 + 设计取舍 + 不进文档页的东西（令牌 / 实现约束）。**两段式**：
+ * 脚本只替换 `<!-- hand:start/end -->` 外面的生成区，手写区第一次播种后原样保留，否则重跑就把它冲掉了。
  */
 import fs from 'node:fs';
 import { format, resolveConfig } from 'prettier';
@@ -66,9 +58,8 @@ const NEIGHBORS = {
 const HAND_START = '<!-- hand:start -->';
 const HAND_END = '<!-- hand:end -->';
 
-/* 单元清单从 site-map 派生，不在这里硬编码 —— 加一个组件只要往 site-map 挂一条带 tagName 的节点，
-   跑一次脚本就有了（否则每加一个组件都要记得来改这个数组， forgotten 一次就是一份缺失的 README）。
-   ⚠️ 只收 `packages/` 下**有 tagName** 的节点：`packages/color/page.html` 是色板页，没有标签，不算单元。 */
+/* 单元清单从 site-map 派生，不在这里硬编码 —— 加组件只要往 site-map 挂一条带 tagName 的节点，
+   跑一次脚本就有（否则 forgotten 一次就是一份缺失的 README）。⚠️ 只收 `packages/` 下有 tagName 的节点。 */
 const SLUGS = flat
   .filter((n) => (n.path ?? '').startsWith('packages/') && n.tagName)
   .map((n) => n.path.split('/')[1]);
@@ -111,7 +102,7 @@ for (const slug of SLUGS) {
   if (testCount) rows.push(`| \`test/\` | 组件自己的冒烟套件（${testCount} 个文件） |`);
   for (const f of otherFiles) rows.push(`| \`${f}\` | 构建产物 / 附属文件 |`);
 
-  // 手写区：已存在就原样保留，否则播种子（「设计取舍」的坑位留给迁移脚本填）
+  // 手写区：已存在就原样保留，否则播种子
   const readmePath = `${dir}/README.md`;
   let hand = null;
   if (fs.existsSync(readmePath)) {
@@ -167,11 +158,8 @@ ${HAND_END}
 - 跨组件约定、组件索引与文档页规范：[\`packages/README.md\`](../README.md)
 `;
 
-  /* ⚠️ 落盘前过一遍 prettier：模板里的 markdown 表是**不补空格**的，直接写出去这些 README
-     会永远停在「未格式化」状态 —— 提交前手动格式化它们只是白费功夫（下次跑本脚本又变回来）。
-     ⚠️ `format()` **不会自己读配置文件**：只给 `filepath` 会退回默认值（printWidth 80），
-     与 `prettier --check .` 的口径对不上（实测：```html 代码块里的长标签就折返不回来）。
-     所以要 `resolveConfig` 取一次再传进去。 */
+  /* ⚠️ 落盘前过一遍 prettier：模板里的 markdown 表不补空格，直接写出去这些 README 会永远停在「未格式化」。
+     ⚠️ `format()` 不读配置文件（只给 `filepath` 会退回 printWidth 80），要 `resolveConfig` 取一次再传。 */
   const cfg = await resolveConfig(readmePath);
   const out = await format(text, { ...cfg, filepath: readmePath });
   fs.writeFileSync(readmePath, out);

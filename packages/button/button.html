@@ -1,15 +1,10 @@
-<!--
-  mc-button — Mosaic 参考组件实现
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-button — Mosaic 参考组件实现；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     :host {
-      /* ---------- 盒模型与尺寸：使用者最想覆盖的部分放最前 ---------- */
+      /* ---------- 盒模型与尺寸（使用者最想覆盖的放最前） ---------- */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -43,11 +38,8 @@
         var(--mc-def-color-primary)
       ); /* outline / ghost 的线与文字 */
 
-      /* ---------- 图标特调：按钮里的图标比文字大一档（14px 文字 → 17.5px 图标） ----------
-       * 为什么按钮要单独调：图标集统一是「1em = 跟随字号」，在正文里正好；但按钮文字是
-       * 14px + font-weight 500，同尺寸的图标看着比文字轻一档（描边型图标 24px 画布 2px 描边，
-       * 缩到 14px 只剩 1.17px）。这里是**按钮层**的光学补偿：放大尺寸补重量，
-       * 而不是去改图标集本身（改整套描边会波及所有图标）。想再调就覆盖这一个变量。 */
+      /* ---------- 图标特调 ----------
+       * 图标集是 1em 跟随字号，14px/500 的按钮文字旁显得轻一档 —— 这里做光学补偿。 */
       --mc-button-icon-size: 1.25em;
 
       /* filled 是默认外观，直接写在 :host 上；写 :host(:not([variant])) 会静默失效（P14） */
@@ -108,26 +100,15 @@
     }
 
     /* ---------- 形态：行内文字按钮（inline） ----------
-     * 「形态」是与外观 / 尺寸正交的另一个面（见 packages/README.md §1.2）：盒子交给文字。
-     *   · size 在这一形态下**只选文字档位**（font-size + 配对行高），不碰 --mc-control-h-*
-     *     那一族控制高度；三档盒子一样高，只有字变大。
-     *   · 命中区 = 行高 + 上下透明内边距，凑到 24px（WCAG 2.5.8 最小目标），三档都正好：
-     *       sm 16+4×2 · md 20+2×2 · lg 24+0×2。ghost 下这层内边距看不见；
-     *       filled / outline 会把底色描边一起撑到 24 高 —— inline 是为 ghost 设计的组合，
-     *       另两种按「贴字的胶囊」理解即可。
-     *   · **无底、无框、无下划线**：它是按钮，但长得像文字。所以 `variant` 在这一形态下不参与
-     *     （三种外观都渲染成文字，文字色一律取强调色）—— 写 `variant="ghost"` 不会错，但没必要。
-     *   · 悬停不加底色、不下划线，只把文字**压深一档**（color-mix 对语义色与 hex 一视同仁，
-     *     与 --mc-color-*-hover 实测差 3/255）；叠层因此整条关掉。
-     * ⚠️ 这一段必须排在上面三档 size 规则**之后**：:host([inline]) 与 :host([size='sm']) 同为
-     *     0-2-0，只能靠源码顺序分胜负（同 P14 那类「写法一换就静默失效」的坑）。 */
+     * 与外观/尺寸正交：盒子交给文字，size 只选文字档位、不碰 --mc-control-h-*；无底无框，variant 不参与；
+     * 命中区靠行高 + 上下透明内边距凑到 24px（WCAG 2.5.8）。
+     * ⚠️ 必须排在 size 三档之后：:host([inline]) 与 :host([size='sm']) 同为 0-2-0，靠源码顺序分胜负（同 P14）。 */
     :host([inline]) {
       height: auto;
       padding-inline: 0;
       padding-block: 2px;
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       vertical-align: baseline;
-      /* 纯文字：底色与描边都让掉（形态压过 variant），文字取强调色 */
       background-color: transparent;
       border-color: transparent;
       color: rgb(var(--mc-button-accent));
@@ -140,12 +121,10 @@
       padding-block: 0;
       line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
     }
-    /* 悬停只压深文字色：不加底色（那就成了文字高亮）、也不下划线（那是链接的语汇） */
     :host([inline]:hover) {
       color: color-mix(in oklab, rgb(var(--mc-button-accent)) 88%, black);
     }
 
-    /* 文字按钮整条关掉状态层 —— 它没有盒子，叠层只会变成一块贴在字后的底色 */
     :host([inline]) .mc-layer {
       display: none;
     }
@@ -181,7 +160,6 @@
     :host(:active) .mc-layer {
       opacity: 0.12;
     }
-    /* 禁用/加载态不响应 hover：正向选择器覆盖，不用 :not() */
     :host([disabled]) .mc-layer,
     :host([loading]) .mc-layer {
       opacity: 0;
@@ -203,10 +181,7 @@
       outline-offset: 2px;
     }
 
-    /* loading 指示器常驻 DOM 靠属性显隐；o-if / x-if 不响应运行时属性（P10）。
-       图形就是内置图标集里的 spinner（类名 = 内置图标，见 mc-icon）：
-       组件内部的**静态**图标直接吃类，不引 icon.html —— 少一个请求，
-       形状也和其余内置图标同一套描边。尺寸/颜色由那条图标规则给（1em + currentColor）。 */
+    /* loading 指示器常驻 DOM 靠属性显隐（P10），图形是内置图标集的 spinner；内部静态图标直接吃类、不引 icon.html */
     .mc-loader {
       display: none;
       flex-shrink: 0;
@@ -227,28 +202,22 @@
       display: inline-flex;
       flex-shrink: 0;
     }
-    /* 槽里的图标：尺寸走上面那个令牌，**颜色必须跟按钮的文字色**（filled = on-fill、
-       outline / ghost = accent）。不靠"碰巧继承"：显式 color:inherit 之外，还压掉了
-       图标自带的 color 属性 —— 按钮的标签是整体，里面不该出现第二种颜色。 */
+    /* 槽里的图标：颜色必须跟按钮文字色（filled = on-fill、outline/ghost = accent），显式 color:inherit */
     ::slotted(mc-icon) {
       font-size: var(--mc-button-icon-size);
       color: inherit;
     }
   </style>
 
-  <!-- 交互语义层：透明原生 button，盖满宿主。
-       ⚠️ aria-labelledby 指向**下面那三个 slot**：按钮的可见文字是插槽内容，与原生 button 是
-       **兄弟**而不是父子 —— 不指的话无障碍树里就是个无名按钮（实测 40 个按钮 39 个没名字，
-       链接 45 个全有名字）。IDREF 在同一棵 shadow tree 内解析得到，slot 的子树就是分配进来的
-       那些节点，所以名字跟着可见文字走（prefix/suffix 里的图标是 SVG，不贡献名字）。 -->
+  <!-- 交互语义层：透明原生 button 盖满宿主。⚠️ aria-labelledby 指向下面那三个 slot：
+       按钮可见文字是插槽内容、与原生 button 是兄弟而非父子，不指就是无障碍树里的无名按钮。 -->
   <button
     class="mc-native"
     :type="type"
     :disabled="disabled !== null || loading !== null"
     aria-labelledby="mc-btn-prefix mc-btn-label mc-btn-suffix"
   ></button>
-  <!-- ⚠️ 上面那个 aria-labelledby 由 syncAria() 维护：宿主给了 aria-label 时它会换成 mc-btn-label
-       （否则按 accname 的优先级 labelledby 仍然赢，显式的名字会被无视）。 -->
+  <!-- ⚠️ 上面那个 aria-labelledby 由 syncAria() 维护：宿主给了 aria-label 时换成 mc-btn-label（labelledby 优先级更高）。 -->
 
   <span class="mc-layer" aria-hidden="true"></span>
   <span class="mc-loader mc-icon-spinner" aria-hidden="true"></span>
@@ -257,14 +226,12 @@
   <slot id="mc-btn-suffix" name="suffix"></slot>
 
   <script>
-    /* color 也收 hex（`<mc-button color="#fff000">`）：语义名照旧交给 CSS，hex 走这一个接线器。
-       语义、边界与三条踩过的坑都在那个文件头里 */
+    /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头 */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
 
-    /** 宿主上这几个 aria 转发给内部那个原生 button（**它才是无障碍节点**，写在宿主上它看不到）。
-     *  `aria-label` 单独处理：宿主显式给了就用它，否则回落插槽文字（见 syncAria）。 */
+    /** 宿主上这几个 aria 转发给内部那个原生 button（它才是无障碍节点）；aria-label 单独处理，见 syncAria */
     const ARIA_FORWARD = [
       'aria-haspopup',
       'aria-expanded',
@@ -281,7 +248,6 @@
         color: 'primary',
         variant: 'filled',
         size: 'md',
-        // 形态：行内文字按钮 —— 盒子交给文字，size 只选文字档位（样式见 :host([inline])）
         inline: null,
         type: 'button',
         // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-button disabled> 失效
@@ -295,8 +261,7 @@
         // 宿主 style 等构造期结束再写（P31），首次同步在这里
         color.sync(this.ele, this.color);
         this.syncAria();
-        /* 宿主上的 aria-* 是运行时变的（菜单触发框的 aria-expanded 就是），
-           属性一变就重新镜像 —— 不做的话「展开/收起」对读屏是静默的 */
+        /** 宿主上的 aria-* 是运行时变的（菜单的 aria-expanded 就是），属性一变就重新镜像 —— 否则「展开/收起」对读屏静默 */
         this._ariaObserver = new MutationObserver(() => this.syncAria());
         this._ariaObserver.observe(this.ele, {
           attributes: true,
@@ -316,16 +281,9 @@
       },
 
       proto: {
-        // 原生 click 自带 composed，会穿透 shadow 冒泡；禁用态由 .mc-native 的 :disabled 兜住
-
-        /**
-         * 宿主 → 内部原生 button 的 aria 转发。无障碍节点是那个 button：
-         * 写在宿主上的 aria-haspopup / aria-expanded / aria-current 它一个都看不到，
-         * 菜单按钮、当前页这类语义就静默丢了（实测无障碍树里 hasPopup=null）。
-         * ⚠️ 名字单独走一条：宿主给了 `aria-label` 就用它（**必须摘掉模板上的 aria-labelledby**，
-         * 否则按 accname 的优先级 labelledby 仍然赢）；没给就回落插槽文字。
-         * `aria-labelledby` 不转发 —— 它是 IDREF，跨 shadow 边界解析不到外层的元素。
-         */
+        /** 宿主 → 内部原生 button 的 aria 转发：无障碍节点是那个 button，宿主上的 aria-haspopup / aria-expanded /
+         *  aria-current 它看不到，语义静默丢。⚠️ 名字单独走一条：宿主给了 aria-label 就用它，并摘掉模板上的
+         *  aria-labelledby（它优先级更高），否则回落插槽文字；aria-labelledby 不转发（IDREF 跨不了 shadow）。 */
         syncAria() {
           const native = this.ele.shadowRoot?.querySelector('.mc-native');
           if (!native) return;

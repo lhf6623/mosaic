@@ -1,16 +1,12 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
-  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 演示里用到的组件必须**本页注册**：ofa 给每个组件模板注入了
-         `*:not(:defined){display:none}`，没注册的标签会连同里面的文字一起被藏掉 ——
-         不报错、图标还在，只是四个演示里的按钮全不见（踩过，见 P44）。
-         站点外壳（docs/layout.html）只注册 code / icon / collapse / menu / breadcrumb / card 那一批，
-         **不含 mc-button** —— 别指望首页碰巧注册过它：深链 + 刷新时首页不一定渲染，
-         于是同一页两种表现（从首页点进来正常、刷新后按钮消失）。 -->
+    <!-- ⚠️ 演示用到的组件必须本页注册（P44）：ofa 给组件模板注入了 `*:not(:defined){display:none}`，
+         没注册的标签会连同文字一起被藏掉、还不报错 —— 站点外壳也不含 mc-button，深链 + 刷新时更明显。 -->
     <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/duration.html"></l-m>
     <l-m src="./demos/closable.html"></l-m>
@@ -83,12 +79,11 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
-         唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->
     <doc-spec src="./api.md"></doc-spec>
   </div>
   <script>
-    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    // 挂到分区布局页：三栏 / 菜单 / 目录都在它那里，相对本页面文件解析
     export const parent = '../../docs/doc-layout.html';
 
     export default () => ({ data: {} });

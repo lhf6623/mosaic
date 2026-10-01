@@ -2,9 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 演示里用到的组件必须本页注册得到（外壳只注册 code / icon / collapse / menu /
-         breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）。
-         本单元两个标签都在这里注册：只有 mc-select 的话，里面的 mc-option 一片空白。 -->
+    <!-- ⚠️ 本页用到的组件必须自己注册（外壳只注册 code / icon / collapse / menu / breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）；本单元两个标签都要注册。 -->
     <l-m src="./select.html"></l-m>
     <l-m src="./option.html"></l-m>
 
@@ -142,8 +140,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
-         唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <!-- 参考区（属性/方法/事件/配置/插槽/part）由 api.md 渲染，不在这里手抄 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>
   <script>

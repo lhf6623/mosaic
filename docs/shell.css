@@ -1,9 +1,6 @@
 /* ============================================================================
- * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。
- * 刻意不分层：未分层声明赢过分层声明，不用 !important 就能压过 mosaic.css 的工具类。
- *
- * 滚动模型：**只有外壳的正文带 `.doc-main` 在滚**（`body{height:100%;overflow:hidden}`，见
- * `docs/layout.html` 的 `.doc-shell` / `.doc-main`）；左右两栏是 `position: fixed`，不参与文档流。
+ * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。刻意不分层：未分层声明赢过分层声明。
+ * 滚动模型：**只有外壳的正文带 `.doc-main` 在滚**（`body{height:100%;overflow:hidden}`，见 docs/layout.html）；左右两栏是 `position: fixed`，不参与文档流。
  * ========================================================================== */
 
 *,
@@ -18,8 +15,7 @@ body {
   padding: 0;
 }
 
-/* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此**从顶栏下面开始**，不会伸进头部）。
-   滚动只有一处，就在 .doc-main（见 docs/layout.html）。 */
+/* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此从顶栏下面开始，不会伸进头部） */
 html {
   height: 100%;
 }
@@ -37,8 +33,7 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* ⚠️ o-router 自带 :host{overflow:hidden}：长页面会被它静默截断（滚动不再上传）。
-   这里退回 visible；o-app / o-page 同理，一律不当滚动容器。 */
+/* ⚠️ o-router 自带 :host{overflow:hidden}，长页面会被它静默截断（滚动不再上传）；o-app / o-page 同理，一律不当滚动容器。 */
 o-router,
 o-app,
 o-page {

@@ -1,15 +1,9 @@
-<!--
-  mc-dialog — 模态对话框（遮罩 + 居中面板 + 焦点陷阱）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-dialog — 模态对话框（遮罩 + 居中面板 + 焦点陷阱）；设计取舍见 README.md「设计取舍」。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
-    /* 1. 宿主盒模型 + 令牌默认值。视觉全在 top layer 的面板里，宿主自己不生成盒子
-          （display: contents：放在 flex 行里不会多占一个 gap） */
+    /* 1. 宿主盒模型 + 令牌默认值。视觉全在 top layer 的面板里，宿主用 display: contents 不占 flex gap */
     :host {
       display: contents;
 
@@ -33,12 +27,7 @@
       --mc-dialog-panel-width: 44rem;
     }
 
-    /* 3. 浮层本体（popover）：**默认 display:none，只有 :popover-open 才展开**。
-           ⚠️ 不能把 display 写在基类上：作者样式压得过 UA 的
-           `[popover]:not(:popover-open){display:none}`，关着的浮层会一直盖在页面上。
-           整块（遮罩 + 面板）是**一个** popover，它才在 top layer、才盖得住一切。
-           ⚠️ `width/height` 必须显式写 auto：UA 给 `[popover]` 的是 `width: fit-content`，
-           光有 `inset: 0` 也铺不满视口（实测盒宽缩成内容宽）。 */
+    /* 3. 浮层本体（popover）：整块是**一个** popover 才进 top layer。⚠️ display 不能写在基类上（作者样式压得过 UA 的 `[popover]:not(:popover-open){display:none}`）；⚠️ width/height 必须显式 auto，否则 `inset:0` 也铺不满视口。 */
     .mc-root {
       display: none;
       position: fixed;
@@ -50,10 +39,7 @@
       border: 0;
       padding: var(--mc-dialog-space);
       overflow: auto;
-      /* ⚠️ 必须显式关掉背景：UA 给 `[popover]` 的默认背景是 `canvas`（不透明白）。
-         留着它，遮罩就成了「半透明灰压在**一张白纸**上」—— 背后的页面一点不露，
-         整块屏是一片均匀的灰（实测 computed 是 rgb(255, 255, 255)）。
-         灰度只该由 .mc-overlay 那一层给，这里必须透明。 */
+      /* ⚠️ 必须显式透明：UA 给 `[popover]` 的默认背景是 `canvas`（不透明白），留着遮罩就成了一张白纸，灰度只该由 .mc-overlay 给 */
       background-color: transparent;
     }
     .mc-root:popover-open {
@@ -66,7 +52,7 @@
       background-color: rgb(var(--mc-dialog-overlay-bg) / var(--mc-dialog-overlay-alpha));
     }
 
-    /* 4. 面板：margin:auto 在 flex 容器里两个轴都居中，且比 align-items:center 更耐「内容比视口高」 */
+    /* 4. 面板：margin:auto 两轴居中，比 align-items:center 更耐「内容比视口高」 */
     .mc-panel {
       position: relative;
       z-index: 1;
@@ -139,7 +125,7 @@
       display: flex;
     }
 
-    /* 关闭按钮：32×32 命中区的原生按钮（aria-label 给无障碍名），closable 控制显形 */
+    /* 关闭按钮：32×32 命中区、aria-label 给无障碍名 */
     .mc-close {
       display: none;
       flex: none;
@@ -174,9 +160,7 @@
     }
   </style>
 
-  <!-- 遮罩 + 面板 = 一个 popover（进 top layer）。
-       ⚠️ popover="manual" 是刻意的：manual 不会被 light dismiss 关掉，所以 Esc / 点遮罩 / ×
-       三条关闭路径都由脚本自己接（见下面 onRootClick / onKeydown）。 -->
+  <!-- 遮罩 + 面板 = 一个 popover（进 top layer）。⚠️ popover="manual" 是刻意的：manual 不被 light dismiss 关掉，Esc / 点遮罩 / × 三条关闭路径都由脚本自己接。 -->
   <div class="mc-root" popover="manual" on:click="onRootClick">
     <div class="mc-overlay" part="overlay" aria-hidden="true"></div>
 
@@ -202,17 +186,13 @@
   <script>
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
-    /** 面板里可聚焦的原生元素，Tab 循环用它。用 `:disabled`（认 property）而不是 `[disabled]` */
+    /** 面板里可聚焦的原生元素；`:disabled` 认 property，够得到真正可聚焦的那些 */
     const FOCUSABLE =
       'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])';
 
     /**
-     * 扁平树（渲染树）顺序上的可聚焦元素。
-     *
-     * ⚠️ 不能直接 `panel.querySelectorAll(...)`：正文 / 底部是**使用者写在插槽里的 light DOM**，
-     * 它们不在 shadow 树里，选择器一个都够不到（实测只数到自己那个 × ）。嵌套的 custom element
-     * 还要钻进它的 shadow root —— 所以按扁平树走：`<slot>` 换成 `assignedElements()`，
-     * 有 shadow root 的元素换成它 shadow root 的子节点。
+     * 扁平树（渲染树）顺序上的可聚焦元素。⚠️ 不能直接 `panel.querySelectorAll(...)`：正文 / 底部是**使用者写在插槽里的
+     * light DOM**，不在 shadow 树里，选择器够不到；嵌套 custom element 还要钻进它的 shadow root。
      */
     const flatFocusables = (root) => {
       const out = [];
@@ -248,13 +228,11 @@
         // 标题纯文本，富标题走 header 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（P32）
         heading: '',
         closable: null,
-        // 点遮罩关闭（HTML 里写 mask-closable）
         maskClosable: null,
         size: 'md',
       },
 
       data: {
-        // 面板是否已经就绪（ready 之后才敢碰宿主与 popover API）
         mounted: false,
       },
 
@@ -272,11 +250,11 @@
           },
         });
 
-        // Esc / Tab 都在 document 上收：焦点万一跑到面板外（别的组件抢焦点）也要能拉回来
+        // Esc / Tab 都在 document 上收：焦点万一跑到面板外也要能拉回来
         this._onKeydown = (event) => this.onKeydown(event);
         document.addEventListener('keydown', this._onKeydown, true);
 
-        // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 packages/boot/scroll-pin.js）
+        // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 scroll-pin.js）
         this._scrollGuard = attachFloatingScrollGuard(this.ele, this.root);
         // 老浏览器没有 popover API 时不炸：面板由 CSS 兜在 display:none，交互一律不动
         this.popoverOk = typeof this.root?.showPopover === 'function';
@@ -285,8 +263,7 @@
       },
 
       attached() {
-        /* data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）。
-           头部还要算上 closable —— 没有标题时那个 × 也得有地方待。 */
+        /* data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）；头部还要算上 closable */
         this._onSlotChange = () => this.applyState();
         for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
         this.applyState();
@@ -343,8 +320,7 @@
           if (shouldOpen && !isOpen) {
             // 焦点归还的目标：打开前那一处（可能要钻进别人的 shadow root）
             this._returnFocus = deepActive();
-            /* 显式显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动
-               （三种形状见 packages/boot/scroll-pin.js） */
+            /* 显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
             this._scrollGuard.run(() => this.root.showPopover());
             this.focusIntoPanel();
             this.emit('open', { bubbles: true, composed: true });
@@ -355,17 +331,14 @@
           }
         },
 
-        /** 打开时把焦点送进面板：首个可聚焦元素，没有就面板自己（tabindex="-1"） */
         focusIntoPanel() {
           (this.focusables()[0] ?? this.panelEl).focus({ preventScroll: true });
         },
 
-        /** 面板里当前可聚焦的原生元素（display:none 的那些靠布局盒排除，见 flatFocusables） */
         focusables() {
           return flatFocusables(this.panelEl);
         },
 
-        /** 焦点归还打开前那一处（节点已经被删就算了） */
         restoreFocus() {
           const target = this._returnFocus;
           this._returnFocus = null;
@@ -393,11 +366,8 @@
           items[(index + step + items.length) % items.length].focus({ preventScroll: true });
         },
 
-        /**
-         * 点遮罩关闭。
-         * ⚠️ P20：跨 shadow 判「点在哪」必须走 composedPath —— contains(e.target) 拿到的是
-         * 沿途重定向后的宿主，必然误判成外部。
-         */
+        /** 点遮罩关闭。⚠️ P20：跨 shadow 判「点在哪」必须走 composedPath —— contains(e.target)
+         * 拿到的是沿途重定向后的宿主，必然误判成外部。 */
         onRootClick(event) {
           const path = event.composedPath();
           if (!path.includes(this.ele)) return;
@@ -415,7 +385,6 @@
           this.syncOpen();
         },
 
-        /** 头部（标题 or ×）/ 底部有没有东西 —— 空的时候不占内边距 */
         applyState() {
           this.mirror(
             'data-has-header',

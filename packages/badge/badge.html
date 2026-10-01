@@ -1,13 +1,8 @@
-<!--
-  mc-badge — 徽标
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-badge — 徽标；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。徽标不是控件：高度用自己的 --mc-badge-h，不借 --mc-control-h-* */
+    /* 1. 宿主盒模型 + 色槽默认值；徽标不是控件，高度用自己的 --mc-badge-h */
     :host {
       display: inline-flex;
       align-items: center;
@@ -34,15 +29,13 @@
         border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
           var(--mc-ease-standard, var(--mc-def-ease-standard));
 
-      /* L3 组件令牌：默认引用 L2 令牌。按实例覆盖写在宿主 style 上 */
+      /* 色槽。徽标没有 neutral（草案如此）：默认 primary，中性场景交给 mc-tag */
       --mc-badge-h: 1.25rem;
       --mc-badge-pad-x: var(--mc-space-2, var(--mc-def-space-2));
       --mc-badge-font: var(--mc-text-xs, var(--mc-def-text-xs));
       --mc-badge-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       --mc-badge-dot: 0.5rem;
 
-      /* 色槽：fill / on-fill 是实心那套，accent 是文字与描边，subtle-fill 是浅底。
-         徽标没有 neutral（草案如此）：它默认就是 primary，中性场景交给 mc-tag */
       --mc-badge-fill: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-badge-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
       --mc-badge-accent: var(--mc-color-primary, var(--mc-def-color-primary));
@@ -53,7 +46,7 @@
       color: rgb(var(--mc-badge-accent));
     }
 
-    /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
+    /* 2. 维度一 color：只往色槽里填值（primary 已在上面） */
     :host([color='info']) {
       --mc-badge-fill: var(--mc-color-info, var(--mc-def-color-info));
       --mc-badge-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
@@ -114,7 +107,6 @@
       width: var(--mc-badge-dot);
       height: var(--mc-badge-dot);
       border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
-      /* 圆点跟着当前文字色走：subtle 是 accent、solid 是 on-fill，不引新色 */
       background-color: currentColor;
     }
     /* max 裁剪出来的 `${max}+` 住在常驻的 span 里（P17），显隐同样靠宿主属性 */
@@ -138,9 +130,7 @@
   <span class="mc-text"></span>
 
   <script>
-    /* color 也收 hex（`<mc-badge color="#fff000">`）：语义名照旧交给 CSS，hex 走共享接线器。
-        徽标默认是浅底外观（subtle），所以这里要接 subtle-fill —— 主题重算与「浅底上读不清」的
-        警告都在那个文件里 */
+    /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；徽标默认浅底外观，所以接 subtle-fill */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
@@ -171,7 +161,6 @@
         // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
 
-        /* 内容换了要重算 max 截断 —— slotchange 覆盖「内容变了」这一路（同 mc-tag 的 applyLabel） */
         this._onSlotChange = () => this.applyMax();
         this._slot?.addEventListener('slotchange', this._onSlotChange);
         this.applyMax();
@@ -186,7 +175,6 @@
         color(value) {
           color.change(this.ele, value);
         },
-        // 首次触发同样在构造期 —— applyMax 里的 _live 守卫把它挡掉
         max() {
           this.applyMax();
         },
@@ -196,7 +184,6 @@
       },
 
       proto: {
-        /** 插槽的纯文本。元素内容（图标）算空串：max 只认「内容本身是数字」这一种 */
         slotText() {
           return [...(this._slot?.assignedNodes() ?? [])]
             .map((node) => node.textContent ?? '')
@@ -204,14 +191,11 @@
             .trim();
         },
 
-        /**
-         * 内容与 max 的裁决：纯数字且超过上限 → 显示 `${max}+`。
-         * 结果写在常驻的内部 span 上（P17），显隐交给 `:host([data-overflow])`（P10）。
-         */
+        /** 纯数字且超上限 → 显示 `${max}+`；结果写常驻 span（P17），显隐交给 :host([data-overflow])（P10） */
         applyMax() {
           if (!this._content || !this._text) return;
           const el = this.ele;
-          /* dot 打开时内容整块不显示，也就没有「超过上限」这回事（两个状态互斥） */
+          /* dot 打开时内容整块不显示，也就没有「超过上限」这回事（两状态互斥） */
           const raw = el.hasAttribute('dot') ? '' : this.slotText();
           const maxAttr = el.getAttribute('max');
           const max = maxAttr === null ? NaN : Number(maxAttr);
@@ -221,7 +205,6 @@
           this.mirror('data-overflow', over);
         },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次 slotchange 都白触发一轮样式重算 */
         mirror(name, on) {
           if (on === this.ele.hasAttribute(name)) return;
           if (on) this.ele.setAttribute(name, '');

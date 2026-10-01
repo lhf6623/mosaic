@@ -1,9 +1,4 @@
-<!--
-  mc-message — 命令式消息条（容器）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-message — 命令式消息条（容器）。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -28,22 +23,17 @@
       border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
       background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
-      /* 浮层唯一的视觉依据。没有 --mc-shadow-* 令牌（全仓组件都没用阴影），
-         这里给浮层一个专用阴影，明暗都压得住 */
+      /* 浮层唯一的视觉依据：全仓没有 --mc-shadow-* 令牌，这里给浮层专用阴影 */
       box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
       color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
       font-size: var(--mc-text-sm, var(--mc-def-text-sm));
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       pointer-events: auto;
-      /* ⚠️ 必须 !important：shadow-base 的 mosaic.base 层把 :host 的 font-size 钉成
-         --mc-text-base，而工具类在 mosaic.utilities 层 —— 层序是 base < utilities，
-         所以 text-sm 工具类在这里赢不了 reset（实测 16px 压过 14px） */
+      /* ⚠️ 必须 !important：reset 在 mosaic.base 层、工具类在 utilities 层，层序 base < utilities，text-sm 赢不了 */
       font-size: var(--mc-text-sm, var(--mc-def-text-sm)) !important;
     }
 
-    /* ---------- 关闭按钮：右侧一个明确的 ×（32×32 命中区，和 mc-alert 同一套）
-       整条**不再可点**：消息条是要读的，点一下就没不应该是它的默认行为；
-       要关就点这个 ×，"哪里能点" 一目了然。 */
+    /* ---------- 关闭按钮：右侧 32×32 命中区（同 mc-alert）；整条不再可点，要关就点这个 ×。 ---------- */
     .mc-close {
       display: none;
       flex: none;
@@ -82,11 +72,7 @@
       outline-offset: 2px;
     }
 
-    /* ⚠️ 容器必须显式 align-items: center：
-       `.mc-list` 是**纵向**的 flex 容器，条目在**交叉轴**上默认 stretch ——
-       于是一列消息的宽度会被最长那条撑开、所有短消息跟着一起变宽（实测：
-       一条 576px 的长消息会把 "短" 也拉到 576px）。加上它，每条各自按内容宽，
-       长的撞 max-width 才换行。 */
+    /* ⚠️ .mc-list 是纵向 flex，条目在交叉轴默认 stretch —— 不写 align-items: center 就会被最长那条一起撑宽 */
     .mc-list {
       display: flex;
       flex-direction: column;
@@ -98,7 +84,7 @@
       overflow-wrap: anywhere;
     }
 
-    /* ---------- 图标：跟着 type 换色（装饰性，由 mc-icon 自己 aria-hidden） ---------- */
+    /* ---------- 图标：跟着 type 换色（装饰性，mc-icon 自己 aria-hidden） ---------- */
     .mc-glyph {
       flex: none;
       display: inline-flex;
@@ -115,9 +101,7 @@
       color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
     }
 
-    /* ---------- 进场：从上方落下来一点 + 淡入。
-       退场不在这里：节点是被移除的，动画来不及播（要退场动画就得先标记再延迟删，
-       见 message.js 顶部的说明）。 */
+    /* ---------- 进场：从上方落下来一点 + 淡入；退场不在这里（节点直接被移除） ---------- */
     @keyframes mc-message-in {
       from {
         opacity: 0;
@@ -133,9 +117,7 @@
         var(--mc-ease-emphasized, var(--mc-def-ease-emphasized)) both;
     }
 
-    /* shadow-base 在 prefers-reduced-motion 下把所有 --mc-duration-* 归零，
-       但 animation 的时长读的是令牌，归零后动画变成瞬时 —— 这里再兜一层，
-       避免「动画名还在、帧还在跑」 */
+    /* 令牌归零后 animation 已经是瞬时，这里再兜一层，避免「动画名还在」 */
     @media (prefers-reduced-motion: reduce) {
       .mc-item {
         animation: none;
@@ -143,8 +125,7 @@
     }
   </style>
 
-  <!-- 容器只有这一个根子元素（P42）：o-fill 的宿主 + aria-live 都挂在它身上。
-       aria-live 跟着 message 的紧急程度走 —— 用 attr: 绑数据，不用 o-if 切（P10）。 -->
+  <!-- 根子元素（P42）：o-fill 宿主 + aria-live 都挂在它身上；aria-live 跟紧急程度走，用 attr: 绑（P10） -->
   <div class="mc-list" role="log" attr:aria-live="live" attr:aria-label="'通知'">
     <o-fill :value="rows" fill-key="id">
       <div style="display: contents">
@@ -176,15 +157,13 @@
 
   <script>
     export default async ({ load }) => {
-      /* 图标是独立组件：注册 mc-message 之前先就位（同 mc-alert）。
-         只引 message 的使用者会连带取一次 icon.html —— 这是「不各画一套图标」的代价。 */
+      /* 图标是独立组件：注册 mc-message 之前先就位（同 mc-alert），代价是多取一次 icon.html */
       await load('../icon/icon.html');
 
       return {
         tag: 'mc-message',
 
-        /* aria-live / role 由数据决定：error 是紧急播报（assertive + role=alert），
-           其余走 polite 的 log。见 data.live / data.assertive 的绑定。 */
+        /* aria-live / role 由数据决定：error 走 assertive + role=alert，其余 polite 的 log */
         data: {
           rows: [],
           live: 'polite',
@@ -192,13 +171,8 @@
         },
 
         ready() {
-          /* ⚠️ `o-fill` 的模板里**绑不到 proto 方法**：条目作用域只有 $data / $index / $host，
-             写 on:click="activate" 会报「function "activate" not found」；
-             写 on:click="activate($event)" / "activate($index)" 会报「Error evaluating element
-             expression」（异常还会中断整块模板）。所以监听只能挂在**容器**上做事件委托 ——
-             这也正是 P12 推荐的形态（o-fill 的条目在它自己的 light DOM 里）。
-             ⚠️ proto / 生命周期里的 `this` 是 **ofa 实例（数据对象）**，元素 API 要走 `this.ele`
-             （P5 一族，实测 `this.shadowRoot` 是 undefined）。 */
+          /* ⚠️ o-fill 模板里绑不到 proto 方法（条目作用域只有 $data / $index / $host），监听只能挂**容器**做委托 —— 这正是 P12 推荐的形态。
+             ⚠️ proto / 生命周期里的 `this` 是 ofa 实例，元素 API 要走 `this.ele`（P5 一族）。 */
           const list = this.ele.shadowRoot.querySelector('.mc-list');
           list.addEventListener('click', (event) => this._onActivate(event));
           list.addEventListener('keydown', (event) => this._onActivate(event));
@@ -211,10 +185,7 @@
         },
 
         proto: {
-          /**
-           * 委托入口：只有**点/敲 × 按钮**才关（整条不再可点）。
-           * 用委托而不是在条目上写 on:click —— 见 ready() 里那条（o-fill 里绑不到 proto 方法）。
-           */
+          /** 委托入口：只有点/敲 × 才关；用委托的原因见 ready()（o-fill 里绑不到 proto 方法）。 */
           _onActivate(event) {
             const btn = event.composedPath().find((el) => el?.classList?.contains('mc-close'));
             if (!btn) return;
@@ -230,15 +201,11 @@
               this._kb = null;
               return;
             }
-            /* 键盘为什么走 keydown 而不是 click：按钮上的 Space 只在 keyup 才合成 click，
-               而这里要的是"按下去就关"。两边都只调一次 activate()。 */
+            /* 走 keydown 而不是 click：按钮上的 Space 只在 keyup 才合成 click，这里要「按下去就关」 */
             this.activate(Number(btn.getAttribute('data-index')));
           },
 
-          /**
-           * 推一条消息。**必须原地 push**：实测从外部整体替换 rows（inst.rows = [...]）
-           * 之后 o-fill 完全不更新。参数由 message.js 归一好再传进来。
-           */
+          /** 推一条消息。⚠️ 必须原地 push：实测整体替换 rows 之后 o-fill 完全不更新（且不报错）。 */
           push(item) {
             this.rows.push(item);
             // 紧急程度 = 当前队列里最急的那条（error 优先）
@@ -246,7 +213,7 @@
             this.live = this.assertive ? 'assertive' : 'polite';
           },
 
-          /** 按位置移除（DOM → 数据只能靠位置：见文件头 $index 那条）。 */
+          /** 按位置移除（DOM → 数据只能靠位置）。 */
           removeAt(index) {
             const [removed] = this.rows.splice(index, 1);
             this.assertive = this.rows.some((r) => r.type === 'error');

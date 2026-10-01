@@ -1,32 +1,14 @@
 <template page>
   <link rel="stylesheet" href="./content.css" />
   <!--
-    组件文档页的**分区布局页**：左栏菜单 + 正文 + 右栏本页目录。
-
-    packages/<slug>/page.html 用 `export const parent` 挂上来，
-    自己只写正文 —— 菜单、目录与留位都在这里，页面不用各写一遍（也就不会漏、不会各写各的）。
-    上面还有一层外壳 docs/layout.html（sticky 顶栏 + 正文带 .doc-main 滚动），形成三级嵌套。
-
-    ⚠️ 左右两栏是 position: fixed（不在文档流里），正文靠 .doc-content 的 padding 留位；
-    两栏高度固定 100%（注释见下面的 <style>）。
+    组件文档页的**分区布局页**：左栏菜单 + 正文 + 右栏本页目录。packages/<slug>/page.html 用 `export const parent` 挂上来，上面还有一层外壳 docs/layout.html。
+    ⚠️ 左右两栏是 position: fixed（不在文档流里），正文靠 .doc-content 的 padding 留位；两栏高度固定 100%（注释见下面的 <style>）。
   -->
   <style>
-    /* ---------- 浮动侧栏 + 正文留位（页面自己的左右两栏） ----------
-     *
-     * 左右两栏 position: fixed、**不在文档流里**：
-     *   · 高度固定 100%（= 视口高），内部超出时自己滚；顶部用 padding 让开顶栏
-     *     （顶栏 z-index 高一档，会盖住两栏顶部那一条）
-     *   · 于是**不存在 sticky 的滑动区间问题** —— 内容怎么高怎么矮、切到哪一页，两栏都不动；
-     *     页面高度变化也不再带动它们（这正是之前「换页时整页塌一下」的根源）
-     *   · 正文用 padding 把两栏的位置留出来；中栏宽度**不设上限**（视口多宽就多宽），
-     *     只留一条兜底下限 —— 两栏是 fixed、不占宽度，所以「正文多宽」与「两栏多宽」互不牵连
-     *   · 滚动在顶栏下面的正文带（docs/layout.html 的 .doc-main）里发生，不影响两栏；
-     *     滚动条因此从顶栏下方开始，不会像窗口滚动条那样伸进头部
-     *   · ⚠️ fixed 的包含块是视口，前提是祖先链上没有 transform / filter / perspective /
-     *     contain:paint / will-change —— 谁给外壳或布局页加了这些，两栏就会退化成跟着内容滚
-     *   · 两栏不在正文的滚动链上，滚轮在栏内到底后会被吞掉 —— 外壳 docs/layout.html 里有一段
-     *     只在边界接管的转发（用 composedPath() 认 <doc-nav>/<doc-toc>，见那里的注释）
-     * 谁需要左栏 / 右栏，就在自己的模板里放 <doc-nav> / <doc-toc>。 */
+    /* ---------- 浮动侧栏 + 正文留位 ----------
+     * 左右两栏 position: fixed、不在文档流里（高度 = 视口高、自己滚，顶部 padding 让开顶栏），所以没有 sticky 的滑动区间问题，页面高度变化也不带动它们；正文用 padding 留位，中栏宽度不设上限。
+     * ⚠️ fixed 的包含块是视口，祖先链上不能有 transform / filter / perspective / contain:paint / will-change —— 否则两栏会退化成跟着内容滚。
+     * 两栏不在正文的滚动链上，滚轮在栏内到底会被吞掉 —— 外壳 docs/layout.html 里有一段只在边界接管的转发（用 composedPath() 认 <doc-nav>/<doc-toc>）。 */
 
     .doc-split {
       display: block;
@@ -53,11 +35,8 @@
       border-right: 1px solid rgb(var(--mc-color-border));
     }
 
-    /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html）。
-       宽度 15rem 不是随手写的：缩进后的子项要放得下最长的那个标题
-       （「卡片外观（variant="surface"）」= 172px，见 toc.html 的 <style>），
-       内边距因此用 space-4 而不是左栏的 space-5 —— 少 8px 就少截断一次。
-       三条都要一起改：宽度、内边距、toc.html 的缩进量（09 号套件盯着「不许截断」）。 */
+    /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html）。宽度 15rem 是按缩进后最长标题（「卡片外观（variant="surface"）」= 172px）反算的，
+       内边距因此用 space-4 而不是左栏的 space-5。宽度、内边距、toc.html 的缩进量要一起改（09 号套件盯着「不许截断」）。 */
     doc-toc {
       right: 0;
       width: 15rem;
@@ -65,11 +44,8 @@
       border-left: 1px solid rgb(var(--mc-color-border));
     }
 
-    /* 中栏 = 分区布局页里包住 <slot> 的那一栏。左右 padding 就是两栏的占位，
-       宽度**不设上限**：视口多宽正文就用多宽（两栏是 fixed，不占它的宽度）。
-       只留一条下限兜底（20rem = 320px）：再窄就让窗口横向滚，不硬挤成一列字。
-       窄屏真正的处理在两条断点上（≤78rem 收右栏、≤52rem 左栏不再浮动、占位归零）。
-       它自己不滚（滚的是外壳的 .doc-main）。正文的实际内边距仍由子页面自己的 .doc-body 负责。 */
+    /* 中栏 = 分区布局页里包住 <slot> 的那一栏：左右 padding 就是两栏的占位，宽度**不设上限**（两栏是 fixed，不占它的宽度），只留一条下限 20rem 兜底。
+       它自己不滚（滚的是外壳的 .doc-main），正文的实际内边距由子页面自己的 .doc-body 负责；窄屏处理在下面两条断点上。 */
     .doc-split > .doc-content {
       min-width: 20rem;
       padding-inline: 15rem 15rem;
@@ -90,9 +66,8 @@
     }
 
     @media (max-width: 52rem) {
-      /* 窄屏放不下浮动侧栏：左栏整个收进**头部那颗图标按钮的浮层**（外壳 layout.html 里，
-         复用同一个 <doc-nav> 组件）。这里只需要把它藏掉 —— 留着的话菜单会先在正文上面
-         顶一大块，那正是要换掉的那种展示。 */
+      /* 窄屏放不下浮动侧栏：左栏整个收进**头部那颗图标按钮的浮层**（外壳 layout.html 里，复用同一个 <doc-nav> 组件）；
+         这里只需要把它藏掉 —— 留着的话菜单会先在正文上面顶一大块，那正是要换掉的那种展示。 */
       doc-nav {
         display: none;
       }

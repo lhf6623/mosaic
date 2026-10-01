@@ -1,9 +1,4 @@
-<!--
-  mc-tooltip — 提示气泡（原生 popover + CSS 锚点定位）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-tooltip — 提示气泡（原生 popover + CSS 锚点定位）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -21,16 +16,13 @@
         var(--mc-space-3, var(--mc-def-space-3));
     }
 
-    /* 锚点：必须是自己 shadow 里的元素（设在 light DOM 的 slot 元素上无效）。
-       inline-flex 而不是 inline-block：后者的行盒基线缝隙会让锚点盒子比触发元素高 3px，
-       而**锚点的几何就是面板的定位基准**（同 mc-popover）。 */
+    /* 锚点：必须是自己 shadow 里的元素（设在 light DOM 的 slot 元素上无效）。inline-flex 而非 inline-block：后者的行盒基线缝隙会让锚点盒子高 3px，而锚点几何就是面板的定位基准 */
     .mc-anchor {
       display: inline-flex;
       anchor-name: --mc-tooltip-anchor;
     }
 
-    /* 面板：position: fixed + 锚点定位。⚠️ 不写 display —— 关着时靠 UA 的
-       `[popover]:not(:popover-open){display:none}` 收起来（作者一写 display 就压过它）。 */
+    /* 面板：position: fixed + 锚点定位。⚠️ 不写 display —— 关着时靠 UA 的 `[popover]:not(:popover-open){display:none}` 收起来（作者一写 display 就压过它） */
     .mc-panel {
       position: fixed;
       inset: auto;
@@ -57,10 +49,7 @@
         flip-block flip-inline;
     }
 
-    /* 12 个 placement：只写「面板哪条边贴锚点哪条边」；默认 top（不写后缀 = 居中）。
-       ⚠️ 默认态挂在 `:host([placement='top'])` 上而不是 `:host(:not([placement]))`：
-       ofa 会把声明过的字符串属性连默认值一起写到宿主上（P32，实测 `placement="top"` 一定在），
-       而 `:host()` 里嵌 `:not()` 在 ofa 里静默失效（P14）。 */
+    /* 12 个 placement：只写「面板哪条边贴锚点哪条边」；默认 top（不写后缀 = 居中）。⚠️ 默认态挂在 `:host([placement='top'])` 上：ofa 会把声明过的字符串属性连默认值一起写到宿主上（P32），而 `:host()` 里嵌 `:not()` 静默失效（P14） */
     :host([placement='top']) .mc-panel {
       bottom: anchor(top);
       left: anchor(center);
@@ -160,11 +149,8 @@
       attrs: {
         // 纯文本内容。不叫 title —— 原生 title 会让宿主自己弹一个浏览器 tooltip（P32）
         content: '',
-        // 12 个方向，取值与 mc-popover 一致；默认在触发元素上方
         placement: 'top',
-        // 怎么触发：hover（默认，hover 与 focus 都算）/ focus / click
         trigger: 'hover',
-        // 显示 / 隐藏的延迟（ms）
         delay: 100,
       },
 
@@ -214,8 +200,7 @@
         showTip() {
           if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
           if (this._panelEl.matches(':popover-open')) return;
-          /* 显式显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动
-             （见 packages/boot/scroll-pin.js） */
+          /* 显式显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
           this._scrollGuard.run(() => this._panelEl.showPopover());
           this.shown = true;
         },
@@ -261,10 +246,7 @@
           else this.showTip();
         },
 
-        /**
-         * trigger="click" 时点面板外收起。
-         * ⚠️ P20：composedPath 而不是 contains(e.target) —— 后者拿到的是重定向后的宿主。
-         */
+        /** trigger="click" 时点面板外收起。⚠️ P20：必须用 composedPath —— contains(e.target) 拿到的是重定向后的宿主 */
         onDocumentPointerDown(event) {
           if (this.effectiveTrigger() !== 'click') return;
           if (!this._panelEl.matches(':popover-open')) return;

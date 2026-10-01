@@ -1,13 +1,9 @@
 <template page>
   <!-- 文档站外壳（嵌套路由的布局页）：子页面用 export const parent 挂上来，正文走 <slot> -->
   <script>
-    /* 外壳的脚本：页面模块也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL，实测），
-       所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。
-
-       这里同时是**站点级行为**的归属地（原来在 docs/site.js，已并入）：
-         · 换页复位：把 `.doc-main` 滚回顶部；
-         · 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。
-       两者都是「外壳的事」——滚的是外壳的正文带，接管的是外壳进出的两个浮动栏。 */
+    /* 外壳的脚本：页面模块也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL），
+       所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。这里同时是**站点级行为**的归属地：
+         · 换页复位：把 `.doc-main` 滚回顶部；· 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。 */
     import { hashOf } from './routes.js';
     import { TOPBAR, firstPageOf, locate, menuOf } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
@@ -15,12 +11,9 @@
     const THEME_KEY = 'mosaic-doc-theme';
     const THEMES = ['auto', 'light', 'dark'];
 
-    /**
-     * 存下来的三态主题（没有 / 非法 / 隐私模式读不了 → auto，跟随系统）。
-     * ⚠️ 在 data 里就算好、而不是等 ready()：下拉的初始值要在**第一次渲染**就带上，
-     * 否则会先画一个「自动」再跳成存下来的值（闪一下）。页面的 data-theme 由
-     * docs/theme-boot.js 在 head 里同步落好，是另一条路。
-     */
+    /* 存下来的三态主题（没有 / 非法 / 隐私模式读不了 → auto，跟随系统）。
+       ⚠️ 在 data 里就算好而不是等 ready()：下拉的初始值要在**第一次渲染**就带上，否则会先画一个「自动」再跳成存下来的值（闪一下）。
+       页面的 data-theme 由 docs/theme-boot.js 在 head 里同步落好，是另一条路。 */
     const storedTheme = () => {
       try {
         const v = localStorage.getItem(THEME_KEY);
@@ -64,18 +57,13 @@
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
            ⚠️ 链接一律用 hashOf() 生成、不走 olink：olink 是编译期指令，这份数据是运行时拼的 */
         this.links = TOPBAR.map((entry) => {
-          /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，
-             否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一。 */
+          /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一 */
           const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
           return landing ? { path: landing, label: entry.label, aria: null } : null;
         }).filter(Boolean);
-        /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与
-           docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
-           宽屏下不渲染浮层 —— DOM 里就不会平白多出一份 <doc-nav>。
-           ⚠️ 这段必须排在 syncMenuButton() **之前**：showMenu = hasMenu && narrow，
-           而 narrow 是这里才有的。反过来的话窄屏**全新加载**时 narrow 还是初值 false，
-           showMenu 算成 false 且没人再算一次 —— 表现就是「窄屏刷新后按钮不见了，
-           resize 一下又出来」（实测复现过）。 */
+        /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与 docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
+           ⚠️ 必须排在 syncMenuButton() **之前**：showMenu = hasMenu && narrow，而 narrow 是这里才有的；反过来窄屏全新加载时 narrow 还是初值 false，
+           按钮就会「刷新后不见了，resize 一下又出来」。 */
         this._mq = window.matchMedia('(max-width: 52rem)');
         this.narrow = this._mq.matches;
         this._onMQ = (event) => {
@@ -88,15 +76,12 @@
         this.syncMenuButton();
 
         /* 侧栏滚到底后把滚轮接力给正文带。
-           ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主
-           （实测是 o-page），只能用 composedPath() 认 <doc-nav> / <doc-toc> */
+           ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主（实测是 o-page），只能用 composedPath() 认 <doc-nav> / <doc-toc> */
         this._onWheel = (event) => this.forwardWheel(event);
         document.addEventListener('wheel', this._onWheel, { passive: false });
 
-        /* 顶栏入口的点击走**事件委托**：这些行是 o-fill 渲染出来的，而 ofa 的 `on:` 绑定
-           在 o-fill 模板里拿不到 `$data`（实测真实点击也不触发，仓库里没有先例）。
-           监听挂在外层 <nav> 上 —— 事件跨 shadow 冒泡到这里时 target 已被重定向成
-           <mc-button> 宿主，从它的 data-path 取路由。 */
+        /* 顶栏入口的点击走**事件委托**：这些行是 o-fill 渲染出来的，而 ofa 的 `on:` 绑定在 o-fill 模板里拿不到 `$data`。
+           监听挂在外层 <nav> 上 —— 事件跨 shadow 冒泡到这里时 target 已被重定向成 <mc-button> 宿主，从它的 data-path 取路由。 */
         this._topNav = this.ele.shadowRoot?.querySelector('.doc-top-nav');
         this._onTopNavClick = (event) => {
           const path = event.target?.closest?.('mc-button')?.dataset?.path;
@@ -104,8 +89,7 @@
         };
         this._topNav?.addEventListener('click', this._onTopNavClick);
 
-        /* 路由变化：只改 links[i].aria 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，
-           04 套件盯着这条），顺带把正文带滚回顶部 */
+        /* 路由变化：只改 links[i].aria 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，04 套件盯着这条），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
           this.syncMenuButton();
@@ -157,10 +141,8 @@
           scroller.scrollTop += wheelPixels(event);
         },
 
-        /* 当前路由命中哪一支就点亮哪条入口。组件页靠「是「组件」的孩子」天然归属，
-           不再需要那条 packages/<slug>/page.html 的兜底正则。
-           ⚠️ 按**分区的 label** 比，不按 path：分区自己可能没有落地页（path 是落到的子页），
-           按 path 比的话「组件」这一支永远点不亮。 */
+        /* 当前路由命中哪一支就点亮哪条入口（组件页靠「是「组件」的孩子」天然归属）。
+           ⚠️ 按**分区的 label** 比，不按 path：分区自己可能没有落地页（path 是落到的子页），按 path 比的话「组件」这一支永远点不亮。 */
         syncTopNav() {
           const entryLabel = locate(routeState().path)?.entry?.label ?? null;
           for (const link of this.links) {
@@ -169,10 +151,7 @@
           }
         },
 
-        /**
-         * 窄屏那颗菜单按钮露不露：看**当前分区有没有左栏菜单**（首页那种没有，就不该出现
-         * 一个点开是空的浮层）。与宽度无关 —— 宽度由 CSS 的媒体查询管。
-         */
+        /* 窄屏那颗菜单按钮露不露：看**当前分区有没有左栏菜单**（首页那种没有，就不该出现一个点开是空的浮层）。与宽度无关 —— 宽度由 CSS 的媒体查询管。 */
         syncMenuButton() {
           const entry = locate(routeState().path)?.entry ?? null;
           this.hasMenu = entry ? menuOf(entry).length > 0 : false;
@@ -184,14 +163,10 @@
           this.showMenu = this.hasMenu && this.narrow;
         },
 
-        /**
-         * 路由一变就把窄屏菜单收起来 —— 点条目本质就是导航，收在这里比在点击上判路径稳：
-         * 面板内容是**插槽里的 light DOM**（在浮层 shadow 之外），在浮层上挂委托、或让 ofa 的
-         * `on:` 去接，都够不着里面那个 <a>（实测点完不收起）。
-         */
+        /* 路由一变就把窄屏菜单收起来 —— 点条目本质就是导航，收在这里比在点击上判路径稳：
+           面板内容是**插槽里的 light DOM**（在浮层 shadow 之外），在浮层上挂委托、或让 ofa 的 `on:` 去接，都够不着里面那个 <a>。 */
         hideNarrowMenu() {
-          /* ⚠️ 组件方法在 ofa 的包装上，**裸元素上没有**：`$('.doc-menu')` 才有 hide()。
-             直接 `el.hide()` 抛 TypeError —— 而且在路由回调里抛会把后面的 resetScroll() 一起带崩。 */
+          /* ⚠️ 组件方法在 ofa 的包装上，**裸元素上没有**：`$('.doc-menu')` 才有 hide()。直接 `el.hide()` 抛 TypeError，而且在路由回调里抛会把后面的 resetScroll() 一起带崩。 */
           const menu = this.ele.shadowRoot?.querySelector('.doc-menu');
           if (menu) $(menu)?.hide();
         },
@@ -234,8 +209,7 @@
     }
 
     /* 顶栏是固定的一行（外壳锁一屏，正文带在它下面自己滚）。
-       z-index 要比浮动侧栏高一档：侧栏是 fixed，而且是被 <slot> 投影进来的
-       （在绘制顺序里靠后），同层会盖住顶栏 */
+       z-index 要比浮动侧栏高一档：侧栏是 fixed，而且是被 <slot> 投影进来的（绘制顺序里靠后），同层会盖住顶栏 */
     .doc-top {
       position: relative;
       z-index: calc(var(--mc-z-sticky) + 1);
@@ -251,8 +225,7 @@
     .doc-top-nav {
       display: flex;
       align-items: center;
-      /* 一级入口之间留一档：它们是无底无框的文字按钮，`--mc-space-1`（4px）时
-         「首页 文档 组件」三个词会糊成一句，读起来像面包屑而不是三个可点入口 */
+      /* 一级入口之间留一档：它们是无底无框的文字按钮，`--mc-space-1`（4px）时「首页 文档 组件」三个词会糊成一句，读起来像面包屑而不是三个可点入口 */
       gap: var(--mc-space-3);
       min-width: 0;
       flex: 1 1 auto;
@@ -265,9 +238,8 @@
       display: none;
     }
 
-    /* 顶栏四处（三个入口 + 主题触发框）都是 mc-button 的 inline 形态：盒子 / 排版 / 悬停 /
-       焦点环全归组件，页面只剩一件它表达不了的事 —— **次要文字色**（`color` 维度里最接近的
-       `neutral` 是填充档 213 218 224，当文字用浅得看不见），所以把强调色接到前景族上。
+    /* 顶栏四处（三个入口 + 主题触发框）都是 mc-button 的 inline 形态：盒子 / 排版 / 悬停 / 焦点环全归组件，页面只剩一件它表达不了的事 ——
+       **次要文字色**（`color` 维度里最接近的 `neutral` 是填充档，当文字用浅得看不见），所以把强调色接到前景族上。
        ⚠️ 色槽由**外层样式表**覆盖：语义色名走 CSS，外层规则压得住 :host([color=…])。 */
     .doc-top-nav mc-button,
     .doc-top-actions mc-button {
@@ -275,28 +247,21 @@
       --mc-button-accent: var(--mc-color-fg-muted);
     }
 
-    /* 当前页用**主色**：与左栏、主题下拉里「选中项」同一个约定（`mc-menu-item[data-current]`
-       就是主色 + primary-subtle 底）—— 不然头部是前景灰、菜单是主色紫，两处「当前」对不上。
-       这里**只给颜色不给底色**（文字按钮不补底色，见上一条注释）；字重也不用写：
-       组件默认就是 medium，正好是选中项那一档。 */
+    /* 当前页用**主色**：与左栏、主题下拉里「选中项」同一个约定（`mc-menu-item[data-current]` 就是主色 + primary-subtle 底），不然头部是前景灰、菜单是主色紫，两处「当前」对不上。
+       这里**只给颜色不给底色**（文字按钮不补底色，见上一条注释）；字重也不用写：组件默认就是 medium，正好是选中项那一档。 */
     .doc-top-nav mc-button[aria-current] {
       --mc-button-accent: var(--mc-color-primary);
     }
 
-    /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条，
-       所以给它一个宽度下限 + 高度上限。
-       ⚠️ 滚动容器必须是**里面的 <doc-nav>**，不能是这层面板包装：外壳那段滚轮接力认的是
-       `doc-nav` / `doc-toc`，它按宿主的 scrollTop/scrollHeight 判「滚到底了没」。容器换成包装层，
-       <doc-nav> 自己就不滚（可滚高度恒为 0）→ 永远被判成「已经在底部」→ 滚轮被 preventDefault
-       转发给正文带：**面板纹丝不动、页面在滚**（实测面板 scrollTop 一直 0、正文 scrollTop 240）。
-       让 <doc-nav> 自己滚，同时也就拿到了和宽屏左栏一样的行为：栏内滚到底再把滚轮交给正文带。 */
+    /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条，所以给它一个宽度下限 + 高度上限。
+       ⚠️ 滚动容器必须是**里面的 <doc-nav>**，不能是这层面板包装：外壳那段滚轮接力认的是 `doc-nav` / `doc-toc`，它按宿主的 scrollTop/scrollHeight 判「滚到底了没」。
+       容器换成包装层，<doc-nav> 自己就不滚（可滚高度恒为 0）→ 永远被判成「已经在底部」→ 滚轮被转发给正文带：**面板纹丝不动、页面在滚**；让 <doc-nav> 自己滚即可。 */
     .doc-menu {
       --mc-popover-panel-min-width: 14rem;
     }
 
     .doc-menu-panel doc-nav {
-      /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），
-         下面的 max-height / overflow 全是空转，滚动更无从谈起（实测滚轮直接落到页面上）。
+      /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），下面的 max-height / overflow 全是空转。
          宽屏那份能滚是因为 doc-layout 给它写了 display:block，这份在外壳里，得自己来。 */
       display: block;
       max-height: min(70vh, 32rem);
@@ -329,8 +294,7 @@
       border-radius: var(--mc-radius-full);
       color: rgb(var(--mc-color-fg-muted));
       text-decoration: none;
-      /* mc-icon 的盒子是 1em、颜色走 currentColor —— 定住字号，
-         图标才和旁边那颗 mc-button 的文字同一档大小（原来是 16×16 的手写 SVG） */
+      /* mc-icon 的盒子是 1em、颜色走 currentColor —— 定住字号，图标才和旁边那颗 mc-button 的文字同一档大小 */
       font-size: 1rem;
     }
 
@@ -340,15 +304,13 @@
     }
 
     /* 焦点环用 ring 令牌，不用 currentColor（两者底色都浅）。
-       ⚠️ 主题切换的焦点环在 mc-button 内部那个原生按钮上，组件自带了同款（--mc-color-ring），
-       所以这里只管 GitHub 那颗。 */
+       ⚠️ 主题切换的焦点环在 mc-button 内部那个原生按钮上，组件自带了同款（--mc-color-ring），所以这里只管 GitHub 那颗。 */
     .doc-github:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring));
       outline-offset: 2px;
     }
 
-    /* 外壳 = 一屏高的纵向 flex：顶栏定高（flex: none），正文带吃掉剩下的（flex: 1 + min-height: 0）。
-       不需要把高度一层层从 body 传下来 —— 这一层自己声明 height: 100vh。
+    /* 外壳 = 一屏高的纵向 flex：顶栏定高（flex: none），正文带吃掉剩下的（flex: 1 + min-height: 0）；这一层自己声明 height: 100vh，不用把高度从 body 一层层传下来。
        正文带因此正好从顶栏下面开始：它的滚动条不会像窗口滚动条那样伸进头部里去。 */
     .doc-shell {
       height: 100vh;
@@ -356,8 +318,7 @@
       flex-direction: column;
     }
 
-    /* 正文带：**唯一的滚动容器**。全宽 → 滚动条贴窗口右缘；
-       左右两栏是 position: fixed（见 docs/content.css 的分栏注释），不占这里的布局。 */
+    /* 正文带：**唯一的滚动容器**。全宽 → 滚动条贴窗口右缘；左右两栏是 position: fixed（见 docs/content.css 的分栏注释），不占这里的布局。 */
     .doc-main {
       flex: 1;
       min-height: 0; /* 不写这一条，flex 子项会被内容撑高、滚不起来 */
@@ -368,8 +329,7 @@
       overscroll-behavior: contain;
     }
 
-    /* 子页面只负责铺满宽度；正文多宽由页面自己决定（组件页还要先给浮动侧栏留出位置，
-       见 docs/content.css 的分栏注释 —— 宽度不设上限，只留下限）。
+    /* 子页面只负责铺满宽度；正文多宽由页面自己决定（组件页还要先给浮动侧栏留出位置，见 docs/content.css）。
        ::slotted 的实参只能是复合选择器，所以不能写成 .doc-main ::slotted(o-page) */
     ::slotted(o-page) {
       display: block;
@@ -382,8 +342,7 @@
   <l-m src="../packages/icon/icon.html"></l-m>
   <l-m src="../packages/collapse/collapse.html"></l-m>
   <l-m src="../packages/collapse/collapse-item.html"></l-m>
-  <!-- 文档站自己的组件在 docs/components/ 下：标签名由组件里显式声明的 tag 决定，约定 doc- + 文件名
-       （nav.html → tag: 'doc-nav'；不写 tag 会按文件名推断出非法元素名，见 ofa-pitfalls P40）。左栏 <doc-nav>、右栏 <doc-toc> 都用 mc-menu 渲染 -->
+  <!-- 文档站自己的组件在 docs/components/ 下：标签名由组件里显式声明的 tag 决定（约定 doc- + 文件名；不写 tag 会按文件名推断出非法元素名，见 ofa-pitfalls P40）。左栏 <doc-nav>、右栏 <doc-toc> 都用 mc-menu 渲染 -->
   <l-m src="./components/nav.html"></l-m>
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
@@ -392,8 +351,7 @@
   <l-m src="../packages/dropdown/dropdown.html"></l-m>
   <l-m src="../packages/popover/popover.html"></l-m>
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
-  <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），
-       渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
+  <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
   <l-m src="./components/spec.html"></l-m>
   <!-- 页面占位也是组件（原来在 layout 的脚本里手搓 DOM）：设计令牌的色板 -->
   <l-m src="./components/palette.html"></l-m>
@@ -403,13 +361,11 @@
     <header class="doc-top">
       <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
-      <!-- 一级菜单就是页面本身（入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；
-           二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
+      <!-- 一级菜单就是页面本身（入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
       <nav class="doc-top-nav">
         <!-- 入口是 mc-button（inline 形态），不是 <a>：导航改由 openEntry() 改 hash。
-             ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），
-             换来的是「顶栏每一处都由项目自己的组件渲染」。改回锚点前先看提交记录里的取舍。
-             aria-current 由新增的 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
+             ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），换来的是「顶栏每一处都由项目自己的组件渲染」；改回锚点前先看提交记录里的取舍。
+             aria-current 由 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
         <o-fill :value="links" fill-key="path">
           <mc-button inline attr:aria-current="$data.aria" attr:data-path="$data.path"
             >{{$data.label}}</mc-button
@@ -417,8 +373,7 @@
         </o-fill>
       </nav>
 
-      <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf），
-           图标按钮必须有 aria-label，装饰性 SVG 加 aria-hidden（无障碍基线，见 design-spec 第八节） -->
+      <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf），图标按钮必须有 aria-label，装饰性 SVG 加 aria-hidden（无障碍基线，见 design-spec 第八节） -->
       <div class="doc-top-actions">
         <a
           class="doc-github"
@@ -428,24 +383,19 @@
           aria-label="GitHub 仓库"
           title="GitHub 仓库"
         >
-          <!-- 图标走内置的 github 品牌图标（mc-icon）：这条 path 原来是手写的 Octicons，
-               现在清单里有了就不该再存一份 —— 上游改图形只需要 pnpm icons。
-               装饰性图标对读屏隐藏，名字在 <a> 的 aria-label 上。 -->
+          <!-- 图标走内置的 github 品牌图标（mc-icon）：清单里有了就不该再存一份手写 path，上游改图形只需要 pnpm icons。装饰性图标对读屏隐藏，名字在 <a> 的 aria-label 上。 -->
           <mc-icon name="github" aria-hidden="true"></mc-icon>
         </a>
 
-        <!-- 主题切换：项目自己的下拉**菜单**。触发元素是我们写的按钮，无障碍名直接写在它
-             身上（不用跨 shadow）；当前主题挂在菜单项的 aria-current 上 —— mc-menu-item 会
-             把它镜像成 [data-current] 换底色加粗（复用「当前页」那套状态机）。
-             placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
+        <!-- 主题切换：项目自己的下拉**菜单**。触发元素是我们写的按钮，无障碍名直接写在它身上（不用跨 shadow）；当前主题挂在菜单项的 aria-current 上 ——
+             mc-menu-item 会把它镜像成 [data-current] 换底色加粗（复用「当前页」那套状态机）。placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
         <mc-dropdown
           trigger="click"
           placement="bottom-end"
           on:open="menuOpen = true"
           on:close="menuOpen = false"
         >
-          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件，不再手写一颗。
-               无障碍名由 .sr-only 那半句 + 当前值拼出来（「切换深浅色：自动」）——
+          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件。无障碍名由 .sr-only 那半句 + 当前值拼出来（「切换深浅色：自动」）——
                mc-button 的可访问名来自插槽文字，所以可见文字与隐藏文字要一起给。 -->
           <mc-button
             slot="trigger"
@@ -485,10 +435,8 @@
           >
         </mc-dropdown>
 
-        <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。
-             o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
-             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。
-             ⚠️ 它是 disclosure（按钮 + 展开区块），不是 ARIA menu —— 用 aria-expanded，不用 aria-haspopup。 -->
+        <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
+             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。⚠️ 它是 disclosure（按钮 + 展开区块），用 aria-expanded，不用 aria-haspopup。 -->
         <o-if :value="showMenu">
           <mc-popover
             class="doc-menu"

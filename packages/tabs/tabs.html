@@ -1,9 +1,4 @@
-<!--
-  mc-tabs — 标签页容器（同目录还有 tab.html）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-tabs — 标签页容器（同目录还有 tab.html）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -103,8 +98,7 @@
         this.ele.addEventListener('click', this._onClick);
         this.ele.addEventListener('keydown', this._onKeydown);
 
-        /* 增删标签 / 改 value / 改 disabled 都要重新同步。我们自己写的 selected / hidden / aria-* / id
-           不在过滤表里，所以不会自激 */
+        /* 增删标签 / 改 value / 改 disabled 都要重新同步；我们自己写的 selected / hidden / aria-* / id 不在过滤表里，不会自激 */
         this._mo = new MutationObserver(() => this.applyState());
         this._mo.observe(this.ele, {
           childList: true,
@@ -156,11 +150,7 @@
           return first ? (first.getAttribute('value') ?? '') : '';
         },
 
-        /**
-         * 把「谁是激活项」同时落到四处：标签的 selected、内部原生 button 的 aria-selected / roving
-         * tabindex / aria-controls、面板的 role / hidden / aria-labelledby、指示条。
-         * 面板用 hidden 常驻 DOM（不删节点），切回来时内容与滚动位置都还在。
-         */
+        /** 把「谁是激活项」同时落到四处：标签的 selected、button 的 aria-selected / roving tabindex / aria-controls、面板的 role / hidden / aria-labelledby、指示条；面板用 hidden 常驻 DOM，切回来内容还在 */
         applyState() {
           const active = this.activeValue();
           const tabs = this.tabList().map((tab, index) => {

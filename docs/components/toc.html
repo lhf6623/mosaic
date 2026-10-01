@@ -1,41 +1,12 @@
 <!--
-  <doc-toc> —— 组件文档页右栏的「本页目录」（ofa 组件模板，原来是一个手写 class）。
-
-  它住在**分区布局页** docs/doc-layout.html 里，正文在**子页面**的 shadow root 里 —— 跨一层
-  边界，所以扫标题前要先顺着 <slot> 找到当前那一页（contentRoot()）。换页时 slotchange 会响，
-  页内后续渲染（示例、异步卡片）由 MutationObserver 兜。
-    · 目录项不能用 `#id` 锚点：地址栏 hash 归 ofa 路由器所有（#/packages/…），
-      而且页面正文在 shadow root 里、URL fragment 也进不去 —— 所以点击一律
-      preventDefault + 程序化滚动；
-    · 滚动容器是外壳的 `.doc-main`（顶栏下面那一带，见 layout.html 的注释），scroll-spy 盯它；
-      高亮仍旧走 mc-menu 那条路：给 <a> 写 aria-current，组件镜像成宿主的 data-current；
-      滚到底时**单独收尾到最后一项** —— 判定带只覆盖顶部 30%（≤240px），页尾那几节够不着
-      （见 syncActive() 里的注释与 09 号套件那条「滚到底」的断言）。
-
-  **两条大纲规则**（09 号套件逐条盯着）：
-    · 页面的 h2/h3 一条不漏地进目录，**不按标题名过滤** —— 目录是正文大纲的镜像，
-      少一条就变成「演示标题与页面小节平级」的假结构（曾经这么干过，右栏因此显得乱）；
-    · h2 = 节、h3 = 节里的子项：缩进一档 + 颜色弱一档、节与节之间留一道空。
-      缩进会吃掉可点宽度，所以右栏宽度按「最长标题放得下」定（见 <style> 里的注释）。
-
-  ⚠️ 只把「建 DOM」那一段交给模板（结构与数据同形）；扫描标题、**扁平树找滚动容器**、
-     签名守卫、滚动高亮、防抖全部留在 JS —— 那是这块的难点，不是模板能表达的。
-  ⚠️ **高亮也走数据**：当前项 = `rows[i].aria`，模板负责渲染（阶段 0 实测：o-fill 局部改数据
-     复用节点，所以不会把正在点的节点换掉）。只写真正变化的那一两行，滚动开销可以忽略；
-     这么写还顺带免掉「锚点后渲染 → 高亮要补一次」的时序问题。
-  ⚠️ **标题不是一开始就齐的**：子页面先挂上、演示区与组件里的内容再各补一拍。
-     所以挂 MutationObserver，标题签名变了才重建目录（签名没变不碰 DOM，
-     免得把正在点的节点换掉 —— 同 nav.html 那条「不重建 DOM」的教训）。
-  ⚠️ **此元素自带 shadow root 了**：proto 里的 `this` 是 ofa 实例，所有元素 API 走 `this.ele`
-     （实测）——`contentRoot()` / `scroller()` 都踩在这条上。
+  <doc-toc> —— 组件文档页右栏的「本页目录」：住分区布局页 docs/doc-layout.html，正文在子页面 shadow root 里，扫标题前要先顺 <slot> 找到当前页（contentRoot()）。
+  两条大纲规则：h2/h3 一条不漏、不按标题名过滤（目录是正文大纲的镜像）；h2 = 节，h3 = 缩进一档的子项。
+  ⚠️ 目录项不能用 `#id` 锚点（hash 归 ofa 路由器），点击一律 preventDefault + 程序化滚动；scroll-spy 盯外壳的 `.doc-main`，滚到底单独收尾到最后一项；标题会晚到，签名没变就不重建目录。
 -->
 <template component>
   <style>
-    /* 两级大纲：h2 = 节（正常前景色），h3 = 子项（退一档缩进 + 弱一档颜色）。
-       ⚠️ 条目文字是**单行 + overflow: hidden**（mc-menu-item 的固有行为，右栏够不着它的
-       shadow 去改），所以缩进会实打实吃掉可点宽度：右栏宽度（docs/doc-layout.html 的 15rem）
-       是按「最长的那个标题也放得下」反算的 —— 改宽度、改缩进量、给演示起更长的名字，
-       三件事都会顶到 09 号套件那条「任何一项都没被省略号截断」的断言上。 */
+    /* 两级大纲：h2 = 节（正常前景色），h3 = 子项（缩进一档 + 弱一档颜色）。
+       ⚠️ 条目文字是单行 + overflow: hidden（mc-menu-item 固有，够不着它的 shadow），缩进实打实吃掉可点宽度 —— 右栏宽度按最长标题反算，改宽度 / 缩进量 / 演示名都会顶到 09 号套件的断言。 */
     mc-menu {
       /* 走 mc-menu 的色槽通道；`:host` 的默认值优先级低于外部声明，所以这里写得进 */
       --mc-menu-item-color: var(--mc-color-fg);
@@ -46,8 +17,7 @@
       --mc-menu-item-color: var(--mc-color-fg-muted);
     }
 
-    /* 换节留白：上一项是子项、这一项是节标题 —— 一行空说明「上一节到这儿结束了」。
-       o-fill 把条目铺成平铺的兄弟节点，所以相邻选择器认得出来（实测）。 */
+    /* 换节留白：上一项是子项、这一项是节标题（o-fill 把条目铺成平铺的兄弟，相邻选择器认得出来） */
     mc-menu-item[data-level='deep'] + mc-menu-item:not([data-level]) {
       margin-top: var(--mc-space-3);
     }
@@ -65,14 +35,12 @@
   </mc-menu>
 
   <script>
-    /** 收进目录的标题层级。页面里 h1 只有一个（页名），不进目录。
-     *  列全、**不按标题名过滤**：目录是正文大纲的镜像，「例子」也是页面上真实的一节 ——
-     *  滤掉它只会把它的子项（每个演示）顶到与小节平级，那才是「乱」的来源。 */
+    /** 收进目录的标题层级。h1 只有一个（页名），不进目录；列全、**不按标题名过滤** ——
+     *  滤掉「例子」只会把它的子项（每个演示）顶到与小节平级，那才是「乱」的来源。 */
     const HEADINGS = 'h2, h3';
 
     /** 当前项判定带：滚动容器顶部往下这么高的区间里，最后一个标题算「当前」。
-     *  不能只留几像素 —— 点目录项后标题落在 scroll-margin-top（顶栏 + 间距 ≈ 72px）处，
-     *  判定线太靠上会把上一节判成当前（实测踩过） */
+     *  不能只留几像素 —— 点目录项后标题落在 scroll-margin-top（≈72px）处，判定线太靠上会把上一节判成当前。 */
     const ACTIVE_BAND_RATIO = 0.3;
     const ACTIVE_BAND_MAX = 240;
 
@@ -110,9 +78,8 @@
         this._onScroll = () => this.syncActive();
         this._onResize = () => this.syncActive();
 
-        /* 点目录项后先把自己点亮、并暂时不参与 scroll-spy：判定带是 240px，点击落在
-           短小节上时，紧跟着的下一节标题也在带内，按「最后一个过线标题」会把它抢走。
-           用户一旦自己滚（滚轮 / 触摸 / 按键）就交还给 scroll-spy */
+        /* 点目录项后先把自己点亮、并暂时不参与 scroll-spy：判定带是 240px，点击落在短小节上时，
+           紧跟着的下一节标题也在带内，按「最后一个过线标题」会把它抢走。用户一旦自己滚就交还给 scroll-spy */
         this._onUserScroll = () => {
           if (!this._pinned) return;
           this._pinned = null;
@@ -215,18 +182,13 @@
           this._scroller ??= this.scroller();
           this._scroller?.addEventListener('scroll', this._onScroll, { passive: true });
 
-          /* 高亮：条目是异步渲染出来的，这里先同步切一次（已渲染时立刻生效），
-             剩下的交给 ready() 里那个盯子页面 shadow root（contentRoot()）的 childList 观察者 */
+          /* 高亮：条目是异步渲染出来的，这里先同步切一次，剩下的交给 ready() 里那个盯子页面 shadow root 的观察者 */
           this.syncActive();
           return true;
         },
 
-        /**
-         * 滚动容器：外壳的 `.doc-main`（顶栏下面那一带，也是页面上唯一的滚动容器）。
-         * ⚠️ 必须走扁平树（先看 `assignedSlot`）：子页面是被外壳的 `<slot>` 投影进去的，
-         * 只看 parentElement / getRootNode().host 会从文档树绕过去，永远碰不到它。
-         * 找不到元素级滚动祖先时退回 window（窗口不在扁平树遍历里）。
-         */
+        /* 滚动容器：外壳的 `.doc-main`（页面上唯一的滚动容器）。⚠️ 必须走扁平树（先看 `assignedSlot`）：
+           子页面是被外壳 `<slot>` 投影进来的，只看 parentElement / getRootNode().host 会从文档树绕过去；找不到元素级滚动祖先时退回 window。 */
         scroller() {
           let node =
             this.ele.assignedSlot ?? this.ele.parentElement ?? this.ele.getRootNode()?.host ?? null;
@@ -274,9 +236,7 @@
             ? { top: 0, height: window.innerHeight }
             : scroller.getBoundingClientRect();
 
-          /* 滚到底就认最后一项收尾。判定带只有滚动区顶部 30%（≤240px），页尾那几节
-             可能整节都落在带下面 —— 不收尾的话最后一节永远点不亮（实测：button 页滚到底
-             还停在「API」，而它后面还有参考节）。
+          /* 滚到底就认最后一项收尾（判定带只有滚动区顶部 30%，页尾那几节够不着，不收尾最后一节永远点不亮）。
              ⚠️ 「滚不动的一屏」（内容比视口还矮）不算到底：那时整页都在眼前，该亮第一项。 */
           const overflow = viewport
             ? document.documentElement.scrollHeight - window.innerHeight
@@ -298,8 +258,7 @@
             if (entry.heading.getBoundingClientRect().top <= line) active = entry;
           }
 
-          /* 高亮 = 改数据（渲染交给模板）：数据驱动顺带解决了时序 —— 首次 rebuild 时条目
-             可能还没渲染出来，模板后渲染时会读到已经写好的 aria（命令式则要观察者兜底） */
+          /* 高亮 = 改数据（渲染交给模板）：只写真正变了的行，数据驱动还顺带解决「首次 rebuild 时条目可能还没渲染出来」的时序 */
           this.applyActive(active?.id);
         },
       },

@@ -1,19 +1,8 @@
-/* 文档站**唯一的导航信号源**。
- *
- * 以前「跟着路由走」在 4 个文件里各挂一遍 hashchange + router-change（8 个监听），
- * 每处都要单独记得「olink 走 pushState、不触发 hashchange」（P28）—— 漏一个就是一处静默不更新。
- * 现在监听只在这里挂，消费方订阅同一个 store / 同一个订阅表。
- *
- * 两种消费方式（按需选）：
- *   · routeState()          拿响应式对象 —— 模板里可以按 {{nav.path}} 绑（ofa 会跟随，实测）
- *   · onRouteChange(cb)      拿订阅 —— JS 里要派生的（左栏行、面包屑、翻页）用这条
- *
- * ⚠️ 三个不显然的点：
- *   · **懒创建**：模块顶层调 $.stanz 会依赖 ofa 的执行顺序；这里只在首次取用时建。
- *   · **创建即写入当前路由**：组件可能比外壳的引导更早 attach，先有值再订阅，
- *     消费方就不用写「还没值」的分支。
- *   · **订阅表是自己的一张 Set**，不用 $.stanz 的 watch：watch 的返回值能不能退订
- *     没有官方说明（实测未验），而组件会随切页反复建/毁，退订必须可靠。
+/* 文档站**唯一的导航信号源**：监听只在这里挂（hashchange + router-change），消费方订阅同一个 store / 订阅表。
+ * 以前 4 个文件各挂一遍（8 个监听），每处都要记得「olink 走 pushState、不触发 hashchange」（P28）—— 漏一个就是静默不更新。
+ * 两种消费：routeState() 拿响应式对象（模板里可以按 {{nav.path}} 绑），onRouteChange(cb) 拿订阅（JS 里要派生的用）。
+ * ⚠️ 三个不显然的点：懒创建（模块顶层调 $.stanz 依赖 ofa 的执行顺序）；创建即写入当前路由（组件可能比外壳更早 attach）；
+ *   订阅表是自己的一张 Set（watch 的返回值能不能退订没有官方说明，而组件会随切页反复建/毁，退订必须可靠）。
  */
 
 import { locate } from '../site-map.js';
@@ -68,10 +57,7 @@ export function startRouteTracking() {
   document.addEventListener('router-change', sync);
 }
 
-/**
- * 订阅路由变化（只在实际换页时回调）。返回退订函数 ——
- * 组件必须在 detached() 里调用它，否则切页后会留下改旧组件的回调。
- */
+/** 订阅路由变化（只在实际换页时回调）。返回退订函数 —— 组件必须在 detached() 里调用它，否则切页后会留下改旧组件的回调。 */
 export function onRouteChange(cb) {
   routeState(); // 保证 store 与监听都已就位
   subscribers.add(cb);

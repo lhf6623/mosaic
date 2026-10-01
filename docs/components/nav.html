@@ -1,25 +1,10 @@
 <!--
-  <doc-nav> —— 文档站左栏二级菜单，站点级 ofa 组件。
-
-  菜单结构 = docs/site-map.js 的树 = 这份模板：o-fill 逐条铺 children（分组再嵌一层）。
-  本文件只管两件事 —— 该渲染哪一支（routeState 的 entry + menuOf）、谁是当前页（aria-current）；
-  其余（分组标题行、待建外链、压暗）都是模板里一句绑定。
-
-  为什么从普通自定义元素改成组件模板：以前得手写 _append 递归、_link 建 DOM、syncActive 切高亮，
-  菜单一变就得跟着改三层；现在结构与数据同形，改菜单只改数据。
-
-  ⚠️ 组件模板必然带 shadow root：content.css 只能落在宿主标签本身（sticky / padding / border
-     那几条照旧生效），够不到这里渲染出来的 <a>，所以条目自己的样式写在下面 <style> 里。
-  ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区内切页不重建列表 ——
-     真人点击的 mousedown→click 必须落在同一个节点上。
-     ⚠️ 原来由 tests/site/04-nav-stability.mjs 盯着这条，该套件已随站点测试一起删掉 ——
-     改这里时请手动验一次「切换同分区的两页，菜单不会被重建」。
-  ⚠️ mc-menu / mc-menu-item 由外壳 docs/layout.html 统一 <l-m> 进来，这里不再引一遍。
+  <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（aria-current）；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
+  ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区切页不重建列表 —— 改这里时请手动验一次；mc-menu / mc-menu-item 由外壳 docs/layout.html 统一 <l-m> 进来。
 -->
 <template component>
   <style>
-    /* 未实现的组件压暗一档，和「已实现」区分开（链接指向规范文档，不是死链）。
-       当前项高亮由 mc-menu 负责：插槽元素的 aria-current → 宿主的 data-current */
+    /* 未实现的组件压暗一档；当前项高亮由 mc-menu 负责：插槽的 aria-current → 宿主 data-current */
     a[data-status='planned'] {
       opacity: 0.72;
     }
@@ -27,11 +12,8 @@
 
   <mc-menu>
     <o-fill :value="rows" fill-key="key">
-      <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许**一个**根子元素，
-             而这一行要渲染「分组标题 + 组内条目」两块（<o-if> + <o-else>）。
-             ofa 发现多根时会自己包一层同样的 div 并打一条 console 警告（temp_multi_child）——
-             包裹本身无害（display:contents 不生成盒子，布局与不包时逐像素相同），但会刷屏。
-             显式写出这层，语义一致、控制台干净；tests/site/11 的「写法守卫」盯着这条不变量。 -->
+      <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许一个根子元素，而这一行要渲染两块（<o-if> + <o-else>）。
+             多根时 ofa 会自己包一层同样的 div 并打一条 console 警告；显式写出语义一致、控制台干净（tests/site/11 盯着这条不变量）。 -->
       <div style="display: contents">
         <o-if :value="$data.pages">
           <mc-menu-item group>{{$data.name}}</mc-menu-item>
@@ -73,23 +55,14 @@
     import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
-    /**
-     * 左栏显示名，三种节点三种写法：
-     *   · 分组 → `基础（9）`：括号里是**这一组渲染出来的子项数**（隐藏项已在 menuOf 里剔除）
-     *   · 组件 → `按钮（Button）`：中文 + 括号里的 API 名（英文名 = label，中文名 = zh）
-     *   · 其余 → 原样的 label（站点页 / 分组不做中英对照）
-     */
+    /** 左栏显示名：分组 `基础（9）`（括号里是隐藏项剔除后的子项数）；组件 `按钮（Button）`；其余原样 label */
     const displayName = (node) => {
       if (node.children) return `${node.label}（${node.children.length}）`;
       return node.zh ? `${node.zh}（${node.label}）` : node.label;
     };
 
-    /**
-     * 一个节点 → 模板要的字段。展示策略都收在这里：
-     * 待建的不给死链（外链规范 + `stage · 待建` 的 tooltip），压暗靠 data-status。
-     * ⚠️ 链接一律 `attr:href`：`:` 只写 property，`getAttribute('href')` 会是 null。
-     * ⚠️ 显示名与 tooltip 是两个字段：tooltip 用 title（summary），别混。
-     */
+    /* 节点 → 模板字段：待建的不给死链（外链规范 + `stage · 待建` 的 tooltip），压暗靠 data-status。
+       ⚠️ 链接一律 `attr:href`：`:` 只写 property，`getAttribute('href')` 会是 null；显示名与 tooltip 是两个字段。 */
     const linkOf = (page, current) => {
       const ready = hasPage(page);
       return {
@@ -123,16 +96,14 @@
       );
 
     export default () => ({
-      /* ⚠️ 一定要显式写 tag：不写时 ofa 用**文件名**推断标签名（老版本这里叫 doc-nav.html
-         所以能歪打正着），文件一改名/挪目录就会推断成别的名字而注册失败 ——
-         外层还只报 "wrong module address"，极难反查（见 ofa-pitfalls 的 P40） */
+      /* ⚠️ 一定要显式写 tag：不写时 ofa 用文件名推断标签名，文件一改名/挪目录就会注册失败，
+         而外层只报 "wrong module address"，极难反查（见 ofa-pitfalls 的 P40） */
       tag: 'doc-nav',
 
       data: { rows: [] },
 
       ready() {
-        /* 路由信号统一来自 docs/state/route.js（唯一挂 hashchange + router-change 的地方，
-           见那里的注释与 ofa-pitfalls 的 P28）；这里只订阅 */
+        /* 路由信号统一来自 docs/state/route.js（唯一挂 hashchange + router-change 的地方，见 P28）；这里只订阅 */
         this._unwatch = onRouteChange(() => this.renderRows());
         this.renderRows();
       },
@@ -145,8 +116,7 @@
       proto: {
         /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
-          /* ⚠️ 别再调一次 locate()：routeState() 里已经是它算好的结果 ——
-             entry 是当前页所在的分区，node 是当前页自己。 */
+          /* ⚠️ 别再调一次 locate()：routeState() 里已经是它算好的结果（entry = 当前页所在分区，node = 当前页自己） */
           const { path: current, entry } = routeState();
           this.rows = entry ? rowsOf(entry, current) : [];
         },

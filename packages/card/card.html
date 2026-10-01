@@ -1,13 +1,8 @@
-<!--
-  mc-card — 内容承载面
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-card — 内容承载面；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
+    /* 1. 宿主盒模型 + 色槽默认值（写在这里，使用者 style="…" 才压得住） */
     :host {
       display: block;
       position: relative; /* 使用者自己铺「整卡可点」那条 ::after 的包含块 —— 对外契约，别删 */
@@ -20,16 +15,14 @@
       line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
       color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
 
-      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
       --mc-card-bg: var(--mc-color-surface, var(--mc-def-color-surface));
       --mc-card-border: var(--mc-color-border, var(--mc-def-color-border));
       --mc-card-pad: var(--mc-space-4, var(--mc-def-space-4));
-      /* 边框宽度单独成变量：使用者的「铺满」伪元素要按它把边框那圈也算进去
-         （绝对定位的包含块是宿主的内边距盒，inset:0 会漏掉边框） */
+      /* 边框宽度单独成变量：使用者的「铺满」伪元素要按它算进去（绝对定位的包含块是内边距盒，inset:0 漏边框） */
       --mc-card-border-w: 1px;
     }
 
-    /* 2. 维度 variant：surface 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+    /* 2. 维度 variant：surface 是默认外观，写在 1 区（:host(:not([variant])) 会静默失效，P14） */
     :host([variant='outline']) {
       background-color: transparent;
     }
@@ -45,12 +38,9 @@
       --mc-card-pad: var(--mc-space-6, var(--mc-def-space-6));
     }
 
-    /* 4. 状态：一个都没有。可点 / 悬停 / 光标都由使用者写在页面 CSS 里 ——
-       组件一旦接管，就得替使用者判断「哪个元素算整卡动作」，还要处理边框死区、伪元素
-       的 cursor、位移抖动（命中判定走变换后的盒子），那些是行为不是面 */
+    /* 4. 状态：一个都没有 —— 可点 / 悬停 / 光标都由使用者写在页面 CSS 里，组件接管就成了行为不是面 */
 
-    /* 5. 内部结构。内边距只在 .mc-base 上声明一次：头尾用负外边距贴到卡片边缘、各自带
-       自己的内边距，分隔线因此是通长的，而头尾与正文之间只隔一个 pad */
+    /* 5. 内部结构。内边距只在 .mc-base 上声明一次：头尾用负外边距贴到边缘、各自带内边距，分隔线因此通长 */
     .mc-base {
       display: block;
       padding: var(--mc-card-pad);
@@ -61,20 +51,16 @@
       display: none; /* 常驻 DOM，有没有内容由宿主属性说话（P10） */
       padding: var(--mc-card-pad);
       margin-inline: calc(var(--mc-card-pad) * -1);
-      /* 头尾是通长的整条，底色会一直铺到卡片边缘 —— 圆角必须跟着宿主走，
-         否则卡片是圆角、头尾是直角，两个直角会从圆角里露出来。
-         inherit 拿的是 .mc-base 的圆角（它又是 inherit 宿主的），所以使用者
-         用 style="border-radius: …" 覆盖宿主时这里自动跟随 */
+      /* 头尾是通长整条，底色铺到卡片边缘 —— 圆角必须跟着宿主走，否则直角会从圆角里露出来；
+         inherit 拿的是 .mc-base 的圆角（它又 inherit 宿主），使用者覆盖宿主时自动跟随 */
       border-radius: inherit;
     }
     :host([data-has-header]) .mc-header {
-      /* 头部是一行：正文插槽占满左边，slot="suffix" 贴右边（徽标 / 状态 / 小按钮） */
       display: flex;
       align-items: center;
       gap: var(--mc-space-2, var(--mc-def-space-2));
       margin-block: calc(var(--mc-card-pad) * -1) var(--mc-card-pad);
       border-bottom: 1px solid rgb(var(--mc-card-border));
-      /* 朝向正文的两个角必须是直角（那里贴着正文，圆了会露出卡片底色） */
       border-end-start-radius: 0;
       border-end-end-radius: 0;
     }
@@ -85,7 +71,6 @@
       border-start-start-radius: 0;
       border-start-end-radius: 0;
     }
-    /* 关分隔线只改颜色、不改宽度：否则关线时整张卡的高度会抖 1px */
     :host([divider='none']) .mc-header {
       border-bottom-color: transparent;
     }
@@ -119,8 +104,7 @@
       attrs: {
         variant: 'surface',
         padding: 'md',
-        // 头尾分隔线：枚举而不是布尔 —— 默认是「有线」，而 :host(:not([divider])) 会静默失效（P14），
-        // 所以只能把「非默认」那一档写成属性值
+        // 头尾分隔线：枚举而不是布尔 —— 默认是「有线」，而 :host(:not([divider])) 会静默失效（P14）
         divider: 'line',
       },
 
@@ -130,8 +114,7 @@
       },
 
       attached() {
-        /* 头尾有没有内容只靠 slotchange 判定：插槽的分到节点一变就会响
-           （往头尾元素**内部**加东西不影响「有没有内容」，不需要再盯子树） */
+        /* 头尾有没有内容只靠 slotchange 判定：分到节点一变就响（往头尾元素内部加东西不算「有内容」，不用盯子树） */
         this._onSlotChange = () => this.applyState();
         for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
         this.applyState();
@@ -142,9 +125,7 @@
       },
 
       proto: {
-        /** 头尾有没有内容 → 宿主上的 data-has-header / data-has-footer（CSS 只能从宿主上选） */
         applyState() {
-          // suffix 也是头部那一行的内容，只写 header 就不算「有头」会让徽标孤零零地悬着
           this.mirror(
             'data-has-header',
             this.slotHasContent('header') || this.slotHasContent('suffix'),
@@ -152,7 +133,6 @@
           this.mirror('data-has-footer', this.slotHasContent('footer'));
         },
 
-        /** 具名插槽有没有分到东西：**元素即内容**；纯文本/注释节点要非空白才算 */
         slotHasContent(name) {
           const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
           return (slot?.assignedNodes() ?? []).some(
@@ -160,7 +140,6 @@
           );
         },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
         mirror(name, on) {
           if (on === this.ele.hasAttribute(name)) return;
           if (on) this.ele.setAttribute(name, '');

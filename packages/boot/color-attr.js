@@ -1,36 +1,17 @@
 /**
- * color-attr.js —— 让组件的 `color` 属性**直接吃 hex**：`<mc-button color="#fff000">`。
+ * color-attr.js —— 让组件的 `color` 属性直接吃 hex：`<mc-button color="#fff000">`。
  *
- * 组件里四行接线（button / tag / icon 各一处，alert 刻意不接）：
+ * 组件侧四行接线：`const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] })`，
+ * 模板里 `attached() { color.sync(this, this.color); }` + `watch: { color(v) { color.change(this, v); } }`。
  *
- * ```js
- * import { colorAttr } from '../boot/color-attr.js';
- * const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
- * // 组件模板里：
- * attached() { color.sync(this, this.color); },
- * watch: { color(value) { color.change(this, value); } },
- * ```
+ * 分工：语义名（`primary` / `info` / …）一律交给 CSS，hex 才走这里写组件自己的色槽；
+ * `-fg` 按 WCAG 亮度算（`#fff000` 配白字只有 1.19:1，不该由使用者决定）；只收 hex，
+ * `rgb()` / 颜色名一律不当颜色，警告一条后什么都不写。只用 fill / on-fill / accent 的组件
+ * 不装观察器，声明了 `-subtle-fill` 的（tag）才在主题变化时重算。
  *
- * ## 语义
- *
- * · **语义名照旧交给 CSS**：`primary` / `info` / … （外加组件自己的取值，如 `mc-icon` 的 `current`）
- *   一律不碰，`variant` 决定槽贴到哪儿，组合关系一个字没变。
- * · **hex 走这里**：`#fff000` / `#fc0` → 写该组件自己的色槽（`--mc-<slug>-fill` 等）。
- *   只收 hex —— `rgb()` / `hsl()` / 颜色名一律**不当颜色**，一条 `[mosaic]` 警告后什么都不写
- *   （不猜、不降级：值不对就是不给颜色）。
- * · `-fg` 不用你给：按 WCAG 相对亮度算（`#fff000` 配白字只有 1.19:1，所以这个不该由使用者决定）。
- * · `-subtle-fill` 要跟主题走：声明了它的组件（tag）会在 `<html data-theme>` 或系统配色变化时重算。
- *   只用 `fill` / `on-fill` / `accent` 的组件（button）**不装任何观察器**，零常驻开销。
- *
- * ## 三条边界
- *
- * 1. 写的是**宿主的内联 style**：盖过 `:host` 上的默认值，也盖过使用者写在同一元素上的同名令牌。
- *    （本文件只清自己写过的那几个属性，不碰别人的。）
- * 2. 宿主 style 只在 `attached()` 之后写 —— 构造期往宿主写属性会抛 `NotSupportedError`（P31）；
- *    `watch` 首次触发恰好落在构造期，由 `change()` 内部跳过（P5）。这两个坑都在本文件里处理完，
- *    组件侧只剩上面四行。
- * 3. **hex 不随主题翻转**（它是品牌色，不是语义色）；要亮暗两套就亮暗各写一个值 ——
- *    `[data-theme='dark'] mc-button { --mc-button-fill: … }` 之类。
+ * 三条边界：① 写的是宿主内联 style，会盖过 `:host` 默认值与使用者写的同名令牌（只清自己写的）；
+ * ② 宿主 style 只能在 `attached()` 之后写（构造期写会抛 `NotSupportedError`，P31），
+ * `watch` 首次触发恰在构造期、由 `change()` 跳过（P5）；③ hex 不随主题翻转。
  */
 
 import { contrast, mix, parseHex, readToken, readableOn, triple, warnOnce } from './color-math.js';
@@ -115,8 +96,7 @@ function apply(host, raw, config) {
     if (surface) {
       const subtle = mix(rgb, surface, 0.9);
       write(host, slot('subtle-fill'), triple(subtle));
-      /* 浅底变体的强调色仍是品牌色本身（L2 没有"浅底上的强调色"这个令牌），
-         所以极浅的牌子色在浅底上会读不清。语义色有构建期 34 项门禁兜底，字面量没有 —— 这里补一条。 */
+      /* 浅底变体的强调色仍是品牌色本身，极浅的牌子色会读不清 —— 语义色有构建期门禁，字面量没有 */
       const ratio = contrast(rgb, subtle);
       if (ratio < 4.5)
         warnOnce(

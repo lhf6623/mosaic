@@ -1,15 +1,8 @@
-<!--
-  mc-scroll-bar — 滚动条
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-scroll-bar — 滚动条。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主只负责「尺寸 + 裁切」，滚动全在里面那个 .mc-viewport 上 ——
-          原生滚动留着（键盘、触屏惯性、锚点、find-in-page 全都照旧），只是把原生滚动条藏掉，
-          位置与长度交给我们自己画的条子。 */
+    /* 1. 宿主只负责「尺寸 + 裁切」，滚动在 .mc-viewport 上：原生滚动留着，只藏掉原生滚动条 */
     :host {
       display: block;
       position: relative;
@@ -29,10 +22,7 @@
     .mc-viewport {
       width: 100%;
       height: 100%;
-      /* ⚠️ 这里**不写** overscroll-behavior: contain：那会让滚轮在容器里「滚到底就锁住」，
-         鼠标停在容器上时整页都动不了（实测：容器滚到 602px 到底后再滚 300，页面纹丝不动）。
-         默认的 auto 会把到头的滚轮交给外层 —— 与外壳里「侧栏滚到底再接力给正文带」同一个口径。
-         真要「滚不出去」的场合（比如弹层里的内滚区），使用者自己给 ::part(viewport) 写 contain。 */
+      /* ⚠️ 这里**不写** overscroll-behavior: contain：那会让滚轮到容器底就锁住，鼠标停在容器上整页都动不了；默认 auto 会把到头的滚轮交给外层 */
       /* 藏原生滚动条：两条路都写 —— Firefox 走 scrollbar-width，Chromium / Safari 走伪元素 */
       scrollbar-width: none;
     }
@@ -59,30 +49,22 @@
     .mc-bar {
       position: absolute;
       opacity: 0;
-      /* ⚠️ 条子**不能吃指针**：它是 viewport 的**兄弟**节点、盖在最右边那 10px 上，
-         命中它时滚轮到不了 viewport —— 表现就是「鼠标停在滚动条那条上滚不动」，
-         而滚动条恰恰是大家最自然会去悬停的地方（实测：落在条子上 scrollTop 纹丝不动，
-         落在旁边一格就滚）。这里关掉指针，让滚轮穿透到底下的 viewport；
-         滑块自己再打开（它要能拖），并在它上面单独把滚轮转过去。 */
+      /* ⚠️ 条子**不能吃指针**：它是 viewport 的兄弟节点、盖在最右边那 10px 上，命中它滚轮到不了 viewport（「鼠标停在滚动条上滚不动」） */
       pointer-events: none;
       transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
         var(--mc-ease-standard);
     }
-    /* reveal="hover"（默认）：平时藏着，鼠标移入宿主才淡入。
-       「正在用它」的另外两条路同样算：键盘把焦点 Tab 进来、以及正在拖滑块
-       （拖拽时指针常常已经移出宿主，只认 :hover 会让滑块在手里消失）。 */
+    /* reveal="hover"（默认）：平时藏着，鼠标移入才淡入；焦点 Tab 进来、正在拖滑块（指针常已移出宿主）同样算 */
     :host([data-reveal='hover'][data-overflow]:hover) .mc-bar,
     :host([data-reveal='hover'][data-overflow]:focus-within) .mc-bar,
     :host([data-reveal='hover'][data-overflow][data-dragging]) .mc-bar {
       opacity: 1;
     }
-    /* reveal="always"：只要溢出就常显 —— 截图 / 大屏演示这类「鼠标不在上面才是常态」的场合，
-       藏起来等于把「还有内容」这条线索删了。 */
+    /* reveal="always"：只要溢出就常显 —— 截图 / 大屏演示这类场合，藏起来等于删掉「还有内容」的线索 */
     :host([data-reveal='always'][data-overflow]) .mc-bar {
       opacity: 1;
     }
-    /* 没有 hover 能力的设备（触屏）压根没有「移入」这个动作 —— 退回「溢出即常显」，
-       否则手机上永远看不见条子。有鼠标的设备（含触屏笔记本）走上面的悬停。 */
+    /* 没有 hover 能力的设备（触屏）没有「移入」这个动作，退回「溢出即常显」，否则手机上永远看不见条子 */
     @media (hover: none) {
       :host([data-reveal='hover'][data-overflow]) .mc-bar {
         opacity: 1;
@@ -134,11 +116,9 @@
       tag: 'mc-scroll-bar',
 
       attrs: {
-        /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器（见 README） */
+        /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器 */
         axis: 'y',
-        /* 条子什么时候出现（枚举而不是布尔，形状同 axis —— 将来真要加第三档只多一个值）：
-           `hover` = 鼠标移入才淡入；`always` = 只要溢出就常显（截图 / 大屏演示、
-           内容很小而条子本身就是主体的界面 —— 那些场合「鼠标不在上面」才是常态）。 */
+        /* 条子什么时候出现（枚举而不是布尔，形状同 axis）：`hover` = 移入才淡入；`always` = 溢出即常显 */
         reveal: 'hover',
         /** 可滚动区域的读屏名（只在真的溢出时挂到 viewport 上） */
         label: '可滚动区域',
@@ -158,9 +138,7 @@
         };
         this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
 
-        /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去同样到不了 viewport —— 就地转过去。
-           只为这一小块（约 10×40px）挂非 passive 监听，代价可以忽略；
-           条子其余部分靠 CSS 的 pointer-events: none 让滚轮原生穿透。 */
+        /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去到不了 viewport —— 就地转过去；只为这一小块挂非 passive 监听 */
         this._onThumbWheel = (event) => {
           const vp = this._viewport;
           const horizontal = this.axis === 'x';
@@ -174,8 +152,7 @@
         this._thumb.addEventListener('wheel', this._onThumbWheel, { passive: false });
 
         this._slot.addEventListener('slotchange', () => this.observeContent());
-        /* 视口本身变大变小（比如宿主高度变了）要重算；内容变高变矮同样要重算 ——
-           后者 ResizeObserver 不会替我们看，得盯住被塞进来的那些元素 */
+        /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
         this._ro = new ResizeObserver(() => this.sync());
         this._ro.observe(this._viewport);
 
@@ -235,10 +212,7 @@
           }
         },
 
-        /**
-         * 把滚动事实同步成三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、
-         * viewport 的无障碍三连（只有真溢出才该是个可 Tab 的 region）。
-         */
+        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的无障碍三连 */
         sync() {
           const vp = this._viewport;
           if (!vp) return;
@@ -253,8 +227,7 @@
           this.syncA11y(over);
           if (!over) return;
 
-          /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：
-             长列表里 1% 的滑块只有半个像素，看不见也抓不住 */
+          /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：长列表里 1% 只有半个像素，抓不住 */
           const minThumb = parseFloat(
             getComputedStyle(this.ele).getPropertyValue('--mc-scroll-bar-min-thumb'),
           );
@@ -284,10 +257,7 @@
           for (const name of ['tabindex', 'role', 'aria-label']) vp.removeAttribute(name);
         },
 
-        /**
-         * 拖滑块：按位移比例换算回滚动量。用 pointer capture 而不是 window 上的监听 ——
-         * 指针移出窗口、移出宿主都不会丢事件。
-         */
+        /** 拖滑块：按位移比例换算回滚动量。用 pointer capture，指针移出窗口也不会丢事件 */
         startDrag(event) {
           if (event.button != null && event.button !== 0) return;
           event.preventDefault();
@@ -312,9 +282,7 @@
           this.ele.setAttribute('data-dragging', '');
 
           this._onDragMove = (move) => {
-            /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管、触屏手势被系统收走…）就别再拖着
-               内容跑 —— 那之后鼠标**一动内容就跟着跑**，使用者感受是「滚动卡住了/时好时坏」
-               （实测：pointercancel 之后仅移动鼠标，scrollTop 从 150 一路被拖到 600）。 */
+            /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管…）就别再拖着内容跑 —— 那之后鼠标一动内容就跟着跑，感受是「滚动卡住了」 */
             if (!move.buttons) {
               this.endDrag();
               return;
@@ -331,7 +299,7 @@
           window.addEventListener('pointercancel', this._onDragEnd);
         },
 
-        /** 收掉这一次拖拽（重复调用无害：拖拽结束时三条路都会走到这里） */
+        /** 收掉这一次拖拽（重复调用无害：结束时三条路都会走到这里） */
         endDrag() {
           window.removeEventListener('pointermove', this._onDragMove);
           window.removeEventListener('pointerup', this._onDragEnd);

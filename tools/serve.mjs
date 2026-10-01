@@ -13,14 +13,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const portArg = process.argv.indexOf('--port');
 const PORT = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT || 8642);
 
-/* 部署前缀：GitHub Pages 项目页挂在 `/<repo>/` 下。`--prefix /mosaic` 用来在本地复现
- * 线上子路径行为 —— 站内链接、菜单高亮在两种前缀下都必须对得上。 */
+/* 部署前缀：GitHub Pages 项目页挂在 `/<repo>/` 下；`--prefix` 在本地复现子路径行为（站内链接、菜单高亮都得对）。 */
 const prefixArg = process.argv.indexOf('--prefix');
 const PREFIX = (prefixArg > -1 ? process.argv[prefixArg + 1] : '').replace(/\/+$/, '');
 
-/* 模拟 Live Server 注入（规则照抄 live-server/index.js）：注入点依次找 </body> → </svg> → </head>，
- * 取第一个命中处。注入内容自带 HTML 注释，会把目标文件的注释提前闭合 —— 少了它，注入的 script
- * 就会抢走页面模块的「第一个 <script>」而加载失败，正是冒烟测试要覆盖的那条路径。 */
+/* 模拟 Live Server 注入（照抄 live-server/index.js）：注入点依次找 </body> → </svg> → </head>，取第一个
+ * 命中处。注入内容自带 HTML 注释、会提前闭合目标文件的注释 —— script 会抢走「第一个 <script>」而加载失败。 */
 const INJECT = process.argv.includes('--inject');
 const INJECTED =
   '<!-- Code injected by live-server -->\n' +
@@ -37,7 +35,7 @@ function injectLikeLiveServer(html) {
   return html; // 三个都没命中就不注入 —— 和 live-server 行为一致
 }
 
-/** 本地开发：.html 按 text/html 提供（ofa.js 用 fetch + 文本解析，不看 content-type）。jsDelivr 的 content-type 讨论见文档 */
+/** .html 按 text/html 提供（ofa.js 用 fetch + 文本解析，不看 content-type）；jsDelivr 的 content-type 讨论见文档 */
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -63,7 +61,7 @@ const server = createServer(async (req, res) => {
     return;
   }
   if (PREFIX) {
-    // 不带尾斜杠的入口重定向一次 —— 和 GitHub Pages 行为一致，相对路径才有正确基准
+    // 不带尾斜杠的入口重定向一次 —— 与 GitHub Pages 一致，相对路径才有正确基准
     if (pathname === PREFIX) {
       res.writeHead(302, { location: `${PREFIX}/` }).end();
       return;
@@ -92,7 +90,7 @@ const server = createServer(async (req, res) => {
     }
     res.writeHead(200, {
       'content-type': TYPES[extname(target).toLowerCase()] ?? 'application/octet-stream',
-      // 禁缓存。改完立刻生效，不用手动 hard reload
+      // 禁缓存：改完立刻生效，不用手动 hard reload
       'cache-control': 'no-store, must-revalidate',
       // 和 jsDelivr 一样允许跨域读取，方便本地复现 CDN 场景
       'access-control-allow-origin': '*',

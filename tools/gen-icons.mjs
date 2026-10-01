@@ -1,20 +1,11 @@
 #!/usr/bin/env node
 /**
- * mosaic — 内置图标生成器：清单 + 上游图标数据 → 三份提交进仓库的产物。
- *
- *   packages/icon/icons.generated.ts   我们的 mc 图标集合（IconifyJSON 形状，键 = 对外名）
- *                                      —— 运行时数据源（mc-icon 组件按名查它），从不发请求
- *   packages/icon/icons.generated.css  内置图标的 CSS（每条一个 data-URI mask，类名 mc-icon-<名字>）
- *                                      —— 由 tools/build-css.mjs 装配进 packages/boot/mosaic.css
- *   packages/icon/icons.license.txt    来源与许可清单（署名义务、白名单核对结果）
- *
- * 三条守卫都是「缺输入必须大声失败」，而且是**构建期**就红，不留到浏览器里变成静默空白：
- *   1. 清单里的上游名必须真的存在（含别名解析）—— 上游改名/归档会在构建时就暴露；
- *   2. 图标集的 license.spdx 必须在白名单里 —— GPL / CC-BY-NC / 需署名的 CC-BY 一律进不来；
- *   3. 生成的图标类名不能和组件里已有的类名撞车 —— `mc-icon-*` 是和组件内部类同处一个全局
- *      命名空间的（mosaic.css 会被 <link> 进使用者的页面），撞了就是把某个内部元素变成图标。
- *
- * 用法：node tools/gen-icons.mjs（通常经 `pnpm icons` 调用；`pnpm build` 里排在 tokens 之前）
+ * mosaic — 内置图标生成器：清单 + 上游图标数据 → 三份提交进仓库的产物：icons.generated.ts（运行时数据源，
+ * mc-icon 按名查它、从不发请求）、icons.generated.css（每条一个 data-URI mask，类名 mc-icon-<名字>）、
+ * icons.license.txt（来源与许可）。三条守卫都是「缺输入必须大声失败」，而且是**构建期**就红：
+ * ① 上游名必须真的存在（含别名解析）；② license.spdx 必须在白名单里（GPL / CC-BY-NC / 需署名的 CC-BY 进不来）；
+ * ③ 生成的类名不能和组件已有的类名撞车。
+ * 用法：node tools/gen-icons.mjs（通常经 `pnpm icons`；`pnpm build` 里排在 tokens 之前）
  */
 
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -85,7 +76,7 @@ for (const [set, { info }] of sets) {
 }
 if (licenseProblems.length) fail(licenseProblems);
 
-/* ---------- 2. 逐条解析：上游名 → 图形数据（getIconData 会解析别名与 rotate/hFlip 变换） ---------- */
+/* ---------- 2. 逐条解析：上游名 → 图形数据（getIconData 解析别名与 rotate/hFlip 变换） ---------- */
 
 const icons = {};
 const missing = [];
@@ -108,14 +99,9 @@ for (const [pub, spec] of Object.entries(ICONS)) {
 }
 if (missing.length) fail(missing);
 
-/* ---------- 3. 类名守卫：引用必须存在；组件自己的样式不能占用图标类名 ----------
- * 图标类名和组件内部类名同处一个全局命名空间（mosaic.css 会被 <link> 进使用者的页面），守两头：
- *   · 组件里写死的 `mc-icon-x`（静态图标直接吃类，省一个文件请求）必须在清单里 ——
- *     上游改名或手滑要在**构建期**就炸，别等浏览器里静默空白；
- *   · 组件自己的 `<style>` 里不能出现和内置图标同名的选择器 —— 那等于把某个内部节点变成图标。
- *     实测过的反面教材：集合名叫 mc 时 `.mc-close` 会被写成图标规则，alert 的关闭按钮直接废。
- *     （外层包装类不算：`.mc-loader` 包着 `.mc-icon-spinner` 是合法且推荐的写法。）
- */
+/* ---------- 3. 类名守卫：图标类名和组件内部类名同处一个全局命名空间（mosaic.css 进使用者页面）----
+ * 组件里写死的 `mc-icon-x` 必须在清单里（上游改名要在**构建期**炸）；组件自己的 <style> 里也不许出现
+ * 同名选择器 —— 那等于把内部节点变成图标（`.mc-close` 实测过）。外层包装类不算。 */
 
 const walk = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
@@ -135,8 +121,7 @@ const noteRef = (cls, file) => {
 };
 for (const file of scanFiles) {
   const text = readFileSync(file, 'utf8');
-  /* 只认「真的当类名用」的地方：class="…" 里的整词，或引号包起来的整串。
-     刻意不扫裸文本 —— @keyframes mc-icon-spin 这种动画名不是类名，不该被当成图标引用。 */
+  /* 只认「真的当类名用」的地方：class="…" 里的整词或引号包起来的整串；刻意不扫裸文本（@keyframes 动画名不是类名） */
   for (const attr of text.matchAll(/class="([^"]*)"/g)) {
     for (const token of attr[1].split(/\s+/)) noteRef(token, file);
   }
@@ -246,10 +231,8 @@ licenseLines.push(
   '',
 );
 
-/* ---------- 图标 CSS：每条一个 data-URI mask ----------
- * 以前这份由 UnoCSS 的 presetIcons 生成（uno.config.ts 已删）。它只有一个用途：让组件里的
- * **静态**图标直接吃类名（`<span class="mc-icon-spinner">`），零 JS、零字体、零请求。
- * 中转变量叫 --mc-icon-uri（原先是框架的 --un-icon）。 */
+/* ---------- 图标 CSS：每条一个 data-URI mask —— 唯一用途是让组件里的**静态**图标直接吃类名
+ * （`<span class="mc-icon-spinner">`），零 JS、零字体、零请求；中转变量是 --mc-icon-uri。 */
 const ICON_W = sets.get(ICON_SOURCE).data.width ?? 24;
 const ICON_H = sets.get(ICON_SOURCE).data.height ?? 24;
 

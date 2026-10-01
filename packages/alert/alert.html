@@ -1,13 +1,8 @@
-<!--
-  mc-alert — 页内提示条
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-alert — 页内提示条；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。尺寸/圆角/内边距都写在这里，使用者 style="…" 才压得住 */
+    /* 1. 宿主盒模型 + 色槽默认值（写在这里，使用者 style="…" 才压得住） */
     :host {
       display: block;
       position: relative; /* 内部绝对定位元素的包含块（P21） */
@@ -27,18 +22,15 @@
         border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
           var(--mc-ease-standard, var(--mc-def-ease-standard));
 
-      /* L3 组件令牌：默认引用 L2 语义令牌。按实例覆盖写在宿主 style 上 */
+      /* L3 组件令牌，默认引 L2；按实例覆盖写在宿主 style 上 */
       --mc-alert-pad-x: var(--mc-space-4, var(--mc-def-space-4));
       --mc-alert-pad-y: var(--mc-space-3, var(--mc-def-space-3));
       --mc-alert-gap: var(--mc-space-3, var(--mc-def-space-3));
       --mc-alert-radius: var(--mc-radius-md, var(--mc-def-radius-md));
-      /* 正文色，以及 × 的 state layer：都是「相对当前配色」的叠加，不引新色。
-         layer 是一个 0–1 的数（hover 用，active 乘 1.5），色随 variant 换。 */
       --mc-alert-body-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
       --mc-alert-layer-color: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-alert-layer: 0.08;
 
-      /* 色槽：primary 是默认色（API 规范 1.2 的全局默认），已经填好 */
       --mc-alert-fill: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-alert-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
       --mc-alert-accent: var(--mc-color-primary, var(--mc-def-color-primary));
@@ -49,7 +41,7 @@
       color: rgb(var(--mc-alert-accent));
     }
 
-    /* 2. 维度一 color：只往色槽里填值。primary（默认）已经在上面 */
+    /* 2. 维度一 color：只往色槽里填值（primary 已在上面） */
     :host([color='info']) {
       --mc-alert-fill: var(--mc-color-info, var(--mc-def-color-info));
       --mc-alert-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
@@ -86,7 +78,7 @@
       background-color: rgb(var(--mc-alert-fill));
       color: rgb(var(--mc-alert-on-fill));
       --mc-alert-body-color: var(--mc-alert-on-fill);
-      /* 实心上的叠加要用 on-fill，用 fg 会在饱和底色上糊成一块 */
+      /* 实心上的叠加要用 on-fill，fg 会在饱和底色上糊成一块 */
       --mc-alert-layer-color: var(--mc-alert-on-fill);
     }
     :host([variant='outline']) {
@@ -108,7 +100,6 @@
     :host([icon]) .mc-icon {
       display: flex;
     }
-    /* 自定义图标插槽优先：有内容就内置图形让位（数据由 applyState 判定，见脚本） */
     :host([data-has-icon]) .mc-icon {
       display: flex;
     }
@@ -138,20 +129,18 @@
       align-items: flex-start;
       gap: var(--mc-alert-gap);
     }
-    /* 长文本在窄容器里折行，不撑破宿主 */
     .mc-content {
       flex: 1 1 0%;
       min-width: 0;
       overflow-wrap: anywhere;
     }
-    /* 内置图标：一个 mc-icon 实例，图形名跟着 color 走（见脚本的 GLYPH_NAMES）。
-       size="lg" = 1.25em，和改造前手绘图形的尺寸一致 */
+    /* 内置图标：一个 mc-icon 实例，图形名跟着 color 走（见 GLYPH_NAMES）；size="lg" = 1.25em */
     .mc-glyphs {
       display: flex;
       align-items: center;
     }
 
-    /* 关闭按钮：32×32 命中区的原生按钮；负外边距抵消掉超出行高的那 6px，单行提示条不被撑高 */
+    /* 关闭按钮：32×32 命中区；负外边距抵消超出行高的 6px，单行提示条不被撑高 */
     .mc-close {
       display: none;
       position: relative;
@@ -195,8 +184,7 @@
   </style>
 
   <div part="base" class="mc-base">
-    <!-- 图标：内置图形来自 mc-icon（不给 label，所以它自己就是 aria-hidden 的装饰）；
-         slot="icon" 是使用者的内容，不替它决定是否被朗读 -->
+    <!-- 图标：内置图形来自 mc-icon（不给 label，自身即 aria-hidden 装饰）；slot="icon" 是使用者的内容 -->
     <span class="mc-icon" part="icon">
       <mc-icon class="mc-glyphs" size="lg" aria-hidden="true" :name="glyphName"></mc-icon>
       <slot name="icon"></slot>
@@ -207,24 +195,19 @@
       <div class="mc-body" part="body"><slot></slot></div>
     </div>
 
-    <!-- 关闭：用内置的 close 图标；无障碍名由按钮自己的 aria-label 给 -->
+    <!-- 关闭：无障碍名由按钮自己的 aria-label 给 -->
     <button class="mc-close" part="close" type="button" aria-label="关闭" on:click="onClose()">
       <mc-icon name="close"></mc-icon>
     </button>
   </div>
 
   <script>
-    /* color 也收 hex（`<mc-alert color="#1a7f5a">`）：语义名照旧交给 CSS，hex 走共享接线器。
-       提示条默认也是浅底外观，所以接 subtle-fill —— 主题重算与"浅底上读不清"的警告都在那个文件里 */
+    /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；提示条是浅底外观，所以接 subtle-fill */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
-    /**
-     * 语义色 → 内置图标名（primary / info / neutral 共用信息圆）。
-     * 图形本体住在 packages/icon/icons.generated.ts，构建期被编译成 CSS（零请求）；
-     * 这里只留一张映射表，形状一个字节都不进本文件。
-     */
+    /** 语义色 → 内置图标名。图形本体住在 packages/icon/icons.generated.ts，构建期编译成 CSS（零请求） */
     const GLYPH_NAMES = {
       primary: 'info',
       info: 'info',
@@ -235,8 +218,7 @@
     };
 
     export default async ({ load }) => {
-      /* 图标是独立组件：注册 mc-alert 之前先把它就位（路径相对本文件 URL 解析）。
-         只引 mc-alert 的使用者会连带取一次 icon.html —— 这是「不给每个组件各画一套图标」的代价。 */
+      /* 图标是独立组件：注册前先就位（路径相对本文件 URL）；代价是只引 mc-alert 也会取一次 icon.html */
       await load('../icon/icon.html');
 
       return {
@@ -245,7 +227,7 @@
         attrs: {
           color: 'primary',
           variant: 'subtle',
-          // 标题文案，富内容走 title 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（见文件头）
+          // 标题文案，富内容走 title 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip
           heading: '',
           // 布尔属性默认值必须是 null（P1）。icon 是「存在即显示内置图形」
           icon: null,
@@ -261,8 +243,7 @@
           // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
           color.sync(this.ele, this.color);
 
-          /* 标题/正文的空内容折叠只靠 slotchange 判定：分到节点一变就会响（同 mc-card）。
-           icon 插槽也一样 —— 有自定义图标时内置图形让位。 */
+          /* 空内容折叠靠 slotchange 判定：分到节点一变就响；icon 插槽同理 —— 有自定义图标时内置图形让位 */
           this._onSlotChange = () => this.applyState();
           for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
           this.applyState();
@@ -279,10 +260,7 @@
             color.change(this.ele, value);
           },
 
-          /**
-           * heading 变了要有标题块 —— 但首次触发落在构造期，那时往宿主写属性会抛
-           * NotSupportedError（P5 + P31，实测踩过一回）。守卫之后这里就是纯粹的「文案变了」。
-           */
+          /** heading 变了要有标题块；首次触发在构造期，那时写宿主属性会抛 NotSupportedError（P5 + P31） */
           heading() {
             if (this._headingWatchInit === undefined) {
               this._headingWatchInit = true;
@@ -293,7 +271,6 @@
         },
 
         proto: {
-          /** 图标名跟着 color 走：4 个语义图形现在住在内置图标集里，靠 mc-icon 的 :name 绑定 */
           get glyphName() {
             return GLYPH_NAMES[this.color] ?? 'info';
           },
@@ -308,16 +285,11 @@
             this.mirror('data-has-icon', this.slotHasContent('icon'));
           },
 
-          /**
-           * 标题文案。⚠️ attach 那一刻宿主上还没有 heading 属性（ofa 稍后才写空值，P32），
-           * getAttribute 会给 null —— 直接 `?.trim() !== ''` 会得到 `undefined !== ''` = true，
-           * 于是空标题也判成「有标题」，白占一行。必须先落成空串。
-           */
+          /** 标题文案。⚠️ attach 时宿主还没有 heading 属性（ofa 稍后写空值，P32），必须先落成空串 */
           headingText() {
             return (this.ele.getAttribute('heading') ?? '').trim();
           },
 
-          /** 具名插槽有没有分到东西：**元素即内容**；纯文本/注释节点要非空白才算 */
           slotHasContent(name) {
             const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
             const slot = this.ele.shadowRoot.querySelector(selector);
@@ -327,14 +299,12 @@
             );
           },
 
-          /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
           mirror(name, on) {
             if (on === this.ele.hasAttribute(name)) return;
             if (on) this.ele.setAttribute(name, '');
             else this.ele.removeAttribute(name);
           },
 
-          /** 只发事件，不删 DOM —— 删不删由使用者决定 */
           onClose() {
             this.emit('close', { bubbles: true, composed: true });
           },
