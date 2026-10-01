@@ -80,6 +80,27 @@ export const ICONS = {
   play: 'lucide:play',
   pause: 'lucide:pause',
 
+  // ---- 财务 ----
+  wallet: 'lucide:wallet',
+  'credit-card': 'lucide:credit-card',
+  banknote: 'lucide:banknote',
+  coins: 'lucide:coins',
+  calculator: 'lucide:calculator',
+  receipt: 'lucide:receipt-text',
+  'piggy-bank': 'lucide:piggy-bank',
+  landmark: 'lucide:landmark',
+  percent: 'lucide:percent',
+  scale: 'lucide:scale',
+
+  // ---- 报表 ----
+  'chart-bar': 'lucide:chart-bar',
+  'chart-line': 'lucide:chart-line',
+  'chart-pie': 'lucide:chart-pie',
+  'trending-up': 'lucide:trending-up',
+  'trending-down': 'lucide:trending-down',
+  table: 'lucide:table',
+  'file-spreadsheet': 'lucide:file-spreadsheet',
+
   // ---- 品牌：开发与代码 ----
   /* 品牌图标与语义图标同一条产物（都进 mosaic.css / icons.generated.css）。
      ⚠️ 品牌 path 比 lucide 大一个量级（平均 1.4 KB CSS，淘宝 3.8 KB 最贵），
