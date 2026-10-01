@@ -1,0 +1,41 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button on:click="openDialog()">打开</mc-button>
+    <mc-dialog
+      heading="事件回调"
+      attr:open="open ? '' : null"
+      on:open="markOpen()"
+      on:close="markClose()"
+    >
+      <p>
+        打开时发 <code>open</code>；点 × / 按 <kbd>Esc</kbd> / 点遮罩三条关闭路径都发
+        <code>close</code>。
+      </p>
+    </mc-dialog>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-dialog-events',
+
+      data: { open: false, last: '（还没交互）' },
+
+      proto: {
+        openDialog() {
+          const dialog = this.ele.shadowRoot.querySelector('mc-dialog');
+          dialog.open = true;
+          this.open = dialog.open;
+        },
+        markOpen() {
+          this.last = 'open';
+        },
+        markClose() {
+          this.open = false;
+          this.last = 'close';
+        },
+      },
+    });
+  </script>
+</template>

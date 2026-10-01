@@ -393,6 +393,20 @@ const rules = [
             );
           }
         }
+        /* 有事件的组件必须有一节「事件回调」：光在别的演示里顺带绑一下不算 ——
+           `mc-input` 的 input / change 一度只藏在「可清除」演示里，读者按目录找事件找不到。
+           事件的用法（载荷形状、什么时候发）得有一节自己的地方说。 */
+        if (c.facts.union.events.size) {
+          const page = `packages/${c.slug}/page.html`;
+          if (io.exists(page) && !/<h3>\s*事件回调\s*<\/h3>/.test(io.read(page))) {
+            problems.push(
+              page +
+                '：有事件却没有「事件回调」演示区（' +
+                [...c.facts.union.events].join(' / ') +
+                '）—— 事件要在页面上演一遍',
+            );
+          }
+        }
         for (const slot of c.facts.union.slots) {
           if (slot === '(默认)') continue; // 无名的默认插槽静态判不出来，也不值得判
           const quoted = ['slot="' + slot + '"', "slot='" + slot + "'"];

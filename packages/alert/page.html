@@ -13,6 +13,7 @@
     <l-m src="./demos/closable.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
     <h1>Alert <code>mc-alert</code></h1>
     <p class="doc-lead">
       页内提示条：一块语义色的小面，带图标、标题与描述，可关。要「自己进场、自己走掉」的浮层消息用
@@ -116,6 +117,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/closable.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        只有 <code>close</code> 一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
+        <code>event.target</code>。组件<strong>不删 DOM</strong>：要它消失，在事件里自己
+        <code>remove()</code>。
+      </p>
+      <demo-alert-events></demo-alert-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

@@ -1,0 +1,29 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-2">
+    <mc-tag checkable selected color="primary" on:change="markChange($event)">已实现</mc-tag>
+    <mc-tag checkable color="primary" on:change="markChange($event)">待建</mc-tag>
+    <mc-tag closable color="danger" on:close="markClose($event)">已废弃</mc-tag>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-tag-events',
+
+      data: { last: '（还没动过）' },
+
+      proto: {
+        /* change 只在 checkable 的标签上发，载荷 { selected } */
+        markChange(event) {
+          this.last = `change → ${event.data.selected ? '选中' : '取消'}`;
+        },
+        /* close 不带载荷，也不删 DOM —— 要消失自己 remove（这里就删） */
+        markClose(event) {
+          this.last = 'close（组件不删 DOM，这里自己 remove）';
+          event.target.remove();
+        },
+      },
+    });
+  </script>
+</template>

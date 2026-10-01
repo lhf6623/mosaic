@@ -14,6 +14,7 @@
     <l-m src="./demos/maxlength.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
     <h1>Input <code>mc-input</code></h1>
     <p class="doc-lead">
       单行输入框。初始值写在 <code>default-value</code> 上，运行时读写走宿主 property
@@ -129,6 +130,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        <code>input</code> 每打一个字都发、<code>change</code> 在失焦 / 回车时发（载荷都是
+        <code>$event.data.value</code>）；点可清除的 × 先发 <code>clear</code>，紧接着补发
+        <code>input</code> 与 <code>change</code>。
+      </p>
+      <demo-input-events></demo-input-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

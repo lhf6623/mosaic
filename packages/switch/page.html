@@ -8,6 +8,7 @@
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
     <h1>Switch <code>mc-switch</code></h1>
     <p class="doc-lead">
       开关。只有开 / 关两态，改完立刻生效 —— 比 <code>mc-checkbox</code> 少一个「提交」的心智。
@@ -47,6 +48,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/disabled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        状态变化时发 <code>change</code>，载荷
+        <code>$event.data.checked</code>；开关只有状态位、没有 <code>value</code>。
+      </p>
+      <demo-switch-events></demo-switch-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>
