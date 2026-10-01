@@ -361,14 +361,17 @@ const rules = [
   },
   {
     /* 「例子按 api.md 的属性来、内容按插槽来、内部样式按 part 来」—— 演示和接口不许脱节：
-       组件代码里有的属性 / 命名插槽 / part，都至少要有一个演示真的用到它。
+       组件代码里有的属性 / 事件 / 命名插槽 / part，都至少要有一个演示真的用到它。
        ⚠️ 插槽也是**接口的一部分**（api.md 的表里承诺了），但这一面过去是盲区：属性与 part 有覆盖线、
        插槽没有 —— `mc-table` 的 empty / loading 两个槽就一度零演示。
+       ⚠️ 事件曾经也是盲区（2026-10 补上）：7 个组件有事件一次都没在演示里监听 ——
+       checkbox 的 change、textarea 的 input/change、scroll-bar 的 scroll、dialog / dropdown 的
+       open、popover 的 before-open/open；api.md 里承诺了却没人演，读者只能猜怎么用。
        ⚠️ 这是**最低覆盖线**，不是「一条演示只讲一个属性」：同一维度的变体（三档尺寸、六个颜色）
-       合一条照样算覆盖；反过来，加了属性 / 插槽 / part 却没有演示，这里就红。 */
+       合一条照样算覆盖；反过来，加了属性 / 事件 / 插槽 / part 却没有演示，这里就红。 */
     type: 'custom',
     id: 'demo-covers-api',
-    title: '组件文档 · 演示覆盖 api.md 的属性、插槽与 part',
+    title: '组件文档 · 演示覆盖 api.md 的属性、事件、插槽与 part',
     run: ({ io, components, problems }) => {
       for (const c of components) {
         if (c.imperative) continue; // 命令式组件没有标签属性，也没有 part
@@ -380,6 +383,14 @@ const rules = [
           const re = new RegExp('(?:^|[^\\w-])' + attr + '(?:[^\\w-]|$)');
           if (!re.test(text)) {
             problems.push(dir + '：属性 `' + attr + '` 在组件代码里有，演示里一次都没出现');
+          }
+        }
+        for (const name of c.facts.union.events) {
+          const bound = new RegExp(`on:${name}\\b|addEventListener\\(\\s*['"]${name}['"]`);
+          if (!bound.test(text)) {
+            problems.push(
+              dir + '：事件 `' + name + '` 在组件代码里有，演示里一次都没监听（on:' + name + '）',
+            );
           }
         }
         for (const slot of c.facts.union.slots) {

@@ -1,0 +1,37 @@
+<template component>
+  <!-- 监听挂在**外层 div** 上：原生的 scroll 不冒泡、viewport 又在 shadow 里，
+       所以组件在宿主上重发了一次（bubbles + composed）—— 挂在祖先上同样收得到。 -->
+  <div on:scroll="onScroll()">
+    <mc-scroll-bar
+      label="事件演示"
+      style="height: 8rem; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
+    >
+      <div class="flex flex-col gap-2 p-3">
+        <o-fill :value="rows" fill-key="$key">
+          <div>{{$data}}</div>
+        </o-fill>
+      </div>
+    </mc-scroll-bar>
+  </div>
+
+  <p class="mt-3 text-sm text-muted">最近一次 scroll：<strong>{{last}}</strong></p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-scroll-bar-events',
+
+      data: {
+        rows: Array.from({ length: 20 }, (_, i) => `第 ${i + 1} 行`),
+        last: '（还没滚）',
+      },
+
+      proto: {
+        /* 条子事件不带载荷（滚到哪儿要自己读 viewport）；这里数一数它真的在滚的时候发 */
+        onScroll() {
+          this.count = (this.count ?? 0) + 1;
+          this.last = `第 ${this.count} 次`;
+        },
+      },
+    });
+  </script>
+</template>

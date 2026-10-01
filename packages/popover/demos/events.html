@@ -1,0 +1,37 @@
+<template component>
+  <mc-popover id="pop" placement="bottom-start">
+    <mc-button variant="outline">点我开合</mc-button>
+    <div slot="panel">
+      点空白或按 <kbd>Esc</kbd> 关掉 —— 三个事件都带 <code>data.reason</code>。
+    </div>
+  </mc-popover>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：<strong>{{last}}</strong>（上一条：{{beforeLast}}）
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-popover-events',
+
+      data: { last: '（还没交互）', beforeLast: '（还没交互）' },
+
+      /* ⚠️ 这里用 addEventListener 而不是模板 on: —— popover 的 before-open / open
+         是在原生 toggle 的处理里同步派发的，模板 on: 收不到（实测几种写法都不触发）；
+         挂在宿主上监听则稳定收得到。
+         ⚠️ 字段别叫 `prev`：ofa 把它留给了自己，data 里出现同名键会让模块注册失败
+         （外层只报「错误的模块地址」，同 loading-bar 演示里 `on` 那个坑）。 */
+      ready() {
+        const pop = this.ele.shadowRoot.querySelector('#pop');
+        const record = (what) => (event) => {
+          this.beforeLast = this.last;
+          /* ⚠️ 载荷在 event.detail（组件用原生 CustomEvent 派发），不是 event.data */
+          this.last = `${what}（reason=${event.detail.reason}）`;
+        };
+        pop.addEventListener('before-open', record('before-open'));
+        pop.addEventListener('open', record('open'));
+        pop.addEventListener('close', record('close'));
+      },
+    });
+  </script>
+</template>

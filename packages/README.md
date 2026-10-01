@@ -204,6 +204,11 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 实测 `ctor === Event`、`isCustomEvent === false`），没有 `data` 就写 `(event: Event) => void`；
 字段类型按组件真实的 payload 写。
 
+⚠️ **例外**：组件自己 `dispatchEvent(new CustomEvent(…))` 时（`before-open` 要 `cancelable`、
+`scroll` 要重发，都绕不开原生派发），载荷在 **`event.detail`** 而不是 `data` ——
+`mc-popover` 的三个事件就是这条路，类型写
+`(event: CustomEvent<{ reason: string }>) => void`，别照抄 `data`。
+
 **方法也写进这张表**：名称写调用式（`` `show()` `` / `` `loadingBar.start(config?)` ``），
 类型写这个可调用的 TS 签名（`(reason?: 'api' \| 'trigger' \| 'dismiss') => void`）。
 引擎的 `callRows` 认「名称里带调用语法」的行：它们按方法对账（名字要在源码里找得到），

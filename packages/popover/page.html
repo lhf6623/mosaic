@@ -12,6 +12,7 @@
     <l-m src="./demos/placement.html"></l-m>
     <l-m src="./demos/trigger.html"></l-m>
     <l-m src="./demos/controlled.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/arrow.html"></l-m>
     <l-m src="./demos/flip.html"></l-m>
     <l-m src="./demos/menu.html"></l-m>
@@ -63,17 +64,32 @@
         <code>open</code> 是受控属性：写上即开、移除即关。<strong
           >用它就得同时把 <code>trigger</code> 设成 <code>manual</code></strong
         >
-        —— 默认的 <code>click</code> 走的是组件自己的 <code>toggle()</code>，
-        它会和外面这份状态抢着写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。组件在
-        <code>show()</code> /
-        <code>hide()</code> 里同样会增删它（把浏览器发起的关闭同步回来），所以外部
-        只从「改属性」这一头驱动；被 Esc / 点空白关掉时属性已经删了、只发
-        <code>close</code>，使用者把 那边的状态收回去 —— 外面那个按钮就是这套写法。
+        —— 默认的 <code>click</code> 走的是组件自己的开合逻辑，
+        它会和外面这份状态抢着写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。组件把
+        浏览器发起的关闭也同步成「删属性」，所以外部只从「改属性」这一头驱动；被 Esc /
+        点空白关掉时属性已经删了、只发 <code>close</code>，使用者把那边的状态收回去 ——
+        外面那个按钮就是这套写法。
       </p>
       <demo-popover-controlled></demo-popover-controlled>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/controlled.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        三个事件都带 <code>$event.detail.reason</code>：<code>before-open</code> 在打开前发、
+        <code>preventDefault()</code> 能拦掉；<code>open</code> / <code>close</code> 表示已经开了 /
+        已经关了，<code>reason</code> 告诉你是谁干的（<code>trigger</code> / <code>api</code> /
+        <code>dismiss</code>）。演示里用 <code>addEventListener</code> 监听。
+      </p>
+      <demo-popover-events></demo-popover-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

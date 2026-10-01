@@ -7,6 +7,7 @@
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/always-visible.html"></l-m>
     <l-m src="./demos/horizontal.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <h1>Scroll Bar <code>mc-scroll-bar</code></h1>
     <p class="doc-lead">
@@ -57,6 +58,22 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/horizontal.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        内部滚动时组件会在<strong>宿主</strong>上重发一次 <code>scroll</code>（原生
+        <code>scroll</code>
+        不冒泡、viewport 又在 shadow 里）—— 挂在祖先上就收得到；滚到哪儿要自己读
+        <code>part="viewport"</code>。
+      </p>
+      <demo-scroll-bar-events></demo-scroll-bar-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/events.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

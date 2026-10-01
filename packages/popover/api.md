@@ -22,23 +22,20 @@
 
 ## 属性
 
-| 名称        | 值                                                                                                                                                                   | 默认     | 说明                                                                 |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------- |
-| `placement` | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `bottom` | 面板相对触发元素的方向（不写后缀 = 居中）；空间不够自动翻转          |
-| `trigger`   | `'click' \| 'hover' \| 'manual'`                                                                                                                                     | `click`  | 怎么开；`manual` 只认 `open` 与 `show()`；受控开合就配它             |
-| `open`      | `boolean`                                                                                                                                                            | —        | 受控开合：属性在就开、移除就关；要受控就把 `trigger` 设成 `manual`   |
-| `arrow`     | `'none'`                                                                                                                                                             | —        | 面板上一个小三角，方向跟着 `placement`；**默认显示**，写 `none` 关掉 |
+| 名称        | 值                                                                                                                                                                   | 默认     | 说明                                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `placement` | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `bottom` | 面板相对触发元素的方向（不写后缀 = 居中）；空间不够自动翻转                                                 |
+| `trigger`   | `'click' \| 'hover' \| 'manual'`                                                                                                                                     | `click`  | 怎么开：`click` 点触发元素、`hover` 悬停；`manual` 关掉这两条路，只认 `open` 属性（受控开合就配它）         |
+| `open`      | `boolean`                                                                                                                                                            | —        | 受控开合：**属性**在就开、移除就关（`setAttribute` / 模板 `attr:open`）；要受控就把 `trigger` 设成 `manual` |
+| `arrow`     | `'none'`                                                                                                                                                             | —        | 面板上一个小三角，方向跟着 `placement`；**默认显示**，写 `none` 关掉                                        |
 
 ## 事件
 
-| 名称          | 类型                                                 | 说明                                                       |
-| ------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
-| `before-open` | `(event: Event & { data: { reason } }) => void`      | 打开前；`preventDefault()` 可拦掉                          |
-| `open`        | `(event: Event & { data: { reason } }) => void`      | 已打开                                                     |
-| `close`       | `(event: Event & { data: { reason } }) => void`      | 已关闭；`reason` = `trigger` / `api` / `dismiss`           |
-| `show()`      | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 打开；可被 `before-open` 拦掉（返回 `false` 表示这次没开） |
-| `hide()`      | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 关闭                                                       |
-| `toggle()`    | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 开合互换                                                   |
+| 名称          | 类型                                               | 说明                                             |
+| ------------- | -------------------------------------------------- | ------------------------------------------------ |
+| `before-open` | `(event: CustomEvent<{ reason: string }>) => void` | 打开前；`preventDefault()` 可拦掉                |
+| `open`        | `(event: CustomEvent<{ reason: string }>) => void` | 已打开                                           |
+| `close`       | `(event: CustomEvent<{ reason: string }>) => void` | 已关闭；`reason` = `trigger` / `api` / `dismiss` |
 
 ## 插槽
 
