@@ -1,15 +1,36 @@
 <template component>
-  <mc-menu
-    style="
+  <style>
+    /* 外层样式两条路：① 宿主 style / 令牌（静态）② 宿主钩子（按状态） */
+    #customize-demo mc-menu {
       width: 14rem;
+      /* ① 令牌按实例覆盖：当前项的底色 / 字色、左右缩进 */
       --mc-menu-item-bg-current: var(--mc-color-info-subtle);
       --mc-menu-item-color-current: var(--mc-color-info);
       --mc-menu-pad-x: var(--mc-space-5);
-    "
-  >
-    <mc-menu-item><a href="#/packages/menu/page.html" aria-current="page">当前项换成信息色</a></mc-menu-item>
-    <mc-menu-item><a href="#/packages/button/page.html">行距和内边距也换了</a></mc-menu-item>
-  </mc-menu>
+    }
+
+    /* ② 宿主钩子：当前项 / 禁用项会镜像成 mc-menu-item 宿主上的 data-* 属性，
+       外层想给它们补点组件没做的东西（竖条、虚线框）就从这里接。 */
+    #customize-demo mc-menu-item[data-current] {
+      box-shadow: inset 3px 0 0 rgb(var(--mc-color-info));
+    }
+    #customize-demo mc-menu-item[data-disabled] {
+      outline: 1px dashed rgb(var(--mc-color-border));
+      outline-offset: -1px;
+    }
+  </style>
+
+  <div id="customize-demo">
+    <mc-menu>
+      <mc-menu-item
+        ><a href="#/packages/menu/page.html" aria-current="page">当前项换成信息色</a></mc-menu-item
+      >
+      <mc-menu-item
+        ><a href="#/packages/button/page.html">行距和内边距也换了</a></mc-menu-item
+      >
+      <mc-menu-item><button type="button" disabled>禁用项：外面补了虚线</button></mc-menu-item>
+    </mc-menu>
+  </div>
 
   <script>
     export default async () => ({ tag: 'demo-menu-customize' });

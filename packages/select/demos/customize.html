@@ -1,0 +1,45 @@
+<template component>
+  <style>
+    /* 外层样式两条路：① 宿主 style / 令牌（静态）② 宿主钩子（按状态） */
+    #customize-demo mc-select {
+      /* ① 令牌按实例覆盖：触发框圆角换成一整圈、底色换成主色浅底 */
+      --mc-select-control-radius: var(--mc-radius-full);
+      --mc-select-control-bg: rgb(var(--mc-color-primary-subtle));
+    }
+
+    .tip {
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: 0.8125rem;
+      opacity: 0;
+      transition: opacity var(--mc-duration-fast, 0.15s) var(--mc-ease-standard, ease);
+    }
+
+    /* ② 宿主钩子就是宿主上的 data-* 属性，外层 CSS 直接勾：
+       一项没选 → 「还没选」；选了 → 「已选好」；面板开着 → 「展开中」 */
+    #customize-demo mc-select[data-empty] ~ .tip-empty,
+    #customize-demo mc-select[data-filled] ~ .tip-filled,
+    #customize-demo mc-select[data-open] ~ .tip-open {
+      opacity: 1;
+    }
+
+    /* 钩子也能作用在宿主自己身上：选好之后整行加重 */
+    #customize-demo mc-select[data-filled] {
+      font-weight: 600;
+    }
+  </style>
+
+  <div id="customize-demo" class="flex flex-wrap items-center gap-3">
+    <mc-select placeholder="选择城市">
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+    </mc-select>
+    <span class="tip tip-empty">还没选</span>
+    <span class="tip tip-filled">已选好 ✓</span>
+    <span class="tip tip-open">展开中</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-customize' });
+  </script>
+</template>

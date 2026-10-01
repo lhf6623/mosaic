@@ -10,7 +10,6 @@
     <l-m src="./demos/size.html"></l-m>
     <l-m src="./demos/surface.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/hooks.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <h1>Menu <code>mc-menu</code></h1>
@@ -97,25 +96,13 @@
     </section>
 
     <section class="doc-demo">
-      <h3>宿主钩子</h3>
-      <p class="doc-hint">
-        这两类行会镜像成 <code>mc-menu-item</code> 宿主上的 <code>[data-current]</code> /
-        <code>[data-disabled]</code> —— 外层想给它们加点组件没做的东西（竖条、虚线框）就从这里接。
-      </p>
-      <demo-menu-hooks></demo-menu-hooks>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hooks.html"></mc-code
-        ></mc-collapse-item>
-      </mc-collapse>
-    </section>
-
-    <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        颜色与内边距写在自己的 <code>style="…"</code> 上（L3 令牌按实例覆盖），不用跨 shadow 边界。
-        改缩进用 <code>--mc-menu-pad-x</code>：对内部 <code>&lt;button&gt;</code> 写的 padding
-        会被页面 reset 吃掉。
+        两条路：① 颜色与内边距写在自己的 <code>style="…"</code> 上（L3 令牌按实例覆盖）， 不用跨
+        shadow 边界 —— 改缩进用 <code>--mc-menu-pad-x</code>，对内部
+        <code>&lt;button&gt;</code> 写的 padding 会被页面 reset 吃掉； ② <b>宿主钩子</b> —— 当前项 /
+        禁用项会镜像成 <code>mc-menu-item</code> 宿主上的 <code>[data-current]</code> /
+        <code>[data-disabled]</code>，外层从这儿补东西。
       </p>
       <demo-menu-customize></demo-menu-customize>
       <mc-collapse class="doc-demo-code">

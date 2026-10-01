@@ -15,6 +15,10 @@
       color: rgb(var(--mc-color-primary));
       text-align: center;
     }
+    /* 宿主钩子也能配 ::part()：面板展开时给触发框一圈高亮 */
+    #part-demo mc-select[data-open]::part(base) {
+      box-shadow: 0 0 0 3px rgb(var(--mc-color-primary-subtle));
+    }
   </style>
 
   <div id="part-demo" class="flex flex-wrap items-center gap-3">

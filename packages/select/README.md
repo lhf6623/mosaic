@@ -64,6 +64,13 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 （数组才装得下多个值、也不怕值里带逗号）；两者各自贴合自己那一侧的用法，
 代价是同一个字段两种形状 —— 文档页与 `api.md` 开场白都点明了。
 
+**状态写成宿主钩子**：`data-open`（面板正在显示）/ `data-filled`（至少选中一项）/
+`data-empty`（一项没选）挂在宿主上。组件自己的 shadow CSS 靠它们换样式
+（`:host([data-empty]) .mc-value`、`:host([data-open]) .mc-chevron`、
+`:host([clearable][data-filled]) .mc-clear`），**外层也拿它按状态写样式** ——
+`mc-select[data-filled] { … }`，或配 `::part()`：`mc-select[data-open]::part(base) { … }`
+（文档页的「外部样式」「内部样式」两条演示）。
+
 ## 令牌
 
 写在宿主 `style="…"` 上按实例覆盖：
