@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.136",
+    "@iconify-json/simple-icons": "^1.2.98",
     "@iconify/utils": "^3.1.7",
     "@types/node": "^26.6.1",
     "markdownlint-cli2": "^0.23.3",

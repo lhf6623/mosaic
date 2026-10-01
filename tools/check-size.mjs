@@ -21,8 +21,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** 共享产物：raw / gzip 两条线（注释里是写下预算时的现值） */
 const SHARED = [
-  // 51.0 KB / 9.0 KB —— 令牌 + 图标 + 工具类，使用者必下（卸掉 UnoCSS 后从 69.2 降下来）
-  { file: 'packages/boot/mosaic.css', raw: 56 * 1024, gzip: 10 * 1024 },
+  // 84.8 KB / 19.7 KB —— 令牌 + 图标 + 工具类，使用者必下（卸掉 UnoCSS 后从 69.2 降下来；
+  // 2026-10 加了 24 个品牌图标后从 51.0 涨上来 —— 品牌 path 平均 1.4 KB/个，见 tools/icon-manifest.mjs）
+  { file: 'packages/boot/mosaic.css', raw: 93 * 1024, gzip: 22 * 1024 },
+  // 66.4 KB / 13.6 KB —— mc-icon 自己 <link> 的那份（也被 mosaic.css 包含）；
+  // 单列是为了盯住图标集的增长：加图标先看这里，再看 mosaic.css 那条
+  { file: 'packages/icon/icons.generated.css', raw: 73 * 1024, gzip: 15 * 1024 },
   // 6.7 KB / 2.6 KB —— 组件自带的基座（shadow reset + 令牌默认值），
   // 每个组件 <link> 它一次、浏览器共享缓存；只对**组件**生效，不进宿主页面
   { file: 'packages/boot/component-base.css', raw: 8192, gzip: 3072 },

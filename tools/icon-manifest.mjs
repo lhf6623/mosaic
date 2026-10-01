@@ -17,7 +17,7 @@
 export const ICON_SOURCE = 'lucide';
 
 /** 允许出现在内置集里的上游图标集（spdx 白名单在 gen-icons.mjs 里） */
-export const ALLOWED_SETS = ['lucide'];
+export const ALLOWED_SETS = ['lucide', 'simple-icons'];
 
 export const ICONS = {
   // ---- 方向与折叠 ----
@@ -79,4 +79,39 @@ export const ICONS = {
   moon: 'lucide:moon',
   play: 'lucide:play',
   pause: 'lucide:pause',
+
+  // ---- 品牌：开发与代码 ----
+  /* 品牌图标与语义图标同一条产物（都进 mosaic.css / icons.generated.css）。
+     ⚠️ 品牌 path 比 lucide 大一个量级（平均 1.4 KB CSS，淘宝 3.8 KB 最贵），
+     所以 mosaic.css 的预算跟着抬过一次 —— 加品牌前先看 tools/check-size.mjs。
+     ⚠️ 图形数据是 CC0（simple-icons），但**商标归各自公司所有**：只作「这是哪个平台」的标识，
+     别用来暗示合作或背书。署名与来源见 icons.license.txt。 */
+  github: 'simple-icons:github',
+  gitlab: 'simple-icons:gitlab',
+  gitee: 'simple-icons:gitee',
+  docker: 'simple-icons:docker',
+  npm: 'simple-icons:npm',
+  vue: 'simple-icons:vuedotjs',
+  react: 'simple-icons:react',
+  svelte: 'simple-icons:svelte',
+
+  // ---- 品牌：国内互联网 ----
+  wechat: 'simple-icons:wechat',
+  qq: 'simple-icons:qq',
+  alibaba: 'simple-icons:alibabadotcom',
+  taobao: 'simple-icons:taobao',
+  xiaomi: 'simple-icons:xiaomi',
+  huawei: 'simple-icons:huawei',
+  bilibili: 'simple-icons:bilibili',
+  zhihu: 'simple-icons:zhihu',
+  weibo: 'simple-icons:sinaweibo',
+  baidu: 'simple-icons:baidu',
+
+  // ---- 品牌：国际 ----
+  google: 'simple-icons:google',
+  apple: 'simple-icons:apple',
+  microsoft: 'simple-icons:microsoft',
+  amazon: 'simple-icons:amazon',
+  youtube: 'simple-icons:youtube',
+  x: 'simple-icons:x',
 };
