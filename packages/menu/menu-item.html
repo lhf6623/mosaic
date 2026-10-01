@@ -1,21 +1,18 @@
-<!--
-  mc-menu-item — 菜单项（配合 mc-menu 使用）
-
-  设计取舍 / 实现约束不写在这里 —— 见同目录 README.md「设计取舍」里这一节。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-menu-item — 菜单项（配合 mc-menu 使用）。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主 = 整行。⚠️ --mc-menu-* 不能在这里写默认值，会盖掉容器继承来的通道，
-       消费一律带兜底值（同 mc-collapse-item 的坑） */
+    /* 1. 宿主 = 整行。⚠️ --mc-menu-* 不能在这里写默认值，会盖掉容器继承来的通道（同 mc-collapse-item）。
+       ⚠️ 只在右边留 padding：左边缩进走 text-indent（见下），两侧都留会变成「缩进 + 内边距」双份；
+       但右边这一层不能省 —— 插槽元素铺的是内容盒，只靠 text-indent 的话右边没有留白，
+       而宿主的内边距会计入固有宽度，面板按内容自适应时就靠它补齐对称。 */
     :host {
       position: relative;
       display: block;
       box-sizing: border-box;
       min-width: 0;
       height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
-      padding-inline: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      padding-inline-end: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
       border-radius: var(--mc-menu-radius, var(--mc-radius-md, var(--mc-def-radius-md)));
       text-indent: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
       line-height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
@@ -37,8 +34,7 @@
       color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg, var(--mc-def-color-fg))));
     }
 
-    /* 3. 状态。§5 的脚本把插槽元素上的 aria-current / disabled 读出来镜像到这里 ——
-       ::slotted() 拿不到足够优先级，宿主才是唯一能稳定着色的地方 */
+    /* 3. 状态。脚本把插槽元素上的 aria-current / disabled 镜像到这里 —— ::slotted() 优先级不够，宿主才稳定 */
     :host([data-current]) {
       background-color: rgb(
         var(
@@ -74,29 +70,28 @@
       );
       font-size: var(--mc-text-xs, var(--mc-def-text-xs));
       font-weight: var(--mc-weight-semibold, var(--mc-def-weight-semibold));
-      /* 字距保留、**不做 uppercase**：分组名可能是中英混排（左栏就是「基础（Basics）」），
-         uppercase 只作用在拉丁字母上，会把括号里的英文变成 BASIC —— 和同一栏其它行不一致 */
+      /* 不做 uppercase：分组名可能中英混排，uppercase 只作用拉丁字母，会和同栏其它行不一致 */
       letter-spacing: 0.06em;
       pointer-events: none;
       user-select: none;
     }
 
-    /* 5. 插槽元素 = 铺满整行的交互层。这里只写祖先 shadow 树里没声明过的属性
-       （position / inset / display / overflow / white-space / border-radius / outline）；
-       凡是 shadow-base 的 button reset 声明过的（padding、background、cursor、font…），
-       写在插槽元素上对 <button> 一律不生效 —— 那些挪到上面的宿主上了 */
+    /* 5. 插槽元素 = 铺满整行的交互层，**走正常流**：绝对定位（inset:0）不参与固有宽度计算，外面那个容器
+       （如 mc-dropdown 的面板）就永远量不到标签有多宽。这里只写祖先 shadow 树没声明过的属性；
+       shadow-base 的 button reset 声明过的（padding / background / cursor）写在它上面一律不生效 */
     ::slotted(a),
     ::slotted(button) {
-      position: absolute;
-      inset: 0;
       display: block;
+      box-sizing: border-box;
+      /* 100% + pad-x：宿主右边那一层 padding 要一起铺到，整行才是可点区（100% 只到内容盒右沿） */
+      width: calc(100% + var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))));
+      height: 100%;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      /* ⚠️ 不能只靠宿主继承：UA 样式表给 <button> / <input> 写死了 text-indent:0（只有作者声明压得住），
-         而 <a> 会正常继承宿主的值 —— 两种元素必须显式写一遍，否则 <button> 行的文字贴边 */
+      /* ⚠️ 不能只靠宿主继承：UA 给 <button> 写死了 text-indent:0，只有作者声明压得住；它同时是固有宽度的一部分 */
       text-indent: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
-      /* ⚠️ 不能省：<button> 的 UA 默认是 text-align:center，靠 text-indent 缩进的文字会被居中 */
+      /* ⚠️ 不能省：<button> 的 UA 默认 text-align:center，缩进的文字会被居中 */
       text-align: start;
       border-radius: inherit;
       color: inherit;
@@ -131,7 +126,7 @@
         this._onSlotChange = () => this.bindChild();
         this._onChildChange = () => this.applyState();
         this._slot.addEventListener('slotchange', this._onSlotChange);
-        // aria-current 是运行时切来切去的（文档站切页就是这么做的），属性一变就得重新镜像
+        // aria-current 是运行时切来切去的，属性一变就得重新镜像
         this._observer = new MutationObserver(this._onChildChange);
 
         this.bindChild();
@@ -144,12 +139,7 @@
       },
 
       watch: {
-        /**
-         * ⚠️ 首次触发必须跳过（P5）：ofa 初始化时会把每个 watch 空跑一遍，而那次 init 落在
-         * **构造期**，此时往宿主写属性会抛 NotSupportedError —— 症状是 createElement 出来的
-         * 组件没有 shadow root，只有标记写的实例正常（P31，实测踩过一回）。守卫之后这里就是
-         * 纯粹的「group 变了 → role 跟着变」。
-         */
+        /** ⚠️ 首次触发必须跳过（P5）：watch 的 init 空跑落在构造期，此时往宿主写属性会抛 NotSupportedError（P31） */
         group() {
           if (this._groupWatchInit === undefined) {
             this._groupWatchInit = true;
@@ -160,11 +150,7 @@
       },
 
       proto: {
-        /**
-         * 列表语义：容器是 role=list（mc-menu 的 .mc-list），条目就得是 listitem。
-         * 子项在 light DOM，浏览器看不到 slot 那层包裹，只能由条目自己声明；
-         * 使用者自己写了 role 就不覆盖。
-         */
+        /** 列表语义：容器是 role=list，条目就得是 listitem；子项在 light DOM，slot 那层包裹浏览器看不到，只能条目自己声明 */
         applyRole() {
           const own = this.ele.getAttribute('role');
           if (this.ele.hasAttribute('group')) {
@@ -193,10 +179,7 @@
           this.applyState();
         },
 
-        /**
-         * 读插槽元素的状态 → 写成宿主上的 data-* 钩子（CSS 只能从宿主上选它）。
-         * aria-current="false" 等于没写；<a> 没有 disabled，禁用看 aria-disabled。
-         */
+        /** 读插槽元素的状态 → 写成宿主上的 data-* 钩子（CSS 只能从宿主上选它）；aria-current="false" 等于没写，<a> 的禁用看 aria-disabled */
         applyState() {
           const el = this.interactive();
           const value = (name) => (el?.getAttribute(name) ?? '').toLowerCase();

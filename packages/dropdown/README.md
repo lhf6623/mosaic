@@ -67,19 +67,19 @@ select 是**表单控件**（选项与 `value` 归它管），dropdown 是**菜�
 
 写在宿主 `style="…"` 上按实例覆盖：
 
-| 令牌                            | 默认                        | 作用                                           |
-| ------------------------------- | --------------------------- | ---------------------------------------------- |
-| `--mc-dropdown-offset`          | `--mc-space-2`              | 面板到触发元素的距离（四个方向同一档）         |
-| `--mc-dropdown-panel-bg`        | `--mc-color-surface-raised` | 面板底色                                       |
-| `--mc-dropdown-panel-border`    | `--mc-color-border-strong`  | 面板**轮廓色**（drop-shadow 画的，不是真边框） |
-| `--mc-dropdown-panel-radius`    | `--mc-radius-lg`            | 面板圆角                                       |
-| `--mc-dropdown-panel-pad`       | `--mc-space-2`              | 面板内边距                                     |
-| `--mc-dropdown-panel-min-width` | `12rem`                     | 面板最小宽度（面板至少与触发元素同宽；见下）   |
+| 令牌                            | 默认                        | 作用                                                                   |
+| ------------------------------- | --------------------------- | ---------------------------------------------------------------------- |
+| `--mc-dropdown-offset`          | `--mc-space-2`              | 面板到触发元素的距离（四个方向同一档）                                 |
+| `--mc-dropdown-panel-bg`        | `--mc-color-surface-raised` | 面板底色                                                               |
+| `--mc-dropdown-panel-border`    | `--mc-color-border-strong`  | 面板**轮廓色**（drop-shadow 画的，不是真边框）                         |
+| `--mc-dropdown-panel-radius`    | `--mc-radius-lg`            | 面板圆角                                                               |
+| `--mc-dropdown-panel-pad`       | `--mc-space-2`              | 面板内边距                                                             |
+| `--mc-dropdown-panel-min-width` | `0px`                       | 面板最小宽度的**下限**（默认 0：宽度跟着内容；面板始终不窄于触发元素） |
 
-窄触发元素上的默认宽度是 **12rem 而不是「跟着触发元素」**：菜单项里的原生元素是绝对定位的
-（`mc-menu-item` 的形态，见它自己的 `::slotted(a/button)`），**不撑开父级** —— 所以面板的
-「内容宽」永远是 0，只给 `anchor-size(width)` 的话窄触发元素上标签会被裁掉（实测
-「面板居中」被裁成「面板…」）。要贴着触发元素的宽度就自己把它写成 `0px`。
+**面板宽度跟着内容**（`width: max-content`）：菜单项会把标签的宽度贡献上来（它的插槽元素
+走正常流，见 `../menu/README.md` 的「行盒子」），所以三个两字标签就是三个两字标签的宽，
+长菜单项也不会被裁。面板同时不窄于触发元素（`min-width: anchor-size(width)`）；
+要额外的固定下限就覆盖 `--mc-dropdown-panel-min-width`（**必须带单位**，`0px` 这类）。
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 > 还有一个 `--mc-dropdown-anchor`（锚点标识）：它是组件内部的接线，不是使用者的覆盖点，在代码里标了 `@internal`。

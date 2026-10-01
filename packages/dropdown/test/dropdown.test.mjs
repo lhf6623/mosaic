@@ -181,6 +181,47 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(opened),
   );
 
+  /* ------------------------------------------------------------------ *
+   * 1b. 面板宽度跟着内容：同样窄的触发元素，标签越长面板越宽
+   *     回归守卫 —— 面板宽度曾经是固定下限（12rem），靠 mc-menu-item 的插槽元素
+   *     绝对定位（不参与固有宽度）才量不到内容宽；改回绝对定位这条就会红。
+   *     用「短 vs 长」相对比较，不量绝对像素，换字体也不会抖。
+   * ------------------------------------------------------------------ */
+  const adaptive = await page.evaluate(async () => {
+    const probe = document.getElementById('dropdown-probe');
+    const make = (label) => {
+      const host = document.createElement('mc-dropdown');
+      host.innerHTML =
+        `<span slot="trigger"><button type="button">开</button></span>` +
+        `<mc-menu-item><button type="button">${label}</button></mc-menu-item>`;
+      probe.append(host);
+      return host;
+    };
+    const short = make('短');
+    const long = make('一个明显更长的菜单项标签');
+    await new Promise((r) => setTimeout(r, 80));
+    for (const host of [short, long]) host.setAttribute('open', '');
+    await new Promise((r) => setTimeout(r, 400));
+    const width = (host) => host.shadowRoot.querySelector('.mc-panel').getBoundingClientRect().width;
+    const out = {
+      short: Math.round(width(short)),
+      long: Math.round(width(long)),
+      trigger: Math.round(
+        short.shadowRoot.querySelector('.mc-anchor').getBoundingClientRect().width,
+      ),
+    };
+    for (const host of [short, long]) {
+      host.removeAttribute('open');
+      host.remove();
+    }
+    return out;
+  });
+  check(
+    '面板宽度跟着内容：同样窄的触发元素下，长标签的面板明显更宽（宽度不再是固定的 12rem）',
+    adaptive.long > adaptive.short + 40 && adaptive.short >= adaptive.trigger - 1,
+    JSON.stringify(adaptive),
+  );
+
   /* 再点一次要真的关掉（真指针；这条是 popover="auto" 会踩的坑） */
   await page.evaluate(() => window.__watch());
   await clickTrigger();

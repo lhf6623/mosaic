@@ -48,18 +48,25 @@ aria-current、disabled / aria-disabled 都是浏览器给的，组件只读它�
 链接为什么必须由使用者写：站内链接要经 ofa 的 olink 补部署前缀，而 olink 只作用于
 页面模板里的元素 —— 组件在 shadow root 里造的 <a> 用不上（docs/routes.js）。
 
-⚠️ 行的视觉全在**宿主**上，插槽元素只铺满整行（position:absolute; inset:0）。
+⚠️ 行的视觉全在**宿主**上，插槽元素只当铺满整行的交互层（正常流 + `width/height: 100%`）。
 原因是一条实测出来的层叠规则：插槽元素同时是**祖先 shadow 树**里的普通元素，而每一层
 shadow root 里都有一份 shadow-base.css（组件的由自己的 `<link>` 带进来、文档站的由
 docs/adopt-styles.js 注入）—— 那里面对 button 的 `padding: 0 / background: none /
 cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root 里的 `::slotted(button)`
 （封装上下文排在层叠顺序前面）。
-所以 padding / 底色 / 颜色一律写在宿主上，靠继承 + 「插槽元素铺满整行」来实现：
+所以底色 / 颜色一律写在宿主上、缩进走宿主继承的 `text-indent`，插槽元素只负责铺满整行：
 
-· 左右缩进 → 宿主 padding-inline（插槽元素 inset:0 铺满，点击区含内边距）
-· 文字缩进 → 宿主 text-indent（继承属性，能穿 shadow 边界；写在插槽元素上会被 reset 吃掉）
+· 左侧缩进 → 宿主 text-indent（继承属性，能穿 shadow 边界；插槽元素上显式写一遍压住 UA）
+· 右侧留白 → 宿主 padding-inline-end（插槽元素铺的是内容盒，宽度写成 `calc(100% + pad-x)`
+把这一层也铺上，整行才是可点区；它同时计入固有宽度 —— 面板按内容自适应时才左右对称，
+只靠 text-indent 的话右边没有留白，看着就是「左有右无」）
 · 垂直居中 → 宿主 line-height = 行高（同上）
 · 底色 → 宿主 :host(:hover) / :host([data-current])
+
+⚠️ 插槽元素**不能绝对定位**（原来是 `position:absolute; inset:0`）：绝对定位不参与固有宽度
+计算，宿主外面那个容器（`mc-dropdown` 的面板）就永远量不到标签有多宽 —— 面板宽度没法跟着
+内容走。改成正常流之后，宿主**左侧**不能有内边距（会和 `text-indent` 叠成双份缩进），
+**右侧**那层则要保留、并让插槽元素的宽度补上它（见上）。
 
 状态同样从插槽元素读，但镜像到宿主上的 data-current / data-disabled —— 宿主没法用
 `:has()` 看孩子（ofa 的样式作用域不支持 :host() 里嵌函数式伪类）。
@@ -69,7 +76,7 @@ cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root �
 | 令牌                           | 默认                        | 作用                |
 | ------------------------------ | --------------------------- | ------------------- |
 | `--mc-menu-item-h`             | `--mc-control-h-md`         | 项高（`size` 改它） |
-| `--mc-menu-pad-x`              | `--mc-space-4`              | 左右内边距          |
+| `--mc-menu-pad-x`              | `--mc-space-4`              | 左右缩进            |
 | `--mc-menu-font`               | `--mc-text-sm`              | 字号                |
 | `--mc-menu-gap`                | `--mc-space-1`              | 项间距              |
 | `--mc-menu-radius`             | `--mc-radius-md`            | 行圆角              |
@@ -89,7 +96,7 @@ cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root �
 > 插槽元素同时是外层 shadow 树里的普通元素，`shadow-base.css` 对 `button` 的
 > `padding` / `background` / `cursor` reset 是「直接命中」，按封装上下文压过组件内的
 > `::slotted(button)`；`:host(:has(...))` 在 ofa.js 里又不生效，宿主「看不到孩子」。
-> 所以视觉留宿主、插槽元素只当铺满整行的交互层、状态靠 JS 镜像 —— 实现见 `packages/menu/menu-item.html` 头部注释。
+> 所以视觉留宿主、插槽元素只当铺满整行的交互层、状态靠 JS 镜像 —— 实现见 `packages/menu/menu-item.html` 的样式段。
 > 副作用：禁用项若用 `<button>`，光标可能仍是手型（reset 那一条压不过），用 `<a>` 正常。
 
 ## 为什么不发事件

@@ -1,9 +1,4 @@
-<!--
-  mc-dropdown — 下拉菜单（触发元素 + 面板）
-
-  设计取舍 / 实现约束（为什么这么定、踩过哪些坑）不写在这里 —— 见同目录 README.md 的「设计取舍」。
-  这份文件是要经 CDN 发给使用者的产物，注释会一起发出去，所以这里只留一行定位与指针。
--->
+<!-- mc-dropdown — 下拉菜单（触发元素 + 面板）；设计取舍见 README.md「设计取舍」。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -23,16 +18,13 @@
       --mc-dropdown-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
       --mc-dropdown-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
       --mc-dropdown-panel-pad: var(--mc-space-2, var(--mc-def-space-2));
-      /* ⚠️ 必须写 `0px` 这类带单位的值：下面那句是 `max(var(…), anchor-size(width))`，
-         而 max() 里混不进无单位的 0（整句失效 → 面板只剩内容宽）。
-         ⚠️ 默认给 12rem 而不是 0：菜单项里的原生元素是绝对定位的（mc-menu-item 的形态），
-         它不撑开父级 → 面板的「内容宽」永远是 0，只给 anchor-size 的话窄触发元素上
-         标签会被裁掉（实测「面板居中」被裁成「面板…」）。 */
-      --mc-dropdown-panel-min-width: 12rem;
+      /* 面板最小宽度：默认 0 —— 面板宽度跟着内容走（见 .mc-panel 的 width）与触发元素（anchor-size），
+         真要下限再覆盖这个令牌。⚠️ 必须写 `0px` 这类带单位的值：下面那句是 `max(var(…), anchor-size(width))`，
+         max() 里混不进无单位的 0（整句失效） */
+      --mc-dropdown-panel-min-width: 0px;
     }
 
-    /* 2. 锚点容器：必须是自己 shadow 里的元素（把 anchor-name 设在 light DOM 的插槽元素上无效），
-       inline-flex 是为了盒高严丝合缝地等于触发元素（inline-block 会带 3px 基线缝隙） */
+    /* 2. 锚点容器：必须是自己 shadow 里的元素（把 anchor-name 设在 light DOM 的插槽元素上无效），inline-flex 让盒高严丝合缝（inline-block 会带 3px 基线缝隙） */
     .mc-anchor {
       display: inline-flex;
       anchor-name: --mc-dropdown-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
@@ -40,12 +32,13 @@
 
     /* 3. 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位 */
     .mc-panel {
-      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，
-         否则那对 auto 会吃掉锚点定位（见 packages/popover/README.md 的实现约束） */
+      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，否则那对 auto 会吃掉锚点定位（见 popover/README.md） */
       position: fixed;
       inset: auto;
       margin: 0;
       box-sizing: border-box;
+      /* 宽度跟着内容（面板里那行贡献多少固有宽度就多宽）；还不够触发元素宽就由下面的 min-width 兜底 */
+      width: max-content;
       min-width: max(var(--mc-dropdown-panel-min-width), anchor-size(width));
       max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
       max-height: min(20rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))));
@@ -57,12 +50,10 @@
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: inherit;
       line-height: inherit;
-      /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
       filter: drop-shadow(0 0 1px rgb(var(--mc-dropdown-panel-border)))
         drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
 
-      /* 默认 bottom-start 写在基类里 —— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），
-         默认态一旦挂到属性选择器上就会整体失效（同 mc-popover 的 arrow） */
+      /* 默认 bottom-start 写在基类里 —— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），挂到属性选择器上会整体失效 */
       position-anchor: --mc-dropdown-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
       position-try-fallbacks:
         flip-block,
@@ -149,8 +140,7 @@
       margin-right: var(--mc-dropdown-offset);
     }
 
-    /* 5. 内部元素：面板内容归使用者（通常是 mc-menu-item），这里不为它们定样式 ——
-       行盒子在 mc-menu-item 自己的宿主上（P33） */
+    /* 5. 面板内容归使用者（通常是 mc-menu-item）；行盒子在它自己的宿主上（P33） */
   </style>
 
   <!-- 触发元素：外面这层 .mc-anchor 是**锚点载体**，不能删 -->
@@ -158,32 +148,27 @@
     <slot name="trigger"></slot>
   </span>
 
-  <!-- 面板：原生 popover 进 top layer。
-       ⚠️ 刻意用 popover="manual"：auto 的 light dismiss 在 pointerdown 上先关、click 再开回来
-       （「点第二次关不掉」），开合一律由组件自己管 + composedPath 判外部（P20） -->
+  <!-- 面板：原生 popover 进 top layer。⚠️ 刻意用 popover="manual"：auto 的 light dismiss 在 pointerdown 上先关、click 再开回来（「点第二次关不掉」），开合一律由组件自己管 + composedPath 判外部（P20） -->
   <div class="mc-panel" part="panel" popover="manual" on:toggle="onNativeToggle">
     <slot></slot>
   </div>
 
   <script>
-    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
+    /* 定住滚动条：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
-    /** hover 进出开合的宽限时间：够把指针从触发元素移到面板上（面板是宿主的后代，不会触发 leave） */
+    /** hover 开合的宽限时间：够把指针从触发元素移到面板上（面板是宿主的后代，不会触发 leave） */
     const HOVER_DELAY = 120;
 
     export default async ({ load }) => {
-      /* 面板里通常放 mc-menu-item（菜单项）：注册 mc-dropdown 时把它一并就位。
-         菜单项是**复用**另一个单元的组件，不在这里改它。路径相对本文件解析 */
+      /* 面板里通常放 mc-menu-item（菜单项）：注册 mc-dropdown 时把它一并就位。菜单项是**复用**另一个单元的组件，不在这里改它 */
       await load('../menu/menu-item.html');
 
       return {
         tag: 'mc-dropdown',
 
         attrs: {
-          /* 单一属性**既是初始值也是运行时状态**（同 mc-collapse-item 的 open）：
-             `<mc-dropdown open>` 首屏就展开，点触发元素时组件也会增删它。
-             布尔属性默认值必须是 null（P1） */
+          /* 单一属性**既是初始值也是运行时状态**（同 mc-collapse-item 的 open）：`<mc-dropdown open>` 首屏就展开，点触发元素时组件也会增删它；布尔属性默认值必须是 null（P1） */
           open: null,
           /* 12 个方向，取值与 mc-popover 的 placement 一致；默认 bottom-start 由 CSS 基类兜 */
           placement: 'bottom-start',
@@ -211,8 +196,7 @@
             },
           });
 
-          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle，模板里不用为它加绑定。
-             显式显示 / 收起那两行再包一层 run()（见 packages/boot/scroll-pin.js） */
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run()（见 scroll-pin.js） */
           this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
           this._popoverOk = typeof this._panel?.showPopover === 'function';
           this.syncOpen();
@@ -223,8 +207,7 @@
           this._onPointerEnter = () => this.onPointerEnter();
           this._onPointerLeave = () => this.onPointerLeave();
 
-          /* 点外部关闭：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是
-             被重定向后的宿主，必然误判成「在外部」 */
+          /* 点外部关闭：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是被重定向后的宿主，必然误判 */
           this._onDocPointerDown = (event) => {
             if (!this.isOpen()) return;
             if (event.composedPath().includes(this.ele)) return;
@@ -281,10 +264,7 @@
             this.syncOpenUI(should);
           },
 
-          /**
-           * 开合状态与事件的**唯一出口**：显式开合直接走这里（同步、确定），
-           * 原生 toggle 也走这里兜底（重复时 changed 为 false，不会发两次）。
-           */
+          /** 开合状态与事件的**唯一出口**：显式开合直接走这里，原生 toggle 也走这里兜底（重复时 changed 为 false，不会发两次） */
           syncOpenUI(open) {
             const changed = this._openState !== open;
             this._openState = open;
@@ -309,7 +289,7 @@
             if (!this._popoverOk || this.isOpen() || !this.ele.isConnected) return;
             this._scrollGuard.run(() => this._panel.showPopover());
             this.syncOpenUI(true);
-            /* 非受控那条路：组件自己把状态写回属性，外部读 open 属性也能看到 */
+            /* 非受控那条路：组件自己把状态写回属性，外部读属性也能看到 */
             if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
           },
 
@@ -320,12 +300,7 @@
             if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
           },
 
-          /**
-           * 焦点归还：触发元素是使用者的（light DOM），找它里面第一个能聚焦的元素。
-           * ⚠️ 触发元素常常是**另一个组件**（如 <mc-button slot="trigger">），甚至被包了一层
-           * （<span slot="trigger"><mc-button>）：可聚焦的那个原生 button 住在组件的 shadow root 里，
-           * light DOM 的 querySelector 找不到 —— 三层都找一遍，否则 Esc 关掉后焦点掉在 body 上。
-           */
+          /** 焦点归还：触发元素是使用者的（light DOM），找它里面第一个能聚焦的元素。⚠️ 触发元素常常是**另一个组件**（甚至被包一层），可聚焦的原生 button 住在它的 shadow root 里，light DOM 的 querySelector 找不到 */
           focusTrigger() {
             const nodes = this._triggerSlot?.assignedElements({ flatten: true }) ?? [];
             const first = nodes[0];
