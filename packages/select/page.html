@@ -98,7 +98,10 @@
       <h3>事件回调</h3>
       <p class="doc-hint">
         四个事件都冒泡 + <code>composed</code>；<code>change</code> 的
-        <code>$event.data.value</code> 单选是字符串、多选是数组。
+        <code>$event.data.value</code> 单选是字符串、多选是数组。 原生的 <code>focus</code> /
+        <code>blur</code> / <code>keydown</code> 这些
+        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-select-events></demo-select-events>
       <mc-collapse class="doc-demo-code">

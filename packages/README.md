@@ -357,7 +357,21 @@ item.open = true; // 组件提供了访问器时同样可以
 <mc-input on:change="value = $event.data.value"></mc-input>
 ```
 
-**点击类交互不定义自定义事件** —— 原生 `click` 自带 `composed: true`，会穿透 shadow 边界冒泡。
+**原生事件不重复定义、也不重复转发** —— 按规范 `composed: true` 的那些本来就会穿透 shadow、
+落在宿主上：`click` / `pointerdown` / `focus` / `blur` / `focusin` / `focusout` / `keydown` /
+`keyup` / `paste` / `copy` / `cut` / `compositionstart` / `compositionupdate` / `compositionend`…
+使用者在宿主上直接 `on:focus` / `on:keydown` 就行，组件不必再发一遍（发了会收到两次）。
+
+**只有三个要组件自己接管**（它们要么穿不出来、要么得带上值）：
+
+| 原生事件 | 为什么                           | 组件怎么做                                                                 |
+| -------- | -------------------------------- | -------------------------------------------------------------------------- |
+| `input`  | 能穿出来，但不带值               | **拦掉原生那条**（`stopPropagation`），改发同名 + `data: { value }` 的事件 |
+| `change` | `composed: false`，穿不出 shadow | 转成同名的 composed 事件，带 `data`（表单组件都这么做）                    |
+| `scroll` | 不冒泡、也不 composed            | 在宿主上重发一次（`mc-scroll-bar`）；滚到哪儿读 `part="viewport"`          |
+
+所以 `api.md` 的「事件」表**只列组件自己发的那些**（`change` / `input` / `open` / `close`…）；
+原生事件不列 —— 列了就是第二份事实，还得跟浏览器对齐。
 
 ### 1.6 插槽命名
 

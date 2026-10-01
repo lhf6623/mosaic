@@ -87,7 +87,10 @@
       <p class="doc-hint">
         勾选状态确定变化时发 <code>change</code>，载荷在 <code>$event.data</code> 里 （<code
           >{ checked, value }</code
-        >）—— 点文案、敲空格、点方框都算。
+        >）—— 点文案、敲空格、点方框都算。 原生的 <code>focus</code> / <code>blur</code> /
+        <code>keydown</code> 这些
+        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-checkbox-events></demo-checkbox-events>
       <mc-collapse class="doc-demo-code">

@@ -139,7 +139,10 @@
       <p class="doc-hint">
         <code>input</code> 每打一个字都发、<code>change</code> 在失焦 / 回车时发（载荷都是
         <code>$event.data.value</code>）；点可清除的 × 先发 <code>clear</code>，紧接着补发
-        <code>input</code> 与 <code>change</code>。
+        <code>input</code> 与 <code>change</code>。 原生的 <code>focus</code> / <code>blur</code> /
+        <code>keydown</code> 这些 <code>composed</code> 事件本来就会穿到宿主上，直接
+        <code>on:focus</code> 写就行（演示里挂了这三个）；组件自己发的只有 <code>input</code> /
+        <code>change</code> / <code>clear</code> 三条。
       </p>
       <demo-input-events></demo-input-events>
       <mc-collapse class="doc-demo-code">

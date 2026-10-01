@@ -6,6 +6,9 @@
     on:input="markInput($event)"
     on:change="markChange($event)"
     on:clear="markClear()"
+    on:focus="markFocus()"
+    on:blur="markBlur()"
+    on:keydown="markKey($event)"
   ></mc-input>
 
   <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
@@ -17,7 +20,7 @@
       data: { last: '（还没动过）' },
 
       proto: {
-        /* input 每打一个字都发；change 在失焦 / 回车时发；clear 之后还会补发这两个 */
+        /* input / change / clear 是**组件自己发**的（前者要带值，后者穿不出 shadow） */
         markInput(event) {
           this.last = `input → ${event.data.value}`;
         },
@@ -26,6 +29,17 @@
         },
         markClear() {
           this.last = 'clear（值已清空，随后补发 input 与 change）';
+        },
+        /* focus / blur / keydown 是**原生的**：composed 自带穿透，直接 on: 就能收，
+           组件不重复发（所以这里拿到的就是浏览器那个事件本身） */
+        markFocus() {
+          this.last = 'focus（原生，直接穿到宿主）';
+        },
+        markBlur() {
+          this.last = 'blur（原生）';
+        },
+        markKey(event) {
+          this.last = `keydown → ${event.key}（原生，键名都读得到）`;
         },
       },
     });

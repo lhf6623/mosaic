@@ -67,7 +67,10 @@
       <h3>事件回调</h3>
       <p class="doc-hint">
         用 <kbd>←</kbd> <kbd>→</kbd> 在组内走一遍也能看到变化。<code>change</code>
-        只在组上发一次，载荷是 <code>$event.data.value</code> —— 子项不会各自再发一遍。
+        只在组上发一次，载荷是 <code>$event.data.value</code> —— 子项不会各自再发一遍。 原生的
+        <code>focus</code> / <code>blur</code> / <code>keydown</code> 这些
+        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-radio-events></demo-radio-events>
       <mc-collapse class="doc-demo-code">

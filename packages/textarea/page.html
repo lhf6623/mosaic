@@ -103,7 +103,10 @@
       <h3>事件回调</h3>
       <p class="doc-hint">
         <code>input</code> 每打一个字都发、<code>change</code> 在失焦 / 回车时发； 两个的载荷都是
-        <code>$event.data.value</code>。
+        <code>$event.data.value</code>。 原生的 <code>focus</code> / <code>blur</code> /
+        <code>keydown</code> 这些
+        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-textarea-events></demo-textarea-events>
       <mc-collapse class="doc-demo-code">

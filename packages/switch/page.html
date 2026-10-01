@@ -56,7 +56,10 @@
       <h3>事件回调</h3>
       <p class="doc-hint">
         状态变化时发 <code>change</code>，载荷
-        <code>$event.data.checked</code>；开关只有状态位、没有 <code>value</code>。
+        <code>$event.data.checked</code>；开关只有状态位、没有 <code>value</code>。 原生的
+        <code>focus</code> / <code>blur</code> / <code>keydown</code> 这些
+        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-switch-events></demo-switch-events>
       <mc-collapse class="doc-demo-code">
