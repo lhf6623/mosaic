@@ -23,9 +23,9 @@ import config from '../../tools/doc-drift.config.mjs';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /** 应有的组数：组件文档 4 个面（API 规范 / 单元令牌 / 页面骨架 / 演示区）
- *  + 开发文档 13 条规则（索引 / 路径与目录树 / 命令 / 数字 / 防回潮 /
- *  doc-spec 接线 / 插槽与 part 的节名 / 演示覆盖 / 值列类型 / 参考节只有表 /
- *  单元 README / 文档链接 / 顶部加载条只有一条）+ 自检 1。
+ *  + 开发文档 14 条规则（索引 / 路径与目录树 / 命令 / 数字 / 防回潮 /
+ *  doc-spec 接线 / 插槽与 part 的节名 / 多标签插槽 part 点名 / 演示覆盖 / 值列类型 /
+ *  参考节只有表 / 单元 README / 文档链接 / 顶部加载条只有一条）+ 自检 1。
  *  ⚠️ 这个数是**写死**的，故意不从配置里推 —— 推出来的话这条断言恒成立，等于没有；
  *  它就是用来抓「配置里少了一整个面 / 一条规则」的。所以在
  *  `tools/doc-drift.config.mjs` 的 rules 里加删规则时，这里要同步（`pnpm check:docs`
@@ -34,7 +34,7 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
  *  那一面没有对象可对了；它的两块职责分别归 `api-spec` 面与两条 custom 规则。
  *  ⚠️ `dev-tree`（目录树）/ `read-budget`（必读闭包）/ `howto-contract`（食谱契约）随
  *  `agent/` 一并删了 —— 它们的对象就是那批规范 Markdown，文档没了，没有可对的东西了。 */
-const EXPECTED_GROUPS = 18;
+const EXPECTED_GROUPS = 19;
 
 /** skill 里那份引擎（本机装了才对账；CI 上不一定有） */
 const SKILL_ENGINE = join(homedir(), '.dsh/skills/doc-code-drift/scripts');

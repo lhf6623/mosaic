@@ -497,6 +497,50 @@ const rules = [
     },
   },
   {
+    /* 多标签组件（`mc-collapse` + `mc-collapse-item` 这种）的 `属性` 节用 h3 分了标签，
+       但 `插槽` / `part` 两节没有 —— 而引擎的 api-spec 是对**并集**：两个标签各有默认插槽时，
+       名字会去重成一个 `（默认）`，于是「哪个标签有什么」在文档里说不清，整条漏掉也没人报
+       （collapse 容器的默认插槽、grid-item 的默认插槽、mc-option 的默认插槽都是这么丢的）。
+       这条要求：每个真有插槽 / part 的标签，都要在对应那节里被点到名。 */
+    type: 'custom',
+    id: 'api-multitag-slots-parts',
+    title: '组件文档 · 多标签组件的插槽 / part 节要点名每个标签',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        if (c.facts.perTag.size < 2) continue;
+        const api = `packages/${c.slug}/api.md`;
+        if (!io.exists(api)) continue;
+        const text = io.read(api);
+        const marks = [...text.matchAll(/^##\s+(.+?)\s*$/gm)];
+        const sectionOf = (title) => {
+          const at = marks.findIndex((mark) => mark[1].replace(/`/g, '').trim() === title);
+          if (at < 0) return null;
+          const end = at + 1 < marks.length ? marks[at + 1].index : text.length;
+          return text.slice(marks[at].index, end);
+        };
+        for (const [title, kind, word] of [
+          ['插槽', 'slots', '插槽'],
+          ['part', 'parts', 'part'],
+        ]) {
+          const tags = [...c.facts.perTag]
+            .filter(([, facet]) => facet[kind].size > 0)
+            .map(([tag]) => tag);
+          if (!tags.length) continue;
+          const body = sectionOf(title) ?? '';
+          for (const tag of tags) {
+            /* `\b…(?![\w-])`：别让 `mc-collapse` 被 `mc-collapse-item` 顶包 */
+            if (!new RegExp(`\\b${tag}(?![\\w-])`).test(body)) {
+              problems.push(
+                `${api}：「${title}」一节里没点到 \`${tag}\` —— 它有 ${word}，` +
+                  `多标签组件要在说明里点名（并集对账看不出漏，见这条规则的注释）`,
+              );
+            }
+          }
+        }
+      }
+    },
+  },
+  {
     /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。
        三件事盯住它别越线、别烂：
          ① 有 api.md 的单元必须有 README.md（反过来也一样）；

@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
     /* 选项只是**数据**：显示文案是 mc-select 从这里的默认插槽读走的（textContent），
-       真正被渲染、能点的行由 mc-select 画进面板（part="option"）。所以这里不占版面。 */
+       真正被渲染、能点的行由 mc-select 画进面板（每行一个 `option` part）。所以这里不占版面。 */
     :host {
       display: none;
     }

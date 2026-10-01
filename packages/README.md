@@ -217,8 +217,9 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 
 > ✅ 这三条现在有自动守卫了：`pnpm check:docs`（`tools/doc-drift/` + `tools/doc-drift.config.mjs`）
 > 会对账 `api.md` 的**表头口径**、插槽 / part 的**节名**（`api-slot-part-title`）、
-> **参考节里只有表**（`api-tables-only` —— 混进的解释句 / 代码块当场红）与每张表跟
-> 组件代码（属性 / 事件 / 插槽 / part，含默认值），以及页面骨架与 `<doc-spec>` 接线。
+> **参考节里只有表**（`api-tables-only` —— 混进的解释句 / 代码块当场红）、
+> **多标签组件的插槽 / part 要点名标签**（`api-multitag-slots-parts` —— 并集对账看不出漏）
+> 与每张表跟组件代码（属性 / 事件 / 插槽 / part，含默认值），以及页面骨架与 `<doc-spec>` 接线。
 > 它管不到的是**演示区**里的重复（导语与演示正文撞车）—— 那是判断，落笔时按上面的清单自查。
 
 ## 四、首页海报：数据驱动 + 响应式（`docs/pages/home.html`）
