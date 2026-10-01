@@ -1,0 +1,21 @@
+<template component>
+  <!-- 默认是「鼠标移入才淡入」；常显的场合（截图 / 大屏演示）写 reveal="always" -->
+  <mc-scroll-bar
+    reveal="always"
+    label="常显滚动条"
+    style="height: 8rem; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
+  >
+    <div class="flex flex-col gap-2 p-3">
+      <o-fill :value="rows" fill-key="$key">
+        <div>{{$data}}</div>
+      </o-fill>
+    </div>
+  </mc-scroll-bar>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-scroll-bar-always-visible',
+      data: { rows: Array.from({ length: 16 }, (_, i) => `第 ${i + 1} 行内容`) },
+    });
+  </script>
+</template>

@@ -3,9 +3,9 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./scroll-bar.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/always-visible.html"></l-m>
     <l-m src="./demos/horizontal.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <h1>Scroll Bar <code>mc-scroll-bar</code></h1>
@@ -13,23 +13,6 @@
       滚动条：内容自己给高度，条子由组件画（覆盖式、跟着主题走），滚动本身仍是原生的 ——
       键盘、触屏惯性、锚点、页内查找全都照旧。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>忘了给高度它就一直不滚</strong>：宿主跟着内容长，看着像坏了 ——
-          多高（或多宽）得你自己给，它不猜。
-        </li>
-        <li>
-          <strong>贴边的内容会被压住</strong
-          >：条子是覆盖式的，长代码块这类内容的最后几个字符会被它盖住 —— 给自己的
-          <code>part="viewport"</code> 加右内边距。
-        </li>
-        <li>
-          <strong>两条轴一起滚它做不到</strong>：那种场合用普通的 <code>overflow</code> 容器 ——
-          两个滑块互相影响、角落还要交叉，不值得为它把接口撑大一倍。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -38,7 +21,10 @@
          取词规则见 packages/README.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>竖向滚动</h3>
-      <p class="doc-hint">鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。</p>
+      <p class="doc-hint">
+        鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。条子平时藏着，鼠标移入才淡入。
+        多高（或多宽）得你自己给：宿主跟着内容长，不给高度它就永远不滚，看着像坏了。
+      </p>
       <demo-scroll-bar-basic></demo-scroll-bar-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -48,8 +34,25 @@
     </section>
 
     <section class="doc-demo">
+      <h3>常显</h3>
+      <p class="doc-hint">
+        要一直在（截图、大屏演示）就写
+        <code>reveal="always"</code>；触屏设备没有「移入」，同样常显。
+      </p>
+      <demo-scroll-bar-always-visible></demo-scroll-bar-always-visible>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/always-visible.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
       <h3>横向滚动</h3>
-      <p class="doc-hint"><code>axis="x"</code>：宽表格、时间轴这类内容用它，条子贴在底沿。</p>
+      <p class="doc-hint">
+        <code>axis="x"</code>：宽表格、时间轴这类内容用它，条子贴在底沿。一次只滚一条轴 ——
+        真要两轴同时滚，用普通的 <code>overflow</code> 容器。
+      </p>
       <demo-scroll-bar-horizontal></demo-scroll-bar-horizontal>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -63,6 +66,8 @@
       <p class="doc-hint">
         三个 part（<code>viewport</code> / <code>bar</code> / <code>thumb</code>）分别对应
         「内容」「轨道」「滑块」，粗细与颜色各有令牌。
+        条子是覆盖式的：长代码块这类内容的最后几个字符会被压住 —— 给自己的
+        <code>part="viewport"</code> 加右内边距。
       </p>
       <demo-scroll-bar-customize></demo-scroll-bar-customize>
       <mc-collapse class="doc-demo-code">

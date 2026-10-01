@@ -1,7 +1,8 @@
 /**
  * mc-scroll-bar · 滚动条：不溢出时「什么都没有」（无条子、无 tabindex / role，不占 tab 停靠点）、
  * 溢出时 a11y 三连 + 滑块比例与位置、原生滚动条被藏掉、条子是覆盖式（不占内容宽度）、
- * scroll 事件从宿主冒泡、拖滑块真的能滚、内容变高滑块跟着变短、axis="x" 横向
+ * 条子平时藏着（鼠标移入 / 键盘焦点 / 拖拽中才淡入）、reveal="always" 常显、scroll 事件从宿主冒泡、
+ * 拖滑块真的能滚、内容变高滑块跟着变短、axis="x" 横向
  */
 
 export default async function run({ page, visit, check }) {
@@ -19,7 +20,8 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(() => !!customElements.get('mc-scroll-bar'), { timeout: 8000 })
       .catch(() => {});
 
-    /* 探针：一条不溢出的、一条溢出 3 倍的、一条横向的。都放进一个固定定位的盒子里量尺寸 */
+    /* 探针：一条不溢出的、一条溢出 3 倍的、一条横向的、一条 reveal="always" 的。
+       都放进一个固定定位的盒子里量尺寸（always 那条放**最后**：插在中间会把后面几条的坐标顶下去） */
     await page.evaluate(() => {
       const box = document.createElement('div');
       box.id = 'sa-probe';
@@ -30,7 +32,9 @@ export default async function run({ page, visit, check }) {
         '<mc-scroll-bar id="sa-over" label="装不下" style="height:100px">' +
         '<div id="sa-content" style="height:400px">b</div></mc-scroll-bar>' +
         '<mc-scroll-bar id="sa-x" axis="x" label="横向" style="height:60px">' +
-        '<div style="width:900px">c</div></mc-scroll-bar>';
+        '<div style="width:900px">c</div></mc-scroll-bar>' +
+        '<mc-scroll-bar id="sa-always" reveal="always" label="常显" style="height:100px">' +
+        '<div style="height:400px">d</div></mc-scroll-bar>';
       document.body.append(box);
       /* scroll 事件是从宿主上重发的，挂在 document 上就说明它真的冒泡出来了 */
       window.__saScrolls = 0;
@@ -317,13 +321,138 @@ export default async function run({ page, visit, check }) {
       return { at, content: await one(at.content), strip: await one(at.strip) };
     })();
 
+    /* 「鼠标移入才显示」：条子平时是透明的（不抢内容视线），鼠标进入宿主才淡入 ——
+       键盘焦点进来（`:focus-within`）、拖拽期间（`[data-dragging]`）同样要看得见。
+       ⚠️ 触屏那条路（`@media (hover: none)` 退回常显）在浏览器里测不了：CDP 的
+       `Emulation.setEmulatedMedia` 不认 `hover` 这个媒体特性（实测：传了 `hover=none` 之后
+       `matchMedia('(hover: none)')` 仍是 false），所以只测悬停 / 焦点 / 拖拽这三条。 */
+    const reveal = await (async () => {
+      const read = () =>
+        page.evaluate(() => {
+          const el = document.getElementById('sa-over');
+          return {
+            opacity: getComputedStyle(el.shadowRoot.querySelector('.mc-bar')).opacity,
+            dragging: el.hasAttribute('data-dragging'),
+            reveal: el.getAttribute('data-reveal'),
+          };
+        });
+      /* ⚠️ 每次都要**等过渡跑完**再读：opacity 走的是 `--mc-duration-fast`（120ms）的过渡，
+         读早了拿到的是中间值（实测：鼠标刚移入就读，是 0.42 而不是 1）。 */
+      const settle = () => page.waitForTimeout(260);
+
+      const box = await page.evaluate(() => {
+        const r = document.getElementById('sa-over').getBoundingClientRect();
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
+      });
+      const awayX = box.x + 400;
+      const awayY = box.y + 400;
+
+      /* ① 鼠标挪开：溢出也应当是透明的 */
+      await page.mouse.move(awayX, awayY);
+      await settle();
+      const away = await read();
+
+      /* ② 移入宿主 */
+      await page.mouse.move(box.x, box.y);
+      await settle();
+      const hover = await read();
+
+      /* ③ 键盘：焦点 Tab 进 viewport（外面 `page.mouse` 已经挪开了） */
+      await page.mouse.move(awayX, awayY);
+      await settle();
+      const blurred = await read();
+      await page.evaluate(() =>
+        document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').focus(),
+      );
+      await settle();
+      const focused = await read();
+      await page.evaluate(() =>
+        document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').blur(),
+      );
+
+      /* ④ 拖拽中：**合成事件**起拖，真实鼠标全程停在宿主外面（`:hover` 是假的）——
+         这时还看得见，就只可能是 `[data-dragging]` 的功劳。
+         ⚠️ 这条不能拿真鼠标测：Chromium 的 pointer capture 会顺手把 `:hover` 留在捕获元素上，
+         按住往外拖照样是绿的（实测：把 `[data-dragging]` 那条规则删掉，真鼠标版本仍 PASS）。 */
+      await page.evaluate(() => {
+        document.getElementById('sa-over').shadowRoot.querySelector('.mc-viewport').scrollTop = 0;
+      });
+      await page.waitForTimeout(80);
+      await page.mouse.move(awayX, awayY);
+      await settle();
+      const beforeDrag = await read();
+      const hoveredWhileDragging = await page.evaluate(() => {
+        const el = document.getElementById('sa-over');
+        const thumb = el.shadowRoot.querySelector('.mc-thumb');
+        const r = thumb.getBoundingClientRect();
+        const opts = {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true,
+          button: 0,
+          buttons: 1,
+          clientX: r.x + r.width / 2,
+          clientY: r.y + r.height / 2,
+        };
+        thumb.dispatchEvent(new PointerEvent('pointerdown', opts));
+        window.dispatchEvent(new PointerEvent('pointermove', { ...opts, clientY: opts.clientY + 20 }));
+        return el.matches(':hover');
+      });
+      await settle();
+      const dragging = await read();
+      await page.evaluate(() => window.dispatchEvent(new PointerEvent('pointerup', { buttons: 0 })));
+      await settle();
+      const released = await read();
+
+      /* ⑤ reveal="always"：鼠标全程不在上面，条子照样常显；
+         而且 `reveal` 是**活属性** —— 运行时改档要立刻跟着变（不用重新挂载） */
+      const readAlways = () =>
+        page.evaluate(() => {
+          const el = document.getElementById('sa-always');
+          return {
+            opacity: getComputedStyle(el.shadowRoot.querySelector('.mc-bar')).opacity,
+            reveal: el.getAttribute('data-reveal'),
+          };
+        });
+      await page.mouse.move(awayX, awayY);
+      await settle();
+      const always = await readAlways();
+      await page.evaluate(() =>
+        document.getElementById('sa-always').setAttribute('reveal', 'hover'),
+      );
+      await settle();
+      const flipped = await readAlways();
+      await page.evaluate(() =>
+        document.getElementById('sa-always').setAttribute('reveal', 'always'),
+      );
+      await settle();
+      const flippedBack = await readAlways();
+
+      return {
+        away,
+        hover,
+        blurred,
+        focused,
+        beforeDrag,
+        hoveredWhileDragging,
+        dragging,
+        released,
+        always,
+        flipped,
+        flippedBack,
+      };
+    })();
+
     await page.evaluate(() => {
       document.getElementById('sa-probe')?.remove();
     });
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { probe, scrolled, drag, grown, wheel, cancel, spots, failed };
+    return { probe, scrolled, drag, grown, wheel, cancel, spots, reveal, failed };
   })();
 
   check(
@@ -423,6 +552,43 @@ export default async function run({ page, visit, check }) {
     '滚轮落在右侧条子上也要滚容器（条子不吃指针）—— 否则就是「时好时坏、不够灵敏」',
     area.spots.content > 0 && area.spots.strip > 0,
     JSON.stringify(area.spots),
+  );
+
+  check(
+    '条子平时藏着：溢出也不常显，鼠标移入宿主才淡入（静态阅读时它没有信息量）',
+    area.reveal.away.opacity === '0' && area.reveal.hover.opacity === '1',
+    JSON.stringify(area.reveal),
+  );
+
+  check(
+    '「正在用」不止 hover：键盘焦点进来（focus-within）与拖拽中（data-dragging）同样可见，松手 / 移开再淡出',
+    area.reveal.blurred.opacity === '0' &&
+      area.reveal.focused.opacity === '1' &&
+      area.reveal.beforeDrag.opacity === '0' &&
+      /* 关键：起拖时真实鼠标**不在**宿主上，`:hover` 是假的 —— 可见只可能来自 [data-dragging] */
+      area.reveal.hoveredWhileDragging === false &&
+      area.reveal.dragging.opacity === '1' &&
+      area.reveal.dragging.dragging === true &&
+      area.reveal.released.opacity === '0' &&
+      area.reveal.released.dragging === false,
+    JSON.stringify(area.reveal),
+  );
+
+  check(
+    'reveal="always"：鼠标不在上面条子照样常显，且运行时改档立刻跟变（不用重新挂载）',
+    area.reveal.away.reveal === 'hover' &&
+      area.reveal.always.opacity === '1' &&
+      area.reveal.always.reveal === 'always' &&
+      area.reveal.flipped.opacity === '0' &&
+      area.reveal.flipped.reveal === 'hover' &&
+      area.reveal.flippedBack.opacity === '1' &&
+      area.reveal.flippedBack.reveal === 'always',
+    JSON.stringify({
+      hoverReveal: area.reveal.away.reveal,
+      always: area.reveal.always,
+      flipped: area.reveal.flipped,
+      flippedBack: area.reveal.flippedBack,
+    }),
   );
 
   check('滚动条文档页没有 404 / 运行时报错', area.failed.length === 0, area.failed.join(' | ') || '无');

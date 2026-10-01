@@ -68,8 +68,25 @@
       transition: opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
         var(--mc-ease-standard);
     }
-    :host([data-overflow]) .mc-bar {
+    /* reveal="hover"（默认）：平时藏着，鼠标移入宿主才淡入。
+       「正在用它」的另外两条路同样算：键盘把焦点 Tab 进来、以及正在拖滑块
+       （拖拽时指针常常已经移出宿主，只认 :hover 会让滑块在手里消失）。 */
+    :host([data-reveal='hover'][data-overflow]:hover) .mc-bar,
+    :host([data-reveal='hover'][data-overflow]:focus-within) .mc-bar,
+    :host([data-reveal='hover'][data-overflow][data-dragging]) .mc-bar {
       opacity: 1;
+    }
+    /* reveal="always"：只要溢出就常显 —— 截图 / 大屏演示这类「鼠标不在上面才是常态」的场合，
+       藏起来等于把「还有内容」这条线索删了。 */
+    :host([data-reveal='always'][data-overflow]) .mc-bar {
+      opacity: 1;
+    }
+    /* 没有 hover 能力的设备（触屏）压根没有「移入」这个动作 —— 退回「溢出即常显」，
+       否则手机上永远看不见条子。有鼠标的设备（含触屏笔记本）走上面的悬停。 */
+    @media (hover: none) {
+      :host([data-reveal='hover'][data-overflow]) .mc-bar {
+        opacity: 1;
+      }
     }
 
     .mc-thumb {
@@ -119,6 +136,10 @@
       attrs: {
         /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器（见 README） */
         axis: 'y',
+        /* 条子什么时候出现（枚举而不是布尔，形状同 axis —— 将来真要加第三档只多一个值）：
+           `hover` = 鼠标移入才淡入；`always` = 只要溢出就常显（截图 / 大屏演示、
+           内容很小而条子本身就是主体的界面 —— 那些场合「鼠标不在上面」才是常态）。 */
+        reveal: 'hover',
         /** 可滚动区域的读屏名（只在真的溢出时挂到 viewport 上） */
         label: '可滚动区域',
       },
@@ -162,6 +183,7 @@
         this._thumb.addEventListener('pointerdown', this._onThumbDown);
 
         this.syncAxis();
+        this.syncReveal();
         this.observeContent();
         this.sync();
       },
@@ -184,6 +206,10 @@
             this.sync();
           }
         },
+        /* 出现时机是纯 CSS 的事：换一档不用重算滑块几何，只需要把宿主属性换过去 */
+        reveal() {
+          if (this._viewport) this.syncReveal();
+        },
         label() {
           if (this._viewport) this.sync();
         },
@@ -193,6 +219,11 @@
         /** axis → 宿主属性：样式挂在 [data-axis] 上（不写属性时也有默认那条） */
         syncAxis() {
           this.ele.setAttribute('data-axis', this.axis === 'x' ? 'x' : 'y');
+        },
+
+        /** reveal → 宿主属性：样式挂在 [data-reveal] 上（不写属性时也有默认那档 hover） */
+        syncReveal() {
+          this.ele.setAttribute('data-reveal', this.reveal === 'always' ? 'always' : 'hover');
         },
 
         /** 盯住插槽里的内容：它长高了 / 变宽了，滑块长度就得跟着重算 */
@@ -277,6 +308,8 @@
               free,
           };
           this._thumb.setPointerCapture?.(event.pointerId);
+          /* 拖拽期间条子必须一直可见：指针拖出宿主后 :hover 会掉，滑块就在手底下淡没了 */
+          this.ele.setAttribute('data-dragging', '');
 
           this._onDragMove = (move) => {
             /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管、触屏手势被系统收走…）就别再拖着
@@ -303,6 +336,7 @@
           window.removeEventListener('pointermove', this._onDragMove);
           window.removeEventListener('pointerup', this._onDragEnd);
           window.removeEventListener('pointercancel', this._onDragEnd);
+          this.ele.removeAttribute('data-dragging');
           this._drag = null;
         },
       },
