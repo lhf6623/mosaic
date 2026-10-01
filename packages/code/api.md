@@ -59,12 +59,6 @@
 | `hljs-theme-dark` | `string`           | `github-dark`    | highlight.js 官方主题名（暗色）                                                                                  |
 | `hljs-base`       | `string`           | 内置固定版本 CDN | highlight.js 的 `build/` 目录地址（自托管 / 换镜像）                                                             |
 
-### 运行时读写
-
-| 运行时                    | 说明                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------ |
-| `el.code`（DOM property） | 读回当前原文（已 dedent）；写入等价于 `setAttribute('code', …)`，**立刻**重渲染 + 重新高亮 |
-
 ## part
 
 | 名称   | 说明                                  |

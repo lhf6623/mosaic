@@ -2,11 +2,16 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
+    <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button
+         要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
+    <l-m src="../button/button.html"></l-m>
+
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/src.html"></l-m>
     <l-m src="./demos/attribute.html"></l-m>
     <l-m src="./demos/binding.html"></l-m>
+    <l-m src="./demos/runtime.html"></l-m>
     <l-m src="./demos/line-numbers.html"></l-m>
     <l-m src="./demos/markup.html"></l-m>
     <l-m src="./demos/max-height.html"></l-m>
@@ -73,6 +78,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/binding.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>运行时读写</h3>
+      <p class="doc-hint">
+        两条通道都会重渲染 + 重新高亮：<code>el.code = '…'</code> 同步生效，
+        <code>setAttribute('code', '…')</code> 走 ofa 的属性观察、要等一个微任务；读回
+        <code>el.code</code> 是当前原文（已 dedent）。
+      </p>
+      <demo-code-runtime></demo-code-runtime>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/runtime.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

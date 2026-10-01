@@ -1,0 +1,52 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button size="sm" on:click="byProperty()">el.code = …</mc-button>
+    <mc-button size="sm" variant="outline" on:click="byAttribute()"
+      >setAttribute('code', …)</mc-button
+    >
+  </div>
+
+  <mc-code
+    id="runtime-target"
+    language="javascript"
+    code="// 初始内容：点上面的按钮换掉它"
+  ></mc-code>
+
+  <p class="mt-3 text-sm">读回 <code>el.code</code>：<strong>{{shown}}</strong></p>
+
+  <script>
+    const BY_PROPERTY = `const byProperty = 'el.code = "…"';`;
+    const BY_ATTRIBUTE = `const byAttribute = "setAttribute('code', '…')";`;
+
+    export default async () => ({
+      tag: 'demo-code-runtime',
+
+      data: {
+        shown: '（还没写）',
+      },
+
+      proto: {
+        target() {
+          return this.ele.shadowRoot.querySelector('#runtime-target');
+        },
+        /* 两条通道都会重渲染 + 重新高亮，区别在时序：property 那条是同步的
+           （组件不等 ofa 那一拍），属性那条走 ofa 的属性观察、微任务里才读得到新值 ——
+           所以读回统一放在微任务里，两条通道拿到的是同一个值。 */
+        write(code, how) {
+          const el = this.target();
+          if (how === 'property') el.code = code;
+          else el.setAttribute('code', code);
+          queueMicrotask(() => {
+            this.shown = el.code;
+          });
+        },
+        byProperty() {
+          this.write(BY_PROPERTY, 'property');
+        },
+        byAttribute() {
+          this.write(BY_ATTRIBUTE, 'attribute');
+        },
+      },
+    });
+  </script>
+</template>
