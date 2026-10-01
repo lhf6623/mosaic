@@ -251,7 +251,9 @@
     .doc-top-nav {
       display: flex;
       align-items: center;
-      gap: var(--mc-space-1);
+      /* 一级入口之间留一档：它们是无底无框的文字按钮，`--mc-space-1`（4px）时
+         「首页 文档 组件」三个词会糊成一句，读起来像面包屑而不是三个可点入口 */
+      gap: var(--mc-space-3);
       min-width: 0;
       flex: 1 1 auto;
       overflow-x: auto;
