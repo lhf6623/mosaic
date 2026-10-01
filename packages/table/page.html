@@ -2,9 +2,14 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
+    <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button
+         要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
+    <l-m src="../button/button.html"></l-m>
+
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./table.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/runtime.html"></l-m>
     <l-m src="./demos/striped.html"></l-m>
     <l-m src="./demos/hoverable.html"></l-m>
     <l-m src="./demos/loading.html"></l-m>
@@ -33,6 +38,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/basic.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>运行时换数据</h3>
+      <p class="doc-hint">
+        赋值就是入口：整体换一个数组也行（组件会重新规范化），空数组就是空态 ——
+        三个按钮改的都是同一个 <code>data</code> property。
+      </p>
+      <demo-table-runtime></demo-table-runtime>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/runtime.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

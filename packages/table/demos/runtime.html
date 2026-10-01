@@ -1,0 +1,65 @@
+<template component>
+  <div class="flex flex-wrap items-center gap-3">
+    <mc-button size="sm" on:click="next()">换一批</mc-button>
+    <mc-button size="sm" variant="outline" on:click="addRow()">加一行</mc-button>
+    <mc-button size="sm" variant="outline" on:click="clear()">清空</mc-button>
+    <span class="text-sm text-muted">现在 {{count}} 行</span>
+  </div>
+
+  <mc-table id="t"></mc-table>
+
+  <script>
+    const COLUMNS = [
+      { key: 'name', title: '姓名', width: '30%' },
+      { key: 'role', title: '角色' },
+      { key: 'city', title: '城市' },
+    ];
+    const BATCHES = [
+      [
+        { name: '张三', role: '前端工程师', city: '杭州' },
+        { name: '李四', role: '后端工程师', city: '成都' },
+      ],
+      [
+        { name: '王五', role: '产品经理', city: '北京' },
+        { name: '赵六', role: '设计师', city: '上海' },
+        { name: '钱七', role: '测试工程师', city: '深圳' },
+      ],
+    ];
+
+    export default async () => ({
+      tag: 'demo-table-runtime',
+
+      data: { rows: [], count: 0, batch: 0 },
+
+      ready() {
+        /* columns / data 是**宿主 property**：对象数组不能走标签属性（会被 JSON 序列化），
+           `data` 更是 ofa 的保留名、进不了 attrs —— 就在元素上赋值。 */
+        const table = this.ele.shadowRoot.querySelector('#t');
+        table.columns = COLUMNS;
+        this.render(BATCHES[0]);
+      },
+
+      proto: {
+        /* 赋 property 就是重渲染入口：整体换一个数组也行（组件会重新规范化） */
+        render(rows) {
+          this.ele.shadowRoot.querySelector('#t').data = rows;
+          this.rows = rows;
+          this.count = rows.length;
+        },
+        next() {
+          this.batch = (this.batch + 1) % BATCHES.length;
+          this.render(BATCHES[this.batch]);
+        },
+        addRow() {
+          this.render([
+            ...this.rows,
+            { name: `新同事 ${this.rows.length + 1}`, role: '待定', city: '—' },
+          ]);
+        },
+        clear() {
+          this.render([]);
+        },
+      },
+    });
+  </script>
+</template>
