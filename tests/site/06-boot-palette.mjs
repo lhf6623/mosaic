@@ -81,20 +81,23 @@ const layoutState = await page.evaluate(() => {
     mainInShadow: !!layout?.shadowRoot?.querySelector('.doc-main'),
     navLinks: layout?.shadowRoot?.querySelectorAll('.doc-top-nav mc-button').length ?? 0,
     themeBtn: !!layout?.shadowRoot?.querySelector('.doc-top-actions mc-button'),
-    /* 顶栏右侧的仓库入口：外链 + 图标按钮（要有 aria-label，装饰 SVG 要 aria-hidden） */
+    /* 顶栏右侧的仓库入口：外链 + 图标按钮（要有 aria-label，装饰性图标要 aria-hidden） */
     github: (() => {
       const a = layout?.shadowRoot?.querySelector('.doc-github');
-      return a
-        ? {
-            href: a.getAttribute('href'),
-            target: a.getAttribute('target'),
-            rel: a.getAttribute('rel'),
-            label: a.getAttribute('aria-label'),
-            iconHidden: a.querySelector('svg')?.getAttribute('aria-hidden'),
-            inTopbar: a.closest('.doc-top') !== null,
-            inNav: a.closest('.doc-top-nav') !== null,
-          }
-        : null;
+      if (!a) return null;
+      /* 图标走内置的 github 品牌图标（mc-icon）—— 这条 path 以前是手写的 Octicons，
+         清单里有了就不该再存一份；装饰性图标对读屏隐藏，名字在 <a> 的 aria-label 上 */
+      const icon = a.querySelector('mc-icon');
+      return {
+        href: a.getAttribute('href'),
+        target: a.getAttribute('target'),
+        rel: a.getAttribute('rel'),
+        label: a.getAttribute('aria-label'),
+        iconTag: icon?.tagName.toLowerCase() ?? a.querySelector('svg')?.tagName.toLowerCase() ?? null,
+        iconHidden: icon?.getAttribute('aria-hidden') ?? a.querySelector('svg')?.getAttribute('aria-hidden') ?? null,
+        inTopbar: a.closest('.doc-top') !== null,
+        inNav: a.closest('.doc-top-nav') !== null,
+      };
     })(),
   };
 });
@@ -115,11 +118,12 @@ check(
 );
 
 check(
-  `顶栏右侧有仓库入口：外链 + aria-label，图标是装饰性 SVG，且不混进一级菜单（nav 仍是 ${TOPBAR.length} 条）`,
+  `顶栏右侧有仓库入口：外链 + aria-label，图标来自内置集（mc-icon，装饰性），且不混进一级菜单（nav 仍是 ${TOPBAR.length} 条）`,
   layoutState.github?.href === 'https://github.com/lhf6623/mosaic' &&
     layoutState.github?.target === '_blank' &&
     layoutState.github?.rel === 'noreferrer' &&
     !!layoutState.github?.label &&
+    layoutState.github?.iconTag === 'mc-icon' &&
     layoutState.github?.iconHidden === 'true' &&
     layoutState.github?.inTopbar === true &&
     layoutState.github?.inNav === false,
