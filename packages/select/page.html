@@ -14,6 +14,7 @@
     <l-m src="./demos/clearable.html"></l-m>
     <l-m src="./demos/multiple.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
+    <l-m src="./demos/hooks.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <h1>Select <code>mc-select</code></h1>
@@ -89,6 +90,21 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>宿主钩子</h3>
+      <p class="doc-hint">
+        组件把状态写在宿主上：<code>[data-open]</code> / <code>[data-filled]</code> /
+        <code>[data-empty]</code> —— 外层 CSS 直接勾它。演示右边那三个提示就是靠它跟着亮灭的，
+        触发框那圈高亮走的是 <code>::part(base)</code>。
+      </p>
+      <demo-select-hooks></demo-select-hooks>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hooks.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

@@ -10,6 +10,7 @@
     <l-m src="./demos/size.html"></l-m>
     <l-m src="./demos/surface.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
+    <l-m src="./demos/hooks.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <h1>Menu <code>mc-menu</code></h1>
@@ -91,6 +92,20 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
           ><mc-code language="html" src="./demos/states.html"></mc-code
+        ></mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>宿主钩子</h3>
+      <p class="doc-hint">
+        这两类行会镜像成 <code>mc-menu-item</code> 宿主上的 <code>[data-current]</code> /
+        <code>[data-disabled]</code> —— 外层想给它们加点组件没做的东西（竖条、虚线框）就从这里接。
+      </p>
+      <demo-menu-hooks></demo-menu-hooks>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码"
+          ><mc-code language="html" src="./demos/hooks.html"></mc-code
         ></mc-collapse-item>
       </mc-collapse>
     </section>

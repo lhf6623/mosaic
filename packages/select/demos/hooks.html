@@ -1,0 +1,44 @@
+<template component>
+  <style>
+    /* 外层 CSS 直接勾宿主上的状态钩子 —— 不用钻进 shadow，也不用 ::part */
+    .field {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-3);
+    }
+
+    .tip {
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: 0.8125rem;
+      opacity: 0;
+      transition: opacity var(--mc-duration-fast, 0.15s) var(--mc-ease-standard, ease);
+    }
+
+    /* 一项没选 → 「还没选」；选了 → 「已选好」；面板开着 → 「展开中」 */
+    mc-select[data-empty] ~ .tip-empty,
+    mc-select[data-filled] ~ .tip-filled,
+    mc-select[data-open] ~ .tip-open {
+      opacity: 1;
+    }
+
+    /* 钩子也能配 ::part()：展开时给触发框一圈高亮 */
+    mc-select[data-open]::part(base) {
+      box-shadow: 0 0 0 3px rgb(var(--mc-color-primary-subtle));
+    }
+  </style>
+
+  <div class="field">
+    <mc-select placeholder="选择城市" clearable>
+      <mc-option value="bj">北京</mc-option>
+      <mc-option value="sh">上海</mc-option>
+      <mc-option value="gz">广州</mc-option>
+    </mc-select>
+    <span class="tip tip-empty">还没选</span>
+    <span class="tip tip-filled">已选好 ✓</span>
+    <span class="tip tip-open">展开中</span>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-select-hooks' });
+  </script>
+</template>
