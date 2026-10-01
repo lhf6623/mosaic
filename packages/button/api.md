@@ -22,7 +22,7 @@
 | `disabled` | `boolean`                                                                | —         | 禁用                                                                 |
 | `loading`  | `boolean`                                                                | —         | 加载中，显示 spinner 且不可点                                        |
 | `block`    | `boolean`                                                                | —         | 撑满父容器宽度                                                       |
-| `inline`   | `boolean`                                                                | —         | **行内文字按钮**形态：盒子交给文字，`size` 只选文字档位（见下）      |
+| `inline`   | `boolean`                                                                | —         | **行内文字按钮**形态：盒子交给文字，`size` 只选文字档位              |
 
 ## 插槽
 

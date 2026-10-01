@@ -22,20 +22,10 @@
 | `name`      | `string`                                                                              | —                             | 先查内置、查不到再远程；`mdi:home` 按 `mdi` 集取，`circle-check-big` 按 `icon-set` 取                |
 | `src`       | `string`                                                                              | —                             | SVG 地址；相对路径按页面解析；给了它就不再查内置（品牌多色图走这条）                                 |
 | `label`     | `string`                                                                              | —                             | 有值 → 宿主 `role="img"` + `aria-label`；空 → 整块 `aria-hidden="true"`                              |
-| `size`      | `'sm' \| 'md' \| 'lg'`                                                                | `md`                          | `0.875em` / `1em` / `1.25em`（改的是 `font-size`，见下）                                             |
+| `size`      | `'sm' \| 'md' \| 'lg'`                                                                | `md`                          | `0.875em` / `1em` / `1.25em`（改的是 `font-size`）                                                   |
 | `color`     | `'current' \| 'primary' \| 'info' \| 'success' \| 'warning' \| 'danger' \| 'neutral'` | `current`                     | 只往 `currentColor` 里填值；`neutral` = 次要文字色；也可以是 hex（如 `#ff6b35`），直接写宿主 `color` |
 | `icon-base` | `string`                                                                              | `https://api.iconify.design/` | 远程取图标的地址前缀，一个属性换自托管 / 镜像                                                        |
 | `icon-set`  | `string`                                                                              | `lucide`                      | 裸名远程回退时用哪个集                                                                               |
-
-### 内置集（50 个）
-
-| 分组       | 名字                                                                                                                                                                      |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 方向与折叠 | `chevron-up` `chevron-down` `chevron-left` `chevron-right` `chevrons-up-down` `arrow-up` `arrow-down` `arrow-left` `arrow-right`                                          |
-| 语义状态   | `info` `warning` `success` `error` `help`                                                                                                                                 |
-| 通用操作   | `check` `close` `plus` `minus` `search` `menu` `more` `drag` `external` `copy` `download` `upload` `refresh` `spinner` `filter` `trash` `edit` `eye` `eye-off` `settings` |
-| 对象与信息 | `user` `calendar` `clock` `link` `image` `file` `folder` `lock` `unlock` `star` `heart` `bell`                                                                            |
-| 主题与播放 | `sun` `moon` `play` `pause`                                                                                                                                               |
 
 ## 插槽
 
