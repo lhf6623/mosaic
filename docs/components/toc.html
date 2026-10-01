@@ -2,6 +2,7 @@
   <doc-toc> —— 组件文档页右栏的「本页目录」：住分区布局页 docs/doc-layout.html，正文在子页面 shadow root 里，扫标题前要先顺 <slot> 找到当前页（contentRoot()）。
   两条大纲规则：h2/h3 一条不漏、不按标题名过滤（目录是正文大纲的镜像）；h2 = 节，h3 = 缩进一档的子项。
   ⚠️ 目录项不能用 `#id` 锚点（hash 归 ofa 路由器），点击一律 preventDefault + 程序化滚动；scroll-spy 盯外壳的 `.doc-main`，滚到底单独收尾到最后一项；标题会晚到，签名没变就不重建目录。
+  ⚠️ 这一栏自己滚（mc-scroll-bar，见下面 <style> 与 scroller()）：scroller() 是从**父元素**往上找正文带的，所以栏内的滚动不会被误认成「正文的滚动容器」。
 -->
 <template component>
   <style>
@@ -21,18 +22,27 @@
     mc-menu-item[data-level='deep'] + mc-menu-item:not([data-level]) {
       margin-top: var(--mc-space-3);
     }
+
+    /* 滚动归 mc-scroll-bar（同 nav.html）：宿主 <doc-toc> 只负责定位与内边距（fixed + height:100%，见 docs/doc-layout.html），
+       有确定高度，这里 100% 解得开 —— 右栏比一屏长时条目就在这一层里滚。 */
+    mc-scroll-bar {
+      height: 100%;
+    }
   </style>
 
-  <!-- 不写标题行：右栏贴着顶栏，四个字的表头只是占地方（sticky 的容器已经说明这是本页目录） -->
-  <mc-menu size="sm">
-    <o-fill :value="rows" fill-key="id">
-      <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
-        <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
-          >{{$data.label}}</a
-        >
-      </mc-menu-item>
-    </o-fill>
-  </mc-menu>
+  <!-- 条子走组件默认的 hover（同 nav.html）。
+       里面不写标题行：右栏贴着顶栏，四个字的表头只是占地方（这一栏的名称在屏幕上已经不言自明）。 -->
+  <mc-scroll-bar label="本页目录">
+    <mc-menu size="sm">
+      <o-fill :value="rows" fill-key="id">
+        <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
+          <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
+            >{{$data.label}}</a
+          >
+        </mc-menu-item>
+      </o-fill>
+    </mc-menu>
+  </mc-scroll-bar>
 
   <script>
     /** 收进目录的标题层级。h1 只有一个（页名），不进目录；列全、**不按标题名过滤** ——

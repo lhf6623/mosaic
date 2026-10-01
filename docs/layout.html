@@ -120,6 +120,17 @@
           this.mainScroller()?.scrollTo({ top: 0 });
         },
 
+        /* 侧栏 / 目录里**真正在滚**的那个元素。滚动归 mc-scroll-bar（住在 <doc-nav>/<doc-toc> 的 shadow 里），
+           宿主自己不再滚 —— 读宿主的 scrollTop/scrollHeight 只会得到「没滚动、可滚 0」的假象，
+           于是每一次滚轮都被判成「已经在底部」而转发给正文带：**面板纹丝不动、页面在滚**。认准 part="viewport"。 */
+        scrollViewportOf(host) {
+          return (
+            host.shadowRoot
+              ?.querySelector('mc-scroll-bar')
+              ?.shadowRoot?.querySelector('[part="viewport"]') ?? null
+          );
+        },
+
         /** 只有「栏内还能滚」时才不插手；到了边界就把这一次滚轮转给正文带 */
         forwardWheel(event) {
           if (!event.deltaY || event.ctrlKey || event.metaKey) return;
@@ -129,9 +140,12 @@
             .find((node) => node instanceof Element && node.matches?.('doc-nav, doc-toc'));
           if (!host) return;
 
+          const viewport = this.scrollViewportOf(host);
+          if (!viewport) return;
+
           const down = event.deltaY > 0;
-          const atTop = host.scrollTop <= 0;
-          const atBottom = host.scrollTop + host.clientHeight >= host.scrollHeight - 1;
+          const atTop = viewport.scrollTop <= 0;
+          const atBottom = viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 1;
           if ((down && !atBottom) || (!down && !atTop)) return;
 
           const scroller = this.mainScroller();
@@ -254,18 +268,17 @@
     }
 
     /* 窄屏菜单浮层：面板要放得下「加载指示（Spinner）」这种长标签，菜单又可能 30+ 条，所以给它一个宽度下限 + 高度上限。
-       ⚠️ 滚动容器必须是**里面的 <doc-nav>**，不能是这层面板包装：外壳那段滚轮接力认的是 `doc-nav` / `doc-toc`，它按宿主的 scrollTop/scrollHeight 判「滚到底了没」。
-       容器换成包装层，<doc-nav> 自己就不滚（可滚高度恒为 0）→ 永远被判成「已经在底部」→ 滚轮被转发给正文带：**面板纹丝不动、页面在滚**；让 <doc-nav> 自己滚即可。 */
+       ⚠️ 高度上限**不写在这层**：滚动容器已经搬进 <doc-nav> 里那个 mc-scroll-bar（nav.html 的 shadow 内），
+       外壳够不着它下一层，只能把「最高到哪」当令牌传进去（nav.html 的 ::part(viewport)）。
+       这层只管「多宽」；宿主 <doc-nav> 保持 auto 高 —— 短菜单就跟着短，长菜单由那条 max-height 封顶。 */
     .doc-menu {
       --mc-popover-panel-min-width: 14rem;
     }
 
     .doc-menu-panel doc-nav {
-      /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），下面的 max-height / overflow 全是空转。
-         宽屏那份能滚是因为 doc-layout 给它写了 display:block，这份在外壳里，得自己来。 */
+      /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），里面的滚动条也撑不出高度。 */
       display: block;
-      max-height: min(70vh, 32rem);
-      overflow-y: auto;
+      --doc-nav-max-height: min(70vh, 32rem);
     }
 
     .doc-brand {
@@ -347,6 +360,10 @@
   <l-m src="./components/toc.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
+  <!-- 左右两栏与窄屏菜单浮层里的滚动条都由它画：<doc-nav> / <doc-toc> 内部各包了一层（见 docs/components/）。
+       ⚠️ 必须在这里注册（不能在组件里靠碰巧）：ofa 给未注册标签注入了 :not(:defined){display:none}，
+       没注册时整块菜单连同文字一起被静默藏掉，控制台干干净净（P44）。 -->
+  <l-m src="../packages/scroll-bar/scroll-bar.html"></l-m>
   <!-- 顶栏右侧的主题切换：项目自己的下拉**菜单**（mc-dropdown；菜单项用已注册的 mc-menu-item） -->
   <l-m src="../packages/dropdown/dropdown.html"></l-m>
   <l-m src="../packages/popover/popover.html"></l-m>

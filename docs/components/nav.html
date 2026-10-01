@@ -1,6 +1,6 @@
 <!--
   <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（aria-current）；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
-  ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区切页不重建列表 —— 改这里时请手动验一次；mc-menu / mc-menu-item 由外壳 docs/layout.html 统一 <l-m> 进来。
+  ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区切页不重建列表 —— 改这里时请手动验一次；mc-menu / mc-menu-item / mc-scroll-bar 由外壳 docs/layout.html 统一 <l-m> 进来。
 -->
 <template component>
   <style>
@@ -8,16 +8,47 @@
     a[data-status='planned'] {
       opacity: 0.72;
     }
+
+    /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 内边距（见 docs/doc-layout.html），滚的是这里面的 viewport。
+       高度接满宿主 —— 宽屏那栏是 fixed + height:100%，有确定高度，100% 解得开。
+       ⚠️ 浮层那份的宿主是 auto 高（外壳只给「最高到哪」），那时 100% 退回 auto：靠下面那条 max-height 封顶，
+       不能反过来把 max-height 挂在宿主上 —— 宿主 auto 高时 viewport 的 100% 同样解不开，撑不出滚动区，菜单会顶出浮层。 */
+    mc-scroll-bar {
+      height: 100%;
+    }
+
+    /* 窄屏浮层的「最高到哪」由外壳当令牌传进来（面板是浮层，菜单再长也不能撑满一屏，见 docs/layout.html）；
+       宽屏那栏不传，`none` 就是不限高，宿主已经是一屏高。 */
+    mc-scroll-bar::part(viewport) {
+      max-height: var(--doc-nav-max-height, none);
+    }
   </style>
 
-  <mc-menu>
-    <o-fill :value="rows" fill-key="key">
-      <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许一个根子元素，而这一行要渲染两块（<o-if> + <o-else>）。
+  <!-- 条子走组件默认的 hover（移入这一栏才淡入）：菜单是拿来读的，常驻一条会一直压在条目背景上 -->
+  <mc-scroll-bar label="站点菜单">
+    <mc-menu>
+      <o-fill :value="rows" fill-key="key">
+        <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许一个根子元素，而这一行要渲染两块（<o-if> + <o-else>）。
              多根时 ofa 会自己包一层同样的 div 并打一条 console 警告；显式写出语义一致、控制台干净（tests/site/11 盯着这条不变量）。 -->
-      <div style="display: contents">
-        <o-if :value="$data.pages">
-          <mc-menu-item group>{{$data.name}}</mc-menu-item>
-          <o-fill :value="$data.pages" fill-key="key">
+        <div style="display: contents">
+          <o-if :value="$data.pages">
+            <mc-menu-item group>{{$data.name}}</mc-menu-item>
+            <o-fill :value="$data.pages" fill-key="key">
+              <mc-menu-item>
+                <a
+                  attr:class="$data.className"
+                  attr:href="$data.href"
+                  attr:target="$data.target"
+                  attr:rel="$data.rel"
+                  attr:title="$data.title"
+                  attr:data-status="$data.status"
+                  attr:aria-current="$data.aria"
+                  >{{$data.name}}</a
+                >
+              </mc-menu-item>
+            </o-fill>
+          </o-if>
+          <o-else>
             <mc-menu-item>
               <a
                 attr:class="$data.className"
@@ -30,25 +61,11 @@
                 >{{$data.name}}</a
               >
             </mc-menu-item>
-          </o-fill>
-        </o-if>
-        <o-else>
-          <mc-menu-item>
-            <a
-              attr:class="$data.className"
-              attr:href="$data.href"
-              attr:target="$data.target"
-              attr:rel="$data.rel"
-              attr:title="$data.title"
-              attr:data-status="$data.status"
-              attr:aria-current="$data.aria"
-              >{{$data.name}}</a
-            >
-          </mc-menu-item>
-        </o-else>
-      </div>
-    </o-fill>
-  </mc-menu>
+          </o-else>
+        </div>
+      </o-fill>
+    </mc-menu>
+  </mc-scroll-bar>
 
   <script>
     import { menuOf, hasPage, SPEC_URL } from '../site-map.js';

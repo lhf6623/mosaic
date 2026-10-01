@@ -8,14 +8,18 @@
     /* ---------- 浮动侧栏 + 正文留位 ----------
      * 左右两栏 position: fixed、不在文档流里（高度 = 视口高、自己滚，顶部 padding 让开顶栏），所以没有 sticky 的滑动区间问题，页面高度变化也不带动它们；正文用 padding 留位，中栏宽度不设上限。
      * ⚠️ fixed 的包含块是视口，祖先链上不能有 transform / filter / perspective / contain:paint / will-change —— 否则两栏会退化成跟着内容滚。
-     * 两栏不在正文的滚动链上，滚轮在栏内到底会被吞掉 —— 外壳 docs/layout.html 里有一段只在边界接管的转发（用 composedPath() 认 <doc-nav>/<doc-toc>）。 */
+     * 两栏不在正文的滚动链上，滚轮在栏内到底会被吞掉 —— 外壳 docs/layout.html 里有一段只在边界接管的转发
+     * （用 composedPath() 认 <doc-nav>/<doc-toc>，再读它们里面那个 mc-scroll-bar 的 viewport）。 */
 
     .doc-split {
       display: block;
       min-width: 0;
     }
 
-    /* 左右两栏：浮在窗口两侧，整屏高，自己滚。样式挂在标签上（都是自定义元素） */
+    /* 左右两栏：浮在窗口两侧，整屏高。样式挂在标签上（都是自定义元素）。
+       ⚠️ 这里**不写** overflow / scrollbar-width：滚动归各自组件里那层 mc-scroll-bar（nav.html / toc.html 的 shadow 内），
+       宿主只负责「定位 + 尺寸 + 内边距」。宿主上再挂一层 overflow = 多出一个永远滚不动的容器，
+       「谁在滚、到没到底」就有了两个答案 —— 外壳那段滚轮接力认的是组件里那个 viewport（见 layout.html）。 */
     doc-nav,
     doc-toc {
       display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
@@ -23,9 +27,10 @@
       top: 0;
       height: 100%;
       z-index: var(--mc-z-sticky); /* 顶栏比它高一档，见 layout.html */
-      padding-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-6));
-      overflow-y: auto;
-      scrollbar-width: thin;
+      /* 只让开顶栏那一条，**不加额外间距**：菜单自己每项都有内边距，再垫一档上下都会显脏。
+         顶栏这 3.5rem 是让位不是间距 —— 去掉的话前几条会钻到顶栏底下（顶栏不透明、压在上面）。 */
+      padding-top: var(--doc-topbar, 3.5rem);
+      padding-bottom: 0;
     }
 
     doc-nav {

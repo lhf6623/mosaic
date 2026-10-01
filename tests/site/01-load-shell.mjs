@@ -234,6 +234,115 @@ check(
   JSON.stringify(wide),
 );
 
+/* 宽屏左栏：滚动同样归 mc-scroll-bar（宿主 <doc-nav> 只定位 + 给内边距）。
+   读宿主自己的 scrollTop/scrollHeight 会得到「没滚动、可滚 0」的假象 —— 真滚的是组件 shadow 里那个 viewport，
+   外壳的滚轮接力也只认它（认错就变成「滚轮被转走、菜单纹丝不动」）。所以这里量的一律是 viewport。 */
+const sideNavState = () =>
+  page.evaluate(`(() => {
+    const nav = window.__deepAll('doc-nav').find((n) => !n.closest('.doc-menu-panel'));
+    const bar = nav?.shadowRoot?.querySelector('mc-scroll-bar');
+    const vp = bar?.shadowRoot?.querySelector('[part="viewport"]');
+    if (!vp) return null;
+    const r = vp.getBoundingClientRect();
+    return {
+      x: r.x + r.width / 2,
+      y: r.y + r.height / 2,
+      菜单: Math.round(vp.scrollTop),
+      可滚: vp.scrollHeight - vp.clientHeight,
+      正文: Math.round(window.__deep('.doc-main').scrollTop),
+      reveal: bar.getAttribute('data-reveal'),
+      条子透明度: getComputedStyle(bar.shadowRoot.querySelector('[part="bar"]')).opacity,
+      /* 菜单里第一条与顶栏下沿的距离（只在 scrollTop = 0 时有意义）：宿主只让开顶栏那一条，
+         不再垫额外的 space-6，所以这个数应当是 0。 */
+      首条余量: (() => {
+        const first = nav.shadowRoot.querySelector('mc-menu-item');
+        const topbar = window.__deep('.doc-top');
+        return first && topbar
+          ? Math.round(first.getBoundingClientRect().top - topbar.getBoundingClientRect().bottom)
+          : null;
+      })(),
+    };
+  })()`);
+
+const wideNav = await sideNavState();
+check(
+  '宽屏：左栏的滚动容器是组件里那个 mc-scroll-bar viewport（宿主自己不滚）',
+  wideNav !== null && wideNav.可滚 > 0,
+  JSON.stringify(wideNav),
+);
+
+/* 条子默认不显示（reveal="hover"）：鼠标还没进过这一栏，条子必须是透明的。
+   这条防的是「顺手写成 always」—— 那样条目背景上会一直压着一条，属于改需求而不是改实现。 */
+check(
+  '宽屏：左栏的条子默认不显示（reveal="hover"，不是常驻）',
+  wideNav !== null && wideNav.reveal === 'hover' && wideNav.条子透明度 === '0',
+  JSON.stringify({ reveal: wideNav?.reveal, 条子透明度: wideNav?.条子透明度 }),
+);
+
+if (wideNav) {
+  await page.mouse.move(wideNav.x, wideNav.y);
+  await page.mouse.wheel(0, 200);
+  await page.waitForTimeout(300);
+  const sideWheel = await sideNavState();
+  check(
+    '宽屏：在左栏上滚轮滚的是菜单，不是页面',
+    sideWheel.菜单 > 0 && sideWheel.正文 === wideNav.正文,
+    `${JSON.stringify(wideNav)} → ${JSON.stringify(sideWheel)}`,
+  );
+
+  await page.mouse.wheel(0, 4000); // 滚到菜单底
+  await page.waitForTimeout(300);
+  await page.mouse.wheel(0, 200); // 到底之后再滚：接力给正文带
+  await page.waitForTimeout(300);
+  const forwardedSide = await sideNavState();
+  check(
+    '宽屏：左栏滚到底后滚轮接力给正文带',
+    forwardedSide.菜单 === forwardedSide.可滚 && forwardedSide.正文 > 0,
+    JSON.stringify(forwardedSide),
+  );
+
+  /* 上下都不留额外间距：顶上只让开顶栏（首条余量 0，在 sideNavState 里量过），
+     底下滚到底时最后一条贴栏底。宿主 <doc-nav> 上不再垫 padding —— 菜单条目自己带内边距。 */
+  const sideGap = await page.evaluate(`(() => {
+    const nav = window.__deepAll('doc-nav').find((n) => !n.closest('.doc-menu-panel'));
+    const vp = nav.shadowRoot.querySelector('mc-scroll-bar').shadowRoot.querySelector('[part="viewport"]');
+    const items = nav.shadowRoot.querySelectorAll('mc-menu-item');
+    const last = items[items.length - 1];
+    return {
+      到底: vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 1,
+      底部余量: Math.round(nav.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom),
+    };
+  })()`);
+  check(
+    '宽屏：左栏上下都不留额外间距（首条贴顶栏下沿、滚到底时末条贴栏底）',
+    Math.abs(wideNav.首条余量) <= 4 && sideGap.到底 && Math.abs(sideGap.底部余量) <= 4,
+    JSON.stringify({ 首条余量: wideNav.首条余量, ...sideGap }),
+  );
+}
+
+/* 右栏「本页目录」走的是同一套（toc.html 里包的是同一个组件）：宿主 <doc-toc> 不滚，滚的是 viewport。
+   把视口压矮才溢得出 —— 满屏高时这一页的目录放得下，溢出与否本来就不是这条要守的东西，
+   守的是「滚动容器换到组件里了、宿主没被偷偷用成第二个滚动容器」。 */
+await page.setViewportSize({ width: 1280, height: 320 });
+await page.waitForTimeout(400);
+const tocBar = await page.evaluate(`(() => {
+  const host = window.__deepAll('doc-toc')[0];
+  const bar = host?.shadowRoot?.querySelector('mc-scroll-bar');
+  const vp = bar?.shadowRoot?.querySelector('[part="viewport"]');
+  return vp
+    ? {
+        可滚: vp.scrollHeight - vp.clientHeight,
+        宿主自身溢出: host.scrollHeight - host.clientHeight,
+        溢出标记: bar.hasAttribute('data-overflow'),
+      }
+    : null;
+})()`);
+check(
+  '宽屏：右栏目录的滚动容器同样是组件里的 mc-scroll-bar viewport（宿主自己不滚）',
+  tocBar !== null && tocBar.可滚 > 0 && tocBar.宿主自身溢出 === 0 && tocBar.溢出标记 === true,
+  JSON.stringify(tocBar),
+);
+
 await page.setViewportSize({ width: 480, height: 900 });
 await page.waitForTimeout(350);
 const narrow = await menuState();
@@ -266,10 +375,11 @@ await page.waitForTimeout(350);
 const opened = await menuState();
 check('窄屏：浮层点开就是这一页的菜单', opened.面板打开 === true, JSON.stringify(opened));
 
-/* 面板里的 <doc-nav> **自己滚** —— 它就是外壳那段滚轮接力认的容器。
-   这条守的是一个真踩过的坑：滚动容器若写在面板包装层上，<doc-nav> 就没有盒子
+/* 面板里的菜单**自己滚** —— 滚的是 <doc-nav> 里那个 mc-scroll-bar 的 viewport（宿主只是定位 + 内边距）。
+   这条守的是一个真踩过的坑：滚动容器若落在面板包装层上，<doc-nav> 就没有盒子
    （自定义元素默认 display:inline，clientHeight 恒为 0）→ 被判定「已在底部」→
-   滚轮被 preventDefault 转走：**面板纹丝不动、页面在滚**。 */
+   滚轮被 preventDefault 转走：**面板纹丝不动、页面在滚**。
+   ⚠️ 换成滚动条组件后又多一个同形的坑：宿主 <doc-nav> 不再滚，读它的 scrollTop 恒为 0 —— 必须读 viewport。 */
 const wheelAt = await page.evaluate(`(() => {
   const r = ${shellRoot}.querySelector('.doc-menu-panel').getBoundingClientRect();
   return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
@@ -277,9 +387,10 @@ const wheelAt = await page.evaluate(`(() => {
 const menuScroll = () =>
   page.evaluate(`(() => {
     const nav = ${shellRoot}.querySelector('.doc-menu-panel doc-nav');
+    const vp = nav.shadowRoot.querySelector('mc-scroll-bar').shadowRoot.querySelector('[part="viewport"]');
     return {
-      菜单: Math.round(nav.scrollTop),
-      可滚: nav.scrollHeight - nav.clientHeight,
+      菜单: Math.round(vp.scrollTop),
+      可滚: vp.scrollHeight - vp.clientHeight,
       正文: Math.round(window.__deep('.doc-main').scrollTop),
     };
   })()`);

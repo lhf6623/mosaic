@@ -123,6 +123,10 @@ OS 接管时只会来 `pointercancel`，`pointerup` 根本不来。监听残留�
   横向滚动就跟着主题走了（表格自己不做横向滚动）。
 - 与 [`mc-code`](../code/) 的搭配：长代码块给个高度再包它。**记得给 viewport 加右内边距**，
   否则覆盖式条子会压住最后几个字符。
+- 与文档站外壳的搭配：左栏菜单、窄屏菜单浮层、右栏本页目录三处都包了它
+  （[`docs/components/nav.html`](../../docs/components/nav.html) 与
+  [`docs/components/toc.html`](../../docs/components/toc.html) 各自的 shadow 内），
+  都用**默认的 `reveal="hover"`** —— 那三处是拿来读的，条子常驻只会一直压在条目背景上。
 
 <!-- hand:end -->
 
