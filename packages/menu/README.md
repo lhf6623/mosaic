@@ -80,7 +80,7 @@ cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root �
 | `--mc-menu-item-bg-current`    | `--mc-color-primary-subtle` | 当前项底色          |
 | `--mc-menu-group-color`        | `--mc-color-fg-subtle`      | 分组标题文字        |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 > ⚠️ 菜单项同样**不能**给 `--mc-menu-*` 写默认值，否则会盖掉容器继承来的通道
 > （和 `mc-collapse-item` 同一条坑），消费侧一律 `var(--mc-menu-x, 兜底)`。

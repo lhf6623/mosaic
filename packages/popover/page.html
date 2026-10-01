@@ -5,7 +5,6 @@
     <!-- ⚠️ mc-button 不在站点级依赖里（外壳只注册 code / icon / collapse / menu / breadcrumb / card），
          演示的触发按钮用它，就必须本页注册：漏了的话 `*:not(:defined){display:none}`
          会把没注册的标签连同文字一起藏掉 —— 不报错，只是每个演示的触发按钮都不见（见 P44）。 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
 
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
@@ -23,21 +22,6 @@
       通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
     </p>
 
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>需要 popover API 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox
-          125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。
-        </li>
-        <li><strong>默认插槽只放一个触发元素</strong>：放多个元素时面板会按整块对齐。</li>
-        <li>
-          <strong>浮层不受宿主页面布局影响</strong>：不会被 <code>transform</code> /
-          <code>filter</code> 困住，Esc 与点空白关闭交给浏览器（<code>--mc-z-*</code>
-          那一套在这里用不上）。
-        </li>
-      </ul>
-    </mc-alert>
-
     <h2>例子</h2>
 
     <section class="doc-demo">
@@ -45,7 +29,10 @@
       <p class="doc-hint">
         <code>placement</code> 十二个方向：上下左右，各带 <code>-start</code> /
         <code>-end</code> 后缀（不写后缀 = 居中）。空间不够时浏览器
-        <strong>自动翻到另一侧</strong>，不会溢出视口。
+        <strong>自动翻到另一侧</strong>，不会溢出视口。 需要原生 popover 与 CSS 锚点定位（Chrome
+        125+ / Safari 17+ / Firefox
+        125+）：没有这些能力的浏览器上面板不会弹出，也不报错；浮层不受宿主布局影响，不会被
+        <code>transform</code> / <code>filter</code> 困住。
       </p>
       <demo-popover-placement></demo-popover-placement>
       <mc-collapse class="doc-demo-code">
@@ -60,6 +47,7 @@
       <p class="doc-hint">
         <code>trigger</code> 三选一：<code>click</code>（默认）/ <code>hover</code> /
         <code>manual</code>（只认 <code>open</code> 属性与 <code>show()</code>，受控开合就走它）。
+        默认插槽只放一个触发元素 —— 放多个时面板会按整块对齐。
       </p>
       <demo-popover-trigger></demo-popover-trigger>
       <mc-collapse class="doc-demo-code">

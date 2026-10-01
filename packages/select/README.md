@@ -88,7 +88,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 | `--mc-select-clear-color`           | `--mc-color-fg-muted`       | × 按钮的颜色                                   |
 | `--mc-select-clear-bg-hover`        | `--mc-color-surface-sunken` | × 按钮悬停底色                                 |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 > 还有一个 `--mc-select-anchor`（锚点标识）：它是组件内部的接线，不是使用者的覆盖点，在代码里标了 `@internal`。
 
 ## 相邻单元

@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./tag.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
     <l-m src="./demos/hex.html"></l-m>
@@ -15,22 +14,6 @@
     <l-m src="./demos/part.html"></l-m>
     <h1>Tag <code>mc-tag</code></h1>
     <p class="doc-lead">分类 / 状态标签：一块小色片，可选可关。</p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>selected</code> 会覆盖 <code>variant</code></strong
-          >：选中的标签统一实心，所以可切换的标签用默认 <code>subtle</code> 才看得出变化。
-        </li>
-        <li>
-          <strong>长文本不折行</strong>：标签要么短，要么自己在宿主上截断（<code>max-width</code> +
-          <code>overflow: hidden</code>）。
-        </li>
-        <li>
-          <strong><code>closable</code> 不删 DOM</strong>：只发
-          <code>close</code>，要消失自己在事件里 <code>el.remove()</code>。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -84,6 +67,8 @@
       <p class="doc-hint">
         尺寸只改字号与左右内边距，<strong>高度由字号撑</strong>：<code>sm</code> / <code>md</code> /
         <code>lg</code> = 26 / 30 / 34px（行高 + 上下内边距 + 上下 1px 边框）。
+        标签不折行：长文本要么短，要么自己在宿主上截断（<code>max-width</code> +
+        <code>overflow: hidden</code>）。
       </p>
       <demo-tag-sizes></demo-tag-sizes>
       <mc-collapse class="doc-demo-code">
@@ -113,7 +98,8 @@
       <p class="doc-hint">
         <code>checkable</code> 让整块可点（shadow 里一个铺满宿主的原生按钮，带
         <code>aria-pressed</code>），切换时发 <code>change</code>，<code>$event.data.selected</code>
-        是切换后的状态；选中态换成该色的实心。
+        是切换后的状态；选中态换成该色的实心。 选中态统一实心，所以可切换的标签用默认
+        <code>subtle</code> 才看得出变化。
       </p>
       <demo-tag-checkable></demo-tag-checkable>
       <mc-collapse class="doc-demo-code">

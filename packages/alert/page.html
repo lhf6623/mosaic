@@ -14,24 +14,10 @@
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <h1>Alert <code>mc-alert</code></h1>
-    <p class="doc-lead">页内提示条：一块语义色的小面，带图标、标题与描述，可关。</p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>和 <code>message()</code> 的分工</strong>：alert 是页内静态的一块面 ——
-          跟着内容流排版、不抢焦点、不会自己消失；自己进场自己走的浮层消息才用 message。
-        </li>
-        <li>
-          <strong>不预设 <code>role</code></strong
-          >：动态插入的报错要播报，自己在宿主上加 <code>role="alert"</code>（紧急）或
-          <code>role="status"</code>（礼貌）。
-        </li>
-        <li>
-          <strong><code>closable</code> 不删 DOM</strong>：只发
-          <code>close</code>，要消失自己在事件里 <code>el.remove()</code>。
-        </li>
-      </ul>
-    </mc-alert>
+    <p class="doc-lead">
+      页内提示条：一块语义色的小面，带图标、标题与描述，可关。要「自己进场、自己走掉」的浮层消息用
+      <code>message()</code>。
+    </p>
 
     <h2>例子</h2>
 
@@ -107,7 +93,9 @@
       <h3>自定义图标</h3>
       <p class="doc-hint">
         <code>slot="icon"</code> 有内容就让内置图形让位 ——
-        插槽内容自己负责无障碍，内置图形才是装饰性的。
+        插槽内容自己负责无障碍，内置图形才是装饰性的。 动态插入的报错要播报，自己在宿主上加
+        <code>role="alert"</code>（紧急）或 <code>role="status"</code>（礼貌）—— 组件不预设
+        <code>role</code>。
       </p>
       <demo-alert-icon-custom></demo-alert-icon-custom>
       <mc-collapse class="doc-demo-code">

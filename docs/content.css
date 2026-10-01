@@ -117,25 +117,6 @@
   background-color: rgb(var(--mc-color-warning-subtle));
 }
 
-/* ---------- 注意事项：页面顶部那一块（<mc-alert class="doc-notes"> 承载） ----------
-   上移后它夹在 doc-lead 与「例子」之间，所以上下各留一档；
-   ⚠️ 站点正文给 li 的是 fg-muted，而注意事项不是次要信息 —— 这里改回正文色
-   （改的是 li 自己，不是 --mc-alert-body-color：那条只管 part="body" 容器） */
-
-.doc-notes {
-  margin: var(--mc-space-4) 0;
-  --mc-alert-body-color: rgb(var(--mc-color-fg));
-}
-
-.doc-notes ul {
-  margin: 0;
-  padding-left: 1.25em;
-}
-
-.doc-notes li {
-  color: rgb(var(--mc-color-fg));
-}
-
 /* ---------- 演示区 ---------- */
 
 /* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：
@@ -272,7 +253,7 @@
  *   · 左栏（nav）只暴露宿主，宿主级的定位 / 间距仍留在本文件。 */
 
 /* ---------- 组件页头部 ----------
- * 页面自己的头部元素（h1 / .doc-lead / 注意事项）。 */
+ * 页面自己的头部元素（h1 / .doc-lead）。 */
 
 .doc-body h1 code {
   font-size: 0.62em;

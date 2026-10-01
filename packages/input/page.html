@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
     <l-m src="./input.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -20,24 +19,6 @@
       单行输入框。初始值写在 <code>default-value</code> 上，运行时读写走宿主 property
       <code>value</code>。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>value</code> 是 property 不是属性</strong>：标签上写
-          <code>value="…"</code> 不生效 —— 初始值用 <code>default-value</code>，运行时改值写
-          <code>el.value = '…'</code>。
-        </li>
-        <li>
-          <strong>事件里读 <code>$event.data.value</code></strong
-          >：<code>input</code> 与 <code>change</code> 都带 <code>data</code>，原生那条不带头 载荷的
-          <code>input</code> 已被组件拦掉，不会收到两次。
-        </li>
-        <li>
-          <strong>不参与原生 <code>&lt;form&gt;</code> 提交</strong>：shadow 里的原生控件不在表单的
-          提交范围内，<code>name</code> 只是转发给内部控件 —— 提交时自己取 <code>el.value</code>。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -48,6 +29,9 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         第二条的 <code>default-value</code> 是初始值，只读一次；之后改属性不会回头覆盖当前值。
+        <code>input</code> / <code>change</code> 的载荷都在
+        <code>$event.data.value</code>；原生那条不带头载荷的
+        <code>input</code> 已被组件拦掉，不会收到两次。
       </p>
       <demo-input-basic></demo-input-basic>
       <mc-collapse class="doc-demo-code">
@@ -70,8 +54,10 @@
     <section class="doc-demo">
       <h3>运行时值</h3>
       <p class="doc-hint">
-        组件不把值反射成属性：读 <code>el.value</code>、写 <code>el.value = '…'</code>
-        都是立刻生效的内部原生控件。
+        组件不把值反射成属性：读 <code>el.value</code>、写
+        <code>el.value = '…'</code> 都是立刻生效的内部原生控件。 它也不参与原生
+        <code>&lt;form&gt;</code> 提交（shadow 里的原生控件不在表单范围内，<code>name</code>
+        只是转发）—— 提交时自己取 <code>el.value</code>。
       </p>
       <demo-input-value></demo-input-value>
       <mc-collapse class="doc-demo-code">
@@ -161,7 +147,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由 api.md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

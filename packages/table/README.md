@@ -95,7 +95,7 @@ CSS 里只写 `border-spacing: 0`，靠 `border-collapse` 的初始值 `separate
 | `--mc-table-state-fg`     | `--mc-color-fg-subtle`      | 空态 / 加载态的文字色  |
 | `--mc-table-state-pad`    | `--mc-space-8`              | 空态 / 加载态的内边距  |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 ## 相邻单元
 

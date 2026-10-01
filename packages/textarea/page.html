@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./textarea.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
@@ -17,22 +16,6 @@
       多行输入框。高度由 <code>rows</code> 与内容决定，另有自动增高与字数统计；值读写与
       <code>mc-input</code> 同一套。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>value</code> 是 property 不是属性</strong>：初始值写在
-          <code>default-value</code> 上，运行时改值写 <code>el.value = '…'</code>。
-        </li>
-        <li>
-          <strong><code>size</code> 改的是最小高度</strong>：真实高度由 <code>rows</code> 与内容
-          决定，想要固定高度就写宿主 <code>style="height: …"</code>。
-        </li>
-        <li>
-          <strong>字数统计要 <code>maxlength</code> 才有</strong>：没给上限就没有
-          <code>当前/上限</code> 那一行。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -129,7 +112,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由 api.md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

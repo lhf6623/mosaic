@@ -20,17 +20,7 @@ m.close();
 
 ---
 
-## 方法
-
-| 名称                                                                | 说明                                                                     |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `message(text, config?)`                                            | 弹一条，返回 `{ close, id }`                                             |
-| `message.neutral / info / success / warning / error(text, config?)` | 类型简写，等价于带上 `type`                                              |
-| `message.close(keyOrId)`                                            | 按 `key` 或返回的 `id` 收掉一条                                          |
-| `message.closeAll()`                                                | 全收掉                                                                   |
-| `message.config(options)`                                           | 改默认值（`duration` / `limit` / `closable` / `icon`），只影响之后创建的 |
-
-## 配置
+## 属性
 
 | 名称       | 值                                                         | 默认      | 说明                                                                                     |
 | ---------- | ---------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------- |
@@ -42,26 +32,12 @@ m.close();
 | `limit`    | `number`                                                   | `5`       | 同屏最多几条，超出从最旧的顶掉（走 `message.config()`，不能逐条给）。                    |
 | `onClose`  | `() => void`                                               | —         | 这条消失时回调一次（点 × / 到点 / `close()` / `closeAll()` 都算）；让生产端停掉定时器    |
 
-### 什么时候写 `closable: false`
+## 事件
 
-**任务还没结束**的时候。典型是「保存中」这类由代码驱动、完成前不该被用户打断的提示：
-
-```js
-message('保存中…', { key: 'save', type: 'info', duration: 0, closable: false });
-// …任务完成，用同一个 key 换成结果（这条默认带 ×），3 秒后自己走
-message('已保存', { key: 'save', type: 'success', duration: 3000 });
-```
-
-如果这条允许点掉，用户会以为保存被取消了，而任务其实还在跑 —— 所以关不关得掉要由
-**谁拥有这个任务**来决定，不是由时长。反过来，纯告知的提示（「已复制」）不需要交互，
-写 `closable: false` 只是少一个按钮，别用 `duration: 0`（那会变成关不掉的孤儿消息）。
-
-### 无障碍
-
-容器是 `aria-live` 区域：`role="log"` + `aria-live="polite"`；队列里出现 `error` 时整块切到
-`assertive` + `role="alert"`（立刻播报），`error` 收掉后回到 `polite`。
-类型图标是装饰性的（`mc-icon` 不给 label 即 `aria-hidden`），含义由文案承担。
-
-关闭方式只有一种：**右侧的 × 按钮**（`closable` 默认 `true`；写 `false` 就没有按钮）
-（原生 `<button>`，`aria-label="关闭提示：<正文>"`）。整条消息**不可点** —— 消息是要读的，
-点一下就没不该是默认行为。另外 `message()` 返回的 `{ close }` 句柄可以从代码里关。
+| 名称                                                                | 类型                                                                   | 说明                                                                     |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `message(text, config?)`                                            | `(text: string, config?: Config) => { close: () => void; id: string }` | 弹一条，返回 `{ close, id }`                                             |
+| `message.neutral / info / success / warning / error(text, config?)` | `(text: string, config?: Config) => { close: () => void; id: string }` | 类型简写，等价于带上 `type`                                              |
+| `message.close(keyOrId)`                                            | `(keyOrId?: string \| number) => void`                                 | 按 `key` 或返回的 `id` 收掉一条                                          |
+| `message.closeAll()`                                                | `() => void`                                                           | 全收掉                                                                   |
+| `message.config(options)`                                           | `(options: Config) => void`                                            | 改默认值（`duration` / `limit` / `closable` / `icon`），只影响之后创建的 |

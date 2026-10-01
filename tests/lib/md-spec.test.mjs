@@ -119,9 +119,9 @@ test('行内粗体与事件签名里的 & > 都能安全落地', () => {
 });
 
 test('多标签组件的 h3 子标题跟着节走', () => {
-  const md = ['---', '', '## 插槽与 part', '', '### mc-collapse', '', '| 名称 | 说明 |', '| --- | --- |', '| `header` | 头部 |'].join('\n');
+  const md = ['---', '', '## 插槽', '', '### mc-collapse', '', '| 名称 | 说明 |', '| --- | --- |', '| `header` | 头部 |'].join('\n');
   const { html } = parseSpecMd(md);
-  assert.match(html, /<h2>插槽与 part<\/h2>\n<h3>mc-collapse<\/h3>/);
+  assert.match(html, /<h2>插槽<\/h2>\n<h3>mc-collapse<\/h3>/);
 });
 
 test('白名单节之外的 h3 / 段落一律丢弃', () => {
@@ -155,6 +155,6 @@ test('没有 --- 时，全文按白名单过滤（不整页吐出去）', () => 
   assert.match(html, /<code>size<\/code>/);
 });
 
-test('SECTIONS 是方案里定的那七节（含命令式组件的「方法 / 配置」）', () => {
-  assert.deepEqual(SECTIONS, ['属性', '方法', '事件', '配置', '插槽与 part', '插槽', 'part']);
+test('SECTIONS 是方案里定的那四节（配置归属性、方法归事件）', () => {
+  assert.deepEqual(SECTIONS, ['属性', '事件', '插槽', 'part']);
 });

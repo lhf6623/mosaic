@@ -276,7 +276,7 @@
 
           /* 滚到底就认最后一项收尾。判定带只有滚动区顶部 30%（≤240px），页尾那几节
              可能整节都落在带下面 —— 不收尾的话最后一节永远点不亮（实测：button 页滚到底
-             还停在「API」，而「注意事项」就在屏幕里）。
+             还停在「API」，而它后面还有参考节）。
              ⚠️ 「滚不动的一屏」（内容比视口还矮）不算到底：那时整页都在眼前，该亮第一项。 */
           const overflow = viewport
             ? document.documentElement.scrollHeight - window.innerHeight

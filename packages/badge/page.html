@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./badge.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/colors.html"></l-m>
@@ -14,23 +13,6 @@
     <l-m src="./demos/max.html"></l-m>
     <h1>Badge <code>mc-badge</code></h1>
     <p class="doc-lead">徽标：一块语义色的小色片，可只留一个圆点，也可按上限截断数字。</p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>它不是 mc-tag</strong>：徽标挂在别的元素旁边做标记，<strong>不交互</strong> ——
-          要能点、能关、能选中，用 <code>mc-tag</code> 的 <code>checkable</code> /
-          <code>closable</code>。
-        </li>
-        <li>
-          <strong><code>dot</code> 与内容互斥</strong>：圆点模式只说「有事发生」，不显示数字 —— 打开
-          <code>dot</code> 时插槽内容整块不渲染。
-        </li>
-        <li>
-          <strong><code>max</code> 只截断纯数字内容</strong>：超过上限才显示
-          <code>99+</code>；内容里混了文字（<code>v2</code>、<code>新</code>）就原样显示。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -39,6 +21,10 @@
          取词规则见 packages/README.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
+      <p class="doc-hint">
+        徽标只是标记，<strong>不交互</strong> —— 要能点、能关、能选中，用 <code>mc-tag</code> 的
+        <code>checkable</code> / <code>closable</code>。
+      </p>
       <demo-badge-basic></demo-badge-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -92,6 +78,7 @@
       <h3>圆点</h3>
       <p class="doc-hint">
         <code>dot</code> 只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。
+        打开 <code>dot</code> 时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
       </p>
       <demo-badge-dot></demo-badge-dot>
       <mc-collapse class="doc-demo-code">

@@ -11,30 +11,10 @@
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <!-- mc-alert 不在站点外壳注册的那批里（见 packages/README.md §二），本页自己引 -->
-    <l-m src="../alert/alert.html"></l-m>
     <h1>Radio <code>mc-radio</code></h1>
     <p class="doc-lead">
       单选项，容器 + 子项两个标签：组管互斥 / 方向 / 尺寸 / 事件，子项只是一格。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong
-            >初始值用 <code>default-value</code>，运行时值用 property <code>value</code></strong
-          >：<code>group.value = 'c'</code> 立刻生效，<code>setAttribute('value', …)</code>
-          不是运行时通道。
-        </li>
-        <li>
-          <strong><code>mc-radio</code> 必须是 <code>mc-radio-group</code> 的直接子项</strong
-          >：组只认直接子项（嵌套组各管各的）。不在组里的 radio 只能切换自己，没有互斥。
-        </li>
-        <li>
-          <strong><code>change</code> 只在组上发一次</strong>：载荷是
-          <code>$event.data.value</code>，子项不会各自再发一遍。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -42,7 +22,8 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         <code>name</code> 是字段名，<code>default-value</code> 是初始选中项 ——
-        同一页可以有多个互不干扰的组。
+        同一页可以有多个互不干扰的组。 组只认直接子项（用 <code>o-if</code> /
+        <code>o-fill</code> 包一层就互斥失效）；不在组里的 radio 只能切换自己。
       </p>
       <demo-radio-basic></demo-radio-basic>
       <mc-collapse class="doc-demo-code">
@@ -84,7 +65,10 @@
 
     <section class="doc-demo">
       <h3>事件</h3>
-      <p class="doc-hint">用 <kbd>←</kbd> <kbd>→</kbd> 在组内走一遍也能看到变化。</p>
+      <p class="doc-hint">
+        用 <kbd>←</kbd> <kbd>→</kbd> 在组内走一遍也能看到变化。<code>change</code>
+        只在组上发一次，载荷是 <code>$event.data.value</code> —— 子项不会各自再发一遍。
+      </p>
       <demo-radio-events></demo-radio-events>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"
@@ -107,7 +91,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

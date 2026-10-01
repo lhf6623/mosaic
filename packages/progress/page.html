@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./progress.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/max.html"></l-m>
@@ -14,22 +13,6 @@
     <l-m src="./demos/part.html"></l-m>
     <h1>Progress <code>mc-progress</code></h1>
     <p class="doc-lead">进度条：一条轨道 + 一条填充，确定态给比例，不确定态只说「还在跑」。</p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>value</code> / <code>max</code> 也是 property</strong>：运行时直接写
-          <code>el.value = 50</code>，当次就生效（不必等属性反射那一拍）。
-        </li>
-        <li>
-          <strong>不确定态不要再写 <code>value</code></strong
-          >：比例交给 CSS 动画，此时读屏拿到的只有 <code>aria-busy="true"</code>。
-        </li>
-        <li>
-          <strong>宽度由父容器决定</strong>：宿主是 <code>display: block</code>， 行内 / flex
-          布局里想让它铺满就给它一个能撑开的容器。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -63,6 +46,8 @@
       <h3>不确定态</h3>
       <p class="doc-hint">
         <code>indeterminate</code> 打开后填充条自己滑：不知道还要多久时用它，不要编一个假比例。
+        此时不要再写 <code>value</code>（比例交给动画），读屏拿到的只有
+        <code>aria-busy="true"</code>。
       </p>
       <demo-progress-indeterminate></demo-progress-indeterminate>
       <mc-collapse class="doc-demo-code">
@@ -85,7 +70,11 @@
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <p class="doc-hint">只有 <code>sm</code> / <code>md</code> 两档轨道高：4 / 8px。</p>
+      <p class="doc-hint">
+        只有 <code>sm</code> / <code>md</code> 两档轨道高：4 / 8px。宿主是
+        <code>display: block</code>，宽度由父容器决定 —— 行内 / flex
+        布局里想让它铺满，就给它一个能撑开的容器。
+      </p>
       <demo-progress-sizes></demo-progress-sizes>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"

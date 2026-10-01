@@ -3,8 +3,7 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button
-         与页首的 mc-alert 都要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
-    <l-m src="../alert/alert.html"></l-m>
+         要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
     <l-m src="../button/button.html"></l-m>
 
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
@@ -21,32 +20,17 @@
       点遮罩 / × 关闭。
     </p>
 
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>需要原生 <code>popover</code></strong
-          >（Chrome 125+ / Safari 17+ / Firefox 125+）：没有这个能力的浏览器上面板不会出现 ——
-          不报错，也没有替代路径。
-        </li>
-        <li>
-          <strong>标题属性叫 <code>heading</code></strong
-          >，不叫 <code>title</code>：后者会让宿主弹出浏览器原生 tooltip（与
-          <code>mc-alert</code> 一致）。
-        </li>
-        <li>
-          <strong>打开会抢焦点</strong>：面板拿到焦点、<kbd>Tab</kbd> 出不去；关闭后焦点归还
-          打开它的那个元素。
-        </li>
-      </ul>
-    </mc-alert>
-
     <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
         按钮改 <code>open</code> 属性打开；关闭走 <code>close</code> 事件把状态收回来 —— 角上的 × 由
-        <code>closable</code> 开。
+        <code>closable</code> 开。 需要原生 <code>popover</code>（Chrome 125+ / Safari 17+ / Firefox
+        125+）：没有这个能力的浏览器上面板不会出现 —— 不报错，也没有替代路径。打开会抢焦点（<kbd
+          >Tab</kbd
+        >
+        出不去），关闭后归还给打开它的那个元素。
       </p>
       <demo-dialog-basic></demo-dialog-basic>
       <mc-collapse class="doc-demo-code">
@@ -99,7 +83,8 @@
       <h3>富标题</h3>
       <p class="doc-hint">
         标题要放标记就用 <code>slot="header"</code>；底部操作区落进
-        <code>slot="footer"</code>，没有内容时整行不占位。
+        <code>slot="footer"</code>，没有内容时整行不占位。 标题属性叫 <code>heading</code>，不叫
+        <code>title</code>（后者会弹原生 tooltip，与 <code>mc-alert</code> 一致）。
       </p>
       <demo-dialog-slots></demo-dialog-slots>
       <mc-collapse class="doc-demo-code">
@@ -124,7 +109,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

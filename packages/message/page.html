@@ -8,7 +8,6 @@
          站点外壳（docs/layout.html）只注册 code / icon / collapse / menu / breadcrumb / card 那一批，
          **不含 mc-button** —— 别指望首页碰巧注册过它：深链 + 刷新时首页不一定渲染，
          于是同一页两种表现（从首页点进来正常、刷新后按钮消失）。 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
 
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
@@ -21,23 +20,6 @@
       浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。<strong>没有标签</strong> —— 它由 JS
       调用，容器由组件自己挂到页面上。
     </p>
-
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>没有 <code>&lt;mc-message&gt;</code> 标签可写</strong>：消息是命令式的，只有
-          <code>message.js</code> 一个入口 —— 页面里写标签不会得到任何东西。
-        </li>
-        <li>
-          <strong>同 key 只留一条</strong>：后一条把前一条换掉。进度类消息记得接
-          <code>onClose</code> 停掉生产端的定时器 —— 否则关掉之后下一拍又会推回来，看着就是关不掉。
-        </li>
-        <li>
-          要「一直留在页面上」用 <code>mc-alert</code>：alert
-          是页内静态的一块面，不抢焦点、不会自己消失。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -90,7 +72,8 @@
       <h3>同 key 更新</h3>
       <p class="doc-hint">
         给一个 <code>key</code>，后一条就把前一条<strong>换掉</strong>（位置也保持）—— 上传进度、
-        保存状态这类「同一条消息在变」的场景用它，不要叠成一摞。
+        保存状态这类「同一条消息在变」的场景用它，不要叠成一摞。 进度类消息记得在
+        <code>onClose</code> 里停掉生产端的定时器 —— 否则关掉之后下一拍又推回来，看着就是关不掉。
       </p>
       <demo-message-key></demo-message-key>
       <mc-collapse class="doc-demo-code">

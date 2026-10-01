@@ -45,14 +45,19 @@ el.addEventListener('input', (e) => console.log(e.data.value));
 | `input`  | `(event: Event & { data: { value: string } }) => void` | 每次输入；`$event.data.value` 是当前值，`$event.target.value` 也读得到 |
 | `change` | `(event: Event & { data: { value: string } }) => void` | 值确定变化（失焦 / 回车）；原生 `change` 穿不出 shadow，由组件转发     |
 
-## 插槽与 part
+## 插槽
 
-| 名称            | 说明                                            |
-| --------------- | ----------------------------------------------- |
-| 插槽 `prefix`   | 第一行左侧的附加物；空着时不占位                |
-| 插槽 `suffix`   | 第一行右侧的附加物；空着时不占位                |
-| part="base"     | 行盒子：前后缀与输入区那一行                    |
-| part="textarea" | 内部原生 `<textarea>` 本身                      |
-| part="prefix"   | `prefix` 插槽的容器（颜色从这里继承给插槽内容） |
-| part="suffix"   | `suffix` 插槽的容器（颜色从这里继承给插槽内容） |
-| part="counter"  | 字数统计那一行；没有 `maxlength` 时不占位       |
+| 名称     | 说明                             |
+| -------- | -------------------------------- |
+| `prefix` | 第一行左侧的附加物；空着时不占位 |
+| `suffix` | 第一行右侧的附加物；空着时不占位 |
+
+## part
+
+| 名称       | 说明                                            |
+| ---------- | ----------------------------------------------- |
+| `base`     | 行盒子：前后缀与输入区那一行                    |
+| `textarea` | 内部原生 `<textarea>` 本身                      |
+| `prefix`   | `prefix` 插槽的容器（颜色从这里继承给插槽内容） |
+| `suffix`   | `suffix` 插槽的容器（颜色从这里继承给插槽内容） |
+| `counter`  | 字数统计那一行；没有 `maxlength` 时不占位       |

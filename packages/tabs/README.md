@@ -74,7 +74,7 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 | `--mc-tabs-indicator`   | `--mc-color-primary`        | 指示条颜色                                |
 | `--mc-tabs-indicator-h` | `2px`                       | 指示条粗细                                |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 > ⚠️ `mc-tab` 侧一律写成 `var(--mc-tabs-x, 兜底)`：在子项 `:host` 上写默认值会盖掉容器继承来的值，
 > 容器的尺寸通道就永远不生效（同 `mc-collapse-item` 那条）。

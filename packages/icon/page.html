@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./icon.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/builtins.html"></l-m>
@@ -21,18 +20,6 @@
     <p class="doc-lead">
       图标。先查内置、查不到再远程取一次；颜色继承周围文字色、尺寸跟随字号，取不到也只是留一个不跳版的空位。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>别用 sprite</strong>：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit
-          一致拒绝，要用内置图标就写 <code>name</code>。
-        </li>
-        <li>
-          <strong>远程取图走公共 API</strong>（没有可用性承诺）：要稳定就把
-          <code>icon-base</code> 指到自托管镜像。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -49,7 +36,9 @@
     <section class="doc-demo">
       <h3>内置图标</h3>
       <p class="doc-hint">
-        50 个内置图标，按语义分组；<code>name</code> 命中内置时不发请求，首屏就有。
+        50 个内置图标，按语义分组；<code>name</code> 命中内置时不发请求，首屏就有。 别用
+        sprite：跨域 <code>&lt;use&gt;</code> 被 Chrome 与 WebKit 一致拒绝 —— 要用内置图标就写
+        <code>name</code>。
       </p>
       <demo-icon-builtins></demo-icon-builtins>
       <mc-collapse class="doc-demo-code">
@@ -126,7 +115,8 @@
       <h3>图标源</h3>
       <p class="doc-hint">
         <code>icon-set</code> 决定裸名去哪个集取；<code>icon-base</code> 是取图标的地址前缀， 换镜像
-        / 自托管改它。
+        / 自托管改它。 远程取图走公共 API，没有可用性承诺 —— 要稳定就把
+        <code>icon-base</code> 指到自托管镜像。
       </p>
       <demo-icon-source></demo-icon-source>
       <mc-collapse class="doc-demo-code">

@@ -75,7 +75,7 @@ el.style.height = `${el.scrollHeight}px`; // scrollHeight 本身就是内容高�
 | `--mc-textarea-counter-color` | `--mc-color-fg-subtle`      | 字数统计的颜色                     |
 | `--mc-textarea-gap`           | `--mc-space-2`              | 前后缀与输入区之间的间距           |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 ## 相邻单元
 

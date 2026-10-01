@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./tabs.html"></l-m>
     <l-m src="./tab.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -15,18 +14,6 @@
       标签页。容器管标签条、面板显隐与键盘；标签就是那一颗能点的按钮，值走 property、变化走
       <code>change</code>。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          面板要写 <code>slot="panel"</code> <strong>和</strong> <code>value</code>：容器按
-          <code>value</code> 与标签配对，非激活的面板挂 <code>hidden</code>（常驻 DOM，不删）。
-        </li>
-        <li>
-          初始值写 <code>default-value</code> 属性，运行时读写宿主 property
-          <code>value</code>（<code>el.value = 'b'</code>）—— <code>value</code> 不是属性。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 

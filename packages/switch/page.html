@@ -8,28 +8,10 @@
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <!-- mc-alert 不在站点外壳注册的那批里（见 packages/README.md §二），本页自己引 -->
-    <l-m src="../alert/alert.html"></l-m>
     <h1>Switch <code>mc-switch</code></h1>
     <p class="doc-lead">
       开关。只有开 / 关两态，改完立刻生效 —— 比 <code>mc-checkbox</code> 少一个「提交」的心智。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>它不是复选框</strong>：内部原生 input 带 <code>role="switch"</code>，
-          读屏读「开关，已打开 / 已关闭」。要勾选多项、或需要半选，用 <code>mc-checkbox</code>。
-        </li>
-        <li>
-          <strong><code>checked</code> 既是初始值也是运行时状态</strong>：HTML 里写属性， JS 里
-          <code>el.checked = true</code> 写完立刻生效。
-        </li>
-        <li>
-          <strong>开关不带 <code>value</code></strong
-          >：它表达的是一个状态位，不是「带值的选项」； 要提交就自己配一个隐藏字段。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -37,7 +19,9 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         文案写在标签里（默认插槽）；<code>on:change</code> 的载荷是
-        <code>$event.data.checked</code>。
+        <code>$event.data.checked</code>。 它不是复选框（内部原生 input 带
+        <code>role="switch"</code>，要勾多项或半选就用 <code>mc-checkbox</code>）；开关也不带
+        <code>value</code> —— 要提交就自己配一个隐藏字段。
       </p>
       <demo-switch-basic></demo-switch-basic>
       <mc-collapse class="doc-demo-code">
@@ -82,7 +66,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

@@ -5,7 +5,6 @@
     <!-- ⚠️ 演示里用到的组件必须本页注册得到（外壳只注册 code / icon / collapse / menu /
          breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）。
          触发元素用 mc-button、菜单项复用 mc-menu-item，两个都在这里注册。 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="../button/button.html"></l-m>
     <l-m src="./dropdown.html"></l-m>
     <l-m src="../menu/menu-item.html"></l-m>
@@ -22,30 +21,15 @@
       <code>mc-menu-item</code>），面板进 top layer、贴边自动翻转。
     </p>
 
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>open</code> 既是初始值也是运行时状态</strong>：属性与
-          <code>el.open</code> property 两条路都行，点触发元素时组件也会自己增删这个属性。
-        </li>
-        <li>
-          <strong>面板内容不自己收起</strong>：点菜单项不会关面板（面板里可以放表单 / 多级内容），
-          要「选完就关」就在菜单项上写 <code>on:click</code> 把 <code>open</code> 设回
-          <code>false</code>。
-        </li>
-        <li>
-          <strong>面板需要原生 popover 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox
-          125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。
-        </li>
-      </ul>
-    </mc-alert>
-
     <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
         点触发元素开合；面板里 <kbd>Esc</kbd> 关闭并把焦点还回触发元素，点空白也关。
+        点菜单项不会自动关面板 —— 要「选完就关」就在菜单项上写 <code>on:click</code> 把
+        <code>open</code> 设回 <code>false</code>。面板需要原生 popover 与 CSS 锚点定位（Chrome 125+
+        / Safari 17+ / Firefox 125+），否则不会弹，也不报错。
       </p>
       <demo-dropdown-basic></demo-dropdown-basic>
       <mc-collapse class="doc-demo-code">

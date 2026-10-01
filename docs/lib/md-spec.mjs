@@ -7,16 +7,17 @@
  *
  * **两条边界规则**：
  *   1. 第一个独占一行的 `---` 之上不渲染（开场白 + 用法片段）；
- *   2. 中间只有 **白名单七节** 渲染：属性 / 方法 / 事件 / 配置 / 插槽与 part / 插槽 / part。
+ *   2. 中间只有 **白名单四节** 渲染：属性 / 事件 / 插槽 / part。
  *      其余节名一律丢弃 —— 白名单是硬的，将来往 md 里加新节不会误渲染出去。
- *      「方法 / 配置」是给命令式组件留的（`message()` 没有标签属性，接口事实就是方法与配置），
- *      节序与 `doc-drift.config.mjs` 的 `referenceOrder` 一致。
+ *      **没有「方法」「配置」两个节名了**（2026-10 收的）：配置表就是属性表（同样 名称 / 值 / 默认），
+ *      方法行并进事件表（名称写调用式，如 `` `show()` ``），节序与
+ *      `doc-drift.config.mjs` 的 `referenceOrder` 一致。
  *
  * 跑单测：`node tests/lib/md-spec.test.mjs`
  */
 
 /** 渲染进页面的节名（顺序即页面参考区顺序，与 packages/README.md §一 一致） */
-export const SECTIONS = ['属性', '方法', '事件', '配置', '插槽与 part', '插槽', 'part'];
+export const SECTIONS = ['属性', '事件', '插槽', 'part'];
 
 /** 仓库在 GitHub 上的浏览前缀（md 里的相对链接按 md 自身 URL 解析后指到这里） */
 export const GITHUB_BLOB = 'https://github.com/lhf6623/mosaic/blob/main';

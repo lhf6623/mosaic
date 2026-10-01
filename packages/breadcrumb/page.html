@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./breadcrumb.html"></l-m>
     <l-m src="./breadcrumb-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -17,23 +16,6 @@
       面包屑。容器 + 每一级两个标签；一级里的交互元素（原生
       <code>&lt;a&gt;</code>）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>链接必须写在插槽里</strong>（原生
-          <code>&lt;a&gt;</code>）：组件不造链接，站内链接自己写 ofa 的 <code>olink</code>。
-        </li>
-        <li>
-          <strong>每一级必须是 <code>&lt;mc-breadcrumb&gt;</code> 的直接子元素</strong>：用
-          <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。
-        </li>
-        <li>
-          <code>separator</code> 属性与
-          <code>--mc-breadcrumb-sep</code>
-          令牌走两条通道：属性是非默认值时优先，写回默认值时以令牌为准。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -44,7 +26,9 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         可点的级写原生 <code>&lt;a&gt;</code>，当前页写纯文本 + <code>current</code>。
-        顺序就是层级顺序，最后一级必须是当前页。
+        顺序就是层级顺序，最后一级必须是当前页。 组件不造链接（站内链接自己写 ofa 的
+        <code>olink</code>）；每一级必须是 <code>mc-breadcrumb</code> 的直接子元素 —— 用
+        <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。
       </p>
       <demo-breadcrumb-basic></demo-breadcrumb-basic>
       <mc-collapse class="doc-demo-code">
@@ -59,6 +43,7 @@
       <p class="doc-hint">
         上面那条用 <code>separator</code> 属性（注意 HTML 里要写 <code>&amp;gt;</code>），
         下面那条直接覆盖 <code>--mc-breadcrumb-sep</code> 令牌 —— 值是 CSS 字符串，要带引号。
+        两条通道同时写时属性优先；写回默认值时以令牌为准。
       </p>
       <demo-breadcrumb-separator></demo-breadcrumb-separator>
       <mc-collapse class="doc-demo-code">

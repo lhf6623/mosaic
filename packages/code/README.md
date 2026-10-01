@@ -32,6 +32,9 @@ mc-code — 代码展示组件。三条主线：
    否则主题的 .hljs 背景与内边距会盖掉组件底色（adopted 表优先于组件自己的 <style>）。
 3. 高亮是可选的运行时增量：CDN 懒加载，失败即保持纯文本，同步先出文本、到位后再原地升级。
    行号建在「行」模型上：高亮产物里的 <span> 可跨行，splitLines() 负责标签配平切分。
+4. 折行属性叫 **`soft-wrap`** 而不是 `wrap`：`wrap` 是 ofa.js 的保留名，声明进 `attrs` 之后
+   `document.createElement('mc-code')` 会直接抛 `NotSupportedError`。运行时有两条等价通道 ——
+   `el.code = '…'` 与 `el.setAttribute('code', '…')` 都立刻生效。
 
 ## 令牌
 
@@ -42,7 +45,7 @@ mc-code — 代码展示组件。三条主线：
 | `--mc-code-font-size` / `--mc-code-line-height`        | 排版                                 |
 | `--mc-code-max-h`                                      | 高度上限（一般写 `max-height` 属性） |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 **语法配色不是令牌**：它来自 highlight.js 的官方主题样式表
 （`styles/<theme>.min.css`），取回来**原样 `adopt`** 进组件的 shadow root，

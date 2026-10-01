@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./grid.html"></l-m>
     <l-m src="./grid-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -15,18 +14,6 @@
     <p class="doc-lead">
       栅格。容器只决定列与间距，子项决定自己跨几列 —— 布局走 CSS Grid，子项内容由使用者自己写。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <code>cols</code> 与 <code>min-item-width</code> 同时写时以
-          <code>min-item-width</code> 为准：列数交给 <code>auto-fill</code> 按容器宽度算。
-        </li>
-        <li>
-          子项要能压缩：<code>mc-grid-item</code> 里放长内容时记得给子元素
-          <code>min-width: 0</code>（或 <code>class="min-w-0"</code>），否则长文本会把列撑宽。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -35,7 +22,11 @@
          取词规则见 packages/README.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
-      <p class="doc-hint">容器 + 子项两个标签搭起来，<code>cols="2"</code> 就是两列。</p>
+      <p class="doc-hint">
+        容器 + 子项两个标签搭起来，<code>cols="2"</code>
+        就是两列。子项要能压缩：里面放长内容时给子元素 <code>min-width: 0</code>（或
+        <code>class="min-w-0"</code>），否则长文本会把列撑宽。
+      </p>
       <demo-grid-basic></demo-grid-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"

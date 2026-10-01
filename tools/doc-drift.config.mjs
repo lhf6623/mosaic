@@ -61,18 +61,18 @@ const apiSpec = {
     { header: ['名称', '值', '默认'], facet: 'attrs', name: 0, default: 2 },
     // ⚠️ 令牌表**不在这里** —— api.md 是页面参考区的渲染源，而令牌不进页面；
     // 令牌搬进了单元 README，由下面的 `unit-tokens` 面单独对账
-    { header: ['名称', '类型', '说明'], facet: 'events', name: 0 },
-    // 插槽与 part 同一张表：`插槽 x` / `part="x"` 带前缀，或裸名字；都按代码事实归类
+    // 事件与方法同一张表：带调用语法的行（`show()`）按方法对账，其余按事件（`callRows`，引擎 1.1.0）
+    { header: ['名称', '类型', '说明'], facet: 'events', name: 0, callRows: true },
+    // 插槽与 part 各自一节、名字写裸的；归哪一类按代码事实判（`插槽与 part` 那个合并节名 2026-10 去掉）
     { header: ['名称', '说明'], facet: 'slotsParts', name: 0, bareNames: 'codeFacts' },
   ],
-  // 命令式组件没有标签属性：改对账「方法」表与源码里的 DEFAULTS
+  // 命令式组件没有标签属性：`属性` 表对账模块的 DEFAULTS，`事件` 表对账模块里的可调用名
   imperatives: {
     methods: {
-      header: ['名称', '说明'],
+      header: ['名称', '类型', '说明'],
       name: 0,
       source: 'module',
       pattern: 'call',
-      skipRow: '插槽|part=',
     },
     config: {
       header: ['名称', '值', '默认'],
@@ -114,12 +114,10 @@ const pageSkeleton = {
     requireH1Code: true,
     parentExport: 'doc-layout.html',
     firstH2: '例子',
-    /* 「注意事项」是**可选尾节**：有值得提醒的才写，没有就整节省略（`mc-button` 就没有）。
-       所以不用 lastH2 —— 那会逼着每页都凑一节，凑出来的往往是废话。
-       下表是参考区顺序，列的是当前用到的**全部**参考节名；顺序断言由引擎 1.0.1 起真正生效
-       （1.0.0 里它是恒成立的死断言），任何一节排到「注意事项」后面都会红。
+    /* 下表是参考区顺序，列的是当前用到的**全部**参考节名；顺序断言由引擎 1.0.1 起真正生效
+       （1.0.0 里它是恒成立的死断言）。
        加新节名（比如将来由 md 渲染出来的「令牌」）时，按位置把名字补进这张表。 */
-    referenceOrder: ['属性', '方法', '事件', '配置', '插槽与 part', '插槽', 'part', '注意事项'],
+    referenceOrder: ['属性', '事件', '插槽', 'part'],
   },
 };
 
@@ -299,8 +297,9 @@ const rules = [
   {
     /* 参考区搬到 md 之后，「插槽 / part 合成一节还是各自成节」没人守了：引擎里那条
        `slotPartTitle` 只认 html 面（page.html 早就不放参考表了），等于死代码。约定落回配置：
-       代码里两种都有 → 一节 `插槽与 part`（混合表，名称加前缀 `插槽 header` / `part="header"`）；
-       只有插槽 → `插槽`；只有 part → `part`；都没有就整节省略。 */
+       **插槽与 part 各自一节**（2026-10 收起节名：api.md 只认 属性 / 事件 / 插槽 / part 四个），
+       名字写裸的；代码里没有哪一类，就整节省略。
+       另外盯着「名字别串节」—— 裸名字之后，插槽写进 part 节（或反过来）光看表是看不出来的。 */
     type: 'custom',
     id: 'api-slot-part-title',
     title: '组件文档 · API 规范里插槽 / part 的节名与代码事实一致',
@@ -308,28 +307,54 @@ const rules = [
       for (const c of components) {
         const api = `packages/${c.slug}/api.md`;
         if (!io.exists(api)) continue;
+        const text = io.read(api);
         const hasSlots = c.facts.union.slots.size > 0;
         const hasParts = c.facts.union.parts.size > 0;
-        const want =
-          hasSlots && hasParts ? '插槽与 part' : hasSlots ? '插槽' : hasParts ? 'part' : null;
-        const present = [...io.read(api).matchAll(/^##\s+(.+?)\s*$/gm)]
-          .map((m) => m[1].replace(/`/g, '').trim())
+        const want = [hasSlots ? '插槽' : null, hasParts ? 'part' : null].filter(Boolean);
+        /* 按 h2 位置切块，别用 `(?=^##|...)` 那种正则 —— 多行模式下 `\s*$` 恒真，
+           切出来的节只有一行，整条守卫会安静地失效（写这条时踩过一次）。 */
+        const marks = [...text.matchAll(/^##\s+(.+?)\s*$/gm)];
+        const sections = marks.map((mark, index) => ({
+          title: mark[1].replace(/`/g, '').trim(),
+          body: text.slice(
+            mark.index + mark[0].length,
+            index + 1 < marks.length ? marks[index + 1].index : text.length,
+          ),
+        }));
+        const present = sections
+          .map((section) => section.title)
           .filter((name) => /^插槽|^part/.test(name));
-        if (!want) {
-          if (present.length) {
-            problems.push(
-              `${api}：代码里既没有插槽也没有 part，却写了「${present.join(' / ')}」节`,
-            );
-          }
+        if (present.join(' / ') !== want.join(' / ')) {
+          problems.push(
+            `${api}：插槽 / part 的节应为「${want.join(' / ') || '（都不写）'}」（代码里${
+              hasSlots ? '有插槽' : '没插槽'
+            }、${hasParts ? '有 part' : '没 part'}），实际是「${present.join(' / ') || '（缺）'}」`,
+          );
           continue;
         }
-        if (present.length !== 1 || present[0] !== want) {
-          const actual = present.length ? `「${present.join(' / ')}」` : '（缺这一节）';
-          problems.push(
-            `${api}：这一段 <h2> 应为「${want}」（代码里${hasSlots ? '有插槽' : '没插槽'}、${
-              hasParts ? '有 part' : '没 part'
-            }），实际是 ${actual}`,
-          );
+        for (const [title, kind] of [
+          ['插槽', 'slots'],
+          ['part', 'parts'],
+        ]) {
+          if (!want.includes(title)) continue;
+          const body = sections.find((section) => section.title === title)?.body ?? '';
+          for (const line of body.split('\n')) {
+            if (!line.trim().startsWith('|')) continue;
+            const cell = (line.split('|')[1] ?? '').replace(/[`*]/g, '').trim();
+            if (!cell || cell === '名称' || /^[:\-\s]+$/.test(cell)) continue;
+            const isDefault = cell === '（默认）' || cell === '(默认)';
+            const known =
+              kind === 'slots'
+                ? isDefault || c.facts.union.slots.has(cell)
+                : c.facts.union.parts.has(cell);
+            if (!known) {
+              problems.push(
+                `${api}：\`${cell}\` 写进了「${title}」节，但代码里它不是${
+                  kind === 'slots' ? '插槽' : ' part'
+                }`,
+              );
+            }
+          }
         }
       }
     },
@@ -415,6 +440,63 @@ const rules = [
     },
   },
   {
+    /* 「参考节只有表」过去没有守卫（README 自己写着「解释句靠落笔时自查」）—— 2026-10 清点时
+       17 个文件在参考节里混了解释句 / 代码块（alert 的「没有 size」段、scroll-bar 的三条
+       blockquote、message 的两个 h3 段…），而且页面上真的渲染出来。现在把它变成机械口径：
+       四个参考节里只允许**表**，以及「后面跟着表的 h3」（多标签组件用它标哪张表属于哪个标签）。
+       解释句的正当去向：机制 → 单元 README / 组件文件头；事实 → 并进表里或写进演示导语。 */
+    type: 'custom',
+    id: 'api-tables-only',
+    title: '组件文档 · API 规范的参考节里只有表',
+    run: ({ io, components, problems }) => {
+      const SECTIONS = new Set(['属性', '事件', '插槽', 'part']);
+      for (const c of components) {
+        const api = `packages/${c.slug}/api.md`;
+        if (!io.exists(api)) continue;
+        let inSection = false;
+        let h3 = null; // { line, title }
+        let tablesUnderH3 = 0;
+        const closeH3 = () => {
+          if (h3 && tablesUnderH3 === 0) {
+            problems.push(
+              `${api}:${h3.line}：「### ${h3.title}」下面没有表 —— 参考节里只放表` +
+                `（解释句回单元 README / 组件文件头）`,
+            );
+          }
+          h3 = null;
+          tablesUnderH3 = 0;
+        };
+        io.read(api)
+          .split('\n')
+          .forEach((line, index) => {
+            const h2 = line.match(/^##\s+(.+?)\s*$/);
+            if (h2) {
+              closeH3();
+              inSection = SECTIONS.has(h2[1].replace(/`/g, '').trim());
+              return;
+            }
+            if (!inSection) return;
+            const h3Match = line.match(/^###\s+(.+?)\s*$/);
+            if (h3Match) {
+              closeH3();
+              h3 = { line: index + 1, title: h3Match[1] };
+              return;
+            }
+            if (!line.trim()) return;
+            if (line.trimStart().startsWith('|')) {
+              tablesUnderH3 += 1;
+              return;
+            }
+            problems.push(
+              `${api}:${index + 1}：参考节里只有表 —— 这一行是解释句` +
+                `（机制回单元 README / 组件文件头，事实并进表里，坑进演示导语）`,
+            );
+          });
+        closeH3();
+      }
+    },
+  },
+  {
     /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。
        三件事盯住它别越线、别烂：
          ① 有 api.md 的单元必须有 README.md（反过来也一样）；
@@ -424,7 +506,8 @@ const rules = [
     id: 'unit-readme',
     title: '组件单元 · README 入口卡（存在 / 不写接口事实 / 状态对账）',
     run: ({ io, components, problems }) => {
-      /* ② README 里不许出现**接口**节标题 —— 属性 / 方法 / 事件 / 配置 / 插槽 / part 归 api.md，
+      /* ② README 里不许出现**接口**节标题 —— 属性 / 事件 / 插槽 / part 归 api.md（2026-10 起
+         只有这四个节名；`方法` / `配置` / `插槽与 part` 也一并拦着，那是旧节名或它们的别名），
          写了就是第二份会漂移的副本。
          ⚠️ **令牌是唯一例外**：按海风的定性，令牌不进文档页（将来由主题编辑器展示），
          也不留在 api.md 里当「渲染源里没人渲染的半截」—— 它归 README，由 `unit-tokens` 面对账。
@@ -528,36 +611,6 @@ const rules = [
               );
             }
           }
-        }
-      }
-    },
-  },
-  {
-    /* 「注意事项」的口径见 packages/README.md §一：**只写使用者会踩的坑、每页 2～3 条**。
-       属性取值与用法是 api.md 的事（由参考区渲染），抄进这里就是第二份会漂移的副本 ——
-       这条踩过：`mc-loading-bar` 的注意事项一度写了 4 条，其中一条整段在讲 state 的取值。
-       条数可数、语义不可数，所以只钉条数：**超过 3 条，基本就是在往里塞别的东西**。 */
-    type: 'custom',
-    id: 'page-notes',
-    title: '组件文档 · 注意事项（只写坑、每页 2～3 条）',
-    run: ({ io, components, problems }) => {
-      for (const c of components) {
-        const page = `packages/${c.slug}/page.html`;
-        if (!io.exists(page)) continue;
-        const text = io.read(page);
-        const block = text.match(/<mc-alert class="doc-notes"[\s\S]*?<\/mc-alert>/);
-        if (!block) continue; // 没有就整块省略 —— 这是允许的
-        const count = (block[0].match(/<li>/g) ?? []).length;
-        const line = text.slice(0, block.index).split('\n').length;
-        if (count === 0) {
-          problems.push(
-            `${page}:${line}：注意事项那一块里一条 <li> 都没有 —— 没有要提醒的就整块删掉`,
-          );
-        } else if (count > 3) {
-          problems.push(
-            `${page}:${line}：注意事项写了 ${count} 条。它只写**使用者会踩的坑**、每页 2～3 条；` +
-              `属性取值与用法归 api.md（参考区渲染），别写到这里来`,
-          );
         }
       }
     },

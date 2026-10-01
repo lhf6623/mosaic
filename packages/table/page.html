@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./table.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/striped.html"></l-m>
@@ -17,17 +16,6 @@
       数据表格。真 <code>&lt;table&gt;</code> 结构；列定义与行数据是对象数组，运行时用 property
       传进去，改完立刻重渲染。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <code>columns</code> / <code>data</code>
-          <strong>必须用 property 传</strong>（对象写在标签属性上会被 JSON 序列化，见 P6）：<code
-            >t.columns = [{ key, title }]</code
-          >、<code>t.data = [{…}]</code>。
-        </li>
-        <li>单元格文本按纯文本渲染（组件自己转义），需要富内容就把整列的值当字符串拼好再传。</li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -39,6 +27,7 @@
       <p class="doc-hint">
         演示里在它自己的 <code>ready()</code> 里把 <code>columns</code> / <code>data</code> 赋给这个
         <code>mc-table</code>；页面里就是 <code>document.querySelector('#t').data = […]</code>。
+        单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
       </p>
       <demo-table-basic></demo-table-basic>
       <mc-collapse class="doc-demo-code">

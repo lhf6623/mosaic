@@ -49,7 +49,7 @@ mc-button — Mosaic 参考组件实现
 | `--mc-button-accent`    | 按 `color` | `outline` / `ghost` 的线与文字 |
 | `--mc-button-icon-size` | `1.25em`   | 按钮里图标的字号（见下）       |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 **槽里的图标有一层特调**（`::slotted(mc-icon)`，只作用于按钮内部，不动图标集）：
 

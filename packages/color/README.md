@@ -4,7 +4,7 @@
 > 不是手写的。改调色板请改那个脚本，不要改 `tokens.css`（它会被覆盖）。
 >
 > **要动手而不是查规矩**：给某个组件加一个可覆盖的令牌 —— 在单元 `README.md` 的令牌表里登记一行。
-> 为什么令牌写进单元 README 而不是 `api.md`：`api.md` 是页面参考区的渲染源（只渲染白名单七节），
+> 为什么令牌写进单元 README 而不是 `api.md`：`api.md` 是页面参考区的渲染源（只渲染白名单四节），
 > 令牌不进文档页；加了不写会被 `pnpm check:docs` 的组件令牌面（`packages/*/README.md ↔ 组件代码`）抓住。
 
 ---
@@ -336,7 +336,7 @@ pnpm build:css
 ### 结构化定制（逐组件，不是全员）
 
 `part` **不是每个组件都有** —— 只有内部有结构性子元素、且确实需要定制的才开（见
-[`packages/README.md`](../README.md) 的 1.7）。名录以该组件 `api.md` 的「插槽与 part」节为准：
+[`packages/README.md`](../README.md) 的 1.7）。名录以该组件 `api.md` 的「插槽」/「part」节为准：
 
 ```css
 /* mc-card 开了 base / header / body / footer */

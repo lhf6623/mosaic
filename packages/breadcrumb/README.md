@@ -62,7 +62,7 @@ olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/ro
 | `--mc-breadcrumb-item-color-hover` | `--mc-color-fg`        | 悬停文字                         |
 | `--mc-breadcrumb-current-color`    | `--mc-color-fg`        | 当前页文字                       |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 > ⚠️ `separator` 属性与 `--mc-breadcrumb-sep` 令牌走**两条通道**：属性落到宿主上一个内部变量
 > （`--mc-breadcrumb-sep-attr`），CSS 里是 `content: var(内部变量, var(--mc-breadcrumb-sep))`。

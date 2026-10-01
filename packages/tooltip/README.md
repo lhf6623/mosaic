@@ -69,7 +69,7 @@
 | `--mc-tooltip-panel-radius` | `--mc-radius-md`              | 气泡圆角                                               |
 | `--mc-tooltip-panel-pad`    | `--mc-space-2` `--mc-space-3` | 气泡内边距（上下 / 左右）                              |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 ## 刻意不做的
 

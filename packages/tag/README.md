@@ -60,7 +60,7 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 | `--mc-tag-layer`        | `0.08`                          | state layer 的 hover 叠加强度；`active` 是它的 1.5 倍（12%） |
 | `--mc-tag-radius`       | `--mc-radius-md`                | 圆角（全圆角写 `--mc-radius-full`）                          |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 **`closable` 只发 `close`，不删 DOM**（组件不改使用者的 DOM，同 `mc-menu` / `mc-breadcrumb`）：
 自己在事件里 `el.remove()` 或改数据。可关 + 可选同时开时，× 压在 toggle 层上面（z-index 分开），

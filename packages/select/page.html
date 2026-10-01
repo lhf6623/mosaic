@@ -5,7 +5,6 @@
     <!-- ⚠️ 演示里用到的组件必须本页注册得到（外壳只注册 code / icon / collapse / menu /
          breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）。
          本单元两个标签都在这里注册：只有 mc-select 的话，里面的 mc-option 一片空白。 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./select.html"></l-m>
     <l-m src="./option.html"></l-m>
 
@@ -22,25 +21,6 @@
       下拉选择：选项写在默认插槽里，面板是原生浮层（进 top layer），键盘、Esc、点外部关闭都齐。
     </p>
 
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong
-            >初始值写 <code>default-value</code>，运行时值读写宿主 DOM property
-            <code>value</code></strong
-          >：写 <code>value</code> 属性不生效，要 <code>el.value = 'bj'</code>。
-        </li>
-        <li>
-          <strong><code>mc-option</code> 只是数据</strong>：它自己不占版面，行由
-          <code>mc-select</code> 画进面板，所以要<strong>两个标签都注册</strong>。
-        </li>
-        <li>
-          <strong>面板需要原生 popover 与 CSS 锚点定位</strong>（Chrome 125+ / Safari 17+ / Firefox
-          125+）：没有这些能力的浏览器上面板不会弹出 —— 不报错，也没有替代路径。
-        </li>
-      </ul>
-    </mc-alert>
-
     <h2>例子</h2>
 
     <section class="doc-demo">
@@ -48,6 +28,9 @@
       <p class="doc-hint">
         选项写在 <code>mc-select</code> 里，点触发框或按 <kbd>↓</kbd> 打开；面板里 <kbd>↑</kbd>
         <kbd>↓</kbd> 移高亮、<kbd>Enter</kbd> 选中、<kbd>Esc</kbd> 关闭。
+        <code>mc-option</code> 只是数据、自己不占版面（行由
+        <code>mc-select</code> 画进面板），两个标签都要注册；面板需要原生 popover 与 CSS
+        锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+），否则不会弹。
       </p>
       <demo-select-basic></demo-select-basic>
       <mc-collapse class="doc-demo-code">

@@ -59,21 +59,11 @@
 | `hljs-theme-dark` | `string`           | `github-dark`    | highlight.js 官方主题名（暗色）                                                                                  |
 | `hljs-base`       | `string`           | 内置固定版本 CDN | highlight.js 的 `build/` 目录地址（自托管 / 换镜像）                                                             |
 
-> ⚠️ 折行属性叫 **`soft-wrap`** 而不是 `wrap`：`wrap` 是 ofa.js 的保留名，
-> 声明进 `attrs` 之后 `document.createElement('mc-code')` 会直接抛
-> `NotSupportedError`。
-
 ### 运行时读写
 
 | 运行时                    | 说明                                                                                       |
 | ------------------------- | ------------------------------------------------------------------------------------------ |
 | `el.code`（DOM property） | 读回当前原文（已 dedent）；写入等价于 `setAttribute('code', …)`，**立刻**重渲染 + 重新高亮 |
-
-```js
-// 运行时两种写法等价，且立刻生效（内部不等 ofa 那一拍）
-el.code = 'const b = 2;';
-el.setAttribute('code', 'const b = 2;');
-```
 
 ## part
 

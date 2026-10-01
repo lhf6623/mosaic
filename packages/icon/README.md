@@ -110,3 +110,6 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 ## 改这个单元之前
 
 - 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
+- 内置集来源 Lucide（ISC），署名见 [`icons.license.txt`](./icons.license.txt)；清单的唯一真相源是
+  [`tools/icon-manifest.mjs`](../../tools/icon-manifest.mjs) —— **加图标 = 加一行 + `pnpm icons`**，
+  使用者的 HTML 一个字都不用改。

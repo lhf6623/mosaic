@@ -29,27 +29,27 @@
 | `open`      | `boolean`                                                                                                                                                            | —        | 受控开合：属性在就开、移除就关；要受控就把 `trigger` 设成 `manual`   |
 | `arrow`     | `'none'`                                                                                                                                                             | —        | 面板上一个小三角，方向跟着 `placement`；**默认显示**，写 `none` 关掉 |
 
-## 方法
-
-| 名称       | 说明                                                       |
-| ---------- | ---------------------------------------------------------- |
-| `show()`   | 打开；可被 `before-open` 拦掉（返回 `false` 表示这次没开） |
-| `hide()`   | 关闭                                                       |
-| `toggle()` | 开合互换                                                   |
-
 ## 事件
 
-| 名称          | 类型                                            | 说明                                             |
-| ------------- | ----------------------------------------------- | ------------------------------------------------ |
-| `before-open` | `(event: Event & { data: { reason } }) => void` | 打开前；`preventDefault()` 可拦掉                |
-| `open`        | `(event: Event & { data: { reason } }) => void` | 已打开                                           |
-| `close`       | `(event: Event & { data: { reason } }) => void` | 已关闭；`reason` = `trigger` / `api` / `dismiss` |
+| 名称          | 类型                                                 | 说明                                                       |
+| ------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| `before-open` | `(event: Event & { data: { reason } }) => void`      | 打开前；`preventDefault()` 可拦掉                          |
+| `open`        | `(event: Event & { data: { reason } }) => void`      | 已打开                                                     |
+| `close`       | `(event: Event & { data: { reason } }) => void`      | 已关闭；`reason` = `trigger` / `api` / `dismiss`           |
+| `show()`      | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 打开；可被 `before-open` 拦掉（返回 `false` 表示这次没开） |
+| `hide()`      | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 关闭                                                       |
+| `toggle()`    | `(reason?: 'api' \| 'trigger' \| 'dismiss') => void` | 开合互换                                                   |
 
-## 插槽与 part
+## 插槽
 
-| 名称          | 说明                                             |
-| ------------- | ------------------------------------------------ |
-| 插槽 （默认） | 触发元素（**只放一个**；面板锚在它所在的容器上） |
-| 插槽 `panel`  | 面板内容                                         |
-| part="panel"  | 面板本体                                         |
-| part="arrow"  | 小三角；`arrow="none"` 时不显示                  |
+| 名称     | 说明                                             |
+| -------- | ------------------------------------------------ |
+| （默认） | 触发元素（**只放一个**；面板锚在它所在的容器上） |
+| `panel`  | 面板内容                                         |
+
+## part
+
+| 名称    | 说明                            |
+| ------- | ------------------------------- |
+| `panel` | 面板本体                        |
+| `arrow` | 小三角；`arrow="none"` 时不显示 |

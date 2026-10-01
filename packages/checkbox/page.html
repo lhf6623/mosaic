@@ -10,29 +10,11 @@
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/validation.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <!-- mc-alert 不在站点外壳注册的那批里（见 packages/README.md §二），本页自己引 -->
-    <l-m src="../alert/alert.html"></l-m>
     <h1>Checkbox <code>mc-checkbox</code></h1>
     <p class="doc-lead">
       复选框。选中 / 半选 / 禁用 / 校验失败四个状态互不正交组合 —— 颜色只有
       <code>invalid</code> 一条危险色介入。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong><code>indeterminate</code> 是纯视觉状态</strong>：原生 checkbox
-          没有这个属性，它只在内部原生 input 的 <code>.indeterminate</code> 上 —— 提交表单时按
-          <code>false</code> 算， 真正要提交的值还是靠 <code>checked</code> / <code>value</code>。
-        </li>
-        <li>
-          <strong>点一下就清掉半选</strong>：跟原生一致，点击后横杠消失、变成明确的选中 / 未选中。
-        </li>
-        <li>
-          <strong>文案写在标签里</strong>（默认插槽），别用 <code>aria-label</code> 兜：
-          文案里的链接会被正确当成链接，点文案则是切换选中。
-        </li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -40,6 +22,8 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         <code>checked</code> 既是初始值也是运行时状态；<code>value</code> 是提交时带出去的值。
+        文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中 —— 别用
+        <code>aria-label</code> 兜。
       </p>
       <demo-checkbox-basic></demo-checkbox-basic>
       <mc-collapse class="doc-demo-code">
@@ -53,7 +37,8 @@
       <h3>半选</h3>
       <p class="doc-hint">
         <code>indeterminate</code> 用来表达「部分选中」；它和 <code>checked</code> 同时存在时，
-        横杠优先显示。
+        横杠优先显示。 <code>indeterminate</code> 是纯视觉状态（原生 checkbox 没有这个属性，提交时按
+        <code>false</code> 算），点一下就清掉半选。
       </p>
       <demo-checkbox-indeterminate></demo-checkbox-indeterminate>
       <mc-collapse class="doc-demo-code">
@@ -111,7 +96,7 @@
       </mc-collapse>
     </section>
 
-    <!-- 参考区（属性 / 事件 / 插槽与 part）由规范 md 渲染，不在这里手抄 ——
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——
          唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>
   </div>

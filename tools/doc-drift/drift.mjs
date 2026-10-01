@@ -183,6 +183,8 @@ export function tokensOfCell(cell) {
 const emptyFacets = () => ({
   attrs: new Map(),
   events: new Set(),
+  /** 方法：事件表里带调用语法的那些行（spec.callRows 打开时才收） */
+  methods: new Set(),
   slots: new Set(),
   parts: new Set(),
   tokens: new Set(),
@@ -237,7 +239,16 @@ function facetsFromTables(tables, specs, facts) {
           });
         } else if (spec.facet === 'events') {
           const name = cell.replace(/[`*]/g, '').trim();
-          if (name) target.events.add(name);
+          if (!name) continue;
+          /* `callRows`：事件表里带调用语法的行（`` `show()` `` / `` `message(text, config?)` ``）
+             是**方法**不是事件 —— 归到 methods 这一面，按源码里出现过的标识符对账。
+             仓库把「方法」并进「事件」一张表，靠这个开关才不会被当成死承诺。 */
+          if (spec.callRows && /\(/.test(name)) {
+            for (const match of name.matchAll(/\b([a-zA-Z_$][\w$]*)\s*\(/g))
+              target.methods.add(match[1]);
+            continue;
+          }
+          target.events.add(name);
         } else if (spec.facet === 'tokens') {
           for (const token of tokensOfCell(cell)) target.tokens.add(token);
         } else if (spec.facet === 'slotsParts') {
@@ -481,6 +492,7 @@ function declaredFacets(surface) {
       facets.add('slots');
       facets.add('parts');
     } else if (spec.facet) facets.add(spec.facet);
+    if (spec.callRows) facets.add('methods');
   }
   return facets;
 }
@@ -500,18 +512,33 @@ const sectionFacetOfTitle = (title) =>
   /part/.test(title) && !/插槽/.test(title) ? 'parts' : 'slots';
 
 const facetSize = (facet) =>
-  facet.attrs.size + facet.events.size + facet.slots.size + facet.parts.size + facet.tokens.size;
+  facet.attrs.size +
+  facet.events.size +
+  facet.methods.size +
+  facet.slots.size +
+  facet.parts.size +
+  facet.tokens.size;
+
+/**
+ * 「方法」这一面的代码侧：源码里出现过的标识符。
+ * 刻意**宽松**（名字在源码里出现过就算有）—— 方法名家常写成 `message.closeAll()` /
+ * `handle.done()` 这种带命名空间与参数的形式，严格解析既脆又收益小；
+ * 反方向（源码里每个标识符都要求写进文档）不可能成立，所以那一侧整体放行。
+ */
+const sourceWords = (facts) =>
+  new Set(`${facts.lines.join('\n')}\n${facts.moduleText ?? ''}`.match(/[A-Za-z_$][\w$]*/g) ?? []);
 
 function mergeFacets(target, source) {
   for (const [name, meta] of source.attrs) target.attrs.set(name, meta);
   for (const name of source.events) target.events.add(name);
+  for (const name of source.methods ?? []) target.methods.add(name);
   for (const name of source.slots) target.slots.add(name);
   for (const name of source.parts) target.parts.add(name);
   for (const name of source.tokens) target.tokens.add(name);
   for (const item of source.unresolved ?? []) target.unresolved.push(item);
 }
 
-/** 对账四个固定面（+ 令牌） */
+/** 对账几个固定面（属性 / 事件 / 方法 / 插槽 / part / 令牌） */
 function runFacetGroups({
   groups,
   shared,
@@ -524,17 +551,23 @@ function runFacetGroups({
   notes = [],
   allowCodeOnlyTokens = new Set(),
 }) {
-  const wanted = facets ?? new Set(['attrs', 'events', 'slots', 'parts', 'tokens']);
+  const wanted = facets ?? new Set(['attrs', 'events', 'methods', 'slots', 'parts', 'tokens']);
   for (const [labelName, key] of [
     ['属性', 'attrs'],
     ['事件', 'events'],
+    ['方法', 'methods'],
     ['插槽', 'slots'],
     ['part', 'parts'],
     ['令牌', 'tokens'],
   ]) {
     if (!wanted.has(key)) continue;
     const allowDocOnly = key === 'events' ? nativeEvents : new Set();
-    const allowCodeOnly = key === 'tokens' ? allowCodeOnlyTokens : new Set();
+    const allowCodeOnly =
+      key === 'tokens'
+        ? allowCodeOnlyTokens
+        : key === 'methods'
+          ? sourceWords(facts)
+          : new Set();
     // **豁免要说出来**：被放行的名字逐条记进 notes，绿的时候也打在报告里 ——
     // 不然「标个 @internal 就没人再提」会悄悄吃掉本来该登记的接口。
     if (allowCodeOnly.size) {
@@ -575,9 +608,11 @@ function runFacetGroups({
         ? facts.tokens
         : key === 'attrs'
           ? facts.union.attrs
-          : key === 'slots' || key === 'parts' || key === 'events'
-            ? facts.union[key]
-            : new Set();
+          : key === 'methods'
+            ? sourceWords(facts)
+            : key === 'slots' || key === 'parts' || key === 'events'
+              ? facts.union[key]
+              : new Set();
     reconcile({
       label: labelName,
       doc: shared[key],

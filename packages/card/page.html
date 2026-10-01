@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./card.html"></l-m>
     <l-m src="../button/button.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
@@ -14,20 +13,6 @@
     <l-m src="./demos/part.html"></l-m>
     <h1>Card <code>mc-card</code></h1>
     <p class="doc-lead">内容承载面：一块面 + 头尾结构，里面的东西自己塞。</p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>整卡可点自己写</strong>：给卡内那个元素铺一条伪元素，<code>inset</code>
-          要取<strong>负的边框宽度</strong>，否则最外那 1px 点不动。
-        </li>
-        <li>
-          <strong>圆角不裁内容</strong>：要让图片或
-          <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加
-          <code>overflow: hidden</code>。
-        </li>
-        <li><strong>不留页面 reset</strong>：卡内元素的默认外边距照旧，要归零自己写。</li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -38,7 +23,8 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         头尾写 <code>slot="header"</code> / <code>slot="footer"</code>，其余进默认插槽；
-        头尾各带一条通长分隔线。
+        头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，<code>inset</code> 按
+        <code>--mc-card-border-w</code> 取负值盖住边框那圈，<code>cursor</code> 要显式写。
       </p>
       <demo-card-basic></demo-card-basic>
       <mc-collapse class="doc-demo-code">
@@ -73,7 +59,9 @@
       <h3>内边距</h3>
       <p class="doc-hint">
         <code>none</code>
-        是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。
+        是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。 要让图片或
+        <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加
+        <code>overflow: hidden</code>。
       </p>
       <demo-card-padding></demo-card-padding>
       <mc-collapse class="doc-demo-code">
@@ -87,6 +75,7 @@
       <h3>外部样式</h3>
       <p class="doc-hint">
         颜色、圆角、内边距都在宿主上改（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow 边界。
+        卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
       </p>
       <demo-card-customize></demo-card-customize>
       <mc-collapse class="doc-demo-code">

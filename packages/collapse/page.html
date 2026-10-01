@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="../alert/alert.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/accordion.html"></l-m>
     <l-m src="./demos/size.html"></l-m>
@@ -17,15 +16,6 @@
     <p class="doc-lead">
       折叠面板。容器 + 子项两个标签：容器管外框、尺寸和互斥，子项管自己那格的开合。
     </p>
-    <mc-alert class="doc-notes" color="warning" icon heading="注意事项">
-      <ul>
-        <li>
-          <strong>头部文案用 <code>header</code> 属性，不要用 <code>title</code></strong
-          >：那是全局 HTML 属性，悬停时浏览器会弹一个原生 tooltip。
-        </li>
-        <li><strong>组件不做高度过渡</strong>：要动画自己加在 <code>::part(body)</code> 上。</li>
-      </ul>
-    </mc-alert>
 
     <h2>例子</h2>
 
@@ -36,7 +26,8 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         容器 + 子项两个标签搭起来：第二项写了 <code>open</code>，首屏就是展开的；点头部或按
-        <kbd>Enter</kbd> / <kbd>空格</kbd> 都能开合。
+        <kbd>Enter</kbd> / <kbd>空格</kbd> 都能开合。 头部文案用 <code>header</code>，别用
+        <code>title</code> —— 后者是全局 HTML 属性，悬停会弹浏览器原生 tooltip。
       </p>
       <demo-collapse-basic></demo-collapse-basic>
       <mc-collapse class="doc-demo-code">
@@ -130,6 +121,7 @@
       <p class="doc-hint">
         组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
         <code>::part(名字)</code> 改样式（这里开了 <code>header</code> / <code>body</code> 两个）。
+        组件不做高度过渡：要动画自己加在 <code>::part(body)</code> 上。
       </p>
       <demo-collapse-part></demo-collapse-part>
       <mc-collapse class="doc-demo-code">

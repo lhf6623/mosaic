@@ -80,7 +80,7 @@
 | `--mc-dialog-gap`           | `--mc-space-4`              | 头部行 / 底部行内的间距                            |
 | `--mc-dialog-space`         | `--mc-space-6`              | 面板到视口边缘的最小距离（内容比视口高时靠它留白） |
 
-> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单七节），将来由主题编辑器展示。
+> 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 ## 刻意不做的
 
@@ -94,7 +94,7 @@
 - 形态与坑的源头是 [`mc-popover`](../popover/)：同一个 `popover` + top layer 结论，同一个
   [`scroll-pin`](../boot/scroll-pin.js) 滚动守卫（dialog 的开合同样会让浏览器顺手滚页面）。
 - [`mc-tooltip`](../tooltip/) 是同一批浮层里的另一个：它**非模态**、锚在触发元素上，不抢焦点。
-- [`mc-button`](../button/) / [`mc-alert`](../alert/) 是文档页演示与注意事项用到的兄弟组件（页面自己 `<l-m>` 注册）。
+- [`mc-button`](../button/) 是文档页演示用到的兄弟组件（页面自己 `<l-m>` 注册）。
 
 <!-- hand:end -->
 
