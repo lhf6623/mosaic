@@ -58,11 +58,9 @@ const NEIGHBORS = {
 const HAND_START = '<!-- hand:start -->';
 const HAND_END = '<!-- hand:end -->';
 
-/* 单元清单从 site-map 派生，不在这里硬编码 —— 加组件只要往 site-map 挂一条带 tagName 的节点，
-   跑一次脚本就有（否则 forgotten 一次就是一份缺失的 README）。⚠️ 只收 `packages/` 下有 tagName 的节点。 */
-const SLUGS = flat
-  .filter((n) => (n.path ?? '').startsWith('packages/') && n.tagName)
-  .map((n) => n.path.split('/')[1]);
+/* 单元清单从 site-map 派生，不在这里硬编码 —— 加组件只要往 site-map 挂一条 type: 'component' 的节点，
+   跑一次脚本就有（否则 forgotten 一次就是一份缺失的 README）。 */
+const SLUGS = flat.filter((n) => n.type === 'component' && n.path).map((n) => n.path.split('/')[1]);
 
 for (const slug of SLUGS) {
   const dir = `packages/${slug}`;
@@ -127,7 +125,9 @@ for (const slug of SLUGS) {
     ].join('\n');
   }
 
-  const tag = node.tagName ?? `mc-${slug}`;
+  /* 入口名（标签 / 命令式函数名）的唯一手写源是 api.md 的第一行 heading，不在这里再抄一份 */
+  const apiHead = fs.readFileSync(`${dir}/api.md`, 'utf8').split('\n')[0] ?? '';
+  const tag = apiHead.replace(/^#\s*/, '').split(' / ')[0].replace(/\(\)$/, '') || `mc-${slug}`;
   const zh = node.zh ? `（${node.zh}）` : '';
 
   const text = `# ${tag}${zh}

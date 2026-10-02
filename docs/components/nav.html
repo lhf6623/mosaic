@@ -90,8 +90,8 @@
     const linkOf = (page, current) => {
       const ready = hasPage(page);
       return {
-        // 待建的没有 path，用 tagName 当 key（数据对账保证每个无 path 的叶子都是组件）
-        key: page.path ?? page.tagName,
+        // 待建的没有 path，用 label 当 key（同层 label 唯一由 10 号套件守着）
+        key: page.path ?? page.label,
         name: displayName(page),
         href: ready ? hashOf(page.path) : SPEC_URL,
         target: ready ? null : '_blank',

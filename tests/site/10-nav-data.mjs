@@ -6,7 +6,8 @@
  *   ② 每个 page.html 都在数据里（忘了登记 → 顶栏 / 左栏 / 面包屑 / 翻页里都没有它）；
  *   ③ 数据里写了 path 的都有文件 —— path 是「已实现」的唯一凭据，写了就不能是死链；
  *   ④ 结构自身的账：order 是数字且同层唯一、数组顺序就是 order 顺序、hidden 必须真有页面、
- *      组件节点的 tagName 与目录名一致；hidden 不进左栏（menuOf 沿树剔除），但仍在工具面（READY）。
+ *      叶子必须写明 type（component / page）、组件的目录里必须有 mc-<目录名> 的 tag 声明、
+ *      同层 label 唯一（待建节点的 o-fill key 用它）；hidden 不进左栏（menuOf 沿树剔除），但仍在工具面（READY）。
  *
  * 不需要浏览器：直接读文件对账，跑得飞快。site 套件里唯一一个 node-only 的。
  */
@@ -22,6 +23,16 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** 外壳页（顶栏 + 正文带）与分区布局页（三栏 + 左栏菜单 + 右栏目录） */
 const SHELL = 'docs/layout.html';
 const SECTION_LAYOUT = 'docs/doc-layout.html';
+
+/** 组件本体（非 page.html）里声明的 tag —— 命名约定对着**代码**验，不在 site-map 里再存一份 */
+function declaredTags(slug) {
+  const dir = `${ROOT}packages/${slug}`;
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.html') && name !== 'page.html')
+    .flatMap((name) => [
+      ...readFileSync(`${dir}/${name}`, 'utf8').matchAll(/tag:\s*'([\w-]+)'/g),
+    ].map((match) => match[1]));
+}
 
 /** 站点里所有「页面」文件：docs/pages/*.html + packages/<slug>/page.html */
 function pageFiles() {
@@ -63,9 +74,10 @@ export default async function run({ check }) {
       node,
       at: [...ancestors.map((a) => a.label), node.label].join(' / '),
     }));
+  const componentNodes = nodes.map(({ node }) => node).filter((node) => node.type === 'component');
 
   /** 组件里还没有页面的（待建）—— 只用于报数 */
-  const plannedCount = nodes.filter(({ node }) => node.tagName && !hasPage(node)).length;
+  const plannedCount = componentNodes.filter((node) => !hasPage(node)).length;
 
   /* ① 每页都挂在正确的层上：分区里的页面挂分区布局页（doc-layout.html），其余挂总外壳（layout.html）。
         页面写的是相对路径（'../doc-layout.html' 等），所以必须**相对本文件解析**后再比 */
@@ -124,12 +136,12 @@ export default async function run({ check }) {
 
   check('NAV 里没有重复路由', dupes.length === 0, dupes.join(' / ') || '无重复');
 
-  /* ⑤ 结构自身的规矩：order / 空分组 / hidden / 组件字段 */
+  /* ⑤ 结构自身的规矩：order / label / 空分组 / hidden / 叶子 type */
   const structural = [];
-  const seenTags = new Map();
 
   const audit = (siblings, where) => {
     const orders = new Map();
+    const labels = new Map();
 
     for (const node of siblings) {
       const at = `${where} / ${node.label}`;
@@ -142,30 +154,33 @@ export default async function run({ check }) {
         orders.set(node.order, node.label);
       }
 
-      if (!node.path && !node.children && !node.tagName) {
-        structural.push(`${at} 既没有 path / children，也不是组件`);
+      if (labels.has(node.label)) {
+        structural.push(`${at} 的 label「${node.label}」在同层出现了两次（待建节点的 key 用它）`);
+      } else {
+        labels.set(node.label, node.label);
+      }
+
+      if (!node.path && !node.children && !node.type) {
+        structural.push(`${at} 既没有 path / children，也没有 type`);
       }
       if (node.children && node.children.length === 0) structural.push(`${at} 是空分组`);
       if (node.hidden === true && !hasPage(node)) {
         structural.push(`${at} 标了 hidden 却没有 path（没页面的条目直接删掉就行）`);
       }
 
-      if (node.tagName) {
-        if (seenTags.has(node.tagName)) {
-          structural.push(`${at} 的 tagName ${node.tagName} 与「${seenTags.get(node.tagName)}」重复`);
-        } else {
-          seenTags.set(node.tagName, node.label);
+      if (!node.children) {
+        if (node.type !== 'component' && node.type !== 'page') {
+          structural.push(`${at} 的 type 应为 component / page（现在是 ${node.type ?? '（没写）'}）`);
         }
-        /* 命令式组件（入口是函数，如 message()）：tagName 不是 mc-<目录名>，
-           标签由模块自己在运行时创建 —— 这条命名规矩对它不适用。
-           判定用 `mc-` 前缀的形状，不写死名字：以后再加命令式组件自动走这条。 */
-        const imperative = !node.tagName.startsWith('mc-');
-        if (hasPage(node)) {
+        if (node.type === 'page' && !hasPage(node)) {
+          structural.push(`${at} 是 page 却没有 path —— 没页面的条目直接删掉`);
+        }
+        if (node.type === 'component' && hasPage(node)) {
           if (!/^packages\/[^/]+\/page\.html$/.test(node.path)) {
             structural.push(`${at} 的 path 不在 packages/<目录>/page.html：${node.path}`);
-          } else if (!imperative && node.tagName !== `mc-${slugOf(node)}`) {
+          } else if (!declaredTags(slugOf(node)).includes(`mc-${slugOf(node)}`)) {
             structural.push(
-              `${at} 的标签名与目录名对不上：${node.tagName} vs ${slugOf(node)}/`,
+              `${at} 的目录里没有 mc-${slugOf(node)} 的 tag 声明（命名约定：mc-<目录名>）`,
             );
           }
         }
@@ -177,9 +192,9 @@ export default async function run({ check }) {
   audit(NAV, '顶层');
 
   check(
-    `结构规矩都对得上（${nodes.length} 个节点：order 唯一 / 组件字段齐全 / hidden 有页面）`,
+    `结构规矩都对得上（${nodes.length} 个节点：order / label 唯一 / 叶子有 type / hidden 有页面）`,
     structural.length === 0,
-    structural.join('\n        ') || `order 无重复 · tagName 无重复 · ${seenTags.size} 个组件`,
+    structural.join('\n        ') || `order 无重复 · label 无重复 · ${componentNodes.length} 个组件`,
   );
 
   /* ⑥ 文件里看到的顺序就是页面上的顺序：数组按 order 写（order 才是权威） */
@@ -212,10 +227,11 @@ export default async function run({ check }) {
     `menuOf(假分区) → ${fakeMenu.join(' / ') || '(空)'}`,
   );
 
-  /* ⑧ 工具面（READY）只收「有 tagName + 有页面」的组件 —— 冒烟套件与文档页检查都开在它上面 */
+  /* ⑧ 工具面（READY）只收 type: 'component' 且已有页面的组件 —— 冒烟套件与文档页检查都开在它上面 */
   check(
-    `工具面 READY 只收有 tagName、有页面的组件（${READY.length} 个）`,
-    READY.every((component) => component.tagName && hasPage(component)),
-    `READY ${READY.length} 条`,
+    `工具面 READY 只收组件、且覆盖全部有页面的组件节点（${READY.length} 个）`,
+    READY.every((component) => component.type === 'component' && hasPage(component)) &&
+      READY.length === componentNodes.filter(hasPage).length,
+    `READY ${READY.length} 条 / 组件节点 ${componentNodes.length} 条`,
   );
 }

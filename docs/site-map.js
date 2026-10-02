@@ -1,18 +1,19 @@
 /* 站点唯一数据源：**有哪些页面 / 组件**、它们的层级与顺序 —— 也就是导航本身。一棵树，**结构即菜单**：children 的层级就是左栏的分组与缩进，label 就是显示名。
  * 有 children → 分组 / 分区；有 path → 有页面、可点；没有 path → 待建。分区自己可以没有落地页，顶栏入口落到子树第一页（firstPageOf）；order 同层唯一、显示顺序由它说了算，hidden 只管展示、子树上继承。
- * 字段：label 显示名 / zh 中文名（只有组件补）/ order / path / children / hidden / summary / tagName。
+ * 字段：label 显示名 / zh 中文名（只有组件补）/ order / path / children / hidden / summary / type ——
+ * type 只写在叶子上：`component`（组件单元）/ `page`（站点页）；分组看 children，「已实现 / 待建」看有没有 path。
  * ⚠️ 页内目录（h2/h3）**不在这里**：它是内容派生的、每页都不同，由 <doc-toc> 扫标题生成。
  */
 
 export const SITE = [
-  { order: 10, label: '首页', path: 'docs/pages/home.html' },
+  { order: 10, type: 'page', label: '首页', path: 'docs/pages/home.html' },
   {
     order: 20,
     label: '文档',
     children: [
-      { order: 10, label: '快速开始', path: 'docs/pages/guide.html' },
-      { order: 20, label: '设计令牌', path: 'packages/color/page.html' },
-      { order: 30, label: '规范', path: 'docs/pages/specs.html' },
+      { order: 10, type: 'page', label: '快速开始', path: 'docs/pages/guide.html' },
+      { order: 20, type: 'page', label: '设计令牌', path: 'packages/color/page.html' },
+      { order: 30, type: 'page', label: '规范', path: 'docs/pages/specs.html' },
     ],
   },
   {
@@ -29,7 +30,7 @@ export const SITE = [
             label: 'Button',
             zh: '按钮',
             path: 'packages/button/page.html',
-            tagName: 'mc-button',
+            type: 'component',
             summary:
               '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；另有行内文字形态（inline）。',
           },
@@ -38,7 +39,7 @@ export const SITE = [
             label: 'Code',
             zh: '代码',
             path: 'packages/code/page.html',
-            tagName: 'mc-code',
+            type: 'component',
             summary:
               '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
           },
@@ -47,7 +48,7 @@ export const SITE = [
             label: 'Icon',
             zh: '图标',
             path: 'packages/icon/page.html',
-            tagName: 'mc-icon',
+            type: 'component',
             summary:
               '图标。先查内置、查不到再远程取一次；颜色继承 currentColor、尺寸跟随 font-size，取不到也只留一个不跳版的空位。',
           },
@@ -56,7 +57,7 @@ export const SITE = [
             label: 'Card',
             zh: '卡片',
             path: 'packages/card/page.html',
-            tagName: 'mc-card',
+            type: 'component',
             summary:
               '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
@@ -65,7 +66,7 @@ export const SITE = [
             label: 'Tag',
             zh: '标签',
             path: 'packages/tag/page.html',
-            tagName: 'mc-tag',
+            type: 'component',
             summary:
               '分类 / 状态标签。语义色 × 浅底 / 实心 / 描边三个维度，可选可关（checkable / closable）。',
           },
@@ -74,7 +75,7 @@ export const SITE = [
             label: 'Badge',
             zh: '徽标',
             path: 'packages/badge/page.html',
-            tagName: 'mc-badge',
+            type: 'component',
             summary: '徽标。默认浅底，比实心更不抢视线；支持纯圆点与数值上限。',
           },
           {
@@ -82,7 +83,7 @@ export const SITE = [
             label: 'Spinner',
             zh: '加载指示',
             path: 'packages/spinner/page.html',
-            tagName: 'mc-spinner',
+            type: 'component',
             summary: '加载指示。跟随当前文字色与字号。',
           },
           {
@@ -90,7 +91,7 @@ export const SITE = [
             label: 'Menu',
             zh: '菜单',
             path: 'packages/menu/page.html',
-            tagName: 'mc-menu',
+            type: 'component',
             summary:
               '垂直菜单。容器 + 菜单项两个标签，交互元素由使用者写在插槽里 —— 组件不造链接、也不改使用者的 DOM。',
           },
@@ -99,7 +100,7 @@ export const SITE = [
             label: 'Breadcrumb',
             zh: '面包屑',
             path: 'packages/breadcrumb/page.html',
-            tagName: 'mc-breadcrumb',
+            type: 'component',
             summary:
               '面包屑。容器 + 每一级两个标签；一级里的链接由使用者写在插槽里，当前页写 current，组件不造链接。',
           },
@@ -115,7 +116,7 @@ export const SITE = [
             label: 'Input',
             zh: '输入框',
             path: 'packages/input/page.html',
-            tagName: 'mc-input',
+            type: 'component',
             summary: '单行输入框。可清除、前后缀插槽。',
           },
           {
@@ -123,7 +124,7 @@ export const SITE = [
             label: 'Textarea',
             zh: '多行输入',
             path: 'packages/textarea/page.html',
-            tagName: 'mc-textarea',
+            type: 'component',
             summary: '多行输入框。支持自动增高与字数统计。',
           },
           {
@@ -131,7 +132,7 @@ export const SITE = [
             label: 'Checkbox',
             zh: '复选框',
             path: 'packages/checkbox/page.html',
-            tagName: 'mc-checkbox',
+            type: 'component',
             summary: '复选框。支持半选态。',
           },
           {
@@ -139,7 +140,7 @@ export const SITE = [
             label: 'Radio',
             zh: '单选按钮',
             path: 'packages/radio/page.html',
-            tagName: 'mc-radio',
+            type: 'component',
             summary: '单选按钮组。',
           },
           {
@@ -147,7 +148,7 @@ export const SITE = [
             label: 'Switch',
             zh: '开关',
             path: 'packages/switch/page.html',
-            tagName: 'mc-switch',
+            type: 'component',
             summary: '开关。',
           },
           {
@@ -155,7 +156,7 @@ export const SITE = [
             label: 'Select',
             zh: '下拉选择',
             path: 'packages/select/page.html',
-            tagName: 'mc-select',
+            type: 'component',
             summary: '下拉选择。最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
           },
         ],
@@ -170,7 +171,7 @@ export const SITE = [
             label: 'Alert',
             zh: '提示条',
             path: 'packages/alert/page.html',
-            tagName: 'mc-alert',
+            type: 'component',
             summary: '页内提示条。可关闭，带标题与描述。',
           },
           {
@@ -178,7 +179,7 @@ export const SITE = [
             label: 'Progress',
             zh: '进度条',
             path: 'packages/progress/page.html',
-            tagName: 'mc-progress',
+            type: 'component',
             summary: '进度条。支持不确定态。',
           },
           {
@@ -187,7 +188,7 @@ export const SITE = [
             zh: '消息条',
             path: 'packages/message/page.html',
             // 命令式：入口是 message() 这个函数，容器标签由模块自己创建，使用者不用写标签
-            tagName: 'message',
+            type: 'component',
             summary: '命令式消息条：从顶部落下来一条，几秒后自己走；同 key 更新不叠加。',
           },
           {
@@ -195,7 +196,7 @@ export const SITE = [
             label: 'Loading Bar',
             zh: '加载条',
             path: 'packages/loading-bar/page.html',
-            tagName: 'mc-loading-bar',
+            type: 'component',
             summary:
               '加载条。state 一个入口（idle / loading / done / error）：在跑就缓慢爬升（到不了 100%），收尾先滑到 100% 再淡出，成功与出错同一条路、只差色；默认钉在视口顶部，也可放进容器；不吃指针。',
           },
@@ -212,7 +213,7 @@ export const SITE = [
             label: 'Popover',
             zh: '浮层',
             path: 'packages/popover/page.html',
-            tagName: 'mc-popover',
+            type: 'component',
             summary: '通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。',
           },
           {
@@ -220,7 +221,7 @@ export const SITE = [
             label: 'Dialog',
             zh: '对话框',
             path: 'packages/dialog/page.html',
-            tagName: 'mc-dialog',
+            type: 'component',
             summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',
           },
           {
@@ -228,7 +229,7 @@ export const SITE = [
             label: 'Dropdown',
             zh: '下拉菜单',
             path: 'packages/dropdown/page.html',
-            tagName: 'mc-dropdown',
+            type: 'component',
             summary: '下拉菜单。',
           },
           {
@@ -236,7 +237,7 @@ export const SITE = [
             label: 'Tooltip',
             zh: '提示气泡',
             path: 'packages/tooltip/page.html',
-            tagName: 'mc-tooltip',
+            type: 'component',
             summary: '提示气泡。',
           },
         ],
@@ -251,7 +252,7 @@ export const SITE = [
             label: 'Collapse',
             zh: '折叠面板',
             path: 'packages/collapse/page.html',
-            tagName: 'mc-collapse',
+            type: 'component',
             summary:
               '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与无障碍不用自己写。',
           },
@@ -260,7 +261,7 @@ export const SITE = [
             label: 'Tabs',
             zh: '标签页',
             path: 'packages/tabs/page.html',
-            tagName: 'mc-tabs',
+            type: 'component',
             summary: '标签页。',
           },
           {
@@ -268,7 +269,7 @@ export const SITE = [
             label: 'Table',
             zh: '表格',
             path: 'packages/table/page.html',
-            tagName: 'mc-table',
+            type: 'component',
             summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
           },
           {
@@ -276,7 +277,7 @@ export const SITE = [
             label: 'Grid',
             zh: '栅格',
             path: 'packages/grid/page.html',
-            tagName: 'mc-grid',
+            type: 'component',
             summary: '栅格。',
           },
           {
@@ -284,7 +285,7 @@ export const SITE = [
             label: 'Scroll Bar',
             zh: '滚动条',
             path: 'packages/scroll-bar/page.html',
-            tagName: 'mc-scroll-bar',
+            type: 'component',
             summary:
               '滚动条。自带覆盖式滚动条（跟着主题走），滚动本身仍是原生的：键盘、触屏惯性、锚点都照旧。',
           },
@@ -366,7 +367,7 @@ function walk(nodes, visit) {
 export const READY = (() => {
   const out = [];
   walk(NAV, (node) => {
-    if (node.tagName && hasPage(node)) out.push(node);
+    if (node.type === 'component' && hasPage(node)) out.push(node);
   });
   return out;
 })();
