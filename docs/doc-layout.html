@@ -18,8 +18,10 @@
 
     /* 左右两栏：浮在窗口两侧，整屏高。样式挂在标签上（都是自定义元素）。
        ⚠️ 这里**不写** overflow / scrollbar-width：滚动归各自组件里那层 mc-scroll-bar（nav.html / toc.html 的 shadow 内），
-       宿主只负责「定位 + 尺寸 + 内边距」。宿主上再挂一层 overflow = 多出一个永远滚不动的容器，
-       「谁在滚、到没到底」就有了两个答案 —— 外壳那段滚轮接力认的是组件里那个 viewport（见 layout.html）。 */
+       宿主只负责「定位 + 尺寸 + 纵向让位」。宿主上再挂一层 overflow = 多出一个永远滚不动的容器，
+       「谁在滚、到没到底」就有了两个答案 —— 外壳那段滚轮接力认的是组件里那个 viewport（见 layout.html）。
+       ⚠️ 横向内边距也不在这里：条子贴的是**宿主的边**（mc-scroll-bar 的条子贴它自己的右沿），
+       而宿主的 padding 会把滚动条一起推离栏边 —— 那条 gutter 改由组件给 viewport（见两个组件的 <style>）。 */
     doc-nav,
     doc-toc {
       display: block; /* 自定义元素默认是 inline，不写会塌成 0 宽 */
@@ -31,21 +33,21 @@
          顶栏这 3.5rem 是让位不是间距 —— 去掉的话前几条会钻到顶栏底下（顶栏不透明、压在上面）。 */
       padding-top: var(--doc-topbar, 3.5rem);
       padding-bottom: 0;
+      padding-inline: 0;
     }
 
     doc-nav {
       left: 0;
       width: 15rem;
-      padding-inline: var(--mc-space-5);
       border-right: 1px solid rgb(var(--mc-color-border));
     }
 
     /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html）。宽度 15rem 是按缩进后最长标题（「卡片外观（variant="surface"）」= 172px）反算的，
-       内边距因此用 space-4 而不是左栏的 space-5。宽度、内边距、toc.html 的缩进量要一起改（09 号套件盯着「不许截断」）。 */
+       内边距因此用 space-4 而不是左栏的 space-5（两处都在各自组件的 <style> 里，条子要贴栏边）。
+       宽度、内边距、toc.html 的缩进量要一起改（09 号套件盯着「不许截断」）。 */
     doc-toc {
       right: 0;
       width: 15rem;
-      padding-inline: var(--mc-space-4);
       border-left: 1px solid rgb(var(--mc-color-border));
     }
 

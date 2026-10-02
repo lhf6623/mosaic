@@ -261,6 +261,12 @@ const sideNavState = () =>
           ? Math.round(first.getBoundingClientRect().top - topbar.getBoundingClientRect().bottom)
           : null;
       })(),
+      /* 条子离栏右边多远：条子贴的是 mc-scroll-bar 自己的右沿，横向 gutter 因此必须挂在
+         viewport 上（挂在宿主 <doc-nav> 上会把条子一起推进内容区）。只剩 gutter 那几像素。 */
+      条子离栏右边: (() => {
+        const thumb = bar.shadowRoot.querySelector('[part="thumb"]');
+        return Math.round(nav.getBoundingClientRect().right - thumb.getBoundingClientRect().right);
+      })(),
     };
   })()`);
 
@@ -277,6 +283,14 @@ check(
   '宽屏：左栏的条子默认不显示（reveal="hover"，不是常驻）',
   wideNav !== null && wideNav.reveal === 'hover' && wideNav.条子透明度 === '0',
   JSON.stringify({ reveal: wideNav?.reveal, 条子透明度: wideNav?.条子透明度 }),
+);
+
+/* 条子贴栏边（只剩 2px gutter + 1px 边框）：把横向 gutter 写回宿主 <doc-nav> 的 padding 上，
+   条子就会被一起推进内容区（差 20px）—— 这条守的是那个位置。 */
+check(
+  '宽屏：左栏的条子贴着栏的右边（没缩在内容区里）',
+  wideNav !== null && wideNav.条子离栏右边 <= 6,
+  JSON.stringify({ 条子离栏右边: wideNav?.条子离栏右边 }),
 );
 
 if (wideNav) {
@@ -329,17 +343,23 @@ const tocBar = await page.evaluate(`(() => {
   const host = window.__deepAll('doc-toc')[0];
   const bar = host?.shadowRoot?.querySelector('mc-scroll-bar');
   const vp = bar?.shadowRoot?.querySelector('[part="viewport"]');
+  const thumb = bar?.shadowRoot?.querySelector('[part="thumb"]');
   return vp
     ? {
         可滚: vp.scrollHeight - vp.clientHeight,
         宿主自身溢出: host.scrollHeight - host.clientHeight,
         溢出标记: bar.hasAttribute('data-overflow'),
+        条子离栏右边: Math.round(host.getBoundingClientRect().right - thumb.getBoundingClientRect().right),
       }
     : null;
 })()`);
 check(
-  '宽屏：右栏目录的滚动容器同样是组件里的 mc-scroll-bar viewport（宿主自己不滚）',
-  tocBar !== null && tocBar.可滚 > 0 && tocBar.宿主自身溢出 === 0 && tocBar.溢出标记 === true,
+  '宽屏：右栏目录的滚动容器同样是组件里的 mc-scroll-bar viewport（宿主自己不滚、条子贴栏边）',
+  tocBar !== null &&
+    tocBar.可滚 > 0 &&
+    tocBar.宿主自身溢出 === 0 &&
+    tocBar.溢出标记 === true &&
+    tocBar.条子离栏右边 <= 6,
   JSON.stringify(tocBar),
 );
 
@@ -374,6 +394,30 @@ await page.evaluate(`(() => {
 await page.waitForTimeout(350);
 const opened = await menuState();
 check('窄屏：浮层点开就是这一页的菜单', opened.面板打开 === true, JSON.stringify(opened));
+
+/* 浮层里的条子**不压在菜单项上**：面板自己有边框和内边距，条子没必要去贴面板边，
+   所以 gutter 由菜单这层的 viewport 出（--doc-scroll-pad-x），条子落在面板内侧。
+   把这条 gutter 去掉，条子就会正好盖住菜单项背景的最右一条。 */
+const popupBar = await page.evaluate(`(() => {
+  const nav = ${shellRoot}.querySelector('.doc-menu-panel doc-nav');
+  const panel = ${shellRoot}.querySelector('.doc-menu').shadowRoot.querySelector('.mc-panel');
+  const bar = nav.shadowRoot.querySelector('mc-scroll-bar');
+  const vp = bar.shadowRoot.querySelector('[part="viewport"]');
+  const thumb = bar.shadowRoot.querySelector('[part="thumb"]');
+  const item = nav.shadowRoot.querySelector('mc-menu-item');
+  const P = panel.getBoundingClientRect(), T = thumb.getBoundingClientRect(), I = item.getBoundingClientRect();
+  return {
+    条目右: Math.round(I.right - P.left),
+    滑块左: Math.round(T.left - P.left),
+    条子距面板右边: Math.round(P.right - T.right),
+    viewport内边距: getComputedStyle(vp).paddingRight,
+  };
+})()`);
+check(
+  '窄屏：浮层里的条子不压在菜单项上，也不往面板边靠',
+  popupBar.条目右 <= popupBar.滑块左 && popupBar.条子距面板右边 >= 6,
+  JSON.stringify(popupBar),
+);
 
 /* 面板里的菜单**自己滚** —— 滚的是 <doc-nav> 里那个 mc-scroll-bar 的 viewport（宿主只是定位 + 内边距）。
    这条守的是一个真踩过的坑：滚动容器若落在面板包装层上，<doc-nav> 就没有盒子

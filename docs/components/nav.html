@@ -9,7 +9,7 @@
       opacity: 0.72;
     }
 
-    /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 内边距（见 docs/doc-layout.html），滚的是这里面的 viewport。
+    /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 尺寸（见 docs/doc-layout.html），滚的是这里面的 viewport。
        高度接满宿主 —— 宽屏那栏是 fixed + height:100%，有确定高度，100% 解得开。
        ⚠️ 浮层那份的宿主是 auto 高（外壳只给「最高到哪」），那时 100% 退回 auto：靠下面那条 max-height 封顶，
        不能反过来把 max-height 挂在宿主上 —— 宿主 auto 高时 viewport 的 100% 同样解不开，撑不出滚动区，菜单会顶出浮层。 */
@@ -17,10 +17,15 @@
       height: 100%;
     }
 
-    /* 窄屏浮层的「最高到哪」由外壳当令牌传进来（面板是浮层，菜单再长也不能撑满一屏，见 docs/layout.html）；
-       宽屏那栏不传，`none` 就是不限高，宿主已经是一屏高。 */
+    /* 两条都挂在 viewport 上，而不是宿主 <doc-nav> 上：
+       · max-height —— 窄屏浮层的「最高到哪」由外壳当令牌传进来（面板是浮层，菜单再长也不能撑满一屏）；
+         宽屏那栏不传，`none` 就是不限高，宿主已经是一屏高。
+       · padding-inline —— 条子贴的是 mc-scroll-bar 自己的右沿，宿主上的 padding 会把条子一起推离栏边，
+         所以 gutter 挪到这里（宿主 doc-nav 的 padding-inline 现在是 0）。浮层那份宿主没有 gutter
+         （面板自带内边距），外壳把 --doc-scroll-pad-x 设成 0。 */
     mc-scroll-bar::part(viewport) {
       max-height: var(--doc-nav-max-height, none);
+      padding-inline: var(--doc-scroll-pad-x, var(--mc-space-5));
     }
   </style>
 

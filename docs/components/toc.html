@@ -23,10 +23,16 @@
       margin-top: var(--mc-space-3);
     }
 
-    /* 滚动归 mc-scroll-bar（同 nav.html）：宿主 <doc-toc> 只负责定位与内边距（fixed + height:100%，见 docs/doc-layout.html），
+    /* 滚动归 mc-scroll-bar（同 nav.html）：宿主 <doc-toc> 只管定位 + 尺寸（fixed + height:100%，见 docs/doc-layout.html），
        有确定高度，这里 100% 解得开 —— 右栏比一屏长时条目就在这一层里滚。 */
     mc-scroll-bar {
       height: 100%;
+    }
+
+    /* gutter 挂在 viewport 上而不是宿主 <doc-toc> 上：条子贴的是 mc-scroll-bar 自己的右沿，
+       宿主上的 padding 会把条子一起推离栏边。这一栏按最长标题反算，用 space-4（左栏是 space-5）。 */
+    mc-scroll-bar::part(viewport) {
+      padding-inline: var(--doc-scroll-pad-x, var(--mc-space-4));
     }
   </style>
 

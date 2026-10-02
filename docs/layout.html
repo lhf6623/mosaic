@@ -279,6 +279,11 @@
       /* ⚠️ 自定义元素默认 display:inline —— 不写这行它没有盒子（clientHeight 恒为 0），里面的滚动条也撑不出高度。 */
       display: block;
       --doc-nav-max-height: min(70vh, 32rem);
+      /* 左右留白：面板自己给 16px，这里再留出一条 gutter 给条子 —— 条子贴的是**滚动区**的右沿，
+         不额外留就正好压在菜单项右沿上（条目一路顶到边）。留一条之后条子落在面板内，
+         不必去贴面板边框（浮层本来就有边框，界限不靠条子来划）。
+         宽屏那两栏不传这个令牌：它们用组件里的默认 gutter（左栏 space-5、右栏 space-4），本来就比条子宽。 */
+      --doc-scroll-pad-x: var(--mc-space-3);
     }
 
     .doc-brand {
