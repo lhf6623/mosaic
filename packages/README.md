@@ -391,11 +391,19 @@ item.open = true; // 组件提供了访问器时同样可以
 已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb`）、
 `pre` / `code` / `line`（`mc-code`）。
 
-### 1.8 无障碍基线（每个组件都要满足）
+### 1.8 无障碍与键盘基线（每个组件都要满足）
 
-- 可交互元素必须是**原生元素**（`<button>` / `<input>` / `<a>`），不是 `<div on:click>`
-- 键盘可完成全部操作；弹层必须支持 `Esc` 关闭、打开时焦点进弹层、关闭后焦点归还
-- 焦点环用 `--mc-color-ring`，不用 `currentColor`
+只承诺**键盘可达** —— 不追 WCAG 全量审计，也不逐项做读屏适配（页面层的补充见
+[`docs/README.md`](../docs/README.md) §八）：
+
+- 可交互元素必须是**原生元素**（`<button>` / `<input>` / `<a>` / `<details>`），不是 `<div on:click>`；
+  自定义交互补等价键：Enter / Space 激活，Esc 关闭，方向键在菜单 / 列表 / 标签页内移动。
+- 键盘可完成全部操作，顺序与视觉一致；焦点环用 `--mc-color-ring`（不用 `currentColor`），
+  且只在键盘态出现（`:focus-visible`）—— 不拿掉 `outline` 了事。
+- 无键盘陷阱：不可达内容用 `inert` / `display: none` 移出 Tab 序列，不能只靠 `opacity: 0`；
+  预设了内容形态的浮层（`mc-dialog` / `mc-dropdown`）负责「打开时焦点进弹层、关闭后归还触发点」，
+  通用容器 `mc-popover` 只走原生 light-dismiss（Esc 交给浏览器）。
+- 不吞键：只在确实需要时 `preventDefault`，别拦 `Tab` / `Esc` / 浏览器组合键；不做全局单键快捷键。
 - 图标按钮必须有 `aria-label`；装饰性 SVG 加 `aria-hidden="true"`
 
 ---
