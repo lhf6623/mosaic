@@ -1,7 +1,7 @@
 # mc-progress
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./progress.html` · M2 · **已实现**
+> 源码 `./progress.html` · **已实现**
 
 进度条：一条轨道 + 一条填充。确定态用 `value` / `max` 表示跑到哪了，不确定态只说「还在跑」。
 和 `mc-spinner` 的分工：spinner 是**不知道要多久**，progress 是**知道进度**；

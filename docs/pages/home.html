@@ -1,364 +1,8 @@
 <template page>
-  <script>
-    const TILE_BASE = 62;
-    const TILE_MIN = 34;
-    const TILE_PER_WIDTH = 16;
-
-    const GAP_RATIO = 0.16;
-    const JITTER_RATIO = 0.05;
-    const GRAIN_RATIO = 0.36;
-    const CHIP_RATIO = 0.72;
-
-    const MID_ROLL = 0.6;
-    const FAR_ROLL = 0.42;
-
-    const CHIP_COUNT = 8;
-    const CHIP_TRIES = 80;
-    const CHIP_COLORS = ['primary', 'info', 'success', 'warning', 'danger'];
-
-    const CHIP_MIN_FADE = 0.35;
-
-    const DEPTH = { far: 10, mid: 24, near: 46 };
-    const MAX_SHIFT = Math.max(DEPTH.far, DEPTH.mid, DEPTH.near);
-    const CHIP_CLEARANCE = 8;
-
-    const SEED_STRIDE = 64;
-
-    const clamp = (v, min, max) => (v < min ? min : v > max ? max : v);
-
-    const metricsFor = (width) => {
-      const tile = clamp(Math.round(width / TILE_PER_WIDTH), TILE_MIN, TILE_BASE);
-      return {
-        tile,
-        gap: Math.round(tile * GAP_RATIO),
-        jitter: tile * JITTER_RATIO,
-        grain: tile * GRAIN_RATIO,
-        chip: tile * CHIP_RATIO,
-      };
-    };
-
-    const noise = (n) => {
-      const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-      return x - Math.floor(x);
-    };
-
-    const round1 = (n) => Math.round(n * 10) / 10;
-    const round3 = (n) => Math.round(n * 1000) / 1000;
-
-    function computeTiles(width, height, block) {
-      const metrics = metricsFor(width);
-      const { tile, gap, jitter, grain, chip } = metrics;
-      const cell = tile + gap;
-      const cols = Math.max(1, Math.floor((width - gap - 2 * jitter) / cell));
-      const rows = Math.max(1, Math.floor((height - gap - 2 * jitter) / cell));
-      const gridW = cols * cell - gap;
-      const gridH = rows * cell - gap;
-      const originX = (width - gridW) / 2;
-      const originY = (height - gridH) / 2;
-      const cx = width / 2;
-      const cy = height / 2;
-      const cells = [];
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const seed = r * SEED_STRIDE + c;
-          const x = originX + c * cell + (noise(seed * 1.7) - 0.5) * 2 * jitter;
-          const y = originY + r * cell + (noise(seed * 2.3) - 0.5) * 2 * jitter;
-          const edgeDist = Math.min(x, y, width - (x + tile), height - (y + tile));
-
-          cells.push({ r, c, seed, x, y, fade: clamp(edgeDist / (cell * 1.1), 0, 1) });
-        }
-      }
-      const chipsAt = new Map();
-      const textHalfW = block.width / 2 + chip / 2 + MAX_SHIFT + CHIP_CLEARANCE;
-      const textHalfH = block.height / 2 + chip / 2 + MAX_SHIFT + CHIP_CLEARANCE;
-
-      for (let i = 0, placed = 0; i < CHIP_TRIES && placed < CHIP_COUNT; i++) {
-        const angle = i * 2.39996;
-        const px = cx + Math.cos(angle) * (0.3 + noise(i * 7.31) * 0.12) * width;
-        const py = cy + Math.sin(angle) * (0.3 + noise(i * 4.17) * 0.12) * height;
-        const c = Math.round((px - originX) / cell);
-        const r = Math.round((py - originY) / cell);
-        if (r < 0 || r >= rows || c < 0 || c >= cols) continue;
-        const key = `${r},${c}`;
-        if (chipsAt.has(key)) continue;
-        const at = cells[r * cols + c];
-        const dx = Math.abs(at.x + chip / 2 - block.x);
-        const dy = Math.abs(at.y + chip / 2 - block.y);
-        if (dx < textHalfW && dy < textHalfH) continue;
-
-        if (at.fade < CHIP_MIN_FADE) continue;
-
-        chipsAt.set(key, CHIP_COLORS[i % CHIP_COLORS.length]);
-        placed++;
-      }
-      const far = [];
-      const mid = [];
-      const near = [];
-
-      for (const { r, c, seed, x, y, fade } of cells) {
-        if (fade <= 0.02) continue;
-        const roll = noise(seed);
-        const t = Math.hypot((x + tile / 2 - cx) / cx, (y + tile / 2 - cy) / cy);
-        const chipColor = chipsAt.get(`${r},${c}`);
-        if (chipColor) {
-          near.push({
-            key: `near-${r}-${c}`,
-            x: round1(x),
-            y: round1(y),
-            opacity: round3(0.78 * fade),
-            color: chipColor,
-          });
-          continue;
-        }
-
-        if (t > 0.55 + noise(seed * 3.7) * 0.45 && t < 1.95 && roll > MID_ROLL) {
-          const shrink = 0.78 + noise(seed * 5.1) * 0.22;
-          mid.push({
-            key: `mid-${r}-${c}`,
-            x: round1(x),
-            y: round1(y),
-            size: round1(tile * shrink),
-            opacity: round3((0.36 - t * 0.1) * fade),
-          });
-          continue;
-        }
-
-        if (roll > FAR_ROLL) {
-          const inset = (tile - grain) / 2;
-          far.push({
-            key: `far-${r}-${c}`,
-            x: round1(x + inset),
-            y: round1(y + inset),
-            opacity: round3((0.16 - t * 0.06) * fade),
-          });
-        }
-      }
-      return { far, mid, near, metrics };
-    }
-
-    export const parent = '../layout.html';
-
-    export default () => ({
-      data: {
-        farTiles: [],
-        midTiles: [],
-        nearTiles: [],
-
-        farTransform: '',
-        midTransform: '',
-        nearTransform: '',
-      },
-
-      ready() {
-        this.relayout();
-        this._stopParallax = this.bindParallax();
-        let resizeTimer = 0;
-        const host = this.ele.shadowRoot?.querySelector('.doc-poster');
-        this._ro = new ResizeObserver(() => {
-          clearTimeout(resizeTimer);
-          resizeTimer = setTimeout(() => this.relayout(), 150);
-        });
-        if (host) this._ro.observe(host);
-        this._stopResize = () => {
-          clearTimeout(resizeTimer);
-          this._ro.disconnect();
-        };
-      },
-
-      detached() {
-        this._stopParallax?.();
-        this._stopParallax = null;
-        this._stopResize?.();
-        this._stopResize = null;
-        this._ro = null;
-      },
-
-      proto: {
-        openPage(path) {
-          // hash 按「相对域名根」解析，所以要带上部署前缀（开发 `/`、Pages `/mosaic/`）
-          const root = new URL('.', document.baseURI).pathname.replace(/\/$/, '');
-          location.hash = `#${root}/${path.replace(/^\//, '')}`;
-        },
-
-        relayout() {
-          const host = this.ele.shadowRoot?.querySelector('.doc-poster');
-          if (!host) return;
-          const width = Math.round(host.clientWidth);
-          const height = Math.round(host.clientHeight);
-          if (!width || !height) return;
-          const hostRect = host.getBoundingClientRect();
-          const inner = host.querySelector('.poster-inner')?.getBoundingClientRect();
-          const block = inner
-            ? {
-                width: inner.width,
-                height: inner.height,
-                x: inner.left + inner.width / 2 - (hostRect.left + host.clientLeft),
-                y: inner.top + inner.height / 2 - (hostRect.top + host.clientTop),
-              }
-            : { width: width * 0.6, height: height * 0.8, x: width / 2, y: height / 2 };
-          const { far, mid, near, metrics } = computeTiles(width, height, block);
-
-          host.style.setProperty('--art-tile', `${metrics.tile}px`);
-          host.style.setProperty('--art-grain', `${round1(metrics.grain)}px`);
-          host.style.setProperty('--art-chip', `${round1(metrics.chip)}px`);
-
-          this.farTiles = far;
-          this.midTiles = mid;
-          this.nearTiles = near;
-        },
-
-        bindParallax() {
-          const reset = () => {
-            this.farTransform = '';
-            this.midTransform = '';
-            this.nearTransform = '';
-          };
-
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return reset;
-          const translate = (x, y, depth) =>
-            `translate3d(${(-x * depth).toFixed(2)}px, ${(-y * depth).toFixed(2)}px, 0)`;
-          let targetX = 0;
-          let targetY = 0;
-          let x = 0;
-          let y = 0;
-          let raf = 0;
-          const onMove = (e) => {
-            targetX = (e.clientX / window.innerWidth) * 2 - 1;
-            targetY = (e.clientY / window.innerHeight) * 2 - 1;
-            if (!raf) raf = requestAnimationFrame(tick);
-          };
-          const tick = () => {
-            const dx = targetX - x;
-            const dy = targetY - y;
-
-            x += dx * 0.06;
-            y += dy * 0.06;
-
-            this.farTransform = translate(x, y, DEPTH.far);
-            this.midTransform = translate(x, y, DEPTH.mid);
-            this.nearTransform = translate(x, y, DEPTH.near);
-
-            raf = Math.abs(dx) < 0.0008 && Math.abs(dy) < 0.0008 ? 0 : requestAnimationFrame(tick);
-          };
-
-          window.addEventListener('pointermove', onMove, { passive: true });
-          return () => {
-            window.removeEventListener('pointermove', onMove);
-            if (raf) cancelAnimationFrame(raf);
-            raf = 0;
-            reset();
-          };
-        },
-      },
-    });
-  </script>
   <link rel="stylesheet" href="../content.css" />
 
-  <!-- 首页专属样式（海报 + 马赛克图案）：只这一页用，所以住这儿而不是 content.css。
-       页面模块的 <style> 与它上面的 <link> 同处本页 shadow root，作用域一致；放在 <link> 之后，特异性打平时本页规则赢。 -->
   <style>
-    /* ============================================================================
-     * 首页海报：马赛克图案 + 两个入口（标题 sr-only）。选择器都带 .doc-poster 前缀，是为了用 0,2,0 的特异性稳定压过上面 .doc-body h1 / p 的 0,1,1。
-     * ========================================================================== */
-
-    /* 定位容器：马赛克图案铺满它，正文叠在上层 */
-    .doc-poster {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* 正好一屏（顶栏以下）：外壳把一屏锁给 body、滚的是正文带 .doc-main，所以这里得自己声明高度，方块网格才是按「一屏」算出来的 */
-      min-height: calc(100vh - var(--doc-topbar, 3.5rem));
-      padding-block: var(--mc-space-8);
-      /* 视差位移是往容器外推的，不裁掉会撑出滚动条 */
-      overflow: hidden;
-    }
-
-    .poster-inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--mc-space-5);
-      /* 入口自己限宽，把两侧的余量让给背景图案 */
-      max-width: 38rem;
-      text-align: center;
-    }
-
-    /* ---------- 马赛克图案：层 .art-layer，块 .art-bit（数据来自 home.html） ---------- */
-
-    .poster-art {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      color: rgb(var(--mc-color-fg));
-      /* 刻意不加遮罩：中心那块留白会变成按钮底下的一片白底 */
-    }
-
-    /* 视差只走 transform（提到合成层，不触发重排） */
-    .art-layer {
-      position: absolute;
-      inset: 0;
-      will-change: transform;
-    }
-
-    /* 一块方块：位置、尺寸由数据给，这里只管长相 */
-    .art-bit {
-      position: absolute;
-      display: block;
-      border: 1.5px solid currentColor;
-    }
-
-    /* 尺寸走 home.html 广播的 --art-*（两边同一个数）；括号里是兜底值 */
-    .art-far {
-      width: var(--art-grain, 22.3px);
-      height: var(--art-grain, 22.3px);
-      /* 圆角只有这里用得到，比例留在 CSS（62 → 6px） */
-      border-radius: calc(var(--art-tile, 62px) * 0.097);
-    }
-
-    /* 边长每块不同，行内绑 width/height；这里只给圆角（62 → 14px） */
-    .art-mid {
-      border-radius: calc(var(--art-tile, 62px) * 0.226);
-    }
-
-    /* 色片：实心、无描边，颜色按语义色 */
-    .art-chip {
-      width: var(--art-chip, 44.6px);
-      height: var(--art-chip, 44.6px);
-      border: 0;
-      border-radius: calc(var(--art-tile, 62px) * 0.226);
-    }
-
-    .art-chip[data-color='primary'] {
-      background-color: rgb(var(--mc-color-primary));
-    }
-    .art-chip[data-color='info'] {
-      background-color: rgb(var(--mc-color-info));
-    }
-    .art-chip[data-color='success'] {
-      background-color: rgb(var(--mc-color-success));
-    }
-    .art-chip[data-color='warning'] {
-      background-color: rgb(var(--mc-color-warning));
-    }
-    .art-chip[data-color='danger'] {
-      background-color: rgb(var(--mc-color-danger));
-    }
-
-    /* 减弱动效偏好下不做视差 */
-    @media (prefers-reduced-motion: reduce) {
-      .art-layer {
-        will-change: auto;
-      }
-    }
-
-    /* 首页两个入口：用项目自己的 mc-button，这里只管把它们排成一行 */
-    .doc-poster .poster-links {
+    .poster-links {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -367,62 +11,39 @@
     }
   </style>
 
-  <div class="doc-body doc-poster">
-    <l-m src="../../packages/button/button.html"></l-m>
+  <l-m src="../../packages/button/button.html"></l-m>
+  <l-m src="../components/poster.html"></l-m>
 
-    <div class="poster-art" aria-hidden="true">
-      <div class="art-layer" data-layer="far" :style.transform="farTransform">
-        <o-fill :value="farTiles" fill-key="key">
-          <span
-            class="art-bit art-far"
-            :style.left="$data.x + 'px'"
-            :style.top="$data.y + 'px'"
-            :style.opacity="$data.opacity"
-          ></span>
-        </o-fill>
-      </div>
+  <doc-poster class="doc-body">
+    <h1 class="sr-only">Mosaic</h1>
 
-      <div class="art-layer" data-layer="mid" :style.transform="midTransform">
-        <o-fill :value="midTiles" fill-key="key">
-          <span
-            class="art-bit art-mid"
-            :style.left="$data.x + 'px'"
-            :style.top="$data.y + 'px'"
-            :style.width="$data.size + 'px'"
-            :style.height="$data.size + 'px'"
-            :style.opacity="$data.opacity"
-          ></span>
-        </o-fill>
-      </div>
+    <nav class="poster-links">
+      <mc-button color="primary" size="lg" on:click="openPage('docs/pages/guide.html')"
+        >快速开始</mc-button
+      >
+      <mc-button
+        variant="outline"
+        color="neutral"
+        size="lg"
+        on:click="openPage('packages/button/page.html')"
+        >浏览组件</mc-button
+      >
+    </nav>
+  </doc-poster>
 
-      <div class="art-layer" data-layer="near" :style.transform="nearTransform">
-        <o-fill :value="nearTiles" fill-key="key">
-          <span
-            class="art-bit art-chip"
-            :style.left="$data.x + 'px'"
-            :style.top="$data.y + 'px'"
-            :style.opacity="$data.opacity"
-            attr:data-color="$data.color"
-          ></span>
-        </o-fill>
-      </div>
-    </div>
+  <script>
+    import { hashOf } from '../routes.js';
 
-    <div class="poster-inner">
-      <h1 class="sr-only">Mosaic</h1>
+    export const parent = '../layout.html';
 
-      <nav class="poster-links">
-        <mc-button color="primary" size="lg" on:click="openPage('docs/pages/guide.html')"
-          >快速开始</mc-button
-        >
-        <mc-button
-          variant="outline"
-          color="neutral"
-          size="lg"
-          on:click="openPage('packages/button/page.html')"
-          >浏览组件</mc-button
-        >
-      </nav>
-    </div>
-  </div>
+    export default () => ({
+      data: {},
+
+      proto: {
+        openPage(path) {
+          location.hash = hashOf(path);
+        },
+      },
+    });
+  </script>
 </template>

@@ -6,7 +6,7 @@
  *   ② 每个 page.html 都在数据里（忘了登记 → 顶栏 / 左栏 / 面包屑 / 翻页里都没有它）；
  *   ③ 数据里写了 path 的都有文件 —— path 是「已实现」的唯一凭据，写了就不能是死链；
  *   ④ 结构自身的账：order 是数字且同层唯一、数组顺序就是 order 顺序、hidden 必须真有页面、
- *      组件节点的 tagName 与目录名一致；hidden 不进渲染面（ALL / 左栏），但仍在工具面（READY）。
+ *      组件节点的 tagName 与目录名一致；hidden 不进左栏（menuOf 沿树剔除），但仍在工具面（READY）。
  *
  * 不需要浏览器：直接读文件对账，跑得飞快。site 套件里唯一一个 node-only 的。
  */
@@ -14,7 +14,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALL, GROUPS, NAV, READY, SITE, hasPage, menuOf, slugOf } from '../../docs/site-map.js';
+import { NAV, READY, SITE, hasPage, menuOf, slugOf } from '../../docs/site-map.js';
 
 /** 仓库根（本文件在 tests/site/ 下） */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -64,6 +64,9 @@ export default async function run({ check }) {
       at: [...ancestors.map((a) => a.label), node.label].join(' / '),
     }));
 
+  /** 组件里还没有页面的（待建）—— 只用于报数 */
+  const plannedCount = nodes.filter(({ node }) => node.tagName && !hasPage(node)).length;
+
   /* ① 每页都挂在正确的层上：分区里的页面挂分区布局页（doc-layout.html），其余挂总外壳（layout.html）。
         页面写的是相对路径（'../doc-layout.html' 等），所以必须**相对本文件解析**后再比 */
   const sectionPaths = new Set();
@@ -107,7 +110,7 @@ export default async function run({ check }) {
     .map(({ node, at }) => `${at} → ${node.path}`);
 
   check(
-    `NAV 里带 path 的条目都有对应文件（共 ${pageNodes.length} 页，另有待建 ${ALL.length - ALL.filter(hasPage).length} 项）`,
+    `NAV 里带 path 的条目都有对应文件（共 ${pageNodes.length} 页，另有待建 ${plannedCount} 项）`,
     missing.length === 0,
     missing.join('\n        ') || `无死链`,
   );
@@ -153,7 +156,6 @@ export default async function run({ check }) {
         } else {
           seenTags.set(node.tagName, node.label);
         }
-        if (!node.stage) structural.push(`${at} 是组件却没写 stage（待建卡片要显示它）`);
         /* 命令式组件（入口是函数，如 message()）：tagName 不是 mc-<目录名>，
            标签由模块自己在运行时创建 —— 这条命名规矩对它不适用。
            判定用 `mc-` 前缀的形状，不写死名字：以后再加命令式组件自动走这条。 */
@@ -177,7 +179,7 @@ export default async function run({ check }) {
   check(
     `结构规矩都对得上（${nodes.length} 个节点：order 唯一 / 组件字段齐全 / hidden 有页面）`,
     structural.length === 0,
-    structural.join('\n        ') || `order 无重复 · tagName 无重复 · ${ALL.length} 个组件`,
+    structural.join('\n        ') || `order 无重复 · tagName 无重复 · ${seenTags.size} 个组件`,
   );
 
   /* ⑥ 文件里看到的顺序就是页面上的顺序：数组按 order 写（order 才是权威） */
@@ -210,15 +212,10 @@ export default async function run({ check }) {
     `menuOf(假分区) → ${fakeMenu.join(' / ') || '(空)'}`,
   );
 
-  /* ⑧ 渲染面（ALL / GROUPS）不含 hidden；工具面（READY）含 —— 藏起来 ≠ 不维护 */
-  const hiddenReady = READY.filter((component) => component.hidden === true);
-
+  /* ⑧ 工具面（READY）只收「有 tagName + 有页面」的组件 —— 冒烟套件与文档页检查都开在它上面 */
   check(
-    `hidden 不进渲染面、但仍在工具面（当前隐藏 ${hiddenReady.length} 个组件）`,
-    ALL.every((item) => item.hidden !== true) &&
-      ALL.length === GROUPS.reduce((n, group) => n + group.items.length, 0) &&
-      hiddenReady.every((component) => !ALL.some((item) => item.path === component.path)) &&
-      READY.every((component) => component.tagName && hasPage(component)),
-    `ALL ${ALL.length} 条 / GROUPS ${GROUPS.length} 组 / READY ${READY.length} 条（含隐藏 ${hiddenReady.length}）`,
+    `工具面 READY 只收有 tagName、有页面的组件（${READY.length} 个）`,
+    READY.every((component) => component.tagName && hasPage(component)),
+    `READY ${READY.length} 条`,
   );
 }

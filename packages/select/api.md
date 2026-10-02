@@ -1,7 +1,7 @@
 # mc-select / mc-option
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./select.html` + `./option.html` · M2 · **已实现**
+> 源码 `./select.html` + `./option.html` · **已实现**
 
 下拉选择，**表单控件 + 选项**两个标签：`mc-select` 管触发框与面板，`mc-option` 只声明一个个选项。
 

@@ -7,7 +7,7 @@
 <template component>
   <style>
     /* 两级大纲：h2 = 节（正常前景色），h3 = 子项（缩进一档 + 弱一档颜色）。
-       ⚠️ 条目文字是单行 + overflow: hidden（mc-menu-item 固有，够不着它的 shadow），缩进实打实吃掉可点宽度 —— 右栏宽度按最长标题反算，改宽度 / 缩进量 / 演示名都会顶到 09 号套件的断言。 */
+       ⚠️ 条目文字是单行 + overflow: hidden（mc-menu-item 固有，够不着它的 shadow），缩进实打实吃掉可点宽度 —— 右栏宽度按最长标题反算，改宽度 / 缩进量 / 演示名都要一起量。 */
     mc-menu {
       /* 走 mc-menu 的色槽通道；`:host` 的默认值优先级低于外部声明，所以这里写得进 */
       --mc-menu-item-color: var(--mc-color-fg);

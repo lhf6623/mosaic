@@ -1,5 +1,27 @@
 <template page>
   <link rel="stylesheet" href="../content.css" />
+
+  <style>
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      gap: var(--mc-space-4);
+      margin: var(--mc-space-4) 0;
+    }
+
+    .doc-card {
+      padding: var(--mc-space-5);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .doc-card p {
+      margin: 0;
+      font-size: var(--mc-text-sm);
+    }
+  </style>
+
   <div class="doc-body">
     <h1>规范</h1>
     <p class="doc-lead">
@@ -155,7 +177,7 @@
         </tr>
         <tr>
           <td>其余组件</td>
-          <td>⏳ M1–M3</td>
+          <td>✅ 已实现</td>
         </tr>
         <tr>
           <td>文档站</td>

@@ -291,7 +291,7 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`），在文档根（`:root` / `[data-theme]`）上换值。
 
 ⚠️ **`match-var` 是 ofa.js 提供的样式查询组件**，适合「按 CSS 变量切换组件内部非令牌样式」。
-Mosaic 的颜色主题走令牌就够了，`match-var` 留给 M3 之后的复杂场景
+Mosaic 的颜色主题走令牌就够了，`match-var` 留给以后更复杂的场景
 （注意它的降级路径在 Firefox 上要靠轮询，需要手动 `$.checkMatch()`）。
 
 ---

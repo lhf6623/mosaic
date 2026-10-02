@@ -9,6 +9,10 @@
       opacity: 0.72;
     }
 
+    .fill-root {
+      display: contents;
+    }
+
     /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 尺寸（见 docs/doc-layout.html），滚的是这里面的 viewport。
        高度接满宿主 —— 宽屏那栏是 fixed + height:100%，有确定高度，100% 解得开。
        ⚠️ 浮层那份的宿主是 auto 高（外壳只给「最高到哪」），那时 100% 退回 auto：靠下面那条 max-height 封顶，
@@ -33,15 +37,14 @@
   <mc-scroll-bar label="站点菜单">
     <mc-menu>
       <o-fill :value="rows" fill-key="key">
-        <!-- ⚠️ 这层 <div style="display: contents"> 不能删：o-fill 的模板只允许一个根子元素，而这一行要渲染两块（<o-if> + <o-else>）。
+        <!-- ⚠️ 这层 .fill-root 不能删：o-fill 的模板只允许一个根子元素，而这一行要渲染两块（<o-if> + <o-else>）。
              多根时 ofa 会自己包一层同样的 div 并打一条 console 警告；显式写出语义一致、控制台干净（tests/site/11 盯着这条不变量）。 -->
-        <div style="display: contents">
+        <div class="fill-root">
           <o-if :value="$data.pages">
             <mc-menu-item group>{{$data.name}}</mc-menu-item>
             <o-fill :value="$data.pages" fill-key="key">
               <mc-menu-item>
                 <a
-                  attr:class="$data.className"
                   attr:href="$data.href"
                   attr:target="$data.target"
                   attr:rel="$data.rel"
@@ -56,7 +59,6 @@
           <o-else>
             <mc-menu-item>
               <a
-                attr:class="$data.className"
                 attr:href="$data.href"
                 attr:target="$data.target"
                 attr:rel="$data.rel"
@@ -83,7 +85,7 @@
       return node.zh ? `${node.zh}（${node.label}）` : node.label;
     };
 
-    /* 节点 → 模板字段：待建的不给死链（外链规范 + `stage · 待建` 的 tooltip），压暗靠 data-status。
+    /* 节点 → 模板字段：待建的不给死链（外链规范 + 待建 tooltip），压暗靠 data-status。
        ⚠️ 链接一律 `attr:href`：`:` 只写 property，`getAttribute('href')` 会是 null；显示名与 tooltip 是两个字段。 */
     const linkOf = (page, current) => {
       const ready = hasPage(page);
@@ -91,16 +93,11 @@
         // 待建的没有 path，用 tagName 当 key（数据对账保证每个无 path 的叶子都是组件）
         key: page.path ?? page.tagName,
         name: displayName(page),
-        className: page.tagName ? 'doc-nav-comp' : '',
         href: ready ? hashOf(page.path) : SPEC_URL,
         target: ready ? null : '_blank',
         rel: ready ? null : 'noreferrer',
-        title: page.summary
-          ? ready
-            ? page.summary
-            : `${page.stage} · 待建 —— ${page.summary}`
-          : null,
-        status: page.tagName ? (ready ? 'ready' : 'planned') : null,
+        title: page.summary ? (ready ? page.summary : `待建 —— ${page.summary}`) : null,
+        status: ready ? null : 'planned',
         aria: ready && page.path === current ? 'page' : null,
       };
     };

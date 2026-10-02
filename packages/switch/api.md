@@ -1,7 +1,7 @@
 # mc-switch
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./switch.html` · M2 · **已实现**
+> 源码 `./switch.html` · **已实现**
 
 开关：只有开 / 关两态，**改完立刻生效**（没有「保存」这一步）。
 和 `mc-checkbox` 的分工：checkbox 是表单里勾若干项（可以有半选、提交时才生效），

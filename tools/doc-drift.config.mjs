@@ -5,12 +5,8 @@
  */
 
 import { dirname, posix } from 'node:path';
-import { READY, slugOf } from '../docs/site-map.js';
 import { componentSuites, siteSuites } from '../tests/lib/suites.mjs';
 import { mdTables } from './doc-drift/lib/parse.mjs';
-
-/** 组件清单的唯一真相源在 site-map：里程碑也从那里取，不另抄一份 */
-const stageOf = (slug) => READY.find((node) => slugOf(node) === slug)?.stage ?? null;
 
 /* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
 
@@ -22,7 +18,6 @@ const code = {
     // 命令式组件（没有标签属性，入口是函数）
     module: ['*.js'],
     imperative: ['message'],
-    stageOf,
   },
   tagPattern: "tag:\\s*'([\\w-]+)'",
   // 组件级令牌的命名约定与「内部令牌」标记
@@ -125,11 +120,10 @@ const rules = [
     title: '开发文档 · 组件索引（packages/README.md ↔ packages/）',
     file: 'packages/README.md',
     single: true,
-    header: ['组件', '标签', '目录', '里程碑', '状态'],
-    columns: { name: 0, tag: 1, dir: 2, stage: 3, status: 4 },
+    header: ['组件', '标签', '目录', '状态'],
+    columns: { name: 0, tag: 1, dir: 2, status: 3 },
     implemented: '已实现',
     entry: 'packages/{dir}/{dir}.html',
-    stageLabel: '里程碑',
     mustList: true,
   },
   {
@@ -524,10 +518,10 @@ const rules = [
   },
   {
     /* 组件单元的 README 是**入口卡**（目录里有什么、状态、相邻单元分工），不是接口文档。三件事：
-       ① 有 api.md 的单元必须有 README.md（反之亦然）；② README 里不许出现接口节标题；③ 状态与 site-map 对账。 */
+       ① 有 api.md 的单元必须有 README.md（反之亦然）；② README 里不许出现接口节标题。 */
     type: 'custom',
     id: 'unit-readme',
-    title: '组件单元 · README 入口卡（存在 / 不写接口事实 / 状态对账）',
+    title: '组件单元 · README 入口卡（存在 / 不写接口事实）',
     run: ({ io, components, problems }) => {
       /* ② README 里不许出现**接口**节标题 —— 属性 / 事件 / 插槽 / part 归 api.md（`方法` / `配置` /
          `插槽与 part` 是旧节名或别名），写了就是第二份会漂移的副本。⚠️ **令牌是唯一例外**，归 README。 */
@@ -556,12 +550,6 @@ const rules = [
               `${readme}:${line}：README 里出现了「${name}」节 —— 接口事实的唯一手写源是 api.md，这里写了就是第二份会漂移的副本`,
             );
           }
-        }
-
-        const want = stageOf(c.slug);
-        const got = text.match(/\*\*状态\*\*：[^·]*·\s*(M\d)/)?.[1] ?? null;
-        if (want && got !== want) {
-          problems.push(`${readme}：写的里程碑是 ${got ?? '（没写）'}，site-map.js 里是 ${want}`);
         }
       }
 

@@ -1,7 +1,7 @@
 # mc-input
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./input.html` · M2 · **已实现**
+> 源码 `./input.html` · **已实现**
 
 单行输入框。和 [`mc-textarea`](../textarea/api.md) 的分工：这一份永远是**单行**（高度由 `size` 定死、
 内容横向滚动），多行与自动增高归 textarea。

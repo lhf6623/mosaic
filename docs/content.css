@@ -2,6 +2,7 @@
  * 文档站 —— **所有页面共用**的正文样式；每个页面模块自己 <link>
  * （文档级 <link> 进不了 shadow root，见 P33 一族）。
  * 分工：只有一个使用者的样式住在那个页面 / 组件里；多个页面共用的正文块放本文件。加规则前先问：是不是只有一个页面在用？
+ * 站点自己的写法规范（布局归属 / 行内样式 / 组件清单）住 docs/README.md。
  * ========================================================================== */
 
 /* ---------- 正文 ---------- */
@@ -110,7 +111,7 @@
 /* ---------- 演示区 ---------- */
 
 /* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：一眼看得明白的例子不写，
- * 写了就必须在组件之前。标题取词规则见 packages/README.md §二，05 号套件盯着这个顺序。 */
+ * 写了就必须在组件之前。标题取词规则见 packages/README.md §二；本组只服务组件文档页。 */
 
 .doc-demo {
   margin: var(--mc-space-5) 0;
@@ -153,27 +154,6 @@
 /* 代码块贴住抽屉（上面那条 mc-code 的块级外边距在这里归零） */
 .doc-demo-code mc-code {
   margin-block: 0;
-}
-
-/* ---------- 卡片 ---------- */
-
-.doc-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: var(--mc-space-4);
-  margin: var(--mc-space-4) 0;
-}
-
-.doc-card {
-  padding: var(--mc-space-5);
-  border: 1px solid rgb(var(--mc-color-border));
-  border-radius: var(--mc-radius-lg);
-  background-color: rgb(var(--mc-color-surface));
-}
-
-.doc-card p {
-  margin: 0;
-  font-size: var(--mc-text-sm);
 }
 
 /* ---------- 表格 ---------- */

@@ -1,5 +1,4 @@
 <template page>
-  <link rel="stylesheet" href="./content.css" />
   <!--
     组件文档页的**分区布局页**：左栏菜单 + 正文 + 右栏本页目录。packages/<slug>/page.html 用 `export const parent` 挂上来，上面还有一层外壳 docs/layout.html。
     ⚠️ 左右两栏是 position: fixed（不在文档流里），正文靠 .doc-content 的 padding 留位；两栏高度固定 100%（注释见下面的 <style>）。
@@ -44,7 +43,7 @@
 
     /* 右栏：本页目录（<doc-toc> 扫标题生成，见 docs/components/toc.html）。宽度 15rem 是按缩进后最长标题（「卡片外观（variant="surface"）」= 172px）反算的，
        内边距因此用 space-4 而不是左栏的 space-5（两处都在各自组件的 <style> 里，条子要贴栏边）。
-       宽度、内边距、toc.html 的缩进量要一起改（09 号套件盯着「不许截断」）。 */
+       宽度、内边距、toc.html 的缩进量要一起改，否则最长标题会被截断。 */
     doc-toc {
       right: 0;
       width: 15rem;

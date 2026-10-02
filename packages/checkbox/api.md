@@ -1,7 +1,7 @@
 # mc-checkbox
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./checkbox.html` · M2 · **已实现**
+> 源码 `./checkbox.html` · **已实现**
 
 复选框：一行方框 + 文案，选中 / 半选 / 禁用 / 校验失败四个正交状态。
 和 `mc-switch` 的分工：checkbox 是**表单里勾选若干项**（有一个中性态、有半选），

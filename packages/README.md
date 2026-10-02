@@ -56,11 +56,9 @@
   之后依次是 `<h1>` / `.doc-lead`、`<h2>例子</h2>`、`<doc-spec src="./api.md">`。
 - 页首只留 `<h1>` + 一句 `doc-lead`，**不要把参考表写在例子前面**：
   先看能做什么（例子），再查怎么配（参考区）。
-  ⚠️ **页首没有徽标了**（2026-09 去掉的 `doc-badges`）：那三个胶囊是
-  「已实现 / 里程碑 M1 / `packages/xxx/`」，前两个每个组件页都写死同一份、
-  且与导航数据（[`site-map.js`](../docs/site-map.js) 的 `stage`、`path`）重复，
-  第三个读者从 URL 就知道 —— 里程碑与状态统一以导航数据为唯一源
-  （左栏就开在它上面），文档页不再单独抄一遍。
+  ⚠️ **页首没有徽标了**（2026-09 去掉的 `doc-badges`）：「已实现 / `packages/xxx/`」这类胶囊
+  每个组件页都写死同一份、且与导航数据（[`site-map.js`](../docs/site-map.js) 有没有 `path`）重复，
+  文档页不再单独抄一遍。
 - 实现说明（为什么这么分层、底层用了什么机制）不进文档页 —— 留在组件文件头与同单元 `README.md` 的「设计取舍」节。
 - 每个演示的标题与 `.doc-hint` 留在 `<section>` 里；演示之间不插属性表。
 - 页面里**内联的 `<mc-code>` 文本是逐字展示的**，前面必须加 `<!-- prettier-ignore -->`
@@ -227,9 +225,9 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 > 与每张表跟组件代码（属性 / 事件 / 插槽 / part，含默认值），以及页面骨架与 `<doc-spec>` 接线。
 > 它管不到的是**演示区**里的重复（导语与演示正文撞车）—— 那是判断，落笔时按上面的清单自查。
 
-## 四、首页海报：数据驱动 + 响应式（`docs/pages/home.html`）
+## 四、首页海报：数据驱动 + 响应式（`docs/components/poster.html`）
 
-- 页面里**没有一行 JS 建 DOM**：`computeTiles(宽, 高, 入口块)` 是纯函数，吐
+- 海报组件里**没有一行 JS 建 DOM**：`computeTiles(宽, 高, 入口块)` 是纯函数，吐
   `{ key, x, y, opacity, … }`；视图由 `<o-fill>` 加 `:style.*` / `attr:data-color` 渲染；
   鼠标视差只改 `farTransform / midTransform / nearTransform` 三个字段。
   容器尺寸变化也只是 `ResizeObserver → relayout()` 重算数据。
@@ -404,45 +402,45 @@ item.open = true; // 组件提供了访问器时同样可以
 
 ## 六、组件索引
 
-逐一列出全部单元：标签、目录、里程碑、状态。**标签名 = `mc-` + 目录名**；
+逐一列出全部单元：标签、目录、状态。**标签名 = `mc-` + 目录名**；
 改了组件 API 先改该单元的 `api.md`，再改文档页。
 
-| 组件                                  | 标签                                   | 目录           | 里程碑 | 状态      |
-| ------------------------------------- | -------------------------------------- | -------------- | ------ | --------- |
-| [Button](./button/api.md)             | `mc-button`                            | `button/`      | M1     | ✅ 已实现 |
-| [Code](./code/api.md)                 | `mc-code`                              | `code/`        | M1     | ✅ 已实现 |
-| [Collapse](./collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`    | M1     | ✅ 已实现 |
-| [Menu](./menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`        | M1     | ✅ 已实现 |
-| [Breadcrumb](./breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/`  | M1     | ✅ 已实现 |
-| [Icon](./icon/api.md)                 | `mc-icon`                              | `icon/`        | M1     | ✅ 已实现 |
-| [Card](./card/api.md)                 | `mc-card`                              | `card/`        | M1     | ✅ 已实现 |
-| [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | M1     | ✅ 已实现 |
-| [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | M1     | ✅ 已实现 |
-| [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | M1     | ✅ 已实现 |
-| [Input](./input/api.md)               | `mc-input`                             | `input/`       | M2     | ✅ 已实现 |
-| [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | M2     | ✅ 已实现 |
-| [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | M2     | ✅ 已实现 |
-| [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | M2     | ✅ 已实现 |
-| [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | M2     | ✅ 已实现 |
-| [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | M2     | ✅ 已实现 |
-| [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | M2     | ✅ 已实现 |
-| [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | M2     | ✅ 已实现 |
-| [Message](./message/api.md)（命令式） | `message()`                            | `message/`     | M2     | ✅ 已实现 |
-| [Loading Bar](./loading-bar/api.md)   | `mc-loading-bar`                       | `loading-bar/` | M3     | ✅ 已实现 |
-| [Scroll Bar](./scroll-bar/api.md)     | `mc-scroll-bar`                        | `scroll-bar/`  | M3     | ✅ 已实现 |
-| [Popover](./popover/api.md)           | `mc-popover`                           | `popover/`     | M3     | ✅ 已实现 |
-| [Dialog](./dialog/api.md)             | `mc-dialog`                            | `dialog/`      | M3     | ✅ 已实现 |
-| [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`    | M3     | ✅ 已实现 |
-| [Tooltip](./tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`     | M3     | ✅ 已实现 |
-| [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | M3     | ✅ 已实现 |
-| [Table](./table/api.md)               | `mc-table`                             | `table/`       | M3     | ✅ 已实现 |
-| [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`        | M3     | ✅ 已实现 |
+| 组件                                  | 标签                                   | 目录           | 状态      |
+| ------------------------------------- | -------------------------------------- | -------------- | --------- |
+| [Button](./button/api.md)             | `mc-button`                            | `button/`      | ✅ 已实现 |
+| [Code](./code/api.md)                 | `mc-code`                              | `code/`        | ✅ 已实现 |
+| [Collapse](./collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`    | ✅ 已实现 |
+| [Menu](./menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`        | ✅ 已实现 |
+| [Breadcrumb](./breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/`  | ✅ 已实现 |
+| [Icon](./icon/api.md)                 | `mc-icon`                              | `icon/`        | ✅ 已实现 |
+| [Card](./card/api.md)                 | `mc-card`                              | `card/`        | ✅ 已实现 |
+| [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | ✅ 已实现 |
+| [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | ✅ 已实现 |
+| [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | ✅ 已实现 |
+| [Input](./input/api.md)               | `mc-input`                             | `input/`       | ✅ 已实现 |
+| [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | ✅ 已实现 |
+| [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | ✅ 已实现 |
+| [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | ✅ 已实现 |
+| [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | ✅ 已实现 |
+| [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | ✅ 已实现 |
+| [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | ✅ 已实现 |
+| [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | ✅ 已实现 |
+| [Message](./message/api.md)（命令式） | `message()`                            | `message/`     | ✅ 已实现 |
+| [Loading Bar](./loading-bar/api.md)   | `mc-loading-bar`                       | `loading-bar/` | ✅ 已实现 |
+| [Scroll Bar](./scroll-bar/api.md)     | `mc-scroll-bar`                        | `scroll-bar/`  | ✅ 已实现 |
+| [Popover](./popover/api.md)           | `mc-popover`                           | `popover/`     | ✅ 已实现 |
+| [Dialog](./dialog/api.md)             | `mc-dialog`                            | `dialog/`      | ✅ 已实现 |
+| [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`    | ✅ 已实现 |
+| [Tooltip](./tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`     | ✅ 已实现 |
+| [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | ✅ 已实现 |
+| [Table](./table/api.md)               | `mc-table`                             | `table/`       | ✅ 已实现 |
+| [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`        | ✅ 已实现 |
 
 ---
 
-## 七、表单控件共用约定（M2 定型，其余照抄）
+## 七、表单控件共用约定
 
-> M2 / M3 全部已实现。接口事实的唯一手写源是各单元的 `packages/<slug>/api.md` —— 这里只留两样东西：
+> 所有单元都已实现。接口事实的唯一手写源是各单元的 `packages/<slug>/api.md` —— 这里只留两样东西：
 > ① 表单控件的**跨组件共用约定**（本节）② 实现相对草案的**出入清单**（第八节，对账用、含理由）。
 > 共用约定见上面第五节；浮层结论见 [`popover/api.md`](./popover/api.md)。
 

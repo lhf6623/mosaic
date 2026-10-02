@@ -1,6 +1,6 @@
 /* 站点唯一数据源：**有哪些页面 / 组件**、它们的层级与顺序 —— 也就是导航本身。一棵树，**结构即菜单**：children 的层级就是左栏的分组与缩进，label 就是显示名。
  * 有 children → 分组 / 分区；有 path → 有页面、可点；没有 path → 待建。分区自己可以没有落地页，顶栏入口落到子树第一页（firstPageOf）；order 同层唯一、显示顺序由它说了算，hidden 只管展示、子树上继承。
- * 字段：label 显示名 / zh 中文名（只有组件补）/ order / path / children / hidden / summary / tagName / stage。
+ * 字段：label 显示名 / zh 中文名（只有组件补）/ order / path / children / hidden / summary / tagName。
  * ⚠️ 页内目录（h2/h3）**不在这里**：它是内容派生的、每页都不同，由 <doc-toc> 扫标题生成。
  */
 
@@ -30,7 +30,6 @@ export const SITE = [
             zh: '按钮',
             path: 'packages/button/page.html',
             tagName: 'mc-button',
-            stage: 'M1',
             summary:
               '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；另有行内文字形态（inline）。',
           },
@@ -40,7 +39,6 @@ export const SITE = [
             zh: '代码',
             path: 'packages/code/page.html',
             tagName: 'mc-code',
-            stage: 'M1',
             summary:
               '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
           },
@@ -50,7 +48,6 @@ export const SITE = [
             zh: '图标',
             path: 'packages/icon/page.html',
             tagName: 'mc-icon',
-            stage: 'M1',
             summary:
               '图标。先查内置、查不到再远程取一次；颜色继承 currentColor、尺寸跟随 font-size，取不到也只留一个不跳版的空位。',
           },
@@ -60,7 +57,6 @@ export const SITE = [
             zh: '卡片',
             path: 'packages/card/page.html',
             tagName: 'mc-card',
-            stage: 'M1',
             summary:
               '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
@@ -70,7 +66,6 @@ export const SITE = [
             zh: '标签',
             path: 'packages/tag/page.html',
             tagName: 'mc-tag',
-            stage: 'M1',
             summary:
               '分类 / 状态标签。语义色 × 浅底 / 实心 / 描边三个维度，可选可关（checkable / closable）。',
           },
@@ -80,7 +75,6 @@ export const SITE = [
             zh: '徽标',
             path: 'packages/badge/page.html',
             tagName: 'mc-badge',
-            stage: 'M1',
             summary: '徽标。默认浅底，比实心更不抢视线；支持纯圆点与数值上限。',
           },
           {
@@ -89,7 +83,6 @@ export const SITE = [
             zh: '加载指示',
             path: 'packages/spinner/page.html',
             tagName: 'mc-spinner',
-            stage: 'M1',
             summary: '加载指示。跟随当前文字色与字号。',
           },
           {
@@ -98,7 +91,6 @@ export const SITE = [
             zh: '菜单',
             path: 'packages/menu/page.html',
             tagName: 'mc-menu',
-            stage: 'M1',
             summary:
               '垂直菜单。容器 + 菜单项两个标签，交互元素由使用者写在插槽里 —— 组件不造链接、也不改使用者的 DOM。',
           },
@@ -108,7 +100,6 @@ export const SITE = [
             zh: '面包屑',
             path: 'packages/breadcrumb/page.html',
             tagName: 'mc-breadcrumb',
-            stage: 'M1',
             summary:
               '面包屑。容器 + 每一级两个标签；一级里的链接由使用者写在插槽里，当前页写 current，组件不造链接。',
           },
@@ -125,7 +116,6 @@ export const SITE = [
             zh: '输入框',
             path: 'packages/input/page.html',
             tagName: 'mc-input',
-            stage: 'M2',
             summary: '单行输入框。可清除、前后缀插槽。',
           },
           {
@@ -134,7 +124,6 @@ export const SITE = [
             zh: '多行输入',
             path: 'packages/textarea/page.html',
             tagName: 'mc-textarea',
-            stage: 'M2',
             summary: '多行输入框。支持自动增高与字数统计。',
           },
           {
@@ -143,7 +132,6 @@ export const SITE = [
             zh: '复选框',
             path: 'packages/checkbox/page.html',
             tagName: 'mc-checkbox',
-            stage: 'M2',
             summary: '复选框。支持半选态。',
           },
           {
@@ -152,7 +140,6 @@ export const SITE = [
             zh: '单选按钮',
             path: 'packages/radio/page.html',
             tagName: 'mc-radio',
-            stage: 'M2',
             summary: '单选按钮组。',
           },
           {
@@ -161,7 +148,6 @@ export const SITE = [
             zh: '开关',
             path: 'packages/switch/page.html',
             tagName: 'mc-switch',
-            stage: 'M2',
             summary: '开关。',
           },
           {
@@ -170,8 +156,7 @@ export const SITE = [
             zh: '下拉选择',
             path: 'packages/select/page.html',
             tagName: 'mc-select',
-            stage: 'M2',
-            summary: '下拉选择。M2 里最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
+            summary: '下拉选择。最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
           },
         ],
       },
@@ -186,7 +171,6 @@ export const SITE = [
             zh: '提示条',
             path: 'packages/alert/page.html',
             tagName: 'mc-alert',
-            stage: 'M2',
             summary: '页内提示条。可关闭，带标题与描述。',
           },
           {
@@ -195,7 +179,6 @@ export const SITE = [
             zh: '进度条',
             path: 'packages/progress/page.html',
             tagName: 'mc-progress',
-            stage: 'M2',
             summary: '进度条。支持不确定态。',
           },
           {
@@ -205,7 +188,6 @@ export const SITE = [
             path: 'packages/message/page.html',
             // 命令式：入口是 message() 这个函数，容器标签由模块自己创建，使用者不用写标签
             tagName: 'message',
-            stage: 'M2',
             summary: '命令式消息条：从顶部落下来一条，几秒后自己走；同 key 更新不叠加。',
           },
           {
@@ -214,7 +196,6 @@ export const SITE = [
             zh: '加载条',
             path: 'packages/loading-bar/page.html',
             tagName: 'mc-loading-bar',
-            stage: 'M3',
             summary:
               '加载条。state 一个入口（idle / loading / done / error）：在跑就缓慢爬升（到不了 100%），收尾先滑到 100% 再淡出，成功与出错同一条路、只差色；默认钉在视口顶部，也可放进容器；不吃指针。',
           },
@@ -232,7 +213,6 @@ export const SITE = [
             zh: '浮层',
             path: 'packages/popover/page.html',
             tagName: 'mc-popover',
-            stage: 'M3',
             summary: '通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。',
           },
           {
@@ -241,7 +221,6 @@ export const SITE = [
             zh: '对话框',
             path: 'packages/dialog/page.html',
             tagName: 'mc-dialog',
-            stage: 'M3',
             summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',
           },
           {
@@ -250,7 +229,6 @@ export const SITE = [
             zh: '下拉菜单',
             path: 'packages/dropdown/page.html',
             tagName: 'mc-dropdown',
-            stage: 'M3',
             summary: '下拉菜单。',
           },
           {
@@ -259,7 +237,6 @@ export const SITE = [
             zh: '提示气泡',
             path: 'packages/tooltip/page.html',
             tagName: 'mc-tooltip',
-            stage: 'M3',
             summary: '提示气泡。',
           },
         ],
@@ -275,7 +252,6 @@ export const SITE = [
             zh: '折叠面板',
             path: 'packages/collapse/page.html',
             tagName: 'mc-collapse',
-            stage: 'M1',
             summary:
               '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与无障碍不用自己写。',
           },
@@ -285,7 +261,6 @@ export const SITE = [
             zh: '标签页',
             path: 'packages/tabs/page.html',
             tagName: 'mc-tabs',
-            stage: 'M3',
             summary: '标签页。',
           },
           {
@@ -294,7 +269,6 @@ export const SITE = [
             zh: '表格',
             path: 'packages/table/page.html',
             tagName: 'mc-table',
-            stage: 'M3',
             summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
           },
           {
@@ -303,7 +277,6 @@ export const SITE = [
             zh: '栅格',
             path: 'packages/grid/page.html',
             tagName: 'mc-grid',
-            stage: 'M3',
             summary: '栅格。',
           },
           {
@@ -312,7 +285,6 @@ export const SITE = [
             zh: '滚动条',
             path: 'packages/scroll-bar/page.html',
             tagName: 'mc-scroll-bar',
-            stage: 'M3',
             summary:
               '滚动条。自带覆盖式滚动条（跟着主题走），滚动本身仍是原生的：键盘、触屏惯性、锚点都照旧。',
           },
@@ -382,12 +354,11 @@ function prune(nodes, inherited = false) {
 /** 左栏要渲染的子节点：hidden 已剔除、隐藏后空掉的分组不出现 */
 export const menuOf = (entry) => prune(entry?.children ?? []);
 
-/** 按树序走一遍，回调拿得到所属分组与继承来的 hidden */
-function walk(nodes, visit, group = null, hidden = false) {
+/** 按树序走一遍（含 hidden） */
+function walk(nodes, visit) {
   for (const node of nodes) {
-    const isHidden = hidden || node.hidden === true;
-    visit(node, { group, hidden: isHidden });
-    if (hasChildren(node)) walk(node.children, visit, node.label, isHidden);
+    visit(node);
+    if (hasChildren(node)) walk(node.children, visit);
   }
 }
 
@@ -399,22 +370,6 @@ export const READY = (() => {
   });
   return out;
 })();
-
-/** **渲染面**：组件分组（hidden 的整组 / 整条不出现，空分组不出现）→ 首页卡片 */
-export const GROUPS = (() => {
-  const out = [];
-  walk(NAV, (node, { hidden }) => {
-    if (hidden || !hasChildren(node)) return;
-    const items = node.children.filter((child) => child.tagName && child.hidden !== true);
-    if (items.length) out.push({ label: node.label, summary: node.summary, items });
-  });
-  return out;
-})();
-
-/** **渲染面**：可见的组件清单（含待建），按左栏顺序，附所属分组 */
-export const ALL = GROUPS.flatMap((group) =>
-  group.items.map((item) => ({ ...item, group: group.label })),
-);
 
 /** 当前路由落在哪一支：`{ entry, node, hidden }`。**隐藏页也能命中** —— 顶栏得知道该点亮谁 */
 export function locate(route) {

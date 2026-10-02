@@ -1,7 +1,7 @@
 # mc-tabs / mc-tab
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./tabs.html` + `./tab.html` · M3 · **已实现**
+> 源码 `./tabs.html` + `./tab.html` · **已实现**
 
 标签页，**容器 + 标签**两个标签：容器管标签条、面板显隐与键盘，标签就是那一颗能点的按钮。
 

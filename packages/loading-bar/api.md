@@ -1,7 +1,7 @@
 # mc-loading-bar
 
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
-> 源码 `./loading-bar.html` · M3 · **已实现**
+> 源码 `./loading-bar.html` · **已实现**
 
 加载条。默认钉在视口顶部，也可以在容器里。**状态只有一个入口 `state`**：
 `idle` 不出现、`loading` 出现并一路缓慢爬升（**永远到不了 100%**，所以看着不像卡住）、
