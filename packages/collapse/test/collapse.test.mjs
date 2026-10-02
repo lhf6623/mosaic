@@ -121,14 +121,14 @@ const collapse = await (async () => {
     };
   });
 
-  // 禁用：读屏能感知、键盘进不来、鼠标点不动（键盘激活最终也是一次可取消 click）
+  // 禁用：键盘进不来、鼠标点不动（键盘激活最终也是一次可取消 click）
   const disabled = await page.evaluate(async () => {
     const items = [
       ...window.__deepAll('mc-collapse-item', window.__deepAll('demo-collapse-disabled')[0].shadowRoot),
     ];
     const header = items[1].shadowRoot.querySelector('.mc-header');
     const state = {
-      aria: header.getAttribute('aria-disabled'),
+      ariaDisabled: header.getAttribute('aria-disabled'),
       tabIndex: header.tabIndex,
       pointerEvents: getComputedStyle(header).pointerEvents,
     };
@@ -314,8 +314,8 @@ check(
 );
 
 check(
-  'disabled 三件套：aria-disabled + tabindex=-1 + 头部不吃指针，且拦截激活',
-  collapse.disabled.aria === 'true' &&
+  'disabled：tabindex=-1 + 头部不吃指针，且拦截激活，不写 aria-disabled',
+  collapse.disabled.ariaDisabled === null &&
     collapse.disabled.tabIndex === -1 &&
     collapse.disabled.pointerEvents === 'none' &&
     collapse.disabled.afterClick === false &&

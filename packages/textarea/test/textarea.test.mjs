@@ -1,7 +1,7 @@
 /**
  * mc-textarea · 多行输入框：值的读写（default-value 属性 vs property value）、input / change 的
  * data.value、rows 转发、auto-resize 把高度写成 scrollHeight（关掉即恢复）、
- * 字数统计只在给了 maxlength 时出现且实时更新、状态布尔与 aria 转发、前后缀插槽。
+ * 字数统计只在给了 maxlength 时出现且实时更新、状态布尔、前后缀插槽。
  * 探针现搭现拆（page.evaluate 建 #textarea-probe，跑完删掉），要等就 waitForFunction。
  */
 
@@ -58,7 +58,6 @@ export default async function run({ page, visit, check }) {
     put('states', 't-disabled', { disabled: '', rows: '2' });
     put('states', 't-readonly', { readonly: '', rows: '2' });
     put('states', 't-invalid', { invalid: '', rows: '2' });
-    put('states', 't-required', { required: '', rows: '2' });
 
     const affix = put('affix', 't-affix', { rows: '2' });
     affix.innerHTML = '<span slot="prefix" id="ta-prefix">#</span><span slot="suffix">条</span>';
@@ -317,9 +316,7 @@ export default async function run({ page, visit, check }) {
       disabledAttr: inner('t-disabled').getAttribute('disabled'),
       disabledCursor: getComputedStyle(document.getElementById('t-disabled')).cursor,
       readonly: inner('t-readonly').readOnly,
-      ariaRequired: inner('t-required').getAttribute('aria-required'),
       ariaInvalid: inner('t-invalid').getAttribute('aria-invalid'),
-      ariaRequiredOff: inner('t-plain').getAttribute('aria-required'),
       invalidBorder: (getComputedStyle(document.getElementById('t-invalid')).borderTopColor.match(/\d+/g) ?? [])
         .slice(0, 3)
         .join(','),
@@ -330,14 +327,12 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    '状态与插槽：disabled / readonly 用原生 property（禁用态光标 not-allowed）、required / invalid 进 aria-*、invalid 边框取 --mc-color-danger；前后缀落在输入区两侧，空插槽不占位',
+    '状态与插槽：disabled / readonly 用原生 property（禁用态光标 not-allowed）、不写 aria-*、invalid 边框取 --mc-color-danger；前后缀落在输入区两侧，空插槽不占位',
     states.disabled === true &&
       states.disabledAttr !== null &&
       states.disabledCursor === 'not-allowed' &&
       states.readonly === true &&
-      states.ariaRequired === 'true' &&
-      states.ariaInvalid === 'true' &&
-      states.ariaRequiredOff === 'false' &&
+      states.ariaInvalid === null &&
       states.invalidBorder === states.danger &&
       states.order &&
       states.plainPrefix === 'none' &&

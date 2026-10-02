@@ -5,7 +5,7 @@
 
 折叠面板，**容器 + 子项**两个标签：容器管外框、尺寸与互斥，子项管自己那格的开合。
 开合直接骑在原生 `<details>/<summary>` 上 —— 键盘（<kbd>Enter</kbd> / <kbd>空格</kbd>）、
-焦点、收起时内容对 <kbd>Tab</kbd> 与读屏都不可达，全是浏览器给的。
+焦点、收起时内容对 <kbd>Tab</kbd> 不可达，全是浏览器给的。
 
 ```html
 <mc-collapse accordion>
@@ -27,12 +27,12 @@
 
 ### mc-collapse-item（子项）
 
-| 名称       | 值        | 默认 | 说明                                                                      |
-| ---------- | --------- | ---- | ------------------------------------------------------------------------- |
-| `header`   | `string`  | —    | 头部文案。富内容用同名的 `header` 插槽                                    |
-| `name`     | `string`  | —    | 标识；`open` / `close` 事件的 `$event.data.name`                          |
-| `open`     | `boolean` | —    | 展开状态。**既是初始值也是运行时状态**，会反射回宿主属性                  |
-| `disabled` | `boolean` | —    | 点不动、<kbd>Tab</kbd> 跳过、读屏可感知（原生 `<details>` 没有 disabled） |
+| 名称       | 值        | 默认 | 说明                                                          |
+| ---------- | --------- | ---- | ------------------------------------------------------------- |
+| `header`   | `string`  | —    | 头部文案。富内容用同名的 `header` 插槽                        |
+| `name`     | `string`  | —    | 标识；`open` / `close` 事件的 `$event.data.name`              |
+| `open`     | `boolean` | —    | 展开状态。**既是初始值也是运行时状态**，会反射回宿主属性      |
+| `disabled` | `boolean` | —    | 点不动、<kbd>Tab</kbd> 跳过（原生 `<details>` 没有 disabled） |
 
 ## 事件
 

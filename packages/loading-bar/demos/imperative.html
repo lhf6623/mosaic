@@ -30,7 +30,7 @@
       proto: {
         /* 默认那条：模块自己挂到 body 上、钉在**视口顶部** */
         begin() {
-          loadingBar.start({ label: '正在加载页面' });
+          loadingBar.start();
         },
         finish() {
           loadingBar.done();
@@ -45,7 +45,7 @@
         /* target 那条：在**这一块**的最上沿 —— 收它只能靠 start() 返回的句柄 */
         beginPanel() {
           const panel = this.ele.shadowRoot.querySelector('.mc-panel');
-          this.panelTask = loadingBar.start({ target: panel, label: '正在刷新列表' });
+          this.panelTask = loadingBar.start({ target: panel });
         },
         finishPanel() {
           this.panelTask?.done();

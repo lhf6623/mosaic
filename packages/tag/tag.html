@@ -203,28 +203,26 @@
     }
   </style>
 
-  <span class="mc-layer" aria-hidden="true"></span>
+  <span class="mc-layer"></span>
 
   <button
     class="mc-toggle"
     type="button"
-    attr:aria-pressed="selected !== null ? 'true' : 'false'"
     :disabled="disabled !== null"
     on:click="onToggle($event)"
   ></button>
 
   <slot></slot>
 
-  <!-- 关闭：内置图标（静态图标直接用类，省一个组件请求）；无障碍名由 aria-label 给，图形本身要有语义就再 aria-hidden -->
+  <!-- 关闭：内置图标直接用类，省一个组件请求 -->
   <button
     class="mc-close"
     part="close"
     type="button"
-    aria-label="移除"
     :disabled="disabled !== null"
     on:click="onClose($event)"
   >
-    <span class="mc-icon-close" aria-hidden="true"></span>
+    <span class="mc-icon-close"></span>
   </button>
 
   <script>
@@ -248,9 +246,6 @@
       },
 
       ready() {
-        this._toggle = this.ele.shadowRoot.querySelector('.mc-toggle');
-        this._slot = this.ele.shadowRoot.querySelector('slot');
-
         // 运行时状态走 property（规范 1.4）：setter 只写宿主属性，CSS 当次就读得到（P4）
         Object.defineProperty(this.ele, 'selected', {
           configurable: true,
@@ -265,15 +260,6 @@
       attached() {
         // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
-
-        /* slotchange 覆盖「插槽内容变了」这一路；运行时不再盯子树 */
-        this._onSlotChange = () => this.applyLabel();
-        this._slot.addEventListener('slotchange', this._onSlotChange);
-        this.applyLabel();
-      },
-
-      detached() {
-        this._slot?.removeEventListener('slotchange', this._onSlotChange);
       },
 
       watch: {
@@ -284,17 +270,6 @@
       },
 
       proto: {
-        /** 插槽文本 → toggle 按钮的 aria-label（空内容就不写，避免出现没有名字的按钮） */
-        applyLabel() {
-          const text = [...this._slot.assignedNodes()]
-            .map((node) => node.textContent ?? '')
-            .join(' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          if (text) this._toggle.setAttribute('aria-label', text);
-          else this._toggle.removeAttribute('aria-label');
-        },
-
         /** 选中态以宿主属性为唯一真相；立刻写属性，事件带 selected（规范 1.4 / 1.5） */
         onToggle() {
           if (this.ele.hasAttribute('disabled')) return;

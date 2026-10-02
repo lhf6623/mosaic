@@ -1,13 +1,13 @@
 /**
- * mc-breadcrumb / mc-breadcrumb-item · 面包屑：语义（nav + ol + listitem）、分隔符两条通道、
- * 当前项与 aria-current、链接的悬停 / 焦点 / 导航、令牌定制、窄栏换行
+ * mc-breadcrumb / mc-breadcrumb-item · 面包屑：结构（nav + ol + part）、分隔符两条通道、
+ * 当前项（current 属性）、链接的悬停 / 焦点 / 导航、令牌定制、窄栏换行
  */
 
 export default async function run({ page, visit, check }) {
 /* ------------------------------------------------------------------ *
  * mc-breadcrumb —— 交互元素是插槽里的原生 <a>，所以这里盯的是组件契约：
- *   容器语义（nav / ol / aria-label）、分隔符（属性与令牌两条通道、第一项没有）、
- *   当前项（current → aria-current + 字色字重）、链接的悬停 / 焦点环 / 真实点击导航、
+ *   容器结构（nav / ol / part）、分隔符（属性与令牌两条通道、第一项没有）、
+ *   当前项（current 属性 → 字色字重）、链接的悬停 / 焦点环 / 真实点击导航、
  *   令牌定制、窄栏自动换行、动态创建不炸（P31）
  * ------------------------------------------------------------------ */
 
@@ -53,17 +53,15 @@ const crumb = await (async () => {
     };
     return {
       upgraded: !!bar.shadowRoot && items.every((i) => i.shadowRoot),
+      itemCount: items.length,
       tag: bar.tagName.toLowerCase(),
       navTag: nav.tagName,
       partBase: nav.getAttribute('part'),
-      ariaLabel: nav.getAttribute('aria-label'),
       listTag: ol.tagName,
-      listRole: ol.getAttribute('role'),
       listPart: ol.getAttribute('part'),
       listWrap: cs(ol).flexWrap,
       gap: cs(ol).gap,
-      roles: items.map((i) => i.getAttribute('role')),
-      aria: items.map((i) => i.getAttribute('aria-current')),
+      currentFlags: items.map((i) => i.hasAttribute('current')),
       colors: items.map((i) => cs(i).color),
       weights: items.map((i) => cs(i).fontWeight),
       fontSizes: items.map((i) => cs(i).fontSize),
@@ -162,8 +160,7 @@ const crumb = await (async () => {
     };
   });
 
-  /** 动态创建（P31）+ separator 属性与令牌两条通道互不踩踏 + current 运行时切换 +
-      使用者自己的 role / aria-current 不被改写 */
+  /** 动态创建（P31）+ separator 属性与令牌两条通道互不踩踏 + current 运行时切换 */
   const dynamic = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const cs = (el, pe) => getComputedStyle(el, pe);
@@ -179,10 +176,7 @@ const crumb = await (async () => {
     const atCreate = bar.getAttributeNames().length;
     bar.style.setProperty('--mc-breadcrumb-sep', "'~'");
     const items = [makeItem('一'), makeItem('二', { current: '' })];
-    // 使用者自己写了 role / aria-current：组件只补缺，不改写
-    const ownRole = makeItem('三', { role: 'presentation' });
-    const ownAria = makeItem('四', { 'aria-current': 'step' });
-    bar.append(...items, ownRole, ownAria);
+    bar.append(...items);
     document.body.append(bar);
     await wait(400);
 
@@ -191,10 +185,7 @@ const crumb = await (async () => {
       atCreate,
       shadow: !!bar.shadowRoot,
       itemShadows: items.every((i) => i.shadowRoot),
-      roles: items.map((i) => i.getAttribute('role')),
-      aria: items.map((i) => i.getAttribute('aria-current')),
-      ownRole: ownRole.getAttribute('role'),
-      ownAria: ownAria.getAttribute('aria-current'),
+      currentFlags: items.map((i) => i.hasAttribute('current')),
       token: contents(),
     };
 
@@ -208,18 +199,16 @@ const crumb = await (async () => {
     await wait(250);
     out.tokenBack = contents();
 
-    // 公开 API label → <nav aria-label>
-    bar.setAttribute('label', 'Breadcrumb');
-    await wait(250);
-    out.navLabel = bar.shadowRoot.querySelector('nav').getAttribute('aria-label');
-
-    // current 运行时切换 → aria-current 跟着走
+    // current 运行时切换 → CSS 状态跟着加 / 摘
+    out.weightBefore = cs(items[0]).fontWeight;
     items[0].setAttribute('current', '');
     await wait(250);
-    out.afterSet = items[0].getAttribute('aria-current');
+    out.afterSet = items[0].hasAttribute('current');
+    out.weightAfterSet = cs(items[0]).fontWeight;
     items[0].removeAttribute('current');
     await wait(250);
-    out.afterRemove = items[0].getAttribute('aria-current');
+    out.afterRemove = items[0].hasAttribute('current');
+    out.weightAfterRemove = cs(items[0]).fontWeight;
 
     bar.remove();
     return out;
@@ -245,11 +234,11 @@ const crumb = await (async () => {
       hash: location.hash,
       top:
         window.__deepAll('.doc-top-nav mc-button')
-          .find((b) => b.hasAttribute('aria-current'))
+          .find((b) => b.hasAttribute('data-current'))
           ?.textContent.trim() ?? null,
       nav:
         window.__inside('doc-nav', 'a')
-          .find((a) => a.hasAttribute('aria-current'))
+          .find((a) => a.hasAttribute('data-current'))
           ?.textContent.trim() ?? null,
     };
   });
@@ -273,34 +262,30 @@ const crumb = await (async () => {
 
 check(
   'mc-breadcrumb / mc-breadcrumb-item 注册并渲染出实例（全部升级）',
-  crumb.basic.upgraded && crumb.basic.roles.length === 3,
-  `升级=${crumb.basic.upgraded} · 基础演示 ${crumb.basic.roles.length} 级`,
+  crumb.basic.upgraded && crumb.basic.itemCount === 3,
+  `升级=${crumb.basic.upgraded} · 基础演示 ${crumb.basic.itemCount} 级`,
 );
 
 check(
-  '容器语义：nav[part=base] + ol[part=list] role=list，无障碍名默认「面包屑」，列表可换行',
+  '容器结构：nav[part=base] + ol[part=list]，列表可换行（nav / ol 保留原生语义）',
   crumb.basic.navTag === 'NAV' &&
     crumb.basic.partBase === 'base' &&
-    crumb.basic.ariaLabel === '面包屑' &&
     crumb.basic.listTag === 'OL' &&
-    crumb.basic.listRole === 'list' &&
     crumb.basic.listPart === 'list' &&
     crumb.basic.listWrap === 'wrap' &&
     crumb.basic.gap === '8px',
   JSON.stringify({
     nav: crumb.basic.navTag,
-    aria: crumb.basic.ariaLabel,
-    list: crumb.basic.listRole,
+    list: crumb.basic.listPart,
     wrap: crumb.basic.listWrap,
     gap: crumb.basic.gap,
   }),
 );
 
 check(
-  '每一级 role=listitem，字号跟着容器走（不落回 shadow-base 的 text-base）',
-  crumb.basic.roles.every((r) => r === 'listitem') &&
-    crumb.basic.fontSizes.every((s) => s === '14px'),
-  JSON.stringify({ roles: crumb.basic.roles, fontSizes: crumb.basic.fontSizes }),
+  '每一级字号跟着容器走（不落回 shadow-base 的 text-base）',
+  crumb.basic.fontSizes.every((s) => s === '14px'),
+  JSON.stringify({ fontSizes: crumb.basic.fontSizes }),
 );
 
 check(
@@ -317,11 +302,15 @@ check(
 );
 
 check(
-  '当前项：current → aria-current="page"，字色更实、字重更重；普通级不带 aria-current',
-  JSON.stringify(crumb.basic.aria) === JSON.stringify([null, null, 'page']) &&
+  '当前项：current 属性点亮字色更实、字重更重；普通级不带 current',
+  JSON.stringify(crumb.basic.currentFlags) === JSON.stringify([false, false, true]) &&
     crumb.basic.colors[2] !== crumb.basic.colors[0] &&
     Number(crumb.basic.weights[2]) > Number(crumb.basic.weights[0]),
-  JSON.stringify({ aria: crumb.basic.aria, colors: crumb.basic.colors, weights: crumb.basic.weights }),
+  JSON.stringify({
+    currentFlags: crumb.basic.currentFlags,
+    colors: crumb.basic.colors,
+    weights: crumb.basic.weights,
+  }),
 );
 
 check(
@@ -378,24 +367,12 @@ check(
   crumb.dynamic.atCreate === 0 &&
     crumb.dynamic.shadow &&
     crumb.dynamic.itemShadows &&
-    JSON.stringify(crumb.dynamic.roles) === JSON.stringify(['listitem', 'listitem']),
+    JSON.stringify(crumb.dynamic.currentFlags) === JSON.stringify([false, true]),
   JSON.stringify({
     atCreate: crumb.dynamic.atCreate,
     shadow: crumb.dynamic.shadow,
-    roles: crumb.dynamic.roles,
+    currentFlags: crumb.dynamic.currentFlags,
   }),
-);
-
-check(
-  '使用者自己的 role / aria-current 不被改写（组件只补缺）',
-  crumb.dynamic.ownRole === 'presentation' && crumb.dynamic.ownAria === 'step',
-  JSON.stringify({ ownRole: crumb.dynamic.ownRole, ownAria: crumb.dynamic.ownAria }),
-);
-
-check(
-  'label 属性落到 <nav aria-label>（运行时改也生效）',
-  crumb.dynamic.navLabel === 'Breadcrumb',
-  `aria-label=${crumb.dynamic.navLabel}`,
 );
 
 check(
@@ -411,14 +388,17 @@ check(
 );
 
 check(
-  'current 运行时切换：aria-current 跟着加 / 摘',
-  crumb.dynamic.aria[1] === 'page' &&
-    crumb.dynamic.afterSet === 'page' &&
-    crumb.dynamic.afterRemove === null,
+  'current 运行时切换：字重跟着加 / 摘（current 只驱动 CSS）',
+  crumb.dynamic.currentFlags[1] === true &&
+    crumb.dynamic.afterSet === true &&
+    Number(crumb.dynamic.weightAfterSet) > Number(crumb.dynamic.weightBefore) &&
+    crumb.dynamic.afterRemove === false &&
+    crumb.dynamic.weightAfterRemove === crumb.dynamic.weightBefore,
   JSON.stringify({
-    aria: crumb.dynamic.aria,
-    afterSet: crumb.dynamic.afterSet,
-    afterRemove: crumb.dynamic.afterRemove,
+    currentFlags: crumb.dynamic.currentFlags,
+    before: crumb.dynamic.weightBefore,
+    afterSet: crumb.dynamic.weightAfterSet,
+    afterRemove: crumb.dynamic.weightAfterRemove,
   }),
 );
 

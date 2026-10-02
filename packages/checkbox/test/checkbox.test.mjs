@@ -35,7 +35,6 @@ export default async function run({ page, visit, check }) {
     put('cb-plain', { value: 'b' }, '未选中');
     put('cb-indeterminate', { value: 'c', indeterminate: true }, '半选');
     put('cb-disabled', { value: 'd', disabled: true }, '禁用');
-    put('cb-required', { value: 'e', required: true }, '必填');
     put('cb-invalid', { value: 'f', invalid: true }, '校验失败');
     put('cb-sm', { size: 'sm' }, '小');
     put('cb-md', {}, '中');
@@ -117,7 +116,7 @@ export default async function run({ page, visit, check }) {
     return { prop: el.checked, changes: window.__cbChanges.slice(-1) };
   });
   check(
-    '键盘 Space 切换（可交互元素是原生 input，键盘与读屏白拿）',
+    '键盘 Space 切换（可交互元素是原生 input，键盘白拿）',
     byKeyboard.prop === true && byKeyboard.changes[0]?.data?.checked === true,
     JSON.stringify(byKeyboard),
   );
@@ -240,22 +239,18 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(disabled),
   );
 
-  /* ---------- required / invalid：转发成 aria-* + 危险色 ---------- */
-  const aria = await page.evaluate(() => {
+  /* ---------- invalid：只换危险色，不写 aria-* ---------- */
+  const state = await page.evaluate(() => {
     const rgbOf = (s) => (s.match(/\d+(?:\.\d+)?/g) ?? []).slice(0, 3).join(',');
     const token = (name) =>
       getComputedStyle(document.documentElement)
         .getPropertyValue(name)
         .trim()
         .replace(/\s+/g, ',');
-    const required = document.getElementById('cb-required').shadowRoot.querySelector('input');
     const invalidEl = document.getElementById('cb-invalid');
     const invalid = invalidEl.shadowRoot.querySelector('input');
-    const plain = document.getElementById('cb-plain').shadowRoot.querySelector('input');
     return {
-      required: required.getAttribute('aria-required'),
-      invalid: invalid.getAttribute('aria-invalid'),
-      plainRequired: plain.getAttribute('aria-required'),
+      invalidAria: invalid.getAttribute('aria-invalid'),
       boxBorder: rgbOf(
         getComputedStyle(invalidEl.shadowRoot.querySelector('.mc-box')).borderTopColor,
       ),
@@ -263,12 +258,10 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    'required / invalid 转发成内部原生 input 的 aria-required / aria-invalid；invalid 的方框换成危险色令牌',
-    aria.required === 'true' &&
-      aria.invalid === 'true' &&
-      aria.plainRequired === 'false' &&
-      aria.boxBorder === aria.danger,
-    JSON.stringify(aria),
+    'invalid 的方框换成危险色令牌，且不写 aria-*',
+    state.invalidAria === null &&
+      state.boxBorder === state.danger,
+    JSON.stringify(state),
   );
 
   /* ---------- 尺寸与颜色都走令牌，没有写死的值 ---------- */

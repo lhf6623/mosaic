@@ -61,7 +61,7 @@
     }
   </style>
 
-  <span class="mc-glyph" part="glyph" aria-hidden="true"></span>
+  <span class="mc-glyph" part="glyph"></span>
   <slot></slot>
 
   <script>
@@ -112,7 +112,6 @@
         svg.setAttribute('height', '1em');
       }
       svg.removeAttribute('style');
-      svg.setAttribute('aria-hidden', 'true');
       return svg;
     }
 
@@ -123,8 +122,6 @@
         name: '',
         /** 直接给一个 SVG 地址（相对路径按页面解析）；给了它就不再查本地 */
         src: '',
-        /** 有值 → 宿主是 role="img" + aria-label；没值 → 宿主整体 aria-hidden（装饰性图标） */
-        label: '',
         size: 'md',
         /* 默认 current：图标 95% 是装饰，强制默认语义色会让所有内联图标变色 */
         color: 'current',
@@ -154,7 +151,7 @@
       },
 
       watch: {
-        // watch 在构造期也会触发一次，那时 ready 还没跑 —— paint / applyLabel 自己守卫
+        // watch 在构造期也会触发一次，那时 ready 还没跑 —— paint 自己守卫
         name() {
           this.paint();
         },
@@ -164,9 +161,6 @@
         },
         src() {
           this.paint();
-        },
-        label() {
-          this.applyLabel();
         },
       },
 
@@ -185,21 +179,6 @@
           );
         },
 
-        /** 有 label 才是有语义的图标；否则整块（宿主一起）对读屏隐藏，图形本身永远 aria-hidden */
-        applyLabel() {
-          if (!this._live) return; // P31：挂载前写宿主属性会抛 NotSupportedError
-          const label = (this.label || '').trim();
-          if (label) {
-            this.ele.setAttribute('role', 'img');
-            this.ele.setAttribute('aria-label', label);
-            this.ele.removeAttribute('aria-hidden');
-          } else {
-            this.ele.removeAttribute('role');
-            this.ele.removeAttribute('aria-label');
-            this.ele.setAttribute('aria-hidden', 'true');
-          }
-        },
-
         /** 唯一入口：插槽 > src > name（先本地、再远程）；属性一变就走这里，用序号作废过期的那一轮 */
         async paint() {
           const glyph = this._glyph;
@@ -208,7 +187,6 @@
 
           glyph.className = 'mc-glyph';
           glyph.replaceChildren();
-          this.applyLabel();
 
           if (this.slotHasContent()) return;
 

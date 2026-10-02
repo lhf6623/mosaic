@@ -1,6 +1,6 @@
 /**
- * mc-progress · 进度条：确定态的宽度比例与 aria（valuemin / valuemax / valuenow）、
- * 不确定态没有 aria-valuenow 且内联宽度被清掉（否则会盖住 CSS 动画，P15）、
+ * mc-progress · 进度条：确定态的宽度比例、不写 role / aria-*、
+ * 不确定态内联宽度被清掉（否则会盖住 CSS 动画，P15）、
  * 语义色 == 令牌、sm/md 轨道高与宿主令牌覆盖、value / max 的 property 当次生效、::part(bar) 定制
  */
 
@@ -97,7 +97,7 @@ export default async function run({ page, visit, check }) {
 
     const ratios = await readRatios();
 
-    /** 不确定态：没有 aria-valuenow、有 aria-busy，内联宽度是空的（CSS 动画才有宽度） */
+    /** 不确定态：不写 aria-valuenow / aria-busy，内联宽度是空的（CSS 动画才有宽度） */
     const indeterminate = await page.evaluate(() => {
       const box = window.__deepAll('demo-progress-indeterminate')[0].shadowRoot;
       return window.__deepAll('mc-progress', box).map((el) => {
@@ -160,21 +160,13 @@ export default async function run({ page, visit, check }) {
       const before = { value: el.value, max: el.max, inline: fill.style.width };
 
       el.value = 50;
-      const afterValue = {
-        value: el.value,
-        inline: fill.style.width,
-        valuenow: el.getAttribute('aria-valuenow'),
-      };
+      const afterValue = { value: el.value, inline: fill.style.width };
 
       el.max = 200;
-      const afterMax = {
-        max: el.max,
-        inline: fill.style.width,
-        valuemax: el.getAttribute('aria-valuemax'),
-      };
+      const afterMax = { max: el.max, inline: fill.style.width };
 
       el.value = null;
-      const afterClear = { value: el.value, inline: fill.style.width, valuenow: el.getAttribute('aria-valuenow') };
+      const afterClear = { value: el.value, inline: fill.style.width };
 
       return { before, afterValue, afterMax, afterClear };
     });
@@ -213,15 +205,11 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'mc-progress 注册并渲染：宿主 role="progressbar" + aria-valuemin/valuemax/valuenow，内部只有一个 part="bar"、没有插槽',
-    progress.ratios.forty.role === 'progressbar' &&
-      progress.ratios.forty.valuemin === '0' &&
-      progress.ratios.forty.valuemax === '100' &&
-      progress.ratios.forty.valuenow === '40' &&
-      progress.ratios.zero.valuenow === '0' &&
-      progress.ratios.full.valuenow === '100' &&
-      progress.ratios.max.valuemax === '200' &&
-      progress.ratios.over.valuenow === '400' &&
+    'mc-progress 注册并渲染：不写 role / aria-*、内部只有一个 part="bar"、没有插槽',
+    progress.ratios.forty.role === null &&
+      progress.ratios.forty.valuemin === null &&
+      progress.ratios.forty.valuemax === null &&
+      progress.ratios.forty.valuenow === null &&
       progress.ratios.forty.slots === 0 &&
       JSON.stringify(progress.ratios.forty.parts) === JSON.stringify(['bar']) &&
       progress.failed.length === 0,
@@ -244,10 +232,10 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '不确定态：没有 aria-valuenow、加 aria-busy="true"，内联宽度被清掉（否则会盖住 :host([indeterminate]) 的 CSS，P15）',
+    '不确定态：不写 aria-valuenow / aria-busy，内联宽度被清掉（否则会盖住 :host([indeterminate]) 的 CSS，P15）',
     progress.indeterminate.length === 3 &&
-      progress.indeterminate.every((p) => p.indeterminate && !p.hasValueNow && p.busy === 'true') &&
-      progress.indeterminate.every((p) => p.role === 'progressbar') &&
+      progress.indeterminate.every((p) => p.indeterminate && !p.hasValueNow && p.busy === null) &&
+      progress.indeterminate.every((p) => p.role === null) &&
       progress.indeterminate.every((p) => p.inline === '') &&
       progress.indeterminate.every((p) => p.animationName === 'mc-progress-slide') &&
       progress.indeterminate.every((p) => p.cssWidth !== '0px'),
@@ -279,18 +267,15 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'value / max 的 property 当次生效（el.value = 50 立刻 50% + aria-valuenow）；::part(bar) 改得动填充条',
+    'value / max 的 property 当次生效（el.value = 50 立刻 50%）；::part(bar) 改得动填充条',
     progress.immediate.before.value === 25 &&
       progress.immediate.before.inline === '25%' &&
       progress.immediate.afterValue.value === 50 &&
       progress.immediate.afterValue.inline === '50%' &&
-      progress.immediate.afterValue.valuenow === '50' &&
       progress.immediate.afterMax.max === 200 &&
       progress.immediate.afterMax.inline === '25%' &&
-      progress.immediate.afterMax.valuemax === '200' &&
       progress.immediate.afterClear.value === null &&
       progress.immediate.afterClear.inline === '0%' &&
-      progress.immediate.afterClear.valuenow === '0' &&
       progress.parts.custom.bg === progress.tokens.danger &&
       progress.parts.custom.radius === '0px' &&
       progress.parts.plain.bg === progress.tokens.primary,

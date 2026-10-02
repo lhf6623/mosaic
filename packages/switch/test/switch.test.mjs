@@ -109,7 +109,7 @@ export default async function run({ page, visit, check }) {
     return { prop: el.checked, changes: window.__swChanges.slice(-1) };
   });
   check(
-    '键盘 Space 切换（可交互元素是原生 input，键盘与读屏白拿）',
+    '键盘 Space 切换（可交互元素是原生 input）',
     byKeyboard.prop === true && byKeyboard.changes[0]?.data?.checked === true,
     JSON.stringify(byKeyboard),
   );
@@ -148,8 +148,8 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    '语义白拿：内部是原生 input[type=checkbox][role=switch]',
-    semantics.tag === 'INPUT' && semantics.type === 'checkbox' && semantics.role === 'switch',
+    '内部是原生 input[type=checkbox]、不写 role',
+    semantics.tag === 'INPUT' && semantics.type === 'checkbox' && semantics.role === null,
     JSON.stringify(semantics),
   );
 

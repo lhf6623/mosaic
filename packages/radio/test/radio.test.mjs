@@ -242,7 +242,7 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(reEnabled),
   );
 
-  /* ---------- 键盘可达 / 读屏语义 ---------- */
+  /* ---------- 键盘可达：原生 input 与共享 name ---------- */
   const a11y = await page.evaluate(() => {
     const group = document.getElementById('rg-a');
     const input = document.getElementById('r-a').shadowRoot.querySelector('input');
@@ -257,14 +257,14 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    '语义白拿：内部是原生 input[type=radio]、共享组的 name；组补 role="radiogroup" + aria-orientation',
+    '键盘可达：内部是原生 input[type=radio]、共享组的 name、组不写 role / aria-*',
     a11y.tag === 'INPUT' &&
       a11y.type === 'radio' &&
       a11y.name === 'plan' &&
       a11y.partName === 'part' &&
-      a11y.role === 'radiogroup' &&
-      a11y.orientation === 'horizontal' &&
-      a11y.columnOrientation === 'vertical',
+      a11y.role === null &&
+      a11y.orientation === null &&
+      a11y.columnOrientation === null,
     JSON.stringify(a11y),
   );
 

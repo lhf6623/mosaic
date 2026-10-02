@@ -28,7 +28,7 @@ message 是命令式浮层（自己进场、自己走，不占版面）。
 | `variant`  | `'subtle' \| 'solid' \| 'outline'`                                       | `subtle`  | 浅底深字 / 实心 / 描边（三档都保留 1px 边框，切换时高度不抖）                                        |
 | `heading`  | `string`                                                                 | —         | 标题纯文本；富内容走 `title` 插槽                                                                    |
 | `icon`     | `boolean`                                                                | —         | 左侧出现该色的内置语义图形；换成自己的图标走 `icon` 插槽                                             |
-| `closable` | `boolean`                                                                | —         | 右侧出现 × 原生按钮（`aria-label="关闭"`，命中区 32×32），点击发 `close`                             |
+| `closable` | `boolean`                                                                | —         | 右侧出现 × 原生按钮（命中区 32×32），点击发 `close`                                                  |
 
 ## 事件
 

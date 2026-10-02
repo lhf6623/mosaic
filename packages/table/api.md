@@ -23,7 +23,7 @@
 | `columns`    | `string`  | —          | 列定义的 JSON 字符串（属性通道只作初始值）；运行时用 property 传 `{ key, title }[]` |
 | `striped`    | `boolean` | —          | 斑马纹：偶数行换底色                                                                |
 | `hoverable`  | `boolean` | —          | 悬停行换底色                                                                        |
-| `loading`    | `boolean` | —          | 加载中：表格 `aria-busy="true"`，并显示 `loading` 插槽                              |
+| `loading`    | `boolean` | —          | 加载中：显示 `loading` 插槽                                                         |
 | `empty-text` | `string`  | `暂无数据` | 没有数据时 `empty` 插槽里的兜底文案                                                 |
 
 ## 插槽

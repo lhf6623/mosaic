@@ -147,7 +147,7 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 图标（demo-alert-icon）：icon 打开才有，图形按 color 切换；内置图形带 aria-hidden */
+    /** 图标（demo-alert-icon）：icon 打开才有，图形按 color 切换 */
     const icons = await page.evaluate(() => {
       const box = window.__deepAll('demo-alert-icon')[0].shadowRoot;
       return window.__deepAll('mc-alert', box).map((el) => {
@@ -184,7 +184,7 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** closable（demo-alert-closable）：× 的命中区 / 无障碍名 / 负外边距；不可关的实例里 × 是隐藏的 */
+    /** closable（demo-alert-closable）：× 的命中区 / 负外边距；不可关的实例里 × 是隐藏的 */
     const closable = await page.evaluate(() => {
       const read = (el) => {
         const btn = el.shadowRoot.querySelector('.mc-close');
@@ -482,14 +482,14 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'mc-alert 注册并渲染出实例，每个实例只有一个原生按钮（×），内部没有别的控件，图标容器是 1 个 mc-icon 且 aria-hidden',
+    'mc-alert 注册并渲染出实例，每个实例只有一个原生按钮（×），内部没有别的控件，图标容器是 1 个 mc-icon 且不写 aria-hidden',
     alert.overview.upgraded &&
       alert.overview.total >= 25 &&
       alert.overview.innerLinks === 0 &&
       JSON.stringify(alert.overview.buttonSets) === JSON.stringify(['mc-close']) &&
       // 改造前是 4 个手绘图形（4 个 svg 节点）；现在图形住在 mc-icon 的 shadow 里，本组件只留 1 个实例
       JSON.stringify(alert.overview.glyphSets) === JSON.stringify([1]) &&
-      JSON.stringify(alert.overview.glyphsHidden) === JSON.stringify(['true']),
+      JSON.stringify(alert.overview.glyphsHidden) === JSON.stringify([null]),
     `${alert.overview.total} 条 · 按钮=${JSON.stringify(alert.overview.buttonSets)} · 图形=${JSON.stringify(alert.overview.glyphSets)}`,
   );
 
@@ -598,12 +598,12 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'closable 的 ×：part="close" 的原生按钮、aria-label="关闭"、命中区 32×32，负外边距让它不把提示条撑高',
+    'closable 的 ×：part="close" 的原生按钮、不写 aria-label、命中区 32×32，负外边距让它不把提示条撑高',
     alert.closable.closeHidden.closable === false &&
       alert.closable.closeHidden.display === 'none' &&
       alert.closable.closable.every((c) => c.closable && c.display === 'flex') &&
       alert.closable.closable.every(
-        (c) => c.tag === 'BUTTON' && c.type === 'button' && c.ariaLabel === '关闭' && c.part === 'close',
+        (c) => c.tag === 'BUTTON' && c.type === 'button' && c.ariaLabel === null && c.part === 'close',
       ) &&
       alert.closable.closable.every((c) => c.width === 32 && c.height === 32) &&
       alert.closable.closable.every((c) => c.marginTop === '-6px') &&

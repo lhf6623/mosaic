@@ -1,6 +1,6 @@
 /**
  * mc-tabs / mc-tab · 标签页：初始值、点击切换、value property、方向键、change 载荷、
- * aria 与 roving tabindex、禁用不可选（packages/tabs）。
+ * roving tabindex、禁用不可选（packages/tabs）。
  */
 
 export default async function run({ page, visit, check }) {
@@ -68,7 +68,7 @@ export default async function run({ page, visit, check }) {
     .catch(() => {});
   await page.waitForTimeout(300);
 
-  /** 探针当前状态：标签 / 面板 / aria 三处一起读，避免只对了一半 */
+  /** 探针当前状态：标签 / 面板 / tabindex 三处一起读，避免只对了一半 */
   const snapshot = () =>
     page.evaluate(() => {
       const tabs = document.querySelector('#p-tabs');
@@ -127,13 +127,12 @@ export default async function run({ page, visit, check }) {
     }),
   );
   check(
-    'aria：role=tab/tabpanel、aria-selected、aria-controls→面板 id、roving tabindex（只有选中项是 0）',
-    JSON.stringify(initial.role) === JSON.stringify(['tab', 'tab', 'tab']) &&
-      JSON.stringify(initial.ariaSelected) === JSON.stringify(['false', 'true', 'false']) &&
-      JSON.stringify(initial.tabIndex) === JSON.stringify([-1, 0, -1]) &&
-      initial.controls.every((id) => typeof id === 'string' && id.length > 0) &&
-      new Set(initial.controls).size === 3 &&
-      JSON.stringify(initial.panelRole) === JSON.stringify(['tabpanel', 'tabpanel', 'tabpanel']),
+    '不写 role / aria-*：roving tabindex 仍然只有选中项是 0',
+    initial.role.every((r) => r === null) &&
+      initial.ariaSelected.every((v) => v === null) &&
+      initial.controls.every((v) => v === null) &&
+      initial.panelRole.every((v) => v === null) &&
+      JSON.stringify(initial.tabIndex) === JSON.stringify([-1, 0, -1]),
     JSON.stringify(initial),
   );
   check(

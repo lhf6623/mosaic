@@ -84,7 +84,7 @@
       overflow-wrap: anywhere;
     }
 
-    /* ---------- 图标：跟着 type 换色（装饰性，mc-icon 自己 aria-hidden） ---------- */
+    /* ---------- 图标：跟着 type 换色 ---------- */
     .mc-glyph {
       flex: none;
       display: inline-flex;
@@ -125,15 +125,14 @@
     }
   </style>
 
-  <!-- 根子元素（P42）：o-fill 宿主 + aria-live 都挂在它身上；aria-live 跟紧急程度走，用 attr: 绑（P10） -->
-  <div class="mc-list" role="log" attr:aria-live="live" attr:aria-label="'通知'">
+  <!-- 根子元素（P42）：o-fill 宿主挂在它身上 -->
+  <div class="mc-list">
     <o-fill :value="rows" fill-key="id">
       <div style="display: contents">
         <div
           class="mc-item"
           attr:data-type="$data.type"
           attr:data-closable="$data.closable ? '' : null"
-          attr:role="$data.assertive ? 'alert' : null"
           attr:data-index="$index"
         >
           <o-if :value="$data.icon">
@@ -142,13 +141,8 @@
             </span>
           </o-if>
           <span class="mc-text">{{$data.text}}</span>
-          <button
-            class="mc-close"
-            type="button"
-            attr:aria-label="'关闭提示：' + $data.text"
-            attr:data-index="$index"
-          >
-            <mc-icon name="close" aria-hidden="true"></mc-icon>
+          <button class="mc-close" type="button" attr:data-index="$index">
+            <mc-icon name="close"></mc-icon>
           </button>
         </div>
       </div>
@@ -163,11 +157,8 @@
       return {
         tag: 'mc-message',
 
-        /* aria-live / role 由数据决定：error 走 assertive + role=alert，其余 polite 的 log */
         data: {
           rows: [],
-          live: 'polite',
-          assertive: false,
         },
 
         ready() {
@@ -208,16 +199,11 @@
           /** 推一条消息。⚠️ 必须原地 push：实测整体替换 rows 之后 o-fill 完全不更新（且不报错）。 */
           push(item) {
             this.rows.push(item);
-            // 紧急程度 = 当前队列里最急的那条（error 优先）
-            this.assertive = this.rows.some((r) => r.type === 'error');
-            this.live = this.assertive ? 'assertive' : 'polite';
           },
 
           /** 按位置移除（DOM → 数据只能靠位置）。 */
           removeAt(index) {
             const [removed] = this.rows.splice(index, 1);
-            this.assertive = this.rows.some((r) => r.type === 'error');
-            this.live = this.assertive ? 'assertive' : 'polite';
             return removed ?? null;
           },
 
@@ -225,8 +211,6 @@
           clear() {
             const removed = [...this.rows];
             this.rows.length = 0;
-            this.assertive = false;
-            this.live = 'polite';
             return removed;
           },
 

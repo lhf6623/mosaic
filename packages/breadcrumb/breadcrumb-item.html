@@ -53,40 +53,6 @@
         // 布尔属性默认值必须是 null，否则 <mc-breadcrumb-item current> 会被默认值冲掉（P1）
         current: null,
       },
-
-      attached() {
-        // 宿主属性一律等构造期结束再写（P31）
-        this.applyRole();
-        this.applyCurrent();
-      },
-
-      watch: {
-        current() {
-          // 首次触发落在构造期，跳过（P5）
-          if (this._currentWatchInit === undefined) {
-            this._currentWatchInit = true;
-            return;
-          }
-          this.applyCurrent();
-        },
-      },
-
-      proto: {
-        applyRole() {
-          if (!this.ele.hasAttribute('role')) this.ele.setAttribute('role', 'listitem');
-        },
-
-        /** current → aria-current="page"。⚠️ 只摘掉组件自己写上去的那个，使用者手写的 aria-current 不动 */
-        applyCurrent() {
-          if (this.ele.hasAttribute('current')) {
-            this.ele.setAttribute('aria-current', 'page');
-            this._ariaCurrent = true;
-          } else if (this._ariaCurrent) {
-            this.ele.removeAttribute('aria-current');
-            this._ariaCurrent = false;
-          }
-        },
-      },
     });
   </script>
 </template>

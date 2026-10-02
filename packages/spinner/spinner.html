@@ -68,8 +68,7 @@
     }
   </style>
 
-  <!-- 纯装饰：语义在宿主上（role="status" + aria-label），图形本身对读屏隐藏 -->
-  <span class="mc-spinner" aria-hidden="true"></span>
+  <span class="mc-spinner"></span>
 
   <script>
     /* color 也收 hex：旋转图形没有色槽，color 直接就是前景色，所以用 fg 模式；'current' 交给 CSS */
@@ -84,37 +83,17 @@
         size: 'md',
         /* 默认 current：spinner 几乎总是嵌在按钮 / 文字里，强制默认语义色会让它跟周围脱节 */
         color: 'current',
-        /** 屏幕阅读器文案。它不显示在界面上，所以默认值就是它的全部内容 */
-        label: '加载中',
       },
 
       attached() {
-        this._live = true;
-        // 宿主属性等构造期结束再写（P31）
-        this.ele.setAttribute('role', 'status');
-        // 宿主 style 同理，color 的首次同步在这里
+        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
-        this.applyLabel();
       },
 
       watch: {
-        // watch 在构造期也会触发一次（P5），applyLabel 里的 _live 守卫把它挡掉
-        label() {
-          this.applyLabel();
-        },
         // color 收 hex：首次触发落在构造期，跳过由 colorAttr 内部处理
         color(value) {
           color.change(this.ele, value);
-        },
-      },
-
-      proto: {
-        /** label → 宿主的 aria-label（空值就不写，避免出现没有名字的 status） */
-        applyLabel() {
-          if (!this._live) return; // P31：挂载前写宿主属性会抛 NotSupportedError
-          const label = (this.label || '').trim();
-          if (label) this.ele.setAttribute('aria-label', label);
-          else this.ele.removeAttribute('aria-label');
         },
       },
     });

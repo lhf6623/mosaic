@@ -1,10 +1,10 @@
 <!--
-  <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（aria-current）；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
+  <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（data-current）；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
   ⚠️ 路由变化只换 rows：o-fill 按 fill-key 复用节点，同分区切页不重建列表 —— 改这里时请手动验一次；mc-menu / mc-menu-item / mc-scroll-bar 由外壳 docs/layout.html 统一 <l-m> 进来。
 -->
 <template component>
   <style>
-    /* 未实现的组件压暗一档；当前项高亮由 mc-menu 负责：插槽的 aria-current → 宿主 data-current */
+    /* 未实现的组件压暗一档；当前项高亮由 mc-menu 负责：插槽的 data-current → 宿主 data-current */
     a[data-status='planned'] {
       opacity: 0.72;
     }
@@ -50,7 +50,7 @@
                   attr:rel="$data.rel"
                   attr:title="$data.title"
                   attr:data-status="$data.status"
-                  attr:aria-current="$data.aria"
+                  attr:data-current="$data.current"
                   >{{$data.name}}</a
                 >
               </mc-menu-item>
@@ -64,7 +64,7 @@
                 attr:rel="$data.rel"
                 attr:title="$data.title"
                 attr:data-status="$data.status"
-                attr:aria-current="$data.aria"
+                attr:data-current="$data.current"
                 >{{$data.name}}</a
               >
             </mc-menu-item>
@@ -98,7 +98,7 @@
         rel: ready ? null : 'noreferrer',
         title: page.summary ? (ready ? page.summary : `待建 —— ${page.summary}`) : null,
         status: ready ? null : 'planned',
-        aria: ready && page.path === current ? 'page' : null,
+        current: ready && page.path === current ? 'page' : null,
       };
     };
 

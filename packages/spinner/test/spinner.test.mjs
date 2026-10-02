@@ -1,7 +1,7 @@
 /**
  * mc-spinner · 加载指示：三档尺寸随继承字号缩放（1em / 1.5em / 2em）、
  * color 默认 current 继承父级文字色（shadow-base 的 :host reset 会掐断继承，这条守着）、
- * 语义色 == 令牌、label → aria-label（宿主 role="status"、图形 aria-hidden）、
+ * 语义色 == 令牌、不写 role / aria-*、
  * 动画时长走 --mc-spinner-duration（宿主覆盖就跟着变）
  */
 
@@ -40,7 +40,7 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 全局：实例数、升级、图形是唯一子元素且对读屏隐藏、没有插槽 / part */
+    /** 全局：实例数、升级、图形是唯一子元素、没有插槽 / part */
     const overview = await page.evaluate(() => {
       const all = window.__deepAll('mc-spinner');
       const read = (el) => {
@@ -72,7 +72,7 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 探针：三档尺寸在两种父字号下的表现；current 继承；令牌覆盖；label 的运行时改动 */
+    /** 探针：三档尺寸在两种父字号下的表现；current 继承；令牌覆盖 */
     await page.evaluate(() => {
       const host = document.createElement('div');
       host.id = 'spinner-probe';
@@ -131,9 +131,9 @@ export default async function run({ page, visit, check }) {
           danger: cs('s-danger').color,
           neutral: cs('s-neutral').color,
         },
-        labels: {
-          default: window.__deepAll('mc-spinner')[0].getAttribute('aria-label'),
-          custom: el('s-label').getAttribute('aria-label'),
+        noAria: {
+          role: el('s-label').getAttribute('role'),
+          aria: el('s-label').getAttribute('aria-label'),
         },
         token: {
           name: glyph('s-token').animationName,
@@ -142,52 +142,22 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** label 是活的：watch 里改宿主 aria-label；清空就不留一个没名字的 status */
-    const labelWatch = await (async () => {
-      await page.evaluate(() => {
-        document.getElementById('s-label').setAttribute('label', '换了个名字');
-      });
-      await page
-        .waitForFunction(
-          () => document.getElementById('s-label').getAttribute('aria-label') === '换了个名字',
-          { timeout: 3000 },
-        )
-        .catch(() => {});
-      const changed = await page.evaluate(() => ({
-        ariaLabel: document.getElementById('s-label').getAttribute('aria-label'),
-        shown: document.getElementById('s-label').textContent.trim(),
-      }));
-      await page.evaluate(() => {
-        document.getElementById('s-label').setAttribute('label', '');
-      });
-      await page
-        .waitForFunction(() => !document.getElementById('s-label').hasAttribute('aria-label'), {
-          timeout: 3000,
-        })
-        .catch(() => {});
-      const empty = await page.evaluate(() => ({
-        hasAriaLabel: document.getElementById('s-label').hasAttribute('aria-label'),
-        role: document.getElementById('s-label').getAttribute('role'),
-      }));
-      return { changed, empty };
-    })();
-
     await page.evaluate(() => document.getElementById('spinner-probe')?.remove());
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { tokens, overview, probe, labelWatch, failed };
+    return { tokens, overview, probe, failed };
   })();
 
   check(
-    'mc-spinner 注册并渲染：宿主 role="status"、图形是唯一子元素且 aria-hidden、没有插槽也没有 part',
+    'mc-spinner 注册并渲染：不写 role / aria-*、图形是唯一子元素、没有插槽也没有 part',
     spinner.overview.upgraded &&
       spinner.overview.total >= 12 &&
-      JSON.stringify(spinner.overview.roles) === JSON.stringify(['status']) &&
+      JSON.stringify(spinner.overview.roles) === JSON.stringify([null]) &&
       JSON.stringify(spinner.overview.slots) === JSON.stringify([0]) &&
       JSON.stringify(spinner.overview.parts) === JSON.stringify([0]) &&
       JSON.stringify(spinner.overview.children) === JSON.stringify(['mc-spinner']) &&
-      JSON.stringify(spinner.overview.glyphHidden) === JSON.stringify(['true']) &&
+      JSON.stringify(spinner.overview.glyphHidden) === JSON.stringify([null]) &&
       spinner.overview.innerControls === 0 &&
       spinner.failed.length === 0,
     `${spinner.overview.total} 个 · ${JSON.stringify(spinner.overview)} · ${spinner.failed.join(' | ') || '无 404 / 报错'}`,
@@ -226,14 +196,9 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'label → 宿主的 aria-label（默认「加载中」，改属性立刻跟上；清空就不留一个没有名字的 status）',
-    spinner.probe.labels.default === '加载中' &&
-      spinner.probe.labels.custom === '正在同步' &&
-      spinner.labelWatch.changed.ariaLabel === '换了个名字' &&
-      spinner.labelWatch.changed.shown === '' &&
-      spinner.labelWatch.empty.hasAriaLabel === false &&
-      spinner.labelWatch.empty.role === 'status',
-    JSON.stringify({ ...spinner.probe.labels, ...spinner.labelWatch }),
+    '不写 role / aria-*：label 属性已不再是接口，不给宿主任何语义',
+    spinner.probe.noAria.role === null && spinner.probe.noAria.aria === null,
+    JSON.stringify(spinner.probe.noAria),
   );
 
   check(

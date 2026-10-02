@@ -462,7 +462,8 @@ export default async function run({ page, visit, check }) {
     '面板里的 mc-menu-item 可点：点击冒泡到 mc-dropdown（composedPath 里有菜单项），面板不自己收',
     itemResult.clicks.length >= 1 &&
       itemResult.clicks.every(Boolean) &&
-      itemResult.itemRole === 'listitem' &&
+      /* mc-menu-item 不再写 role（容器与条目都不碰 role / aria-*） */
+      itemResult.itemRole === null &&
       itemResult.buttonText === '个人资料' &&
       itemResult.open === true,
     JSON.stringify(itemResult),

@@ -184,9 +184,9 @@
   </style>
 
   <div part="base" class="mc-base">
-    <!-- 图标：内置图形来自 mc-icon（不给 label，自身即 aria-hidden 装饰）；slot="icon" 是使用者的内容 -->
+    <!-- 图标：内置图形来自 mc-icon；slot="icon" 是使用者的内容 -->
     <span class="mc-icon" part="icon">
-      <mc-icon class="mc-glyphs" size="lg" aria-hidden="true" :name="glyphName"></mc-icon>
+      <mc-icon class="mc-glyphs" size="lg" :name="glyphName"></mc-icon>
       <slot name="icon"></slot>
     </span>
 
@@ -195,8 +195,8 @@
       <div class="mc-body" part="body"><slot></slot></div>
     </div>
 
-    <!-- 关闭：无障碍名由按钮自己的 aria-label 给 -->
-    <button class="mc-close" part="close" type="button" aria-label="关闭" on:click="onClose()">
+    <!-- 关闭：右侧的 × 按钮，命中区 32×32 -->
+    <button class="mc-close" part="close" type="button" on:click="onClose()">
       <mc-icon name="close"></mc-icon>
     </button>
   </div>

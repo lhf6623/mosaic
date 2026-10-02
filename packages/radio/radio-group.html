@@ -70,9 +70,6 @@
 
       attached() {
         this._mounted = true; // 宿主属性只能在这之后写（P31）
-        // 读屏语义：原生 radio 分居各自的 shadow root，AT 不会自己把它们当成一组
-        if (!this.ele.hasAttribute('role')) this.ele.setAttribute('role', 'radiogroup');
-        this.applyA11y();
 
         this._slot = this.ele.shadowRoot.querySelector('slot');
         this._onSlotChange = () => this.onSlotChange();
@@ -108,9 +105,6 @@
         },
         disabled() {
           this.syncChildren();
-        },
-        direction() {
-          this.applyA11y();
         },
       },
 
@@ -174,14 +168,6 @@
           if (!this._mounted) return;
           const value = this.groupValue();
           if (this.ele.getAttribute('value') !== value) this.ele.setAttribute('value', value);
-        },
-
-        applyA11y() {
-          if (!this._mounted) return;
-          this.ele.setAttribute(
-            'aria-orientation',
-            this.direction === 'column' ? 'vertical' : 'horizontal',
-          );
         },
 
         onSlotChange() {

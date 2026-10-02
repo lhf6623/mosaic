@@ -1,6 +1,6 @@
 /**
- * mc-scroll-bar · 滚动条：不溢出时「什么都没有」（无条子、无 tabindex / role，不占 tab 停靠点）、
- * 溢出时 a11y 三连 + 滑块比例与位置、原生滚动条被藏掉、条子是覆盖式（不占内容宽度）、
+ * mc-scroll-bar · 滚动条：不溢出时「什么都没有」（无条子、无 tabindex，不占 tab 停靠点）、
+ * 溢出时挂 tabindex + 滑块比例与位置、原生滚动条被藏掉、条子是覆盖式（不占内容宽度）、
  * 条子平时藏着（鼠标移入 / 键盘焦点 / 拖拽中才淡入）、reveal="always" 常显、scroll 事件从宿主冒泡、
  * 拖滑块真的能滚、内容变高滑块跟着变短、axis="x" 横向
  */
@@ -27,13 +27,13 @@ export default async function run({ page, visit, check }) {
       box.id = 'sa-probe';
       box.style.cssText = 'position:fixed;left:0;top:0;width:300px;z-index:1200';
       box.innerHTML =
-        '<mc-scroll-bar id="sa-fit" label="装得下" style="height:60px">' +
+        '<mc-scroll-bar id="sa-fit" style="height:60px">' +
         '<div style="height:40px">a</div></mc-scroll-bar>' +
-        '<mc-scroll-bar id="sa-over" label="装不下" style="height:100px">' +
+        '<mc-scroll-bar id="sa-over" style="height:100px">' +
         '<div id="sa-content" style="height:400px">b</div></mc-scroll-bar>' +
-        '<mc-scroll-bar id="sa-x" axis="x" label="横向" style="height:60px">' +
+        '<mc-scroll-bar id="sa-x" axis="x" style="height:60px">' +
         '<div style="width:900px">c</div></mc-scroll-bar>' +
-        '<mc-scroll-bar id="sa-always" reveal="always" label="常显" style="height:100px">' +
+        '<mc-scroll-bar id="sa-always" reveal="always" style="height:100px">' +
         '<div style="height:400px">d</div></mc-scroll-bar>';
       document.body.append(box);
       /* scroll 事件是从宿主上重发的，挂在 document 上就说明它真的冒泡出来了 */
@@ -57,7 +57,7 @@ export default async function run({ page, visit, check }) {
       return {
         fit: {
           overflow: fit.hasAttribute('data-overflow'),
-          attrs: ['tabindex', 'role', 'aria-label'].filter((a) =>
+          attrs: ['tabindex'].filter((a) =>
             q('sa-fit', '.mc-viewport').hasAttribute(a),
           ),
           barOpacity: getComputedStyle(q('sa-fit', '.mc-bar')).opacity,
@@ -66,8 +66,6 @@ export default async function run({ page, visit, check }) {
           overflow: over.hasAttribute('data-overflow'),
           dataAxis: over.getAttribute('data-axis'),
           tabindex: vp.getAttribute('tabindex'),
-          role: vp.getAttribute('role'),
-          ariaLabel: vp.getAttribute('aria-label'),
           scrollbarWidth: getComputedStyle(vp).scrollbarWidth,
           /* 覆盖式：viewport 宽度 == 宿主宽度（条子不占内容宽度） */
           widthMatches: Math.round(vp.clientWidth) === Math.round(host.width),
@@ -180,7 +178,7 @@ export default async function run({ page, visit, check }) {
           .__deep('.doc-body')
           .insertAdjacentHTML(
             'afterbegin',
-            '<mc-scroll-bar id="sa-wheel" label="滚轮" style="height:120px">' +
+            '<mc-scroll-bar id="sa-wheel" style="height:120px">' +
               '<div style="height:900px">w</div></mc-scroll-bar>',
           );
       });
@@ -456,7 +454,7 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    '不溢出时什么都没有：无条子（opacity 0）、也没有 tabindex / role / aria-label —— 不留没用的 tab 停靠点',
+    '不溢出时什么都没有：无条子（opacity 0）、也没有 tabindex —— 不留没用的 tab 停靠点',
     area.probe.fit.overflow === false &&
       area.probe.fit.attrs.length === 0 &&
       area.probe.fit.barOpacity === '0',
@@ -464,11 +462,9 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '溢出时挂上 a11y 三连（tabindex=0 / region / label）、标出 [data-overflow]，轴落到 [data-axis]',
+    '溢出时挂上 tabindex=0、标出 [data-overflow]，轴落到 [data-axis]',
     area.probe.over.overflow === true &&
       area.probe.over.tabindex === '0' &&
-      area.probe.over.role === 'region' &&
-      area.probe.over.ariaLabel === '装不下' &&
       area.probe.over.dataAxis === 'y',
     JSON.stringify(area.probe.over),
   );
@@ -483,10 +479,10 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '结构与约定一致：part 是 viewport / bar / thumb，条子对读屏隐藏，内容走默认插槽',
+    '结构与约定一致：part 是 viewport / bar / thumb，条子不写 aria-hidden，内容走默认插槽',
     JSON.stringify(area.probe.structure.parts) === JSON.stringify(['viewport', 'bar', 'thumb']) &&
-      area.probe.structure.barHidden === 'true' &&
-      area.probe.structure.thumbHidden === 'true' &&
+      area.probe.structure.barHidden === null &&
+      area.probe.structure.thumbHidden === null &&
       area.probe.structure.slots === 1,
     JSON.stringify(area.probe.structure),
   );

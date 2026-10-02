@@ -38,10 +38,9 @@ tag 是「内容本身」的标签，可以做两件交互的事 —— 可关�
   于是 6 色 + 3 外观 = 9 条规则，而不是 18 条组合规则。
 
 交互一律落在**原生元素**上，但刻意不「包一层按钮」：checkable 是 shadow 里一个铺满宿主的
-透明 <button aria-pressed>，内容留在它旁边的默认插槽里（mc-button 同一种做法）。
+透明 <button>，内容留在它旁边的默认插槽里（mc-button 同一种做法）。
 这样 closable 的关闭按钮能与它做**兄弟**而不是嵌套 —— HTML 不允许 button 里再放 button；
 关闭按钮靠 z-index 压在 toggle 层上面，点它不会连带切换选中。
-代价是那个透明按钮是空的，无障碍名要把插槽文本镜像成 aria-label（见 applyLabel）。
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM（同 mc-menu / mc-breadcrumb）：
 使用者自己在事件里 remove() 或改数据。
@@ -66,8 +65,8 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 自己在事件里 `el.remove()` 或改数据。可关 + 可选同时开时，× 压在 toggle 层上面（z-index 分开），
 点 × 只关不选。
 
-**交互元素都是原生按钮**：`checkable` 是 shadow 里一个铺满宿主的透明 `<button aria-pressed>`
-（名字从插槽文本镜像过来），`closable` 的 × 是 `part="close"` 的原生按钮 —— 键盘
+**交互元素都是原生按钮**：`checkable` 是 shadow 里一个铺满宿主的透明 `<button>`，
+`closable` 的 × 是 `part="close"` 的原生按钮 —— 键盘
 <kbd>Space</kbd> / <kbd>Enter</kbd> 可切换，焦点环用 `--mc-color-ring`。
 
 ## 相邻单元

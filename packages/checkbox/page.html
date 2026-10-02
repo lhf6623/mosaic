@@ -23,8 +23,7 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         <code>checked</code> 既是初始值也是运行时状态；<code>value</code> 是提交时带出去的值。
-        文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中 —— 别用
-        <code>aria-label</code> 兜。
+        文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
       </p>
       <demo-checkbox-basic></demo-checkbox-basic>
       <mc-collapse class="doc-demo-code">
@@ -71,9 +70,7 @@
 
     <section class="doc-demo">
       <h3>校验态</h3>
-      <p class="doc-hint">
-        <code>required</code> / <code>invalid</code> 只声明「语义 + 颜色」，不做校验。
-      </p>
+      <p class="doc-hint"><code>invalid</code> 只声明「颜色」，不做校验。</p>
       <demo-checkbox-validation></demo-checkbox-validation>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码"

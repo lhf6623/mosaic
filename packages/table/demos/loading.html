@@ -5,7 +5,7 @@
     export default async () => ({
       tag: 'demo-table-loading',
 
-      /* loading 期间表格 aria-busy="true"，loading 插槽显示在表格下面 */
+      /* loading 期间 loading 插槽显示在表格下面 */
       ready() {
         const table = this.ele.shadowRoot.querySelector('#t');
         table.columns = [{ key: 'name', title: '姓名' }];

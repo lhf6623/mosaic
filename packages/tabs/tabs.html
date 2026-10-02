@@ -54,16 +54,13 @@
     }
   </style>
 
-  <div class="mc-list" part="list" role="tablist" aria-orientation="horizontal">
+  <div class="mc-list" part="list">
     <slot></slot>
-    <span class="mc-indicator" part="indicator" aria-hidden="true"></span>
+    <span class="mc-indicator" part="indicator"></span>
   </div>
   <div class="mc-panel" part="panel"><slot name="panel"></slot></div>
 
   <script>
-    /* aria 关联用的 id 要在文档里唯一（同一页可以有多个 mc-tabs），所以带一个实例序号 */
-    let instanceSeq = 0;
-
     export default async () => ({
       tag: 'mc-tabs',
 
@@ -76,7 +73,6 @@
         const root = this.ele.shadowRoot;
         this._list = root.querySelector('.mc-list');
         this._indicator = root.querySelector('.mc-indicator');
-        this._seq = ++instanceSeq;
 
         /* 运行时值：宿主 DOM property（P18）。这里只挂访问器，不写宿主属性（构造期写宿主会抛，P31） */
         Object.defineProperty(this.ele, 'value', {
@@ -98,7 +94,7 @@
         this.ele.addEventListener('click', this._onClick);
         this.ele.addEventListener('keydown', this._onKeydown);
 
-        /* 增删标签 / 改 value / 改 disabled 都要重新同步；我们自己写的 selected / hidden / aria-* / id 不在过滤表里，不会自激 */
+        /* 增删标签 / 改 value / 改 disabled 都要重新同步；我们自己写的 selected / hidden 不在过滤表里，不会自激 */
         this._mo = new MutationObserver(() => this.applyState());
         this._mo.observe(this.ele, {
           childList: true,
@@ -150,42 +146,31 @@
           return first ? (first.getAttribute('value') ?? '') : '';
         },
 
-        /** 把「谁是激活项」同时落到四处：标签的 selected、button 的 aria-selected / roving tabindex / aria-controls、面板的 role / hidden / aria-labelledby、指示条；面板用 hidden 常驻 DOM，切回来内容还在 */
+        /** 把「谁是激活项」落到三处：标签的 selected、button 的 roving tabindex、面板的 hidden；面板用 hidden 常驻 DOM，切回来内容还在 */
         applyState() {
           const active = this.activeValue();
-          const tabs = this.tabList().map((tab, index) => {
-            if (!tab.id) tab.id = `mc-tabs-${this._seq}-tab-${index}`;
-            return {
-              tab,
-              value: tab.getAttribute('value') ?? '',
-              base: tab.shadowRoot?.querySelector('.mc-base') ?? null,
-            };
-          });
-          const panels = this.panelList().map((panel, index) => {
-            if (!panel.id) panel.id = `mc-tabs-${this._seq}-panel-${index}`;
-            return { panel, value: panel.getAttribute('value') ?? '' };
-          });
+          const tabs = this.tabList().map((tab) => ({
+            tab,
+            value: tab.getAttribute('value') ?? '',
+            base: tab.shadowRoot?.querySelector('.mc-base') ?? null,
+          }));
+          const panels = this.panelList().map((panel) => ({
+            panel,
+            value: panel.getAttribute('value') ?? '',
+          }));
 
           for (const info of tabs) {
             const on = info.value === active;
             if (on) info.tab.setAttribute('selected', '');
             else info.tab.removeAttribute('selected');
             if (!info.base) continue; // 还没升级完：等 ResizeObserver 那一拍再补
-            info.base.id = `${info.tab.id}-btn`;
-            info.base.setAttribute('aria-selected', on ? 'true' : 'false');
             info.base.tabIndex = on ? 0 : -1;
-            const hit = panels.find((panel) => panel.value === info.value);
-            if (hit) info.base.setAttribute('aria-controls', hit.panel.id);
-            else info.base.removeAttribute('aria-controls');
           }
 
           for (const info of panels) {
             const on = info.value === active;
             if (on) info.panel.removeAttribute('hidden');
             else info.panel.setAttribute('hidden', '');
-            info.panel.setAttribute('role', 'tabpanel');
-            const label = tabs.find((tab) => tab.value === info.value);
-            info.panel.setAttribute('aria-labelledby', label ? label.tab.id : '');
           }
 
           this.observeSizes();

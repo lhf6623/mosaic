@@ -52,11 +52,6 @@ mc-progress — 进度条
 `shadow-base.css` 在 `prefers-reduced-motion: reduce` 下把三个 `--mc-duration-*` 压到 1ms，
 这里跟着一起停下来 —— 写死秒数就会让减弱动效偏好静默失效。
 
-**无障碍**：宿主是 `role="progressbar"` + `aria-valuemin="0"` + `aria-valuemax`；
-确定态写 `aria-valuenow`，不确定态**不留** `aria-valuenow`（那是「有一个确切进度」的承诺）
-并加 `aria-busy="true"`。这些宿主属性都在 `attached()` 之后写（构造期写会抛
-`NotSupportedError`），首次触发落在构造期的 watch 由 `_live` / `_fill` 守卫挡掉。
-
 **没有事件**：进度条不接受点击，也不产生值变化 —— 使用者自己知道值什么时候变。
 `mc-progress` 也不消费插槽：它没有可以放内容的语义位置（要标题 / 文字，放在它旁边的容器里）。
 

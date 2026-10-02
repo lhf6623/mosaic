@@ -7,7 +7,7 @@
 
 **状态**：已实现 · 标签 `mc-collapse` · 目录 `packages/collapse/`
 
-折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与无障碍不用自己写。
+折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与焦点不用自己写。
 
 ## 单元里有什么
 
@@ -38,7 +38,7 @@ mc-collapse-item — 折叠面板的子项（配合 mc-collapse 使用）
 
 骑在原生 <details>/<summary> 上：开合、键盘、焦点、收起时内容不可达都是浏览器给的。
 三条约定：状态只有宿主上的 open 属性；<details>.open 是内部实现，跟着属性走；
-disabled 用 aria-disabled + tabindex=-1 + 头部 pointer-events:none 三件套堵住两条路。
+disabled 用 tabindex=-1 + 头部 pointer-events:none 堵住两条路。
 
 ## 令牌
 

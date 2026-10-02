@@ -215,18 +215,18 @@
     .mc-option[data-active] {
       background-color: rgb(var(--mc-select-option-bg-highlight));
     }
-    .mc-option[aria-selected='true'] {
+    .mc-option[data-selected='true'] {
       background-color: rgb(var(--mc-select-option-bg-selected));
       color: rgb(var(--mc-select-option-color-selected));
       font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
-    .mc-option[aria-disabled='true'] {
+    .mc-option[data-disabled='true'] {
       opacity: 0.5;
       cursor: not-allowed;
     }
     /* 正向覆盖，不用 :host(:not(...))（P14） */
-    .mc-option[aria-disabled='true']:hover,
-    .mc-option[aria-disabled='true'][data-active] {
+    .mc-option[data-disabled='true']:hover,
+    .mc-option[data-disabled='true'][data-active] {
       background-color: transparent;
     }
 
@@ -240,23 +240,16 @@
     class="mc-control"
     part="base"
     type="button"
-    aria-haspopup="listbox"
     :disabled="disabled !== null"
     on:click="onControlClick"
     on:keydown="onKeyDown"
   >
     <span class="mc-value"></span>
-    <span class="mc-chevron mc-icon-chevron-down" aria-hidden="true"></span>
+    <span class="mc-chevron mc-icon-chevron-down"></span>
   </button>
 
-  <button
-    class="mc-clear"
-    type="button"
-    aria-label="清除"
-    :disabled="disabled !== null"
-    on:click="onClear"
-  >
-    <span class="mc-icon-close" aria-hidden="true"></span>
+  <button class="mc-clear" type="button" :disabled="disabled !== null" on:click="onClear">
+    <span class="mc-icon-close"></span>
   </button>
 
   <!-- 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位；⚠️ 刻意用 popover="manual"：auto 的 light dismiss 会「点第二次关不掉」（P20） -->
@@ -268,7 +261,7 @@
     on:click="onPanelClick"
     on:mousedown="onPanelMouseDown"
   >
-    <div class="mc-list" role="listbox"></div>
+    <div class="mc-list"></div>
   </div>
 
   <slot class="mc-options"></slot>
@@ -276,9 +269,6 @@
   <script>
     /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
-
-    /** 实例计数：面板里每个选项都要一个全局唯一的 id（aria-activedescendant 按 id 指） */
-    let seq = 0;
 
     export default async ({ load }) => {
       /* mc-option 是这个单元的另一半：先注册它，attached() 收选项时它们才已升级好（路径相对本文件） */
@@ -290,14 +280,12 @@
         attrs: {
           /* 初始值在 HTML 属性 default-value；运行时值走宿主 DOM property `value`（见 ready），所以 `value` 不进 attrs */
           defaultValue: '',
-          name: '',
           placeholder: '请选择',
           /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-select multiple> 失效 */
           multiple: null,
           clearable: null,
           disabled: null,
           readonly: null,
-          required: null,
           invalid: null,
           size: 'md',
         },
@@ -319,8 +307,6 @@
           this._touched = false;
           this._returnFocus = false;
           this._seen = new Set();
-          this._uid = `${this.name || 'mc-select'}-${(seq += 1)}`;
-          this._list.id = `${this._uid}-list`;
 
           /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值，写 = 直接改选中态；刻意不反射成宿主属性 */
           Object.defineProperty(this.ele, 'value', {
@@ -349,7 +335,6 @@
           /* 到这里构造期已结束，才允许往宿主写属性（P31） */
           this._live = true;
           this.collectOptions();
-          this.applyAria();
         },
 
         detached() {
@@ -374,22 +359,6 @@
             if (this._touched) return;
             this.applySelection(this.parseValues(this.ele.getAttribute('default-value') ?? ''));
             this.syncDisplay();
-          },
-          disabled() {
-            if (this.skipInit('disabled')) return;
-            this.applyAria();
-          },
-          readonly() {
-            if (this.skipInit('readonly')) return;
-            this.applyAria();
-          },
-          required() {
-            if (this.skipInit('required')) return;
-            this.applyAria();
-          },
-          invalid() {
-            if (this.skipInit('invalid')) return;
-            this.applyAria();
           },
         },
 
@@ -436,7 +405,6 @@
             this.renderRows();
             this.applySelection(previous);
             this.syncDisplay();
-            this.applyAria();
             if (this._active >= this._items.length) this.setActive(-1);
           },
 
@@ -447,10 +415,8 @@
               const row = document.createElement('div');
               row.className = 'mc-option';
               row.setAttribute('part', 'option');
-              row.setAttribute('role', 'option');
-              row.id = `${this._uid}-opt-${index}`;
-              row.setAttribute('aria-selected', 'false');
-              if (item.disabled) row.setAttribute('aria-disabled', 'true');
+              row.setAttribute('data-selected', 'false');
+              if (item.disabled) row.setAttribute('data-disabled', 'true');
               row.textContent = item.label;
               item.row = row;
               this._list.append(row);
@@ -477,13 +443,13 @@
             for (const item of this._items) {
               const on = values.has(item.value) && (this.isMultiple() || !taken);
               if (on) taken = true;
-              item.row.setAttribute('aria-selected', on ? 'true' : 'false');
+              item.row.setAttribute('data-selected', on ? 'true' : 'false');
             }
           },
 
           readValueArray() {
             return this._items
-              .filter((item) => item.row.getAttribute('aria-selected') === 'true')
+              .filter((item) => item.row.getAttribute('data-selected') === 'true')
               .map((item) => item.value);
           },
 
@@ -499,11 +465,11 @@
             this.syncDisplay();
           },
 
-          /* ---------- 显示与无障碍 ---------- */
+          /* ---------- 显示 ---------- */
 
           syncDisplay() {
             const selected = this._items.filter(
-              (item) => item.row.getAttribute('aria-selected') === 'true',
+              (item) => item.row.getAttribute('data-selected') === 'true',
             );
             const empty = selected.length === 0;
             this.mirror('data-empty', empty);
@@ -513,24 +479,6 @@
                 ? this.placeholderText()
                 : selected.map((item) => item.label).join(', ');
             }
-          },
-
-          applyAria() {
-            const control = this._control;
-            if (!control) return;
-            const on = (name) => this.ele.hasAttribute(name);
-            control.setAttribute('aria-haspopup', 'listbox');
-            control.setAttribute('aria-expanded', this.isOpen() ? 'true' : 'false');
-            control.setAttribute('aria-controls', this._list.id);
-            control.setAttribute('aria-required', on('required') ? 'true' : 'false');
-            control.setAttribute('aria-invalid', on('invalid') ? 'true' : 'false');
-            control.setAttribute('aria-readonly', on('readonly') ? 'true' : 'false');
-            control.setAttribute('aria-disabled', on('disabled') ? 'true' : 'false');
-            /* 无障碍名：触发按钮住在 shadow root 里，外层给不了它名字（跨 shadow 写不了 aria-label，IDREF 也解析不过去）—— 转发宿主上的 aria-label 是唯一入口 */
-            const label = this.ele.getAttribute('aria-label');
-            if (label) control.setAttribute('aria-label', label);
-            else control.removeAttribute('aria-label');
-            this._list.setAttribute('aria-multiselectable', this.isMultiple() ? 'true' : 'false');
           },
 
           /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
@@ -561,7 +509,7 @@
 
           initialActiveIndex() {
             const selected = this._items.findIndex(
-              (item) => item.row.getAttribute('aria-selected') === 'true' && !item.disabled,
+              (item) => item.row.getAttribute('data-selected') === 'true' && !item.disabled,
             );
             return selected >= 0 ? selected : this.firstEnabledIndex();
           },
@@ -577,8 +525,6 @@
               }
             });
             const item = this._items[index];
-            if (item) this._control.setAttribute('aria-activedescendant', item.row.id);
-            else this._control.removeAttribute('aria-activedescendant');
           },
 
           clearActive() {
@@ -619,7 +565,6 @@
             const changed = this._openState !== open;
             this._openState = open;
             this.mirror('data-open', open);
-            this._control?.setAttribute('aria-expanded', open ? 'true' : 'false');
             if (!changed) return;
             if (open) {
               this.emit('open', { bubbles: true, composed: true });
@@ -707,11 +652,11 @@
             if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
 
             if (this.isMultiple()) {
-              const on = item.row.getAttribute('aria-selected') === 'true';
-              item.row.setAttribute('aria-selected', on ? 'false' : 'true');
+              const on = item.row.getAttribute('data-selected') === 'true';
+              item.row.setAttribute('data-selected', on ? 'false' : 'true');
             } else {
               for (const other of this._items) {
-                other.row.setAttribute('aria-selected', other === item ? 'true' : 'false');
+                other.row.setAttribute('data-selected', other === item ? 'true' : 'false');
               }
             }
             this.syncDisplay();

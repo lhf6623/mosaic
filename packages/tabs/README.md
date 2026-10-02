@@ -44,15 +44,12 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 
 指向禁用项、或指向一个不存在的 `value` 时都退到第一个可用项 —— 面板与标签因此不会同时空着。
 
-### 键盘与 aria
+### 键盘
 
-- 可交互元素是 `mc-tab` 内部那颗**原生 `<button>`**（`part="base"`，`role="tab"`），禁用直接走
-  `:disabled`：指针、键盘、读屏三条路一起堵住。
+- 可交互元素是 `mc-tab` 内部那颗**原生 `<button>`**（`part="base"`），禁用直接走
+  `:disabled`：指针、键盘两条路一起堵住。
 - roving tabindex 写在这颗 button 上：只有激活项 `tabindex="0"`，其余 `-1`；方向键 /
   <kbd>Home</kbd> / <kbd>End</kbd> 移动**并激活**（焦点也跟着走），跳过禁用项、到头绕回。
-- `aria-controls` 指向面板 id、面板的 `aria-labelledby` 指回标签宿主。⚠️ 前者跨了
-  `mc-tab` 的 shadow 边界，浏览器不会解析跨树的 IDREF（面板那一侧的引用在同一棵树里，能解析）；
-  属性齐全、值也对，但不是"读屏一定能顺着跳"——这是"标签按钮住在子组件 shadow 里"的固有代价。
 - 指示条（`part="indicator"`）由 JS 按激活标签**内部 button** 的位置写宽度与位移，
   `ResizeObserver` 盯着标签条与每个标签：字体、文案、容器宽度变了都跟着重摆，
   `mc-tab` 比容器晚升级也能补上。

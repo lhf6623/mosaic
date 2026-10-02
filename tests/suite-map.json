@@ -6,6 +6,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -71,6 +72,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -114,6 +116,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -235,6 +238,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -318,7 +322,6 @@
       "packages/icon/demos/builtins.html",
       "packages/icon/demos/colors.html",
       "packages/icon/demos/hex.html",
-      "packages/icon/demos/label.html",
       "packages/icon/demos/part.html",
       "packages/icon/demos/remote.html",
       "packages/icon/demos/sizes.html",
@@ -588,7 +591,6 @@
       "packages/breadcrumb/breadcrumb.html",
       "packages/breadcrumb/demos/basic.html",
       "packages/breadcrumb/demos/customize.html",
-      "packages/breadcrumb/demos/label.html",
       "packages/breadcrumb/demos/long.html",
       "packages/breadcrumb/demos/part.html",
       "packages/breadcrumb/demos/separator.html",
@@ -763,6 +765,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -993,6 +996,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -1096,6 +1100,7 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
+      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
@@ -1625,6 +1630,15 @@
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
+      "tests/site/01-load-shell.mjs",
+      "tests/site/06-boot-palette.mjs",
+      "tests/site/07-inject-server.mjs"
+    ],
+    "docs/components/poster.html": [
+      "packages/code/test/code.test.mjs",
+      "packages/message/test/message.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/radio/test/radio.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
@@ -2354,9 +2368,6 @@
     "packages/breadcrumb/demos/customize.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs"
     ],
-    "packages/breadcrumb/demos/label.html": [
-      "packages/breadcrumb/test/breadcrumb.test.mjs"
-    ],
     "packages/breadcrumb/demos/long.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs"
     ],
@@ -2868,9 +2879,6 @@
       "packages/icon/test/icon.test.mjs"
     ],
     "packages/icon/demos/hex.html": [
-      "packages/icon/test/icon.test.mjs"
-    ],
-    "packages/icon/demos/label.html": [
       "packages/icon/test/icon.test.mjs"
     ],
     "packages/icon/demos/part.html": [

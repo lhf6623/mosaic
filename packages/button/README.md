@@ -36,9 +36,8 @@ mc-button — Mosaic 参考组件实现
    因为它要动的是盒子（那是 `size` 的地盘），见 packages/README.md §1.2；
 3. 交互语义交给内部透明的原生 <button>，宿主只管"长什么样"。
    hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
-   ⚠️ 那个原生 button 是**空的**（可见文字是插槽内容，与它是兄弟），所以它必须
-   `aria-labelledby` 指向三个 slot，否则无障碍树里是个**无名按钮** —— 2026-09 实测：
-   文档页 40 个按钮里 39 个没名字（链接 45 个全有名字）。改标记时别把这层语义弄丢。
+   ⚠️ 那个原生 button 是**空的**（可见文字是插槽内容，与它是兄弟）—— 焦点、键盘激活、
+   disabled、loading 都走它，别把这一层换掉。
 
 ## 令牌
 

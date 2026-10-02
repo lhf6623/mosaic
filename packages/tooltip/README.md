@@ -34,7 +34,7 @@
 
 **内容只有 `content` 一句纯文本**（不是 `title`）：声明 `title` 会让宿主自己弹出浏览器原生 tooltip，两套气泡会同时出现。
 
-**不给使用者的触发元素写任何属性**（不加 `aria-describedby`、不改 `tabindex`）：插槽里的 DOM 归使用者。
+**不给使用者的触发元素写任何属性**（不改 `tabindex`）：插槽里的 DOM 归使用者。
 键盘可达因此靠**聚焦触发** —— `trigger="hover"` 时 `focusin` / `focusout` 与鼠标一视同仁，
 所以「悬停能看到」的元素用 <kbd>Tab</kbd> 走到时也能看到。`focusin` 是 `composed` 的，
 `mc-button` 内部那个原生按钮拿到焦点时也会冒到锚点容器上。

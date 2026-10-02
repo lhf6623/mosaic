@@ -62,7 +62,7 @@
       padding-inline: var(--mc-radio-pad-x, var(--mc-space-3, var(--mc-def-space-3)));
       cursor: pointer;
     }
-    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
+    /* 原生 input 只承载键盘与命中区；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
     .mc-native {
       position: absolute;
       width: 1px;
@@ -109,11 +109,11 @@
     }
   </style>
 
-  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件，读屏也把文案算成控件名 -->
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件 -->
   <label class="mc-base" part="base">
     <!-- 原生 change 只到自己的 shadow 边界（P19 同族的坑）：向外由 group 转成 composed 的 change -->
     <input class="mc-native" type="radio" on:change="onNativeChange()" />
-    <span class="mc-circle" part="circle" aria-hidden="true"><span class="mc-dot"></span></span>
+    <span class="mc-circle" part="circle"><span class="mc-dot"></span></span>
     <span class="mc-label" part="label"><slot></slot></span>
   </label>
 
@@ -183,7 +183,7 @@
         /** 组的状态只读不缓存：组改名 / 禁用都由组自己推一次 syncGroupState() 过来 */
         applyGroupState() {
           const group = this.groupEl();
-          // 同一组共享 name：读屏与表单语义靠它（原生跨 shadow root 不成组，互斥由 group 做）
+          // 同一组共享 name：表单语义靠它（原生跨 shadow root 不成组，互斥由 group 做）
           this._native.name = group?.getAttribute('name') ?? '';
           this._native.disabled = this.isDisabled();
         },

@@ -21,7 +21,7 @@
             info: '信息：告知，不需要做什么',
             success: '成功：操作已经完成',
             warning: '警告：需要注意，但还没出错',
-            error: '错误：出错了，需要处理（这条会立刻播报给屏幕阅读器）',
+            error: '错误：出错了，需要处理',
           }[type];
           /* 演示 type 这一个维度：其余都走默认（duration 3000 → 自己走；closable true → 带 ×） */
           message(text, { type });

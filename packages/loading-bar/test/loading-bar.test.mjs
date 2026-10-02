@@ -1,6 +1,6 @@
 /**
  * mc-loading-bar · 加载条：状态只有一个入口 `state`（idle / loading / done / error）——
- * idle 什么都不做、loading 出现并爬升且挂语义三连、done 与 error 是**同一条收尾**
+ * idle 什么都不做、loading 出现并爬升、done 与 error 是**同一条收尾**
  * （先滑到 100% 再淡出，只有填充色不同）、中途切状态不闪回 0、复位后能重新爬；
  * 另有：铺满视口 / 贴在顶上、两档条高、容器里那一种落在容器内、
  * **pointer-events 必须是 none**（跨 shadow 真命中测试 + 伪证）、
@@ -41,7 +41,7 @@ export default async function run({ page, visit, check }) {
       document.body.insertAdjacentHTML(
         'beforeend',
         '<mc-loading-bar id="lb-idle"></mc-loading-bar>' +
-          '<mc-loading-bar id="lb-loading" state="loading" label="正在加载"></mc-loading-bar>' +
+          '<mc-loading-bar id="lb-loading" state="loading"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-sm" state="loading" size="sm"></mc-loading-bar>' +
           /* 换色走令牌（没有 color 属性）：这条把出错色槽覆盖成 warning */
           '<mc-loading-bar id="lb-tone" state="error" style="--mc-loading-bar-error: var(--mc-color-warning)"></mc-loading-bar>' +
@@ -54,7 +54,7 @@ export default async function run({ page, visit, check }) {
       document.body.insertAdjacentHTML(
         'beforeend',
         '<div id="lb-inline-box" style="position:fixed;left:0;top:200px;width:260px;z-index:1">' +
-          '<mc-loading-bar id="lb-inline" state="loading" position="static" label="这一块在忙"></mc-loading-bar>' +
+          '<mc-loading-bar id="lb-inline" state="loading" position="static"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-inline-sm" state="loading" position="static" size="sm"></mc-loading-bar>' +
           '</div>',
       );
@@ -335,8 +335,8 @@ export default async function run({ page, visit, check }) {
         .then(() => true)
         .catch(() => false);
 
-    /* ① start({ label })：出现 + 语义三连 */
-    await page.evaluate(() => window.__lb.start({ label: '命令式驱动' }));
+    /* ① start()：出现 */
+    await page.evaluate(() => window.__lb.start());
     const started = await waitVisible();
     const running = await readHost();
 
@@ -356,11 +356,10 @@ export default async function run({ page, visit, check }) {
       .catch(() => false);
     const finished = await readHost();
 
-    /* ③ start('字符串')：label 走字符串这一种写法；再 error() 收尾 —— 填充色应当是主题 danger */
-    await page.evaluate(() => window.__lb.start('出错样式'));
+    /* ③ 再跑一次，用 error() 收尾 —— 填充色应当是主题 danger */
+    await page.evaluate(() => window.__lb.start());
     await waitVisible();
     await page.waitForTimeout(80);
-    const stringLabel = (await readHost())?.label;
     await page.evaluate(() => window.__lb.error());
     await page.waitForTimeout(260); // 落在「滑满已结束、淡出还没走完」的窗口里
     const errored = await readHost();
@@ -379,7 +378,7 @@ export default async function run({ page, visit, check }) {
       panel.style.cssText = 'position: fixed; left: 0; top: 200px; width: 260px; z-index: 1';
       panel.innerHTML = '<span>这一块</span>';
       document.body.append(panel);
-      window.__lbTask = window.__lb.start({ target: '#lb-panel', label: '这一块在忙' });
+      window.__lbTask = window.__lb.start({ target: '#lb-panel' });
     });
     await page
       .waitForFunction(
@@ -443,7 +442,6 @@ export default async function run({ page, visit, check }) {
       running,
       faded,
       finished,
-      stringLabel,
       errored,
       idled,
       scoped,
@@ -455,7 +453,7 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'idle（默认）什么都不做：不出现、宽度 0、也不留语义三连 —— 否则每次打开页面都会闪一下',
+    'idle（默认）什么都不做：不出现、宽度 0、也不写 role / aria-* —— 否则每次打开页面都会闪一下',
     bar.probe.idle.attrs.length === 0 &&
       bar.probe.idle.visibility === 'hidden' &&
       bar.probe.idle.opacity === '0' &&
@@ -464,11 +462,11 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'loading：出现 + role="progressbar" + aria-busy + label，爬升终点是 90%（不是 100%）',
+    'loading：出现、不写 role / aria-*，爬升终点是 90%（不是 100%）',
     bar.probe.loading.visibility === 'visible' &&
-      bar.probe.loading.role === 'progressbar' &&
-      bar.probe.loading.busy === 'true' &&
-      bar.probe.loading.label === '正在加载' &&
+      bar.probe.loading.role === null &&
+      bar.probe.loading.busy === null &&
+      bar.probe.loading.label === null &&
       bar.probe.loading.reach === '90%' &&
       parseFloat(bar.probe.loading.creep) > 1 &&
       Number(bar.probe.loading.z) >= 1000,
@@ -495,30 +493,30 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '填充色跟着主题走（没有 color 属性）：在跑就是主题主色；结构与约定一致（part="bar"、图形 aria-hidden、无插槽）',
+    '填充色跟着主题走（没有 color 属性）：在跑就是主题主色；结构与约定一致（part="bar"、不写 aria-hidden、无插槽）',
     bar.probe.fill.loading === bar.tokens.primary &&
       JSON.stringify(bar.probe.structure.parts) === JSON.stringify(['bar']) &&
-      bar.probe.structure.barHidden === 'true' &&
+      bar.probe.structure.barHidden === null &&
       bar.probe.structure.slots === 0,
     JSON.stringify({ ...bar.probe.fill, ...bar.probe.structure }),
   );
 
   check(
-    'position="static"：就落在容器里（通宽 = 容器宽、占自己那 2 / 4px、不铺满视口），语义照旧',
+    'position="static"：就落在容器里（通宽 = 容器宽、占自己那 2 / 4px、不铺满视口），不写 role / aria-*',
     bar.probe.inline.position === 'static' &&
       bar.probe.inline.width === bar.probe.inline.boxWidth &&
       bar.probe.inline.width < bar.probe.inline.viewport &&
       bar.probe.inline.topOffset === 0 &&
       bar.probe.inline.height === 4 &&
       bar.probe.inline.smHeight === 2 &&
-      bar.probe.inline.role === 'progressbar' &&
-      bar.probe.inline.label === '这一块在忙' &&
+      bar.probe.inline.role === null &&
+      bar.probe.inline.label === null &&
       bar.probe.inline.visibility === 'visible',
     JSON.stringify(bar.probe.inline),
   );
 
   check(
-    'done 与 error 是**同一条收尾**：宽度 / 可见性 / 语义处处一样，只有填充色不同（出错走主题的 danger）',
+    'done 与 error 是**同一条收尾**：宽度 / 可见性处处一样，只有填充色不同（出错走主题的 danger）',
     bar.doneMid.width === bar.doneMid.hostWidth &&
       bar.errorMid.width === bar.errorMid.hostWidth &&
       bar.doneMid.width === bar.errorMid.width &&
@@ -529,7 +527,7 @@ export default async function run({ page, visit, check }) {
       bar.errorMid.fill === bar.tokens.danger &&
       /* 要换色是覆盖令牌（没有 color 属性）：把出错色槽换成 warning */
       bar.toneMid.fill === bar.tokens.warning &&
-      /* 收尾之后：淡出到看不见、不留语义 */
+      /* 收尾之后：淡出到看不见、不留 role / aria-* */
       bar.doneEnd.opacity === 0 &&
       bar.errorEnd.opacity === 0 &&
       bar.errorEnd.attrs.length === 0,
@@ -560,14 +558,14 @@ export default async function run({ page, visit, check }) {
   /* ---------------- 函数入口（loading-bar.js） ---------------- */
 
   check(
-    '函数入口懒挂载：页面没注册过 mc-loading-bar，import 之后还不该有宿主；start() 才出现一条挂在 body 上的条子（铺满、贴顶、语义三连）',
+    '函数入口懒挂载：页面没注册过 mc-loading-bar，import 之后还不该有宿主；start() 才出现一条挂在 body 上的条子（铺满、贴顶、不写 role / aria-*）',
     imperative.definedBefore === false &&
       imperative.beforeStart === false &&
       imperative.started === true &&
       imperative.running.state === 'loading' &&
-      imperative.running.role === 'progressbar' &&
-      imperative.running.busy === 'true' &&
-      imperative.running.label === '命令式驱动' &&
+      imperative.running.role === null &&
+      imperative.running.busy === null &&
+      imperative.running.label === null &&
       imperative.running.visibility === 'visible' &&
       imperative.running.top === 0 &&
       imperative.running.width === imperative.running.viewport,
@@ -591,16 +589,9 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'start() 两种写法都收：{ label } 与字符串；反复调用只会复用同一条（不叠第二条）',
-    imperative.running?.label === '命令式驱动' &&
-      imperative.stringLabel === '出错样式' &&
-      imperative.finished?.width === imperative.finished?.viewport &&
-      imperative.hostCount === 1,
-    JSON.stringify({
-      object: imperative.running?.label,
-      string: imperative.stringLabel,
-      hostCount: imperative.hostCount,
-    }),
+    '反复调用 start() 只会复用同一条（不叠第二条）',
+    imperative.finished?.width === imperative.finished?.viewport && imperative.hostCount === 1,
+    JSON.stringify({ hostCount: imperative.hostCount }),
   );
 
   check(
@@ -610,14 +601,14 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'target：条子落进那个容器的最上沿（第一个子元素、static、通宽、占自己那 4px），语义照旧；宿主还只多这一条',
+    'target：条子落进那个容器的最上沿（第一个子元素、static、通宽、占自己那 4px），不写 role / aria-*；宿主还只多这一条',
     imperative.scoped?.isFirstChild === true &&
       imperative.scoped.position === 'static' &&
       imperative.scoped.topOffset === 0 &&
       imperative.scoped.width === imperative.scoped.panelWidth &&
       imperative.scoped.height === 4 &&
-      imperative.scoped.role === 'progressbar' &&
-      imperative.scoped.label === '这一块在忙' &&
+      imperative.scoped.role === null &&
+      imperative.scoped.label === null &&
       imperative.scoped.state === 'loading' &&
       imperative.scoped.visible === 'visible' &&
       imperative.hostCount === 1,

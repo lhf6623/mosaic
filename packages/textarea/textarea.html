@@ -132,8 +132,6 @@
       :disabled="disabled !== null"
       attr:readonly="readonly !== null ? '' : null"
       attr:maxlength="maxlength === null ? null : maxlength"
-      attr:aria-required="required !== null ? 'true' : 'false'"
-      attr:aria-invalid="invalid !== null ? 'true' : 'false'"
       on:input="onInput($event)"
       on:change="onChange()"
     ></textarea>
@@ -158,7 +156,6 @@
         maxlength: null,
         disabled: null,
         readonly: null,
-        required: null,
         invalid: null,
       },
 

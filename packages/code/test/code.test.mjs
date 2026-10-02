@@ -40,8 +40,8 @@ const codeState = await codePage.evaluate(() => {
       balanced: (html.match(/<span/g) || []).length === (html.match(/<\/span>/g) || []).length,
       lines: sr.querySelectorAll('.mc-line').length,
       sourceLines: el.code.split('\n').length,
-      linesAriaHidden: [...sr.querySelectorAll('.mc-ln')].every(
-        (n) => n.getAttribute('aria-hidden') === 'true',
+      linesNoAria: [...sr.querySelectorAll('.mc-ln')].every(
+        (n) => n.getAttribute('aria-hidden') === null,
       ),
       scrolls: body.scrollHeight > body.clientHeight + 1,
       whiteSpace: getComputedStyle(sr.querySelector('.mc-pre')).whiteSpace,
@@ -64,11 +64,11 @@ check(
 );
 const numberedRows = codeState.rows.filter((r) => r.lines > 0);
 check(
-  'line-numbers 实例按行渲染（行数 = 源码行数），行号带 aria-hidden',
+  'line-numbers 实例按行渲染（行数 = 源码行数），行号不写 aria-hidden',
   numberedRows.length >= 1 &&
-    numberedRows.every((r) => r.lines === r.sourceLines && r.lines > 1 && r.linesAriaHidden),
+    numberedRows.every((r) => r.lines === r.sourceLines && r.lines > 1 && r.linesNoAria),
   numberedRows
-    .map((r) => `源码 ${r.sourceLines} 行 → 渲染 ${r.lines} 行 aria-hidden=${r.linesAriaHidden}`)
+    .map((r) => `源码 ${r.sourceLines} 行 → 渲染 ${r.lines} 行 aria-hidden=${r.linesNoAria}`)
     .join(' · '),
 );
 check(

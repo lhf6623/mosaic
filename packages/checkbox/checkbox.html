@@ -82,7 +82,7 @@
       padding-inline: var(--mc-checkbox-pad-x);
       cursor: pointer;
     }
-    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；用「视觉隐藏」而不是 display:none，后者会连焦点一起拿掉 */
+    /* 原生 input 承载键盘与命中区；用「视觉隐藏」而不是 display:none，后者会连焦点一起拿掉 */
     .mc-native {
       position: absolute;
       width: 1px;
@@ -138,18 +138,16 @@
     }
   </style>
 
-  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件，读屏也把文案算成控件名 -->
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点控件 -->
   <label class="mc-base" part="base">
     <!-- 原生 change 穿不出 shadow（P19），由组件自己转成同名的 composed 事件 -->
     <input
       class="mc-native"
       type="checkbox"
       :disabled="disabled !== null"
-      attr:aria-required="required !== null ? 'true' : 'false'"
-      attr:aria-invalid="invalid !== null ? 'true' : 'false'"
       on:change="onNativeChange()"
     />
-    <span class="mc-box" part="box" aria-hidden="true">
+    <span class="mc-box" part="box">
       <span class="mc-mark mc-mark-check mc-icon-check"></span>
       <span class="mc-mark mc-mark-dash mc-icon-minus"></span>
     </span>
@@ -166,7 +164,6 @@
         checked: null,
         indeterminate: null,
         disabled: null,
-        required: null,
         invalid: null,
         size: 'md',
       },

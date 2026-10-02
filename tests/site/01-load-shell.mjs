@@ -212,7 +212,6 @@ const menuState = () =>
   page.evaluate(`(() => {
     const root = ${shellRoot};
     const pop = root?.querySelector('.doc-menu');
-    const btn = pop?.querySelector('mc-button');
     const navs = window.__deepAll('doc-nav');
     const pageNav = navs.find((n) => !n.closest('.doc-menu-panel'));
     const panel = pop?.shadowRoot?.querySelector('.mc-panel');
@@ -220,7 +219,6 @@ const menuState = () =>
       有按钮: !!pop,
       左栏在正文里: pageNav ? getComputedStyle(pageNav).display !== 'none' : null,
       面板打开: !!panel?.matches(':popover-open'),
-      按钮名: btn?.shadowRoot?.querySelector('.mc-native')?.getAttribute('aria-label') ?? null,
       浮层条目数:
         root?.querySelector('.doc-menu-panel doc-nav')?.shadowRoot?.querySelectorAll('mc-menu-item')
           .length ?? 0,
@@ -367,10 +365,9 @@ await page.setViewportSize({ width: 480, height: 900 });
 await page.waitForTimeout(350);
 const narrow = await menuState();
 check(
-  '窄屏：左栏让位，头部出现菜单按钮（复用同一个 <doc-nav>，条目齐全、有名字）',
+  '窄屏：左栏让位，头部出现菜单按钮（复用同一个 <doc-nav>，条目齐全）',
   narrow.有按钮 === true &&
     narrow.左栏在正文里 === false &&
-    narrow.按钮名 === '打开菜单' &&
     narrow.浮层条目数 > 0,
   JSON.stringify(narrow),
 );

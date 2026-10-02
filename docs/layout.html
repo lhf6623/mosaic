@@ -59,7 +59,7 @@
         this.links = TOPBAR.map((entry) => {
           /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一 */
           const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
-          return landing ? { path: landing, label: entry.label, aria: null } : null;
+          return landing ? { path: landing, label: entry.label, current: null } : null;
         }).filter(Boolean);
         /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与 docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
            ⚠️ 必须排在 syncMenuButton() **之前**：showMenu = hasMenu && narrow，而 narrow 是这里才有的；反过来窄屏全新加载时 narrow 还是初值 false，
@@ -89,7 +89,7 @@
         };
         this._topNav?.addEventListener('click', this._onTopNavClick);
 
-        /* 路由变化：只改 links[i].aria 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，04 套件盯着这条），顺带把正文带滚回顶部 */
+        /* 路由变化：只改 links[i].current 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，04 套件盯着这条），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
           this.syncMenuButton();
@@ -161,7 +161,7 @@
           const entryLabel = locate(routeState().path)?.entry?.label ?? null;
           for (const link of this.links) {
             const next = link.label === entryLabel ? 'page' : null;
-            if (link.aria !== next) link.aria = next;
+            if (link.current !== next) link.current = next;
           }
         },
 
@@ -263,7 +263,7 @@
 
     /* 当前页用**主色**：与左栏、主题下拉里「选中项」同一个约定（`mc-menu-item[data-current]` 就是主色 + primary-subtle 底），不然头部是前景灰、菜单是主色紫，两处「当前」对不上。
        这里**只给颜色不给底色**（文字按钮不补底色，见上一条注释）；字重也不用写：组件默认就是 medium，正好是选中项那一档。 */
-    .doc-top-nav mc-button[aria-current] {
+    .doc-top-nav mc-button[data-current] {
       --mc-button-accent: var(--mc-color-primary);
     }
 
@@ -387,29 +387,28 @@
       <nav class="doc-top-nav">
         <!-- 入口是 mc-button（inline 形态），不是 <a>：导航改由 openEntry() 改 hash。
              ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），换来的是「顶栏每一处都由项目自己的组件渲染」；改回锚点前先看提交记录里的取舍。
-             aria-current 由 aria 转发落到内部那个原生按钮上，读屏才看得到「当前页」。 -->
+             -->
         <o-fill :value="links" fill-key="path">
-          <mc-button inline attr:aria-current="$data.aria" attr:data-path="$data.path"
+          <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path"
             >{{$data.label}}</mc-button
           >
         </o-fill>
       </nav>
 
-      <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf），图标按钮必须有 aria-label，装饰性 SVG 加 aria-hidden（无障碍基线，见 design-spec 第八节） -->
+      <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf） -->
       <div class="doc-top-actions">
         <a
           class="doc-github"
           href="https://github.com/lhf6623/mosaic"
           target="_blank"
           rel="noreferrer"
-          aria-label="GitHub 仓库"
           title="GitHub 仓库"
         >
-          <!-- 图标走内置的 github 品牌图标（mc-icon）：清单里有了就不该再存一份手写 path，上游改图形只需要 pnpm icons。装饰性图标对读屏隐藏，名字在 <a> 的 aria-label 上。 -->
-          <mc-icon name="github" aria-hidden="true"></mc-icon>
+          <!-- 图标走内置的 github 品牌图标（mc-icon）：清单里有了就不该再存一份手写 path，上游改图形只需要 pnpm icons。 -->
+          <mc-icon name="github"></mc-icon>
         </a>
 
-        <!-- 主题切换：项目自己的下拉**菜单**。触发元素是我们写的按钮，无障碍名直接写在它身上（不用跨 shadow）；当前主题挂在菜单项的 aria-current 上 ——
+        <!-- 主题切换：项目自己的下拉**菜单**。当前主题挂在菜单项的 data-current 上 ——
              mc-menu-item 会把它镜像成 [data-current] 换底色加粗（复用「当前页」那套状态机）。placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
         <mc-dropdown
           trigger="click"
@@ -417,21 +416,14 @@
           on:open="menuOpen = true"
           on:close="menuOpen = false"
         >
-          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件。无障碍名由 .sr-only 那半句 + 当前值拼出来（「切换深浅色：自动」）——
-               mc-button 的可访问名来自插槽文字，所以可见文字与隐藏文字要一起给。 -->
-          <mc-button
-            slot="trigger"
-            inline
-            aria-haspopup="menu"
-            attr:aria-expanded="menuOpen ? 'true' : 'false'"
-          >
-            <span class="sr-only">切换深浅色：</span>
+          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件 -->
+          <mc-button slot="trigger" inline>
             <span>{{themeLabel}}</span>
           </mc-button>
           <mc-menu-item
             ><button
               type="button"
-              attr:aria-current="theme === 'auto' ? 'true' : null"
+              attr:data-current="theme === 'auto' ? 'true' : null"
               on:click="pickTheme('auto')"
             >
               自动
@@ -440,7 +432,7 @@
           <mc-menu-item
             ><button
               type="button"
-              attr:aria-current="theme === 'light' ? 'true' : null"
+              attr:data-current="theme === 'light' ? 'true' : null"
               on:click="pickTheme('light')"
             >
               亮色
@@ -449,7 +441,7 @@
           <mc-menu-item
             ><button
               type="button"
-              attr:aria-current="theme === 'dark' ? 'true' : null"
+              attr:data-current="theme === 'dark' ? 'true' : null"
               on:click="pickTheme('dark')"
             >
               暗色
@@ -458,7 +450,7 @@
         </mc-dropdown>
 
         <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
-             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。⚠️ 它是 disclosure（按钮 + 展开区块），用 aria-expanded，不用 aria-haspopup。 -->
+             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。 -->
         <o-if :value="showMenu">
           <mc-popover
             class="doc-menu"
@@ -466,12 +458,7 @@
             on:open="narrowMenuOpen = true"
             on:close="narrowMenuOpen = false"
           >
-            <mc-button
-              class="doc-menu-btn"
-              inline
-              aria-label="打开菜单"
-              attr:aria-expanded="narrowMenuOpen ? 'true' : 'false'"
-            >
+            <mc-button class="doc-menu-btn" inline>
               <mc-icon name="menu"></mc-icon>
             </mc-button>
             <div slot="panel" class="doc-menu-panel">

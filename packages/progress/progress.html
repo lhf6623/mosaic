@@ -113,14 +113,13 @@
       },
 
       attached() {
-        this._live = true;
-        // 宿主属性 / style 等构造期结束再写（P31）
+        // 宿主 style 等构造期结束再写（P31）
         color.sync(this.ele, this.color);
         this.paint();
       },
 
       watch: {
-        // 首次触发落在构造期（P5），paint 里的 _live / _fill 守卫把它挡掉
+        // 首次触发落在构造期（P5），paint 里的 _fill 守卫把它挡掉
         value() {
           this.paint();
         },
@@ -144,13 +143,12 @@
           return Number.isFinite(parsed) ? parsed : fallback;
         },
 
-        /** 唯一入口：写填充宽度 + 同步宿主上的 aria */
+        /** 唯一入口：写填充宽度 */
         paint() {
           if (!this._fill) return;
-          const el = this.ele;
           const max = this.readNumber('max', 100);
           const value = this.readNumber('value', 0);
-          const indeterminate = el.hasAttribute('indeterminate');
+          const indeterminate = this.ele.hasAttribute('indeterminate');
 
           if (indeterminate) {
             this._fill.style.removeProperty('width');
@@ -158,19 +156,6 @@
             const ratio = max > 0 ? Math.min(Math.max(value / max, 0), 1) : 0;
             /* 归一化掉 40.0000% 这种尾巴：属性 setter 里那句「立刻生效」要能逐字断言 */
             this._fill.style.width = `${Number((ratio * 100).toFixed(4))}%`;
-          }
-
-          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
-          el.setAttribute('role', 'progressbar');
-          el.setAttribute('aria-valuemin', '0');
-          el.setAttribute('aria-valuemax', String(max));
-          if (indeterminate) {
-            /* 不确定态没有数值可播报：不留 aria-valuenow，改用 aria-busy 表示「还在跑」 */
-            el.removeAttribute('aria-valuenow');
-            el.setAttribute('aria-busy', 'true');
-          } else {
-            el.setAttribute('aria-valuenow', String(value));
-            el.removeAttribute('aria-busy');
           }
         },
       },

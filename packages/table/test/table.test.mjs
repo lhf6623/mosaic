@@ -208,7 +208,7 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(empty),
   );
 
-  /* ---------- loading：aria-busy + loading 插槽可见、空态让位 ---------- */
+  /* ---------- loading：loading 插槽可见、空态让位 ---------- */
   const loading = await page.evaluate(async () => {
     const table = document.getElementById('p-table-state');
     table.setAttribute('loading', '');
@@ -225,8 +225,8 @@ export default async function run({ page, visit, check }) {
     return out;
   });
   check(
-    'loading：表格 aria-busy="true"、loading 插槽显示、空态让位；摘掉属性后恢复',
-    loading.ariaBusy === 'true' &&
+    'loading：表格不写 aria-busy、loading 插槽显示、空态让位；摘掉属性后仍是 null',
+    loading.ariaBusy === null &&
       loading.loadingDisplay === 'block' &&
       loading.emptyDisplay === 'none' &&
       loading.afterAriaBusy === null,

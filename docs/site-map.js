@@ -254,7 +254,7 @@ export const SITE = [
             path: 'packages/collapse/page.html',
             type: 'component',
             summary:
-              '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与无障碍不用自己写。',
+              '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。',
           },
           {
             order: 20,

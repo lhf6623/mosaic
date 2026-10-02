@@ -48,8 +48,7 @@ mc-breadcrumb-item — 面包屑的一级（配合 mc-breadcrumb 使用）
 外观与当前项状态；href / target / rel 全写在原生元素上，组件不造链接 —— 站内链接要经 ofa 的
 olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/routes.js）。
 
-当前项写 `current`：宿主带上 aria-current="page"，字色更实、字重加重。
-列表语义（role=listitem）由组件自己补，使用者写了 role 就不覆盖（同 mc-menu-item）。
+当前项写 `current`：字色更实、字重加重。
 
 ## 令牌
 

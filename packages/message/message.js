@@ -8,11 +8,11 @@
 
 /** 语义类型：对齐 mc-alert 的四个语义色 + neutral，不新造色板 */
 const TYPES = {
-  neutral: { icon: false, assertive: false, iconName: null },
-  info: { icon: true, assertive: false, iconName: 'info' },
-  success: { icon: true, assertive: false, iconName: 'success' },
-  warning: { icon: true, assertive: false, iconName: 'warning' },
-  error: { icon: true, assertive: true, iconName: 'error' },
+  neutral: { icon: false, iconName: null },
+  info: { icon: true, iconName: 'info' },
+  success: { icon: true, iconName: 'success' },
+  warning: { icon: true, iconName: 'warning' },
+  error: { icon: true, iconName: 'error' },
 };
 
 const DEFAULTS = {
@@ -33,7 +33,7 @@ const COMPONENT_URL = new URL('./message.html', import.meta.url).href;
 /** 当前配置（message.config 改） */
 let options = { ...DEFAULTS };
 
-/** 队列项：{ id, type, text, icon, iconName, closable, assertive, timer, key } */
+/** 队列项：{ id, type, text, icon, iconName, closable, timer, key } */
 const queue = [];
 /** key → 队列项（同 key 更新 / close(key) 用） */
 const byKey = new Map();
@@ -123,8 +123,6 @@ const drop = async (id) => {
   const inst = await mount();
   const at = inst.rows.findIndex((row) => row.id === id);
   if (at >= 0) inst.rows.splice(at, 1);
-  inst.assertive = inst.rows.some((row) => row.type === 'error');
-  inst.live = inst.assertive ? 'assertive' : 'polite';
   return true;
 };
 
@@ -158,7 +156,6 @@ export function message(input, config = {}) {
     icon: raw.icon ?? spec.icon,
     iconName: raw.iconName ?? spec.iconName,
     closable: raw.closable ?? options.closable,
-    assertive: spec.assertive || type === 'error',
     duration,
     key: raw.key ?? null,
     /** 这条消失时回调（关掉 / 到点 / close() / closeAll() 都算），只调一次 */

@@ -125,7 +125,7 @@
       display: flex;
     }
 
-    /* 关闭按钮：32×32 命中区、aria-label 给无障碍名 */
+    /* 关闭按钮：32×32 命中区 */
     .mc-close {
       display: none;
       flex: none;
@@ -162,20 +162,13 @@
 
   <!-- 遮罩 + 面板 = 一个 popover（进 top layer）。⚠️ popover="manual" 是刻意的：manual 不被 light dismiss 关掉，Esc / 点遮罩 / × 三条关闭路径都由脚本自己接。 -->
   <div class="mc-root" popover="manual" on:click="onRootClick">
-    <div class="mc-overlay" part="overlay" aria-hidden="true"></div>
+    <div class="mc-overlay" part="overlay"></div>
 
-    <div
-      class="mc-panel"
-      part="panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="mc-dialog-header"
-      tabindex="-1"
-    >
-      <div class="mc-header" part="header" id="mc-dialog-header">
+    <div class="mc-panel" part="panel" tabindex="-1">
+      <div class="mc-header" part="header">
         <div class="mc-heading"><slot name="header">{{heading}}</slot></div>
-        <button class="mc-close" type="button" aria-label="关闭" on:click="closeDialog()">
-          <span class="mc-icon-close" aria-hidden="true"></span>
+        <button class="mc-close" type="button" on:click="closeDialog()">
+          <span class="mc-icon-close"></span>
         </button>
       </div>
       <div class="mc-body" part="body"><slot></slot></div>

@@ -33,25 +33,23 @@ dropdown 是**菜单**（触发元素 + 菜单项）；select 是**表单控件*
 
 ### mc-select
 
-| 名称            | 值                     | 默认     | 说明                                                                     |
-| --------------- | ---------------------- | -------- | ------------------------------------------------------------------------ |
-| `default-value` | `string`               | `''`     | HTML 初始值；`multiple` 时是逗号分隔的多个值（`"bj,sh"`）                |
-| `name`          | `string`               | `''`     | 字段名；同时当面板与选项的 `id` 前缀（`aria-activedescendant` 按 id 指） |
-| `placeholder`   | `string`               | `请选择` | 没有选中项时显示的文案                                                   |
-| `multiple`      | `boolean`              | —        | 多选：`value` property 变 `string[]`，面板不自己收起                     |
-| `clearable`     | `boolean`              | —        | 有值时右端出现 ×；点它清空并发 `clear`                                   |
-| `disabled`      | `boolean`              | —        | 禁用：不进焦点、不弹面板                                                 |
-| `readonly`      | `boolean`              | —        | 只读：可聚焦、`aria-readonly` 转发，但不弹面板                           |
-| `required`      | `boolean`              | —        | 只转发 `aria-required`（校验由使用者做）                                 |
-| `invalid`       | `boolean`              | —        | 校验失败：边框换成 `--mc-color-danger`，并转发 `aria-invalid`            |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md`     | 控件高度 / 字号 / 行高（对外只动宿主高度，`style="height:…"` 也压得住）  |
+| 名称            | 值                     | 默认     | 说明                                                                    |
+| --------------- | ---------------------- | -------- | ----------------------------------------------------------------------- |
+| `default-value` | `string`               | `''`     | HTML 初始值；`multiple` 时是逗号分隔的多个值（`"bj,sh"`）               |
+| `placeholder`   | `string`               | `请选择` | 没有选中项时显示的文案                                                  |
+| `multiple`      | `boolean`              | —        | 多选：`value` property 变 `string[]`，面板不自己收起                    |
+| `clearable`     | `boolean`              | —        | 有值时右端出现 ×；点它清空并发 `clear`                                  |
+| `disabled`      | `boolean`              | —        | 禁用：不进焦点、不弹面板                                                |
+| `readonly`      | `boolean`              | —        | 只读：可聚焦，但不弹面板                                                |
+| `invalid`       | `boolean`              | —        | 校验失败：边框换成 `--mc-color-danger`                                  |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md`     | 控件高度 / 字号 / 行高（对外只动宿主高度，`style="height:…"` 也压得住） |
 
 ### mc-option
 
 | 名称       | 值        | 默认 | 说明                                        |
 | ---------- | --------- | ---- | ------------------------------------------- |
 | `value`    | `string`  | `''` | 选项值：选中它时 `mc-select.value` 就是这个 |
-| `disabled` | `boolean` | —    | 禁用项：点不动、键盘高亮跳过、读屏可感知    |
+| `disabled` | `boolean` | —    | 禁用项：点不动、键盘高亮跳过                |
 
 ## 事件
 

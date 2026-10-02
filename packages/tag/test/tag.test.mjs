@@ -202,7 +202,7 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** closable：关闭按钮的显隐、命中区、无障碍名、宿主压暗；不可关的实例里它是隐藏的 */
+    /** closable：关闭按钮的显隐、命中区、宿主压暗；不可关的实例里它是隐藏的 */
     const closable = await page.evaluate(() => {
       const colorBox = window.__deepAll('demo-tag-colors')[0].shadowRoot;
       const closeBox = window.__deepAll('demo-tag-closable')[0].shadowRoot;
@@ -216,7 +216,6 @@ export default async function run({ page, visit, check }) {
           display: cs.display,
           glyphMask: glyph ? getComputedStyle(glyph).maskImage !== 'none' : false,
           glyphSize: glyph ? Math.round(glyph.getBoundingClientRect().width) : 0,
-          ariaLabel: btn.getAttribute('aria-label'),
           part: btn.getAttribute('part'),
           disabledProp: btn.disabled,
           width: Math.round(r.width),
@@ -312,7 +311,7 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** checkable：原生 <button aria-pressed> 铺满宿主，名字来自插槽文本 */
+    /** checkable：原生 <button> 铺满宿主 */
     const checkable = await page.evaluate(() => {
       const box = window.__deepAll('demo-tag-checkable')[0].shadowRoot;
       const read = (el) => {
@@ -325,8 +324,6 @@ export default async function run({ page, visit, check }) {
           selected: el.hasAttribute('selected'),
           tagName: toggle.tagName,
           type: toggle.type,
-          ariaPressed: toggle.getAttribute('aria-pressed'),
-          ariaLabel: toggle.getAttribute('aria-label'),
           disabledProp: toggle.disabled,
           /** 透明层铺满宿主（绝对定位的包含块是宿主的**内边距盒**，所以比宿主窄两个边框） */
           cover:
@@ -341,7 +338,7 @@ export default async function run({ page, visit, check }) {
       return window.__deepAll('mc-tag', box).map(read);
     });
 
-    /** 点 toggle：立刻写宿主属性 + change（$event.data.selected），aria-pressed 跟着走 */
+    /** 点 toggle：立刻写宿主属性 + change（$event.data.selected） */
     const toggleClicks = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       /* 读 bg/fg 前要等这次颜色过渡**真的**走完：固定 sleep 在 4 个套件并行满载时会读到 96% 的
@@ -373,23 +370,19 @@ export default async function run({ page, visit, check }) {
         bg: getComputedStyle(el).backgroundColor,
         fg: getComputedStyle(el).color,
       };
-      const pressedAfterSelect = toggle.getAttribute('aria-pressed');
       const wordAfterSelect = box.querySelector('strong')?.textContent?.trim() ?? null;
 
       toggle.click();
       const selectedAfterSecond = el.hasAttribute('selected');
       await wait(200);
-      const pressedAfterSecond = toggle.getAttribute('aria-pressed');
       const wordAfterSecond = box.querySelector('strong')?.textContent?.trim() ?? null;
 
       return {
         seen,
         selectedAttrRightAway,
         attrsAfterSelect,
-        pressedAfterSelect,
         wordAfterSelect,
         selectedAfterSecond,
-        pressedAfterSecond,
         wordAfterSecond,
       };
     });
@@ -428,7 +421,6 @@ export default async function run({ page, visit, check }) {
         return {
           focused: toggle.tagName === 'BUTTON',
           selected: el.hasAttribute('selected'),
-          ariaPressed: toggle.getAttribute('aria-pressed'),
           focusVisible: toggle.matches(':focus-visible'),
           outlineWidth: cs.outlineWidth,
           outlineColor: cs.outlineColor,
@@ -448,7 +440,6 @@ export default async function run({ page, visit, check }) {
       const out = {
         atCreate,
         shadow: !!el.shadowRoot,
-        label: el.shadowRoot.querySelector('.mc-toggle').getAttribute('aria-label'),
         closeDisplay: getComputedStyle(el.shadowRoot.querySelector('.mc-close')).display,
         toggleDisplay: getComputedStyle(el.shadowRoot.querySelector('.mc-toggle')).display,
       };
@@ -458,7 +449,6 @@ export default async function run({ page, visit, check }) {
       out.selectedAfterProp = el.hasAttribute('selected');
       out.selectedProp = el.selected;
       await wait(150);
-      out.pressedAfterProp = el.shadowRoot.querySelector('.mc-toggle').getAttribute('aria-pressed');
       el.selected = false;
       out.selectedAfterReset = el.hasAttribute('selected');
 
@@ -574,12 +564,11 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'closable 才有 ×：默认隐藏；× 是 part="close" 的原生按钮、aria-label="移除"、命中区 24×24 且不把标签撑高',
+    'closable 才有 ×：默认隐藏；× 是 part="close" 的原生按钮、命中区 24×24 且不把标签撑高',
     tag.closable.plain.display === 'none' &&
       tag.closable.plain.width === 0 &&
       tag.closable.closable.display === 'flex' &&
       tag.closable.disabled.display === 'flex' &&
-      tag.closable.closable.ariaLabel === '移除' &&
       tag.closable.closable.glyphMask &&
       tag.closable.closable.glyphSize > 0 &&
       tag.closable.closable.part === 'close' &&
@@ -623,15 +612,11 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'checkable 的整块可点是原生 <button type="button" aria-pressed>，铺满宿主、光标变手型，名字来自插槽文本',
+    'checkable 的整块可点是原生 <button type="button">，铺满宿主、光标变手型',
     tag.checkable.every((c) => c.checkable) &&
       tag.checkable.every((c) => c.tagName === 'BUTTON' && c.type === 'button') &&
       tag.checkable.every((c) => c.cover && c.cursor === 'pointer') &&
-      tag.checkable.every((c) => c.layer === '0.08') &&
-      JSON.stringify(tag.checkable.map((c) => c.ariaLabel)) ===
-        JSON.stringify(['已实现', '待建', '已废弃', '可关也可选']) &&
-      JSON.stringify(tag.checkable.map((c) => c.ariaPressed)) ===
-        JSON.stringify(['true', 'false', 'false', 'false']),
+      tag.checkable.every((c) => c.layer === '0.08'),
     JSON.stringify(tag.checkable),
   );
 
@@ -645,7 +630,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '点 toggle：当次就写宿主 selected 属性、发 change($event.data.selected)，aria-pressed 跟着翻转',
+    '点 toggle：当次就写宿主 selected 属性、发 change($event.data.selected)',
     tag.toggleClicks.seen.length === 2 &&
       tag.toggleClicks.seen[0].selected === true &&
       tag.toggleClicks.seen[0].bubbles === true &&
@@ -655,10 +640,8 @@ export default async function run({ page, visit, check }) {
       tag.toggleClicks.attrsAfterSelect.selected === true &&
       tag.toggleClicks.attrsAfterSelect.bg === tag.tokens.primary &&
       tag.toggleClicks.attrsAfterSelect.fg === tag.tokens.primaryFg &&
-      tag.toggleClicks.pressedAfterSelect === 'true' &&
       tag.toggleClicks.wordAfterSelect === '待建 → 选中' &&
       tag.toggleClicks.selectedAfterSecond === false &&
-      tag.toggleClicks.pressedAfterSecond === 'false' &&
       tag.toggleClicks.wordAfterSecond === '待建 → 取消',
     JSON.stringify(tag.toggleClicks),
   );
@@ -675,7 +658,6 @@ export default async function run({ page, visit, check }) {
     '键盘：Space 能切换，焦点环用 --mc-color-ring（不是 currentColor）',
     tag.keyboard.focused === true &&
       tag.keyboard.selected === true &&
-      tag.keyboard.ariaPressed === 'true' &&
       tag.keyboard.focusVisible === true &&
       tag.keyboard.outlineWidth === '2px' &&
       tag.keyboard.outlineColor === tag.tokens.ring,
@@ -686,12 +668,10 @@ export default async function run({ page, visit, check }) {
     '运行时：el.selected 立即生效、closable / checkable 属性驱动内部元素显形，P31 动态创建正常',
     JSON.stringify(tag.runtime.atCreate) === JSON.stringify([]) &&
       tag.runtime.shadow === true &&
-      tag.runtime.label === '动态' &&
       tag.runtime.closeDisplay === 'none' &&
       tag.runtime.toggleDisplay === 'none' &&
       tag.runtime.selectedAfterProp === true &&
       tag.runtime.selectedProp === true &&
-      tag.runtime.pressedAfterProp === 'true' &&
       tag.runtime.selectedAfterReset === false &&
       tag.runtime.closeAfterAttr === 'flex' &&
       tag.runtime.toggleAfterAttr === 'block' &&

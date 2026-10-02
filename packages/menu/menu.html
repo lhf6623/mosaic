@@ -46,7 +46,7 @@
 
     /* 4. 状态：容器自己一个都没有 —— 当前项 / 禁用由 mc-menu-item 读插槽元素，组件不替使用者改 DOM */
 
-    /* 5. 内部结构：role=list 挂在真正包住子项的那层 —— 子项在 light DOM，槽投影不出列表结构 */
+    /* 5. 内部结构 */
     .mc-list {
       display: flex;
       flex-direction: column;
@@ -56,7 +56,7 @@
     }
   </style>
 
-  <div class="mc-list" part="list" role="list"><slot></slot></div>
+  <div class="mc-list" part="list"><slot></slot></div>
 
   <script>
     export default async () => ({

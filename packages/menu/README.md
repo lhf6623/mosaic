@@ -30,7 +30,7 @@
 
 mc-menu — 垂直菜单容器
 
-只做三件事：尺寸通道、外框（variant）、列表语义。菜单项是 mc-menu-item。
+只做两件事：尺寸通道、外框（variant）。菜单项是 mc-menu-item。
 
 **交互元素由使用者写在插槽里**（原生 <a> / <button>），组件既不造链接也不碰使用者的 DOM：
 站内链接要靠 ofa 的 olink 指令补部署前缀，而 olink 只作用于页面模板（light DOM）里的元素，
@@ -44,7 +44,7 @@ mc-menu — 垂直菜单容器
 mc-menu-item — 菜单项（配合 mc-menu 使用）
 
 插槽里放一个原生 <a> 或 <button>，它承载全部语义与交互：href、键盘、焦点环、
-aria-current、disabled / aria-disabled 都是浏览器给的，组件只读它、不改它。
+data-current、disabled / data-disabled 都是使用者写的，组件只读它、不改它。
 链接为什么必须由使用者写：站内链接要经 ofa 的 olink 补部署前缀，而 olink 只作用于
 页面模板里的元素 —— 组件在 shadow root 里造的 <a> 用不上（docs/routes.js）。
 

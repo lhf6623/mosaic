@@ -56,7 +56,6 @@ export default async function run({ page, visit, check }) {
     put('states', 'i-disabled', { disabled: '' });
     put('states', 'i-readonly', { readonly: '' });
     put('states', 'i-invalid', { invalid: '' });
-    put('states', 'i-required', { required: '' });
     put('states', 'i-max', { maxlength: '5' });
     put('states', 'i-nomax', {});
 
@@ -184,7 +183,7 @@ export default async function run({ page, visit, check }) {
       seen,
       tag: btn.tagName,
       type: btn.type,
-      aria: btn.getAttribute('aria-label'),
+      ariaLabel: btn.getAttribute('aria-label'),
       noClearableShown: shown('i-noclear'),
       disabledShown: shown('i-clear-disabled'),
     };
@@ -200,7 +199,7 @@ export default async function run({ page, visit, check }) {
         JSON.stringify(['clear:bubbles=true,composed=true', 'input:', 'change:']) &&
       clear.tag === 'BUTTON' &&
       clear.type === 'button' &&
-      clear.aria === '清除' &&
+      clear.ariaLabel === null &&
       clear.noClearableShown === false &&
       clear.disabledShown === false,
     JSON.stringify(clear),
@@ -236,9 +235,7 @@ export default async function run({ page, visit, check }) {
       disabledAttr: inner('i-disabled').getAttribute('disabled'),
       disabledCursor: getComputedStyle(document.getElementById('i-disabled')).cursor,
       readonly: inner('i-readonly').readOnly,
-      ariaRequired: inner('i-required').getAttribute('aria-required'),
       ariaInvalid: inner('i-invalid').getAttribute('aria-invalid'),
-      ariaRequiredOff: inner('i-nomax').getAttribute('aria-required'),
       invalidBorder: rgbOf('i-invalid'),
       danger: window.__dangerRgb,
       max: inner('i-max').maxLength,
@@ -248,14 +245,12 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    '状态与转发：disabled / readonly 用原生 property，required / invalid 进 aria-*，invalid 边框取 --mc-color-danger；maxlength 逐字转发并真的截断',
+    '状态与转发：disabled / readonly 用原生 property，不写 aria-*，invalid 边框取 --mc-color-danger；maxlength 逐字转发并真的截断',
     states.disabled === true &&
       states.disabledAttr !== null &&
       states.disabledCursor === 'not-allowed' &&
       states.readonly === true &&
-      states.ariaRequired === 'true' &&
-      states.ariaInvalid === 'true' &&
-      states.ariaRequiredOff === 'false' &&
+      states.ariaInvalid === null &&
       states.invalidBorder === states.danger &&
       states.max === 5 &&
       states.noMax === -1 &&

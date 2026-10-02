@@ -31,12 +31,11 @@
 它们的原生 radio 分居不同树 —— 浏览器根本不认它们是一组：点一个不会取消另一个，
 <kbd>方向键</kbd>也不会走。所以组把这三件事全接过来：
 
-| 能力     | 谁做                            | 怎么做到                                                                        |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------- |
-| 互斥     | `mc-radio-group`                | 点谁选谁：组在 `click` 里改所有子项的 `checked` 属性（`composedPath()` 认成员） |
-| 方向键   | `mc-radio-group`                | `keydown`（composed，从子项 shadow 里冒上来）里算下一格、选中、把焦点交过去     |
-| 语义     | 内部原生 `<input type="radio">` | 宿主补 `role="radiogroup"` + `aria-orientation`；每个 input 带组的 `name`       |
-| 键鼠可达 | 内部原生 input + `<label>`      | <kbd>Space</kbd> 选中、<kbd>Tab</kbd> 聚焦、读屏读 role / checked 全白拿        |
+| 能力     | 谁做                       | 怎么做到                                                                        |
+| -------- | -------------------------- | ------------------------------------------------------------------------------- |
+| 互斥     | `mc-radio-group`           | 点谁选谁：组在 `click` 里改所有子项的 `checked` 属性（`composedPath()` 认成员） |
+| 方向键   | `mc-radio-group`           | `keydown`（composed，从子项 shadow 里冒上来）里算下一格、选中、把焦点交过去     |
+| 键鼠可达 | 内部原生 input + `<label>` | <kbd>Space</kbd> 选中、<kbd>Tab</kbd> 聚焦，键盘操作全白拿                      |
 
 **组 ↔ 子项是单向的两个宿主方法，组不伸手进子项的 shadow root**：
 `radio.syncGroupState()`（重读组状态：`name` / 禁用 → 内部原生 input）与

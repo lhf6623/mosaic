@@ -48,8 +48,8 @@ ofa 会把声明过的字符串属性以空值写到宿主上，"有没有给标
 所以 ready() 里只做查询，判定统一走 applyState()。
 
 图标直接消费 **mc-icon**（4 个语义图形住在内置图标集里：info / success / warning / error），
-`:name` 跟着 color 走 —— 常驻 DOM、不用 o-if。装饰性由 mc-icon 自己保证（不给 label 即
-aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图形让位。
+`:name` 跟着 color 走 —— 常驻 DOM、不用 o-if。要给自己的图标就写 slot="icon"，
+有内容时内置图形让位。
 
 ⚠️ **这个文件里没有任何 SVG 形状**（图标数据在 mc-icon 那边，构建期编译进 mosaic.css）。
 这条约束值得留着：Live Server 会往 HTML 里注入热重载 script，注入点是「body / svg / head 的
@@ -58,9 +58,6 @@ aria-hidden）；要给自己的图标就写 slot="icon"，有内容时内置图
 VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
 tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
 （同理，图标数据放 `packages/icon/icons.generated.ts` —— 生成物，只有 tools/gen-icons.mjs 读它。）
-
-**不预设 role**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。需要播报的用法（动态插入的
-报错）由使用者在宿主上加 role="alert" / role="status"，组件不去覆盖它（同 mc-card 不做整卡可点）。
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。
 关闭按钮是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，
@@ -92,13 +89,9 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 没有它们时空标题会白占一行、空正文会白留一个 gap。
 
 **图标来自 [mc-icon](../icon/api.md)**：按自己的 `color` 取内置图标集里的四个语义图形 —— 信息圆
-（`primary` / `info` / `neutral` 共用）、对勾（`success`）、三角叹号（`warning`）、叉圆（`danger`），
-渲染成装饰性（`aria-hidden`）。`mc-alert` 的内部有 `await load('../icon/icon.html')`，所以只引
-`mc-alert` 的使用者会连带取一次 `icon.html`。要别的图标就写 `slot="icon"`（有内容时内置图形让位），
-那时无障碍由使用者负责。
-
-**不预设 `role`**：静态提示条不该在被渲染出来时就让屏幕阅读器播报。动态插入的报错要播报，使用者
-自己在宿主上加 `role="alert"`（紧急）/ `role="status"`（礼貌）—— 组件不覆盖它。
+（`primary` / `info` / `neutral` 共用）、对勾（`success`）、三角叹号（`warning`）、叉圆（`danger`）。
+`mc-alert` 的内部有 `await load('../icon/icon.html')`，所以只引 `mc-alert` 的使用者会连带取一次
+`icon.html`。要别的图标就写 `slot="icon"`（有内容时内置图形让位）。
 
 **`closable` 只发 `close`，不删 DOM**（组件不改使用者的 DOM，同 `mc-tag` / `mc-menu` / `mc-breadcrumb`）：
 自己在事件里 `el.remove()` 或改数据。× 是 32×32 命中区的原生按钮，靠 `-6px` 的上下负外边距抵消掉

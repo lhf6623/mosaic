@@ -25,9 +25,8 @@
 
 ## 设计取舍
 
-**原生 input 是 `type="checkbox"` + `role="switch"`**，不是 `type="checkbox"` 加样式——
-ARIA 的 `switch` 角色让读屏读「开关，已打开」而不是「复选框，已勾选」，
-而键盘行为（<kbd>Space</kbd> 切换）、焦点、命中区仍然全部来自原生 checkbox。
+**原生 input 是 `type="checkbox"`**：键盘行为（<kbd>Space</kbd> 切换）、焦点、命中区
+全部来自原生 checkbox，视觉由轨道 / 滑块承担。
 
 **滑块的行程是算出来的，不是写死的第二条值**：`--mc-switch-track-w` − `--mc-switch-thumb` −
 两侧 `--mc-switch-pad`。三档尺寸只是换这三条令牌（外加宿主高度与字号），

@@ -12,7 +12,7 @@ DOM：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用
 
 ```html
 <mc-menu>
-  <mc-menu-item><a href="#/packages/button/page.html" aria-current="page">Button</a></mc-menu-item>
+  <mc-menu-item><a href="#/packages/button/page.html" data-current>Button</a></mc-menu-item>
   <mc-menu-item><a href="#/packages/code/page.html">Code</a></mc-menu-item>
   <mc-menu-item group>布局</mc-menu-item>
   <mc-menu-item><a href="#/packages/collapse/page.html">Collapse</a></mc-menu-item>
@@ -38,11 +38,11 @@ DOM：站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用
 
 ### 状态写在插槽元素上
 
-| 状态   | 写法                                                          | 组件做什么                                 |
-| ------ | ------------------------------------------------------------- | ------------------------------------------ |
-| 当前项 | 插槽元素上 `<a aria-current="page">`                          | 换底色字色 + 字重加粗（`false` 等于没写）  |
-| 悬停   | 不用写                                                        | 整行浅底                                   |
-| 禁用   | `<button disabled>`；`<a aria-disabled="true">` 并去掉 `href` | 压暗 50% + `cursor: not-allowed`，悬停不亮 |
+| 状态   | 写法                                                   | 组件做什么                                 |
+| ------ | ------------------------------------------------------ | ------------------------------------------ |
+| 当前项 | 插槽元素上 `<a data-current>`                          | 换底色字色 + 字重加粗                      |
+| 悬停   | 不用写                                                 | 整行浅底                                   |
+| 禁用   | `<button disabled>`；`<a data-disabled>` 并去掉 `href` | 压暗 50% + `cursor: not-allowed`，悬停不亮 |
 
 ## 插槽
 

@@ -24,19 +24,18 @@ el.addEventListener('input', (e) => console.log(e.data.value));
 
 ## 属性
 
-| 名称            | 值                     | 默认 | 说明                                                        |
-| --------------- | ---------------------- | ---- | ----------------------------------------------------------- |
-| `default-value` | `string`               | —    | HTML 里的初始值；之后改它**不会**覆盖当前值                 |
-| `placeholder`   | `string`               | —    | 占位符                                                      |
-| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                     |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位        |
-| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`                 |
-| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复      |
-| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计     |
-| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`             |
-| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`             |
-| `required`      | `boolean`              | —    | 必填，内部原生 `<textarea>` 上镜像成 `aria-required`        |
-| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`，镜像成 `aria-invalid` |
+| 名称            | 值                     | 默认 | 说明                                                    |
+| --------------- | ---------------------- | ---- | ------------------------------------------------------- |
+| `default-value` | `string`               | —    | HTML 里的初始值；之后改它**不会**覆盖当前值             |
+| `placeholder`   | `string`               | —    | 占位符                                                  |
+| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                 |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位    |
+| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`             |
+| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复  |
+| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计 |
+| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`         |
+| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`         |
+| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`                    |
 
 ## 事件
 

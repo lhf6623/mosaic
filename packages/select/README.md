@@ -53,7 +53,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
   `document` 上的 `pointerdown` + `composedPath` 判定，Esc 由触发框的 `keydown` 处理
   （顺手 `preventDefault`，避免和原生 close-watcher 抢），关闭后把焦点还给触发框。
 - **`mc-option` 只是数据，面板里的行由 `mc-select` 渲染**。渲染出的每一行才有
-  `part="option"`（`::part()` 够不到插槽里的 light DOM 元素），行也才能跟着 `aria-selected` /
+  `part="option"`（`::part()` 够不到插槽里的 light DOM 元素），行也才能跟着 `data-selected` /
   `data-active` 走样式。代价是 `mc-option` 的默认插槽只被读文案、不直接显示 ——
   它自己 `:host { display: none }`。选项用 `o-fill` 生成时也能收到
   （条目住在 `o-fill` 自己的 light DOM 里，

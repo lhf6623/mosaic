@@ -1,7 +1,7 @@
 /**
  * loadingBar — 命令式加载条（函数入口）。使用者只碰这个文件：
  *   import loadingBar from '../../loading-bar/loading-bar.js';
- *   loadingBar.start({ label: '正在保存' });  loadingBar.done();
+ *   loadingBar.start();  loadingBar.done();
  *   const task = loadingBar.start({ target: panel });  task.done();
  * 它只把组件的某个 `state` 写上去（没有队列 / 计数）；默认那条必须挂 body 才压得住弹层。
  */
@@ -98,24 +98,20 @@ const resolveTarget = (target) => {
 };
 
 /** 写一次状态 —— 这个文件的全部实现；返回 Promise（等挂载那一下） */
-const drive = async (target, state, label) => {
+const drive = async (target, state) => {
   const el = await hostFor(target);
-  /* 先写文案再写状态：状态一变，组件就会读 label 去挂 aria-label */
-  if (label !== undefined) el.setAttribute('label', label);
   el.setAttribute('state', state);
   return el;
 };
-
-const labelOf = (config) => (typeof config === 'string' ? config : config?.label);
 
 /** 模块级那三个只管默认那条；它还没出现过就什么都不做（省得打错目标时在顶部闪一条） */
 const defaultOnly = (state) => (fixedHost ? drive(null, state) : Promise.resolve(null));
 
 /** 开始：条子出现并缓慢爬升（到不了 100%），返回这一条的句柄；给了 `target` 之后只有句柄能收掉它 */
 export function start(config = {}) {
-  const target = resolveTarget(typeof config === 'string' ? null : config?.target);
+  const target = resolveTarget(config?.target);
   /* 不等挂载：句柄同步返回（都排在同一个挂载 Promise 后面）；挂载失败要像 message.js 那样在控制台报出来，不该静默 */
-  void drive(target, 'loading', labelOf(config));
+  void drive(target, 'loading');
 
   return {
     done: () => drive(target, 'done'),

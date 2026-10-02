@@ -173,29 +173,24 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ ...hit, ...opened }),
   );
 
-  const a11y = await page.evaluate(() => {
+  const shell = await page.evaluate(() => {
     const dlg = document.getElementById('dlg');
     const root = dlg.shadowRoot.querySelector('.mc-root');
     const panel = dlg.shadowRoot.querySelector('.mc-panel');
-    const labelled = dlg.shadowRoot.getElementById(panel.getAttribute('aria-labelledby'));
     return {
       popover: root.getAttribute('popover'),
       display: getComputedStyle(root).display,
-      role: panel.getAttribute('role'),
-      modal: panel.getAttribute('aria-modal'),
-      labelled: labelled?.textContent?.trim() ?? null,
+      tabindex: panel.getAttribute('tabindex'),
       closeDisplay: getComputedStyle(dlg.shadowRoot.querySelector('.mc-close')).display,
     };
   });
   check(
-    'a11y：popover="manual" + role=dialog + aria-modal + aria-labelledby 指向头部；closable 的 × 可见',
-    a11y.popover === 'manual' &&
-      a11y.display === 'flex' &&
-      a11y.role === 'dialog' &&
-      a11y.modal === 'true' &&
-      a11y.labelled === '确认删除' &&
-      a11y.closeDisplay === 'flex',
-    JSON.stringify(a11y),
+    '浮层：popover="manual" 靠作者样式常显；面板 tabindex="-1"（无内部可聚焦元素时自己接焦点）；closable 的 × 可见',
+    shell.popover === 'manual' &&
+      shell.display === 'flex' &&
+      shell.tabindex === '-1' &&
+      shell.closeDisplay === 'flex',
+    JSON.stringify(shell),
   );
 
   /* 遮罩是「半透明灰压在页面上」还是「压在 UA 给 [popover] 的那张白纸上」，肉眼差别巨大：

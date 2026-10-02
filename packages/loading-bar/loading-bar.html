@@ -88,8 +88,7 @@
     }
   </style>
 
-  <!-- 纯装饰：语义在宿主上（role / aria-busy / aria-label），图形对读屏隐藏 -->
-  <div class="mc-bar" part="bar" aria-hidden="true"></div>
+  <div class="mc-bar" part="bar"></div>
 
   <script>
     const RUNNING = 'loading';
@@ -103,8 +102,6 @@
         size: 'md',
         /** 钉在哪儿：fixed = 视口顶部（全局在忙）；static = 就在所在容器里 */
         position: 'fixed',
-        /** 屏幕阅读器文案：它不显示在界面上，默认值就是全部内容 */
-        label: '加载中',
       },
 
       attached() {
@@ -117,21 +114,17 @@
         state() {
           if (this._live) this.syncState();
         },
-        label() {
-          if (this._live && this.state === RUNNING) this.syncLabel();
-        },
       },
 
       proto: {
         /**
-         * 样式全由 `[state]` 驱动，脚本只补两件 CSS 做不到的事：① 进 loading 时把上一轮留下的宽度
-         * 瞬间归零再重新爬（不归零会从 100% 往回滑）；② 只有「在跑」才挂 role / aria-busy / aria-label。
+         * 样式全由 `[state]` 驱动，脚本只补一件 CSS 做不到的事：进 loading 时把上一轮留下的宽度
+         * 瞬间归零再重新爬（不归零会从 100% 往回滑）。
          */
         syncState() {
           const bar = this.bar();
           if (!bar) return;
           if (this.state === RUNNING) this.restartCreep(bar);
-          this.syncSemantics();
         },
 
         /** 让爬升从 0 开始：先关掉 transition 把宽度按到 0，再交回 CSS（目标 = reach） */
@@ -141,25 +134,6 @@
           void bar.offsetWidth; // 强制回流：让「归零」这件事先落下去
           bar.style.transition = '';
           bar.style.width = '';
-        },
-
-        /** 在跑 → role="progressbar" + aria-busy + 名字；其余状态不留语义痕迹 */
-        syncSemantics() {
-          const el = this.ele;
-          if (this.state === RUNNING) {
-            el.setAttribute('role', 'progressbar');
-            el.setAttribute('aria-busy', 'true');
-            this.syncLabel();
-            return;
-          }
-          for (const name of ['role', 'aria-busy', 'aria-label']) el.removeAttribute(name);
-        },
-
-        /** label → 宿主的 aria-label（空值就不写，避免出现没有名字的 progressbar） */
-        syncLabel() {
-          const label = (this.label || '').trim();
-          if (label) this.ele.setAttribute('aria-label', label);
-          else this.ele.removeAttribute('aria-label');
         },
 
         /** 内部那条填充 */

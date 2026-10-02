@@ -13,14 +13,14 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 
 ```html
 <mc-loading-bar state="loading"></mc-loading-bar>
-<mc-loading-bar state="loading" size="sm" label="正在保存"></mc-loading-bar>
+<mc-loading-bar state="loading" size="sm"></mc-loading-bar>
 
 <!-- 收尾：成功与出错走同一条路（先滑到 100% 再淡出），只差一个填充色 -->
 <mc-loading-bar state="done"></mc-loading-bar>
 <mc-loading-bar state="error"></mc-loading-bar>
 
 <!-- 放进容器：就在它所在的那一块里当一条细线 -->
-<mc-loading-bar state="loading" position="static" label="正在刷新列表"></mc-loading-bar>
+<mc-loading-bar state="loading" position="static"></mc-loading-bar>
 ```
 
 整页在忙那一根多半由 JS 驱动，所以同一个单元还有一个**函数入口**（懒挂载一条钉在视口顶部的
@@ -29,11 +29,11 @@ loading-bar 是**整页 / 整路由在忙**（默认那种）或**某一整块�
 ```js
 import loadingBar from '../../loading-bar/loading-bar.js';
 
-loadingBar.start({ label: '正在保存' });
+loadingBar.start();
 loadingBar.done(); // 成功收尾；出错走 loadingBar.error()
 
 // 某一整块在忙：给它容器，条子落在那一块的最上沿（句柄是收它的入口）
-const task = loadingBar.start({ target: '#list', label: '正在刷新列表' });
+const task = loadingBar.start({ target: '#list' });
 task.done();
 ```
 
@@ -41,20 +41,19 @@ task.done();
 
 ## 属性
 
-| 名称       | 值                                         | 默认     | 说明                                                                                                   |
-| ---------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------ |
-| `state`    | `'idle' \| 'loading' \| 'done' \| 'error'` | `idle`   | 状态：`idle` 不出现；`loading` 在跑（爬升）；`done` / `error` 收尾（先滑到 100% 再淡出）。**唯一入口** |
-| `size`     | `'sm' \| 'md'`                             | `md`     | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                  |
-| `position` | `'fixed' \| 'static'`                      | `fixed`  | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽     |
-| `label`    | `string`                                   | `加载中` | 只给屏幕阅读器的文案：`loading` 时宿主是 `role="progressbar"` + `aria-busy` + 这个名字                 |
+| 名称       | 值                                         | 默认    | 说明                                                                                                   |
+| ---------- | ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------ |
+| `state`    | `'idle' \| 'loading' \| 'done' \| 'error'` | `idle`  | 状态：`idle` 不出现；`loading` 在跑（爬升）；`done` / `error` 收尾（先滑到 100% 再淡出）。**唯一入口** |
+| `size`     | `'sm' \| 'md'`                             | `md`    | 条高 2 / 4px（它不是控件，不借 `--mc-control-h-*`，同 `mc-progress`）                                  |
+| `position` | `'fixed' \| 'static'`                      | `fixed` | 钉在哪儿：`fixed` = 视口顶部（全局在忙）；`static` = 就在它所在的容器里，占自己那 2 / 4px 高、通宽     |
 
 ## 事件
 
-| 名称                                                             | 类型                                                                            | 说明                                                                                                              |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `loadingBar.start(config?)`                                      | `(config?: { target?: string \| Element; label?: string } \| string) => handle` | 开始：条子出现并缓慢爬升，返回**这一条**的句柄。`config` = `{ target?, label? }`；也可以直接给字符串（= `label`） |
-| `handle.done()` / `handle.error()` / `handle.idle()`             | `() => void`                                                                    | 收掉 `start({ target })` 那一条：`done` 滑满再淡出、`error` 同上只是换成 danger、`idle` 立刻收掉（不播收尾）      |
-| `loadingBar.done()` / `loadingBar.error()` / `loadingBar.idle()` | `() => void`                                                                    | 收掉**默认那条**（挂 `document.body`、钉在视口顶部）；它还没出现过就什么都不做                                    |
+| 名称                                                             | 类型                                                  | 说明                                                                                                         |
+| ---------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `loadingBar.start(config?)`                                      | `(config?: { target?: string \| Element }) => handle` | 开始：条子出现并缓慢爬升，返回**这一条**的句柄。`config` = `{ target? }`                                     |
+| `handle.done()` / `handle.error()` / `handle.idle()`             | `() => void`                                          | 收掉 `start({ target })` 那一条：`done` 滑满再淡出、`error` 同上只是换成 danger、`idle` 立刻收掉（不播收尾） |
+| `loadingBar.done()` / `loadingBar.error()` / `loadingBar.idle()` | `() => void`                                          | 收掉**默认那条**（挂 `document.body`、钉在视口顶部）；它还没出现过就什么都不做                               |
 
 ## part
 

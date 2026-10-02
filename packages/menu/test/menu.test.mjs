@@ -1,13 +1,13 @@
 /**
  * mc-menu / mc-menu-item · 垂直菜单：行渲染与缩进、尺寸通道、当前项/悬停/禁用、列表语义、
- * 状态镜像（aria-current / disabled 运行时变化）、P31 动态创建
+ * 状态镜像（data-current / disabled 运行时变化）、P31 动态创建
  */
 
 export default async function run({ page, visit, check }) {
 /* ------------------------------------------------------------------ *
  * 11.5 mc-menu —— 垂直菜单（交互元素是插槽里的原生元素，所以这里盯的是组件契约：
  *      整行铺满 / 文字缩进与垂直居中靠宿主继承 / 三个状态镜像到宿主 /
- *      role 列表语义 / 动态创建那条路不炸（P31 实测踩过一次））
+ *      part 结构 / 动态创建那条路不炸（P31 实测踩过一次））
  * ------------------------------------------------------------------ */
 
 const menu = await (async () => {
@@ -30,7 +30,7 @@ const menu = await (async () => {
     )
     .catch(() => {});
 
-  /** 基础页：行铺满、文字缩进来自宿主、当前项高亮、容器 role */
+  /** 基础页：行铺满、文字缩进来自宿主、当前项高亮、容器 part */
   const basic = await page.evaluate(() => {
     const host = window.__deepAll('demo-menu-basic')[0];
     const box = host.shadowRoot;
@@ -49,8 +49,7 @@ const menu = await (async () => {
       total: window.__deepAll('mc-menu-item').length,
       menus: window.__deepAll('mc-menu').length,
       upgraded: !!menu.shadowRoot && items.every((i) => i.shadowRoot),
-      listRole: menu.shadowRoot.querySelector('[part="list"]')?.getAttribute('role'),
-      itemRoles: items.map((i) => i.getAttribute('role')),
+      listPart: menu.shadowRoot.querySelector('[part="list"]')?.getAttribute('part'),
       currentFlags: items.map((i) => i.hasAttribute('data-current')),
       menuW: Math.round(rect(menu).width),
       rowH: items.map((i) => Math.round(rect(i).height)),
@@ -132,11 +131,9 @@ const menu = await (async () => {
     return {
       count: items.length,
       groupCount: groupItems.length,
-      groupRoles: groupItems.map((i) => i.getAttribute('role')),
       groupPointer: getComputedStyle(groupItems[0]).pointerEvents,
       groupHeight: Math.round(groupItems[0].getBoundingClientRect().height),
       groupIndent: getComputedStyle(groupItems[0]).textIndent,
-      normalRoles: normalItems.map((i) => i.getAttribute('role')),
       normalHeight: Math.round(normalItems[0].getBoundingClientRect().height),
     };
   });
@@ -204,7 +201,7 @@ const menu = await (async () => {
     return { byKeyboard, cantFocus };
   })();
 
-  /** 状态镜像：aria-current / aria-disabled / disabled 运行时变化要跟着走（文档站切页就靠它） */
+  /** 状态镜像：data-current / data-disabled / disabled 运行时变化要跟着走（文档站切页就靠它） */
   const mirrorState = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
@@ -212,28 +209,27 @@ const menu = await (async () => {
     const a = item.querySelector('a');
     const out = { before: item.hasAttribute('data-current') };
 
-    a.setAttribute('aria-current', 'page');
+    a.setAttribute('data-current', '');
     await wait(200);
     out.afterSet = item.hasAttribute('data-current');
     out.bgAfterSet = getComputedStyle(item).backgroundColor;
 
-    a.setAttribute('aria-current', 'false');
+    a.removeAttribute('data-current');
     await wait(200);
-    out.afterFalse = item.hasAttribute('data-current');
+    out.afterRemove = item.hasAttribute('data-current');
 
-    a.removeAttribute('aria-current');
-    a.setAttribute('aria-disabled', 'true');
+    a.setAttribute('data-disabled', '');
     await wait(200);
     out.afterDisabled = item.hasAttribute('data-disabled');
     out.opacity = getComputedStyle(item).opacity;
 
-    a.removeAttribute('aria-disabled');
+    a.removeAttribute('data-disabled');
     await wait(200);
     out.afterEnabled = item.hasAttribute('data-disabled');
     return out;
   });
 
-  /** 动态创建（P31：构造期不能往宿主写属性）+ group 运行时切换 + 使用者自己的 role 不被覆盖 */
+  /** 动态创建（P31：构造期不能往宿主写属性）+ group 运行时切换 */
   const dynamic = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const menu = document.createElement('mc-menu');
@@ -244,10 +240,9 @@ const menu = await (async () => {
       menu.append(el);
       return el;
     };
-    const falseItem = item({}, '<a href="#/docs/pages/home.html" aria-current="false">没写</a>');
-    const pageItem = item({}, '<a href="#/docs/pages/home.html" aria-current="page">当前</a>');
+    const falseItem = item({}, '<a href="#/docs/pages/home.html">没写</a>');
+    const pageItem = item({}, '<a href="#/docs/pages/home.html" data-current>当前</a>');
     const groupItem = item({ group: '' }, '分组');
-    const ownItem = item({ role: 'presentation' }, '<a href="#/docs/pages/home.html">自己写的 role</a>');
 
     const atCreate = menu.getAttributeNames().length + falseItem.getAttributeNames().length;
     document.body.append(menu);
@@ -257,19 +252,18 @@ const menu = await (async () => {
       atCreate,
       menuShadow: !!menu.shadowRoot,
       itemShadows: [...menu.children].every((i) => i.shadowRoot),
-      roles: [...menu.children].map((i) => i.getAttribute('role')),
       currentFlags: [...menu.children].map((i) => i.hasAttribute('data-current')),
       falseBg: getComputedStyle(falseItem).backgroundColor,
       pageBg: getComputedStyle(pageItem).backgroundColor,
+      groupPointer: getComputedStyle(groupItem).pointerEvents,
     };
 
     groupItem.removeAttribute('group');
     await wait(200);
-    out.afterUngroup = groupItem.getAttribute('role');
+    out.afterUngroup = getComputedStyle(groupItem).pointerEvents;
     groupItem.setAttribute('group', '');
     await wait(200);
-    out.afterGroup = groupItem.getAttribute('role');
-    out.ownRole = ownItem.getAttribute('role');
+    out.afterGroup = getComputedStyle(groupItem).pointerEvents;
 
     menu.remove();
     return out;
@@ -301,9 +295,9 @@ check(
 );
 
 check(
-  '列表语义：容器 role=list（part=list），条目 role=listitem',
-  menu.basic.listRole === 'list' && menu.basic.itemRoles.every((r) => r === 'listitem'),
-  `list=${menu.basic.listRole} · items=${JSON.stringify(menu.basic.itemRoles)}`,
+  '容器渲染 part="list"（列表 role 已移除）',
+  menu.basic.listPart === 'list',
+  `list part=${menu.basic.listPart}`,
 );
 
 check(
@@ -322,7 +316,7 @@ check(
 );
 
 check(
-  '当前项（aria-current → data-current）底色/字色/字重与普通项不同',
+  '当前项（data-current）底色/字色/字重与普通项不同',
   menu.basic.currentFlags.join() === 'true,false,false,false' &&
     menu.basic.current.bg !== menu.basic.normal.bg &&
     menu.basic.current.color !== menu.basic.normal.color &&
@@ -357,18 +351,16 @@ check(
 );
 
 check(
-  'group 行：不可交互、不算列表项、不定高，普通项照旧是 listitem',
+  'group 行：不可交互、不定高，普通项照旧 36',
   menu.groups.groupCount === 2 &&
-    menu.groups.groupRoles.every((r) => r === null) &&
     menu.groups.groupPointer === 'none' &&
     menu.groups.groupIndent === '0px' &&
-    menu.groups.normalRoles.every((r) => r === 'listitem') &&
     menu.groups.normalHeight === 36,
   JSON.stringify(menu.groups),
 );
 
 check(
-  '状态从插槽元素读：<a aria-current> / <button disabled> / <a aria-disabled> 三种都镜像到宿主',
+  '状态从插槽元素读：<a data-current> / <button disabled> / <a data-disabled> 三种都镜像到宿主',
   menu.states.tags.join() === 'A,A,BUTTON,A' &&
     menu.states.currentFlags.join() === 'true,false,false,false' &&
     menu.states.disabledFlags.join() === 'false,false,true,true' &&
@@ -404,10 +396,10 @@ check(
 );
 
 check(
-  '状态镜像跟随运行时变化：aria-current 加了就亮、写成 false 就灭、aria-disabled 加了就压暗',
+  '状态镜像跟随运行时变化：data-current 加了就亮、摘掉就灭、data-disabled 加了就压暗',
   menu.mirrorState.before === false &&
     menu.mirrorState.afterSet === true &&
-    menu.mirrorState.afterFalse === false &&
+    menu.mirrorState.afterRemove === false &&
     menu.mirrorState.afterDisabled === true &&
     Number(menu.mirrorState.opacity) < 1 &&
     menu.mirrorState.afterEnabled === false,
@@ -419,27 +411,28 @@ check(
   menu.dynamic.atCreate === 0 &&
     menu.dynamic.menuShadow &&
     menu.dynamic.itemShadows &&
-    JSON.stringify(menu.dynamic.roles) === JSON.stringify(['listitem', 'listitem', null, 'presentation']),
+    JSON.stringify(menu.dynamic.currentFlags) === JSON.stringify([false, true, false]),
   JSON.stringify(menu.dynamic),
 );
 
 check(
-  'aria-current="false" 不点亮（等于没写）',
-  menu.dynamic.currentFlags.join() === 'false,true,false,false' &&
+  '没有 data-current 就不亮（presence 即开启，没有 false 语义）',
+  menu.dynamic.currentFlags.join() === 'false,true,false' &&
     menu.dynamic.falseBg !== menu.dynamic.pageBg &&
     menu.dynamic.pageBg !== 'rgba(0, 0, 0, 0)',
   JSON.stringify({ flags: menu.dynamic.currentFlags, falseBg: menu.dynamic.falseBg, pageBg: menu.dynamic.pageBg }),
 );
 
 check(
-  'group 运行时切换：role 跟着摘掉/补回',
-  menu.dynamic.afterUngroup === 'listitem' && menu.dynamic.afterGroup === null,
-  `去掉 group → ${menu.dynamic.afterUngroup} · 加回 group → ${menu.dynamic.afterGroup}`,
+  'group 运行时切换：pointer-events 跟着摘掉/补回',
+  menu.dynamic.groupPointer === 'none' &&
+    menu.dynamic.afterUngroup === 'auto' &&
+    menu.dynamic.afterGroup === 'none',
+  JSON.stringify({
+    before: menu.dynamic.groupPointer,
+    afterUngroup: menu.dynamic.afterUngroup,
+    afterGroup: menu.dynamic.afterGroup,
+  }),
 );
 
-check(
-  '使用者自己写的 role 不被覆盖',
-  menu.dynamic.ownRole === 'presentation',
-  `own=${menu.dynamic.ownRole} · 使用者写了 role 时组件不补 listitem`,
-);
 }

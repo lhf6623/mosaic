@@ -209,37 +209,20 @@
     }
   </style>
 
-  <!-- 交互语义层：透明原生 button 盖满宿主。⚠️ aria-labelledby 指向下面那三个 slot：
-       按钮可见文字是插槽内容、与原生 button 是兄弟而非父子，不指就是无障碍树里的无名按钮。 -->
-  <button
-    class="mc-native"
-    :type="type"
-    :disabled="disabled !== null || loading !== null"
-    aria-labelledby="mc-btn-prefix mc-btn-label mc-btn-suffix"
-  ></button>
-  <!-- ⚠️ 上面那个 aria-labelledby 由 syncAria() 维护：宿主给了 aria-label 时换成 mc-btn-label（labelledby 优先级更高）。 -->
+  <!-- 交互层：透明原生 button 盖满宿主 -->
+  <button class="mc-native" :type="type" :disabled="disabled !== null || loading !== null"></button>
 
-  <span class="mc-layer" aria-hidden="true"></span>
-  <span class="mc-loader mc-icon-spinner" aria-hidden="true"></span>
-  <slot id="mc-btn-prefix" name="prefix"></slot>
-  <slot id="mc-btn-label"></slot>
-  <slot id="mc-btn-suffix" name="suffix"></slot>
+  <span class="mc-layer"></span>
+  <span class="mc-loader mc-icon-spinner"></span>
+  <slot name="prefix"></slot>
+  <slot></slot>
+  <slot name="suffix"></slot>
 
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头 */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
-
-    /** 宿主上这几个 aria 转发给内部那个原生 button（它才是无障碍节点）；aria-label 单独处理，见 syncAria */
-    const ARIA_FORWARD = [
-      'aria-haspopup',
-      'aria-expanded',
-      'aria-controls',
-      'aria-pressed',
-      'aria-current',
-    ];
-    const SLOT_LABEL_IDS = 'mc-btn-prefix mc-btn-label mc-btn-suffix';
 
     export default async () => ({
       tag: 'mc-button',
@@ -260,42 +243,12 @@
       attached() {
         // 宿主 style 等构造期结束再写（P31），首次同步在这里
         color.sync(this.ele, this.color);
-        this.syncAria();
-        /** 宿主上的 aria-* 是运行时变的（菜单的 aria-expanded 就是），属性一变就重新镜像 —— 否则「展开/收起」对读屏静默 */
-        this._ariaObserver = new MutationObserver(() => this.syncAria());
-        this._ariaObserver.observe(this.ele, {
-          attributes: true,
-          attributeFilter: [...ARIA_FORWARD, 'aria-label'],
-        });
-      },
-
-      detached() {
-        this._ariaObserver?.disconnect();
       },
 
       watch: {
         // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
         color(value) {
           color.change(this.ele, value);
-        },
-      },
-
-      proto: {
-        /** 宿主 → 内部原生 button 的 aria 转发：无障碍节点是那个 button，宿主上的 aria-haspopup / aria-expanded /
-         *  aria-current 它看不到，语义静默丢。⚠️ 名字单独走一条：宿主给了 aria-label 就用它，并摘掉模板上的
-         *  aria-labelledby（它优先级更高），否则回落插槽文字；aria-labelledby 不转发（IDREF 跨不了 shadow）。 */
-        syncAria() {
-          const native = this.ele.shadowRoot?.querySelector('.mc-native');
-          if (!native) return;
-          for (const name of ARIA_FORWARD) {
-            const value = this.ele.getAttribute(name);
-            if (value === null) native.removeAttribute(name);
-            else native.setAttribute(name, value);
-          }
-          const label = this.ele.getAttribute('aria-label');
-          if (label) native.setAttribute('aria-label', label);
-          else native.removeAttribute('aria-label');
-          native.setAttribute('aria-labelledby', label ? 'mc-btn-label' : SLOT_LABEL_IDS);
         },
       },
     });

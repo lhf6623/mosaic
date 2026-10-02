@@ -9,7 +9,7 @@ switch 是**立刻生效的开关**（只有开 / 关，没有半选）。
 
 ```html
 <mc-checkbox checked>同意用户协议</mc-checkbox>
-<mc-checkbox value="email" required invalid>邮箱通知</mc-checkbox>
+<mc-checkbox value="email" invalid>邮箱通知</mc-checkbox>
 <mc-checkbox indeterminate>全选（已选 2 / 5）</mc-checkbox>
 ```
 
@@ -18,7 +18,7 @@ DOM property（`el.checked = true` / `el.indeterminate = true` 写完立刻生�
 `indeterminate` 是纯视觉状态 —— 原生没有这个 HTML 属性，它只在内部原生 input 的
 `.indeterminate` 上，提交表单时按 `false` 算。
 
-> `disabled` / `required` / `invalid` 是状态布尔，改它们走 `setAttribute` / `removeAttribute`
+> `disabled` / `invalid` 是状态布尔，改它们走 `setAttribute` / `removeAttribute`
 > （[`packages/README.md`](../README.md) §1.4）。
 
 ---
@@ -30,9 +30,8 @@ DOM property（`el.checked = true` / `el.indeterminate = true` 写完立刻生�
 | `value`         | `string`               | —    | 表单值；跟原生 checkbox 的 `value` 一个意思             |
 | `checked`       | `boolean`              | —    | 选中                                                    |
 | `indeterminate` | `boolean`              | —    | 半选（横杠），优先于 `checked` 显示                     |
-| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 input（读屏 / 键盘可感知）         |
-| `required`      | `boolean`              | —    | 必填，转发成内部原生 input 的 `aria-required`           |
-| `invalid`       | `boolean`              | —    | 校验失败，转发成 `aria-invalid` 并把方框换成危险色      |
+| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 input（<kbd>Tab</kbd> 会跳过）     |
+| `invalid`       | `boolean`              | —    | 校验失败，把方框换成危险色                              |
 | `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 控件高 / 内边距 / 字号；三档之外用宿主 `style="…"` 覆盖 |
 
 ## 事件

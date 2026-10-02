@@ -75,7 +75,7 @@
   <details class="mc-details" :open="open !== null">
     <summary class="mc-header" part="header">
       <span class="mc-header-text"><slot name="header">{{header}}</slot></span>
-      <span class="mc-chevron mc-icon-chevron-right" aria-hidden="true"></span>
+      <span class="mc-chevron mc-icon-chevron-right"></span>
     </summary>
     <div class="mc-body" part="body"><slot></slot></div>
   </details>
@@ -148,10 +148,8 @@
           const off = this.ele.hasAttribute('disabled');
           if (off) {
             this._header.tabIndex = -1;
-            this._header.setAttribute('aria-disabled', 'true');
           } else {
             this._header.removeAttribute('tabindex');
-            this._header.removeAttribute('aria-disabled');
           }
         },
 

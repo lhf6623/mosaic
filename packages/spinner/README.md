@@ -28,7 +28,7 @@
 mc-spinner — 加载指示
 
 **没有插槽、没有 part、没有事件、没有布尔状态**：它就是一个图形。语义只有一个 ——
-「这里在等」。所以接口只剩 `size` / `color` / `label` 三个维度，视觉全在 `:host` 上。
+「这里在等」。所以接口只剩 `size` / `color` 两个维度，视觉全在 `:host` 上。
 
 **为什么是 CSS 画的环，不是 `mc-icon` 的 `spinner` 图标**：
 `mc-icon` 是独立组件（自带 shadow root、要走本地类名探测），一个「一直在转」的指示器
@@ -50,9 +50,6 @@ mc-spinner — 加载指示
 **动画时长走 `--mc-duration-*`**：`shadow-base.css` 在 `prefers-reduced-motion: reduce`
 下把三个时长令牌统一压到 1ms，所以这里**不能写死秒数**，否则减弱动效偏好会静默失效。
 模板里没有 `<l-m>`，也没有 `data()` 样式。
-
-**无障碍**：宿主 `role="status"` + `aria-label`（取 `label`），图形本身 `aria-hidden="true"`。
-`role` / `aria-label` 都在 `attached()` 里写（构造期写宿主属性会抛 `NotSupportedError`）。
 
 ## 令牌
 

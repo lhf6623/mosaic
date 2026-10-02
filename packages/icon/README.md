@@ -16,7 +16,7 @@
 | `icon.html`          | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`          | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`             | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`             | 12 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
+| `demos/`             | 11 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
 | `test/`              | 组件自己的冒烟套件（1 个文件）                                                |
 | `icons.generated.ts` | 构建产物 / 附属文件                                                           |
 | `icons.license.txt`  | 构建产物 / 附属文件                                                           |
@@ -79,7 +79,7 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 
 **框架内部怎么用这套图标**（写组件时的约定）：
 
-- **静态**图标直接用类名：`<span class="mc-loader mc-icon-spinner" aria-hidden="true"></span>`
+- **静态**图标直接用类名：`<span class="mc-loader mc-icon-spinner"></span>`
   —— 类规则已经在 `mosaic.css` 里、也被 adopt 进每个 shadow root，所以**零请求、零额外依赖**
   （`mc-button` 的 loading 指示器、`mc-collapse-item` 的折叠箭头都是这么写的）。
 - **动态**换名 / 需要 `src` / 需要插槽时才用 `<mc-icon>` 组件：`mc-alert` 的左侧图形跟着
@@ -94,8 +94,7 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 
 ## 为什么不发事件
 
-> 页面上**没有**这一节：图标是纯展示元素，不用 `on:` 监听任何东西；
-> 无障碍只看 `label`（有值才是有语义的图标，否则整块对读屏隐藏）。
+> 页面上**没有**这一节：图标是纯展示元素，不用 `on:` 监听任何东西。
 > 这一行留给对账与改代码的人 —— 不渲染（README 不进页面）。
 
 ## 相邻单元

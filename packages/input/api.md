@@ -28,19 +28,18 @@ el.addEventListener('change', (e) => console.log(e.data.value));
 
 ## 属性
 
-| 名称            | 值                                                                          | 默认   | 说明                                                        |
-| --------------- | --------------------------------------------------------------------------- | ------ | ----------------------------------------------------------- |
-| `type`          | `'text' \| 'password' \| 'email' \| 'number' \| 'search' \| 'tel' \| 'url'` | `text` | 转发给内部原生 `<input>` 的 `type`                          |
-| `default-value` | `string`                                                                    | —      | HTML 里的初始值；之后改它**不会**覆盖当前值                 |
-| `placeholder`   | `string`                                                                    | —      | 占位符                                                      |
-| `name`          | `string`                                                                    | —      | 表单字段名，转发给内部原生 `<input>`                        |
-| `size`          | `'sm' \| 'md' \| 'lg'`                                                      | `md`   | 尺寸；高度取 `--mc-control-h-*`                             |
-| `maxlength`     | `number`                                                                    | —      | 最大长度，转发给内部原生 `<input>`                          |
-| `clearable`     | `boolean`                                                                   | —      | 有内容时右侧出现 × 原生按钮（`aria-label="清除"`）          |
-| `disabled`      | `boolean`                                                                   | —      | 禁用，转发给内部原生 `<input>` 的 `disabled`                |
-| `readonly`      | `boolean`                                                                   | —      | 只读，转发给内部原生 `<input>` 的 `readonly`                |
-| `required`      | `boolean`                                                                   | —      | 必填，内部原生 `<input>` 上镜像成 `aria-required`           |
-| `invalid`       | `boolean`                                                                   | —      | 校验失败：边框取 `--mc-color-danger`，镜像成 `aria-invalid` |
+| 名称            | 值                                                                          | 默认   | 说明                                         |
+| --------------- | --------------------------------------------------------------------------- | ------ | -------------------------------------------- |
+| `type`          | `'text' \| 'password' \| 'email' \| 'number' \| 'search' \| 'tel' \| 'url'` | `text` | 转发给内部原生 `<input>` 的 `type`           |
+| `default-value` | `string`                                                                    | —      | HTML 里的初始值；之后改它**不会**覆盖当前值  |
+| `placeholder`   | `string`                                                                    | —      | 占位符                                       |
+| `name`          | `string`                                                                    | —      | 表单字段名，转发给内部原生 `<input>`         |
+| `size`          | `'sm' \| 'md' \| 'lg'`                                                      | `md`   | 尺寸；高度取 `--mc-control-h-*`              |
+| `maxlength`     | `number`                                                                    | —      | 最大长度，转发给内部原生 `<input>`           |
+| `clearable`     | `boolean`                                                                   | —      | 有内容时右侧出现 × 原生按钮                  |
+| `disabled`      | `boolean`                                                                   | —      | 禁用，转发给内部原生 `<input>` 的 `disabled` |
+| `readonly`      | `boolean`                                                                   | —      | 只读，转发给内部原生 `<input>` 的 `readonly` |
+| `invalid`       | `boolean`                                                                   | —      | 校验失败：边框取 `--mc-color-danger`         |
 
 ## 事件
 

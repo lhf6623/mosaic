@@ -130,15 +130,7 @@
   </span>
 
   <!-- 面板：popover="manual" + 锚点定位。内容和显隐都由脚本管，浏览器不参与 light dismiss -->
-  <div
-    class="mc-panel"
-    part="panel"
-    popover="manual"
-    role="tooltip"
-    attr:aria-hidden="shown ? 'false' : 'true'"
-  >
-    {{content}}
-  </div>
+  <div class="mc-panel" part="panel" popover="manual">{{content}}</div>
 
   <script>
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
@@ -157,8 +149,6 @@
       data: {
         // 面板是否就绪（ready 之后才敢碰 popover API）
         mounted: false,
-        // 当前是否显示 —— 只喂给面板的 aria-hidden，原生状态才是真相
-        shown: false,
       },
 
       ready() {
@@ -202,14 +192,12 @@
           if (this._panelEl.matches(':popover-open')) return;
           /* 显式显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
           this._scrollGuard.run(() => this._panelEl.showPopover());
-          this.shown = true;
         },
 
         hideTip() {
           if (this._panelEl.matches(':popover-open')) {
             this._scrollGuard.run(() => this._panelEl.hidePopover());
           }
-          this.shown = false;
         },
 
         /* hover 与 focus 都触发显示（键盘可达靠 focus）；trigger="click" 时那两条都不响应 */

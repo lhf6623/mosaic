@@ -106,8 +106,7 @@
 
   <div class="mc-viewport" part="viewport"><slot></slot></div>
 
-  <!-- 条子对读屏隐藏：滚动这件事由 viewport 的 role="region" + 键盘本身表达 -->
-  <div class="mc-bar" part="bar" aria-hidden="true">
+  <div class="mc-bar" part="bar">
     <div class="mc-thumb" part="thumb"></div>
   </div>
 
@@ -120,8 +119,6 @@
         axis: 'y',
         /* 条子什么时候出现（枚举而不是布尔，形状同 axis）：`hover` = 移入才淡入；`always` = 溢出即常显 */
         reveal: 'hover',
-        /** 可滚动区域的读屏名（只在真的溢出时挂到 viewport 上） */
-        label: '可滚动区域',
       },
 
       attached() {
@@ -187,9 +184,6 @@
         reveal() {
           if (this._viewport) this.syncReveal();
         },
-        label() {
-          if (this._viewport) this.sync();
-        },
       },
 
       proto: {
@@ -212,7 +206,7 @@
           }
         },
 
-        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的无障碍三连 */
+        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的键盘可达性 */
         sync() {
           const vp = this._viewport;
           if (!vp) return;
@@ -224,7 +218,7 @@
           const over = total > size + 1;
 
           this.ele.toggleAttribute('data-overflow', over);
-          this.syncA11y(over);
+          this.syncKeyboard(over);
           if (!over) return;
 
           /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：长列表里 1% 只有半个像素，抓不住 */
@@ -245,16 +239,11 @@
           }
         },
 
-        /** 只有真的溢出时才让它 Tab 得到、有名字 —— 否则就是个没用的 tab 停靠点 */
-        syncA11y(over) {
+        /** 只有真的溢出时才让它 Tab 得到 —— 否则就是个没用的 tab 停靠点 */
+        syncKeyboard(over) {
           const vp = this._viewport;
-          if (over) {
-            vp.setAttribute('tabindex', '0');
-            vp.setAttribute('role', 'region');
-            vp.setAttribute('aria-label', (this.label || '').trim() || '可滚动区域');
-            return;
-          }
-          for (const name of ['tabindex', 'role', 'aria-label']) vp.removeAttribute(name);
+          if (over) vp.setAttribute('tabindex', '0');
+          else vp.removeAttribute('tabindex');
         },
 
         /** 拖滑块：按位移比例换算回滚动量。用 pointer capture，指针移出窗口也不会丢事件 */

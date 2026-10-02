@@ -33,7 +33,7 @@
 **转发给内部原生元素一律用 `attr:`**（除了 `disabled` 用 `:disabled`）：这一条在 textarea 上不是风格问题
 而是生死问题 —— 实测 `<textarea :placeholder="…">` / `<textarea :rows="…">` **完全不生效**
 （同一个仓库里 `<input :placeholder>` 却生效），所以 `placeholder` / `rows` / `name` /
-`maxlength` / `readonly` / `aria-*` 全部走 `attr:`，`null` 表示移除属性。细节与证据见
+`maxlength` / `readonly` 全部走 `attr:`，`null` 表示移除属性。细节与证据见
 [`../input/README.md`](../input/README.md) 的「转发给内部原生元素」那段。
 
 **`size` 改的是 `min-height` 而不是 `height`**：多行控件的真实高度由 `rows` 与内容决定，

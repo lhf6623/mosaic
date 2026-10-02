@@ -1,6 +1,6 @@
 /**
  * message · 命令式消息条：懒挂载（只挂一次、挂到 body 末尾）、自动关闭、手动关闭、
- * closeAll、同 key 更新不叠加、limit 顶掉最旧的、aria-live/role 跟着 type 切、
+ * closeAll、同 key 更新不叠加、limit 顶掉最旧的、类型 → 图标 / 颜色、
  * prefers-reduced-motion 下不播动画、样式只用令牌、没有魔法 z-index。
  *
  * 跑法：node tests/smoke.mjs message（需先 pnpm dev）
@@ -42,17 +42,14 @@ export default async function run({ page, visit, check, newPage }) {
   const snapshot = () =>
     page.evaluate(() => {
       const host = document.querySelector('mc-message');
-      const list = host?.shadowRoot?.querySelector('.mc-list');
       const items = [...(host?.shadowRoot?.querySelectorAll('.mc-item') ?? [])];
       return {
         hosts: document.querySelectorAll('mc-message').length,
         lastChild: document.body.lastElementChild?.tagName.toLowerCase() ?? null,
         position: host ? getComputedStyle(host).position : null,
         zIndex: host ? getComputedStyle(host).zIndex : null,
-        live: list?.getAttribute('aria-live') ?? null,
         texts: items.map((i) => i.textContent.trim()),
         types: items.map((i) => i.getAttribute('data-type')),
-        roles: items.map((i) => i.getAttribute('role')),
         closable: items.map((i) => i.hasAttribute('data-closable')),
         // 图标渲染：行内有没有真的画出 mc-icon
         icons: items.map((i) => i.querySelector('mc-glyph, .mc-glyph mc-icon')?.getAttribute?.('name') ?? null),
@@ -155,7 +152,7 @@ export default async function run({ page, visit, check, newPage }) {
     };
   });
   check(
-    '每条消息右侧有明确的 ×：约 32×32 命中区、圆形、带 aria-label、图标已渲染',
+    '每条消息右侧有明确的 ×：约 32×32 命中区、圆形、不写 aria-label、图标已渲染',
     closeBtn?.exists === true &&
       closeBtn.display === 'flex' &&
       closeBtn.w >= 31 &&
@@ -163,7 +160,7 @@ export default async function run({ page, visit, check, newPage }) {
       closeBtn.h >= 31 &&
       closeBtn.h <= 33 &&
       closeBtn.radius === '9999px' &&
-      !!closeBtn.label &&
+      closeBtn.label === null &&
       closeBtn.icon === true,
     JSON.stringify(closeBtn),
   );
@@ -371,7 +368,7 @@ export default async function run({ page, visit, check, newPage }) {
   );
 
   /* ------------------------------------------------------------------ *
-   * 9. 类型 → 图标 / 颜色 / role；error 切 assertive
+   * 9. 类型 → 图标 / 颜色
    * ------------------------------------------------------------------ */
   await until(() => document.querySelector('mc-message')?.shadowRoot?.querySelectorAll('.mc-item').length === 0);
   const typeRows = await page.evaluate(async () => {
@@ -415,8 +412,11 @@ export default async function run({ page, visit, check, newPage }) {
     JSON.stringify(typeRows.map((r) => `${r.type}:${r.iconColor}`)),
   );
   check(
-    'error 是紧急播报（role=alert + aria-live=assertive），其余 polite',
-    byType.error.role === 'alert' && byType.error.live === 'assertive' && byType.info.live === 'polite' && byType.info.role === null,
+    '消息条与容器都不写 role / aria-*',
+    byType.error.role === null &&
+      byType.error.live === null &&
+      byType.info.live === null &&
+      byType.info.role === null,
     JSON.stringify(typeRows.map((r) => `${r.type}:${r.role}/${r.live}`)),
   );
 

@@ -169,7 +169,7 @@ export default async function run({ page, visit, check }) {
       aligned: Math.abs(p.left - c.left) <= 1.5,
       /* 面板最小宽度跟着触发框（anchor-size），内容更长时才会更宽 */
       wideEnough: p.width >= c.width - 1,
-      expanded: s.control.getAttribute('aria-expanded'),
+      hostOpen: s.host.hasAttribute('data-open'),
       display: getComputedStyle(s.panel).display,
     };
   });
@@ -181,7 +181,7 @@ export default async function run({ page, visit, check }) {
       opened.below === true &&
       opened.aligned === true &&
       opened.wideEnough === true &&
-      opened.expanded === 'true',
+      opened.hostOpen === true,
     JSON.stringify(opened),
   );
   check(
@@ -254,8 +254,6 @@ export default async function run({ page, visit, check }) {
     return {
       open: s.panel.matches(':popover-open'),
       active: s.rows.map((row) => row.hasAttribute('data-active')),
-      activeId: s.control.getAttribute('aria-activedescendant'),
-      firstId: s.rows[0].id,
     };
   });
   await page.keyboard.press('ArrowDown');
@@ -263,8 +261,6 @@ export default async function run({ page, visit, check }) {
     const s = window.__sel();
     return {
       active: s.rows.map((row) => row.hasAttribute('data-active')),
-      activeId: s.control.getAttribute('aria-activedescendant'),
-      secondId: s.rows[1].id,
     };
   });
   await page.keyboard.press('ArrowUp');
@@ -272,8 +268,6 @@ export default async function run({ page, visit, check }) {
     const s = window.__sel();
     return {
       active: s.rows.map((row) => row.hasAttribute('data-active')),
-      activeId: s.control.getAttribute('aria-activedescendant'),
-      firstId: s.rows[0].id,
     };
   });
   await page.keyboard.press('End');
@@ -291,14 +285,11 @@ export default async function run({ page, visit, check }) {
     return { value: s.host.value, open: s.panel.matches(':popover-open') };
   });
   check(
-    '键盘：ArrowDown 打开并移动高亮（aria-activedescendant 跟着走）、ArrowUp / Home / End、Enter 选中',
+    '键盘：ArrowDown 打开并移动高亮（data-active 跟着走）、ArrowUp / Home / End、Enter 选中',
     navFirst.open === true &&
       JSON.stringify(navFirst.active) === JSON.stringify([true, false, false, false]) &&
-      navFirst.activeId === navFirst.firstId &&
       JSON.stringify(nav.active) === JSON.stringify([false, true, false, false]) &&
-      nav.activeId === nav.secondId &&
       JSON.stringify(navBack.active) === JSON.stringify([true, false, false, false]) &&
-      navBack.activeId === navBack.firstId &&
       /* End 落在最后一个**可用**项上（禁用项不算，所以是第 3 项） */
       JSON.stringify(navEnd.active) === JSON.stringify([false, false, true, false]) &&
       committed.value === 'bj' &&
@@ -316,14 +307,14 @@ export default async function run({ page, visit, check }) {
     return {
       open: s.panel.matches(':popover-open'),
       focused: s.root.activeElement?.className ?? null,
-      expanded: s.control.getAttribute('aria-expanded'),
+      hostOpen: s.host.hasAttribute('data-open'),
     };
   });
   check(
-    'Esc 关闭面板并把焦点还给触发框（aria-expanded 收回 false）',
+    'Esc 关闭面板并把焦点还给触发框（data-open 收回）',
     escaped.open === false &&
       escaped.focused === 'mc-control' &&
-      escaped.expanded === 'false',
+      escaped.hostOpen === false,
     JSON.stringify(escaped),
   );
 
@@ -441,8 +432,8 @@ export default async function run({ page, visit, check }) {
     const s = window.__sel();
     return {
       value: s.host.value,
-      selected: s.rows.map((row) => row.getAttribute('aria-selected')),
-      multi: s.list.getAttribute('aria-multiselectable'),
+      selected: s.rows.map((row) => row.getAttribute('data-selected')),
+      multiple: s.host.hasAttribute('multiple'),
       text: s.root.querySelector('.mc-value').textContent,
     };
   });
@@ -461,7 +452,7 @@ export default async function run({ page, visit, check }) {
     'multiple：value 是 string[]、default-value 是逗号分隔串、再点一次取消选中、面板不自己收',
     JSON.stringify(multiInit.value) === JSON.stringify(['bj', 'sh']) &&
       JSON.stringify(multiInit.selected) === JSON.stringify(['true', 'true', 'false']) &&
-      multiInit.multi === 'true' &&
+      multiInit.multiple === true &&
       multiInit.text === '北京, 上海' &&
       JSON.stringify(multiAfter.value) === JSON.stringify(['bj', 'sh', 'gz']) &&
       multiAfter.open === true &&
@@ -470,11 +461,11 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ------------------------------------------------------------------ *
-   * 7. disabled / readonly / required / invalid / size
+   * 7. disabled / readonly / invalid / size
    * ------------------------------------------------------------------ */
   await page.evaluate(() =>
     window.__make(
-      { disabled: '', required: '', invalid: '', 'default-value': 'bj' },
+      { disabled: '', invalid: '', 'default-value': 'bj' },
       '<mc-option value="bj">北京</mc-option><mc-option value="sh">上海</mc-option>',
     ),
   );
@@ -487,9 +478,8 @@ export default async function run({ page, visit, check }) {
       .join(', ');
     return {
       controlDisabled: s.control.disabled,
-      required: s.control.getAttribute('aria-required'),
-      invalid: s.control.getAttribute('aria-invalid'),
-      disabledAria: s.control.getAttribute('aria-disabled'),
+      hostDisabled: s.host.hasAttribute('disabled'),
+      hostInvalid: s.host.hasAttribute('invalid'),
       border: getComputedStyle(s.control).borderTopColor,
       danger: `rgb(${danger})`,
     };
@@ -499,11 +489,10 @@ export default async function run({ page, visit, check }) {
   await page.waitForTimeout(200);
   const disabledOpen = await isOpen();
   check(
-    'disabled：原生 button 真的 disabled、aria-* 转发、点了不弹面板；invalid 只换边框色',
+    'disabled：原生 button 真的 disabled、宿主属性在、点了不弹面板；invalid 只换边框色',
     stateInit.controlDisabled === true &&
-      stateInit.required === 'true' &&
-      stateInit.invalid === 'true' &&
-      stateInit.disabledAria === 'true' &&
+      stateInit.hostDisabled === true &&
+      stateInit.hostInvalid === true &&
       stateInit.border === stateInit.danger &&
       disabledOpen === false,
     JSON.stringify({ stateInit, disabledOpen }),
@@ -516,25 +505,12 @@ export default async function run({ page, visit, check }) {
   await page.waitForTimeout(200);
   const readonlyOpen = await page.evaluate(() => ({
     open: window.__sel().panel.matches(':popover-open'),
-    aria: window.__sel().control.getAttribute('aria-readonly'),
+    readonly: window.__sel().host.hasAttribute('readonly'),
   }));
   check(
-    'readonly：可以聚焦、aria-readonly 转发，但面板不打开',
-    readonlyOpen.open === false && readonlyOpen.aria === 'true',
+    'readonly：宿主属性在、可以聚焦，但面板不打开',
+    readonlyOpen.open === false && readonlyOpen.readonly === true,
     JSON.stringify(readonlyOpen),
-  );
-
-  /* 无障碍名跨 shadow：宿主 aria-label → 触发按钮（组件里唯一能被命名的位置） */
-  const labelled = await page.evaluate(() => {
-    window.__make({ 'aria-label': '切换深浅色' }, '<mc-option value="bj">北京</mc-option>');
-    const named = window.__sel().control.getAttribute('aria-label');
-    window.__make({}, '<mc-option value="bj">北京</mc-option>');
-    return { named, plain: window.__sel().control.getAttribute('aria-label') };
-  });
-  check(
-    '无障碍名：宿主的 aria-label 转发到触发按钮（没写就不留残留）',
-    labelled.named === '切换深浅色' && labelled.plain === null,
-    JSON.stringify(labelled),
   );
 
   const sizes = await page.evaluate(() => {

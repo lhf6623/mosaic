@@ -49,9 +49,8 @@
     }
   </style>
 
-  <!-- role=list 是 Safari 的补丁：list-style:none 会让 Safari 丢掉 <ol> 的列表语义 -->
-  <nav part="base" attr:aria-label="label">
-    <ol class="mc-list" part="list" role="list">
+  <nav part="base">
+    <ol class="mc-list" part="list">
       <slot></slot>
     </ol>
   </nav>
@@ -62,8 +61,6 @@
 
       attrs: {
         separator: '/',
-        // 导航区块的无障碍名（<nav aria-label>）。默认中文，英文站写 label="Breadcrumb"
-        label: '面包屑',
       },
 
       attached() {

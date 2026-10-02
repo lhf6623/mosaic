@@ -34,7 +34,7 @@
       color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg, var(--mc-def-color-fg))));
     }
 
-    /* 3. 状态。脚本把插槽元素上的 aria-current / disabled 镜像到这里 —— ::slotted() 优先级不够，宿主才稳定 */
+    /* 3. 状态。脚本把插槽元素上的 data-current / disabled 镜像到这里 —— ::slotted() 优先级不够，宿主才稳定 */
     :host([data-current]) {
       background-color: rgb(
         var(
@@ -126,11 +126,10 @@
         this._onSlotChange = () => this.bindChild();
         this._onChildChange = () => this.applyState();
         this._slot.addEventListener('slotchange', this._onSlotChange);
-        // aria-current 是运行时切来切去的，属性一变就得重新镜像
+        // data-current 是运行时切来切去的，属性一变就得重新镜像
         this._observer = new MutationObserver(this._onChildChange);
 
         this.bindChild();
-        this.applyRole();
       },
 
       detached() {
@@ -138,28 +137,7 @@
         this._observer?.disconnect();
       },
 
-      watch: {
-        /** ⚠️ 首次触发必须跳过（P5）：watch 的 init 空跑落在构造期，此时往宿主写属性会抛 NotSupportedError（P31） */
-        group() {
-          if (this._groupWatchInit === undefined) {
-            this._groupWatchInit = true;
-            return;
-          }
-          this.applyRole();
-        },
-      },
-
       proto: {
-        /** 列表语义：容器是 role=list，条目就得是 listitem；子项在 light DOM，slot 那层包裹浏览器看不到，只能条目自己声明 */
-        applyRole() {
-          const own = this.ele.getAttribute('role');
-          if (this.ele.hasAttribute('group')) {
-            if (own === 'listitem') this.ele.removeAttribute('role');
-            return;
-          }
-          if (!own) this.ele.setAttribute('role', 'listitem');
-        },
-
         /** 插槽里那个原生交互元素（一行只放一个）；没有 a/button 就退化成第一个元素 */
         interactive() {
           const items = this._slot?.assignedElements() ?? [];
@@ -173,20 +151,18 @@
           if (el) {
             this._observer.observe(el, {
               attributes: true,
-              attributeFilter: ['aria-current', 'aria-disabled', 'disabled'],
+              attributeFilter: ['data-current', 'data-disabled', 'disabled'],
             });
           }
           this.applyState();
         },
 
-        /** 读插槽元素的状态 → 写成宿主上的 data-* 钩子（CSS 只能从宿主上选它）；aria-current="false" 等于没写，<a> 的禁用看 aria-disabled */
+        /** 读插槽元素的状态 → 写成宿主上的 data-* 钩子（CSS 只能从宿主上选它）；状态只有 data-current / disabled / data-disabled 三种来源 */
         applyState() {
           const el = this.interactive();
-          const value = (name) => (el?.getAttribute(name) ?? '').toLowerCase();
-          const current =
-            !!el && el.hasAttribute('aria-current') && value('aria-current') !== 'false';
+          const current = !!el && el.hasAttribute('data-current');
           const disabled =
-            !!el && (el.hasAttribute('disabled') || value('aria-disabled') === 'true');
+            !!el && (el.hasAttribute('disabled') || el.hasAttribute('data-disabled'));
 
           this.mirror('data-current', current);
           this.mirror('data-disabled', disabled);

@@ -1,5 +1,5 @@
 /**
- * mc-icon：本地命中（零请求）/ 远程内联（一次、全页共享）/ 语义色与尺寸 / 层顺序 / 插槽让位 / 无障碍。
+ * mc-icon：本地命中（零请求）/ 远程内联（一次、全页共享）/ 语义色与尺寸 / 层顺序 / 插槽让位。
  * 跑法：node tests/smoke.mjs icon（需先 pnpm dev）
  *
  * ⚠️ 两条实测过的坑写在这里，别把它们当成"多余的小心"：
@@ -97,14 +97,14 @@ export default async function run({ page, visit, check }) {
       },
       emptyBox: [Math.round(box('i-empty').width), Math.round(box('i-empty').height)],
       emptyChildren: glyph('i-empty').childElementCount,
-      label: {
+      noAria: {
         role: document.getElementById('i-label').getAttribute('role'),
         aria: document.getElementById('i-label').getAttribute('aria-label'),
         glyphHidden: document.getElementById('i-label').shadowRoot
           .querySelector('.mc-glyph')
           .getAttribute('aria-hidden'),
+        hostHidden: document.getElementById('i-local').getAttribute('aria-hidden'),
       },
-      plainHidden: document.getElementById('i-local').getAttribute('aria-hidden'),
       utility: { color: rgb(css(document.getElementById('i-utility')).color), primary: token('--mc-color-primary') },
       slot: {
         class: glyph('i-slot').className,
@@ -178,12 +178,12 @@ export default async function run({ page, visit, check }) {
     `${state.utility.color} vs ${state.utility.primary}`,
   );
   check(
-    '有 label → role=img + aria-label；没 label → 宿主 aria-hidden，图形本身永远 aria-hidden',
-    state.label.role === 'img' &&
-      state.label.aria === '关闭' &&
-      state.label.glyphHidden === 'true' &&
-      state.plainHidden === 'true',
-    JSON.stringify(state.label) + ` · 无 label 的宿主 aria-hidden=${state.plainHidden}`,
+    '不写 role / aria-*：宿主与图形槽都没有（label 属性已不再是接口）',
+    state.noAria.role === null &&
+      state.noAria.aria === null &&
+      state.noAria.glyphHidden === null &&
+      state.noAria.hostHidden === null,
+    JSON.stringify(state.noAria),
   );
   check(
     '插槽有内容就让位：不加图标类、不注入图形，尺寸由使用者内容决定',

@@ -104,7 +104,7 @@ export default async function run({ page, visit, check }) {
   const park = () => page.mouse.move(4, 4);
 
   /* ------------------------------------------------------------------ *
-   * 1. 地基：锚点几何 = 触发元素几何；面板是原生 popover + role=tooltip
+   * 1. 地基：锚点几何 = 触发元素几何；面板是原生 popover
    * ------------------------------------------------------------------ */
   const hoverPoint = await hover('tt-hover-btn');
   await waitOpen('tt-hover', true);
@@ -130,10 +130,10 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    '悬停触发显示：原生 popover="manual" + role="tooltip" + content 文本；锚点盒与触发元素严丝合缝（inline-flex）、默认方位在上方',
+    '悬停触发显示：原生 popover="manual" + content 文本；锚点盒与触发元素严丝合缝（inline-flex）、默认方位在上方',
     hoverPoint.hit === 'tt-hover-btn' &&
       base.popover === 'manual' &&
-      base.role === 'tooltip' &&
+      base.role === null &&
       base.text === '悬停提示' &&
       base.anchorDisplay === 'inline-flex' &&
       base.anchorW < 0.5 &&
@@ -143,18 +143,18 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ ...hoverPoint, ...base }),
   );
 
-  const ariaShown = await page.evaluate(() =>
+  const noAriaOpen = await page.evaluate(() =>
     document.getElementById('tt-hover').shadowRoot.querySelector('.mc-panel').getAttribute('aria-hidden'),
   );
   await park();
   await waitOpen('tt-hover', false);
-  const ariaHidden = await page.evaluate(() =>
+  const noAriaClosed = await page.evaluate(() =>
     document.getElementById('tt-hover').shadowRoot.querySelector('.mc-panel').getAttribute('aria-hidden'),
   );
   check(
-    '移开就收；aria-hidden 跟着显隐走（显示 false / 收起 true）',
-    ariaShown === 'false' && ariaHidden === 'true' && (await isOpen('tt-hover')) === false,
-    JSON.stringify({ ariaShown, ariaHidden }),
+    '移开就收；面板不写 aria-hidden（显隐是原生 popover 的真相）',
+    noAriaOpen === null && noAriaClosed === null && (await isOpen('tt-hover')) === false,
+    JSON.stringify({ noAriaOpen, noAriaClosed }),
   );
 
   /* ------------------------------------------------------------------ *

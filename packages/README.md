@@ -245,7 +245,7 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 
 ---
 
-## 五、共用约定（属性 / 事件 / 插槽 / part / 无障碍）
+## 五、共用约定（属性 / 事件 / 插槽 / part / 键盘）
 
 > 子节编号沿用原「组件 API 规范」的 **1.x** —— 外部有多处按 1.2 / 1.4 / 1.5 / 1.7 引用，别重编号。
 
@@ -391,10 +391,10 @@ item.open = true; // 组件提供了访问器时同样可以
 已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb`）、
 `pre` / `code` / `line`（`mc-code`）。
 
-### 1.8 无障碍与键盘基线（每个组件都要满足）
+### 1.8 键盘基线（每个组件都要满足）
 
-只承诺**键盘可达** —— 不追 WCAG 全量审计，也不逐项做读屏适配（页面层的补充见
-[`docs/README.md`](../docs/README.md) §八）：
+**不做读屏支持**：组件里没有 `role` / `aria-*` / live region / 文字替代；
+只保证键盘操作（页面层的补充见 [`docs/README.md`](../docs/README.md) §八）：
 
 - 可交互元素必须是**原生元素**（`<button>` / `<input>` / `<a>` / `<details>`），不是 `<div on:click>`；
   自定义交互补等价键：Enter / Space 激活，Esc 关闭，方向键在菜单 / 列表 / 标签页内移动。
@@ -404,7 +404,8 @@ item.open = true; // 组件提供了访问器时同样可以
   预设了内容形态的浮层（`mc-dialog` / `mc-dropdown`）负责「打开时焦点进弹层、关闭后归还触发点」，
   通用容器 `mc-popover` 只走原生 light-dismiss（Esc 交给浏览器）。
 - 不吞键：只在确实需要时 `preventDefault`，别拦 `Tab` / `Esc` / 浏览器组合键；不做全局单键快捷键。
-- 图标按钮必须有 `aria-label`；装饰性 SVG 加 `aria-hidden="true"`
+- 状态一律用 `data-*`（`data-current` / `data-selected` / `data-disabled` / `data-expanded`），
+  `aria-*` 与 `role` 一个都不写
 
 ---
 

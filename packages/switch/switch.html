@@ -78,7 +78,7 @@
       padding-inline: var(--mc-switch-pad-x);
       cursor: pointer;
     }
-    /* 原生 input 只承载语义（键盘 / 读屏 / 命中区）；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
+    /* 原生 input 只承载键盘与命中区；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
     .mc-native {
       position: absolute;
       width: 1px;
@@ -131,13 +131,11 @@
     }
   </style>
 
-  <!-- 原生 <label> 包住 input 与文案：点文案 = 点开关，读屏也把文案算成控件名 -->
+  <!-- 原生 <label> 包住 input 与文案：点文案 = 点开关 -->
   <label class="mc-base" part="base">
-    <!-- role="switch"：读屏读「开关，已打开 / 已关闭」而不是「复选框」（原生 change 见脚本转发） -->
     <input
       class="mc-native"
       type="checkbox"
-      role="switch"
       :disabled="disabled !== null"
       on:change="onNativeChange()"
     />

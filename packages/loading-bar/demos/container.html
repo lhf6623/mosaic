@@ -9,7 +9,7 @@
     <div
       style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); overflow: hidden"
     >
-      <mc-loading-bar attr:state="phase" position="static" label="正在刷新列表"></mc-loading-bar>
+      <mc-loading-bar attr:state="phase" position="static"></mc-loading-bar>
       <div class="flex flex-col gap-1 p-3">
         <span>成员列表</span>
         <span class="text-xs text-muted">这一条只说这一块（收尾的样子见「出错」那一节）</span>
@@ -23,7 +23,6 @@
       <mc-loading-bar
         attr:state="phase"
         position="static"
-        label="正在保存"
         style="position: absolute; inset-inline: 0; top: 0"
       ></mc-loading-bar>
       <div class="flex flex-col gap-1 p-3">

@@ -42,7 +42,10 @@
     <mc-menu size="sm">
       <o-fill :value="rows" fill-key="id">
         <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
-          <a attr:href="'#' + $data.id" attr:data-toc-id="$data.id" attr:aria-current="$data.aria"
+          <a
+            attr:href="'#' + $data.id"
+            attr:data-toc-id="$data.id"
+            attr:data-current="$data.current"
             >{{$data.label}}</a
           >
         </mc-menu-item>
@@ -190,7 +193,7 @@
             id: entry.id,
             label: entry.heading.textContent.trim(),
             deep: entry.deep,
-            aria: null,
+            current: null,
           }));
 
           // 一次性动作：盯住当前这一页、找到滚动容器并挂上 scroll-spy
@@ -236,7 +239,7 @@
         applyActive(id) {
           for (const row of this.rows) {
             const next = row.id === id ? 'location' : null;
-            if (row.aria !== next) row.aria = next;
+            if (row.current !== next) row.current = next;
           }
         },
 
