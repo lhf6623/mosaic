@@ -5,16 +5,23 @@
       heading="受控开合"
       attr:open="open ? '' : null"
       on:open="last = 'open'"
-      on:close="open = false; last = 'close'"
-    >
+      on:close="open = false; last = 'close'">
       <p>
-        外面这个按钮改的是 <code>dialog.open</code>（property，写完立刻生效）；被
-        <kbd>Esc</kbd> 或点遮罩关掉时组件只发 <code>close</code>，这里把它同步回状态。
+        外面这个按钮改的是
+        <code>dialog.open</code>
+        （property，写完立刻生效）；被
+        <kbd>Esc</kbd>
+        或点遮罩关掉时组件只发
+        <code>close</code>
+        ，这里把它同步回状态。
       </p>
     </mc-dialog>
   </div>
 
-  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
   <script>
     export default async () => ({
       tag: 'demo-dialog-controlled',

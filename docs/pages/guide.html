@@ -10,48 +10,74 @@
 
     <mc-code language="html" src="../snippets/quick-start.html"></mc-code>
     <p class="doc-hint">
-      片段放在 <code>docs/snippets/quick-start.html</code>，页面里一行引用 —— 文件本身是真
-      HTML，不用写 <code>&amp;lt;</code>，编辑器高亮、也能直接打开验证。
+      片段放在
+      <code>docs/snippets/quick-start.html</code>
+      ，页面里一行引用 —— 文件本身是真 HTML，不用写
+      <code>&amp;lt;</code>
+      ，编辑器高亮、也能直接打开验证。
     </p>
 
     <div class="doc-note">
       <strong>就两样：ofa.js 与你要用的组件。</strong>
       <ul>
         <li>
-          <code>ofa.js</code> 是唯一的运行时依赖 —— 一个
+          <code>ofa.js</code>
+          是唯一的运行时依赖 —— 一个
           <code>&lt;script type="module"&gt;</code>
         </li>
         <li>
-          <code>&lt;l-m src="…"&gt;</code> 按需拉一个组件，<strong>一个组件一条</strong>；
-          样式由组件自己带进 shadow root
+          <code>&lt;l-m src="…"&gt;</code>
+          按需拉一个组件，
+          <strong>一个组件一条</strong>
+          ； 样式由组件自己带进 shadow root
         </li>
         <li>
-          可选：<code>mosaic.css</code> 给<strong>你自己的页面</strong>提供工具类与完整令牌表
-          （含暗色 / 跟随系统三态），不引它组件照常
+          可选：
+          <code>mosaic.css</code>
+          给
+          <strong>你自己的页面</strong>
+          提供工具类与完整令牌表 （含暗色 / 跟随系统三态），不引它组件照常
         </li>
       </ul>
     </div>
 
     <h2>为什么不用引 CSS</h2>
     <p>
-      ofa.js 的组件渲染是 <code>attachShadow()</code> + <code>innerHTML</code>， 也就是<strong
-        >组件必定有 shadow root</strong
-      >，而文档级 <code>&lt;link&gt;</code>
+      ofa.js 的组件渲染是
+      <code>attachShadow()</code>
+      +
+      <code>innerHTML</code>
+      ， 也就是
+      <strong>组件必定有 shadow root</strong>
+      ，而文档级
+      <code>&lt;link&gt;</code>
       里的规则进不去。所以「组件自带样式」不能让页面引一份 CSS —— 那份 CSS 到不了组件内部。
     </p>
     <p>
-      组件的做法：在自己的模板里 <code>&lt;link&gt;</code> 一份
-      <code>packages/boot/component-base.css</code>（shadow reset + 令牌默认值）。 它<strong
-        >只作用于那个 shadow root</strong
-      >，一个字节都不改进你的页面。
+      组件的做法：在自己的模板里
+      <code>&lt;link&gt;</code>
+      一份
+      <code>packages/boot/component-base.css</code>
+      （shadow reset + 令牌默认值）。 它
+      <strong>只作用于那个 shadow root</strong>
+      ，一个字节都不改进你的页面。
     </p>
 
     <div class="doc-note doc-warn">
       <strong>自带默认值不会盖掉你的换肤。</strong>
-      组件写的是两级回退：<code>var(--mc-color-primary, var(--mc-def-color-primary))</code> —— 你在
-      <code>:root</code> / <code>[data-theme]</code> / 元素
-      <code>style</code> 上给的令牌<strong>一定赢</strong>，只有没定义时才落到组件自带的亮色默认值。
-      暗色、跟随系统、<code>data-tone</code> 这些手段照旧有效。
+      组件写的是两级回退：
+      <code>var(--mc-color-primary, var(--mc-def-color-primary))</code>
+      —— 你在
+      <code>:root</code>
+      /
+      <code>[data-theme]</code>
+      / 元素
+      <code>style</code>
+      上给的令牌
+      <strong>一定赢</strong>
+      ，只有没定义时才落到组件自带的亮色默认值。 暗色、跟随系统、
+      <code>data-tone</code>
+      这些手段照旧有效。
     </div>
 
     <h2>本地开发</h2>
@@ -68,26 +94,43 @@
     </mc-code>
 
     <div class="doc-note doc-warn">
-      <strong>本地验证必须用 <code>pnpm dev</code>。</strong>
-      它跑的是仓库自带的零依赖 <code>tools/serve.mjs</code>，响应头带
-      <code>cache-control: no-store</code>。换成带缓存的静态服务器后， 改完
-      <code>page.html</code> 或组件本体浏览器会继续用旧模块， 表现为「改了没生效」，排查极耗时。
+      <strong>
+        本地验证必须用
+        <code>pnpm dev</code>
+        。
+      </strong>
+      它跑的是仓库自带的零依赖
+      <code>tools/serve.mjs</code>
+      ，响应头带
+      <code>cache-control: no-store</code>
+      。换成带缓存的静态服务器后， 改完
+      <code>page.html</code>
+      或组件本体浏览器会继续用旧模块， 表现为「改了没生效」，排查极耗时。
     </div>
 
     <h2>接入方式的几种变体</h2>
 
     <h3>锁死版本（推荐）</h3>
     <p>
-      文档里一律写精确版本号。jsDelivr 上 <code>@latest</code> / <code>@1</code> 这类别名 有 7
-      天缓存，最长 7 天不生效；而精确版本是 <strong>1 年 <code>immutable</code></strong
-      >。
+      文档里一律写精确版本号。jsDelivr 上
+      <code>@latest</code>
+      /
+      <code>@1</code>
+      这类别名 有 7 天缓存，最长 7 天不生效；而精确版本是
+      <strong>
+        1 年
+        <code>immutable</code>
+      </strong>
+      。
     </p>
 
     <h3>自托管 / 内网</h3>
     <p>
-      本仓库没有构建产物 —— 仓库里的 <code>packages/**</code> 就是 CDN 上的东西。 所以
-      <code>git clone</code> 之后直接当静态目录托管即可，不需要任何构建步骤。 把上面代码块里的 CDN
-      前缀换成本地路径就行。
+      本仓库没有构建产物 —— 仓库里的
+      <code>packages/**</code>
+      就是 CDN 上的东西。 所以
+      <code>git clone</code>
+      之后直接当静态目录托管即可，不需要任何构建步骤。 把上面代码块里的 CDN 前缀换成本地路径就行。
     </p>
 
     <h3>大陆访问</h3>
@@ -103,29 +146,59 @@
 
     <h3>组件样式没生效</h3>
     <p>
-      看网络面板里 <code>component-base.css</code> 是不是 404 —— 组件的样式基座由它自己
-      <code>&lt;link&gt;</code>，路径相对<strong>组件文件</strong>。自托管时只拷了组件目录、 没带上
-      <code>packages/boot/component-base.css</code>，就是这个现象。
+      看网络面板里
+      <code>component-base.css</code>
+      是不是 404 —— 组件的样式基座由它自己
+      <code>&lt;link&gt;</code>
+      ，路径相对
+      <strong>组件文件</strong>
+      。自托管时只拷了组件目录、 没带上
+      <code>packages/boot/component-base.css</code>
+      ，就是这个现象。
     </p>
 
     <h3>工具类不生效</h3>
     <p>
-      工具类住在<strong>可选</strong>的 <code>mosaic.css</code> 里，它只服务你自己的页面
-      （组件不需要它）。里面是一份<strong>手写的工具类子集</strong>（当前 43 条），覆盖布局 / 间距 /
-      排版 / 语义色；子集之外的（<code>mt-7</code>、<code>bg-gradient-to-r</code>…）
-      <strong>不存在</strong>，需要时请自己写 CSS。
+      工具类住在
+      <strong>可选</strong>
+      的
+      <code>mosaic.css</code>
+      里，它只服务你自己的页面 （组件不需要它）。里面是一份
+      <strong>手写的工具类子集</strong>
+      （当前 43 条），覆盖布局 / 间距 / 排版 / 语义色；子集之外的（
+      <code>mt-7</code>
+      、
+      <code>bg-gradient-to-r</code>
+      …）
+      <strong>不存在</strong>
+      ，需要时请自己写 CSS。
     </p>
 
-    <h3>为什么没有 <code>dark:</code> 这类变体</h3>
+    <h3>
+      为什么没有
+      <code>dark:</code>
+      这类变体
+    </h3>
     <p>
-      工具类子集是手写的，<strong>只有列在 packages/boot/utilities.css 里的那些</strong>， 没有
-      <code>dark:</code> / <code>md:</code> 这类变体。真要有 <code>dark:</code>，它编译出来会是
-      <code>@media (prefers-color-scheme: dark)</code> —— 在 shadow
-      树里<strong>只跟随系统偏好</strong>， 跟不了站点的
-      <code>&lt;html data-theme&gt;</code> 三态切换。 暗色差异一律提升为令牌，在文档根（<code
-        >:root</code
-      >
-      / <code>[data-theme]</code>）上换值。
+      工具类子集是手写的，
+      <strong>只有列在 packages/boot/utilities.css 里的那些</strong>
+      ， 没有
+      <code>dark:</code>
+      /
+      <code>md:</code>
+      这类变体。真要有
+      <code>dark:</code>
+      ，它编译出来会是
+      <code>@media (prefers-color-scheme: dark)</code>
+      —— 在 shadow 树里
+      <strong>只跟随系统偏好</strong>
+      ， 跟不了站点的
+      <code>&lt;html data-theme&gt;</code>
+      三态切换。 暗色差异一律提升为令牌，在文档根（
+      <code>:root</code>
+      /
+      <code>[data-theme]</code>
+      ）上换值。
     </p>
   </div>
   <script>

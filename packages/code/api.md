@@ -9,7 +9,7 @@
 
 ```html
 <!-- ① 标签里直接贴：最好读，不用转义引号 -->
-<mc-code language="javascript"> const a = 1; </mc-code>
+<mc-code language="javascript">const a = 1;</mc-code>
 
 <!-- ② code 属性：单行/多行都行 -->
 <mc-code language="javascript" code="const a = 1;"></mc-code>
@@ -39,8 +39,8 @@
   &lt;!doctype html&gt; &lt;html lang="zh-CN"&gt; &lt;/mc-code&gt;
 
   <!-- ❌ 首行粘在标签上 → 公共缩进 0 → 其余行多出 2 格，第一行还顶在最左 -->
-  <mc-code language="html">&lt;!doctype html&gt; &lt;html lang="zh-CN"&gt;</mc-code></mc-code
->
+  <mc-code language="html">&lt;!doctype html&gt; &lt;html lang="zh-CN"&gt;</mc-code>
+</mc-code>
 ```
 
 ---

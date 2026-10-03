@@ -63,6 +63,11 @@
 - 每个演示的标题与 `.doc-hint` 留在 `<section>` 里；演示之间不插属性表。
 - 页面里**内联的 `<mc-code>` 文本是逐字展示的**，前面必须加 `<!-- prettier-ignore -->`
   （否则 `pnpm format` 会把它的换行重排掉）；长片段改用 `src="…"` 就没这个问题。
+  ⚠️ 这个注释**只有 prettier 认** —— 编辑器自带的 HTML 格式化器（VSCode 没装 / 没用 Prettier
+  扩展时，「格式化文档」走的就是内置那份）不认它：块内多个空格被并成一个、相对缩进被抹平。
+  块里是要**逐字展示**的原文，重排 = 文档内容变了（`mc-code` 只 dedent 掉最小公共缩进，
+  少掉的 2 空格就是渲染出来的层级）。改这份文件前先确认编辑器用的格式化器是 Prettier
+  （即 `pnpm format` 跑的那份），别用编辑器内置的 HTML 格式化器。
 
 ## 二、演示区四段：标题 → 说明 → 组件 → 组件代码
 
@@ -77,9 +82,9 @@
   <demo-button-colors></demo-button-colors>
   <!-- ③ 组件：活样例（独立的 demos/*.html 组件） -->
   <mc-collapse class="doc-demo-code">
-    <mc-collapse-item header="查看代码"
-      ><mc-code language="html" src="./demos/colors.html"></mc-code
-    ></mc-collapse-item>
+    <mc-collapse-item header="查看代码">
+      <mc-code language="html" src="./demos/colors.html"></mc-code>
+    </mc-collapse-item>
   </mc-collapse>
   <!-- ④ 组件代码：默认收起的抽屉，内容就是 ③ 那份文件 -->
 </section>

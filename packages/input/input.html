@@ -147,14 +147,12 @@
       attr:readonly="readonly !== null ? '' : null"
       attr:maxlength="maxlength === null ? null : maxlength"
       on:input="onInput($event)"
-      on:change="onChange()"
-    />
+      on:change="onChange()" />
     <button
       class="mc-clear"
       type="button"
       :disabled="disabled !== null || readonly !== null"
-      on:click="onClear()"
-    >
+      on:click="onClear()">
       ×
     </button>
     <span class="mc-suffix" part="suffix"><slot name="suffix"></slot></span>

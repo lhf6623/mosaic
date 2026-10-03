@@ -14,10 +14,16 @@
     <l-m src="./demos/controlled.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
-    <h1>Dropdown <code>mc-dropdown</code></h1>
+    <h1>
+      Dropdown
+      <code>mc-dropdown</code>
+    </h1>
     <p class="doc-lead">
-      下拉菜单：触发元素放 <code>trigger</code> 插槽，面板内容放默认插槽（通常是
-      <code>mc-menu-item</code>），面板进 top layer、贴边自动翻转。
+      下拉菜单：触发元素放
+      <code>trigger</code>
+      插槽，面板内容放默认插槽（通常是
+      <code>mc-menu-item</code>
+      ），面板进 top layer、贴边自动翻转。
     </p>
 
     <h2>例子</h2>
@@ -25,87 +31,110 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        点触发元素开合；面板里 <kbd>Esc</kbd> 关闭并把焦点还回触发元素，点空白也关。
-        点菜单项不会自动关面板 —— 要「选完就关」就在菜单项上写 <code>on:click</code> 把
-        <code>open</code> 设回 <code>false</code>。面板需要原生 popover 与 CSS 锚点定位（Chrome 125+
-        / Safari 17+ / Firefox 125+），否则不会弹，也不报错。
+        点触发元素开合；面板里
+        <kbd>Esc</kbd>
+        关闭并把焦点还回触发元素，点空白也关。 点菜单项不会自动关面板 ——
+        要「选完就关」就在菜单项上写
+        <code>on:click</code>
+        把
+        <code>open</code>
+        设回
+        <code>false</code>
+        。面板需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
+        125+），否则不会弹，也不报错。
       </p>
       <demo-dropdown-basic></demo-dropdown-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>方位</h3>
       <p class="doc-hint">
-        <code>placement</code> 取值与 <code>mc-popover</code> 一致：上下左右各带
-        <code>-start</code> / <code>-end</code> 后缀，不写后缀 = 居中；空间不够浏览器自动翻。
+        <code>placement</code>
+        取值与
+        <code>mc-popover</code>
+        一致：上下左右各带
+        <code>-start</code>
+        /
+        <code>-end</code>
+        后缀，不写后缀 = 居中；空间不够浏览器自动翻。
       </p>
       <demo-dropdown-placement></demo-dropdown-placement>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/placement.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/placement.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>悬停触发</h3>
       <p class="doc-hint">
-        <code>trigger="hover"</code>：指针移入开、移出关；中间那 120ms 的宽限让指针能挪到面板上
+        <code>trigger="hover"</code>
+        ：指针移入开、移出关；中间那 120ms 的宽限让指针能挪到面板上
         （面板是宿主的后代，不会误触移出）。
       </p>
       <demo-dropdown-hover></demo-dropdown-hover>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hover.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hover.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>受控开合</h3>
       <p class="doc-hint">
-        <code>open</code> 由外面的状态驱动；被 Esc / 点空白关掉时组件会删掉这个属性并发
-        <code>close</code>，这里把状态同步回去。
+        <code>open</code>
+        由外面的状态驱动；被 Esc / 点空白关掉时组件会删掉这个属性并发
+        <code>close</code>
+        ，这里把状态同步回去。
       </p>
       <demo-dropdown-controlled></demo-dropdown-controlled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/controlled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/controlled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        <code>open</code> / <code>close</code> 都不带载荷：打开（属性 / property /
-        点触发元素）、关闭（Esc / 点外部 / 再点触发元素）各发一次 —— 受控写法在
-        <code>close</code> 里把状态收回。
+        <code>open</code>
+        /
+        <code>close</code>
+        都不带载荷：打开（属性 / property / 点触发元素）、关闭（Esc / 点外部 /
+        再点触发元素）各发一次 —— 受控写法在
+        <code>close</code>
+        里把状态收回。
       </p>
       <demo-dropdown-events></demo-dropdown-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部封在 shadow 里，只有 <code>::part(panel)</code>（面板本体）能从外面改；
-        菜单项的样式归它自己的单元（<code>mc-menu-item</code>）。
+        组件内部封在 shadow 里，只有
+        <code>::part(panel)</code>
+        （面板本体）能从外面改； 菜单项的样式归它自己的单元（
+        <code>mc-menu-item</code>
+        ）。
       </p>
       <demo-dropdown-part></demo-dropdown-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

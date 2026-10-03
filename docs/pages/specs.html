@@ -25,19 +25,21 @@
   <div class="doc-body">
     <h1>规范</h1>
     <p class="doc-lead">
-      这两份文档各回答一个问题，都在 <code>packages/</code> 下，直接读 Markdown 即可。
+      这两份文档各回答一个问题，都在
+      <code>packages/</code>
+      下，直接读 Markdown 即可。
     </p>
 
     <div class="doc-grid">
       <div class="doc-card">
         <h4>
-          <a href="https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md"
-            >设计令牌</a
-          >
+          <a href="https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md">
+            设计令牌
+          </a>
         </h4>
         <p>
-          <strong>有什么值</strong>：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG
-          自检、换肤指南。
+          <strong>有什么值</strong>
+          ：OKLCH 生成的 6 色族 × 11 档色板、语义令牌、WCAG 自检、换肤指南。
         </p>
       </div>
       <div class="doc-card">
@@ -45,26 +47,41 @@
           <a href="https://github.com/lhf6623/mosaic/blob/main/packages/README.md">组件 API 规范</a>
         </h4>
         <p>
-          <strong>有哪些组件、各自什么接口</strong>：五个正交维度、值读写规则、属性 / 事件 / 插槽与
-          part、逐组件 API 表。
+          <strong>有哪些组件、各自什么接口</strong>
+          ：五个正交维度、值读写规则、属性 / 事件 / 插槽与 part、逐组件 API 表。
         </p>
       </div>
     </div>
 
     <h2>五条不可谈判的约束</h2>
     <ol>
-      <li><strong>使用者侧零工具链</strong> —— 任何「请先安装 X」的方案直接否决</li>
       <li>
-        <strong>组件不过打包器</strong> —— <code>packages/**.html</code> 源 = 产物。 ofa.js
-        的组件就是一个可独立寻址的 <code>.html</code>，不该变成 JS bundle
-      </li>
-      <li><strong>组件不依赖宿主页面任何 CSS</strong> —— 样式自带，宿主的全局选择器影响不到它</li>
-      <li>
-        <strong>定制点只用原生 CSS</strong> —— <code>style="…"</code> + 令牌 +
-        <code>::part()</code>， 不用 JS 配置对象
+        <strong>使用者侧零工具链</strong>
+        —— 任何「请先安装 X」的方案直接否决
       </li>
       <li>
-        <strong>只有一个运行时依赖 ofa.js</strong> —— pin 在验证过的版本；代码高亮是可选懒加载依赖
+        <strong>组件不过打包器</strong>
+        ——
+        <code>packages/**.html</code>
+        源 = 产物。 ofa.js 的组件就是一个可独立寻址的
+        <code>.html</code>
+        ，不该变成 JS bundle
+      </li>
+      <li>
+        <strong>组件不依赖宿主页面任何 CSS</strong>
+        —— 样式自带，宿主的全局选择器影响不到它
+      </li>
+      <li>
+        <strong>定制点只用原生 CSS</strong>
+        ——
+        <code>style="…"</code>
+        + 令牌 +
+        <code>::part()</code>
+        ， 不用 JS 配置对象
+      </li>
+      <li>
+        <strong>只有一个运行时依赖 ofa.js</strong>
+        —— pin 在验证过的版本；代码高亮是可选懒加载依赖
       </li>
     </ol>
 
@@ -80,24 +97,45 @@
       </thead>
       <tbody>
         <tr>
-          <td>用 <code>presetWind3</code>，不用 <code>presetWind4</code></td>
           <td>
-            wind4 的 theme 色不支持 <code>&lt;alpha-value&gt;</code>，会产出非法 CSS
-            且整条声明静默失效
+            用
+            <code>presetWind3</code>
+            ，不用
+            <code>presetWind4</code>
+          </td>
+          <td>
+            wind4 的 theme 色不支持
+            <code>&lt;alpha-value&gt;</code>
+            ，会产出非法 CSS 且整条声明静默失效
           </td>
         </tr>
         <tr>
-          <td>必须开 <code>outputToCssLayers</code></td>
           <td>
-            <code>adoptedStyleSheets</code> 在 shadow root 内的优先级<strong>高于</strong> 组件自身
-            <code>&lt;style&gt;</code>，不分层的话工具类会反过来盖住组件样式
+            必须开
+            <code>outputToCssLayers</code>
+          </td>
+          <td>
+            <code>adoptedStyleSheets</code>
+            在 shadow root 内的优先级
+            <strong>高于</strong>
+            组件自身
+            <code>&lt;style&gt;</code>
+            ，不分层的话工具类会反过来盖住组件样式
           </td>
         </tr>
         <tr>
-          <td>组件里禁止 <code>dark:</code> 变体</td>
           <td>
-            <code>dark:</code> 编译成 <code>@media (prefers-color-scheme: dark)</code>， 在 shadow
-            树里能生效，但只跟随系统偏好，跟不了 <code>&lt;html data-theme&gt;</code> 的三态切换
+            组件里禁止
+            <code>dark:</code>
+            变体
+          </td>
+          <td>
+            <code>dark:</code>
+            编译成
+            <code>@media (prefers-color-scheme: dark)</code>
+            ， 在 shadow 树里能生效，但只跟随系统偏好，跟不了
+            <code>&lt;html data-theme&gt;</code>
+            的三态切换
           </td>
         </tr>
         <tr>
@@ -107,14 +145,20 @@
         <tr>
           <td>构建缺输入必须大声失败</td>
           <td>
-            实测拼少一份输入会产出<strong>没有令牌的坏 CSS</strong>，退出码却还是 0 ——
-            <code>build-css.mjs</code> 因此先查输入存在、装配后再验图标齐全
+            实测拼少一份输入会产出
+            <strong>没有令牌的坏 CSS</strong>
+            ，退出码却还是 0 ——
+            <code>build-css.mjs</code>
+            因此先查输入存在、装配后再验图标齐全
           </td>
         </tr>
         <tr>
           <td>文档里锁精确版本</td>
           <td>
-            <code>@latest</code> / <code>@1</code> 有 7 天缓存，最长 7 天不生效； 精确版本是 1 年
+            <code>@latest</code>
+            /
+            <code>@1</code>
+            有 7 天缓存，最长 7 天不生效； 精确版本是 1 年
             <code>immutable</code>
           </td>
         </tr>
@@ -142,9 +186,16 @@
     </mc-code>
 
     <div class="doc-note">
-      <strong>没有 <code>dist/</code>。</strong>
-      分发走 jsDelivr <code>/gh/</code>，仓库即产物 —— 仓库里的 <code>packages/**</code> 就是 CDN
-      上的东西。
+      <strong>
+        没有
+        <code>dist/</code>
+        。
+      </strong>
+      分发走 jsDelivr
+      <code>/gh/</code>
+      ，仓库即产物 —— 仓库里的
+      <code>packages/**</code>
+      就是 CDN 上的东西。
     </div>
 
     <h2>当前状态</h2>
@@ -165,13 +216,26 @@
           <td>✅ 51.0 KB raw / 9.0 KB gzip</td>
         </tr>
         <tr>
-          <td>组件自带样式（<code>component-base.css</code>，不碰宿主页面）</td>
+          <td>
+            组件自带样式（
+            <code>component-base.css</code>
+            ，不碰宿主页面）
+          </td>
           <td>✅ 已实现</td>
         </tr>
         <tr>
           <td>
-            <code>mc-button</code> / <code>mc-code</code> / <code>mc-collapse</code> /
-            <code>mc-menu</code> / <code>mc-breadcrumb</code> / <code>mc-card</code>
+            <code>mc-button</code>
+            /
+            <code>mc-code</code>
+            /
+            <code>mc-collapse</code>
+            /
+            <code>mc-menu</code>
+            /
+            <code>mc-breadcrumb</code>
+            /
+            <code>mc-card</code>
           </td>
           <td>✅ 已实现</td>
         </tr>

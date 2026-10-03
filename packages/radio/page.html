@@ -11,7 +11,10 @@
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Radio <code>mc-radio</code></h1>
+    <h1>
+      Radio
+      <code>mc-radio</code>
+    </h1>
     <p class="doc-lead">
       单选项，容器 + 子项两个标签：组管互斥 / 方向 / 尺寸 / 事件，子项只是一格。
     </p>
@@ -21,15 +24,20 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        <code>name</code> 是字段名，<code>default-value</code> 是初始选中项 ——
-        同一页可以有多个互不干扰的组。 组只认直接子项（用 <code>o-if</code> /
-        <code>o-fill</code> 包一层就互斥失效）；不在组里的 radio 只能切换自己。
+        <code>name</code>
+        是字段名，
+        <code>default-value</code>
+        是初始选中项 —— 同一页可以有多个互不干扰的组。 组只认直接子项（用
+        <code>o-if</code>
+        /
+        <code>o-fill</code>
+        包一层就互斥失效）；不在组里的 radio 只能切换自己。
       </p>
       <demo-radio-basic></demo-radio-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -37,9 +45,9 @@
       <h3>方向</h3>
       <demo-radio-direction></demo-radio-direction>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/direction.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/direction.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -47,9 +55,9 @@
       <h3>尺寸</h3>
       <demo-radio-sizes></demo-radio-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -57,40 +65,60 @@
       <h3>禁用</h3>
       <demo-radio-disabled></demo-radio-disabled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/disabled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/disabled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        用 <kbd>←</kbd> <kbd>→</kbd> 在组内走一遍也能看到变化。<code>change</code>
-        只在组上发一次，载荷是 <code>$event.data.value</code> —— 子项不会各自再发一遍。 原生的
-        <code>focus</code> / <code>blur</code> / <code>keydown</code> 这些
-        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        用
+        <kbd>←</kbd>
+        <kbd>→</kbd>
+        在组内走一遍也能看到变化。
+        <code>change</code>
+        只在组上发一次，载荷是
+        <code>$event.data.value</code>
+        —— 子项不会各自再发一遍。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        这些
+        <code>composed</code>
+        事件本来就会穿到宿主上（不用组件转发），
+        <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-radio-events></demo-radio-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组与子项各有自己的 <code>part</code>：<code>::part(circle)</code> 改圆圈、
-        <code>::part(label)</code> 改文案、<code>::part(base)</code> 改整格 / 整行。
+        组与子项各有自己的
+        <code>part</code>
+        ：
+        <code>::part(circle)</code>
+        改圆圈、
+        <code>::part(label)</code>
+        改文案、
+        <code>::part(base)</code>
+        改整格 / 整行。
       </p>
       <demo-radio-part></demo-radio-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

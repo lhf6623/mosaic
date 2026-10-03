@@ -8,8 +8,7 @@
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
-></script>
+  src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"></script>
 
 <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
 <mc-button color="primary">提交</mc-button>

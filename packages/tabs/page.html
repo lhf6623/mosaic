@@ -9,10 +9,14 @@
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Tabs <code>mc-tabs</code></h1>
+    <h1>
+      Tabs
+      <code>mc-tabs</code>
+    </h1>
     <p class="doc-lead">
       标签页。容器管标签条、面板显隐与键盘；标签就是那一颗能点的按钮，值走 property、变化走
-      <code>change</code>。
+      <code>change</code>
+      。
     </p>
 
     <h2>例子</h2>
@@ -21,52 +25,72 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        <code>default-value</code> 指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
+        <code>default-value</code>
+        指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
       </p>
       <demo-tabs-basic></demo-tabs-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>禁用</h3>
-      <p class="doc-hint">点不动，方向键与 <kbd>Home</kbd> / <kbd>End</kbd> 也会跳过它。</p>
+      <p class="doc-hint">
+        点不动，方向键与
+        <kbd>Home</kbd>
+        /
+        <kbd>End</kbd>
+        也会跳过它。
+      </p>
       <demo-tabs-disabled></demo-tabs-disabled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/disabled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/disabled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        <code>change</code> 只在激活项真的变了时发，载荷是 <code>$event.data.value</code>。
+        <code>change</code>
+        只在激活项真的变了时发，载荷是
+        <code>$event.data.value</code>
+        。
       </p>
       <demo-tabs-events></demo-tabs-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式（这里开了 <code>list</code> / <code>indicator</code> /
-        <code>panel</code>，标签自己的 <code>base</code> 也在）。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（这里开了
+        <code>list</code>
+        /
+        <code>indicator</code>
+        /
+        <code>panel</code>
+        ，标签自己的
+        <code>base</code>
+        也在）。
       </p>
       <demo-tabs-part></demo-tabs-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

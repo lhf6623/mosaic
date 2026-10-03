@@ -1,15 +1,19 @@
 <template component>
   <div class="flex flex-col gap-3">
-    <mc-alert closable color="warning" icon heading="点右侧 × 试试" on:close="markClose($event)"
-      >组件只发 <code>close</code>，删不删 DOM 由使用者决定 —— 这里就把它删掉。</mc-alert
-    >
-    <mc-alert closable color="info" on:close="markClose($event)"
-      >第二条一样，事件挂在每一条自己身上。</mc-alert
-    >
+    <mc-alert closable color="warning" icon heading="点右侧 × 试试" on:close="markClose($event)">
+      组件只发
+      <code>close</code>
+      ，删不删 DOM 由使用者决定 —— 这里就把它删掉。
+    </mc-alert>
+    <mc-alert closable color="info" on:close="markClose($event)">
+      第二条一样，事件挂在每一条自己身上。
+    </mc-alert>
   </div>
 
   <p class="mt-3 text-sm text-muted">
-    最近一次 close：<strong>{{last}}</strong>（累计 {{count}} 次）
+    最近一次 close：
+    <strong>{{last}}</strong>
+    （累计 {{count}} 次）
   </p>
 
   <script>

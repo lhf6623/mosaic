@@ -11,7 +11,10 @@
     <l-m src="./demos/sections.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Card <code>mc-card</code></h1>
+    <h1>
+      Card
+      <code>mc-card</code>
+    </h1>
     <p class="doc-lead">内容承载面：一块面 + 头尾结构，里面的东西自己塞。</p>
 
     <h2>例子</h2>
@@ -19,15 +22,23 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        头尾写 <code>slot="header"</code> / <code>slot="footer"</code>，其余进默认插槽；
-        头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，<code>inset</code> 按
-        <code>--mc-card-border-w</code> 取负值盖住边框那圈，<code>cursor</code> 要显式写。
+        头尾写
+        <code>slot="header"</code>
+        /
+        <code>slot="footer"</code>
+        ，其余进默认插槽； 头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，
+        <code>inset</code>
+        按
+        <code>--mc-card-border-w</code>
+        取负值盖住边框那圈，
+        <code>cursor</code>
+        要显式写。
       </p>
       <demo-card-basic></demo-card-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -35,20 +46,23 @@
       <h3>头部与分隔线</h3>
       <demo-card-sections></demo-card-sections>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sections.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sections.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外观</h3>
-      <p class="doc-hint"><code>outline</code> 适合放在已经有底色的容器里（侧栏、弹层内部）。</p>
+      <p class="doc-hint">
+        <code>outline</code>
+        适合放在已经有底色的容器里（侧栏、弹层内部）。
+      </p>
       <demo-card-variants></demo-card-variants>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/variants.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/variants.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -57,43 +71,54 @@
       <p class="doc-hint">
         <code>none</code>
         是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。 要让图片或
-        <code>padding="none"</code> 的整块内容跟着圆角裁，在宿主 <code>style</code> 上加
-        <code>overflow: hidden</code>。
+        <code>padding="none"</code>
+        的整块内容跟着圆角裁，在宿主
+        <code>style</code>
+        上加
+        <code>overflow: hidden</code>
+        。
       </p>
       <demo-card-padding></demo-card-padding>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/padding.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/padding.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        颜色、圆角、内边距都在宿主上改（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow 边界。
-        卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
+        颜色、圆角、内边距都在宿主上改（L3 令牌或一句
+        <code>style="…"</code>
+        ），不用跨 shadow 边界。 卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
       </p>
       <demo-card-customize></demo-card-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式（这里开了 <code>header</code> /
-        <code>footer</code> 两个）。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（这里开了
+        <code>header</code>
+        /
+        <code>footer</code>
+        两个）。
       </p>
       <demo-card-part></demo-card-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

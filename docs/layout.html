@@ -389,9 +389,9 @@
              ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），换来的是「顶栏每一处都由项目自己的组件渲染」；改回锚点前先看提交记录里的取舍。
              -->
         <o-fill :value="links" fill-key="path">
-          <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path"
-            >{{$data.label}}</mc-button
-          >
+          <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path">
+            {{$data.label}}
+          </mc-button>
         </o-fill>
       </nav>
 
@@ -402,8 +402,7 @@
           href="https://github.com/lhf6623/mosaic"
           target="_blank"
           rel="noreferrer"
-          title="GitHub 仓库"
-        >
+          title="GitHub 仓库">
           <!-- 图标走内置的 github 品牌图标（mc-icon）：清单里有了就不该再存一份手写 path，上游改图形只需要 pnpm icons。 -->
           <mc-icon name="github"></mc-icon>
         </a>
@@ -414,39 +413,35 @@
           trigger="click"
           placement="bottom-end"
           on:open="menuOpen = true"
-          on:close="menuOpen = false"
-        >
+          on:close="menuOpen = false">
           <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件 -->
           <mc-button slot="trigger" inline>
             <span>{{themeLabel}}</span>
           </mc-button>
-          <mc-menu-item
-            ><button
+          <mc-menu-item>
+            <button
               type="button"
               attr:data-current="theme === 'auto' ? 'true' : null"
-              on:click="pickTheme('auto')"
-            >
+              on:click="pickTheme('auto')">
               自动
-            </button></mc-menu-item
-          >
-          <mc-menu-item
-            ><button
+            </button>
+          </mc-menu-item>
+          <mc-menu-item>
+            <button
               type="button"
               attr:data-current="theme === 'light' ? 'true' : null"
-              on:click="pickTheme('light')"
-            >
+              on:click="pickTheme('light')">
               亮色
-            </button></mc-menu-item
-          >
-          <mc-menu-item
-            ><button
+            </button>
+          </mc-menu-item>
+          <mc-menu-item>
+            <button
               type="button"
               attr:data-current="theme === 'dark' ? 'true' : null"
-              on:click="pickTheme('dark')"
-            >
+              on:click="pickTheme('dark')">
               暗色
-            </button></mc-menu-item
-          >
+            </button>
+          </mc-menu-item>
         </mc-dropdown>
 
         <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
@@ -456,8 +451,7 @@
             class="doc-menu"
             placement="bottom-end"
             on:open="narrowMenuOpen = true"
-            on:close="narrowMenuOpen = false"
-          >
+            on:close="narrowMenuOpen = false">
             <mc-button class="doc-menu-btn" inline>
               <mc-icon name="menu"></mc-icon>
             </mc-button>

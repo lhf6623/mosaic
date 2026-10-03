@@ -1,11 +1,20 @@
 <template component>
   <div class="flex flex-wrap items-center gap-2">
     <mc-button on:click="toggleOpen()">{{open ? '收起' : '展开'}}</mc-button>
-    <mc-popover trigger="manual" attr:open="open ? '' : null" placement="bottom-start" on:close="open = false">
+    <mc-popover
+      trigger="manual"
+      attr:open="open ? '' : null"
+      placement="bottom-start"
+      on:close="open = false">
       <mc-button variant="outline">受控触发的元素</mc-button>
       <div slot="panel">
-        面板的 <code>open</code> 属性由外面的按钮控制；点空白 / Esc 关掉时组件会发
-        <code>close</code>，这里把它同步回 <code>open</code>。
+        面板的
+        <code>open</code>
+        属性由外面的按钮控制；点空白 / Esc 关掉时组件会发
+        <code>close</code>
+        ，这里把它同步回
+        <code>open</code>
+        。
       </div>
     </mc-popover>
   </div>

@@ -15,10 +15,14 @@
     <l-m src="./demos/empty.html"></l-m>
     <l-m src="./demos/slots.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Table <code>mc-table</code></h1>
+    <h1>
+      Table
+      <code>mc-table</code>
+    </h1>
     <p class="doc-lead">
-      数据表格。真 <code>&lt;table&gt;</code> 结构；列定义与行数据是对象数组，运行时用 property
-      传进去，改完立刻重渲染。
+      数据表格。真
+      <code>&lt;table&gt;</code>
+      结构；列定义与行数据是对象数组，运行时用 property 传进去，改完立刻重渲染。
     </p>
 
     <h2>例子</h2>
@@ -27,15 +31,23 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        演示里在它自己的 <code>ready()</code> 里把 <code>columns</code> / <code>data</code> 赋给这个
-        <code>mc-table</code>；页面里就是 <code>document.querySelector('#t').data = […]</code>。
-        单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
+        演示里在它自己的
+        <code>ready()</code>
+        里把
+        <code>columns</code>
+        /
+        <code>data</code>
+        赋给这个
+        <code>mc-table</code>
+        ；页面里就是
+        <code>document.querySelector('#t').data = […]</code>
+        。 单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
       </p>
       <demo-table-basic></demo-table-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -43,13 +55,15 @@
       <h3>运行时换数据</h3>
       <p class="doc-hint">
         赋值就是入口：整体换一个数组也行（组件会重新规范化），空数组就是空态 ——
-        三个按钮改的都是同一个 <code>data</code> property。
+        三个按钮改的都是同一个
+        <code>data</code>
+        property。
       </p>
       <demo-table-runtime></demo-table-runtime>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/runtime.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/runtime.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -58,9 +72,9 @@
       <p class="doc-hint">偶数行换底色，长表格里更好找行。</p>
       <demo-table-striped></demo-table-striped>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/striped.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/striped.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -69,65 +83,84 @@
       <p class="doc-hint">鼠标停在哪一行，哪一行亮起来。</p>
       <demo-table-hoverable></demo-table-hoverable>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hoverable.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hoverable.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>加载中</h3>
       <p class="doc-hint">
-        <code>loading</code> 期间显示 <code>loading</code> 插槽（不给就是一行「加载中…」）。
+        <code>loading</code>
+        期间显示
+        <code>loading</code>
+        插槽（不给就是一行「加载中…」）。
       </p>
       <demo-table-loading></demo-table-loading>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/loading.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/loading.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>空态</h3>
       <p class="doc-hint">
-        一行数据都没有时显示 <code>empty</code> 插槽；文案默认「暂无数据」，可以用
-        <code>empty-text</code> 换掉。
+        一行数据都没有时显示
+        <code>empty</code>
+        插槽；文案默认「暂无数据」，可以用
+        <code>empty-text</code>
+        换掉。
       </p>
       <demo-table-empty></demo-table-empty>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/empty.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/empty.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>空态与加载插槽</h3>
       <p class="doc-hint">
-        两个槽都有兜底内容（<code>empty-text</code> 与内置的「加载中…」）， 给了
-        <code>slot="empty"</code> / <code>slot="loading"</code> 就整块换成你的。
+        两个槽都有兜底内容（
+        <code>empty-text</code>
+        与内置的「加载中…」）， 给了
+        <code>slot="empty"</code>
+        /
+        <code>slot="loading"</code>
+        就整块换成你的。
       </p>
       <demo-table-slots></demo-table-slots>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/slots.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slots.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式（这里开了 <code>table</code> / <code>row</code> /
-        <code>cell</code>）。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（这里开了
+        <code>table</code>
+        /
+        <code>row</code>
+        /
+        <code>cell</code>
+        ）。
       </p>
       <demo-table-part></demo-table-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

@@ -3,8 +3,11 @@
        所以组件在宿主上重发了一次（bubbles + composed）—— 挂在祖先上同样收得到。 -->
   <div on:scroll="onScroll()">
     <mc-scroll-bar
-      style="height: 8rem; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
-    >
+      style="
+        height: 8rem;
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: var(--mc-radius-md);
+      ">
       <div class="flex flex-col gap-2 p-3">
         <o-fill :value="rows" fill-key="$key">
           <div>{{$data}}</div>
@@ -13,7 +16,10 @@
     </mc-scroll-bar>
   </div>
 
-  <p class="mt-3 text-sm text-muted">最近一次 scroll：<strong>{{last}}</strong></p>
+  <p class="mt-3 text-sm text-muted">
+    最近一次 scroll：
+    <strong>{{last}}</strong>
+  </p>
 
   <script>
     export default async () => ({

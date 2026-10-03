@@ -33,7 +33,9 @@
              `this.sticky = 句柄` 会把 sticky() 自己覆盖掉，下一次点击就是
              「Error evaluating element expression: on:click="sticky()"」—— 症状是"点第一次有用，
              之后再也打不开"。 */
-          this.stickyMessage = message('duration: 0 —— 点右侧 × 关掉它，或调 close()', { duration: 0 });
+          this.stickyMessage = message('duration: 0 —— 点右侧 × 关掉它，或调 close()', {
+            duration: 0,
+          });
         },
         closeSticky() {
           if (!this.stickyMessage) return;

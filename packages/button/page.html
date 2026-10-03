@@ -14,10 +14,14 @@
     <l-m src="./demos/slots.html"></l-m>
     <l-m src="./demos/block.html"></l-m>
     <l-m src="./demos/override.html"></l-m>
-    <h1>Button <code>mc-button</code></h1>
+    <h1>
+      Button
+      <code>mc-button</code>
+    </h1>
     <p class="doc-lead">
       按钮。语义色 × 外观样式是两个正交维度， 「描边样式的危险按钮」这种组合能直接写出来。 另有
-      <code>inline</code> 形态：盒子交给文字的行内按钮（见下面「行内文字按钮」一节）。
+      <code>inline</code>
+      形态：盒子交给文字的行内按钮（见下面「行内文字按钮」一节）。
     </p>
     <h2>例子</h2>
 
@@ -25,9 +29,9 @@
       <h3>语义色</h3>
       <demo-button-colors></demo-button-colors>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/colors.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/colors.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -35,41 +39,52 @@
       <h3>外观 × 颜色</h3>
       <demo-button-variants></demo-button-variants>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/variants.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/variants.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>行内文字按钮</h3>
       <p class="doc-hint">
-        <code>inline</code> 是<strong>形态</strong>（不是
-        <code>variant</code> 的取值）：盒子交给文字，
-        <code>size</code> 只选字号，所以它跟着正文基线走、三档高度一样。
-        <strong>别和实心按钮并排</strong> ——
-        它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
-        放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了 <code>size="lg"</code>。
+        <code>inline</code>
+        是
+        <strong>形态</strong>
+        （不是
+        <code>variant</code>
+        的取值）：盒子交给文字，
+        <code>size</code>
+        只选字号，所以它跟着正文基线走、三档高度一样。
+        <strong>别和实心按钮并排</strong>
+        —— 它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
+        放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了
+        <code>size="lg"</code>
+        。
       </p>
       <demo-button-inline></demo-button-inline>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/inline.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/inline.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>hex 颜色</h3>
       <p class="doc-hint">
-        <code>color</code> 也直接收 hex（<code>#fff000</code> /
-        <code>#fc0</code>）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
+        <code>color</code>
+        也直接收 hex（
+        <code>#fff000</code>
+        /
+        <code>#fc0</code>
+        ）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
       </p>
       <demo-button-hex></demo-button-hex>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hex.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hex.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -77,48 +92,65 @@
       <h3>尺寸</h3>
       <demo-button-sizes></demo-button-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>表单类型</h3>
       <p class="doc-hint">
-        <code>type</code> 转发给内部原生 <code>&lt;button&gt;</code>；放进
-        <code>&lt;form&gt;</code> 才生效 —— <code>submit</code> 提交、<code>reset</code> 还原，
-        不写默认 <code>button</code>（不会误提交）。
+        <code>type</code>
+        转发给内部原生
+        <code>&lt;button&gt;</code>
+        ；放进
+        <code>&lt;form&gt;</code>
+        才生效 ——
+        <code>submit</code>
+        提交、
+        <code>reset</code>
+        还原， 不写默认
+        <code>button</code>
+        （不会误提交）。
       </p>
       <demo-button-type></demo-button-type>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/type.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/type.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>状态</h3>
-      <p class="doc-hint">用 <kbd>Tab</kbd> 走一遍能看到焦点环。</p>
+      <p class="doc-hint">
+        用
+        <kbd>Tab</kbd>
+        走一遍能看到焦点环。
+      </p>
       <demo-button-states></demo-button-states>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/states.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/states.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>图标插槽</h3>
       <p class="doc-hint">
-        图标写在 <code>slot="prefix"</code> / <code>slot="suffix"</code>，文字照旧放默认插槽。
+        图标写在
+        <code>slot="prefix"</code>
+        /
+        <code>slot="suffix"</code>
+        ，文字照旧放默认插槽。
       </p>
       <demo-button-slots></demo-button-slots>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/slots.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slots.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -126,23 +158,28 @@
       <h3>撑满宽度</h3>
       <demo-button-block></demo-button-block>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/block.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/block.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        样式写在宿主上，一句 <code>style="…"</code> 直接压过去；换色槽是
-        <code>--mc-button-fill</code> / <code>--mc-button-accent</code>。
+        样式写在宿主上，一句
+        <code>style="…"</code>
+        直接压过去；换色槽是
+        <code>--mc-button-fill</code>
+        /
+        <code>--mc-button-accent</code>
+        。
       </p>
       <demo-button-override></demo-button-override>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/override.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/override.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

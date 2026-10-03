@@ -9,7 +9,10 @@
     <l-m src="./demos/gap.html"></l-m>
     <l-m src="./demos/min-width.html"></l-m>
     <l-m src="./demos/span.html"></l-m>
-    <h1>Grid <code>mc-grid</code></h1>
+    <h1>
+      Grid
+      <code>mc-grid</code>
+    </h1>
     <p class="doc-lead">
       栅格。容器只决定列与间距，子项决定自己跨几列 —— 布局走 CSS Grid，子项内容由使用者自己写。
     </p>
@@ -20,64 +23,87 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        容器 + 子项两个标签搭起来，<code>cols="2"</code>
-        就是两列。子项要能压缩：里面放长内容时给子元素 <code>min-width: 0</code>（或
-        <code>class="min-w-0"</code>），否则长文本会把列撑宽。
+        容器 + 子项两个标签搭起来，
+        <code>cols="2"</code>
+        就是两列。子项要能压缩：里面放长内容时给子元素
+        <code>min-width: 0</code>
+        （或
+        <code>class="min-w-0"</code>
+        ），否则长文本会把列撑宽。
       </p>
       <demo-grid-basic></demo-grid-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>列数</h3>
-      <p class="doc-hint"><code>cols</code> 直接给列数；同一个容器里多出来的子项自动换行。</p>
+      <p class="doc-hint">
+        <code>cols</code>
+        直接给列数；同一个容器里多出来的子项自动换行。
+      </p>
       <demo-grid-cols></demo-grid-cols>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/cols.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/cols.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>间距</h3>
       <p class="doc-hint">
-        <code>gap</code> 只有三档，分别对应 <code>--mc-space-2</code> / <code>--mc-space-4</code> /
-        <code>--mc-space-6</code> —— 想更细就覆盖宿主的 <code>gap</code>。
+        <code>gap</code>
+        只有三档，分别对应
+        <code>--mc-space-2</code>
+        /
+        <code>--mc-space-4</code>
+        /
+        <code>--mc-space-6</code>
+        —— 想更细就覆盖宿主的
+        <code>gap</code>
+        。
       </p>
       <demo-grid-gap></demo-grid-gap>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/gap.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/gap.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>最小宽度自适应</h3>
       <p class="doc-hint">
-        不写列数、只给 <code>min-item-width</code>：容器窄了就少几列，宽了就多几列，不用写断点。
+        不写列数、只给
+        <code>min-item-width</code>
+        ：容器窄了就少几列，宽了就多几列，不用写断点。
       </p>
       <demo-grid-min-width></demo-grid-min-width>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/min-width.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/min-width.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>跨列</h3>
-      <p class="doc-hint">子项上的 <code>span</code> 就是 <code>grid-column: span n</code>。</p>
+      <p class="doc-hint">
+        子项上的
+        <code>span</code>
+        就是
+        <code>grid-column: span n</code>
+        。
+      </p>
       <demo-grid-span></demo-grid-span>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/span.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/span.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

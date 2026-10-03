@@ -3,12 +3,9 @@
     <mc-icon name="close"></mc-icon>
     <mc-button on:click="basic()">默认（带 ×）</mc-button>
     <!-- 同一个按钮：点一下开始「保存中」，再点一下取消它 -->
-    <mc-button
-      color="info"
-      attr:variant="saving ? 'filled' : 'outline'"
-      on:click="toggleSave()"
-      >{{saving ? '取消保存' : '保存中（任务归组件管）'}}</mc-button
-    >
+    <mc-button color="info" attr:variant="saving ? 'filled' : 'outline'" on:click="toggleSave()">
+      {{saving ? '取消保存' : '保存中（任务归组件管）'}}
+    </mc-button>
     <mc-button variant="outline" on:click="autoOnly()">自动关 + 不给 ×</mc-button>
   </div>
 

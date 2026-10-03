@@ -26,9 +26,12 @@
       closable
       mask-closable
       attr:open="open ? '' : null"
-      on:close="open = false"
-    >
-      <p>遮罩、面板、头部、正文、底部各是一个 part，都能从外面用 <code>::part()</code> 改。</p>
+      on:close="open = false">
+      <p>
+        遮罩、面板、头部、正文、底部各是一个 part，都能从外面用
+        <code>::part()</code>
+        改。
+      </p>
       <mc-button slot="footer" on:click="open = false">关闭</mc-button>
     </mc-dialog>
   </div>

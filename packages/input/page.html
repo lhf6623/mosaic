@@ -14,10 +14,16 @@
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
-    <h1>Input <code>mc-input</code></h1>
+    <h1>
+      Input
+      <code>mc-input</code>
+    </h1>
     <p class="doc-lead">
-      单行输入框。初始值写在 <code>default-value</code> 上，运行时读写走宿主 property
-      <code>value</code>。
+      单行输入框。初始值写在
+      <code>default-value</code>
+      上，运行时读写走宿主 property
+      <code>value</code>
+      。
     </p>
 
     <h2>例子</h2>
@@ -26,16 +32,23 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        第二条的 <code>default-value</code> 是初始值，只读一次；之后改属性不会回头覆盖当前值。
-        <code>input</code> / <code>change</code> 的载荷都在
-        <code>$event.data.value</code>；原生那条不带头载荷的
-        <code>input</code> 已被组件拦掉，不会收到两次。
+        第二条的
+        <code>default-value</code>
+        是初始值，只读一次；之后改属性不会回头覆盖当前值。
+        <code>input</code>
+        /
+        <code>change</code>
+        的载荷都在
+        <code>$event.data.value</code>
+        ；原生那条不带头载荷的
+        <code>input</code>
+        已被组件拦掉，不会收到两次。
       </p>
       <demo-input-basic></demo-input-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -43,125 +56,176 @@
       <h3>尺寸</h3>
       <demo-input-sizes></demo-input-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>运行时值</h3>
       <p class="doc-hint">
-        组件不把值反射成属性：读 <code>el.value</code>、写
-        <code>el.value = '…'</code> 都是立刻生效的内部原生控件。 它也不参与原生
-        <code>&lt;form&gt;</code> 提交（shadow 里的原生控件不在表单范围内，<code>name</code>
-        只是转发）—— 提交时自己取 <code>el.value</code>。
+        组件不把值反射成属性：读
+        <code>el.value</code>
+        、写
+        <code>el.value = '…'</code>
+        都是立刻生效的内部原生控件。 它也不参与原生
+        <code>&lt;form&gt;</code>
+        提交（shadow 里的原生控件不在表单范围内，
+        <code>name</code>
+        只是转发）—— 提交时自己取
+        <code>el.value</code>
+        。
       </p>
       <demo-input-value></demo-input-value>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/value.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/value.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>前后缀插槽</h3>
       <p class="doc-hint">
-        <code>slot="prefix"</code> / <code>slot="suffix"</code> 放单位或图标；空着的那一侧不占位，
-        第三条就是没有前后缀时的间距。
+        <code>slot="prefix"</code>
+        /
+        <code>slot="suffix"</code>
+        放单位或图标；空着的那一侧不占位， 第三条就是没有前后缀时的间距。
       </p>
       <demo-input-slots></demo-input-slots>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/slots.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slots.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>可清除</h3>
       <p class="doc-hint">
-        <code>clearable</code> 只在有内容时给 ×；点它会发 <code>clear</code>，并补发
-        <code>input</code> 与 <code>change</code>。
+        <code>clearable</code>
+        只在有内容时给 ×；点它会发
+        <code>clear</code>
+        ，并补发
+        <code>input</code>
+        与
+        <code>change</code>
+        。
       </p>
       <demo-input-clearable></demo-input-clearable>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/clearable.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/clearable.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>输入类型</h3>
       <p class="doc-hint">
-        <code>type</code> 逐字转发给内部原生 <code>&lt;input&gt;</code>，键盘与输入法跟着它走。
+        <code>type</code>
+        逐字转发给内部原生
+        <code>&lt;input&gt;</code>
+        ，键盘与输入法跟着它走。
       </p>
       <demo-input-type></demo-input-type>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/type.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/type.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>长度限制</h3>
-      <p class="doc-hint"><code>maxlength</code> 转发给内部原生控件，超出的字符根本输不进去。</p>
+      <p class="doc-hint">
+        <code>maxlength</code>
+        转发给内部原生控件，超出的字符根本输不进去。
+      </p>
       <demo-input-maxlength></demo-input-maxlength>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/maxlength.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/maxlength.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>状态</h3>
       <p class="doc-hint">
-        四个状态布尔都转发给内部原生控件：<code>disabled</code> 用原生 <code>disabled</code> （<kbd
-          >Tab</kbd
-        >
-        会跳过），<code>invalid</code> 只是把边框换成危险色。
+        四个状态布尔都转发给内部原生控件：
+        <code>disabled</code>
+        用原生
+        <code>disabled</code>
+        （
+        <kbd>Tab</kbd>
+        会跳过），
+        <code>invalid</code>
+        只是把边框换成危险色。
       </p>
       <demo-input-states></demo-input-states>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/states.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/states.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        <code>input</code> 每打一个字都发、<code>change</code> 在失焦 / 回车时发（载荷都是
-        <code>$event.data.value</code>）；点可清除的 × 先发 <code>clear</code>，紧接着补发
-        <code>input</code> 与 <code>change</code>。 原生的 <code>focus</code> / <code>blur</code> /
-        <code>keydown</code> 这些 <code>composed</code> 事件本来就会穿到宿主上，直接
-        <code>on:focus</code> 写就行（演示里挂了这三个）；组件自己发的只有 <code>input</code> /
-        <code>change</code> / <code>clear</code> 三条。
+        <code>input</code>
+        每打一个字都发、
+        <code>change</code>
+        在失焦 / 回车时发（载荷都是
+        <code>$event.data.value</code>
+        ）；点可清除的 × 先发
+        <code>clear</code>
+        ，紧接着补发
+        <code>input</code>
+        与
+        <code>change</code>
+        。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        这些
+        <code>composed</code>
+        事件本来就会穿到宿主上，直接
+        <code>on:focus</code>
+        写就行（演示里挂了这三个）；组件自己发的只有
+        <code>input</code>
+        /
+        <code>change</code>
+        /
+        <code>clear</code>
+        三条。
       </p>
       <demo-input-events></demo-input-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式。
       </p>
       <demo-input-part></demo-input-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

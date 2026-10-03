@@ -38,12 +38,22 @@
               onClose,
             });
           };
-          message('上传中 0%', { key: 'upload', type: 'info', duration: 0, closable: false, onClose });
+          message('上传中 0%', {
+            key: 'upload',
+            type: 'info',
+            duration: 0,
+            closable: false,
+            onClose,
+          });
           timer = setInterval(tick, 500);
         },
         finish() {
           clearInterval(timer);
-          message.success('上传完成', { key: 'upload', duration: 3000, onClose: () => clearInterval(timer) });
+          message.success('上传完成', {
+            key: 'upload',
+            duration: 3000,
+            onClose: () => clearInterval(timer),
+          });
         },
       },
     });

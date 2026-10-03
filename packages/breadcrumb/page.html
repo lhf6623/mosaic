@@ -10,10 +10,14 @@
     <l-m src="./demos/long.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Breadcrumb <code>mc-breadcrumb</code></h1>
+    <h1>
+      Breadcrumb
+      <code>mc-breadcrumb</code>
+    </h1>
     <p class="doc-lead">
       面包屑。容器 + 每一级两个标签；一级里的交互元素（原生
-      <code>&lt;a&gt;</code>）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
+      <code>&lt;a&gt;</code>
+      ）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
     </p>
 
     <h2>例子</h2>
@@ -21,72 +25,95 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        可点的级写原生 <code>&lt;a&gt;</code>，当前页写纯文本 + <code>current</code>。
-        顺序就是层级顺序，最后一级必须是当前页。 组件不造链接（站内链接自己写 ofa 的
-        <code>olink</code>）；每一级必须是 <code>mc-breadcrumb</code> 的直接子元素 —— 用
-        <code>o-fill</code> / <code>o-if</code> 包一层，分隔符会静默消失。
+        可点的级写原生
+        <code>&lt;a&gt;</code>
+        ，当前页写纯文本 +
+        <code>current</code>
+        。 顺序就是层级顺序，最后一级必须是当前页。 组件不造链接（站内链接自己写 ofa 的
+        <code>olink</code>
+        ）；每一级必须是
+        <code>mc-breadcrumb</code>
+        的直接子元素 —— 用
+        <code>o-fill</code>
+        /
+        <code>o-if</code>
+        包一层，分隔符会静默消失。
       </p>
       <demo-breadcrumb-basic></demo-breadcrumb-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>分隔符</h3>
       <p class="doc-hint">
-        上面那条用 <code>separator</code> 属性（注意 HTML 里要写 <code>&amp;gt;</code>），
-        下面那条直接覆盖 <code>--mc-breadcrumb-sep</code> 令牌 —— 值是 CSS 字符串，要带引号。
-        两条通道同时写时属性优先；写回默认值时以令牌为准。
+        上面那条用
+        <code>separator</code>
+        属性（注意 HTML 里要写
+        <code>&amp;gt;</code>
+        ）， 下面那条直接覆盖
+        <code>--mc-breadcrumb-sep</code>
+        令牌 —— 值是 CSS 字符串，要带引号。 两条通道同时写时属性优先；写回默认值时以令牌为准。
       </p>
       <demo-breadcrumb-separator></demo-breadcrumb-separator>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/separator.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/separator.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        颜色、间距、分隔符各是一条令牌，覆盖在容器自己的 <code>style</code> 上，
-        令牌靠继承进每一级，不用碰组件内部。
+        颜色、间距、分隔符各是一条令牌，覆盖在容器自己的
+        <code>style</code>
+        上， 令牌靠继承进每一级，不用碰组件内部。
       </p>
       <demo-breadcrumb-customize></demo-breadcrumb-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>自动换行</h3>
       <p class="doc-hint">
-        层级多或容器窄时整行换行（列表是 <code>flex-wrap</code>），不会撑破容器。
+        层级多或容器窄时整行换行（列表是
+        <code>flex-wrap</code>
+        ），不会撑破容器。
       </p>
       <demo-breadcrumb-long></demo-breadcrumb-long>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/long.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/long.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        内层结构封在 shadow 里，只有 <code>::part(base)</code>（内层 <code>&lt;nav&gt;</code>）与
-        <code>::part(list)</code>（内层 <code>&lt;ol&gt;</code>）能从外面改。
+        内层结构封在 shadow 里，只有
+        <code>::part(base)</code>
+        （内层
+        <code>&lt;nav&gt;</code>
+        ）与
+        <code>::part(list)</code>
+        （内层
+        <code>&lt;ol&gt;</code>
+        ）能从外面改。
       </p>
       <demo-breadcrumb-part></demo-breadcrumb-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

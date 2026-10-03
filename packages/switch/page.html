@@ -9,9 +9,14 @@
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
-    <h1>Switch <code>mc-switch</code></h1>
+    <h1>
+      Switch
+      <code>mc-switch</code>
+    </h1>
     <p class="doc-lead">
-      开关。只有开 / 关两态，改完立刻生效 —— 比 <code>mc-checkbox</code> 少一个「提交」的心智。
+      开关。只有开 / 关两态，改完立刻生效 —— 比
+      <code>mc-checkbox</code>
+      少一个「提交」的心智。
     </p>
 
     <h2>例子</h2>
@@ -19,15 +24,21 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        文案写在标签里（默认插槽）；<code>on:change</code> 的载荷是
-        <code>$event.data.checked</code>。它不是复选框（要勾多项或半选就用
-        <code>mc-checkbox</code>）；开关也不带 <code>value</code> —— 要提交就自己配一个隐藏字段。
+        文案写在标签里（默认插槽）；
+        <code>on:change</code>
+        的载荷是
+        <code>$event.data.checked</code>
+        。它不是复选框（要勾多项或半选就用
+        <code>mc-checkbox</code>
+        ）；开关也不带
+        <code>value</code>
+        —— 要提交就自己配一个隐藏字段。
       </p>
       <demo-switch-basic></demo-switch-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -35,9 +46,9 @@
       <h3>尺寸</h3>
       <demo-switch-sizes></demo-switch-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -45,41 +56,60 @@
       <h3>禁用</h3>
       <demo-switch-disabled></demo-switch-disabled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/disabled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/disabled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        状态变化时发 <code>change</code>，载荷
-        <code>$event.data.checked</code>；开关只有状态位、没有 <code>value</code>。 原生的
-        <code>focus</code> / <code>blur</code> / <code>keydown</code> 这些
-        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        状态变化时发
+        <code>change</code>
+        ，载荷
+        <code>$event.data.checked</code>
+        ；开关只有状态位、没有
+        <code>value</code>
+        。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        这些
+        <code>composed</code>
+        事件本来就会穿到宿主上（不用组件转发），
+        <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-switch-events></demo-switch-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        轨道是 <code>track</code>、滑块是 <code>thumb</code>、整行是 <code>base</code> —— 没有开
-        <code>part</code> 的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
+        轨道是
+        <code>track</code>
+        、滑块是
+        <code>thumb</code>
+        、整行是
+        <code>base</code>
+        —— 没有开
+        <code>part</code>
+        的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
         改轨道长度不用再改第二条规则。
       </p>
       <demo-switch-part></demo-switch-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

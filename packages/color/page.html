@@ -4,35 +4,42 @@
     <h1>设计令牌</h1>
     <p class="doc-lead">
       色板不是手写的，是从 OKLCH 感知均匀色空间算出来的，并且每次生成都要跑
-      <strong>34 项 WCAG 对比度自检</strong> —— 不达标直接退出 1。
+      <strong>34 项 WCAG 对比度自检</strong>
+      —— 不达标直接退出 1。
     </p>
 
     <h2>三层结构</h2>
     <!-- prettier-ignore -->
     <mc-code language="text">
-              L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
-                                   ↓
-              L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
-                                   ↓
-              L3 组件令牌   --mc-button-fill: var(--mc-color-primary);     ← 同样只是三元组
-            </mc-code>
+      L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
+                           ↓
+      L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
+                           ↓
+      L3 组件令牌   --mc-button-fill: var(--mc-color-primary);     ← 同样只是三元组
+    </mc-code>
 
     <div class="doc-note doc-warn">
-      <strong>全链路唯一不变量：存三元组，用的时候才包 <code>rgb()</code>。</strong>
+      <strong>
+        全链路唯一不变量：存三元组，用的时候才包
+        <code>rgb()</code>
+        。
+      </strong>
       <!-- prettier-ignore -->
       <mc-code language="css" style="margin: 0.75rem 0 0">
-                /* 存 */
-                :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
-                mc-button { --mc-button-fill: var(--mc-color-primary); }
+        /* 存 */
+        :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
+        mc-button { --mc-button-fill: var(--mc-color-primary); }
 
-                /* 用 */
-                .mc-btn   { background-color: rgb(var(--mc-button-fill)); }
-                .dim      { background-color: rgb(var(--mc-button-fill) / 0.5); }
-              </mc-code>
+        /* 用 */
+        .mc-btn   { background-color: rgb(var(--mc-button-fill)); }
+        .dim      { background-color: rgb(var(--mc-button-fill) / 0.5); }
+      </mc-code>
       <p style="margin: 0.75rem 0 0">
-        混着来的话会拼出 <code>rgb(rgb(114 70 237) / 1)</code> 这种
-        <strong>非法 CSS</strong>，整条声明在计算值阶段被丢弃 ——
-        类名在、规则在、就是不生效，控制台零报错。
+        混着来的话会拼出
+        <code>rgb(rgb(114 70 237) / 1)</code>
+        这种
+        <strong>非法 CSS</strong>
+        ，整条声明在计算值阶段被丢弃 —— 类名在、规则在、就是不生效，控制台零报错。
       </p>
     </div>
     <p>
@@ -43,27 +50,53 @@
 
     <div class="doc-note">
       <strong>为什么存通道三元组而不是 hex？</strong>
-      只有这样才能在任意地方再叠一层透明度：<code>rgb(var(--mc-primary-500) / 0.5)</code>。
-      存完整颜色就没法再套 <code>rgb()</code>，这类用法直接不成立。
+      只有这样才能在任意地方再叠一层透明度：
+      <code>rgb(var(--mc-primary-500) / 0.5)</code>
+      。 存完整颜色就没法再套
+      <code>rgb()</code>
+      ，这类用法直接不成立。
     </div>
 
     <h2>原始色阶</h2>
     <p class="doc-hint">
-      下面这些色值<strong>实时从 <code>packages/color/tokens.css</code> 解析出来的</strong>，
-      不是抄在页面里的。改色后刷新即可，不会出现「文档写的是旧色值」。
+      下面这些色值
+      <strong>
+        实时从
+        <code>packages/color/tokens.css</code>
+        解析出来的
+      </strong>
+      ， 不是抄在页面里的。改色后刷新即可，不会出现「文档写的是旧色值」。
     </p>
     <doc-palette></doc-palette>
 
     <h2>语义令牌</h2>
-    <p>每个状态色族<strong>只保留一个档位</strong>，并用自检脚本强制它同时满足两件事：</p>
+    <p>
+      每个状态色族
+      <strong>只保留一个档位</strong>
+      ，并用自检脚本强制它同时满足两件事：
+    </p>
     <ul>
-      <li>作为实心填充时，<code>--mc-color-{色}-fg</code> 压在它上面 ≥ 4.5:1</li>
-      <li>作为文字落在中性底 <code>--mc-color-surface</code> 上时 ≥ 4.5:1</li>
+      <li>
+        作为实心填充时，
+        <code>--mc-color-{色}-fg</code>
+        压在它上面 ≥ 4.5:1
+      </li>
+      <li>
+        作为文字落在中性底
+        <code>--mc-color-surface</code>
+        上时 ≥ 4.5:1
+      </li>
     </ul>
     <p>
-      于是 <code>bg-primary</code> / <code>text-primary</code> / <code>border-primary</code>
+      于是
+      <code>bg-primary</code>
+      /
+      <code>text-primary</code>
+      /
+      <code>border-primary</code>
       可以无脑用同一个令牌，不需要记「哪个是填充哪个是文字」。
-      <strong>这个约束是构建期硬门禁</strong>，换品牌色时不可能悄悄引入对比度回归。
+      <strong>这个约束是构建期硬门禁</strong>
+      ，换品牌色时不可能悄悄引入对比度回归。
     </p>
 
     <table class="doc-table">
@@ -134,11 +167,24 @@
     </table>
 
     <p>
-      状态色族 <code>{primary, info, success, warning, danger}</code> 各有
-      <code>--mc-color-{色}</code> / <code>-fg</code> / <code>-hover</code> / <code>-active</code> /
-      <code>-subtle</code> 五个。 注意 <code>success</code> 在亮色下整体用
-      <strong>700 档</strong> —— 500 档当文字放白底上只有 3.34:1，600 档 4.62:1 刚过线，
-      整体下移一档给填充 / 文字两个角色留余量。
+      状态色族
+      <code>{primary, info, success, warning, danger}</code>
+      各有
+      <code>--mc-color-{色}</code>
+      /
+      <code>-fg</code>
+      /
+      <code>-hover</code>
+      /
+      <code>-active</code>
+      /
+      <code>-subtle</code>
+      五个。 注意
+      <code>success</code>
+      在亮色下整体用
+      <strong>700 档</strong>
+      —— 500 档当文字放白底上只有 3.34:1，600 档 4.62:1 刚过线， 整体下移一档给填充 /
+      文字两个角色留余量。
     </p>
 
     <h2>非颜色令牌</h2>
@@ -186,30 +232,54 @@
 
     <h2>主题切换</h2>
     <p>
-      令牌在 <code>@layer mosaic.tokens</code>（只高于 <code>mosaic.base</code>；层序
-      <code>base</code> &lt; <code>tokens</code> &lt; <code>preflights</code> &lt;
-      <code>components</code> &lt; <code>utilities</code>），
-      所以<strong>宿主页面里任何「未分层」的覆盖都必定生效</strong>， 不需要
-      <code>!important</code>，也不用关心加载顺序。
+      令牌在
+      <code>@layer mosaic.tokens</code>
+      （只高于
+      <code>mosaic.base</code>
+      ；层序
+      <code>base</code>
+      &lt;
+      <code>tokens</code>
+      &lt;
+      <code>preflights</code>
+      &lt;
+      <code>components</code>
+      &lt;
+      <code>utilities</code>
+      ）， 所以
+      <strong>宿主页面里任何「未分层」的覆盖都必定生效</strong>
+      ， 不需要
+      <code>!important</code>
+      ，也不用关心加载顺序。
     </p>
     <div class="doc-note">
-      <strong>令牌只定义在 <code>:root</code> 上，刻意不带 <code>:host</code>。</strong>
-      令牌表在 shadow root 里也会被 adopt 一次，而 <code>:host</code> 会给宿主元素
-      重新赋一遍<strong>亮色</strong>值，盖掉从文档继承下来的暗色值 ——
-      表现为「切主题时组件纹丝不动」。<code>:root</code> 在 shadow root 内不匹配任何元素，天然无害。
+      <strong>
+        令牌只定义在
+        <code>:root</code>
+        上，刻意不带
+        <code>:host</code>
+        。
+      </strong>
+      令牌表在 shadow root 里也会被 adopt 一次，而
+      <code>:host</code>
+      会给宿主元素 重新赋一遍
+      <strong>亮色</strong>
+      值，盖掉从文档继承下来的暗色值 —— 表现为「切主题时组件纹丝不动」。
+      <code>:root</code>
+      在 shadow root 内不匹配任何元素，天然无害。
     </div>
 
     <!-- prettier-ignore -->
     <mc-code language="html">
-              &lt;!-- 跟随系统（默认，tokens.css 里有 prefers-color-scheme 兜底） --&gt;
-              &lt;html&gt;
+      &lt;!-- 跟随系统（默认，tokens.css 里有 prefers-color-scheme 兜底） --&gt;
+      &lt;html&gt;
 
-              &lt;!-- 强制亮色 --&gt;
-              &lt;html data-theme="light"&gt;
+      &lt;!-- 强制亮色 --&gt;
+      &lt;html data-theme="light"&gt;
 
-              &lt;!-- 强制暗色 --&gt;
-              &lt;html data-theme="dark"&gt;
-            </mc-code>
+      &lt;!-- 强制暗色 --&gt;
+      &lt;html data-theme="dark"&gt;
+    </mc-code>
 
     <p class="doc-hint">右上角的按钮就是这个机制 —— 点一下，整个文档站和页面里所有组件一起变。</p>
 
@@ -219,67 +289,69 @@
     <p>改一个数字，重跑生成器：</p>
     <!-- prettier-ignore -->
     <mc-code language="javascript">
-              // tools/gen-tokens.mjs
-              const HUES = {
-                primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
-                // ...
-              };
-            </mc-code>
+      // tools/gen-tokens.mjs
+      const HUES = {
+        primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
+        // ...
+      };
+    </mc-code>
     <!-- prettier-ignore -->
     <mc-code language="bash">
-              pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
-              pnpm build
-            </mc-code>
+      pnpm tokens        # 重算色阶 + 自检对比度；不达标会拒绝写入
+      pnpm build
+    </mc-code>
 
     <h3>只改某几个令牌</h3>
     <!-- prettier-ignore -->
     <mc-code language="css">
-              /* 未分层 → 必定赢过 @layer mosaic.tokens */
-              :root {
-                --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
-                --mc-radius-md: 2px;
-              }
-            </mc-code>
+      /* 未分层 → 必定赢过 @layer mosaic.tokens */
+      :root {
+        --mc-color-primary: 16 185 129;   /* 注意是 "R G B" 通道三元组，不是 hex */
+        --mc-radius-md: 2px;
+      }
+    </mc-code>
 
     <p class="doc-hint">
-      上面那段只是「跟随系统」那一态；强制亮 /
-      强制暗（<code>data-theme</code>）各要一份同形状的覆盖， 否则切过去还是旧色。
+      上面那段只是「跟随系统」那一态；强制亮 / 强制暗（
+      <code>data-theme</code>
+      ）各要一份同形状的覆盖， 否则切过去还是旧色。
     </p>
 
     <h3>单个组件实例</h3>
     <!-- prettier-ignore -->
     <mc-code language="html">
-              &lt;mc-button style="--mc-button-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
-            </mc-code>
+      &lt;mc-button style="--mc-button-fill: 220 38 38; border-radius: 9999px"&gt;删除&lt;/mc-button&gt;
+    </mc-code>
     <p class="doc-hint">组件令牌存的同样是三元组，写在宿主元素上时会随之继承进 shadow root。</p>
     <p class="doc-hint">
-      <code>--mc-*</code> 是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
+      <code>--mc-*</code>
+      是自定义属性，会跨 shadow 边界继承，写在宿主元素上即可。
     </p>
 
     <h3>直接给 hex</h3>
     <!-- prettier-ignore -->
     <mc-code language="html">
-              &lt;mc-button color="#fff000"&gt;品牌按钮&lt;/mc-button&gt;
-              &lt;mc-tag color="#1a7f5a"&gt;标签&lt;/mc-tag&gt;
-            </mc-code>
+      &lt;mc-button color="#fff000"&gt;品牌按钮&lt;/mc-button&gt;
+      &lt;mc-tag color="#1a7f5a"&gt;标签&lt;/mc-tag&gt;
+    </mc-code>
+    <!-- prettier-ignore -->
     <p class="doc-hint">
       <code>mc-button</code> / <code>mc-tag</code> / <code>mc-icon</code> / <code>mc-alert</code> 的
       <code>color</code> 也可以直接写 hex（<code>#fff000</code> /
       <code>#fc0</code>）：组件只往自己的色槽填值，所以
-      <code>variant</code> 组合照旧；文字色按对比度自动给， 浅底档跟着主题走。hex 是品牌色，<strong
-        >不随主题翻转</strong
-      >
+      <code>variant</code> 组合照旧；文字色按对比度自动给， 浅底档跟着主题走。hex 是品牌色，<strong>不随主题翻转</strong>
       —— 要亮暗两套就各写一个值。 要整段子树一起换，用 <code>data-tone</code>（见
-      <a href="https://github.com/lhf6623/mosaic/blob/main/packages/boot/tone.js"
-        >packages/boot/tone.js 的文件头</a
-      >）。
+      <a href="https://github.com/lhf6623/mosaic/blob/main/packages/boot/tone.js">packages/boot/tone.js 的文件头</a>）。
     </p>
 
     <h2>对比度自检</h2>
     <p>
-      <code>pnpm tokens</code> 每次都会跑这 34 项，任何一项不达标就<strong>退出 1</strong>。
-      当前全绿。完整结果见
-      <a href="https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md">README.md</a>。
+      <code>pnpm tokens</code>
+      每次都会跑这 34 项，任何一项不达标就
+      <strong>退出 1</strong>
+      。 当前全绿。完整结果见
+      <a href="https://github.com/lhf6623/mosaic/blob/main/packages/color/README.md">README.md</a>
+      。
     </p>
   </div>
   <script>

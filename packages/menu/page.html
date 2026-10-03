@@ -12,10 +12,16 @@
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Menu <code>mc-menu</code></h1>
+    <h1>
+      Menu
+      <code>mc-menu</code>
+    </h1>
     <p class="doc-lead">
-      垂直菜单。容器 + 菜单项两个标签；交互元素（原生 <code>&lt;a&gt;</code> /
-      <code>&lt;button&gt;</code>）由使用者写在菜单项里，组件不造链接、也不改使用者的 DOM。
+      垂直菜单。容器 + 菜单项两个标签；交互元素（原生
+      <code>&lt;a&gt;</code>
+      /
+      <code>&lt;button&gt;</code>
+      ）由使用者写在菜单项里，组件不造链接、也不改使用者的 DOM。
     </p>
 
     <h2>例子</h2>
@@ -24,102 +30,146 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        一个菜单项里放一个原生 <code>&lt;a&gt;</code>，它自己就是整行；当前项在
-        <code>&lt;a&gt;</code> 上写 <code>data-current</code>。 菜单与菜单项都撑满父容器 ——
-        要限宽就写在菜单自己的 <code>style</code> 上，或者套一层定宽容器。
+        一个菜单项里放一个原生
+        <code>&lt;a&gt;</code>
+        ，它自己就是整行；当前项在
+        <code>&lt;a&gt;</code>
+        上写
+        <code>data-current</code>
+        。 菜单与菜单项都撑满父容器 —— 要限宽就写在菜单自己的
+        <code>style</code>
+        上，或者套一层定宽容器。
       </p>
       <demo-menu-basic></demo-menu-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>分组标题</h3>
       <p class="doc-hint">
-        <code>&lt;mc-menu-item group&gt;</code> 是不可交互的纯文字行：鼠标穿透。
+        <code>&lt;mc-menu-item group&gt;</code>
+        是不可交互的纯文字行：鼠标穿透。
       </p>
       <demo-menu-groups></demo-menu-groups>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/groups.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/groups.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
       <p class="doc-hint">
-        尺寸写在容器上（<code>sm</code> / <code>md</code> / <code>lg</code> = <code>28</code> /
-        <code>36</code> / <code>44px</code>），菜单项跟着变。
+        尺寸写在容器上（
+        <code>sm</code>
+        /
+        <code>md</code>
+        /
+        <code>lg</code>
+        =
+        <code>28</code>
+        /
+        <code>36</code>
+        /
+        <code>44px</code>
+        ），菜单项跟着变。
       </p>
       <demo-menu-size></demo-menu-size>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/size.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/size.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>卡片外观</h3>
       <p class="doc-hint">
-        默认的 <code>plain</code> 没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
-        <code>surface</code>。
+        默认的
+        <code>plain</code>
+        没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
+        <code>surface</code>
+        。
       </p>
       <demo-menu-surface></demo-menu-surface>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/surface.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/surface.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>当前项与禁用</h3>
       <p class="doc-hint">
-        前两项可用（<kbd>Tab</kbd> 能进、<kbd>Enter</kbd> 能激活）；后两项压暗： 一个是原生
-        <code>&lt;button disabled&gt;</code>，一个是去掉 <code>href</code> 的
-        <code>&lt;a&gt;</code>，两者都进不了焦点顺序。
+        前两项可用（
+        <kbd>Tab</kbd>
+        能进、
+        <kbd>Enter</kbd>
+        能激活）；后两项压暗： 一个是原生
+        <code>&lt;button disabled&gt;</code>
+        ，一个是去掉
+        <code>href</code>
+        的
+        <code>&lt;a&gt;</code>
+        ，两者都进不了焦点顺序。
       </p>
       <demo-menu-states></demo-menu-states>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/states.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/states.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        两条路：① 颜色与内边距写在自己的 <code>style="…"</code> 上（L3 令牌按实例覆盖）， 不用跨
-        shadow 边界 —— 改缩进用 <code>--mc-menu-pad-x</code>，对内部
-        <code>&lt;button&gt;</code> 写的 padding 会被页面 reset 吃掉； ② <b>宿主钩子</b> —— 当前项 /
-        禁用项会镜像成 <code>mc-menu-item</code> 宿主上的 <code>[data-current]</code> /
-        <code>[data-disabled]</code>，外层从这儿补东西。
+        两条路：① 颜色与内边距写在自己的
+        <code>style="…"</code>
+        上（L3 令牌按实例覆盖）， 不用跨 shadow 边界 —— 改缩进用
+        <code>--mc-menu-pad-x</code>
+        ，对内部
+        <code>&lt;button&gt;</code>
+        写的 padding 会被页面 reset 吃掉； ②
+        <b>宿主钩子</b>
+        —— 当前项 / 禁用项会镜像成
+        <code>mc-menu-item</code>
+        宿主上的
+        <code>[data-current]</code>
+        /
+        <code>[data-disabled]</code>
+        ，外层从这儿补东西。
       </p>
       <demo-menu-customize></demo-menu-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式（mc-menu 开了 <code>list</code> 一个）。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（mc-menu 开了
+        <code>list</code>
+        一个）。
       </p>
       <demo-menu-part></demo-menu-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

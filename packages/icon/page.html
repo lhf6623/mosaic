@@ -14,7 +14,10 @@
     <l-m src="./demos/slot.html"></l-m>
     <l-m src="./demos/styles.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Icon <code>mc-icon</code></h1>
+    <h1>
+      Icon
+      <code>mc-icon</code>
+    </h1>
     <p class="doc-lead">
       图标。先查内置、查不到再远程取一次；颜色继承周围文字色、尺寸跟随字号，取不到也只是留一个不跳版的空位。
     </p>
@@ -25,9 +28,9 @@
       <h3>基本用法</h3>
       <demo-icon-basic></demo-icon-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -36,15 +39,18 @@
       <p class="doc-hint">
         91 个内置图标：67 个语义图标（含财务 / 报表）+ 24 个品牌（GitHub / 微信 /
         阿里巴巴…），按分组列出；
-        <code>name</code> 命中内置时不发请求，首屏就有。 别用 sprite：跨域
-        <code>&lt;use&gt;</code> 被 Chrome 与 WebKit 一致拒绝 —— 要用内置图标就写
-        <code>name</code>。
+        <code>name</code>
+        命中内置时不发请求，首屏就有。 别用 sprite：跨域
+        <code>&lt;use&gt;</code>
+        被 Chrome 与 WebKit 一致拒绝 —— 要用内置图标就写
+        <code>name</code>
+        。
       </p>
       <demo-icon-builtins></demo-icon-builtins>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/builtins.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/builtins.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -52,9 +58,9 @@
       <h3>尺寸</h3>
       <demo-icon-sizes></demo-icon-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -62,67 +68,81 @@
       <h3>语义色</h3>
       <demo-icon-colors></demo-icon-colors>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/colors.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/colors.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>hex 颜色</h3>
       <p class="doc-hint">
-        <code>color</code> 也直接收 hex（<code>#ff6b35</code>）：图标没有色槽，它就是前景色；
-        <code>current</code> 与六个语义名照旧。
+        <code>color</code>
+        也直接收 hex（
+        <code>#ff6b35</code>
+        ）：图标没有色槽，它就是前景色；
+        <code>current</code>
+        与六个语义名照旧。
       </p>
       <demo-icon-hex></demo-icon-hex>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hex.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hex.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>远程图标</h3>
       <p class="doc-hint">
-        名字带集名就按那个集取（<code>mdi:home</code>）；不带冒号、内置又没有的，按
-        <code>icon-set</code>（默认 <code>lucide</code>）取。<code>lucide:search</code>
+        名字带集名就按那个集取（
+        <code>mdi:home</code>
+        ）；不带冒号、内置又没有的，按
+        <code>icon-set</code>
+        （默认
+        <code>lucide</code>
+        ）取。
+        <code>lucide:search</code>
         的集名等于内置来源集，退化成裸名后命中内置，不联网。
       </p>
       <demo-icon-remote></demo-icon-remote>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/remote.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/remote.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>图标源</h3>
       <p class="doc-hint">
-        <code>icon-set</code> 决定裸名去哪个集取；<code>icon-base</code> 是取图标的地址前缀， 换镜像
-        / 自托管改它。 远程取图走公共 API，没有可用性承诺 —— 要稳定就把
-        <code>icon-base</code> 指到自托管镜像。
+        <code>icon-set</code>
+        决定裸名去哪个集取；
+        <code>icon-base</code>
+        是取图标的地址前缀， 换镜像 / 自托管改它。 远程取图走公共 API，没有可用性承诺 —— 要稳定就把
+        <code>icon-base</code>
+        指到自托管镜像。
       </p>
       <demo-icon-source></demo-icon-source>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/source.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/source.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>直接地址</h3>
       <p class="doc-hint">
-        <code>src</code> 直接给一个 SVG 地址（相对路径按页面解析），给了它就不再查内置；这里用 data
+        <code>src</code>
+        直接给一个 SVG 地址（相对路径按页面解析），给了它就不再查内置；这里用 data
         URI，免得示例依赖网络。
       </p>
       <demo-icon-src></demo-icon-src>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/src.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/src.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -131,36 +151,44 @@
       <p class="doc-hint">默认插槽有内容时，内置 / 远程图形让位 —— 不想加依赖时用它。</p>
       <demo-icon-slot></demo-icon-slot>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/slot.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slot.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        样式写在宿主上：<code>font-size</code> 就是尺寸、<code>color</code> 就是颜色，都是原生 CSS。
+        样式写在宿主上：
+        <code>font-size</code>
+        就是尺寸、
+        <code>color</code>
+        就是颜色，都是原生 CSS。
       </p>
       <demo-icon-styles></demo-icon-styles>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/styles.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/styles.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        <code>part</code> 是组件内部那个图形槽（<code>glyph</code>）；<code>::part(glyph)</code>
+        <code>part</code>
+        是组件内部那个图形槽（
+        <code>glyph</code>
+        ）；
+        <code>::part(glyph)</code>
         改它的内部样式，这里让它转起来。
       </p>
       <demo-icon-part></demo-icon-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

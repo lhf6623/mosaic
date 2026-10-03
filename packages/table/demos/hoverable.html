@@ -7,7 +7,10 @@
 
       ready() {
         const table = this.ele.shadowRoot.querySelector('#t');
-        table.columns = [{ key: 'name', title: '姓名' }, { key: 'dept', title: '部门' }];
+        table.columns = [
+          { key: 'name', title: '姓名' },
+          { key: 'dept', title: '部门' },
+        ];
         table.data = [
           { name: '张三', dept: '设计' },
           { name: '李四', dept: '研发' },

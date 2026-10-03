@@ -11,10 +11,14 @@
     <l-m src="./demos/validation.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Checkbox <code>mc-checkbox</code></h1>
+    <h1>
+      Checkbox
+      <code>mc-checkbox</code>
+    </h1>
     <p class="doc-lead">
       复选框。选中 / 半选 / 禁用 / 校验失败四个状态互不正交组合 —— 颜色只有
-      <code>invalid</code> 一条危险色介入。
+      <code>invalid</code>
+      一条危险色介入。
     </p>
 
     <h2>例子</h2>
@@ -22,29 +26,36 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        <code>checked</code> 既是初始值也是运行时状态；<code>value</code> 是提交时带出去的值。
-        文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
+        <code>checked</code>
+        既是初始值也是运行时状态；
+        <code>value</code>
+        是提交时带出去的值。 文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
       </p>
       <demo-checkbox-basic></demo-checkbox-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>半选</h3>
       <p class="doc-hint">
-        <code>indeterminate</code> 用来表达「部分选中」；它和 <code>checked</code> 同时存在时，
-        横杠优先显示。 <code>indeterminate</code> 是纯视觉状态（原生 checkbox 没有这个属性，提交时按
-        <code>false</code> 算），点一下就清掉半选。
+        <code>indeterminate</code>
+        用来表达「部分选中」；它和
+        <code>checked</code>
+        同时存在时， 横杠优先显示。
+        <code>indeterminate</code>
+        是纯视觉状态（原生 checkbox 没有这个属性，提交时按
+        <code>false</code>
+        算），点一下就清掉半选。
       </p>
       <demo-checkbox-indeterminate></demo-checkbox-indeterminate>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/indeterminate.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/indeterminate.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -52,9 +63,9 @@
       <h3>禁用</h3>
       <demo-checkbox-disabled></demo-checkbox-disabled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/disabled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/disabled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -62,53 +73,75 @@
       <h3>尺寸</h3>
       <demo-checkbox-sizes></demo-checkbox-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>校验态</h3>
-      <p class="doc-hint"><code>invalid</code> 只声明「颜色」，不做校验。</p>
+      <p class="doc-hint">
+        <code>invalid</code>
+        只声明「颜色」，不做校验。
+      </p>
       <demo-checkbox-validation></demo-checkbox-validation>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/validation.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/validation.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        勾选状态确定变化时发 <code>change</code>，载荷在 <code>$event.data</code> 里 （<code
-          >{ checked, value }</code
-        >）—— 点文案、敲空格、点方框都算。 原生的 <code>focus</code> / <code>blur</code> /
-        <code>keydown</code> 这些
-        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        勾选状态确定变化时发
+        <code>change</code>
+        ，载荷在
+        <code>$event.data</code>
+        里 （
+        <code>{ checked, value }</code>
+        ）—— 点文案、敲空格、点方框都算。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        这些
+        <code>composed</code>
+        事件本来就会穿到宿主上（不用组件转发），
+        <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-checkbox-events></demo-checkbox-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式 —— 方框是 <code>box</code>、文案容器是
-        <code>label</code>、整行是 <code>base</code>。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式 —— 方框是
+        <code>box</code>
+        、文案容器是
+        <code>label</code>
+        、整行是
+        <code>base</code>
+        。
       </p>
       <demo-checkbox-part></demo-checkbox-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

@@ -11,10 +11,14 @@
     <l-m src="./demos/duration.html"></l-m>
     <l-m src="./demos/closable.html"></l-m>
     <l-m src="./demos/key.html"></l-m>
-    <h1>Message <code>message()</code></h1>
+    <h1>
+      Message
+      <code>message()</code>
+    </h1>
     <p class="doc-lead">
-      浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。<strong>没有标签</strong> —— 它由 JS
-      调用，容器由组件自己挂到页面上。
+      浮层消息条：从屏幕顶部中间落下来一条，几秒后自己走。
+      <strong>没有标签</strong>
+      —— 它由 JS 调用，容器由组件自己挂到页面上。
     </p>
 
     <h2>例子</h2>
@@ -22,60 +26,79 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        导入 <code>message.js</code> 直接调用；每种类型一个简写方法，都返回
-        <code>{ close }</code>。默认 3 秒后自己走。
+        导入
+        <code>message.js</code>
+        直接调用；每种类型一个简写方法，都返回
+        <code>{ close }</code>
+        。默认 3 秒后自己走。
       </p>
       <demo-message-basic></demo-message-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>停留时长</h3>
       <p class="doc-hint">
-        <code>duration</code> 是毫秒；给 <code>0</code> 就不自动关 —— 这时只有两条路：
-        <strong>点消息条本身</strong>（可聚焦，回车也行），或者拿调用返回的
-        <code>{ close }</code> 句柄去关。演示下面那个 <code>close()</code> 按钮走的就是第二条。
+        <code>duration</code>
+        是毫秒；给
+        <code>0</code>
+        就不自动关 —— 这时只有两条路：
+        <strong>点消息条本身</strong>
+        （可聚焦，回车也行），或者拿调用返回的
+        <code>{ close }</code>
+        句柄去关。演示下面那个
+        <code>close()</code>
+        按钮走的就是第二条。
       </p>
       <demo-message-duration></demo-message-duration>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/duration.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/duration.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>可关闭</h3>
       <p class="doc-hint">
-        <code>closable</code> 是独立属性、默认 <code>true</code>（右侧有 ×，点它才关；整条不可点）。
-        关掉它的场合是<strong>任务还没结束</strong>：一条「保存中」被点掉，用户会以为保存取消了 ——
-        所以不给 ×，停止的时机归任务方管。下面那个按钮点一下开始、再点一下就是「任务方来取消」
+        <code>closable</code>
+        是独立属性、默认
+        <code>true</code>
+        （右侧有 ×，点它才关；整条不可点）。 关掉它的场合是
+        <strong>任务还没结束</strong>
+        ：一条「保存中」被点掉，用户会以为保存取消了 —— 所以不给
+        ×，停止的时机归任务方管。下面那个按钮点一下开始、再点一下就是「任务方来取消」
         （消息自己给不出的能力，只有代码有）。
       </p>
       <demo-message-closable></demo-message-closable>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/closable.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/closable.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>同 key 更新</h3>
       <p class="doc-hint">
-        给一个 <code>key</code>，后一条就把前一条<strong>换掉</strong>（位置也保持）—— 上传进度、
-        保存状态这类「同一条消息在变」的场景用它，不要叠成一摞。 进度类消息记得在
-        <code>onClose</code> 里停掉生产端的定时器 —— 否则关掉之后下一拍又推回来，看着就是关不掉。
+        给一个
+        <code>key</code>
+        ，后一条就把前一条
+        <strong>换掉</strong>
+        （位置也保持）—— 上传进度、 保存状态这类「同一条消息在变」的场景用它，不要叠成一摞。
+        进度类消息记得在
+        <code>onClose</code>
+        里停掉生产端的定时器 —— 否则关掉之后下一拍又推回来，看着就是关不掉。
       </p>
       <demo-message-key></demo-message-key>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/key.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/key.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

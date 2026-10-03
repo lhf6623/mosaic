@@ -7,8 +7,11 @@
   <div class="flex flex-col gap-3">
     <!-- 放进卡片：它只占自己那 4px，表达「这一块在刷新」 -->
     <div
-      style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); overflow: hidden"
-    >
+      style="
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: var(--mc-radius-md);
+        overflow: hidden;
+      ">
       <mc-loading-bar attr:state="phase" position="static"></mc-loading-bar>
       <div class="flex flex-col gap-1 p-3">
         <span>成员列表</span>
@@ -18,13 +21,16 @@
 
     <!-- 盖在容器上沿：static 只是把定位交回文档流，想盖上去自己写内联样式 -->
     <div
-      style="position: relative; overflow: hidden; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
-    >
+      style="
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: var(--mc-radius-md);
+      ">
       <mc-loading-bar
         attr:state="phase"
         position="static"
-        style="position: absolute; inset-inline: 0; top: 0"
-      ></mc-loading-bar>
+        style="position: absolute; inset-inline: 0; top: 0"></mc-loading-bar>
       <div class="flex flex-col gap-1 p-3">
         <span>详情面板</span>
         <span class="text-xs text-muted">条子盖在面板上沿，不占布局</span>

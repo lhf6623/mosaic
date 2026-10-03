@@ -14,148 +14,194 @@
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
-    <h1>Alert <code>mc-alert</code></h1>
+    <h1>
+      Alert
+      <code>mc-alert</code>
+    </h1>
     <p class="doc-lead">
       页内提示条：一块语义色的小面，带图标、标题与描述，可关。要「自己进场、自己走掉」的浮层消息用
-      <code>message()</code>。
+      <code>message()</code>
+      。
     </p>
 
     <h2>例子</h2>
 
     <section class="doc-demo">
       <h3>语义色</h3>
-      <p class="doc-hint">六个色值都有；不写 <code>color</code> 就是 <code>primary</code>。</p>
+      <p class="doc-hint">
+        六个色值都有；不写
+        <code>color</code>
+        就是
+        <code>primary</code>
+        。
+      </p>
       <demo-alert-colors></demo-alert-colors>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/colors.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/colors.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>hex 颜色</h3>
       <p class="doc-hint">
-        <code>color</code> 也直接收 hex（<code>#fff000</code> /
-        <code>#fc0</code>）：浅底按主题派生，
-        文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
+        <code>color</code>
+        也直接收 hex（
+        <code>#fff000</code>
+        /
+        <code>#fc0</code>
+        ）：浅底按主题派生， 文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
       </p>
       <demo-alert-hex></demo-alert-hex>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hex.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hex.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外观</h3>
       <p class="doc-hint">
-        <code>subtle</code>（默认）浅底深字，最不抢视线；<code>solid</code> 底色满铺；
-        <code>outline</code> 只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+        <code>subtle</code>
+        （默认）浅底深字，最不抢视线；
+        <code>solid</code>
+        底色满铺；
+        <code>outline</code>
+        只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
       </p>
       <demo-alert-variants></demo-alert-variants>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/variants.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/variants.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>标题</h3>
       <p class="doc-hint">
-        纯文本标题用 <code>heading</code>，富内容用
-        <code>slot="title"</code>；两者都没有时标题块不占位。
+        纯文本标题用
+        <code>heading</code>
+        ，富内容用
+        <code>slot="title"</code>
+        ；两者都没有时标题块不占位。
       </p>
       <demo-alert-heading></demo-alert-heading>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/heading.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/heading.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>图标</h3>
       <p class="doc-hint">
-        <code>icon</code> 打开左侧图标：四个语义图形， <code>primary</code> / <code>info</code> /
-        <code>neutral</code> 共用信息圆。
+        <code>icon</code>
+        打开左侧图标：四个语义图形，
+        <code>primary</code>
+        /
+        <code>info</code>
+        /
+        <code>neutral</code>
+        共用信息圆。
       </p>
       <demo-alert-icon></demo-alert-icon>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/icon.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/icon.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>自定义图标</h3>
-      <p class="doc-hint"><code>slot="icon"</code> 有内容就让内置图形让位。</p>
+      <p class="doc-hint">
+        <code>slot="icon"</code>
+        有内容就让内置图形让位。
+      </p>
       <demo-alert-icon-custom></demo-alert-icon-custom>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/icon-custom.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/icon-custom.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>可关闭</h3>
       <p class="doc-hint">
-        <code>closable</code> 在右侧加一个原生 <code>&lt;button&gt;</code>；点击只发
-        <code>close</code>，组件<strong>不自己删 DOM</strong>，例子里的 <code>remove()</code>
+        <code>closable</code>
+        在右侧加一个原生
+        <code>&lt;button&gt;</code>
+        ；点击只发
+        <code>close</code>
+        ，组件
+        <strong>不自己删 DOM</strong>
+        ，例子里的
+        <code>remove()</code>
         就是使用者那一半。
       </p>
       <demo-alert-closable></demo-alert-closable>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/closable.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/closable.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        只有 <code>close</code> 一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
-        <code>event.target</code>。组件<strong>不删 DOM</strong>：要它消失，在事件里自己
-        <code>remove()</code>。
+        只有
+        <code>close</code>
+        一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
+        <code>event.target</code>
+        。组件
+        <strong>不删 DOM</strong>
+        ：要它消失，在事件里自己
+        <code>remove()</code>
+        。
       </p>
       <demo-alert-events></demo-alert-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句 <code>style="…"</code>），不用跨 shadow
-        边界。
+        内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句
+        <code>style="…"</code>
+        ），不用跨 shadow 边界。
       </p>
       <demo-alert-customize></demo-alert-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部默认改不动：只有标了 <code>part</code> 的节点，才能从外面用
-        <code>::part(名字)</code> 改样式。
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式。
       </p>
       <demo-alert-part></demo-alert-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

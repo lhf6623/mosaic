@@ -7,7 +7,10 @@
 
       ready() {
         const table = this.ele.shadowRoot.querySelector('#t');
-        table.columns = [{ key: 'n', title: '序号' }, { key: 'text', title: '内容' }];
+        table.columns = [
+          { key: 'n', title: '序号' },
+          { key: 'text', title: '内容' },
+        ];
         table.data = Array.from({ length: 5 }, (_, i) => ({ n: i + 1, text: `第 ${i + 1} 行` }));
       },
     });

@@ -11,7 +11,10 @@
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/dot.html"></l-m>
     <l-m src="./demos/max.html"></l-m>
-    <h1>Badge <code>mc-badge</code></h1>
+    <h1>
+      Badge
+      <code>mc-badge</code>
+    </h1>
     <p class="doc-lead">徽标：一块语义色的小色片，可只留一个圆点，也可按上限截断数字。</p>
 
     <h2>例子</h2>
@@ -19,96 +22,125 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        徽标只是标记，<strong>不交互</strong> —— 要能点、能关、能选中，用 <code>mc-tag</code> 的
-        <code>checkable</code> / <code>closable</code>。
+        徽标只是标记，
+        <strong>不交互</strong>
+        —— 要能点、能关、能选中，用
+        <code>mc-tag</code>
+        的
+        <code>checkable</code>
+        /
+        <code>closable</code>
+        。
       </p>
       <demo-badge-basic></demo-badge-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>语义色</h3>
       <p class="doc-hint">
-        默认 <code>primary</code>；徽标<strong>没有中性色</strong> —— 中性场景交给
-        <code>mc-tag</code>。
+        默认
+        <code>primary</code>
+        ；徽标
+        <strong>没有中性色</strong>
+        —— 中性场景交给
+        <code>mc-tag</code>
+        。
       </p>
       <demo-badge-colors></demo-badge-colors>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/colors.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/colors.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外观</h3>
       <p class="doc-hint">
-        <code>subtle</code>（默认）浅底深字；<code>solid</code> 底色满铺；<code>outline</code>
+        <code>subtle</code>
+        （默认）浅底深字；
+        <code>solid</code>
+        底色满铺；
+        <code>outline</code>
         只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
       </p>
       <demo-badge-variants></demo-badge-variants>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/variants.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/variants.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
       <p class="doc-hint">
-        只有 <code>sm</code> / <code>md</code> 两档：高度 16 / 20px，字号 10 / 12px。
+        只有
+        <code>sm</code>
+        /
+        <code>md</code>
+        两档：高度 16 / 20px，字号 10 / 12px。
       </p>
       <demo-badge-sizes></demo-badge-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>圆点</h3>
       <p class="doc-hint">
-        <code>dot</code> 只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。
-        打开 <code>dot</code> 时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
+        <code>dot</code>
+        只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。 打开
+        <code>dot</code>
+        时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
       </p>
       <demo-badge-dot></demo-badge-dot>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/dot.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/dot.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>数值上限</h3>
       <p class="doc-hint">
-        <code>max</code> 给数字上限：内容超过它就显示 <code>99+</code>。只认纯数字内容。
+        <code>max</code>
+        给数字上限：内容超过它就显示
+        <code>99+</code>
+        。只认纯数字内容。
       </p>
       <demo-badge-max></demo-badge-max>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/max.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/max.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>hex 颜色</h3>
       <p class="doc-hint">
-        <code>color</code> 也直接收 hex（<code>#fff000</code> /
-        <code>#fc0</code>）：浅底按主题派生， 实心上的文字色按对比度自动给。
+        <code>color</code>
+        也直接收 hex（
+        <code>#fff000</code>
+        /
+        <code>#fc0</code>
+        ）：浅底按主题派生， 实心上的文字色按对比度自动给。
       </p>
       <demo-badge-hex></demo-badge-hex>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/hex.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hex.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

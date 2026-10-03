@@ -8,10 +8,12 @@
     on:clear="markClear()"
     on:focus="markFocus()"
     on:blur="markBlur()"
-    on:keydown="markKey($event)"
-  ></mc-input>
+    on:keydown="markKey($event)"></mc-input>
 
-  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
 
   <script>
     export default async () => ({

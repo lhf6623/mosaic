@@ -2,10 +2,12 @@
   <mc-textarea
     placeholder="边打边看下面那行"
     on:input="onInput($event)"
-    on:change="onChange($event)"
-  ></mc-textarea>
+    on:change="onChange($event)"></mc-textarea>
 
-  <p class="mt-3 text-sm text-muted">最近一次事件：<strong>{{last}}</strong></p>
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
 
   <script>
     export default async () => ({

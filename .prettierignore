@@ -26,7 +26,7 @@ packages/*/test/
 
 # 演示文件：里面 mc-code 的文本是**逐字展示**的样例代码，prettier 会把它的换行压掉
 # （实测：JSON 被压成两行、bash 丢了所有换行），而它本身就是要展示的内容。
-packages/*/demos/*.html
+# packages/*/demos/*.html
 
 # 对账引擎的**仓库副本**（从 skill `doc-code-drift` 拷进来的，与 skill 里那份逐字节相同）。
 # 它不该被本仓的 prettier 重排 —— 一排就和 skill 那份分叉，「引擎副本是最新的」再也没法用比字节来验。

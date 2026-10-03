@@ -15,7 +15,10 @@
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Select <code>mc-select</code></h1>
+    <h1>
+      Select
+      <code>mc-select</code>
+    </h1>
     <p class="doc-lead">
       下拉选择：选项写在默认插槽里，面板是原生浮层（进 top layer），键盘、Esc、点外部关闭都齐。
     </p>
@@ -25,17 +28,29 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">
-        选项写在 <code>mc-select</code> 里，点触发框或按 <kbd>↓</kbd> 打开；面板里 <kbd>↑</kbd>
-        <kbd>↓</kbd> 移高亮、<kbd>Enter</kbd> 选中、<kbd>Esc</kbd> 关闭。
-        <code>mc-option</code> 只是数据、自己不占版面（行由
-        <code>mc-select</code> 画进面板），两个标签都要注册；面板需要原生 popover 与 CSS
-        锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+），否则不会弹。
+        选项写在
+        <code>mc-select</code>
+        里，点触发框或按
+        <kbd>↓</kbd>
+        打开；面板里
+        <kbd>↑</kbd>
+        <kbd>↓</kbd>
+        移高亮、
+        <kbd>Enter</kbd>
+        选中、
+        <kbd>Esc</kbd>
+        关闭。
+        <code>mc-option</code>
+        只是数据、自己不占版面（行由
+        <code>mc-select</code>
+        画进面板），两个标签都要注册；面板需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+
+        / Firefox 125+），否则不会弹。
       </p>
       <demo-select-basic></demo-select-basic>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/basic.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -43,99 +58,141 @@
       <h3>尺寸</h3>
       <demo-select-sizes></demo-select-sizes>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/sizes.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>可清除</h3>
       <p class="doc-hint">
-        <code>clearable</code> 在有值时把右端换成 ×：点它清空，并依次发 <code>clear</code> 与
-        <code>change</code>。
+        <code>clearable</code>
+        在有值时把右端换成 ×：点它清空，并依次发
+        <code>clear</code>
+        与
+        <code>change</code>
+        。
       </p>
       <demo-select-clearable></demo-select-clearable>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/clearable.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/clearable.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>多选</h3>
       <p class="doc-hint">
-        加 <code>multiple</code> 之后 <code>value</code> property 是 <code>string[]</code>， 而
-        <code>default-value</code> 属性仍是逗号分隔的字符串；面板不会自己收起。
+        加
+        <code>multiple</code>
+        之后
+        <code>value</code>
+        property 是
+        <code>string[]</code>
+        ， 而
+        <code>default-value</code>
+        属性仍是逗号分隔的字符串；面板不会自己收起。
       </p>
       <demo-select-multiple></demo-select-multiple>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/multiple.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/multiple.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>状态</h3>
       <p class="doc-hint">
-        <code>disabled</code> / <code>readonly</code> 都不开面板，
-        <code>invalid</code> 只把边框换成危险色。
+        <code>disabled</code>
+        /
+        <code>readonly</code>
+        都不开面板，
+        <code>invalid</code>
+        只把边框换成危险色。
       </p>
       <demo-select-states></demo-select-states>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/states.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/states.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        四个事件都冒泡 + <code>composed</code>；<code>change</code> 的
-        <code>$event.data.value</code> 单选是字符串、多选是数组。 原生的 <code>focus</code> /
-        <code>blur</code> / <code>keydown</code> 这些
-        <code>composed</code> 事件本来就会穿到宿主上（不用组件转发），<code>on:focus</code>
+        四个事件都冒泡 +
+        <code>composed</code>
+        ；
+        <code>change</code>
+        的
+        <code>$event.data.value</code>
+        单选是字符串、多选是数组。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        这些
+        <code>composed</code>
+        事件本来就会穿到宿主上（不用组件转发），
+        <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
       <demo-select-events></demo-select-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">
-        两条路：① 宿主 <code>style</code> / 令牌按实例覆盖（演示里把触发框换成了主色浅底 +
-        整圈圆角）；② <b>宿主钩子</b> —— 状态会写成宿主上的 <code>[data-open]</code> /
-        <code>[data-filled]</code> / <code>[data-empty]</code>，外层 CSS 直接勾它，
-        旁边三个提示就是这么跟着亮灭的。
+        两条路：① 宿主
+        <code>style</code>
+        / 令牌按实例覆盖（演示里把触发框换成了主色浅底 + 整圈圆角）；②
+        <b>宿主钩子</b>
+        —— 状态会写成宿主上的
+        <code>[data-open]</code>
+        /
+        <code>[data-filled]</code>
+        /
+        <code>[data-empty]</code>
+        ，外层 CSS 直接勾它， 旁边三个提示就是这么跟着亮灭的。
       </p>
       <demo-select-customize></demo-select-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        组件内部封在 shadow 里，只有 <code>part</code> 能从外面改：<code>base</code>（触发框）、
-        <code>panel</code>（面板）、<code>option</code>（面板里每一行）。 宿主钩子也能配
-        <code>::part()</code>：演示里面板展开时，触发框会多一圈高亮。
+        组件内部封在 shadow 里，只有
+        <code>part</code>
+        能从外面改：
+        <code>base</code>
+        （触发框）、
+        <code>panel</code>
+        （面板）、
+        <code>option</code>
+        （面板里每一行）。 宿主钩子也能配
+        <code>::part()</code>
+        ：演示里面板展开时，触发框会多一圈高亮。
       </p>
       <demo-select-part></demo-select-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

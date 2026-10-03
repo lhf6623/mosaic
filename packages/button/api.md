@@ -6,7 +6,10 @@
 ```html
 <mc-button color="danger" variant="outline">删除</mc-button>
 <mc-button color="success" loading>正在保存…</mc-button>
-<mc-button><mc-icon slot="prefix" name="search"></mc-icon>搜索</mc-button>
+<mc-button>
+  <mc-icon slot="prefix" name="search"></mc-icon>
+  搜索
+</mc-button>
 ```
 
 ---

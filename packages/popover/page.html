@@ -17,7 +17,10 @@
     <l-m src="./demos/menu.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
-    <h1>Popover <code>mc-popover</code></h1>
+    <h1>
+      Popover
+      <code>mc-popover</code>
+    </h1>
     <p class="doc-lead">
       通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
     </p>
@@ -27,83 +30,129 @@
     <section class="doc-demo">
       <h3>方位</h3>
       <p class="doc-hint">
-        <code>placement</code> 十二个方向：上下左右，各带 <code>-start</code> /
-        <code>-end</code> 后缀（不写后缀 = 居中）。空间不够时浏览器
-        <strong>自动翻到另一侧</strong>，不会溢出视口。 需要原生 popover 与 CSS 锚点定位（Chrome
-        125+ / Safari 17+ / Firefox
+        <code>placement</code>
+        十二个方向：上下左右，各带
+        <code>-start</code>
+        /
+        <code>-end</code>
+        后缀（不写后缀 = 居中）。空间不够时浏览器
+        <strong>自动翻到另一侧</strong>
+        ，不会溢出视口。 需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
         125+）：没有这些能力的浏览器上面板不会弹出，也不报错；浮层不受宿主布局影响，不会被
-        <code>transform</code> / <code>filter</code> 困住。
+        <code>transform</code>
+        /
+        <code>filter</code>
+        困住。
       </p>
       <demo-popover-placement></demo-popover-placement>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/placement.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/placement.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>触发方式</h3>
       <p class="doc-hint">
-        <code>trigger</code> 三选一：<code>click</code>（默认）/ <code>hover</code> /
-        <code>manual</code>（只认 <code>open</code> 属性与 <code>show()</code>，受控开合就走它）。
-        默认插槽只放一个触发元素 —— 放多个时面板会按整块对齐。
+        <code>trigger</code>
+        三选一：
+        <code>click</code>
+        （默认）/
+        <code>hover</code>
+        /
+        <code>manual</code>
+        （只认
+        <code>open</code>
+        属性与
+        <code>show()</code>
+        ，受控开合就走它）。 默认插槽只放一个触发元素 —— 放多个时面板会按整块对齐。
       </p>
       <demo-popover-trigger></demo-popover-trigger>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/trigger.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/trigger.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>受控开合</h3>
       <p class="doc-hint">
-        <code>open</code> 是受控属性：写上即开、移除即关。<strong
-          >用它就得同时把 <code>trigger</code> 设成 <code>manual</code></strong
-        >
-        —— 默认的 <code>click</code> 走的是组件自己的开合逻辑，
+        <code>open</code>
+        是受控属性：写上即开、移除即关。
+        <strong>
+          用它就得同时把
+          <code>trigger</code>
+          设成
+          <code>manual</code>
+        </strong>
+        —— 默认的
+        <code>click</code>
+        走的是组件自己的开合逻辑，
         它会和外面这份状态抢着写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。组件把
         浏览器发起的关闭也同步成「删属性」，所以外部只从「改属性」这一头驱动；被 Esc /
-        点空白关掉时属性已经删了、只发 <code>close</code>，使用者把那边的状态收回去 ——
-        外面那个按钮就是这套写法。
+        点空白关掉时属性已经删了、只发
+        <code>close</code>
+        ，使用者把那边的状态收回去 —— 外面那个按钮就是这套写法。
       </p>
       <demo-popover-controlled></demo-popover-controlled>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/controlled.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/controlled.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>事件回调</h3>
       <p class="doc-hint">
-        三个事件都带 <code>$event.detail.reason</code>：<code>before-open</code> 在打开前发、
-        <code>preventDefault()</code> 能拦掉；<code>open</code> / <code>close</code> 表示已经开了 /
-        已经关了，<code>reason</code> 告诉你是谁干的（<code>trigger</code> / <code>api</code> /
-        <code>dismiss</code>）。演示里用 <code>addEventListener</code> 监听。
+        三个事件都带
+        <code>$event.detail.reason</code>
+        ：
+        <code>before-open</code>
+        在打开前发、
+        <code>preventDefault()</code>
+        能拦掉；
+        <code>open</code>
+        /
+        <code>close</code>
+        表示已经开了 / 已经关了，
+        <code>reason</code>
+        告诉你是谁干的（
+        <code>trigger</code>
+        /
+        <code>api</code>
+        /
+        <code>dismiss</code>
+        ）。演示里用
+        <code>addEventListener</code>
+        监听。
       </p>
       <demo-popover-events></demo-popover-events>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/events.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>箭头</h3>
       <p class="doc-hint">
-        小三角<strong>默认就有</strong>，跟着 <code>placement</code> 换边；<code>arrow="none"</code>
+        小三角
+        <strong>默认就有</strong>
+        ，跟着
+        <code>placement</code>
+        换边；
+        <code>arrow="none"</code>
         关掉。
       </p>
       <demo-popover-arrow></demo-popover-arrow>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/arrow.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/arrow.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -114,22 +163,24 @@
       </p>
       <demo-popover-flip></demo-popover-flip>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/flip.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/flip.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>面板里放菜单</h3>
       <p class="doc-hint">
-        面板内容由使用者给 —— 放项目自己的 <code>mc-menu</code> 就是一个下拉菜单。
+        面板内容由使用者给 —— 放项目自己的
+        <code>mc-menu</code>
+        就是一个下拉菜单。
       </p>
       <demo-popover-menu></demo-popover-menu>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/menu.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/menu.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
@@ -137,27 +188,31 @@
       <h3>外部样式</h3>
       <p class="doc-hint">
         样式写在宿主上：面板底色、圆角、内边距、离触发元素的距离都是
-        <code>--mc-popover-*</code> 令牌。
+        <code>--mc-popover-*</code>
+        令牌。
       </p>
       <demo-popover-customize></demo-popover-customize>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/customize.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 
     <section class="doc-demo">
       <h3>内部样式</h3>
       <p class="doc-hint">
-        内部结构封在 shadow 里，只有 <code>::part(panel)</code>（面板本体）与
-        <code>::part(arrow)</code>（小三角）能从外面改。
+        内部结构封在 shadow 里，只有
+        <code>::part(panel)</code>
+        （面板本体）与
+        <code>::part(arrow)</code>
+        （小三角）能从外面改。
       </p>
       <demo-popover-part></demo-popover-part>
       <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码"
-          ><mc-code language="html" src="./demos/part.html"></mc-code
-        ></mc-collapse-item>
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
       </mc-collapse>
     </section>
 

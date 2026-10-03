@@ -3,13 +3,16 @@
     <mc-tag checkable selected color="primary" on:change="onChange($event)">已实现</mc-tag>
     <mc-tag checkable color="primary" on:change="onChange($event)">待建</mc-tag>
     <mc-tag checkable color="danger" on:change="onChange($event)">已废弃</mc-tag>
-    <mc-tag checkable closable color="info" on:change="onChange($event)" on:close="onClose($event)"
-      >可关也可选</mc-tag
-    >
+    <mc-tag checkable closable color="info" on:change="onChange($event)" on:close="onClose($event)">
+      可关也可选
+    </mc-tag>
   </div>
 
   <p class="mt-3 text-sm text-muted">
-    最近一次 <code>change</code>：<strong>{{lastChange}}</strong>
+    最近一次
+    <code>change</code>
+    ：
+    <strong>{{lastChange}}</strong>
   </p>
 
   <script>

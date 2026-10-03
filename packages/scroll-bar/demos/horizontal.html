@@ -1,14 +1,17 @@
 <template component>
   <mc-scroll-bar
     axis="x"
-    style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)"
-  >
+    style="border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md)">
     <div class="flex gap-3 p-3" style="width: max-content">
       <o-fill :value="cards" fill-key="$key">
         <div
           class="flex items-center justify-center"
-          style="width: 8rem; height: 4rem; background-color: rgb(var(--mc-color-surface-sunken)); border-radius: var(--mc-radius-md)"
-        >
+          style="
+            width: 8rem;
+            height: 4rem;
+            background-color: rgb(var(--mc-color-surface-sunken));
+            border-radius: var(--mc-radius-md);
+          ">
           {{$data}}
         </div>
       </o-fill>
