@@ -467,7 +467,11 @@ await page.waitForTimeout(800);
 const afterNav = await menuState();
 check(
   '窄屏：点条目跳走之后浮层自动收起',
-  afterNav.面板打开 === false && (await page.evaluate(() => window.__deepAll('h1')[0]?.textContent ?? '')).startsWith('Code'),
+  /* ⚠️ 必须 trim：prettier 把 <h1> 的内容拆到多行，textContent 带上了首尾换行与缩进 */
+  afterNav.面板打开 === false &&
+    (
+      await page.evaluate(() => (window.__deepAll('h1')[0]?.textContent ?? '').trim())
+    ).startsWith('Code'),
   JSON.stringify(afterNav),
 );
 
