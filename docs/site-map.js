@@ -11,9 +11,73 @@ export const SITE = [
     order: 20,
     label: '文档',
     children: [
-      { order: 10, type: 'page', label: '快速开始', path: 'docs/pages/guide.html' },
-      { order: 20, type: 'page', label: '设计令牌', path: 'packages/color/page.html' },
-      { order: 30, type: 'page', label: '规范', path: 'docs/pages/specs.html' },
+      {
+        order: 10,
+        label: '介绍',
+        children: [
+          {
+            order: 10,
+            type: 'page',
+            label: 'Mosaic UI',
+            path: 'docs/pages/intro.html',
+            summary: '这个库是什么、用什么写的、有多少组件。',
+          },
+        ],
+      },
+      {
+        order: 20,
+        label: '快速上手',
+        children: [
+          {
+            order: 10,
+            type: 'page',
+            label: '安装',
+            path: 'docs/pages/install.html',
+            summary: '不需要 npm 与打包器：最小用法、引组件的方式、自托管与大陆访问。',
+          },
+          {
+            order: 20,
+            type: 'page',
+            label: '支持的平台',
+            path: 'docs/pages/platforms.html',
+            summary: '取决于浏览器有没有那几样原生能力：ES module、自定义元素、popover、锚点定位。',
+          },
+          {
+            order: 30,
+            type: 'page',
+            label: '常见问题',
+            path: 'docs/pages/faq.html',
+            summary: '组件没渲染、改了没生效、有结构没样式、工具类不生效这类「装上了却没效果」。',
+          },
+        ],
+      },
+      {
+        order: 30,
+        label: '指南',
+        children: [
+          {
+            order: 10,
+            type: 'page',
+            label: '调整主题',
+            path: 'docs/pages/theme.html',
+            summary: '亮色 / 暗色两态，以及覆盖令牌换肤。',
+          },
+          {
+            order: 20,
+            type: 'page',
+            label: '单个组件主题适配',
+            path: 'docs/pages/component-theme.html',
+            summary: '只给某一块换色：color 属性、实例上覆盖令牌、data-tone 子树。',
+          },
+          {
+            order: 30,
+            type: 'page',
+            label: '样式冲突',
+            path: 'docs/pages/style-conflicts.html',
+            summary: '组件样式不外溢，以及怎么反过来盖掉库的默认样式。',
+          },
+        ],
+      },
     ],
   },
   {
@@ -25,6 +89,14 @@ export const SITE = [
         label: '基础',
         summary: '最常用的展示与操作单元',
         children: [
+          {
+            order: 5,
+            type: 'page',
+            label: '色彩',
+            path: 'packages/color/page.html',
+            summary:
+              '色彩与设计令牌：色板由 OKLCH 生成（6 色族 × 11 档），语义令牌每族只留一档，构建期强制跑 WCAG 对比度自检。',
+          },
           {
             order: 10,
             label: 'Button',

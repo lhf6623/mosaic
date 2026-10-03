@@ -1,5 +1,5 @@
 <!--
-  <doc-palette> —— 设计令牌页的原始色阶色板：色值实时从 packages/color/tokens.css 解析（生成器输出的形状 `--mc-<family>-<step>: R G B; /* #hex */`），不抄第二份。
+  <doc-palette> —— 「色彩」页的原始色阶色板：色值实时从 packages/color/tokens.css 解析（生成器输出的形状 `--mc-<family>-<step>: R G B; /* #hex */`），不抄第二份。
   ⚠️ 组件自带 shadow root，色板内部样式（.doc-palette* / .doc-swatch）从 content.css 搬到这里；拉取地址用 document.baseURI 拼绝对路径，子路径部署（`--prefix /mosaic`）才不会错。
 -->
 <template component>
@@ -80,7 +80,7 @@
   </div>
 
   <script>
-    /** 色族的展示顺序（与设计令牌文档的叙述顺序一致） */
+    /** 色族的展示顺序（与色彩文档的叙述顺序一致） */
     const LAYOUT_ORDER = ['neutral', 'primary', 'info', 'success', 'warning', 'danger'];
 
     /* 生成器输出的形状：`--mc-<family>-<step>: R G B;` 后面跟一个 hex 注释。

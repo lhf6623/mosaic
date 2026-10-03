@@ -1,0 +1,58 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>支持的平台</h1>
+    <p class="doc-lead">
+      桌面上的现代浏览器都能跑。最低版本由 CSS 锚点定位决定，只有那四个浮层组件用到它。
+    </p>
+
+    <h2>各个浏览器的最低版本</h2>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>浏览器</th>
+          <th>最低版本</th>
+          <th>卡在哪</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Chrome / Edge</td>
+          <td>125</td>
+          <td rowspan="3">CSS 锚点定位</td>
+        </tr>
+        <tr>
+          <td>Firefox</td>
+          <td>147</td>
+        </tr>
+        <tr>
+          <td>Safari</td>
+          <td>26</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="doc-hint">数据来自 MDN 的浏览器兼容数据。</p>
+
+    <p>
+      原生
+      <code>popover</code>
+      的要求比表里低：Chrome / Edge 116、Firefox 125、Safari 17。如果不用 Popover、
+      Dropdown、Tooltip、Select 这四个浮层组件，只需要浏览器支持 ES module
+      和自定义元素，近几年的版本都可以。
+    </p>
+    <p>这四个浮层组件没有写降级路径：浏览器低于表里的版本时，浮层会打不开，或者贴不住触发元素。</p>
+
+    <h2>怎么确认</h2>
+    <p>
+      在你的目标浏览器里打开一个浮层组件的文档页，点开演示：浮层能贴住触发元素、点外面能关掉，就没问题。主要风险是老版本的
+      Safari 和 Firefox，其中 Firefox 是最后一个跟上锚点定位的。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

@@ -79,12 +79,11 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/guide.html",
       "docs/pages/home.html",
+      "docs/pages/intro.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
-      "docs/snippets/quick-start.html",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
@@ -1842,8 +1841,7 @@
       "tests/site/07-inject-server.mjs"
     ],
     "docs/pages/guide.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/06-boot-palette.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "docs/pages/home.html": [
       "packages/code/test/code.test.mjs",
@@ -1853,6 +1851,9 @@
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
+    ],
+    "docs/pages/intro.html": [
+      "tests/site/06-boot-palette.mjs"
     ],
     "docs/routes.js": [
       "packages/alert/test/alert.test.mjs",
@@ -1958,8 +1959,7 @@
       "tests/site/13-docs-drift.mjs"
     ],
     "docs/snippets/quick-start.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/06-boot-palette.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "docs/state/route.js": [
       "packages/alert/test/alert.test.mjs",

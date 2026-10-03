@@ -1,0 +1,48 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>Mosaic UI</h1>
+    <p class="doc-lead">
+      一套跑在 ofa.js 上的 Web Components 组件库：页面引一个 ofa.js，再按需引组件文件，没有
+      npm，也没有构建步骤。
+    </p>
+
+    <h2>是什么</h2>
+    <p>
+      组件就是一个
+      <code>.html</code>
+      文件。放在 CDN 或者你自己的服务器上，用
+      <code>&lt;l-m src="…"&gt;</code>
+      引进来，标签就能用了。仓库里的文件就是发布出去的文件，没有 dist
+      目录，也没有需要先跑一遍的构建。
+    </p>
+    <p>
+      样式跟着组件走。每个组件把样式关在自己的 shadow DOM
+      里，页面上的全局选择器进不去，它也不会改到你页面的其它地方。反过来也有代价：想改组件内部的样子，得用它开放的
+      CSS 变量或者
+      <code>::part()</code>
+      ，靠覆盖 class 是不行的。
+    </p>
+
+    <h2>用什么写的</h2>
+    <p>
+      原生自定义元素加 shadow DOM，运行时依赖只有 ofa.js（当前钉在
+      4.7.5）。对外的接口就是标签属性、事件和 CSS 变量，没有 JS 配置对象。
+    </p>
+
+    <h2>有多少组件</h2>
+    <p>现在有 28 个组件，分在基础、表单、反馈、浮层、布局五类里，左栏「组件」下面是全部。</p>
+
+    <h2>主题</h2>
+    <p>
+      颜色全部写在 CSS 变量上，亮色和暗色两套都有。换品牌色就是覆盖对应的变量，做法见
+      <a olink href="./theme.html">调整主题</a>
+      。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

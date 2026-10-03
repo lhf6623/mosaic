@@ -72,6 +72,13 @@
         };
         this._mq.addEventListener('change', this._onMQ);
 
+        /* 令牌表只有亮 / 暗两态，「自动」是本站自己接的：系统偏好变了就地重算一次（只对选着 auto 时有意义） */
+        this._sysMQ = window.matchMedia('(prefers-color-scheme: dark)');
+        this._onSysMQ = () => {
+          if (this.theme === 'auto') this.applyTheme('auto');
+        };
+        this._sysMQ.addEventListener('change', this._onSysMQ);
+
         this.syncTopNav();
         this.syncMenuButton();
 
@@ -103,6 +110,7 @@
         document.removeEventListener('wheel', this._onWheel);
         this._topNav?.removeEventListener('click', this._onTopNavClick);
         this._mq?.removeEventListener('change', this._onMQ);
+        this._sysMQ?.removeEventListener('change', this._onSysMQ);
       },
 
       proto: {
@@ -197,10 +205,14 @@
           if (menu) menu.open = false;
         },
 
-        /** 落主题：auto 就是不写 data-theme（跟随系统，交给 theme-boot.js 与媒体查询） */
+        /** 落主题：令牌表只有亮 / 暗两态，「自动」这一档由这里读系统偏好再落成 dark / light */
         applyTheme(mode) {
-          if (mode === 'auto') delete document.documentElement.dataset.theme;
-          else document.documentElement.dataset.theme = mode;
+          document.documentElement.dataset.theme =
+            mode === 'auto'
+              ? window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : mode;
 
           this.theme = mode;
           this.themeLabel = THEME_LABELS[mode];
@@ -375,7 +387,7 @@
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
   <l-m src="./components/spec.html"></l-m>
-  <!-- 页面占位也是组件（原来在 layout 的脚本里手搓 DOM）：设计令牌的色板 -->
+  <!-- 页面占位也是组件（原来在 layout 的脚本里手搓 DOM）：「色彩」页的色板 -->
   <l-m src="./components/palette.html"></l-m>
 
   <!-- 一屏高的外壳容器：顶栏 + 正文带（flex 纵向，正文带吃掉剩下的高度并自己滚） -->

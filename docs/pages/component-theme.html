@@ -1,0 +1,70 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>单个组件主题适配</h1>
+    <p class="doc-lead">不想动全局配色时，按影响范围从小到大有三种做法。</p>
+
+    <h2>给组件一个 color</h2>
+    <p>
+      大部分组件收
+      <code>color</code>
+      ，直接写 hex 或者语义色名：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;mc-button color="#fff000"&gt;品牌按钮&lt;/mc-button&gt;
+      &lt;mc-tag color="#1a7f5a"&gt;标签&lt;/mc-tag&gt;
+    </mc-code>
+    <p>
+      组件只往自己的色槽里填值，
+      <code>variant</code>
+      、
+      <code>size</code>
+      这些照常组合，文字色按对比度自动算，浅底那档跟着主题走。hex
+      本身不随主题翻转，需要跟着主题切换的颜色就别用 hex。
+    </p>
+
+    <h2>在实例上覆盖变量</h2>
+    <p>
+      CSS 变量会从宿主元素继承进 shadow DOM，所以写在
+      <code>style</code>
+      上只影响这一个实例：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;mc-button
+        style="--mc-color-primary: 220 38 38; --mc-color-primary-fg: 255 255 255;
+               --mc-color-primary-subtle: 254 226 226; --mc-color-primary-hover: 185 28 28;
+               --mc-color-primary-active: 153 27 27; --mc-color-ring: 220 38 38"&gt;
+        删除
+      &lt;/mc-button&gt;
+    </mc-code>
+    <p>六个变量要给全，少给的那个状态不会跟着变。</p>
+
+    <h2>给一整块区域换色</h2>
+    <p>
+      在容器上写
+      <code>data-tone</code>
+      ，里面所有用主色的组件一起变，派生颜色和文字色自动算：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;div data-tone="#fff000"&gt;
+        &lt;mc-button color="primary"&gt;按钮&lt;/mc-button&gt;
+        &lt;mc-tag color="primary"&gt;标签&lt;/mc-tag&gt;
+      &lt;/div&gt;
+    </mc-code>
+    <p>
+      品牌色不随主题翻转，但悬停、浅底、焦点环会跟着主题重新算。要在脚本里动态切换，用同一个模块的
+      <code>applyTone(选择器, 颜色)</code>
+      和
+      <code>clearTone(选择器)</code>
+      。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

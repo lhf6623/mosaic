@@ -429,18 +429,12 @@ for (const [key, value] of Object.entries(THEMES.light)) push(`    --mc-${key}: 
 push('  }', '');
 
 push('  /* ---- L2 语义令牌 · 暗色 ---------------------------------------- */');
-push('  /* 方式一：显式切换（推荐，可做「跟随系统 / 强制亮 / 强制暗」三态） */');
+push('  /* 暗色：不写 data-theme 的页面永远是亮色 —— 不适配暗色的站点不该被系统偏好带跑 */');
 push('  [data-theme="dark"] {');
 push('    color-scheme: dark;');
 for (const [key, value] of Object.entries(THEMES.dark)) push(`    --mc-${key}: ${value};`);
 push('  }', '');
-push('  /* 方式二：未显式指定时跟随系统偏好 */');
-push('  @media (prefers-color-scheme: dark) {');
-push('    :root:not([data-theme]) {');
-push('      color-scheme: dark;');
-for (const [key, value] of Object.entries(THEMES.dark)) push(`      --mc-${key}: ${value};`);
-push('    }');
-push('  }', '');
+push('  /* 跟随系统不在令牌表里：那是使用者自己读 prefers-color-scheme 再写 data-theme 的事。', '');
 
 push('  /* ---- L2 排版 / 间距 / 圆角 / 控件 / 动效 / 层级 ------------------ */');
 push('  :root {');

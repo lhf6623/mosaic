@@ -268,26 +268,23 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。紫罗兰（288°）能立�
 见 `tokens.css` 顶部的 `@layer` 声明），所以**宿主页面任何"未分层"的覆盖都必定生效**，
 不需要 `!important`，也不需要关心加载顺序。
 
-三种切换方式，按需求选：
+两种状态，按需求选：
 
-```html
-<!-- 1. 跟随系统（默认行为，无需配置） -->
+```text
+<!-- 亮色（默认）：不写属性，系统偏好带不动它 -->
 <html>
-  <!-- tokens.css 里有 @media (prefers-color-scheme: dark) 兜底 -->
 
-  <!-- 2. 强制亮色 -->
-  <html data-theme="light">
-    <!-- 3. 强制暗色 -->
-    <html data-theme="dark"></html>
-  </html>
-</html>
+<!-- 暗色 -->
+<html data-theme="dark">
 ```
+
+想跟随系统？使用者自己读 `prefers-color-scheme` 再写 `data-theme`，令牌表里没有这一态。
 
 `color-scheme` 会跟着一起切，所以原生控件（滚动条、`<select>` 弹出层）会同步变色。
 
 ⚠️ **工具类子集里没有 `dark:` 变体，组件里也别自己写。**
 真要有它，编译出来就是 `@media (prefers-color-scheme: dark)`：在 shadow DOM 里确实生效，
-但它只跟系统偏好，跟不上站点 `<html data-theme>` 的三态切换。
+但它只跟系统偏好，跟不上页面上的主题切换。
 需要暗色差异时，提升为一个令牌（例如 `--mc-shadow-card`），在文档根（`:root` / `[data-theme]`）上换值。
 
 ⚠️ **`match-var` 是 ofa.js 提供的样式查询组件**，适合「按 CSS 变量切换组件内部非令牌样式」。

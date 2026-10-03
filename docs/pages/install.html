@@ -1,0 +1,63 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>安装</h1>
+    <p class="doc-lead">不用装任何东西。把下面这段写进 HTML，放到 HTTP 服务上就能看到按钮。</p>
+
+    <h2>最小用法</h2>
+    <mc-code language="html" src="../snippets/quick-start.html"></mc-code>
+    <p class="doc-hint">
+      存成本地文件后直接双击打开不行：模块和请求会被浏览器拦住，要起一个 HTTP 服务。
+    </p>
+
+    <h2>组件怎么引</h2>
+    <p>
+      ofa.js 引一次就够了，之后一个组件一条
+      <code>&lt;l-m src="…"&gt;</code>
+      。组件会把样式一起带进 shadow DOM，不需要你另外引 CSS。
+    </p>
+    <p>
+      如果你自己的页面想用工具类和完整的令牌表，再引一份
+      <code>mosaic.css</code>
+      。它是可选包，只作用于宿主页面，组件不依赖它。
+    </p>
+
+    <h2>版本号写精确的</h2>
+    <p>
+      CDN 地址里别写
+      <code>@latest</code>
+      或
+      <code>@1</code>
+      ：jsDelivr 对这类别名有 7 天缓存，最长可能一周都不更新。写精确版本号可以缓存一年。
+    </p>
+    <p>
+      本文示例里的
+      <code>0.1.0</code>
+      是计划中的首个版本。仓库还没打 tag，发布之前这些地址下不到东西。
+    </p>
+
+    <h2>自托管</h2>
+    <p>
+      整份仓库就是产物。把
+      <code>packages/</code>
+      目录当静态资源托管，再把你页面里的 CDN
+      前缀换成自己的地址就行。注意保持目录结构：组件会按相对路径去取
+      <code>packages/boot/component-base.css</code>
+      ，只拷一个组件文件的话，页面会变成有结构、没样式。
+    </p>
+
+    <h2>大陆访问</h2>
+    <p>jsDelivr 在大陆经常连不上。换个入口域名，后面的路径不用动：</p>
+    <!-- prettier-ignore -->
+    <mc-code language="text">
+      https://fastly.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+      https://gcore.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+      https://testingcf.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/...
+    </mc-code>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

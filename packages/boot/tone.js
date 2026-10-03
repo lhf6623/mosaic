@@ -156,5 +156,5 @@ new MutationObserver(reapplyAll).observe(document.documentElement, {
   attributeFilter: ['data-theme'],
 });
 
-/* 「跟随系统」那一态没有 data-theme，靠这条媒体查询兜 */
+/* 使用者在自己的 CSS 里写跟随系统（覆盖令牌）时不会动 data-theme，靠这条媒体查询兜 */
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', reapplyAll);

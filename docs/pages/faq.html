@@ -1,0 +1,73 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>常见问题</h1>
+    <p class="doc-lead">页面出问题时，从这几条开始查。</p>
+
+    <h3>组件完全不出现</h3>
+    <p>
+      打开开发者工具看控制台：有 404 或者 Failed to fetch，就是
+      <code>&lt;l-m src="…"&gt;</code>
+      的地址不对，版本号和路径都检查一下。地址没问题、标签却是空的，确认 ofa.js 那段
+      <code>&lt;script type="module"&gt;</code>
+      在组件之前。另外，双击 HTML 文件用
+      <code>file://</code>
+      打开是不行的，得走 HTTP。
+    </p>
+
+    <h3>改了文件，页面没变化</h3>
+    <p>
+      多半是服务器给了缓存。开发时换一个不发缓存头的静态服务器，或者在开发者工具里勾上禁用缓存再刷新。
+    </p>
+
+    <h3>结构出来了，样式没有</h3>
+    <p>
+      自托管时漏拷了组件的样式基座。打开网络面板搜
+      <code>component-base.css</code>
+      ，如果它是 404，把
+      <code>packages/</code>
+      按原目录结构补齐 —— 这个文件在
+      <code>packages/boot/</code>
+      下。
+    </p>
+
+    <h3>工具类不生效</h3>
+    <p>
+      先确认页面引了
+      <code>mosaic.css</code>
+      ，它是可选包，组件不会替你引。引了还是不生效，多半是用到了子集之外的类：目前只有布局、间距、排版、语义色这些手写类，像
+      <code>mt-7</code>
+      、
+      <code>bg-gradient-to-r</code>
+      都没有，需要就自己写 CSS。
+    </p>
+
+    <h3>
+      没有
+      <code>dark:</code>
+      或
+      <code>md:</code>
+      变体
+    </h3>
+    <p>
+      工具类是手写的，没有这些前缀。暗色也别用变体来做：
+      <code>dark:</code>
+      在 shadow DOM 里只能跟随系统偏好，跟不了页面上手动的主题切换。颜色差异一律改令牌，见
+      <a olink href="./theme.html">调整主题</a>
+      。
+    </p>
+
+    <h3>切了主题，组件颜色不变</h3>
+    <p>两种情况。一是颜色在组件上写死了 hex，换成令牌就会跟着变；二是只覆盖了一种主题状态。</p>
+    <p>
+      亮色和暗色是两个独立状态，覆盖写在哪一态就只管哪一态，改法见
+      <a olink href="./theme.html">调整主题</a>
+      。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

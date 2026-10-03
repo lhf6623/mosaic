@@ -5,6 +5,7 @@
  */
 
 import { dirname, posix } from 'node:path';
+import { READY } from '../docs/site-map.js';
 import { componentSuites, siteSuites } from '../tests/lib/suites.mjs';
 import { mdTables } from './doc-drift/lib/parse.mjs';
 
@@ -195,6 +196,13 @@ const rules = [
         pattern: '(\\d+)\\s*个?组件套件',
         files: ['README.md', 'tests/smoke.mjs', 'tests/select.mjs', 'docs/**/*.html'],
         actual: () => componentSuites().length,
+      },
+      {
+        /* 使用者文档里写死的组件总数（如「28 个组件」）↔ 导航树里的组件 —— 页面不许报旧数 */
+        label: '个组件',
+        pattern: '(\\d+)\\s*个组件(?!套件)',
+        files: ['docs/**/*.html'],
+        actual: () => READY.length,
       },
       {
         /* 口径 = mosaic.css 里 **mosaic.utilities 层**以 . 开头的选择器行数，与文档用词

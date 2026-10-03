@@ -1,7 +1,23 @@
 /**
  * 站点 · 启动与色板（第 12.x 节）：色板回读 tokens.css、冷启动占位、入口与布局页
  */
-import { READY, TOPBAR, locate } from '../../docs/site-map.js';
+import { NAV, TOPBAR, firstPageOf, locate } from '../../docs/site-map.js';
+
+/** 站点里所有页面（首页 + 文档分区各页 + 组件/参考页）—— 从导航树推导，别在这儿抄第二份清单 */
+const NAV_PAGES = (() => {
+  const out = [];
+  const walk = (nodes) => {
+    for (const node of nodes) {
+      if (node.path) out.push(node.path);
+      else if (node.children) walk(node.children);
+    }
+  };
+  walk(NAV);
+  return [...new Set(out)];
+})();
+
+/** 「文档」分区第一页：切页不重建那条断言用它，页面改名 / 调顺序都不会让断言失效 */
+const DOC_PAGE = firstPageOf(NAV.find((node) => node.label === '文档')).path;
 
 export default async function run({ page, visit, goHash, pageState, check, BASE, newPage }) {
 /* ------------------------------------------------------------------ *
@@ -10,7 +26,7 @@ export default async function run({ page, visit, goHash, pageState, check, BASE,
 
 await goHash('packages/color/page.html');
 const tokensState = await pageState();
-check('令牌文档页可获取', tokensState.h1 === '设计令牌', `h1=${tokensState.h1}`);
+check('色彩文档页可获取', tokensState.h1 === '色彩', `h1=${tokensState.h1}`);
 check('色板渲染出 66 个色块（6 色族 × 11 档）', tokensState.paletteRows === 6, `6 个色族 / ${tokensState.paletteRows} 行`);
 
 /* ------------------------------------------------------------------ *
@@ -101,7 +117,7 @@ const layoutState = await page.evaluate(() => {
 });
 check(
   '外壳由布局页 docs/layout.html 提供（子页面嵌在它的 o-page 里，外壳在它的 shadow root 里）',
-  /* 此刻在设计令牌页（「文档」分区）→ 三层：外壳 → 分区布局页 → 页面。
+  /* 此刻在色彩页（「组件」分区）→ 三层：外壳 → 分区布局页 → 页面。
      外壳与分区布局页各只有一层 —— 漏挂 / 重复挂都会在这里红。 */
   layoutState.count === 3 &&
     layoutState.shellCount === 1 &&
@@ -133,7 +149,7 @@ const layoutIdentity = await (async () => {
       (p.getAttribute('src') || '').endsWith('/docs/layout.html'),
     );
   });
-  await goHash('docs/pages/guide.html');
+  await goHash(DOC_PAGE);
   return page.evaluate(() => {
     const pages = [...document.querySelectorAll('o-page')];
     const srcOf = (p) => p.getAttribute('src') || '';
@@ -156,19 +172,14 @@ check(
   /* 顶栏只到**分区**这一级：快速开始属于「文档」分区，所以高亮的是「文档」。
      期望值从 site-map 算（locate 命中哪一支），不写死页面名或分区名。 */
   layoutIdentity.same === true &&
-    layoutIdentity.active === locate('docs/pages/guide.html').entry.label,
+    layoutIdentity.active === locate(DOC_PAGE).entry.label,
   `子页面=${layoutIdentity.child} · 顶栏高亮=${layoutIdentity.active}`,
 );
 
 /** 每个页面模块都要挂到布局页上；少一条，那一页就掉出外壳 */
 const parentRefs = await (async () => {
-  const urls = [
-    'docs/pages/home.html',
-    'docs/pages/guide.html',
-    'docs/pages/specs.html',
-    'packages/color/page.html', // 令牌文档页不是组件，但它同样是页面模块
-    ...READY.map((c) => c.path),
-  ];
+  /* 清单来自导航树：新增页面时这里不会再漏检（原来是一份手抄的清单） */
+  const urls = NAV_PAGES;
   const missing = [];
   for (const url of urls) {
     const text = await (await fetch(`${BASE}/${url}`)).text();

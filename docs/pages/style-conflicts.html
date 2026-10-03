@@ -1,0 +1,73 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>样式冲突</h1>
+    <p class="doc-lead">
+      组件的样式在 shadow DOM 里，和页面上的样式互不干扰。两边都要动的时候，各有各的规则。
+    </p>
+
+    <h2>改组件内部</h2>
+    <p>
+      页面上的选择器进不去 shadow DOM，写
+      <code>.mc-btn { … }</code>
+      是不会生效的。能用的只有组件开放的 CSS 变量和
+      <code>::part()</code>
+      ：变量管颜色这类主题值，
+      <code>::part()</code>
+      管结构里的某一块。每个组件文档页都列了它开放了哪些。
+    </p>
+
+    <h2>覆盖库自己的样式</h2>
+    <p>
+      <code>mosaic.css</code>
+      里的工具类和默认样式都放在 CSS 分层（
+      <code>@layer</code>
+      ）里，未分层的规则一定排在前面，所以你自己写的样式能直接压过去，不用
+      <code>!important</code>
+      ，也不用管引入顺序：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="css">
+      /* 没写 @layer，所以这条会赢过库里的默认值 */
+      .my-card {
+        border-radius: 2px;
+      }
+    </mc-code>
+
+    <h2>几种常见情况</h2>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>现象</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>组件里面的文字、边框改不动</td>
+          <td>
+            样式在 shadow DOM 里，改用组件开放的变量或
+            <code>::part()</code>
+          </td>
+        </tr>
+        <tr>
+          <td>自己写的覆盖被工具类压住</td>
+          <td>
+            覆盖写进了
+            <code>@layer</code>
+            ，挪出来写成普通样式
+          </td>
+        </tr>
+        <tr>
+          <td>改了一个变量，只有一部分跟着变</td>
+          <td>一个色族有六个变量，悬停、按下、浅底、焦点环要一起改</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

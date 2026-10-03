@@ -1,0 +1,74 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>调整主题</h1>
+    <p class="doc-lead">主题就是一组 CSS 变量。切状态改属性，换颜色改变量。</p>
+
+    <h2>亮色与暗色</h2>
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;!-- 亮色（默认）：不写属性 --&gt;
+      &lt;html&gt;
+
+      &lt;!-- 亮色 --&gt;
+      &lt;html data-theme="light"&gt;
+
+      &lt;!-- 暗色 --&gt;
+      &lt;html data-theme="dark"&gt;
+    </mc-code>
+    <p>
+      属性写在页面根元素上就行，组件跟着变。令牌表只提供亮、暗两套：不写属性是亮色，
+      不适配暗色的站点，不会因为用户系统是暗色就被带着变暗。
+    </p>
+
+    <h2>覆盖颜色</h2>
+    <p>
+      把这些变量写进你自己的样式里。库的默认值在 CSS 分层里，你写的是未分层规则，一定赢，不需要
+      <code>!important</code>
+      ，也不用管引入顺序：
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="css">
+      :root {
+        --mc-color-bg: 250 250 250;
+        --mc-color-primary: 16 185 129;
+      }
+    </mc-code>
+    <p>
+      有两个地方容易写错。格式上，变量存的是
+      <code>"R G B"</code>
+      三元组，上面那行是
+      <code>16 185 129</code>
+      ，不是
+      <code>#10b981</code>
+      。范围上，一个色族不止一个变量：填色、文字色、浅底、悬停、按下和焦点环一共六个（
+      <code>--mc-color-primary</code>
+      加上它的
+      <code>-fg</code>
+      /
+      <code>-subtle</code>
+      /
+      <code>-hover</code>
+      /
+      <code>-active</code>
+      ，以及
+      <code>--mc-color-ring</code>
+      ），只改填色的话，鼠标移上去还是旧颜色。
+    </p>
+    <p>
+      覆盖写在哪一态就只管哪一态。上面这段写的是亮色（默认）那一态；暗色要一份同样的覆盖，否则切过去还是旧颜色。
+    </p>
+
+    <h2>换整套品牌色</h2>
+    <p>
+      色阶是用感知均匀色空间算出来的，悬停、浅底这些派生颜色都是推出来的。要整套换掉，得改生成器里的主色相重新算一遍；只用组件的话，按上面覆盖变量就够了。色阶和变量的对应关系见
+      <a olink href="../../packages/color/page.html">色彩</a>
+      。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

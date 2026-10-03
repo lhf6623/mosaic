@@ -14,8 +14,8 @@
 | 页面     | `docs/pages/*.html`                   | 只写正文内容                                                                 |
 
 - 页面里**不写** `position: fixed`、侧栏宽度与 `@media` 断点 —— 那是布局页的事。
-- `docs/pages/` 下三个页面里，只有首页挂 `layout.html`（单栏），`guide` / `specs` 挂
-  `doc-layout.html`（三栏）。
+- `docs/pages/` 下只有首页挂 `layout.html`（单栏），其余站点页都挂 `doc-layout.html`（三栏）。
+- 页面清单与分组**不在本文档里抄第二份** —— 唯一来源是 `docs/site-map.js`。
 
 ## 二、样式归属：一句话一条规则
 
@@ -56,7 +56,7 @@
 | `doc-nav`     | `docs/components/nav.html`     | 左栏 / 窄屏浮层菜单                                  |
 | `doc-toc`     | `docs/components/toc.html`     | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）       |
 | `doc-spec`    | `docs/components/spec.html`    | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
-| `doc-palette` | `docs/components/palette.html` | 设计令牌页的原始色阶色板                             |
+| `doc-palette` | `docs/components/palette.html` | 「色彩」页的原始色阶色板                             |
 | `doc-poster`  | `docs/components/poster.html`  | 首页马赛克海报（图案 + 视差，内容由页面插槽）        |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
@@ -81,7 +81,7 @@ docs/
   site-map.js           导航数据（顶栏 / 左栏 / 状态）
   state/route.js        路由状态 store（唯一挂监听的地方）
   components/           站点组件（见上一节）
-  pages/                站点页：home / guide / specs
+  pages/                站点页（清单与分组见 site-map.js）
   snippets/             可复制的片段（quick-start.html 等）
   lib/                  站点内部工具（md-spec 渲染器）
 ```
@@ -104,3 +104,12 @@ docs/
 
 验证：拔掉鼠标，只用 Tab 走一遍「顶栏入口 → 左栏菜单 → 主题下拉 → 窄屏浮层 → 正文」。
 对比度不在本条线里 —— 令牌层由 `pnpm tokens` 的 WCAG 自检守住。
+
+## 九、构建与令牌红线（原站内「规范」页搬来）
+
+- **组件只消费语义令牌，不碰原始色阶** —— 原始色阶不随主题切换，直接用它必然在某个主题下读不清。
+- **组件里禁止 `dark:` 变体** —— 它只会跟随系统偏好，跟不了页面上的主题切换；暗色差异一律在令牌上换值。
+- **样式注入靠层序压住** —— `adoptedStyleSheets` 的优先级高于组件自身的 `<style>`，所以
+  `packages/boot/mosaic.css` 顶部先钉死 `@layer` 层序，工具类才不会反过来盖住组件样式。
+- **构建缺输入必须大声失败** —— 拼少一份输入会产出「没有令牌的坏 CSS」、退出码却还是 0；
+  `tools/build-css.mjs` 因此先查输入存在、装配后再验图标齐全。
