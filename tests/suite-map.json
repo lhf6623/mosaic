@@ -17,7 +17,6 @@
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
-      "docs/snippets/highlight-demo.js",
       "docs/state/route.js",
       "docs/theme-boot.js",
       "index.html",
@@ -46,6 +45,7 @@
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
+      "packages/code/demos/highlight-demo.js",
       "packages/code/demos/hljs-base.html",
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
@@ -250,7 +250,6 @@
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
-      "docs/snippets/highlight-demo.js",
       "docs/snippets/quick-start.html",
       "docs/state/route.js",
       "docs/theme-boot.js",
@@ -268,6 +267,7 @@
       "packages/code/demos/basic.html",
       "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
+      "packages/code/demos/highlight-demo.js",
       "packages/code/demos/hljs-base.html",
       "packages/code/demos/line-numbers.html",
       "packages/code/demos/markup.html",
@@ -1957,10 +1957,6 @@
       "tests/site/12-affected.mjs",
       "tests/site/13-docs-drift.mjs"
     ],
-    "docs/snippets/highlight-demo.js": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
-    ],
     "docs/snippets/quick-start.html": [
       "packages/code/test/code.test.mjs",
       "tests/site/06-boot-palette.mjs"
@@ -2589,6 +2585,10 @@
       "tests/site/01-load-shell.mjs"
     ],
     "packages/code/demos/box-model.html": [
+      "packages/code/test/code.test.mjs",
+      "tests/site/01-load-shell.mjs"
+    ],
+    "packages/code/demos/highlight-demo.js": [
       "packages/code/test/code.test.mjs",
       "tests/site/01-load-shell.mjs"
     ],
