@@ -13,6 +13,15 @@
       display: contents;
     }
 
+    /* 二级条目缩进一档，分组标题留在最左 —— 只有标题 + 子项拉不开层级，一栏读下来全是平的。
+       走 mc-menu-item 自己的尺寸通道 --mc-menu-pad-x：它的「左边缩进」就是这个值（text-indent），
+       加在外层反而会和组件内边距叠成双份。 */
+    mc-menu-item.child {
+      --mc-menu-pad-x: calc(
+        var(--mc-space-4, var(--mc-def-space-4)) + var(--mc-space-3, var(--mc-def-space-3))
+      );
+    }
+
     /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 尺寸（见 docs/doc-layout.html），滚的是这里面的 viewport。
        高度接满宿主 —— 宽屏那栏是 fixed + height:100%，有确定高度，100% 解得开。
        ⚠️ 浮层那份的宿主是 auto 高（外壳只给「最高到哪」），那时 100% 退回 auto：靠下面那条 max-height 封顶，
@@ -43,7 +52,7 @@
           <o-if :value="$data.pages">
             <mc-menu-item group>{{$data.name}}</mc-menu-item>
             <o-fill :value="$data.pages" fill-key="key">
-              <mc-menu-item>
+              <mc-menu-item class="child">
                 <a
                   attr:href="$data.href"
                   attr:target="$data.target"
@@ -79,9 +88,9 @@
     import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
-    /** 左栏显示名：分组 `基础（9）`（括号里是隐藏项剔除后的子项数）；组件 `按钮（Button）`；其余原样 label */
+    /** 左栏显示名：分组只写组名（不报子项数）；组件 `按钮（Button）`；其余原样 label */
     const displayName = (node) => {
-      if (node.children) return `${node.label}（${node.children.length}）`;
+      if (node.children) return node.label;
       return node.zh ? `${node.zh}（${node.label}）` : node.label;
     };
 
