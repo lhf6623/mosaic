@@ -393,7 +393,8 @@ item.open = true; // 组件提供了访问器时同样可以
 视觉在 `:host` 上的组件（如 `mc-button`）不需要 —— 外部 `style="…"` 已经够用。
 
 通用词汇：`base` / `panel` / `overlay` / `header` / `body` / `footer` / `label` / `input` / `error`。
-已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb`）、
+已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb` / `mc-pagination`）、
+`item` / `prev` / `next` / `jumper` / `sizer` / `select`（`mc-pagination`）、
 `pre` / `code` / `line`（`mc-code`）。
 
 ### 1.8 键盘基线（每个组件都要满足）
@@ -449,6 +450,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | ✅ 已实现 |
 | [Table](./table/api.md)               | `mc-table`                             | `table/`       | ✅ 已实现 |
 | [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`        | ✅ 已实现 |
+| [Pagination](./pagination/api.md)     | `mc-pagination`                        | `pagination/`  | ✅ 已实现 |
 
 ---
 

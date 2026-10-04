@@ -1,0 +1,200 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <l-m src="./pagination.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/disabled.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
+    <l-m src="./demos/jumper.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+    <l-m src="./demos/siblings.html"></l-m>
+    <l-m src="./demos/sizer.html"></l-m>
+    <l-m src="./demos/size.html"></l-m>
+    <l-m src="./demos/slots.html"></l-m>
+    <h1>
+      Pagination
+      <code>mc-pagination</code>
+    </h1>
+    <p class="doc-lead">
+      分页。给总条数与每页条数，它渲染页码条；翻页发
+      <code>change</code>
+      ，页数多了自动折叠成省略号。
+    </p>
+
+    <h2>例子</h2>
+
+    <!-- 每个演示区四段：标题 → 说明（可选，是导语不是脚注）→ 组件 → 组件代码；取词规则见 packages/README.md「演示区四段」。 -->
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        <code>default-current</code>
+        是初始页码（运行时读写宿主 property
+        <code>current</code>
+        ）；85 条、每页 10 条就是 9 页，超出的页码会被夹回最后一页。
+      </p>
+      <demo-pagination-basic></demo-pagination-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>页码密度</h3>
+      <p class="doc-hint">
+        页数多到放不下时，中间会折叠成省略号；
+        <code>sibling-count</code>
+        决定当前页两侧各留几个页码。
+      </p>
+      <demo-pagination-siblings></demo-pagination-siblings>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/siblings.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-pagination-size></demo-pagination-size>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/size.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>禁用</h3>
+      <p class="doc-hint">所有按钮都点不动，也不会发 change；键盘同样进不来。</p>
+      <demo-pagination-disabled></demo-pagination-disabled>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/disabled.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        <code>change</code>
+        的载荷是
+        <code>$event.data.current</code>
+        与
+        <code>$event.data.pageSize</code>
+        ；页码真的变了才发，写 property
+        <code>current</code>
+        不算。
+      </p>
+      <demo-pagination-events></demo-pagination-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>输入跳转</h3>
+      <p class="doc-hint">
+        打开
+        <code>jumper</code>
+        多一个「跳至 __ 页」输入框：回车或失焦提交，越界夹回第一页 /
+        最后一页；提交后输入框清空，占位符显示当前页。
+      </p>
+      <demo-pagination-jumper></demo-pagination-jumper>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/jumper.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>每页条数</h3>
+      <p class="doc-hint">
+        打开
+        <code>sizer</code>
+        多一个「每页 __ 条」选择器，候选项由
+        <code>page-sizes</code>
+        给；换条数后当前页不变、只有越界才夹回。它是个原生
+        <code>&lt;select&gt;</code>
+        ：收起时跟组件样式走，展开那层由系统画（不跟
+        <code>data-theme</code>
+        ）—— 想要主题化的下拉，用
+        <code>suffix</code>
+        插槽放自己的
+        <code>mc-select</code>
+        。
+      </p>
+      <demo-pagination-sizer></demo-pagination-sizer>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/sizer.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>前后附加</h3>
+      <p class="doc-hint">
+        <code>prefix</code>
+        /
+        <code>suffix</code>
+        两个具名插槽在页码条两侧，跟宿主横排一行。
+      </p>
+      <demo-pagination-slots></demo-pagination-slots>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slots.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（这里开了
+        <code>list</code>
+        /
+        <code>item</code>
+        /
+        <code>prev</code>
+        /
+        <code>next</code>
+        /
+        <code>jumper</code>
+        /
+        <code>input</code>
+        /
+        <code>sizer</code>
+        /
+        <code>select</code>
+        ）。
+      </p>
+      <demo-pagination-part></demo-pagination-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不在这里手抄 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

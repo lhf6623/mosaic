@@ -1,0 +1,40 @@
+<template component>
+  <style>
+    mc-pagination::part(list) {
+      gap: var(--mc-space-2);
+    }
+    mc-pagination::part(item) {
+      border-radius: var(--mc-radius-full);
+    }
+    mc-pagination::part(prev),
+    mc-pagination::part(next) {
+      border: 1px solid rgb(var(--mc-color-border));
+    }
+    mc-pagination::part(jumper) {
+      font-size: var(--mc-text-xs);
+    }
+    mc-pagination::part(input) {
+      border-color: rgb(var(--mc-color-primary));
+      border-radius: var(--mc-radius-full);
+    }
+    mc-pagination::part(sizer) {
+      font-size: var(--mc-text-xs);
+    }
+    mc-pagination::part(select) {
+      border-color: rgb(var(--mc-color-primary));
+      border-radius: var(--mc-radius-full);
+    }
+  </style>
+
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="85" page-size="10" default-current="4" jumper sizer></mc-pagination>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      间距、页码形状、前后两枚按钮的描边，以及跳页输入框 / 每页条数选择器的字号与形状，都是从外面用
+      `::part()` 改的。
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-part' });
+  </script>
+</template>

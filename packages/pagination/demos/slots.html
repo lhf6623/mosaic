@@ -1,0 +1,10 @@
+<template component>
+  <mc-pagination total="85" page-size="10" default-current="2">
+    <span slot="prefix" style="font-size: var(--mc-text-sm)">共 85 条</span>
+    <span slot="suffix" style="font-size: var(--mc-text-sm)">每页 10 条</span>
+  </mc-pagination>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-slots' });
+  </script>
+</template>

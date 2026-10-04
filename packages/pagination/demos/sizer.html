@@ -1,0 +1,20 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="85" page-size="10" default-current="3" sizer></mc-pagination>
+    <mc-pagination
+      total="5000"
+      page-size="25"
+      default-current="5"
+      sizer
+      page-sizes="10,25,50,100"></mc-pagination>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      上面用默认候选项（10 / 20 / 50 / 100）；下面自己给了
+      <code>page-sizes</code>
+      ，所以候选项就是列出来的那几个。换条数后当前页不变（只有越界才夹回），并会发一次 `change`。
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-sizer' });
+  </script>
+</template>

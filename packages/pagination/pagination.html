@@ -1,0 +1,584 @@
+<!-- mc-pagination — 分页；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
+  <style>
+    /* 1. 宿主：前缀槽 + 页码条 + 后缀槽横排一行；高度、间距、色槽都收在这里 */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
+      --mc-pagination-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      --mc-pagination-gap: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-pagination-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      /* 两个小控件（跳页输入框 / 每页条数选择器）比页码按钮小一号：高度固定 sm 档、字号 xs */
+      --mc-pagination-field-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-pagination-jump-w: 2.75em;
+      --mc-pagination-sizer-w: 4em;
+      --mc-pagination-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-pagination-fg-current: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-pagination-bg-hover: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-pagination-bg-current: var(
+        --mc-color-primary-subtle,
+        var(--mc-def-color-primary-subtle)
+      );
+    }
+
+    /* 2. 尺寸：三档只换控件高度与字号，内部按钮靠变量与 inherit 跟上 */
+    :host([size='sm']) {
+      --mc-pagination-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
+    }
+    :host([size='lg']) {
+      --mc-pagination-h: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
+    }
+
+    /* 3. 状态：禁用整条压暗；按钮自己的 disabled 由原生属性给 */
+    :host([disabled]) {
+      opacity: 0.5;
+    }
+
+    /* 4. 页码条：ul 只做布局与语义，o-fill 那层用 display: contents 不生成盒子 */
+    .mc-list {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-pagination-gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .mc-cell {
+      display: flex;
+    }
+
+    /* 5. 按钮：页码 / 上一页 / 下一页是同一颗，尺寸只由 --mc-pagination-h 决定 */
+    .mc-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: var(--mc-pagination-h);
+      height: var(--mc-pagination-h);
+      padding-inline: var(--mc-space-2, var(--mc-def-space-2));
+      border: 0;
+      border-radius: var(--mc-pagination-radius);
+      background-color: transparent;
+      color: rgb(var(--mc-pagination-fg));
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    .mc-btn:hover:not(:disabled) {
+      background-color: rgb(var(--mc-pagination-bg-hover));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+    .mc-btn:focus-visible {
+      /* 焦点环用 ring 令牌，不用 currentColor（P16） */
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 1px;
+    }
+    .mc-btn:disabled {
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+      cursor: not-allowed;
+    }
+    .mc-item[data-current] {
+      background-color: rgb(var(--mc-pagination-bg-current));
+      color: rgb(var(--mc-pagination-fg-current));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
+    .mc-icon {
+      font-size: 1em;
+    }
+
+    /* 6. 省略号：不可点，和按钮同宽同高，占住那一格 */
+    .mc-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: var(--mc-pagination-h);
+      height: var(--mc-pagination-h);
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+    }
+
+    /* 7. 输入跳转：原生 number 输入框，jumper 打开才显示（节点常驻，靠属性显隐，P10） */
+    .mc-jumper {
+      display: none;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      color: rgb(var(--mc-pagination-fg));
+    }
+    :host([jumper]) .mc-jumper {
+      display: inline-flex;
+    }
+    /* 原生 number 的上下箭头（spinner）一律去掉：跟页码按钮抢位置，而 ±1 已经有上一页 / 下一页 */
+    .mc-jump::-webkit-outer-spin-button,
+    .mc-jump::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+    }
+    .mc-jump {
+      appearance: textfield;
+      -moz-appearance: textfield;
+      box-sizing: border-box;
+      width: var(--mc-pagination-jump-w);
+      height: var(--mc-pagination-field-h);
+      padding-inline: var(--mc-space-1, var(--mc-def-space-1));
+      border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
+      border-radius: var(--mc-pagination-radius);
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      /* 字号固定 xs（比周围的「跳至 / 页」小一档）；font-family 等仍走 component-base 的 font: inherit */
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      text-align: center;
+    }
+    .mc-jump:focus-visible {
+      /* 焦点环用 ring 令牌（P16）。实心 2px 环套在这个小控件上是个亮眼的双层框，所以拆成两层：
+         边框给**实色** ring（对白底 3.91:1，扛得住 WCAG 1.4.11 的 3:1），外圈那 2px 用 30% 的 ring 做柔光 */
+      border-color: rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)) / 0.3);
+      outline-offset: 1px;
+    }
+    :host([disabled]) .mc-jump {
+      cursor: not-allowed;
+    }
+
+    /* 8. 每页条数：原生 <select>（零依赖），sizer 打开才显示 */
+    .mc-sizer {
+      display: none;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      color: rgb(var(--mc-pagination-fg));
+    }
+    :host([sizer]) .mc-sizer {
+      display: inline-flex;
+    }
+    .mc-size-field {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .mc-size-select {
+      /* appearance: none 去掉系统箭头，换成内置图标那一枚（零请求，见 .mc-size-field .mc-icon） */
+      appearance: none;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+      width: var(--mc-pagination-sizer-w);
+      height: var(--mc-pagination-field-h);
+      padding-inline: var(--mc-space-2, var(--mc-def-space-2))
+        var(--mc-space-4, var(--mc-def-space-4));
+      border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
+      border-radius: var(--mc-pagination-radius);
+      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      text-align: start;
+      cursor: pointer;
+    }
+    .mc-size-select:focus-visible {
+      /* 焦点态与跳页输入框同款：实色 ring 边框 + 30% 柔光 */
+      border-color: rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)) / 0.3);
+      outline-offset: 1px;
+    }
+    .mc-size-field .mc-icon {
+      position: absolute;
+      right: var(--mc-space-1, var(--mc-def-space-1));
+      font-size: 0.8em;
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+      pointer-events: none;
+    }
+    :host([disabled]) .mc-size-select {
+      cursor: not-allowed;
+    }
+  </style>
+
+  <slot name="prefix"></slot>
+
+  <ul class="mc-list" part="list">
+    <li class="mc-cell">
+      <button
+        class="mc-btn"
+        part="prev"
+        type="button"
+        data-step="prev"
+        :disabled="disabled !== null || atFirst">
+        <i class="mc-icon mc-icon-chevron-left"></i>
+      </button>
+    </li>
+
+    <!-- o-fill 里绑不到 proto 方法，页码按钮只写 data-page，点击 / 键盘一律在 ul 上委托（P12） -->
+    <o-fill :value="pages" fill-key="key">
+      <div style="display: contents">
+        <o-if :value="$data.ellipsis">
+          <li class="mc-cell"><span class="mc-ellipsis">…</span></li>
+        </o-if>
+        <o-if :value="!$data.ellipsis">
+          <li class="mc-cell">
+            <button
+              class="mc-btn mc-item"
+              part="item"
+              type="button"
+              attr:data-page="$data.page"
+              attr:data-current="$data.current ? '' : null"
+              :disabled="$data.disabled">
+              {{$data.label}}
+            </button>
+          </li>
+        </o-if>
+      </div>
+    </o-fill>
+
+    <li class="mc-cell">
+      <button
+        class="mc-btn"
+        part="next"
+        type="button"
+        data-step="next"
+        :disabled="disabled !== null || atLast">
+        <i class="mc-icon mc-icon-chevron-right"></i>
+      </button>
+    </li>
+  </ul>
+
+  <label class="mc-sizer" part="sizer">
+    每页
+    <!-- 选项在 syncSizer() 里用真 <option> 建：HTML 解析器会把 <select> 里的非 option 标签整个丢掉，o-fill 放不进来 -->
+    <span class="mc-size-field">
+      <select class="mc-size-select" part="select" :disabled="disabled !== null"></select>
+      <i class="mc-icon mc-icon-chevron-down"></i>
+    </span>
+    条
+  </label>
+
+  <label class="mc-jumper" part="jumper">
+    跳至
+    <input
+      class="mc-jump"
+      part="input"
+      type="number"
+      min="1"
+      inputmode="numeric"
+      :disabled="disabled !== null" />
+    页
+  </label>
+
+  <slot name="suffix"></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-pagination',
+
+      attrs: {
+        total: 0,
+        pageSize: 10,
+        /* 初始值走属性；运行时值走宿主 DOM property current（规范 1.4），current 不进 attrs */
+        defaultCurrent: 1,
+        siblingCount: 1,
+        size: 'md',
+        // 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-pagination disabled> 失效
+        disabled: null,
+        // 打开「跳至 __ 页」输入框；输入框节点常驻，显隐交给 :host([jumper])（P10）
+        jumper: null,
+        // 打开「每页 __ 条」选择器（原生 <select>）；候选项由 page-sizes 给
+        sizer: null,
+        pageSizes: '10,20,50,100',
+      },
+
+      data: {
+        /* 渲染源：页码 / 省略号（o-fill 只读它，规范化结果绝不写回 attrs 的键，P6） */
+        pages: [],
+        atFirst: true,
+        atLast: true,
+      },
+
+      ready() {
+        this._list = this.ele.shadowRoot.querySelector('.mc-list');
+        this._jump = this.ele.shadowRoot.querySelector('.mc-jump');
+        this._sizer = this.ele.shadowRoot.querySelector('.mc-size-select');
+
+        /* 运行时值走宿主 property（P18）：setter 不写属性、也不发 change（change 只由使用者操作触发） */
+        Object.defineProperty(this.ele, 'current', {
+          configurable: true,
+          get: () => this.currentPage(),
+          set: (value) => {
+            this._current = value;
+            this.applyState();
+          },
+        });
+
+        this._mounted = true; // 之后的 watch 才算真变化（P5）
+        this.applyState();
+      },
+
+      attached() {
+        this._onActivate = (event) => this.handleActivate(event);
+        this._list.addEventListener('click', this._onActivate);
+        this._list.addEventListener('keydown', this._onActivate);
+
+        /* 跳页输入框是静态节点，直接绑；原生 input 是 composed，拦掉别让它以「没有 data」的形态漏到宿主（规范 1.5） */
+        this._onJumpInput = (event) => event.stopPropagation();
+        this._onJumpKeydown = (event) => {
+          if (event.key === 'Enter') this.commitJump(); // 有些浏览器 Enter 不补发 change，自己收一次
+        };
+        this._onJumpCommit = () => this.commitJump();
+        this._jump.addEventListener('input', this._onJumpInput);
+        this._jump.addEventListener('keydown', this._onJumpKeydown);
+        this._jump.addEventListener('change', this._onJumpCommit);
+
+        /* 每页条数：原生 select 的 change 穿不出 shadow，直接绑；input 是 composed，同样拦掉别漏到宿主 */
+        this._onSizerInput = (event) => event.stopPropagation();
+        this._onSizerChange = (event) => this.setPageSize(Number(event.target.value));
+        this._sizer.addEventListener('input', this._onSizerInput);
+        this._sizer.addEventListener('change', this._onSizerChange);
+
+        this.applyState();
+      },
+
+      detached() {
+        this._list?.removeEventListener('click', this._onActivate);
+        this._list?.removeEventListener('keydown', this._onActivate);
+        this._jump?.removeEventListener('input', this._onJumpInput);
+        this._jump?.removeEventListener('keydown', this._onJumpKeydown);
+        this._jump?.removeEventListener('change', this._onJumpCommit);
+        this._sizer?.removeEventListener('input', this._onSizerInput);
+        this._sizer?.removeEventListener('change', this._onSizerChange);
+      },
+
+      watch: {
+        total() {
+          if (this._mounted) this.applyState();
+        },
+        pageSize() {
+          if (this._mounted) this.applyState();
+        },
+        defaultCurrent() {
+          // property 写过值就不再跟随初始值（同 mc-tabs）
+          if (this._mounted && this._current === undefined) this.applyState();
+        },
+        siblingCount() {
+          if (this._mounted) this.applyState();
+        },
+        disabled() {
+          if (this._mounted) this.applyState();
+        },
+        sizer() {
+          if (this._mounted) this.applyState();
+        },
+        pageSizes() {
+          if (this._mounted) this.applyState();
+        },
+      },
+
+      proto: {
+        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+        readNumber(name, fallback) {
+          const raw = this.ele.getAttribute(name);
+          const parsed = raw === null ? NaN : Number(raw);
+          return Number.isFinite(parsed) ? parsed : fallback;
+        },
+
+        totalValue() {
+          return Math.max(0, this.readNumber('total', 0));
+        },
+
+        pageSizeValue() {
+          return Math.max(1, this.readNumber('page-size', 10));
+        },
+
+        siblingValue() {
+          return Math.max(0, this.readNumber('sibling-count', 1));
+        },
+
+        /** 总页数：没有数据也留一页（页码条不留空） */
+        pageCount() {
+          return Math.max(1, Math.ceil(this.totalValue() / this.pageSizeValue()));
+        },
+
+        /** 原始当前页：property > default-current 属性 > 1 */
+        rawCurrent() {
+          if (this._current !== undefined) return this._current;
+          return this.readNumber('default-current', 1);
+        },
+
+        /** 夹在 [1, pageCount] 里的当前页 */
+        currentPage() {
+          const raw = Math.trunc(Number(this.rawCurrent()));
+          if (!Number.isFinite(raw)) return 1;
+          return Math.min(Math.max(raw, 1), this.pageCount());
+        },
+
+        /** 页码序列：页数少时全列；多了就首尾各一 + 当前页两侧 sibling-count 个，其余折叠成省略号 */
+        pageItems(current) {
+          const total = this.pageCount();
+          const siblings = this.siblingValue();
+          const disabled = this.ele.hasAttribute('disabled');
+          const out = [];
+          const pushPage = (page) =>
+            out.push({
+              key: 'p' + page,
+              page,
+              label: String(page),
+              current: page === current,
+              disabled,
+            });
+
+          if (total <= siblings * 2 + 5) {
+            for (let page = 1; page <= total; page += 1) pushPage(page);
+            return out;
+          }
+
+          const left = Math.max(current - siblings, 2);
+          const right = Math.min(current + siblings, total - 1);
+
+          pushPage(1);
+          if (left > 2) out.push({ key: 'gap-start', ellipsis: true });
+          for (let page = left; page <= right; page += 1) pushPage(page);
+          if (right < total - 1) out.push({ key: 'gap-end', ellipsis: true });
+          pushPage(total);
+          return out;
+        },
+
+        /** 唯一入口：页码序列 + 上一页 / 下一页的可用态写进 data，越界的当前页顺手夹回来 */
+        applyState() {
+          const current = this.currentPage();
+          if (this._current !== undefined) this._current = current;
+          this.pages = this.pageItems(current);
+          this.atFirst = current <= 1;
+          this.atLast = current >= this.pageCount();
+          this.syncJump(false);
+          this.syncSizer();
+        },
+
+        /** 跳页输入框只读：placeholder 常驻当前页、max 跟着总页数；正在输入时不覆盖别人的内容 */
+        syncJump(force) {
+          const input = this._jump;
+          if (!input) return;
+          input.max = String(this.pageCount());
+          if (!force && this.ele.shadowRoot.activeElement === input) return;
+          input.value = '';
+          input.placeholder = String(this.currentPage());
+        },
+
+        /** 提交「跳至 __ 页」：越界交给 go 夹回；提交后清空输入框（placeholder 顶回当前页） */
+        commitJump() {
+          const raw = this._jump?.value.trim() ?? '';
+          const page = Number(raw);
+          if (raw !== '' && Number.isFinite(page)) this.go(page);
+          this.syncJump(true);
+        },
+
+        /** 每页条数的候选项：page-sizes 解析结果；当前 page-size 不在列表里时补进去（否则选择器会显示空） */
+        sizeOptions() {
+          const raw = String(this.ele.getAttribute('page-sizes') ?? '');
+          const parsed = raw
+            .split(',')
+            .map((part) => Number.parseInt(part.trim(), 10))
+            .filter((value) => Number.isInteger(value) && value > 0);
+          const list = parsed.length ? parsed : [10, 20, 50, 100];
+          const current = this.pageSizeValue();
+          if (!list.includes(current)) list.push(current);
+          return [...new Set(list)].sort((a, b) => a - b);
+        },
+
+        /** 每页条数选择器只读：选项按候选项重建（签名没变就不碰 DOM），value 永远跟着 page-size */
+        syncSizer() {
+          const select = this._sizer;
+          if (!select) return;
+          const options = this.sizeOptions();
+          const signature = `${options.join('/')}:${this.pageSizeValue()}`;
+          if (signature !== this._sizeSignature) {
+            this._sizeSignature = signature;
+            select.replaceChildren(
+              ...options.map((value) => {
+                const option = document.createElement('option');
+                option.value = String(value);
+                option.textContent = String(value);
+                return option;
+              }),
+            );
+          }
+          select.value = String(this.pageSizeValue());
+        },
+
+        /** 换每页条数：写回 page-size 属性（watch 会再同步一拍），当前页不变、越界才夹回，然后发 change */
+        setPageSize(value) {
+          const next = Math.trunc(Number(value));
+          if (!Number.isFinite(next) || next < 1 || next === this.pageSizeValue()) return;
+          this.ele.setAttribute('page-size', String(next));
+          this.applyState(); // 不等属性那一拍，观感立刻跟上
+          this.emit('change', {
+            data: { current: this.currentPage(), pageSize: next },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 点击 / 键盘都在 ul 上委托：页码按钮是 o-fill 渲染的，绑不到 proto 方法（P12） */
+        handleActivate(event) {
+          const path = event.composedPath();
+          const button = path.find(
+            (el) => el?.classList?.contains('mc-btn') && el.tagName === 'BUTTON',
+          );
+          if (!button || button.disabled) return;
+
+          if (event.type === 'keydown') {
+            const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+            if (!keys.includes(event.key)) return;
+            event.preventDefault(); // 别让方向键滚页面
+            this.moveFocus(button, event.key);
+            return;
+          }
+
+          const step = button.getAttribute('data-step');
+          if (step === 'prev') this.go(this.currentPage() - 1);
+          else if (step === 'next') this.go(this.currentPage() + 1);
+          else this.go(Number(button.getAttribute('data-page')));
+        },
+
+        /** 方向键 / Home / End 在可用按钮之间移动焦点；到边就停，不绕回 */
+        moveFocus(button, key) {
+          const buttons = [...this._list.querySelectorAll('button:not(:disabled)')];
+          const at = buttons.indexOf(button);
+          if (at < 0) return;
+          const target =
+            key === 'Home'
+              ? buttons[0]
+              : key === 'End'
+                ? buttons[buttons.length - 1]
+                : buttons[at + (key === 'ArrowLeft' ? -1 : 1)];
+          target?.focus();
+        },
+
+        /** 翻到某一页：整页不变就不发事件；真变了才发 change，载荷是 { current, pageSize } */
+        go(page) {
+          if (this.ele.hasAttribute('disabled')) return;
+          const next = Math.min(Math.max(Math.trunc(page), 1), this.pageCount());
+          if (!Number.isFinite(next) || next === this.currentPage()) return;
+          this._current = next;
+          this.applyState();
+          this.emit('change', {
+            data: { current: next, pageSize: this.pageSizeValue() },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,14 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="200" page-size="10" default-current="9" sibling-count="2"></mc-pagination>
+    <mc-pagination total="200" page-size="10" default-current="9" sibling-count="0"></mc-pagination>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      20 页、当前第 9 页：上面 `sibling-count="2"`（当前页两侧各 2 个），下面
+      `sibling-count="0"`（只剩首尾与当前页）。
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-siblings' });
+  </script>
+</template>

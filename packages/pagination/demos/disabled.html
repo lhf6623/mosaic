@@ -1,0 +1,12 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="42" page-size="10" default-current="2" disabled></mc-pagination>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      整条都点不动，键盘也进不来，翻页事件不会发。
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-disabled' });
+  </script>
+</template>

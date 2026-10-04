@@ -1,0 +1,12 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="85" page-size="10" default-current="3"></mc-pagination>
+    <p style="color: rgb(var(--mc-color-fg-muted)); font-size: var(--mc-text-sm)">
+      85 条、每页 10 条，初始落在第 3 页。
+    </p>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-basic' });
+  </script>
+</template>

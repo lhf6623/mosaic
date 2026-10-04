@@ -31,7 +31,11 @@
     </p>
 
     <h2>有多少组件</h2>
-    <p>现在有 28 个组件，分在基础、表单、反馈、浮层、布局五类里，左栏「组件」下面是全部。</p>
+    <!-- ⚠️ {{categoryLabels}} 与 {{categoryCount}} 之间不能有空格（「布局五类里」要连排）；prettier 只在已有空白处折行，所以现在这样折是安全的 -->
+    <p>
+      现在有 {{componentCount}}
+      个组件，分在{{categoryLabels}}{{categoryCount}}类里，左栏「组件」下面是全部。
+    </p>
 
     <h2>主题</h2>
     <p>
@@ -41,8 +45,35 @@
     </p>
   </div>
   <script>
+    import { SITE } from '../site-map.js';
+
+    /* 统计从导航数据派生：加组件只要往 site-map 挂一条，这一页不用再手改（也就不会写错） */
+    const components = [];
+    const collect = (nodes) => {
+      for (const node of nodes) {
+        if (node.type === 'component' && node.path) components.push(node);
+        if (node.children) collect(node.children);
+      }
+    };
+    collect(SITE);
+
+    /* 「组件」那一支的直接子节点就是分类（基础 / 表单 / 反馈 / 浮层 / 布局），hidden 的整支不算 */
+    const categories = (SITE.find((node) => node.label === '组件')?.children ?? []).filter(
+      (node) => node.hidden !== true,
+    );
+
+    /* 分类个数写中文数字，保持原句语气（「分在……五类里」）；超过十类就直接落数字 */
+    const CN_NUM = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+    const categoryCount = CN_NUM[categories.length] ?? String(categories.length);
+
     export const parent = '../doc-layout.html';
 
-    export default () => ({ data: {} });
+    export default () => ({
+      data: {
+        componentCount: components.length,
+        categoryCount,
+        categoryLabels: categories.map((node) => node.label).join('、'),
+      },
+    });
   </script>
 </template>

@@ -353,6 +353,15 @@ export const SITE = [
             summary: '栅格。',
           },
           {
+            order: 45,
+            label: 'Pagination',
+            zh: '分页',
+            path: 'packages/pagination/page.html',
+            type: 'component',
+            summary:
+              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至 __ 页」输入跳转与「每页 __ 条」选择器，翻页发 change。',
+          },
+          {
             order: 50,
             label: 'Scroll Bar',
             zh: '滚动条',

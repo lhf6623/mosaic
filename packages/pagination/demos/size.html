@@ -1,0 +1,11 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <mc-pagination total="85" page-size="10" default-current="3" size="sm"></mc-pagination>
+    <mc-pagination total="85" page-size="10" default-current="3"></mc-pagination>
+    <mc-pagination total="85" page-size="10" default-current="3" size="lg"></mc-pagination>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-size' });
+  </script>
+</template>
