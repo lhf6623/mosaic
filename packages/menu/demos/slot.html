@@ -1,0 +1,13 @@
+<template component>
+  <mc-menu style="width: 13rem">
+    <mc-menu-item><a href="../page.html" olink data-current>当前项</a></mc-menu-item>
+    <mc-menu-item><a href="../../button/page.html" olink>普通项</a></mc-menu-item>
+    <mc-menu-item icon="star"><a href="../../icon/page.html" olink>行内图标</a></mc-menu-item>
+    <mc-menu-item><a data-disabled>禁用的链接项</a></mc-menu-item>
+    <mc-menu-item><button type="button" disabled>禁用的按钮项</button></mc-menu-item>
+  </mc-menu>
+
+  <script>
+    export default async () => ({ tag: 'demo-menu-slot' });
+  </script>
+</template>

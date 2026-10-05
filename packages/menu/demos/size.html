@@ -1,22 +1,25 @@
 <template component>
   <div class="flex flex-wrap items-start gap-4">
-    <mc-menu size="sm" style="width: 9rem">
-      <mc-menu-item><a href="#/packages/menu/page.html">sm</a></mc-menu-item>
-      <mc-menu-item><a href="#/packages/button/page.html" data-current>当前项</a></mc-menu-item>
-    </mc-menu>
-
-    <mc-menu size="md" style="width: 9rem">
-      <mc-menu-item><a href="#/packages/menu/page.html">md</a></mc-menu-item>
-      <mc-menu-item><a href="#/packages/button/page.html" data-current>当前项</a></mc-menu-item>
-    </mc-menu>
-
-    <mc-menu size="lg" style="width: 9rem">
-      <mc-menu-item><a href="#/packages/menu/page.html">lg</a></mc-menu-item>
-      <mc-menu-item><a href="#/packages/button/page.html" data-current>当前项</a></mc-menu-item>
-    </mc-menu>
+    <mc-menu id="size-sm" size="sm" style="width: 9rem"></mc-menu>
+    <mc-menu id="size-md" size="md" style="width: 9rem"></mc-menu>
+    <mc-menu id="size-lg" size="lg" style="width: 9rem"></mc-menu>
   </div>
 
   <script>
-    export default async () => ({ tag: 'demo-menu-size' });
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* 尺寸写在容器上，options 渲染出来的整棵树跟着走 */
+    const OPTIONS = [
+      { label: '普通项', href: hashOf('packages/menu/page.html') },
+      { label: '当前项', href: hashOf('packages/button/page.html'), current: true },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-size',
+
+      ready() {
+        for (const menu of this.ele.shadowRoot.querySelectorAll('mc-menu')) menu.options = OPTIONS;
+      },
+    });
   </script>
 </template>

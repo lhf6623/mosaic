@@ -1,12 +1,22 @@
 <template component>
-  <mc-menu style="width: 13rem">
-    <mc-menu-item><a href="#/packages/menu/page.html" data-current>当前项</a></mc-menu-item>
-    <mc-menu-item><a href="#/packages/button/page.html">普通项</a></mc-menu-item>
-    <mc-menu-item><button type="button" disabled>禁用的按钮项</button></mc-menu-item>
-    <mc-menu-item><a data-disabled>禁用且不可聚焦的链接项</a></mc-menu-item>
-  </mc-menu>
+  <mc-menu id="states-menu" style="width: 13rem"></mc-menu>
 
   <script>
-    export default async () => ({ tag: 'demo-menu-states' });
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* current / disabled 都是 options 里的字段：禁用的行不给 href（点不动、也进不了焦点顺序） */
+    const OPTIONS = [
+      { label: '当前项', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '普通项', href: hashOf('packages/button/page.html') },
+      { label: '禁用项', disabled: true },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-states',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#states-menu').options = OPTIONS;
+      },
+    });
   </script>
 </template>

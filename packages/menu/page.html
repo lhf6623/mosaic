@@ -5,45 +5,119 @@
     <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./menu.html"></l-m>
     <l-m src="./menu-item.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
+    <!-- 演示里的按钮 -->
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="./demos/options.html"></l-m>
+    <l-m src="./demos/nested.html"></l-m>
+    <l-m src="./demos/icon.html"></l-m>
     <l-m src="./demos/groups.html"></l-m>
     <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/surface.html"></l-m>
+    <l-m src="./demos/collapsed.html"></l-m>
+    <l-m src="./demos/accordion.html"></l-m>
     <l-m src="./demos/states.html"></l-m>
     <l-m src="./demos/customize.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
+    <l-m src="./demos/slot.html"></l-m>
     <h1>
       Menu
       <code>mc-menu</code>
     </h1>
     <p class="doc-lead">
-      垂直菜单。容器 + 菜单项两个标签；交互元素（原生
-      <code>&lt;a&gt;</code>
-      /
-      <code>&lt;button&gt;</code>
-      ）由使用者写在菜单项里，组件不造链接、也不改使用者的 DOM。
+      <b>推荐用法只有一种</b>
+      ：给
+      <code>options</code>
+      传对象数组，容器自己渲染出整棵树 ——
+      分组、图标、层级缩进、二级菜单都在数据里，不用写任何菜单项标签。菜单项（
+      <code>mc-menu-item</code>
+      ）的属性和插槽是内部 / 兼容通道，
+      <b>不推荐</b>
+      手写；只有要
+      <code>olink</code>
+      或插槽里放别的东西时才走最后那条「自备控件」。
     </p>
 
     <h2>例子</h2>
 
     <!-- 每个演示区四段：标题 → 说明 → 组件 → 代码；取词规则见 packages/README.md「演示区四段」。 -->
     <section class="doc-demo">
-      <h3>基本用法</h3>
+      <h3>数据驱动</h3>
       <p class="doc-hint">
-        一个菜单项里放一个原生
+        一条
+        <code>options</code>
+        撑起整个菜单：
+        <code>label</code>
+        /
+        <code>icon</code>
+        /
+        <code>href</code>
+        /
+        <code>current</code>
+        /
+        <code>disabled</code>
+        ，分组用
+        <code>type: 'group'</code>
+        ，二级菜单用
+        <code>children</code>
+        （同形状的数组，递归）。
+        <code>href</code>
+        是最终地址 —— 部署前缀由站点自己补（这里用
+        <code>hashOf()</code>
+        ），组件不碰路由；外链之类要写在链接上的属性放
+        <code>attrs</code>
+        （
+        <code>target</code>
+        /
+        <code>rel</code>
+        /
+        <code>title</code>
+        会转给内置
         <code>&lt;a&gt;</code>
-        ，它自己就是整行；当前项在
-        <code>&lt;a&gt;</code>
-        上写
-        <code>data-current</code>
-        。 菜单与菜单项都撑满父容器 —— 要限宽就写在菜单自己的
-        <code>style</code>
-        上，或者套一层定宽容器。
+        ，
+        <code>data-*</code>
+        留在行上给宿主钩子用）。
       </p>
-      <demo-menu-basic></demo-menu-basic>
+      <demo-menu-options></demo-menu-options>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
+          <mc-code language="html" src="./demos/options.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>缩进</h3>
+      <p class="doc-hint">
+        <code>children</code>
+        每深一级自动缩进一档（
+        <code>--mc-menu-indent-step</code>
+        ），层级由容器从数据里算出来 —— 数据里没有
+        <code>level</code>
+        ，行内边距也不用自己叠。父级行是开合开关，不导航。
+      </p>
+      <demo-menu-nested></demo-menu-nested>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/nested.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>图标</h3>
+      <p class="doc-hint">
+        <code>icon</code>
+        是
+        <code>options</code>
+        里的一个字段，取
+        <code>mc-icon</code>
+        的
+        <code>name</code>
+        语法（内置图标零请求、查不到才远程取一次）。图标落在行的左端、不占点击区 —— 整行照旧可点。
+      </p>
+      <demo-menu-icon></demo-menu-icon>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/icon.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>
@@ -51,8 +125,20 @@
     <section class="doc-demo">
       <h3>分组标题</h3>
       <p class="doc-hint">
-        <code>&lt;mc-menu-item group&gt;</code>
-        是不可交互的纯文字行：鼠标穿透。
+        分组是
+        <code>options</code>
+        里
+        <code>{ type: 'group', label }</code>
+        的一条数据：标题不可交互、鼠标穿透、也不缩进。带
+        <code>children</code>
+        时标题下面是一列
+        <b>常显</b>
+        的条目（缩进一档，走
+        <code>--mc-menu-group-indent</code>
+        ，默认 12px —— 与 collapsible 的逐级缩进分开；侧栏那种「分组名 + 子项」，doc-nav
+        就是这个用法）； 不带
+        <code>children</code>
+        就是一条纯标题。
       </p>
       <demo-menu-groups></demo-menu-groups>
       <mc-collapse class="doc-demo-code">
@@ -77,7 +163,9 @@
         <code>36</code>
         /
         <code>44px</code>
-        ），菜单项跟着变。
+        ），
+        <code>options</code>
+        渲染出来的整棵树跟着变 —— 嵌套的子菜单也拿同一套通道。
       </p>
       <demo-menu-size></demo-menu-size>
       <mc-collapse class="doc-demo-code">
@@ -88,18 +176,41 @@
     </section>
 
     <section class="doc-demo">
-      <h3>卡片外观</h3>
+      <h3>压缩</h3>
       <p class="doc-hint">
-        默认的
-        <code>plain</code>
-        没有外框，贴在自己的侧栏容器里用； 需要独立一块时用
-        <code>surface</code>
-        。
+        容器上写
+        <code>collapsed</code>
+        后收窄成方形（宽度走
+        <code>--mc-menu-collapsed-w</code>
+        ），项上只留
+        <code>icon</code>
+        、文字与分组标题隐去。有子菜单的行把鼠标移进去（键盘
+        <kbd>Tab</kbd>
+        聚焦也一样）会弹出浮层子菜单，可以一层层往下；
+        <kbd>Esc</kbd>
+        或点外面关掉。
       </p>
-      <demo-menu-surface></demo-menu-surface>
+      <demo-menu-collapsed></demo-menu-collapsed>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/surface.html"></mc-code>
+          <mc-code language="html" src="./demos/collapsed.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>手风琴</h3>
+      <p class="doc-hint">
+        容器上写
+        <code>accordion</code>
+        后，同一层只留一个展开的分支（同
+        <code>mc-collapse</code>
+        的口径，嵌套层各管各的）：点「表单」，「组件」自己收起来。
+      </p>
+      <demo-menu-accordion></demo-menu-accordion>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/accordion.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>
@@ -107,17 +218,14 @@
     <section class="doc-demo">
       <h3>当前项与禁用</h3>
       <p class="doc-hint">
-        前两项可用（
-        <kbd>Tab</kbd>
-        能进、
-        <kbd>Enter</kbd>
-        能激活）；后两项压暗： 一个是原生
-        <code>&lt;button disabled&gt;</code>
-        ，一个是去掉
+        <code>current</code>
+        /
+        <code>disabled</code>
+        也是
+        <code>options</code>
+        里的字段：当前项换底色字色，禁用的行压暗、不给
         <code>href</code>
-        的
-        <code>&lt;a&gt;</code>
-        ，两者都进不了焦点顺序。
+        —— 点不动，也进不了焦点顺序。
       </p>
       <demo-menu-states></demo-menu-states>
       <mc-collapse class="doc-demo-code">
@@ -134,9 +242,9 @@
         <code>style="…"</code>
         上（L3 令牌按实例覆盖）， 不用跨 shadow 边界 —— 改缩进用
         <code>--mc-menu-pad-x</code>
-        ，对内部
-        <code>&lt;button&gt;</code>
-        写的 padding 会被页面 reset 吃掉； ②
+        /
+        <code>--mc-menu-indent-step</code>
+        ； ②
         <b>宿主钩子</b>
         —— 当前项 / 禁用项会镜像成
         <code>mc-menu-item</code>
@@ -169,6 +277,31 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
           <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自备控件（不推荐）</h3>
+      <p class="doc-hint">
+        只有要
+        <code>olink</code>
+        （编译期指令，运行时造出来的
+        <code>&lt;a&gt;</code>
+        拿不到部署前缀）或插槽里放别的东西时，才把原生
+        <code>&lt;a&gt;</code>
+        /
+        <code>&lt;button&gt;</code>
+        写进
+        <code>&lt;mc-menu-item&gt;</code>
+        —— 这条路能表达全部状态，但菜单项、层级、开合都要自己管，
+        <b>不推荐</b>
+        当常规用法。
+      </p>
+      <demo-menu-slot></demo-menu-slot>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/slot.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>

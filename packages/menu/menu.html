@@ -1,8 +1,9 @@
-<!-- mc-menu — 垂直菜单容器。设计取舍见同目录 README.md 的「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
+<!-- mc-menu — 数据驱动的垂直菜单容器。设计取舍见同目录 README.md「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值 */
+    /* 1. 宿主 + 尺寸 / 色槽通道。菜单项在另一个 shadow root 里，容器选择器够不到它，
+       所以只能像 mc-collapse 那样在 :host 上开一条通道，子项用 var() 带兜底值消费。 */
     :host {
       display: block;
       box-sizing: border-box;
@@ -14,6 +15,26 @@
       --mc-menu-font: var(--mc-text-sm, var(--mc-def-text-sm));
       --mc-menu-gap: var(--mc-space-1, var(--mc-def-space-1));
       --mc-menu-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      /* 压缩态宽度：默认 = 项高，于是三档尺寸下都是正方形 */
+      --mc-menu-collapsed-w: var(
+        --mc-menu-item-h,
+        var(--mc-control-h-md, var(--mc-def-control-h-md))
+      );
+      --mc-menu-icon-size: 1.25em;
+      --mc-menu-icon-gap: var(--mc-space-2, var(--mc-def-space-2));
+      /* 每深一级的缩进量：子菜单逐级累加（数据驱动 children 的层级就靠它） */
+      --mc-menu-indent-step: var(--mc-space-4, var(--mc-def-space-4));
+      /* 分组标题下那一列条目的缩进：与上面那条分开 —— 侧栏的分组缩进通常比 collapsible 的逐级缩进浅 */
+      --mc-menu-group-indent: var(--mc-space-3, var(--mc-def-space-3));
+
+      /* 压缩态 / 浮层里弹出来的子菜单浮层 */
+      --mc-menu-flyout-gap: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-menu-flyout-pad: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-menu-flyout-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-menu-flyout-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-menu-flyout-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-menu-flyout-shadow: 0 4px 12px rgb(0 0 0 / 0.16);
+      --mc-menu-flyout-min-w: 8rem;
 
       /* 色槽：L3 组件令牌，默认引用 L2 语义令牌；按实例覆盖（style 上写 --mc-menu-*） */
       --mc-menu-item-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
@@ -24,15 +45,7 @@
       --mc-menu-group-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
     }
 
-    /* 2. 维度 variant：plain 是默认外观，直接写在 1 区（:host(:not([variant])) 会静默失效，P14） */
-    :host([variant='surface']) {
-      padding: var(--mc-space-2, var(--mc-def-space-2));
-      border: 1px solid rgb(var(--mc-color-border, var(--mc-def-color-border)));
-      border-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
-      background-color: rgb(var(--mc-color-surface, var(--mc-def-color-surface)));
-    }
-
-    /* 3. 尺寸 */
+    /* 2. 尺寸：默认 md 直接写在 1 区（规范 1.3） */
     :host([size='sm']) {
       --mc-menu-item-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
       --mc-menu-pad-x: var(--mc-space-3, var(--mc-def-space-3));
@@ -44,9 +57,12 @@
       --mc-menu-font: var(--mc-text-base, var(--mc-def-text-base));
     }
 
-    /* 4. 状态：容器自己一个都没有 —— 当前项 / 禁用由 mc-menu-item 读插槽元素，组件不替使用者改 DOM */
+    /* 3. 压缩态：整栏收窄成方形；子菜单不再内联展开，脚本会把它们渲染进浮层 */
+    :host([collapsed]) {
+      width: var(--mc-menu-collapsed-w);
+    }
 
-    /* 5. 内部结构 */
+    /* 4. 内部结构 */
     .mc-list {
       display: flex;
       flex-direction: column;
@@ -54,18 +70,439 @@
       margin: 0;
       padding: 0;
     }
+
+    /* 子菜单可以被脚本挂上 hidden（内联折叠）；:host 的 display:block 会压过 UA 的 [hidden] */
+    :host([hidden]) {
+      display: none;
+    }
+
+    /* 5. 子菜单浮层（.mc-flyout）的外观**内联写在元素上**（见脚本里的 FLYOUT_STYLE）：插槽元素在
+       祖先 shadow 树里，UA 的 [popover] 默认样式与祖先 shadow 的 reset 都可能压过本 shadow 的
+       ::slotted()（实测：祖先 reset 是直接命中）—— 内联才稳。令牌照旧是 var(--mc-menu-flyout-*)。 */
   </style>
 
   <div class="mc-list" part="list"><slot></slot></div>
 
   <script>
-    export default async () => ({
-      tag: 'mc-menu',
+    /* 定住滚动条：开合原生浮层时浏览器可能顺手滚一下页面（火狐实测，见 ../boot/scroll-pin.js 的文件头） */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
-      attrs: {
-        size: 'md',
-        variant: 'plain',
-      },
-    });
+    export default async ({ load }) => {
+      /* 数据驱动的项也是 mc-menu-item：菜单本体把同族子标签一起带进来（声明式用法本来也要引它） */
+      await load('./menu-item.html');
+
+      /* 指针从行移到浮层上要跨一条缝：给一段宽限时间，别让浮层在缝上闪掉 */
+      const HOVER_CLOSE_DELAY = 120;
+      /* 浮层面板的外观。内联写而不是 ::slotted()：.mc-flyout 在祖先 shadow 树里，
+         UA 的 [popover] 默认样式（background: Canvas / inset: 0 / margin: auto）与祖先 shadow 的
+         reset 都可能压过本 shadow 的 ::slotted()，结果就是「第三级浮层像换了暗色主题」这类怪相。
+         值仍然是令牌，按实例覆盖照常生效。 */
+      const FLYOUT_STYLE = [
+        'position: fixed',
+        'inset: auto',
+        'margin: 0',
+        'top: anchor(top)',
+        'left: anchor(right)',
+        'margin-inline-start: var(--mc-menu-flyout-gap, var(--mc-space-2, var(--mc-def-space-2)))',
+        'width: max-content',
+        'min-width: var(--mc-menu-flyout-min-w, 8rem)',
+        'max-height: min(24rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))))',
+        'overflow: auto',
+        'padding: var(--mc-menu-flyout-pad, var(--mc-space-2, var(--mc-def-space-2)))',
+        'border: 1px solid rgb(var(--mc-menu-flyout-border, var(--mc-def-color-border-strong)))',
+        'border-radius: var(--mc-menu-flyout-radius, var(--mc-def-radius-lg))',
+        'background-color: rgb(var(--mc-menu-flyout-bg, var(--mc-def-color-surface-raised)))',
+        'box-shadow: var(--mc-menu-flyout-shadow, 0 4px 12px rgb(0 0 0 / 0.16))',
+        'position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline',
+      ].join('; ');
+      /* 分组子项那一档缩进：行上写 --mc-item-step 覆盖默认的逐级步长（见 createNodes 的 step 形参） */
+      const GROUP_STEP = 'var(--mc-menu-group-indent, var(--mc-space-3, var(--mc-def-space-3)))';
+      /* 容器通道。嵌套实例自己的 :host 默认值会盖掉继承来的使用者覆盖（在根上写 style 的那份），
+         所以建实例时把解析后的值复制成内联，整棵树共用同一套通道。 */
+      const CHANNEL = [
+        '--mc-menu-item-h',
+        '--mc-menu-pad-x',
+        '--mc-menu-font',
+        '--mc-menu-gap',
+        '--mc-menu-radius',
+        '--mc-menu-collapsed-w',
+        '--mc-menu-icon-size',
+        '--mc-menu-icon-gap',
+        '--mc-menu-indent-step',
+        '--mc-menu-group-indent',
+        '--mc-menu-flyout-gap',
+        '--mc-menu-flyout-pad',
+        '--mc-menu-flyout-bg',
+        '--mc-menu-flyout-border',
+        '--mc-menu-flyout-radius',
+        '--mc-menu-flyout-shadow',
+        '--mc-menu-flyout-min-w',
+        '--mc-menu-item-color',
+        '--mc-menu-item-color-hover',
+        '--mc-menu-item-color-current',
+        '--mc-menu-item-bg-hover',
+        '--mc-menu-item-bg-current',
+        '--mc-menu-group-color',
+      ];
+      /* 浮层的锚名要逐行唯一（同名锚会互相顶掉），拿实例序号拼一个 */
+      let instances = 0;
+
+      return {
+        tag: 'mc-menu',
+
+        attrs: {
+          size: 'md',
+          /* 压缩态：只剩 icon；有子菜单的行改成鼠标移入弹出浮层 */
+          collapsed: null,
+          /* 手风琴：同一层只允许一个子菜单展开（同 mc-collapse 的口径） */
+          accordion: null,
+          /* 数据驱动的项。属性通道只作 JSON 兼容（P6：走属性会被序列化），运行时用 property 传数组 */
+          options: null,
+        },
+
+        data: {
+          /* 渲染源：规范化后的选项数组。⚠️ 结果不写回 attrs 声明的 options 键（会被 ofa 再序列化一次，P6） */
+          items: [],
+        },
+
+        ready() {
+          this._rendered = [];
+          this._submenus = [];
+          this._flyoutPairs = [];
+          this._openFlyout = null;
+          this._uid = ++instances;
+          /* 挂载前赋的 property（createElement 之后马上 el.options = …）落在宿主上只是普通属性，先收下来；构造期不往宿主写属性（P31） */
+          this._presetOptions = Object.prototype.hasOwnProperty.call(this.ele, 'options')
+            ? this.ele.options
+            : undefined;
+
+          Object.defineProperty(this.ele, 'options', {
+            configurable: true,
+            get: () => this.items,
+            set: (value) => {
+              this._propOptions = true;
+              this.applyOptions(value);
+            },
+          });
+
+          this._mounted = true; // 之后的 watch 才算真变化（P5）
+        },
+
+        attached() {
+          /* 初始值放在这里而不是 ready()：ofa 会把 options 的初值铺在实例上，构造期写进去的会被它盖掉。
+             顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢），同 mc-table */
+          if (!this._applied) {
+            this._applied = true;
+            if (this.ele.hasAttribute('options'))
+              this.applyOptions(this.ele.getAttribute('options'));
+            if (this._presetOptions !== undefined) {
+              this._propOptions = true;
+              this.applyOptions(this._presetOptions);
+              this._presetOptions = undefined;
+            }
+          }
+
+          /* options 的属性通道自己听（同 mc-table 的 data）；我们从不写这个属性，所以不会自激 */
+          this._attrMo = new MutationObserver(() => {
+            const raw = this.ele.getAttribute('options');
+            const blank = raw == null || raw.trim() === '';
+            if (blank && this._propOptions) return; // property 写的值不被空属性擦掉
+            this.applyOptions(raw);
+          });
+          this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
+
+          /* 点外部关浮层：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是被重定向后的宿主 */
+          this._onDocPointerDown = (event) => {
+            if (!this._openFlyout) return;
+            if (event.composedPath().includes(this.ele)) return;
+            this.closeFlyouts();
+          };
+          document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+          /* Esc 关浮层（不 preventDefault：没开浮层时一个键都不吞） */
+          this._onKeyDown = (event) => {
+            if (event.key !== 'Escape' || !this._openFlyout) return;
+            this.closeFlyouts();
+          };
+          this.ele.addEventListener('keydown', this._onKeyDown);
+        },
+
+        detached() {
+          this._attrMo?.disconnect();
+          document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+          this.ele.removeEventListener('keydown', this._onKeyDown);
+          this.cancelClose();
+          for (const pair of this._flyoutPairs) {
+            if (pair.flyout?.matches?.(':popover-open')) pair.flyout.hidePopover();
+            pair.guard?.dispose();
+          }
+        },
+
+        watch: {
+          options(value) {
+            if (!this._mounted) return; // 首次触发落在构造期（P5）
+            this.applyOptionsIfPresent(value);
+          },
+          /* 压缩态换的是整个渲染结构（子菜单从内联折叠换成浮层），所以整棵重建 */
+          collapsed() {
+            if (!this._mounted) return;
+            this.renderItems(this.items);
+          },
+          /* 尺寸变了要重新下发通道：嵌套实例拿的是建立那一刻的内联副本 */
+          size() {
+            if (!this._mounted) return;
+            for (const pair of this._submenus) this.copyChannel(pair.sub);
+          },
+        },
+
+        proto: {
+          /** options 回到空值时别把 property 写过的值擦掉（watch 与属性观察都走这里） */
+          applyOptionsIfPresent(value) {
+            const blank = value == null || String(value).trim() === '';
+            if (blank && this._propOptions) return;
+            this.applyOptions(value);
+          },
+
+          /** JSON 字符串 / 数组 / null → 数组（P6 的解析就这一处） */
+          toOptions(value) {
+            if (value == null) return [];
+            if (typeof value === 'string') {
+              const text = value.trim();
+              if (!text) return [];
+              try {
+                const parsed = JSON.parse(text);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            }
+            return Array.isArray(value) ? value : [];
+          },
+
+          /** 唯一入口：规范化 → 重建自己生成的那些项（使用者手写的子元素不动） */
+          applyOptions(value) {
+            const items = this.toOptions(value);
+            this.items = items;
+            this.renderItems(items);
+          },
+
+          /** 本实例的层级：根 = 0，父级渲染嵌套实例时写进 data-level（内部接线，不是给使用者的属性） */
+          baseLevel() {
+            const raw = this.ele.getAttribute('data-level');
+            return raw ? Number(raw) || 0 : 0;
+          },
+
+          /** 子菜单是否走浮层：压缩态的根，以及浮层里的每一级（浮层里再内联展开会把它越撑越长） */
+          flyoutChildren() {
+            return this.ele.hasAttribute('collapsed') || this.ele.hasAttribute('data-flyout');
+          },
+
+          /** 把本实例解析后的通道复制成嵌套实例的内联样式（见 CHANNEL 处的注释） */
+          copyChannel(sub) {
+            const own = this.ele.style;
+            const computed = this.ele.isConnected ? getComputedStyle(this.ele) : null;
+            for (const name of CHANNEL) {
+              const value =
+                own.getPropertyValue(name).trim() || computed?.getPropertyValue(name).trim() || '';
+              if (value) sub.style.setProperty(name, value);
+            }
+          },
+
+          /** attrs：附加到行上的属性（target / rel / title 由菜单项转给内置控件）。
+              null / false 跳过；true 写成空属性。 */
+          applyAttrs(el, attrs) {
+            if (!attrs || typeof attrs !== 'object') return;
+            for (const [name, value] of Object.entries(attrs)) {
+              if (value == null || value === false) continue;
+              el.setAttribute(name, value === true ? '' : String(value));
+            }
+          },
+
+          /** 一条数据 → 节点们：[行] / [行, 浮层] / [行, 子菜单]；有 children 的行是开合开关，不是链接。
+              行本身（控件 / 箭头 / 状态）归 mc-menu-item —— 它按 label、href、data-expandable 自己造 <a> / <button>。
+              step：这一行的「每级步长」覆盖值（分组子项用它，见 GROUP_STEP） */
+          createNodes(option, level, step) {
+            const doc = this.ele.ownerDocument;
+            const data = typeof option === 'string' ? { label: option } : (option ?? {});
+            const el = doc.createElement('mc-menu-item');
+            /* 缩进：层级走内联通道，菜单项按 var 消费（它自己不能写默认值，会盖掉容器这条通道） */
+            el.style.setProperty('--mc-item-level', String(level));
+            if (step) el.style.setProperty('--mc-item-step', step);
+            const label = String(data.label ?? '');
+            const children = Array.isArray(data.children) ? data.children : [];
+
+            /* 分组：标题行 + 组内条目。带 children 的分组（侧栏那种「分组名 + 一列子项」）不折叠 ——
+               标题不可交互，子项常显、缩进一档；不带 children 的就是一条纯标题。组内条目走
+               --mc-menu-group-indent 那一档（与 collapsible 的逐级缩进分开），嵌套的分组继续沿用。 */
+            if (data.group || data.type === 'group') {
+              const heading = doc.createElement('mc-menu-item');
+              heading.setAttribute('group', '');
+              heading.textContent = label;
+              this.applyAttrs(heading, data.attrs);
+              const nodes = [heading];
+              for (const child of children) {
+                nodes.push(...this.createNodes(child, level + 1, step ?? GROUP_STEP));
+              }
+              return nodes;
+            }
+
+            const parent = children.length > 0;
+            if (data.icon) el.setAttribute('icon', String(data.icon));
+            this.applyAttrs(el, data.attrs);
+            el.setAttribute('label', label);
+            /* href 只给叶子行；父级行是开合开关（mc-menu-item 会为此造 <button>），不导航 */
+            if (parent) el.setAttribute('data-expandable', '');
+            else if (data.href && !data.disabled) el.setAttribute('href', String(data.href));
+            if (data.current && !parent) el.setAttribute('current', '');
+            if (data.disabled) el.setAttribute('disabled', '');
+
+            if (!parent) return [el];
+
+            /* 子菜单 = 嵌套的 mc-menu：复用同一套渲染（递归）。通道复制过去、手风琴跟着继承。
+               层级：内联展开时 +1（逐级缩进）；**浮层里不缩进** —— 每一列就是一级，缩进由浮层本身表达，
+               再叠一档就会在第二、三级左边白留一块（没有 icon 的行尤其明显）。 */
+            const sub = doc.createElement('mc-menu');
+            sub.setAttribute('data-level', String(this.flyoutChildren() ? 0 : level + 1));
+            if (this.flyoutChildren()) sub.setAttribute('data-flyout', '');
+            if (this.ele.hasAttribute('accordion')) sub.setAttribute('accordion', '');
+            this.copyChannel(sub);
+            sub.options = children;
+
+            const pair = { row: el, sub, flyout: null };
+            el.addEventListener('click', () => this.toggleSub(pair));
+            this._submenus.push(pair);
+
+            /* 内联模式：子菜单挂在行后面，靠 hidden 开合 */
+            if (!this.flyoutChildren()) {
+              sub.setAttribute('hidden', '');
+              return [el, sub];
+            }
+
+            /* 浮层模式：子菜单进原生 popover，鼠标移入 / 键盘聚焦父级行时弹出 */
+            const flyout = doc.createElement('div');
+            flyout.className = 'mc-flyout';
+            flyout.setAttribute('popover', 'manual');
+            flyout.style.cssText = FLYOUT_STYLE;
+            const anchor = `--mc-item-anchor-${this._uid}-${this._submenus.length}`;
+            el.style.setProperty('anchor-name', anchor);
+            flyout.style.setProperty('position-anchor', anchor);
+            flyout.append(sub);
+            pair.flyout = flyout;
+            pair.guard = attachFloatingScrollGuard(this.ele, flyout);
+            this._flyoutPairs.push(pair);
+            this.bindFlyout(pair);
+            return [el, flyout];
+          },
+
+          /* ---------- 内联开合（普通模式） ---------- */
+
+          /** 点一行开合子菜单：hidden 与行上的 data-expanded 一起切（箭头方向归 mc-menu-item 自己看 data-expanded） */
+          toggleSub(pair) {
+            if (this.flyoutChildren()) return; // 浮层模式：开合归 hover / focus，点击不参与
+            if (pair.row.hasAttribute('data-disabled')) return;
+            if (pair.sub.hasAttribute('hidden')) this.openSub(pair);
+            else this.closeSub(pair);
+          },
+
+          openSub(pair) {
+            /* 手风琴：同一层只留一个展开的分支（口径同 mc-collapse，嵌套层各管各的） */
+            if (this.ele.hasAttribute('accordion')) {
+              for (const other of this._submenus) if (other !== pair) this.closeSub(other);
+            }
+            pair.sub.removeAttribute('hidden');
+            pair.row.setAttribute('data-expanded', '');
+          },
+
+          closeSub(pair) {
+            pair.sub.setAttribute('hidden', '');
+            pair.row.removeAttribute('data-expanded');
+          },
+
+          /* ---------- 浮层开合（压缩态 / 浮层里的每一级） ---------- */
+
+          /** 行 → 浮层的进出线：行上移入 / 聚焦打开，浮层里移入取消关闭，两边离开都排队关闭。
+              relatedTarget 还指着行或浮层（含浮层里的嵌套浮层）时不算离开 —— 否则指针在缝上闪一下就收 */
+          bindFlyout(pair) {
+            const schedule = () => this.scheduleClose(pair);
+            const leave = (event) => {
+              if (!pair.flyout.contains(event.relatedTarget)) schedule();
+            };
+            /* 禁用的父级行不给弹层（点不动、也不该有下一级） */
+            const open = () => {
+              if (!pair.row.hasAttribute('data-disabled')) this.openFlyout(pair);
+            };
+            pair.row.addEventListener('pointerenter', open);
+            pair.row.addEventListener('focusin', open);
+            pair.row.addEventListener('pointerleave', leave);
+            pair.row.addEventListener('focusout', leave);
+            pair.flyout.addEventListener('pointerenter', () => this.cancelClose());
+            pair.flyout.addEventListener('pointerleave', leave);
+            pair.flyout.addEventListener('focusout', leave);
+          },
+
+          openFlyout(pair) {
+            this.cancelClose();
+            /* 同一层同时只弹一个：换行时先收起同层的其它浮层（祖先浮层不动） */
+            for (const other of this._flyoutPairs) if (other !== pair) this.closeFlyout(other);
+            this._openFlyout = pair;
+            /* 指针已经移进浮层，行不再 :hover —— 用 data-open 把「这条分支开着」留在锚点行上 */
+            pair.row.setAttribute('data-open', '');
+            if (!pair.flyout.matches(':popover-open')) {
+              /* 显式开合那一瞬也要包 run()：toggle 事件是排队发的，挡不住同步动作那一下的位移 */
+              if (pair.guard) pair.guard.run(() => pair.flyout.showPopover());
+              else pair.flyout.showPopover();
+            }
+          },
+
+          closeFlyout(pair) {
+            if (pair.flyout?.matches(':popover-open')) {
+              if (pair.guard) pair.guard.run(() => pair.flyout.hidePopover());
+              else pair.flyout.hidePopover();
+            }
+            /* 一起收起浮层里的每一级：外层关了、内层还挂在 top layer 就会变成一块孤儿面板 */
+            for (const inner of pair.flyout?.querySelectorAll('.mc-flyout') ?? []) {
+              if (inner.matches(':popover-open')) inner.hidePopover();
+            }
+            for (const row of pair.flyout?.querySelectorAll('mc-menu-item[data-open]') ?? []) {
+              row.removeAttribute('data-open');
+            }
+            pair.row?.removeAttribute('data-open');
+            if (this._openFlyout === pair) this._openFlyout = null;
+          },
+
+          closeFlyouts() {
+            this.cancelClose();
+            for (const pair of this._flyoutPairs) this.closeFlyout(pair);
+          },
+
+          scheduleClose(pair) {
+            this.cancelClose();
+            this._closeTimer = setTimeout(() => this.closeFlyout(pair), HOVER_CLOSE_DELAY);
+          },
+
+          cancelClose() {
+            clearTimeout(this._closeTimer);
+            this._closeTimer = null;
+          },
+
+          renderItems(items) {
+            if (!this._rendered) return; // 构造期前的 watch 不落 DOM
+            this.closeFlyouts();
+            for (const pair of this._flyoutPairs) pair.guard?.dispose();
+            for (const el of this._rendered) el.remove();
+            this._rendered = [];
+            this._submenus = [];
+            this._flyoutPairs = [];
+            const level = this.baseLevel();
+            for (const option of items) {
+              for (const el of this.createNodes(option, level)) {
+                this.ele.append(el);
+                this._rendered.push(el);
+              }
+            }
+          },
+        },
+      };
+    };
   </script>
 </template>

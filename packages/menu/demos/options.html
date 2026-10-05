@@ -1,0 +1,60 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-3">
+    <mc-button size="sm" variant="outline" on:click="add()">加一项</mc-button>
+    <mc-menu id="options-menu" style="width: 13rem"></mc-menu>
+  </div>
+
+  <script>
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* href 是**最终地址**：站内链接的部署前缀由站点自己补（这里用 docs/routes.js 的 hashOf）。
+       attrs = 行上的额外属性（target / rel / title 会转给内置 <a>，data-* 留在行上给宿主钩子用） */
+    const OPTIONS = [
+      { label: '首页', icon: 'menu', href: hashOf('packages/menu/page.html'), current: true },
+      { type: 'group', label: '导航' },
+      {
+        label: '组件',
+        icon: 'file',
+        /* children = 二级菜单：父级是个开合按钮（不导航），子项点开才出现 */
+        children: [
+          { label: '按钮', href: hashOf('packages/button/page.html') },
+          { label: '图标', href: hashOf('packages/icon/page.html') },
+          { label: '折叠面板', href: hashOf('packages/collapse/page.html') },
+        ],
+      },
+      { label: '设置', icon: 'settings', href: hashOf('packages/color/page.html') },
+      { label: '禁用项', icon: 'lock', disabled: true },
+      {
+        label: 'ofa.js',
+        icon: 'external',
+        href: 'https://ofajs.com',
+        attrs: { target: '_blank', rel: 'noreferrer', title: '外链：新窗口打开' },
+      },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-options',
+
+      data: { extra: 0 },
+
+      /* options 是宿主 property：属性通道只收 JSON 字符串，运行时传数组（同 mc-table 的 data） */
+      ready() {
+        this.menu().options = OPTIONS;
+      },
+
+      proto: {
+        menu() {
+          return this.ele.shadowRoot.querySelector('#options-menu');
+        },
+        /* 赋 property 就是重渲染入口：换一个数组，组件自己生成的那些项会被整体换掉 */
+        add() {
+          this.extra += 1;
+          this.menu().options = [
+            ...OPTIONS,
+            { label: `动态项 ${this.extra}`, icon: 'star', href: hashOf('packages/tag/page.html') },
+          ];
+        },
+      },
+    });
+  </script>
+</template>

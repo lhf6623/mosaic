@@ -541,6 +541,7 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -548,13 +549,17 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/menu/api.md",
-      "packages/menu/demos/basic.html",
+      "packages/menu/demos/accordion.html",
+      "packages/menu/demos/collapsed.html",
       "packages/menu/demos/customize.html",
       "packages/menu/demos/groups.html",
+      "packages/menu/demos/icon.html",
+      "packages/menu/demos/nested.html",
+      "packages/menu/demos/options.html",
       "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
+      "packages/menu/demos/slot.html",
       "packages/menu/demos/states.html",
-      "packages/menu/demos/surface.html",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/menu/page.html",
@@ -2468,6 +2473,7 @@
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs",
@@ -3133,7 +3139,10 @@
     "packages/menu/api.md": [
       "packages/menu/test/menu.test.mjs"
     ],
-    "packages/menu/demos/basic.html": [
+    "packages/menu/demos/accordion.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
+    "packages/menu/demos/collapsed.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/customize.html": [
@@ -3142,16 +3151,25 @@
     "packages/menu/demos/groups.html": [
       "packages/menu/test/menu.test.mjs"
     ],
+    "packages/menu/demos/icon.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
+    "packages/menu/demos/nested.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
+    "packages/menu/demos/options.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
     "packages/menu/demos/part.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/size.html": [
       "packages/menu/test/menu.test.mjs"
     ],
-    "packages/menu/demos/states.html": [
+    "packages/menu/demos/slot.html": [
       "packages/menu/test/menu.test.mjs"
     ],
-    "packages/menu/demos/surface.html": [
+    "packages/menu/demos/states.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/menu-item.html": [

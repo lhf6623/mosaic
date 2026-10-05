@@ -165,7 +165,7 @@ export const SITE = [
             path: 'packages/menu/page.html',
             type: 'component',
             summary:
-              '垂直菜单。容器 + 菜单项两个标签，交互元素由使用者写在插槽里 —— 组件不造链接、也不改使用者的 DOM。',
+              '数据驱动的垂直菜单：给 options 传对象数组，分组 / 图标 / 层级缩进 / 二级菜单都由容器渲染；可压缩成图标栏（子菜单浮层弹出），也可以开手风琴。',
           },
           {
             order: 80,

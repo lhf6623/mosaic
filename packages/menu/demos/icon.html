@@ -1,0 +1,23 @@
+<template component>
+  <mc-menu id="icon-menu" style="width: 13rem"></mc-menu>
+
+  <script>
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* icon 是 options 里的一个字段：取 mc-icon 的 name 语法（内置零请求、查不到才远程取一次） */
+    const OPTIONS = [
+      { label: '导航', icon: 'menu', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '组件', icon: 'file', href: hashOf('packages/button/page.html') },
+      { label: '设置', icon: 'settings', href: hashOf('packages/code/page.html') },
+      { label: '通知', icon: 'bell', href: hashOf('packages/collapse/page.html') },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-icon',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#icon-menu').options = OPTIONS;
+      },
+    });
+  </script>
+</template>

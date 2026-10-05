@@ -6,12 +6,22 @@
     }
   </style>
 
-  <mc-menu style="width: 14rem">
-    <mc-menu-item><a href="#/packages/menu/page.html" data-current>项间距被拉开</a></mc-menu-item>
-    <mc-menu-item><a href="#/packages/button/page.html">整列的行距都变了</a></mc-menu-item>
-  </mc-menu>
+  <mc-menu id="part-menu" style="width: 14rem"></mc-menu>
 
   <script>
-    export default async () => ({ tag: 'demo-menu-part' });
+    import { hashOf } from '../../../docs/routes.js';
+
+    const OPTIONS = [
+      { label: '项间距被拉开', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '整列的行距都变了', href: hashOf('packages/button/page.html') },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-part',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#part-menu').options = OPTIONS;
+      },
+    });
   </script>
 </template>

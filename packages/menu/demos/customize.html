@@ -21,16 +21,24 @@
   </style>
 
   <div id="customize-demo">
-    <mc-menu>
-      <mc-menu-item>
-        <a href="#/packages/menu/page.html" data-current>当前项换成信息色</a>
-      </mc-menu-item>
-      <mc-menu-item><a href="#/packages/button/page.html">行距和内边距也换了</a></mc-menu-item>
-      <mc-menu-item><button type="button" disabled>禁用项：外面补了虚线</button></mc-menu-item>
-    </mc-menu>
+    <mc-menu id="customize-menu"></mc-menu>
   </div>
 
   <script>
-    export default async () => ({ tag: 'demo-menu-customize' });
+    import { hashOf } from '../../../docs/routes.js';
+
+    const OPTIONS = [
+      { label: '当前项换成信息色', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '行距和内边距也换了', href: hashOf('packages/button/page.html') },
+      { label: '禁用项：外面补了虚线', disabled: true },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-customize',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#customize-menu').options = OPTIONS;
+      },
+    });
   </script>
 </template>

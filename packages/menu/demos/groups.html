@@ -1,15 +1,36 @@
 <template component>
-  <mc-menu style="width: 12rem">
-    <mc-menu-item group>基础</mc-menu-item>
-    <mc-menu-item><a href="#/packages/button/page.html">Button</a></mc-menu-item>
-    <mc-menu-item><a href="#/packages/code/page.html">Code</a></mc-menu-item>
-
-    <mc-menu-item group>布局</mc-menu-item>
-    <mc-menu-item><a href="#/packages/collapse/page.html">Collapse</a></mc-menu-item>
-    <mc-menu-item><a href="#/packages/menu/page.html" data-current>Menu</a></mc-menu-item>
-  </mc-menu>
+  <mc-menu id="groups-menu" style="width: 12rem"></mc-menu>
 
   <script>
-    export default async () => ({ tag: 'demo-menu-groups' });
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* 分组 = type: 'group'：标题不可交互。带 children 时标题下面一列条目**常显**、缩进一档
+       （侧栏用法，doc-nav 就是这么渲染的）；不带 children 就是一条纯标题。 */
+    const OPTIONS = [
+      {
+        type: 'group',
+        label: '基础',
+        children: [
+          { label: 'Button', href: hashOf('packages/button/page.html') },
+          { label: 'Code', href: hashOf('packages/code/page.html') },
+        ],
+      },
+      {
+        type: 'group',
+        label: '布局',
+        children: [
+          { label: 'Collapse', href: hashOf('packages/collapse/page.html') },
+          { label: 'Menu', href: hashOf('packages/menu/page.html'), current: true },
+        ],
+      },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-groups',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#groups-menu').options = OPTIONS;
+      },
+    });
   </script>
 </template>
