@@ -129,7 +129,7 @@
         this._slot = root.querySelector('slot');
 
         this._onScroll = () => {
-          this.sync();
+          this.syncScrollbar();
           /* 原生 scroll 事件不冒泡、viewport 又在 shadow 里 —— 外面够不着，所以从宿主上再发一次 */
           this.ele.dispatchEvent(new CustomEvent('scroll', { bubbles: true, composed: true }));
         };
@@ -150,7 +150,7 @@
 
         this._slot.addEventListener('slotchange', () => this.observeContent());
         /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
-        this._ro = new ResizeObserver(() => this.sync());
+        this._ro = new ResizeObserver(() => this.syncScrollbar());
         this._ro.observe(this._viewport);
 
         this._onThumbDown = (event) => this.startDrag(event);
@@ -159,7 +159,7 @@
         this.syncAxis();
         this.syncReveal();
         this.observeContent();
-        this.sync();
+        this.syncScrollbar();
       },
 
       detached() {
@@ -177,7 +177,7 @@
         axis() {
           if (this._viewport) {
             this.syncAxis();
-            this.sync();
+            this.syncScrollbar();
           }
         },
         /* 出现时机是纯 CSS 的事：换一档不用重算滑块几何，只需要把宿主属性换过去 */
@@ -200,14 +200,16 @@
         /** 盯住插槽里的内容：它长高了 / 变宽了，滑块长度就得跟着重算 */
         observeContent() {
           this._contentRO?.disconnect();
-          this._contentRO = new ResizeObserver(() => this.sync());
+          this._contentRO = new ResizeObserver(() => this.syncScrollbar());
           for (const node of this._slot?.assignedElements() ?? []) {
             this._contentRO.observe(node);
           }
         },
 
-        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的键盘可达性 */
-        sync() {
+        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的键盘可达性。
+         *  ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被静默丢掉
+         *  （同 docs/components/nav.html 的 renderRows）。 */
+        syncScrollbar() {
           const vp = this._viewport;
           if (!vp) return;
 
