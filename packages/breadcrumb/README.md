@@ -33,8 +33,8 @@ mc-breadcrumb — 面包屑容器
 只做三件事：一行布局、分隔符、列表语义。每一级是 mc-breadcrumb-item。
 
 **交互元素由使用者写在插槽里**（原生 <a>）—— 与 mc-menu 同一条理由：站内链接要靠 olink
-补部署前缀，而 olink 是编译期指令、只作用于页面模板里的元素，组件在 shadow root 里造的
-<a> 用不上（见 docs/routes.js）。纯文本的一级就是当前页，写 current。
+补部署前缀。olink 是**编译期**指令，只作用于模板里的元素；组件运行时造出来的
+<a> 拿不到（见 docs/routes.js）。纯文本的一级就是当前页，写 current。
 
 分隔符画在每一项自己的 ::before 上（第一项除外），间距只有一个来源：.mc-list 的 gap。
 separator 属性在 attached() 里落到一个内部变量上（刻意不碰 --mc-breadcrumb-sep 令牌，
@@ -46,7 +46,7 @@ mc-breadcrumb-item — 面包屑的一级（配合 mc-breadcrumb 使用）
 
 插槽里放一个原生 <a>（可点的一级），或者直接写纯文本（当前页）。组件只负责这一级的文字
 外观与当前项状态；href / target / rel 全写在原生元素上，组件不造链接 —— 站内链接要经 ofa 的
-olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/routes.js）。
+olink 补部署前缀；olink 是编译期指令、只作用于模板里的元素（docs/routes.js）。
 
 当前项写 `current`：字色更实、字重加重。
 
@@ -79,7 +79,7 @@ olink 补部署前缀，而 olink 只作用于页面模板里的元素（docs/ro
 
 ## 相邻单元
 
-- 与 [`mc-menu`](../menu/) 同一条理由：**交互元素由使用者写在插槽里**，组件不造链接 —— 站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用于页面模板（light DOM）里的元素。
+- 与 [`mc-menu`](../menu/) 同一条理由：**交互元素由使用者写在插槽里**，组件不造链接 —— 站内链接要经 ofa 的 `olink` 带部署前缀；`olink` 是编译期指令，只作用于模板里的元素（运行时造的拿不到）。
 
 <!-- hand:end -->
 
