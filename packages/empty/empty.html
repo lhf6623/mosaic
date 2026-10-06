@@ -1,0 +1,114 @@
+<!-- mc-empty — 空态占位；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值（写在这里，使用者 style="…" 才压得住） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      text-align: center;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+
+      --mc-empty-image-size: 2.5em;
+      --mc-empty-image-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-empty-description-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-empty-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-empty-line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      --mc-empty-gap: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-empty-pad: var(--mc-space-8, var(--mc-def-space-8));
+    }
+
+    /* 2. 维度 size：图形与文案一起三档（图形盒恒为 1em，改的是它的 font-size） */
+    :host([size='sm']) {
+      --mc-empty-image-size: 1.75em;
+      --mc-empty-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-empty-line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
+    }
+    :host([size='lg']) {
+      --mc-empty-image-size: 3.5em;
+      --mc-empty-font: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-empty-line-height: var(--mc-text-base-lh, var(--mc-def-text-base-lh));
+    }
+
+    /* 3. 内部结构。图形 / 文案 / 操作区各占一行，间距与内边距各一条通道 */
+    .mc-base {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--mc-empty-gap);
+      padding: var(--mc-empty-pad);
+    }
+    /* 内置图形 = 图标集里的 empty（类名 mc-icon-empty，零请求、不引 mc-icon 组件）：
+       颜色由 currentColor 交给这一行，尺寸由 font-size 交给这一行 */
+    .mc-image {
+      font-size: var(--mc-empty-image-size);
+      color: rgb(var(--mc-empty-image-color));
+    }
+    .mc-description {
+      font-size: var(--mc-empty-font);
+      line-height: var(--mc-empty-line-height);
+      color: rgb(var(--mc-empty-description-color));
+    }
+    .mc-footer {
+      display: none; /* 常驻 DOM，有没有内容由宿主 data-has-footer 说话（P10） */
+    }
+    :host([data-has-footer]) .mc-footer {
+      display: block;
+    }
+  </style>
+
+  <div class="mc-base" part="base">
+    <span class="mc-image mc-icon-empty" part="image"></span>
+    <div class="mc-description" part="description"><slot>{{description}}</slot></div>
+    <div class="mc-footer" part="footer"><slot name="footer"></slot></div>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-empty',
+
+      attrs: {
+        description: '暂无数据',
+        size: 'md',
+      },
+
+      ready() {
+        // 这时 shadow 已建好（同 mc-card）；宿主属性留到 attached 才写（P31）
+        this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+      },
+
+      attached() {
+        /* 操作区有没有内容只靠 slotchange 判定：分到节点一变就响，不盯子树（同 mc-card） */
+        this._onSlotChange = () => this.applyState();
+        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+        this.applyState();
+      },
+
+      detached() {
+        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      proto: {
+        applyState() {
+          const slot = this.ele.shadowRoot.querySelector('slot[name="footer"]');
+          this.mirror(
+            'data-has-footer',
+            (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            ),
+          );
+        },
+
+        /** 宿主属性即状态：值没变就不写（同 mc-card） */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>

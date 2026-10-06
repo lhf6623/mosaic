@@ -1,0 +1,16 @@
+<template component>
+  <style>
+    /* 外部样式：宿主 style / L3 令牌。图形色、间距、内边距都从 --mc-empty-* 走 */
+    mc-empty {
+      --mc-empty-image-color: var(--mc-color-primary);
+      --mc-empty-gap: var(--mc-space-2);
+      --mc-empty-pad: var(--mc-space-6);
+    }
+  </style>
+
+  <mc-empty description="还没有配置主题"></mc-empty>
+
+  <script>
+    export default async () => ({ tag: 'demo-empty-customize' });
+  </script>
+</template>

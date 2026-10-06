@@ -1,0 +1,27 @@
+<template component>
+  <style>
+    /* 内部样式：只有标了 part 的节点能从外面改 —— base / image / description / footer */
+    mc-empty::part(base) {
+      border: 1px dashed rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-radius-lg);
+    }
+    mc-empty::part(image) {
+      color: rgb(var(--mc-color-primary));
+      opacity: 0.6;
+    }
+    mc-empty::part(description) {
+      font-weight: var(--mc-weight-medium);
+    }
+    mc-empty::part(footer) {
+      margin-block-start: var(--mc-space-2);
+    }
+  </style>
+
+  <mc-empty description="虚线框、图形、文案与操作区都来自 ::part()">
+    <mc-button slot="footer">重试</mc-button>
+  </mc-empty>
+
+  <script>
+    export default async () => ({ tag: 'demo-empty-part' });
+  </script>
+</template>

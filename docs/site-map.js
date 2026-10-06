@@ -173,6 +173,15 @@ export const SITE = [
             summary: '加载指示。跟随当前文字色与字号。',
           },
           {
+            order: 65,
+            label: 'Empty',
+            zh: '空态',
+            path: 'packages/empty/page.html',
+            type: 'component',
+            summary:
+              '空态。没有内容可显示时的一块占位：内置图形 + 一行文案 + 可选操作区，三档尺寸。',
+          },
+          {
             order: 70,
             label: 'Menu',
             zh: '菜单',

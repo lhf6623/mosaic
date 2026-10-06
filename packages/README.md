@@ -395,7 +395,7 @@ item.open = true; // 组件提供了访问器时同样可以
 通用词汇：`base` / `panel` / `overlay` / `header` / `body` / `footer` / `label` / `input` / `error`。
 已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb` / `mc-pagination`）、
 `item` / `prev` / `next` / `jumper` / `sizer` / `select`（`mc-pagination`）、
-`pre` / `code` / `line`（`mc-code`）。
+`pre` / `code` / `line`（`mc-code`）、`image` / `description`（`mc-empty`）。
 
 ### 1.8 键盘基线（每个组件都要满足）
 
@@ -432,6 +432,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | ✅ 已实现 |
 | [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | ✅ 已实现 |
 | [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | ✅ 已实现 |
+| [Empty](./empty/api.md)               | `mc-empty`                             | `empty/`       | ✅ 已实现 |
 | [Input](./input/api.md)               | `mc-input`                             | `input/`       | ✅ 已实现 |
 | [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | ✅ 已实现 |
 | [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | ✅ 已实现 |

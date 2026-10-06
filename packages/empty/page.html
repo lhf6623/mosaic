@@ -1,0 +1,121 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <l-m src="./empty.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/description.html"></l-m>
+    <l-m src="./demos/size.html"></l-m>
+    <l-m src="./demos/footer.html"></l-m>
+    <l-m src="./demos/customize.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+    <h1>
+      Empty
+      <code>mc-empty</code>
+    </h1>
+    <p class="doc-lead">空态：没有内容可显示时的一块占位 —— 内置图形 + 一行文案 + 可选的操作区。</p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <demo-empty-basic></demo-empty-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>文案</h3>
+      <p class="doc-hint">
+        两种给法：
+        <code>description</code>
+        属性写一句，或者往默认插槽里放内容（插槽赢）。
+      </p>
+      <demo-empty-description></demo-empty-description>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/description.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>尺寸</h3>
+      <demo-empty-size></demo-empty-size>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/size.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>操作区</h3>
+      <p class="doc-hint">
+        空态里通常要给一条出路：
+        <code>slot="footer"</code>
+        放一个按钮。不给就整块不占位，不占那一段间距。
+      </p>
+      <demo-empty-footer></demo-empty-footer>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/footer.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        图形色、行间距、内边距各有一条 L3 令牌，写在宿主
+        <code>style</code>
+        或页面 CSS 上。
+      </p>
+      <demo-empty-customize></demo-empty-customize>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/customize.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        组件内部默认改不动：只有标了
+        <code>part</code>
+        的节点，才能从外面用
+        <code>::part(名字)</code>
+        改样式（这里开了
+        <code>base</code>
+        /
+        <code>image</code>
+        /
+        <code>description</code>
+        /
+        <code>footer</code>
+        四个）。
+      </p>
+      <demo-empty-part></demo-empty-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

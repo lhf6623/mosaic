@@ -1,0 +1,10 @@
+<template component>
+  <div class="flex flex-wrap items-start gap-4">
+    <mc-empty description="没有匹配的记录"></mc-empty>
+    <mc-empty>收件箱是空的，换个条件再找找</mc-empty>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-empty-description' });
+  </script>
+</template>
