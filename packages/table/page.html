@@ -11,6 +11,8 @@
     <l-m src="./demos/runtime.html"></l-m>
     <l-m src="./demos/striped.html"></l-m>
     <l-m src="./demos/hoverable.html"></l-m>
+    <l-m src="./demos/size.html"></l-m>
+    <l-m src="./demos/border.html"></l-m>
     <l-m src="./demos/loading.html"></l-m>
     <l-m src="./demos/empty.html"></l-m>
     <l-m src="./demos/slots.html"></l-m>
@@ -90,12 +92,51 @@
     </section>
 
     <section class="doc-demo">
+      <h3>密度</h3>
+      <p class="doc-hint">
+        三档只动字号与单元格内边距，行高不动；要更极端的尺寸就按
+        <code>--mc-table-font</code>
+        /
+        <code>--mc-table-cell-pad-x</code>
+        /
+        <code>--mc-table-cell-pad-y</code>
+        自己写。
+      </p>
+      <demo-table-size></demo-table-size>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/size.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外边框</h3>
+      <p class="doc-hint">
+        <code>bordered</code>
+        给整块加一圈描边（单元格横线不变）；圆角大小走
+        <code>--mc-table-radius</code>
+        ，不想要圆角就把它设成
+        <code>0</code>
+        。
+      </p>
+      <demo-table-border></demo-table-border>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/border.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
       <h3>加载中</h3>
       <p class="doc-hint">
         <code>loading</code>
-        期间显示
+        期间盖在表格上一层的
         <code>loading</code>
-        插槽（不给就是一行「加载中…」）。
+        插槽（不给就是
+        <code>mc-spinner</code>
+        + 一行「加载中…」）：表格留在原位不跳版，层里的内容居中。
       </p>
       <demo-table-loading></demo-table-loading>
       <mc-collapse class="doc-demo-code">
@@ -110,7 +151,9 @@
       <p class="doc-hint">
         一行数据都没有时显示
         <code>empty</code>
-        插槽；文案默认「暂无数据」，可以用
+        插槽；不给内容就用内置的
+        <code>mc-empty</code>
+        兜底（图形 + 一行文案），文案默认「暂无数据」，可以用
         <code>empty-text</code>
         换掉。
       </p>
@@ -125,9 +168,9 @@
     <section class="doc-demo">
       <h3>空态与加载插槽</h3>
       <p class="doc-hint">
-        两个槽都有兜底内容（
-        <code>empty-text</code>
-        与内置的「加载中…」）， 给了
+        两个槽都有兜底内容（内置的
+        <code>mc-empty</code>
+        与一行「加载中…」），给了
         <code>slot="empty"</code>
         /
         <code>slot="loading"</code>

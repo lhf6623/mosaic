@@ -91,8 +91,9 @@ export default async function run({ page, visit, check }) {
         ),
         ariaBusy: root.querySelector('table')?.getAttribute('aria-busy') ?? null,
         emptyDisplay: getComputedStyle(root.querySelector('.mc-empty')).display,
-        emptyText: root.querySelector('.mc-empty').textContent.trim(),
+        emptyText: root.querySelector('.mc-empty mc-empty')?.getAttribute('description') ?? null,
         loadingDisplay: getComputedStyle(root.querySelector('.mc-loading')).display,
+        loadingSpinner: !!root.querySelector('.mc-loading mc-spinner')?.shadowRoot,
       };
     }, id);
 
@@ -183,52 +184,91 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ before: striped.backgrounds, hovered }),
   );
 
-  /* ---------- 空态：data=[] → empty 插槽可见、文案是 empty-text ---------- */
+  /* ---------- 空态：data=[] → empty 插槽可见，兜底是 mc-empty（description = empty-text） ---------- */
   const empty = await page.evaluate(async () => {
     const table = document.getElementById('p-table-state');
     table.data = [];
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => setTimeout(r, 300));
     const root = table.shadowRoot;
+    /** 兜底那个 mc-empty：它常驻 shadow 树（有 slot="empty" 内容时只是不投影），所以直接查得到 */
+    const fallback = () => root.querySelector('.mc-empty mc-empty');
+    /** mc-empty 自己的文案在它的 shadow 里；[part="description"] 的 textContent 就是渲染出来的那句 */
+    const rendered = () =>
+      fallback()?.shadowRoot?.querySelector('[part="description"]')?.textContent.trim() ?? null;
+    const read = () => ({
+      description: fallback()?.getAttribute('description') ?? null,
+      rendered: rendered(),
+      hasGraphic: !!fallback()?.shadowRoot?.querySelector('[part="image"]'),
+      upgrade: !!fallback()?.shadowRoot,
+    });
     const before = {
-      text: root.querySelector('.mc-empty').textContent.trim(),
+      ...read(),
       display: getComputedStyle(root.querySelector('.mc-empty')).display,
       loading: getComputedStyle(root.querySelector('.mc-loading')).display,
     };
     table.setAttribute('empty-text', '没有数据');
-    await new Promise((r) => setTimeout(r, 250));
-    before.afterAttr = root.querySelector('.mc-empty').textContent.trim();
+    await new Promise((r) => setTimeout(r, 300));
+    before.after = read();
     return before;
   });
   check(
-    '空态：默认文案「暂无数据」，改 empty-text 跟着换；此时不显示 loading',
-    empty.text === '暂无数据' &&
+    '空态：默认由 mc-empty 兜底（description = empty-text「暂无数据」、带内置图形），改 empty-text 跟着换；此时不显示 loading',
+    empty.upgrade &&
+      empty.hasGraphic &&
+      empty.description === '暂无数据' &&
+      empty.rendered === '暂无数据' &&
       empty.display === 'block' &&
       empty.loading === 'none' &&
-      empty.afterAttr === '没有数据',
+      empty.after.description === '没有数据' &&
+      empty.after.rendered === '没有数据',
     JSON.stringify(empty),
   );
 
-  /* ---------- loading：loading 插槽可见、空态让位 ---------- */
+  /* ---------- loading：那一层盖在表格上、空态让位、兜底是 mc-spinner ---------- */
   const loading = await page.evaluate(async () => {
     const table = document.getElementById('p-table-state');
+    const root = () => table.shadowRoot;
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return [Math.round(r.width), Math.round(r.height)];
+    };
+    const tableBoxBefore = box(root().querySelector('table'));
+
     table.setAttribute('loading', '');
-    await new Promise((r) => setTimeout(r, 250));
-    const root = table.shadowRoot;
+    await new Promise((r) => setTimeout(r, 300));
+    const layer = root().querySelector('.mc-loading');
+    const spinner = layer.querySelector('mc-spinner');
     const out = {
-      ariaBusy: root.querySelector('table').getAttribute('aria-busy'),
-      loadingDisplay: getComputedStyle(root.querySelector('.mc-loading')).display,
-      emptyDisplay: getComputedStyle(root.querySelector('.mc-empty')).display,
+      ariaBusy: root().querySelector('table').getAttribute('aria-busy'),
+      loadingDisplay: getComputedStyle(layer).display,
+      /* 盖在表格上 = 绝对定位、正好铺满 .mc-wrap（也就是表格那块地方） */
+      position: getComputedStyle(layer).position,
+      layerBox: box(layer),
+      wrapBox: box(root().querySelector('.mc-wrap')),
+      emptyDisplay: getComputedStyle(root().querySelector('.mc-empty')).display,
+      /* 兜底加载态 = mc-spinner(size=sm) + 一行「加载中…」：spinner 已升级、盒宽 = 表格字号（14px） */
+      spinnerUpgraded: !!spinner?.shadowRoot,
+      spinnerBox: spinner ? Math.round(spinner.getBoundingClientRect().width) : 0,
+      fallbackText: layer.querySelector('.mc-loading-text')?.textContent.trim() ?? null,
     };
     table.removeAttribute('loading');
     await new Promise((r) => setTimeout(r, 250));
-    out.afterAriaBusy = root.querySelector('table').getAttribute('aria-busy');
+    out.afterAriaBusy = root().querySelector('table').getAttribute('aria-busy');
+    out.tableBoxAfter = box(root().querySelector('table'));
+    out.tableBoxBefore = tableBoxBefore;
     return out;
   });
   check(
-    'loading：表格不写 aria-busy、loading 插槽显示、空态让位；摘掉属性后仍是 null',
+    'loading：表格不写 aria-busy；那一层**盖在表格上**（absolute 且铺满 .mc-wrap，表格自己的盒子不动）、空态让位；兜底是 mc-spinner +「加载中…」；摘掉后仍是 null',
     loading.ariaBusy === null &&
-      loading.loadingDisplay === 'block' &&
+      loading.loadingDisplay === 'flex' &&
+      loading.position === 'absolute' &&
+      JSON.stringify(loading.layerBox) === JSON.stringify(loading.wrapBox) &&
+      JSON.stringify(loading.tableBoxAfter) === JSON.stringify(loading.tableBoxBefore) &&
       loading.emptyDisplay === 'none' &&
+      loading.spinnerUpgraded &&
+      loading.spinnerBox === 14 &&
+      loading.fallbackText === '加载中…' &&
       loading.afterAriaBusy === null,
     JSON.stringify(loading),
   );
@@ -254,7 +294,88 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(escaped),
   );
 
-  /* ---------- 命名插槽：给了内容就顶掉兜底（empty-text / 内置「加载中…」） ---------- */
+  /* ---------- bordered：整块一圈外框 + 圆角（单元格横线照旧） ---------- */
+  const bordered = await page.evaluate(async () => {
+    const plain = document.getElementById('p-table');
+    const el = document.createElement('mc-table');
+    el.setAttribute('bordered', '');
+    el.columns = [{ key: 'v', title: 'V' }];
+    el.data = [{ v: '一' }];
+    document.body.append(el);
+    await new Promise((r) => setTimeout(r, 300));
+    const cs = getComputedStyle(el);
+    /* 拿表头格：tbody 最后一行那条横线本来就被抹掉了（见「表格不合并边框」），别拿它当证据 */
+    const head = getComputedStyle(el.shadowRoot.querySelector('th'));
+    const out = {
+      width: cs.borderTopWidth,
+      style: cs.borderTopStyle,
+      radius: cs.borderTopLeftRadius,
+      overflow: cs.overflow,
+      /* 外框是**加**上去的，单元格那条横线照旧 */
+      headBorder: head.borderBottomWidth,
+      /* 不写 bordered 的实例没有外框 */
+      plainWidth: getComputedStyle(plain).borderTopWidth,
+    };
+    el.remove();
+    return out;
+  });
+  check(
+    'bordered：整块一圈描边 + 圆角 + 裁切（单元格横线照旧）；不写则没有外框',
+    bordered.width === '1px' &&
+      bordered.style === 'solid' &&
+      bordered.radius === '6px' &&
+      bordered.overflow === 'hidden' &&
+      bordered.headBorder === '1px' &&
+      bordered.plainWidth === '0px',
+    JSON.stringify(bordered),
+  );
+
+  /* ---------- size：密度三档只动字号与单元格内边距，行高不动 ---------- */
+  const sizes = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.id = 'size-probe';
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;background:#fff';
+    host.innerHTML =
+      '<mc-table id="s-sm" size="sm"></mc-table>' +
+      '<mc-table id="s-md"></mc-table>' +
+      '<mc-table id="s-lg" size="lg"></mc-table>';
+    document.body.append(host);
+    await new Promise((r) => setTimeout(r, 300));
+    for (const id of ['s-sm', 's-md', 's-lg']) {
+      const el = document.getElementById(id);
+      el.columns = [{ key: 'v', title: 'V' }];
+      el.data = [{ v: '一' }];
+    }
+    await new Promise((r) => setTimeout(r, 300));
+    const read = (id) => {
+      const el = document.getElementById(id);
+      const th = el.shadowRoot.querySelector('th');
+      const thCs = getComputedStyle(th);
+      return {
+        font: getComputedStyle(el).fontSize,
+        padX: thCs.paddingLeft,
+        padY: thCs.paddingTop,
+        /* 宿主上的行高：三档都该是 shadow-base 给的 24px（size 不动它） */
+        lineHeight: getComputedStyle(el).lineHeight,
+        rowHeight: Math.round(th.getBoundingClientRect().height),
+      };
+    };
+    const out = { sm: read('s-sm'), md: read('s-md'), lg: read('s-lg') };
+    host.remove();
+    return out;
+  });
+  check(
+    'size 三档：字号 12 / 14 / 16px、内边距 12×4 / 16×8 / 20×12px、表头行 33 / 41 / 49px；行高三档都是 24px（不跟字号走）',
+    JSON.stringify(sizes) ===
+      JSON.stringify({
+        sm: { font: '12px', padX: '12px', padY: '4px', lineHeight: '24px', rowHeight: 33 },
+        md: { font: '14px', padX: '16px', padY: '8px', lineHeight: '24px', rowHeight: 41 },
+        lg: { font: '16px', padX: '20px', padY: '12px', lineHeight: '24px', rowHeight: 49 },
+      }),
+    JSON.stringify(sizes),
+  );
+
+  /* ---------- 命名插槽：给了内容就顶掉兜底（mc-empty 兜底空态 / 内置「加载中…」） ---------- */
   const slotsUi = await page.evaluate(async () => {
     const table = document.getElementById('p-table-slots');
     const height = (id) => document.getElementById(id).getBoundingClientRect().height;
@@ -266,7 +387,15 @@ export default async function run({ page, visit, check }) {
       loadingVisible: height('p-slot-loading') > 0,
       emptyAssigned: assigned('p-slot-empty'),
       emptyText: document.getElementById('p-slot-empty').textContent.trim(),
-      fallbackText: table.shadowRoot.querySelector('.mc-empty').textContent.trim(),
+      /* 兜底那个 mc-empty 还在 shadow 树里，只是没被投影 —— 投影进去的只有使用者的节点 */
+      emptyAssignedText: (() => {
+        const slot = table.shadowRoot.querySelector('.mc-empty slot');
+        return [...slot.assignedNodes()]
+          .map((node) => node.textContent ?? '')
+          .join('')
+          .trim();
+      })(),
+      fallbackPresent: !!table.shadowRoot.querySelector('.mc-empty mc-empty'),
     };
 
     table.setAttribute('loading', '');
@@ -280,11 +409,13 @@ export default async function run({ page, visit, check }) {
     return out;
   });
   check(
-    '命名插槽接手空态 / 加载态：内容是你的，兜底文案让位（两个槽都真的投影进去了）',
+    '命名插槽接手空态 / 加载态：内容是你的，mc-empty 兜底让位（两个槽都真的投影进去了）',
     slotsUi.emptyAssigned &&
       slotsUi.emptyVisible &&
       !slotsUi.loadingVisible &&
       slotsUi.emptyText === '自定义空态' &&
+      slotsUi.emptyAssignedText === '自定义空态' &&
+      slotsUi.fallbackPresent &&
       !slotsUi.whileLoading.emptyVisible &&
       slotsUi.whileLoading.loadingVisible &&
       slotsUi.whileLoading.loadingText === '自定义加载中',

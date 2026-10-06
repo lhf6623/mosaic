@@ -73,34 +73,87 @@ data 属性(JSON)     ─┴─→ applyData()    ─→ this.rows ─→ <o-fil
 切显隐。`data-empty` 写在 `.mc-wrap` 上而不是宿主上：
 构造期（`ready()`）不能往宿主写属性。
 
+### 兜底空态 / 加载态用项目自己的组件
+
+两个槽的兜底都不是纯文本：
+
+- `empty` 槽 → [`mc-empty`](../empty/)（图形 + 一行文案）；`empty-text` 只是绑到它的
+  `description` 上 —— 默认仍是「暂无数据」、换法一个字没变；
+- `loading` 槽 → [`mc-spinner`](../spinner/)（`size="sm"`，跟着表格字号与前景色）+「加载中…」。
+
+**加载态是盖在表格上的一层**：`.mc-wrap` 就是它的包含块（`position: absolute; inset: 0`），
+所以表格留在原位、不跳版，层里的内容居中；底色走 `--mc-table-loading-bg` 配
+`--mc-table-loading-alpha`（与 `mc-dialog` 的遮罩同一套写法）。表格自己还没有高度时（还没给
+`columns` / `data`）给一个 `min-height`，免得那一层跟着塌掉。
+**空态不同**：它留在文档流里、排在表头下面（`.mc-wrap[data-empty]` 切显隐），吃 `.mc-state` 的 padding。
+
+两件事跟着走：
+
+- 本体先 `load()` 这两个组件（`empty.html` / `spinner.html`）：在此之前 mc-table 是零
+  `load()` 的（见「相邻单元」），这两份依赖只在兜底那条路上用得到；
+- `.mc-empty mc-empty` 把 `--mc-empty-pad` 压成 0、两条颜色令牌指回 `--mc-table-state-fg`
+  —— 空态那块盒子的口径不变，使用者 `slot="empty"` 进来的内容照旧吃 `.mc-state` 的 padding。
+
 ### 表格不合并边框
 
 CSS 里只写 `border-spacing: 0`，靠 `border-collapse` 的初始值 `separate`：单元格只画一条下边线，
 视觉上就是单线表格。刻意不写"把相邻边框合成一条"的那条声明 —— 那几条声明本来也不需要，
 手写工具类之后也不会再有人把它的关键字当类名扫走。
 
+### 外框（`bordered`）
+
+默认只有单元格横线、没有封口线（见上一条）。要整块的框就写 `bordered`：宿主上一圈
+`1px solid var(--mc-table-border)`，圆角走 `--mc-table-radius`，另外必须配 `overflow: hidden` ——
+表头底色与首尾那条横线都画在单元格上，不裁就从圆角里露出来。
+
+刻意**不做**网格：`bordered` 只管外面这一圈，「每格都画框」是另一个维度，没做。
+
+### 密度（`size`）
+
+`size` 三档只动**字号 + 单元格内边距**（`--mc-table-font` / `--mc-table-cell-pad-x` / `-y`），
+行高不跟着走：
+
+| 档           | 字号                     | 内边距 x / y | 表头行高（实测） |
+| ------------ | ------------------------ | ------------ | ---------------- |
+| `sm`         | `--mc-text-xs`（12px）   | 12 / 4px     | 33px             |
+| `md`（默认） | `--mc-text-sm`（14px）   | 16 / 8px     | 41px             |
+| `lg`         | `--mc-text-base`（16px） | 20 / 12px    | 49px             |
+
+这是对规范 1.3（`size` = 控件高）的**显式例外**：表格不是控件、没有固定高度，密度只能落在
+字号与内边距上（同 `mc-icon` 那条「图标不是控件，跟随字号」的例外）。档位里也没有
+`xs` / `xl` —— 要更极端的尺寸就按上面三个令牌自己写。
+
+⚠️ **行高不跟字号走**：`line-height` 来自 shadow-base 那条
+`:host { line-height: var(--mc-text-base-lh) }`（24px），组件只覆盖了 `font-size`。
+字号调大的同时想放松行距，得自己写宿主 `line-height`。
+
 ## 令牌
 
-| 令牌                      | 默认                        | 作用                   |
-| ------------------------- | --------------------------- | ---------------------- |
-| `--mc-table-font`         | `--mc-text-sm`              | 表格字号               |
-| `--mc-table-fg`           | `--mc-color-fg`             | 单元格文字色           |
-| `--mc-table-border`       | `--mc-color-border`         | 单元格下边线           |
-| `--mc-table-head-bg`      | `--mc-color-surface-sunken` | 表头底色               |
-| `--mc-table-head-fg`      | `--mc-color-fg-muted`       | 表头文字色             |
-| `--mc-table-stripe-bg`    | `--mc-color-surface-sunken` | `striped` 的偶数行底色 |
-| `--mc-table-row-hover-bg` | `--mc-color-surface-sunken` | `hoverable` 的悬停底色 |
-| `--mc-table-cell-pad-x`   | `--mc-space-4`              | 单元格左右内边距       |
-| `--mc-table-cell-pad-y`   | `--mc-space-2`              | 单元格上下内边距       |
-| `--mc-table-state-fg`     | `--mc-color-fg-subtle`      | 空态 / 加载态的文字色  |
-| `--mc-table-state-pad`    | `--mc-space-8`              | 空态 / 加载态的内边距  |
+| 令牌                       | 默认                        | 作用                            |
+| -------------------------- | --------------------------- | ------------------------------- |
+| `--mc-table-font`          | `--mc-text-sm`              | 表格字号                        |
+| `--mc-table-fg`            | `--mc-color-fg`             | 单元格文字色                    |
+| `--mc-table-border`        | `--mc-color-border`         | 单元格下边线 / 外框颜色         |
+| `--mc-table-radius`        | `--mc-radius-md`            | `bordered` 外框的圆角           |
+| `--mc-table-head-bg`       | `--mc-color-surface-sunken` | 表头底色                        |
+| `--mc-table-head-fg`       | `--mc-color-fg-muted`       | 表头文字色                      |
+| `--mc-table-stripe-bg`     | `--mc-color-surface-sunken` | `striped` 的偶数行底色          |
+| `--mc-table-row-hover-bg`  | `--mc-color-surface-sunken` | `hoverable` 的悬停底色          |
+| `--mc-table-cell-pad-x`    | `--mc-space-4`              | 单元格左右内边距                |
+| `--mc-table-cell-pad-y`    | `--mc-space-2`              | 单元格上下内边距                |
+| `--mc-table-state-fg`      | `--mc-color-fg-subtle`      | 空态 / 加载态的文字色           |
+| `--mc-table-state-pad`     | `--mc-space-8`              | 空态的内边距 / 加载层的最低高度 |
+| `--mc-table-loading-bg`    | `--mc-color-surface`        | 加载覆盖层的底色                |
+| `--mc-table-loading-alpha` | `0.7`                       | 加载覆盖层的不透明度            |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
 ## 相邻单元
 
-- 演示里用站点级的 [`mc-code`](../code/) 展示 `columns` / `data` 的 JSON；组件本体不依赖任何其它组件
-  （零 `load()`）。
+- 兜底空态 / 加载态各先取一次项目组件：[`mc-empty`](../empty/)（`load('../empty/empty.html')`）与
+  [`mc-spinner`](../spinner/)（`load('../spinner/spinner.html')`）—— 在此之前本单元是零 `load()` 的；
+  除此之外组件本体不依赖任何其它组件。
+- 演示里用站点级的 [`mc-code`](../code/) 展示 `columns` / `data` 的 JSON，那是文档页自己的事，不进本体。
 - 与 [`mc-grid`](../grid/) 的分工：grid 只摆位置、不管内容形状；table 有列语义与状态（空 / 加载）。
 
 <!-- hand:end -->

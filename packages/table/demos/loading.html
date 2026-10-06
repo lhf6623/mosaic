@@ -5,7 +5,7 @@
     export default async () => ({
       tag: 'demo-table-loading',
 
-      /* loading 期间 loading 插槽显示在表格下面 */
+      /* loading 期间那一层盖在表格上（表格留在原位不跳版）；不给插槽内容时兜底是 mc-spinner + 「加载中…」 */
       ready() {
         const table = this.ele.shadowRoot.querySelector('#t');
         table.columns = [{ key: 'name', title: '姓名' }];

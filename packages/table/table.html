@@ -14,6 +14,7 @@
       --mc-table-font: var(--mc-text-sm, var(--mc-def-text-sm));
       --mc-table-fg: var(--mc-color-fg, var(--mc-def-color-fg));
       --mc-table-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-table-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       --mc-table-head-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       --mc-table-head-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
       --mc-table-stripe-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
@@ -22,9 +23,24 @@
       --mc-table-cell-pad-y: var(--mc-space-2, var(--mc-def-space-2));
       --mc-table-state-fg: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
       --mc-table-state-pad: var(--mc-space-8, var(--mc-def-space-8));
+      /* 加载态覆盖层：底色三元组 + 不透明度（与 mc-dialog 的遮罩同一套写法） */
+      --mc-table-loading-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-table-loading-alpha: 0.7;
     }
 
-    /* 2. 表格本体：分隔边框用初始值（separate）就够，只把间距归零 */
+    /* 2. 维度 size：密度三档 —— 只动字号与单元格内边距（默认 md 写在 1 区） */
+    :host([size='sm']) {
+      --mc-table-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-table-cell-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-table-cell-pad-y: var(--mc-space-1, var(--mc-def-space-1));
+    }
+    :host([size='lg']) {
+      --mc-table-font: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-table-cell-pad-x: var(--mc-space-5, var(--mc-def-space-5));
+      --mc-table-cell-pad-y: var(--mc-space-3, var(--mc-def-space-3));
+    }
+
+    /* 3. 表格本体：分隔边框用初始值（separate）就够，只把间距归零 */
     .mc-table {
       width: 100%;
       border-spacing: 0;
@@ -46,7 +62,15 @@
       border-bottom: 0;
     }
 
-    /* 3. 状态：条纹与悬停都由属性驱动（变体一律 :host([attr])） */
+    /* 4. 维度 bordered：整块一圈外框。圆角必须配 overflow: hidden —— 表头底色与首尾那条横线
+       都画在单元格上，不裁就从圆角里露出来 */
+    :host([bordered]) {
+      border: 1px solid rgb(var(--mc-table-border));
+      border-radius: var(--mc-table-radius);
+      overflow: hidden;
+    }
+
+    /* 5. 状态：条纹与悬停都由属性驱动（变体一律 :host([attr])） */
     :host([striped]) .mc-table tbody tr:nth-child(even) {
       background-color: rgb(var(--mc-table-stripe-bg));
     }
@@ -54,7 +78,11 @@
       background-color: rgb(var(--mc-table-row-hover-bg));
     }
 
-    /* 4. 空态 / 加载态：常驻 DOM，靠内部 data-empty 与宿主 [loading] 切显隐（不用 o-if，P10） */
+    /* 6. 空态 / 加载态：常驻 DOM，靠内部 data-empty 与宿主 [loading] 切显隐（不用 o-if，P10） */
+    /* .mc-wrap 是加载态那层绝对定位的包含块 */
+    .mc-wrap {
+      position: relative;
+    }
     .mc-state {
       padding: var(--mc-table-state-pad);
       color: rgb(var(--mc-table-state-fg));
@@ -67,8 +95,34 @@
     .mc-wrap[data-empty] .mc-empty {
       display: block;
     }
+    /* 加载态**盖在表格上**（不是排在表格下面）：表格留在原位、不跳版；spinner 与文案在这一层里居中 */
     :host([loading]) .mc-loading {
-      display: block;
+      display: flex;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background-color: rgb(var(--mc-table-loading-bg) / var(--mc-table-loading-alpha));
+    }
+    /* 还没给 columns / data 时表格本身没有高度，覆盖层会跟着塌掉 —— 给个最低高度兜底 */
+    :host([loading]) .mc-wrap {
+      min-height: calc(var(--mc-table-state-pad) * 2);
+    }
+
+    /* 兜底空态是 mc-empty（图形 + 文案）：它自带内边距与两条颜色令牌，这里把它压回表格这套状态通道
+       —— 换掉的是兜底内容，不是 .mc-state 的盒子（使用者 slot="empty" 进来的内容照旧吃这份 padding） */
+    .mc-empty mc-empty {
+      --mc-empty-pad: 0;
+      --mc-empty-image-color: var(--mc-table-state-fg);
+      --mc-empty-description-color: var(--mc-table-state-fg);
+    }
+
+    /* 加载态兜底 = mc-spinner + 一行文案：排在一行中间，颜色 / 字号都跟着 .mc-state 那颗字 */
+    .mc-loading-text {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
     }
   </style>
 
@@ -84,8 +138,17 @@
         <o-fill id="mc-table-rows" name="mc-table-row" :value="rows" fill-key="rowKey"></o-fill>
       </tbody>
     </table>
-    <div class="mc-state mc-empty"><slot name="empty">{{emptyText}}</slot></div>
-    <div class="mc-state mc-loading"><slot name="loading">加载中…</slot></div>
+    <div class="mc-state mc-empty">
+      <slot name="empty"><mc-empty attr:description="emptyText"></mc-empty></slot>
+    </div>
+    <div class="mc-state mc-loading">
+      <slot name="loading">
+        <span class="mc-loading-text">
+          <mc-spinner size="sm"></mc-spinner>
+          加载中…
+        </span>
+      </slot>
+    </div>
   </div>
 
   <!-- 行 / 表头的模板住在具名 <template> 里：表格里放不了自定义元素，模板只能从外面取 -->
@@ -105,163 +168,175 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
 
-    export default async () => ({
-      tag: 'mc-table',
+    /* 兜底空态 / 加载态用的是项目组件（mc-empty / mc-spinner）：先注册好（路径相对本文件 URL）。
+       代价是引 mc-table 也会各取一次这两份 —— 只在「没有数据」/「加载中」那两条路上用得到。 */
+    export default async ({ load }) => {
+      await load('../empty/empty.html');
+      await load('../spinner/spinner.html');
 
-      attrs: {
-        /* 对象数组。属性写法只作 JSON 兼容（P6：走属性通道会被 JSON 序列化），运行时一律用 property */
-        columns: null,
-        /* ⚠️ 行数据**不能**声明进 attrs：`data` 是 ofa 元素代理上的保留名（$.fn.data），声明它会让属性同步往代理写 `data` → TypeError，组件整个渲染不出来（P7 / P31 那一族）。所以 data 只做宿主 property + 自己听的属性观察。 */
-        striped: null,
-        hoverable: null,
-        loading: null,
-        emptyText: '暂无数据',
-      },
+      return {
+        tag: 'mc-table',
 
-      data: {
-        /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。⚠️ 规范化结果绝不能写回 attrs 声明的键 —— 会被 ofa 再次 JSON 序列化（P6） */
-        cols: [],
-        rows: [],
-      },
-
-      ready() {
-        const root = this.ele.shadowRoot;
-        this._headFill = root.querySelector('#mc-table-head');
-        this._rowFill = root.querySelector('#mc-table-rows');
-        this._wrap = root.querySelector('.mc-wrap');
-
-        /* 挂载前就赋的 property（createElement 之后马上 el.data = …）落在宿主上只是普通属性，这里先收下来；构造期不能往宿主写属性（P31） */
-        const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
-        this._presetColumns = hasOwn('columns') ? this.ele.columns : undefined;
-        this._presetData = hasOwn('data') ? this.ele.data : undefined;
-
-        Object.defineProperty(this.ele, 'columns', {
-          configurable: true,
-          get: () => this.cols,
-          set: (value) => {
-            this._propColumns = true;
-            this.applyColumns(value);
-          },
-        });
-        Object.defineProperty(this.ele, 'data', {
-          configurable: true,
-          get: () => this.rows,
-          set: (value) => {
-            this._propData = true;
-            this.applyData(value);
-          },
-        });
-
-        this._mounted = true; // 之后的 watch 才算真变化（P5）
-      },
-
-      attached() {
-        /* 把被解析器搬出表格的 o-fill 挪回去。移动 DOM 节点不重新解析，所以行就是真 <tr>；append 同一节点幂等 */
-        this._headFill && this.ele.shadowRoot.querySelector('thead tr')?.append(this._headFill);
-        this._rowFill && this.ele.shadowRoot.querySelector('tbody')?.append(this._rowFill);
-
-        /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的值会被它盖掉；顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
-        if (!this._applied) {
-          this._applied = true;
-          if (this.ele.hasAttribute('columns')) this.applyColumns(this.ele.getAttribute('columns'));
-          if (this.ele.hasAttribute('data')) this.applyData(this.ele.getAttribute('data'));
-          if (this._presetColumns !== undefined) {
-            this._propColumns = true;
-            this.applyColumns(this._presetColumns);
-            this._presetColumns = undefined;
-          }
-          if (this._presetData !== undefined) {
-            this._propData = true;
-            this.applyData(this._presetData);
-            this._presetData = undefined;
-          }
-        }
-
-        /* data 没进 attrs（保留名），属性通道自己听。我们从不写这个属性，所以不会自激 */
-        this._attrMo = new MutationObserver(() => {
-          const raw = this.ele.getAttribute('data');
-          const blank = raw == null || raw.trim() === '';
-          if (blank && this._propData) return; // property 写的值不被空属性覆盖
-          this.applyData(raw);
-        });
-        this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['data'] });
-      },
-
-      detached() {
-        this._attrMo?.disconnect();
-      },
-
-      watch: {
-        columns(value) {
-          if (!this._mounted) return; // 首次触发落在构造期（P5）
-          this.applyColumnsIfPresent(value);
-        },
-        loading() {
-          this.applyEmpty();
-        },
-      },
-
-      proto: {
-        /** columns 回到空值时别把 property 写过的值擦掉（watch 与属性观察都走这里） */
-        applyColumnsIfPresent(value) {
-          const blank = value == null || String(value).trim() === '';
-          if (blank && this._propColumns) return;
-          this.applyColumns(value);
+        attrs: {
+          /* 对象数组。属性写法只作 JSON 兼容（P6：走属性通道会被 JSON 序列化），运行时一律用 property */
+          columns: null,
+          /* ⚠️ 行数据**不能**声明进 attrs：`data` 是 ofa 元素代理上的保留名（$.fn.data），声明它会让属性同步往代理写 `data` → TypeError，组件整个渲染不出来（P7 / P31 那一族）。所以 data 只做宿主 property + 自己听的属性观察。 */
+          striped: null,
+          hoverable: null,
+          /* 外边框：整块一圈描边 + 圆角（单元格横线照旧） */
+          bordered: null,
+          /* 密度：字号 + 单元格内边距（md 的默认值写在 1 区） */
+          size: 'md',
+          loading: null,
+          emptyText: '暂无数据',
         },
 
-        /** JSON 字符串 / 数组 / null → 数组（P6 的解析就这一处） */
-        toArray(value) {
-          if (value == null) return [];
-          if (typeof value === 'string') {
-            const text = value.trim();
-            if (!text) return [];
-            try {
-              const parsed = JSON.parse(text);
-              return Array.isArray(parsed) ? parsed : [];
-            } catch {
-              return [];
+        data: {
+          /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。⚠️ 规范化结果绝不能写回 attrs 声明的键 —— 会被 ofa 再次 JSON 序列化（P6） */
+          cols: [],
+          rows: [],
+        },
+
+        ready() {
+          const root = this.ele.shadowRoot;
+          this._headFill = root.querySelector('#mc-table-head');
+          this._rowFill = root.querySelector('#mc-table-rows');
+          this._wrap = root.querySelector('.mc-wrap');
+
+          /* 挂载前就赋的 property（createElement 之后马上 el.data = …）落在宿主上只是普通属性，这里先收下来；构造期不能往宿主写属性（P31） */
+          const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
+          this._presetColumns = hasOwn('columns') ? this.ele.columns : undefined;
+          this._presetData = hasOwn('data') ? this.ele.data : undefined;
+
+          Object.defineProperty(this.ele, 'columns', {
+            configurable: true,
+            get: () => this.cols,
+            set: (value) => {
+              this._propColumns = true;
+              this.applyColumns(value);
+            },
+          });
+          Object.defineProperty(this.ele, 'data', {
+            configurable: true,
+            get: () => this.rows,
+            set: (value) => {
+              this._propData = true;
+              this.applyData(value);
+            },
+          });
+
+          this._mounted = true; // 之后的 watch 才算真变化（P5）
+        },
+
+        attached() {
+          /* 把被解析器搬出表格的 o-fill 挪回去。移动 DOM 节点不重新解析，所以行就是真 <tr>；append 同一节点幂等 */
+          this._headFill && this.ele.shadowRoot.querySelector('thead tr')?.append(this._headFill);
+          this._rowFill && this.ele.shadowRoot.querySelector('tbody')?.append(this._rowFill);
+
+          /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的值会被它盖掉；顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
+          if (!this._applied) {
+            this._applied = true;
+            if (this.ele.hasAttribute('columns'))
+              this.applyColumns(this.ele.getAttribute('columns'));
+            if (this.ele.hasAttribute('data')) this.applyData(this.ele.getAttribute('data'));
+            if (this._presetColumns !== undefined) {
+              this._propColumns = true;
+              this.applyColumns(this._presetColumns);
+              this._presetColumns = undefined;
+            }
+            if (this._presetData !== undefined) {
+              this._propData = true;
+              this.applyData(this._presetData);
+              this._presetData = undefined;
             }
           }
-          return Array.isArray(value) ? value : [];
-        },
 
-        /** 列定义 → 内部 cols；title 缺省退回 key，width 统一成字符串（模板用 :style.width） */
-        applyColumns(value) {
-          this.cols = this.toArray(value)
-            .filter((col) => col && typeof col === 'object')
-            .map((col) => ({
-              key: String(col.key ?? ''),
-              title: col.title == null ? String(col.key ?? '') : String(col.title),
-              width: col.width == null ? '' : String(col.width),
-            }));
-        },
-
-        /** 行数据 → 内部 rows，并补一个稳定的 fill-key（优先 rowKey / id） */
-        applyData(value) {
-          this.rows = this.toArray(value).map((row, index) => {
-            if (!row || typeof row !== 'object') return { rowKey: String(index) };
-            return { ...row, rowKey: String(row.rowKey ?? row.id ?? index) };
+          /* data 没进 attrs（保留名），属性通道自己听。我们从不写这个属性，所以不会自激 */
+          this._attrMo = new MutationObserver(() => {
+            const raw = this.ele.getAttribute('data');
+            const blank = raw == null || raw.trim() === '';
+            if (blank && this._propData) return; // property 写的值不被空属性覆盖
+            this.applyData(raw);
           });
-          this.applyEmpty();
+          this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['data'] });
         },
 
-        /** 一行 → 一串 `<td part="cell">`（单元格数量由 columns 决定） */
-        cellsHtml(row) {
-          let html = '';
-          for (const col of this.cols) {
-            html += `<td part="cell">${escapeHtml(row?.[col.key])}</td>`;
-          }
-          return html;
+        detached() {
+          this._attrMo?.disconnect();
         },
 
-        /** 空态：没有行、也不在加载中。写在内部容器上，绝不写宿主属性（P31） */
-        applyEmpty() {
-          if (!this._wrap) return;
-          const empty = this.rows.length === 0 && this.loading === null;
-          if (empty) this._wrap.setAttribute('data-empty', '');
-          else this._wrap.removeAttribute('data-empty');
+        watch: {
+          columns(value) {
+            if (!this._mounted) return; // 首次触发落在构造期（P5）
+            this.applyColumnsIfPresent(value);
+          },
+          loading() {
+            this.applyEmpty();
+          },
         },
-      },
-    });
+
+        proto: {
+          /** columns 回到空值时别把 property 写过的值擦掉（watch 与属性观察都走这里） */
+          applyColumnsIfPresent(value) {
+            const blank = value == null || String(value).trim() === '';
+            if (blank && this._propColumns) return;
+            this.applyColumns(value);
+          },
+
+          /** JSON 字符串 / 数组 / null → 数组（P6 的解析就这一处） */
+          toArray(value) {
+            if (value == null) return [];
+            if (typeof value === 'string') {
+              const text = value.trim();
+              if (!text) return [];
+              try {
+                const parsed = JSON.parse(text);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            }
+            return Array.isArray(value) ? value : [];
+          },
+
+          /** 列定义 → 内部 cols；title 缺省退回 key，width 统一成字符串（模板用 :style.width） */
+          applyColumns(value) {
+            this.cols = this.toArray(value)
+              .filter((col) => col && typeof col === 'object')
+              .map((col) => ({
+                key: String(col.key ?? ''),
+                title: col.title == null ? String(col.key ?? '') : String(col.title),
+                width: col.width == null ? '' : String(col.width),
+              }));
+          },
+
+          /** 行数据 → 内部 rows，并补一个稳定的 fill-key（优先 rowKey / id） */
+          applyData(value) {
+            this.rows = this.toArray(value).map((row, index) => {
+              if (!row || typeof row !== 'object') return { rowKey: String(index) };
+              return { ...row, rowKey: String(row.rowKey ?? row.id ?? index) };
+            });
+            this.applyEmpty();
+          },
+
+          /** 一行 → 一串 `<td part="cell">`（单元格数量由 columns 决定） */
+          cellsHtml(row) {
+            let html = '';
+            for (const col of this.cols) {
+              html += `<td part="cell">${escapeHtml(row?.[col.key])}</td>`;
+            }
+            return html;
+          },
+
+          /** 空态：没有行、也不在加载中。写在内部容器上，绝不写宿主属性（P31） */
+          applyEmpty() {
+            if (!this._wrap) return;
+            const empty = this.rows.length === 0 && this.loading === null;
+            if (empty) this._wrap.setAttribute('data-empty', '');
+            else this._wrap.removeAttribute('data-empty');
+          },
+        },
+      };
+    };
   </script>
 </template>

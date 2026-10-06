@@ -1,0 +1,30 @@
+<template component>
+  <div class="flex flex-col gap-4">
+    <mc-table id="sm" size="sm"></mc-table>
+    <mc-table id="md"></mc-table>
+    <mc-table id="lg" size="lg"></mc-table>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-table-size',
+
+      /* 三档只改字号与单元格内边距，行高不变（紧凑 / 常规 / 宽松） */
+      ready() {
+        const columns = [
+          { key: 'name', title: '姓名' },
+          { key: 'dept', title: '部门' },
+        ];
+        const data = [
+          { name: '张三', dept: '设计' },
+          { name: '李四', dept: '研发' },
+        ];
+        for (const id of ['sm', 'md', 'lg']) {
+          const table = this.ele.shadowRoot.querySelector('#' + id);
+          table.columns = columns;
+          table.data = data;
+        }
+      },
+    });
+  </script>
+</template>

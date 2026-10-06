@@ -13,7 +13,7 @@
     export default async () => ({
       tag: 'demo-table-slots',
 
-      /* 两个命名插槽都给了内容：空态 / 加载态显示的就是这段，而不是 empty-text 与内置的「加载中…」 */
+      /* 两个命名插槽都给了内容：空态 / 加载态显示的就是这段，而不是兜底的 mc-empty 与内置的「加载中…」 */
       ready() {
         const columns = [{ key: 'name', title: '姓名' }];
 
