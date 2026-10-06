@@ -66,6 +66,10 @@ export const ICONS = {
   heart: 'lucide:heart',
   bell: 'lucide:bell',
 
+  // ---- 空态 ----
+  /* 「空」的语义入口：空收件箱 / 空托盘，mc-empty 的内置图形用它（组件里写 class="mc-icon-empty"） */
+  empty: 'lucide:inbox',
+
   // ---- 主题与播放 ----
   sun: 'lucide:sun',
   moon: 'lucide:moon',

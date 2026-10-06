@@ -1,13 +1,13 @@
 Mosaic 内置图标 —— 来源与许可
 
 本文件由 tools/gen-icons.mjs 生成，随清单变化。
-内置图标数：91
+内置图标数：92
 
 Lucide（Iconify 集名：lucide）
   许可：ISC（ISC）
   来源：https://github.com/lucide-icons/lucide/blob/main/LICENSE
   作者：Lucide Contributors
-  本仓库内置其中 67 个图标的图形数据（清单见 tools/icon-manifest.mjs）
+  本仓库内置其中 68 个图标的图形数据（清单见 tools/icon-manifest.mjs）
 
 Simple Icons（Iconify 集名：simple-icons）
   许可：CC0 1.0（CC0-1.0）

@@ -4,7 +4,7 @@
  * JSDoc 类型，运行时并不加载它）、icons.generated.css（每条一个 data-URI mask，类名 mc-icon-<名字>）、
  * icons.license.txt（来源与许可）。三条守卫都是「缺输入必须大声失败」，而且是**构建期**就红：
  * ① 上游名必须真的存在（含别名解析）；② license.spdx 必须在白名单里（GPL / CC-BY-NC / 需署名的 CC-BY 进不来）；
- * ③ 生成的类名不能和组件已有的类名撞车。
+ * ③ 生成的类名不能和组件已有的类名撞车；④ 内置图标页（demos/builtins.html）必须把清单列全。
  * 用法：node tools/gen-icons.mjs（通常经 `pnpm icons`；`pnpm build` 里排在 tokens 之前）
  */
 
@@ -158,6 +158,23 @@ if (styledClashes.length) {
       ([cls, files]) => `组件样式占用了内置图标类名 ${cls}（${[...files].join(' ')}）`,
     ),
     '组件的内部类请换个名字',
+  ]);
+}
+
+/* ---------- 4. 内置图标页必须列全：packages/icon/demos/builtins.html 是使用者查名字 / 复制名字的那一页，
+ * 漏一个新图标不会报错、只是页面上找不到（实测漏过一次）—— 在构建期把它顶出来。 ---------- */
+
+const BUILTINS_PAGE = resolve(ROOT, 'packages/icon/demos/builtins.html');
+const listedNames = new Set(
+  [...readFileSync(BUILTINS_PAGE, 'utf8').matchAll(/data-name="([\w-]+)"/g)].map((m) => m[1]),
+);
+const missingFromPage = Object.keys(icons).filter((name) => !listedNames.has(name));
+const extraOnPage = [...listedNames].filter((name) => !(name in icons));
+if (missingFromPage.length || extraOnPage.length) {
+  fail([
+    ...missingFromPage.map((name) => `内置图标 ${name} 没列进 packages/icon/demos/builtins.html`),
+    ...extraOnPage.map((name) => `builtins.html 列了 ${name}，它不是清单里的内置图标`),
+    '加图标 = tools/icon-manifest.mjs 一行 + 图标页一行 + `pnpm icons`',
   ]);
 }
 

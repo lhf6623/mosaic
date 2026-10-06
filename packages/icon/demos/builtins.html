@@ -397,6 +397,20 @@
     </div>
 
     <div class="flex flex-col gap-2">
+      <p class="text-xs" style="color: rgb(var(--mc-color-fg-muted))">空态</p>
+      <div class="flex flex-wrap items-start gap-1">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
+          data-name="empty"
+          on:click="copy">
+          <mc-icon name="empty" class="text-lg"></mc-icon>
+          empty
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
       <p class="text-xs" style="color: rgb(var(--mc-color-fg-muted))">主题与播放</p>
       <div class="flex flex-wrap items-start gap-1">
         <button
