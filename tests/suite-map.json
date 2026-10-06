@@ -13,6 +13,7 @@
       "docs/doc-layout.html",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
+      "docs/pages/faq.html",
       "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
@@ -61,6 +62,8 @@
       "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.html",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -1906,6 +1909,9 @@
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
     ],
+    "docs/pages/faq.html": [
+      "tests/site/01-load-shell.mjs"
+    ],
     "docs/pages/guide.html": [
       "packages/code/test/code.test.mjs"
     ],
@@ -3125,10 +3131,12 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.html": [
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/loading-bar/loading-bar.js": [
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "tests/site/01-load-shell.mjs"
     ],
     "packages/loading-bar/page.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"

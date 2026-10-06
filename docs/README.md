@@ -16,6 +16,9 @@
 - 页面里**不写** `position: fixed`、侧栏宽度与 `@media` 断点 —— 那是布局页的事。
 - `docs/pages/` 下只有首页挂 `layout.html`（单栏），其余站点页都挂 `doc-layout.html`（三栏）。
 - 页面清单与分组**不在本文档里抄第二份** —— 唯一来源是 `docs/site-map.js`。
+- 换页的加载条是 `mc-loading-bar`，接线在 `app-config.js`：ofa 每次导航开始都会调 `loading`
+  （olink 的 pushState 导航**不发 hashchange**，接在别处会漏掉它），结束信号是 `router-change`；
+  慢过一小会儿才露（阈值就在 `app-config.js` 里），快导航不闪。
 
 ## 二、样式归属：一句话一条规则
 
@@ -68,7 +71,7 @@
 
 ```text
 index.html              站点入口：只做引入（外壳在 docs/layout.html）
-app-config.js           o-app 配置：首页、加载 / 失败兜底
+app-config.js           o-app 配置：首页、导航加载条、加载 / 失败兜底
 docs/
   README.md             本文件
   layout.html           站点外壳（顶栏 + 正文带）

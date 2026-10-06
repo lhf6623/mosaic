@@ -475,6 +475,74 @@ check(
   JSON.stringify(afterNav),
 );
 
+/* ------------------------------------------------------------------ *
+ * 9. 导航加载条（第 7.x 节）：接线在 app-config.js，视觉是 mc-loading-bar
+ *    ofa 每次导航开始都会调 `loading` —— 包括 olink 的 pushState 导航（它不发 hashchange），
+ *    所以这里也顺带守着那条路径；结束信号是 router-change。
+ * ------------------------------------------------------------------ */
+const navBarState = () =>
+  page.evaluate(`(() => {
+    const el = document.querySelector('body > mc-loading-bar');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      state: el.getAttribute('state'),
+      top: Math.round(el.getBoundingClientRect().top),
+      position: cs.position,
+      pointerEvents: cs.pointerEvents,
+    };
+  })()`);
+
+/* ⓐ 快导航不露条：直接在页面上驱动那一对信号，而不是赌「真实导航一定慢过阈值」——
+      本地一次导航只有 10~30ms，拿它做断言在并行跑时会变成时序抽奖。 */
+const fastNav = await page.evaluate(`(async () => {
+  const mod = await import(new URL('app-config.js', document.baseURI).href);
+  mod.loading(); // 布防
+  document.dispatchEvent(new CustomEvent('router-change')); // 结束信号先到
+  await new Promise((r) => setTimeout(r, 400));
+  return document.querySelector('body > mc-loading-bar')?.getAttribute('state') ?? null;
+})()`);
+check('快导航不闪加载条（结束信号先到，条子根本不出现）', fastNav !== 'loading', `state=${fastNav}`);
+
+/* ⓑ 慢导航露条、渲染完收尾：把目标页模块压住 —— faq 这一页本套件没访问过，才会真发那次请求 */
+await page.route('**/docs/pages/faq.html', async (route) => {
+  await new Promise((r) => setTimeout(r, 1500));
+  await route.continue();
+});
+await page.evaluate(() => {
+  location.hash = '#/docs/pages/faq.html';
+});
+const barAppeared = await page
+  .waitForFunction(
+    () => document.querySelector('body > mc-loading-bar')?.getAttribute('state') === 'loading',
+    { timeout: 1200 },
+  )
+  .then(() => true)
+  .catch(() => false);
+const midBar = await navBarState();
+check(
+  '慢导航露出加载条：挂在 body 上、钉在视口顶部、不吃指针',
+  barAppeared &&
+    midBar?.state === 'loading' &&
+    midBar.top === 0 &&
+    midBar.position === 'fixed' &&
+    midBar.pointerEvents === 'none',
+  JSON.stringify(midBar),
+);
+
+const barDone = await page
+  .waitForFunction(
+    () => document.querySelector('body > mc-loading-bar')?.getAttribute('state') === 'done',
+    { timeout: 6000 },
+  )
+  .then(() => true)
+  .catch(() => false);
+check(
+  '新页面渲染完（router-change）后加载条收尾',
+  barDone && (await navBarState())?.state === 'done',
+  JSON.stringify(await navBarState()),
+);
+
 // 复位视口，别把后面的断言（如果有）留在窄屏
 await page.setViewportSize({ width: 1280, height: 900 });
 await page.waitForTimeout(200);
