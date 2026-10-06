@@ -6,7 +6,40 @@
  * 函数与容器组件只传数据；⚠️ 必须原地改数组，整体替换 rows 之后 o-fill 不更新且不报错；必须挂 document.body。
  */
 
-/** 语义类型：对齐 mc-alert 的四个语义色 + neutral，不新造色板 */
+/**
+ * 队列项。
+ * @typedef {object} QueueItem
+ * @property {string} id
+ * @property {string} type
+ * @property {string} text
+ * @property {boolean} icon
+ * @property {string | null} iconName
+ * @property {boolean} closable
+ * @property {number} duration 0 = 不自动关
+ * @property {string | null} key
+ * @property {(() => void) | null} onClose
+ * @property {ReturnType<typeof setTimeout> | null} timer
+ */
+
+/**
+ * `message(input, config)` 收的字段（不传的走 DEFAULTS / 类型默认）
+ * @typedef {object} MessageInput
+ * @property {string} [text]
+ * @property {string} [type]
+ * @property {number} [duration]
+ * @property {string} [key]
+ * @property {boolean} [closable]
+ * @property {boolean} [icon]
+ * @property {string} [iconName]
+ * @property {(() => void) | null} [onClose]
+ */
+
+/** mc-message 实例上本模块用到的那两块 @typedef {{ push: (item: QueueItem) => void, rows: QueueItem[] }} MessageHost */
+
+/**
+ * 语义类型：对齐 mc-alert 的四个语义色 + neutral，不新造色板
+ * @type {Record<string, { icon: boolean, iconName: string | null }>}
+ */
 const TYPES = {
   neutral: { icon: false, iconName: null },
   info: { icon: true, iconName: 'info' },
@@ -30,14 +63,24 @@ const DEFAULTS = {
 /** 组件文件（相对本模块解析），首次调用时才注册 */
 const COMPONENT_URL = new URL('./message.html', import.meta.url).href;
 
-/** 当前配置（message.config 改） */
+/**
+ * 当前配置（message.config 改）
+ * @type {typeof DEFAULTS}
+ */
 let options = { ...DEFAULTS };
 
-/** 队列项：{ id, type, text, icon, iconName, closable, timer, key } */
+/**
+ * 队列项：{ id, type, text, icon, iconName, closable, timer, key }
+ * @type {QueueItem[]}
+ */
 const queue = [];
-/** key → 队列项（同 key 更新 / close(key) 用） */
+/**
+ * key → 队列项（同 key 更新 / close(key) 用）
+ * @type {Map<string, QueueItem>}
+ */
 const byKey = new Map();
 
+/** @type {Promise<MessageHost> | null} */
 let hostPromise = null;
 
 /** 自增 id：同毫秒连发也不会重（o-fill 的 fill-key 用它） */
@@ -46,17 +89,25 @@ const nextId = () => `${Date.now()}-${seq++}`;
 
 /* ---------- 懒挂载：首次调用才注册组件 + 挂宿主，之后复用同一个容器 ---------- */
 
-/** 等 ofa 把实例挂上来（append 之后 $() 不一定立刻有；ready 是异步的） */
+/**
+ * 等 ofa 把实例挂上来（append 之后 $() 不一定立刻有；ready 是异步的）
+ * @returns {Promise<MessageHost>}
+ */
 const waitForInstance = async () => {
   for (let i = 0; i < 40; i++) {
     const inst = $('mc-message');
     if (inst && typeof inst.push === 'function') return inst;
-    await new Promise((r) => requestAnimationFrame(() => r()));
+    /** @type {Promise<void>} */
+    const nextFrame = new Promise((r) => requestAnimationFrame(() => r()));
+    await nextFrame;
   }
   throw new Error('[mosaic] mc-message 没有在预期时间内就绪');
 };
 
-/** 挂载容器：必须先用 `<l-m>` 注册，`document.createElement` 才能升级（注册是异步的） */
+/**
+ * 挂载容器：必须先用 `<l-m>` 注册，`document.createElement` 才能升级（注册是异步的）
+ * @returns {Promise<MessageHost>}
+ */
 const mount = () => {
   if (hostPromise) return hostPromise;
 
@@ -85,10 +136,14 @@ const mount = () => {
 
     const inst = await waitForInstance();
     /* 组件把「被点掉」抛成 close 事件；本模块负责清定时器与索引 */
-    host.addEventListener('close', (event) => {
+    /** @param {Event} event */
+    const onClose = (event) => {
+      /* event 的静态类型只有 Event，close 事件带的是 detail.id（EventListener 签名收不窄，这里自己收） */
+      const { detail } = /** @type {CustomEvent<{ id?: string }>} */ (event);
       /* ⚠️ 必须走 drop()：组件只把行从 rows 摘掉，队列里这条还在 —— 只清一半会持续泄漏，onClose 也永远不触发 */
-      drop(event.detail?.id);
-    });
+      drop(detail?.id);
+    };
+    host.addEventListener('close', onClose);
     return inst;
   })();
 
@@ -97,6 +152,7 @@ const mount = () => {
 
 /* ---------- 队列操作 ---------- */
 
+/** @param {QueueItem | null} item */
 const clearTimer = (item) => {
   if (item?.timer) {
     clearTimeout(item.timer);
@@ -104,7 +160,11 @@ const clearTimer = (item) => {
   }
 };
 
-/** 从队列里删掉一条（按 id）。返回是否删掉了。 */
+/**
+ * 从队列里删掉一条（按 id）。返回是否删掉了。
+ * @param {string | undefined} id
+ * @returns {Promise<boolean>}
+ */
 const drop = async (id) => {
   const index = queue.findIndex((item) => item.id === id);
   if (index < 0) return false;
@@ -126,6 +186,7 @@ const drop = async (id) => {
   return true;
 };
 
+/** @param {QueueItem} item */
 const arm = (item) => {
   if (!item.duration) return;
   item.timer = setTimeout(() => {
@@ -133,7 +194,10 @@ const arm = (item) => {
   }, item.duration);
 };
 
-/** 超出上限时，从最旧的开始顶掉 */
+/**
+ * 超出上限时，从最旧的开始顶掉
+ * @returns {Promise<void>}
+ */
 const enforceLimit = async () => {
   while (queue.length > Math.max(1, options.limit)) {
     await drop(queue[0].id);
@@ -142,13 +206,20 @@ const enforceLimit = async () => {
 
 /* ---------- 公开 API ---------- */
 
-/** 弹一条消息，返回 `{ close }`（`close()` 立刻收掉这一条）。 */
+/**
+ * 弹一条消息，返回 `{ close }`（`close()` 立刻收掉这一条）。
+ * @param {string | MessageInput} input 文本，或一份带字段的对象
+ * @param {MessageInput} [config] 覆盖默认值的字段（同一条消息上的写法优先）
+ * @returns {{ close: () => Promise<boolean>, readonly id: string }}
+ */
 export function message(input, config = {}) {
+  /** @type {MessageInput} */
   const raw = typeof input === 'string' ? { text: input, ...config } : { ...input, ...config };
-  const type = TYPES[raw.type] ? raw.type : DEFAULTS.type;
+  const type = typeof raw.type === 'string' && TYPES[raw.type] ? raw.type : DEFAULTS.type;
   const spec = TYPES[type];
 
   const duration = raw.duration ?? options.duration;
+  /** @type {QueueItem} */
   const item = {
     id: nextId(),
     type,
@@ -196,23 +267,40 @@ export function message(input, config = {}) {
 
 /* 四种类型 + neutral 的简写。都返回 `{ close }`。 */
 for (const type of Object.keys(TYPES)) {
-  message[type] = (input, config = {}) =>
+  /**
+   * @param {string | MessageInput} input
+   * @param {MessageInput} [config]
+   */
+  const shorthand = (input, config = {}) =>
     message(typeof input === 'string' ? { text: input, type } : { ...input, type }, config);
+  // 用 Object.assign 挂上去：函数类型没有字符串索引签名，直接 message[type] = 过不了类型检查
+  Object.assign(message, { [type]: shorthand });
 }
 
-/** 关掉指定的那一条（按 key 或 message() 返回的 id）。 */
+/**
+ * 关掉指定的那一条（按 key 或 message() 返回的 id）。
+ * @param {string} key
+ * @returns {Promise<boolean>}
+ */
 message.close = (key) => {
   const item = byKey.get(key) ?? queue.find((row) => row.id === key);
   return item ? drop(item.id) : Promise.resolve(false);
 };
 
-/** 全收掉。 */
+/**
+ * 全收掉。
+ * @returns {Promise<void>}
+ */
 message.closeAll = () => {
   const ids = queue.map((item) => item.id);
   return Promise.all(ids.map((id) => drop(id))).then(() => undefined);
 };
 
-/** 改默认值（只影响之后创建的消息）。 */
+/**
+ * 改默认值（只影响之后创建的消息）。
+ * @param {Partial<typeof DEFAULTS>} [next]
+ * @returns {typeof DEFAULTS}
+ */
 message.config = (next = {}) => {
   options = { ...options, ...next };
   return { ...options };

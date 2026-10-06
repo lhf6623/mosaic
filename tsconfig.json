@@ -1,15 +1,26 @@
 {
+  // 检查范围 = 手写的浏览器 JS + 生成产物：.html 里的 <script> 检查不了；
+  // tools/ 与 tests/ 是 Node 脚本、不随库发布，要收它们得另开一份带 node 类型的配置。
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "allowJs": false
+    "allowJs": true,
+    "checkJs": true,
+    "types": []
   },
-  "include": ["packages/icon/icons.generated.ts"]
+  "include": [
+    "app-config.js",
+    "docs/**/*.js",
+    "docs/**/*.mjs",
+    "packages/**/*.js",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["packages/code/demos/highlight-demo.js"]
 }

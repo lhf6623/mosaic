@@ -142,7 +142,7 @@ function sharedSurface(file) {
   }
   // 构建配置、入口、文档站（外壳 / 布局 / 页面 / 内容样式）、图标产物
   if (
-    /^(tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/|packages\/icon\/icons\.generated\.css)/.test(
+    /^(tsconfig\.json|package\.json|index\.html|app-config\.js|tools\/|docs\/|packages\/icon\/icons\.generated\.)/.test(
       file,
     )
   ) {

@@ -207,7 +207,7 @@
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
-    /** 语义色 → 内置图标名。图形本体住在 packages/icon/icons.generated.ts，构建期编译成 CSS（零请求） */
+    /** 语义色 → 内置图标名。图形本体住在 packages/icon/icons.generated.css，构建期由 icons.generated.js 编译而来（零请求） */
     const GLYPH_NAMES = {
       primary: 'info',
       info: 'info',

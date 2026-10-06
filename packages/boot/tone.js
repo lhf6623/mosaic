@@ -13,6 +13,15 @@
 
 import { mix, parseHex, readToken, readableOn, triple, warnOnce } from './color-math.js';
 
+/** 颜色三元组，与 color-math.js 同一份 @typedef {import('./color-math.js').RGB} RGB */
+
+/**
+ * 能写内联 style 的元素（HTMLElement / SVGElement / MathMLElement 都算）—— 六个令牌就写在它的 style 上
+ * @typedef {Element & ElementCSSInlineStyle} StylableElement
+ */
+
+/** data-tone 的三种入口写法 @typedef {string | StylableElement | Iterable<StylableElement>} ToneTarget */
+
 /** 六个需要写的令牌：一个色族的全套，少一个就有一处不跟着变 */
 const TOKENS = [
   '--mc-color-primary',
@@ -29,7 +38,11 @@ const ATTR = 'data-tone';
 /* 颜色：解析 / 令牌回读 / 对比度 / 混合 —— 数学在 color-math.js（与组件的 color="#fff000" 共用），
    这里只多一条"也收 `255 240 0` 三元组"的宽容（data-tone 与令牌同形）。 */
 
-/** `#fff000` / `#fc0` / `255 240 0` → [r, g, b]；不认的返回 null */
+/**
+ * `#fff000` / `#fc0` / `255 240 0` → [r, g, b]；不认的返回 null
+ * @param {unknown} value
+ * @returns {RGB | null}
+ */
 function parse(value) {
   const text = String(value ?? '').trim();
   const hex = parseHex(text);
@@ -39,9 +52,15 @@ function parse(value) {
   return rgb.every((n) => n <= 255) ? rgb : null;
 }
 
+/** @param {string} message @returns {void} */
 const warn = (message) => warnOnce(message, `[mosaic] tone：${message}`);
 
-/** 把解析好的颜色写到元素上；令牌读不到时退化为只写必需的两个 */
+/**
+ * 把解析好的颜色写到元素上；令牌读不到时退化为只写必需的两个
+ * @param {StylableElement} el
+ * @param {RGB} rgb
+ * @param {{ subtle: number, step: number }} opts 派生档的混合比例
+ */
 function paint(el, rgb, opts) {
   const surface = readToken('--mc-color-surface');
   const dir = readToken('--mc-color-fg');
@@ -59,9 +78,17 @@ function paint(el, rgb, opts) {
   el.style.setProperty('--mc-color-ring', triple(mix(rgb, dir, opts.step)));
 }
 
-/** 选择器 / 元素 / 元素列表 → 元素数组（不跨 shadow 边界：这是使用者面的 API，不走内部） */
+/**
+ * 选择器 / 元素 / 元素列表 → 元素数组（不跨 shadow 边界：这是使用者面的 API，不走内部）
+ * @param {ToneTarget} target
+ * @returns {StylableElement[]}
+ */
 function resolve(target) {
-  if (typeof target === 'string') return [...document.querySelectorAll(target)];
+  if (typeof target === 'string') {
+    /** @type {NodeListOf<StylableElement>} */
+    const hits = document.querySelectorAll(target);
+    return [...hits];
+  }
   if (target instanceof Element) return [target];
   if (target && typeof target[Symbol.iterator] === 'function') return [...target];
   return [];
@@ -70,7 +97,7 @@ function resolve(target) {
 /**
  * 给一个元素（含子树）换任意色。
  *
- * @param {string|Element|Iterable<Element>} target 选择器或元素
+ * @param {ToneTarget} target 选择器或元素
  * @param {string} color hex（`#fff000` / `#fc0`）或通道三元组（`255 240 0`）
  * @param {{subtle?: number, step?: number}} [opts] 派生档的混合比例，一般不用给
  * @returns {boolean} 是否至少应用成功一个元素（值非法 / 没命中元素 → false，且什么都不改）
@@ -89,7 +116,11 @@ export function applyTone(target, color, opts = {}) {
   return els.length > 0;
 }
 
-/** 撤回任意色：删掉属性、清掉那六个令牌（元素回到语义色） */
+/**
+ * 撤回任意色：删掉属性、清掉那六个令牌（元素回到语义色）
+ * @param {ToneTarget} target
+ * @returns {boolean}
+ */
 export function clearTone(target) {
   const els = resolve(target);
   for (const el of els) {
@@ -99,7 +130,10 @@ export function clearTone(target) {
   return els.length > 0;
 }
 
-/** 只清令牌，不动属性（`clearTone` 与「使用者直接 removeAttribute」共用） */
+/**
+ * 只清令牌，不动属性（`clearTone` 与「使用者直接 removeAttribute」共用）
+ * @param {StylableElement} el
+ */
 function clearPainting(el) {
   for (const name of TOKENS) el.style.removeProperty(name);
 }
@@ -108,6 +142,7 @@ function clearPainting(el) {
  * 声明式：`data-tone` + 主题变化重算
  * ------------------------------------------------------------------ */
 
+/** @param {StylableElement} el */
 function applyFromAttribute(el) {
   const value = el.getAttribute(ATTR);
   const rgb = parse(value);
@@ -120,13 +155,20 @@ function applyFromAttribute(el) {
 
 /** 主题变了：派生档要按新主题的 surface / fg 重算（hex 本身不变，见文件头限制 ①） */
 function reapplyAll() {
-  for (const el of document.querySelectorAll(`[${ATTR}]`)) applyFromAttribute(el);
+  /** @type {NodeListOf<StylableElement>} */
+  const hits = document.querySelectorAll(`[${ATTR}]`);
+  for (const el of hits) applyFromAttribute(el);
 }
 
+/** @param {Node} node */
 function scanAdded(node) {
-  if (node.nodeType !== 1) return;
-  if (node.hasAttribute?.(ATTR)) applyFromAttribute(node);
-  for (const el of node.querySelectorAll?.(`[${ATTR}]`) ?? []) applyFromAttribute(el);
+  if (!(node instanceof Element)) return;
+  // 走到这儿的一定是元素；写令牌要 style，所以按 StylableElement 收窄
+  const el = /** @type {StylableElement} */ (node);
+  if (el.hasAttribute(ATTR)) applyFromAttribute(el);
+  /** @type {NodeListOf<StylableElement>} */
+  const hits = el.querySelectorAll(`[${ATTR}]`);
+  for (const hit of hits) applyFromAttribute(hit);
 }
 
 /* 引入即生效：先把已经存在的扫一遍（module 是 defer 的，DOM 已就绪） */
@@ -140,7 +182,8 @@ new MutationObserver((records) => {
     }
     /* 属性变了：有值就应用，被删掉（clearTone 或使用者自己 removeAttribute）就清干净。
        没有这一步，删属性会走进"读到 null 再警告一次"的岔路。 */
-    const el = record.target;
+    // 属性记录的目标一定是元素；这里要清它的内联 style，所以按 StylableElement 收窄
+    const el = /** @type {StylableElement} */ (record.target);
     if (el.hasAttribute(ATTR)) applyFromAttribute(el);
     else clearPainting(el);
   }

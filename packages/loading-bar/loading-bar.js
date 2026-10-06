@@ -7,26 +7,45 @@
  */
 const COMPONENT_URL = new URL('./loading-bar.html', import.meta.url).href;
 
-/** 组件注册（全局一次，与落点无关） */
+/**
+ * 组件注册（全局一次，与落点无关）
+ * @type {Promise<void> | null}
+ */
 let defined = null;
-/** 默认那一条（挂 body） */
+/**
+ * 默认那一条（挂 body）
+ * @type {Promise<HTMLElement> | null}
+ */
 let fixedHost = null;
-/** 容器 → 该容器里那一条（WeakMap：容器没了它跟着走；存的是 Promise，并发不会造出两条） */
+/**
+ * 容器 → 该容器里那一条（WeakMap：容器没了它跟着走；存的是 Promise，并发不会造出两条）
+ * @type {WeakMap<Element, Promise<HTMLElement>>}
+ */
 const scopedHosts = new WeakMap();
 
+/** @param {number} ms @returns {Promise<void>} */
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** 等 ofa 把实例挂上来（`ready` 是异步的）。⚠️ 必须等：ofa 会把非空默认属性反射到宿主，早写的属性会被那一下盖掉。 */
+/**
+ * 等 ofa 把实例挂上来（`ready` 是异步的）。⚠️ 必须等：ofa 会把非空默认属性反射到宿主，早写的属性会被那一下盖掉。
+ * @param {HTMLElement} el
+ * @returns {Promise<any>} ofa 的组件实例（形状只有组件自己知道）
+ */
 const waitForInstance = async (el) => {
   for (let i = 0; i < 40; i++) {
     const inst = $(el);
     if (inst && typeof inst.syncState === 'function') return inst;
-    await new Promise((r) => requestAnimationFrame(() => r()));
+    /** @type {Promise<void>} */
+    const nextFrame = new Promise((r) => requestAnimationFrame(() => r()));
+    await nextFrame;
   }
   throw new Error('[mosaic] mc-loading-bar 没有在预期时间内就绪');
 };
 
-/** 首次用到才用 `<l-m>` 把组件注册上（在 CDN 上也是相对自己解析） */
+/**
+ * 首次用到才用 `<l-m>` 把组件注册上（在 CDN 上也是相对自己解析）
+ * @returns {Promise<void>}
+ */
 const ensureDefined = () => {
   if (defined) return defined;
 
@@ -47,7 +66,11 @@ const ensureDefined = () => {
   return defined;
 };
 
-/** 造 + 挂一条：无 target 挂 body（fixed），有 target 进容器（static） */
+/**
+ * 造 + 挂一条：无 target 挂 body（fixed），有 target 进容器（static）
+ * @param {Element | null} target
+ * @returns {Promise<HTMLElement>}
+ */
 const create = async (target) => {
   const el = document.createElement('mc-loading-bar');
   if (target) {
@@ -60,7 +83,11 @@ const create = async (target) => {
   return el;
 };
 
-/** 某个落点上的那一条；第一次用到才造（失败就把缓存清掉，下次还能重试） */
+/**
+ * 某个落点上的那一条；第一次用到才造（失败就把缓存清掉，下次还能重试）
+ * @param {Element | null} target
+ * @returns {Promise<HTMLElement>}
+ */
 const hostFor = (target) => {
   if (!target) {
     fixedHost ??= ensureDefined()
@@ -85,7 +112,11 @@ const hostFor = (target) => {
   return host;
 };
 
-/** `target` 归一成「元素 / 空」——选择器给错了要在调用那一刻报，不能静默落到默认那条上 */
+/**
+ * `target` 归一成「元素 / 空」——选择器给错了要在调用那一刻报，不能静默落到默认那条上
+ * @param {unknown} target 选择器、元素，或空
+ * @returns {Element | null}
+ */
 const resolveTarget = (target) => {
   if (target === undefined || target === null) return null;
   const el = typeof target === 'string' ? document.querySelector(target) : target;
@@ -97,17 +128,29 @@ const resolveTarget = (target) => {
   return el;
 };
 
-/** 写一次状态 —— 这个文件的全部实现；返回 Promise（等挂载那一下） */
+/**
+ * 写一次状态 —— 这个文件的全部实现；返回 Promise（等挂载那一下）
+ * @param {Element | null} target
+ * @param {'loading' | 'done' | 'error' | 'idle'} state
+ * @returns {Promise<HTMLElement>}
+ */
 const drive = async (target, state) => {
   const el = await hostFor(target);
   el.setAttribute('state', state);
   return el;
 };
 
-/** 模块级那三个只管默认那条；它还没出现过就什么都不做（省得打错目标时在顶部闪一条） */
+/**
+ * 模块级那三个只管默认那条；它还没出现过就什么都不做（省得打错目标时在顶部闪一条）
+ * @param {'done' | 'error' | 'idle'} state
+ * @returns {Promise<HTMLElement | null>}
+ */
 const defaultOnly = (state) => (fixedHost ? drive(null, state) : Promise.resolve(null));
 
-/** 开始：条子出现并缓慢爬升（到不了 100%），返回这一条的句柄；给了 `target` 之后只有句柄能收掉它 */
+/**
+ * 开始：条子出现并缓慢爬升（到不了 100%），返回这一条的句柄；给了 `target` 之后只有句柄能收掉它
+ * @param {{ target?: string | Element | null }} [config]
+ */
 export function start(config = {}) {
   const target = resolveTarget(config?.target);
   /* 不等挂载：句柄同步返回（都排在同一个挂载 Promise 后面）；挂载失败要像 message.js 那样在控制台报出来，不该静默 */

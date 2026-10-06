@@ -5,6 +5,20 @@
  * ⚠️ 页内目录（h2/h3）**不在这里**：它是内容派生的、每页都不同，由 <doc-toc> 扫标题生成。
  */
 
+/**
+ * 树上的一个节点。字段全可选：分组没有 path，叶子没有 children —— 「是什么」由字段有无决定，不另设 kind。
+ * @typedef {object} NavNode
+ * @property {number} order 同层显示顺序，显示顺序只由它说了算
+ * @property {string} label 显示名
+ * @property {string} [zh] 中文名，只有组件补
+ * @property {string} [path] 仓库根相对路径；有它才算「有页面」
+ * @property {'component' | 'page'} [type] 只写在叶子上
+ * @property {string} [summary] 卡片 / 页头的一句话
+ * @property {boolean} [hidden] 只管展示，子树上继承
+ * @property {NavNode[]} [children] 有它就是分组 / 分区
+ */
+
+/** @type {NavNode[]} */
 export const SITE = [
   { order: 10, type: 'page', label: '首页', path: 'docs/pages/home.html' },
   {
@@ -378,9 +392,18 @@ export const SITE = [
 
 /* ------------------------------------------------------------------ 排序 */
 
+/**
+ * @param {NavNode} a
+ * @param {NavNode} b
+ * @returns {number}
+ */
 const byOrder = (a, b) => a.order - b.order;
 
-/** 递归按 order 排好；children 也换成排好序的新数组（SITE 原样留着，对账测试要看它） */
+/**
+ * 递归按 order 排好；children 也换成排好序的新数组（SITE 原样留着，对账测试要看它）
+ * @param {NavNode[]} nodes
+ * @returns {NavNode[]}
+ */
 const sortTree = (nodes) =>
   [...nodes]
     .sort(byOrder)
@@ -391,12 +414,24 @@ export const NAV = sortTree(SITE);
 
 /* ------------------------------------------------------------------ 结构与查询 */
 
+/**
+ * @param {NavNode} node
+ * @returns {node is NavNode & { children: NavNode[] }}
+ */
 const hasChildren = (node) => Array.isArray(node.children);
 
-/** 有没有自己的文档页。**唯一**的实现状态判断：菜单 / 卡片 / 面包屑 / 翻页都用它 */
+/**
+ * 有没有自己的文档页。**唯一**的实现状态判断：菜单 / 卡片 / 面包屑 / 翻页都用它
+ * @param {NavNode} node
+ * @returns {boolean}
+ */
 export const hasPage = (node) => typeof node.path === 'string';
 
-/** 组件目录名（`packages/<目录>/page.html` 的第二段）。测试拼套件 / 演示路径要用 */
+/**
+ * 组件目录名（`packages/<目录>/page.html` 的第二段）。测试拼套件 / 演示路径要用
+ * @param {NavNode & { path: string }} node 必须是叶子（有页面），分组没有目录名
+ * @returns {string}
+ */
 export const slugOf = (node) => node.path.split('/')[1];
 
 /** 未实现的组件不给死链，指到规范里的接口定义（外链，不走 hash 路由） */
@@ -408,6 +443,10 @@ export const TOPBAR = NAV.filter((entry) => entry.hidden !== true);
 /* 子树里第一个有页面的条目（按左栏顺序，跳过 hidden）—— 分区自己没落地页时，顶栏入口落到这里。
  * ⚠️ **不能**把子节点的 path 直接抄到分区上：那会造出重复路由（10 号套件明令禁止），而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
  */
+/**
+ * @param {NavNode} node
+ * @returns {NavNode | null}
+ */
 export function firstPageOf(node) {
   if (hasPage(node)) return node;
   for (const child of menuOf(node)) {
@@ -418,7 +457,13 @@ export function firstPageOf(node) {
 }
 
 /** 过滤 hidden（沿树继承）；隐藏后空掉的分组整条去掉 */
+/**
+ * @param {NavNode[]} nodes
+ * @param {boolean} [inherited]
+ * @returns {NavNode[]}
+ */
 function prune(nodes, inherited = false) {
+  /** @type {NavNode[]} */
   const out = [];
   for (const node of nodes) {
     const hidden = inherited || node.hidden === true;
@@ -433,10 +478,18 @@ function prune(nodes, inherited = false) {
   return out;
 }
 
-/** 左栏要渲染的子节点：hidden 已剔除、隐藏后空掉的分组不出现 */
+/**
+ * 左栏要渲染的子节点：hidden 已剔除、隐藏后空掉的分组不出现
+ * @param {NavNode} [entry]
+ * @returns {NavNode[]}
+ */
 export const menuOf = (entry) => prune(entry?.children ?? []);
 
-/** 按树序走一遍（含 hidden） */
+/**
+ * 按树序走一遍（含 hidden）
+ * @param {NavNode[]} nodes
+ * @param {(node: NavNode) => void} visit
+ */
 function walk(nodes, visit) {
   for (const node of nodes) {
     visit(node);
@@ -446,6 +499,7 @@ function walk(nodes, visit) {
 
 /** **工具面**：所有已实现的组件（含 hidden）—— 冒烟套件入口、文档页检查都用它 */
 export const READY = (() => {
+  /** @type {NavNode[]} */
   const out = [];
   walk(NAV, (node) => {
     if (node.type === 'component' && hasPage(node)) out.push(node);
@@ -454,6 +508,10 @@ export const READY = (() => {
 })();
 
 /** 当前路由落在哪一支：`{ entry, node, hidden }`。**隐藏页也能命中** —— 顶栏得知道该点亮谁 */
+/**
+ * @param {string} route 仓库根相对路径
+ * @returns {{ entry: NavNode, node: NavNode, hidden: boolean } | null}
+ */
 export function locate(route) {
   for (const entry of NAV) {
     const hit = findIn(entry, route);
@@ -462,6 +520,12 @@ export function locate(route) {
   return null;
 }
 
+/**
+ * @param {NavNode} node
+ * @param {string} route
+ * @param {boolean} [hidden]
+ * @returns {{ node: NavNode, hidden: boolean } | null}
+ */
 function findIn(node, route, hidden = false) {
   const isHidden = hidden || node.hidden === true;
   if (node.path === route) return { node, hidden: isHidden };

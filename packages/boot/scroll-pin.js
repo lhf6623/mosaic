@@ -47,26 +47,26 @@ const GESTURES = ['pointerdown', 'keydown'];
  * @returns {() => void} 回滚函数（幂等；位置没变就什么都不做）
  */
 export function snapshotScroll(el) {
+  /** @type {[Element, number, number][]} */
   const boxes = [];
+  /** @param {Element | null} box */
   const add = (box) => {
     if (box && !boxes.some(([seen]) => seen === box)) {
       boxes.push([box, box.scrollLeft, box.scrollTop]);
     }
   };
 
-  for (let node = el; node;) {
-    if (
-      node instanceof Element &&
-      (node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1)
-    ) {
+  /** @type {Element | null} */
+  let node = el;
+  while (node) {
+    if (node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1) {
       add(node);
     }
     /* 往上走三步：`assignedSlot` 进投递它的 shadow tree → 树内 `parentElement`（不能省，
        正文带就住在槽与宿主之间）→ 走到树顶才跨出去到宿主 */
+    const root = node.getRootNode();
     node =
-      node.assignedSlot ??
-      node.parentElement ??
-      (node.getRootNode() instanceof ShadowRoot ? node.getRootNode().host : null);
+      node.assignedSlot ?? node.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
   }
   add(document.scrollingElement);
 
@@ -84,8 +84,9 @@ export function snapshotScroll(el) {
  * @param {() => void} restore             `snapshotScroll()` 返回的回滚函数
  * @param {object} [options]
  * @param {number} [options.hold=300]      盯多久（ms）
- * @param {Element} [options.owner]        归属元素：按在它**里面**的 pointerdown / touchstart
+ * @param {Element | null} [options.owner] 归属元素：按在它**里面**的 pointerdown / touchstart
  *                                         不算「用户要滚页面」（那一下往往正是开合本身）
+ * @param {(() => void) | null} [options.onEnd] 收尾时叫一次（幂等停止之后）
  * @returns {() => void} 提前放手（幂等）
  */
 export function holdScroll(restore, { hold = HOLD_MS, owner = null, onEnd = null } = {}) {
@@ -109,6 +110,7 @@ export function holdScroll(restore, { hold = HOLD_MS, owner = null, onEnd = null
     onEnd?.();
   };
 
+  /** @param {Event} event */
   const release = (event) => {
     /* 滚轮一律算「人在滚」；按下 / 触摸只在 owner 之外才算 */
     if (event.type === 'wheel' || !(owner && (event.composedPath?.().includes(owner) ?? false))) {
@@ -150,11 +152,13 @@ export function holdScroll(restore, { hold = HOLD_MS, owner = null, onEnd = null
  * @param {number} [options.hold=300]  钉多久（ms）
  */
 export function createScrollPin(el, { hold = HOLD_MS } = {}) {
+  /** 记录的滚动锚点：手势那一刻的位置 + 回滚函数 @type {{ at: number, restore: () => void } | null} */
   let anchor = null;
   /** 在跑着的 hold：dispose 必须把它们一起掐掉，否则时间窗内还会 restore（见 holdScroll 的注释） */
   const holds = new Map();
   let holdSeq = 0;
 
+  /** @param {() => void} restore @returns {() => void} */
   const startHold = (restore) => {
     const id = (holdSeq += 1);
     const release = holdScroll(restore, { hold, owner: el, onEnd: () => holds.delete(id) });
@@ -162,8 +166,10 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
     return release;
   };
 
+  /** @returns {{ at: number, restore: () => void }} */
   const takeAnchor = () => {
     anchor = { at: performance.now(), restore: snapshotScroll(el) };
+    return anchor;
   };
   for (const type of GESTURES) {
     document.addEventListener(type, takeAnchor, { capture: true, passive: true });
@@ -177,8 +183,8 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
    * 滚过页面之后（形状 2），那时重记就把准确的手势位置覆盖成"被滚过的位置"，等于没兜住。
    */
   const freshAnchor = () => {
-    if (!anchor || performance.now() - anchor.at >= hold) takeAnchor();
-    return anchor.restore;
+    const fresh = anchor && performance.now() - anchor.at < hold ? anchor : takeAnchor();
+    return fresh.restore;
   };
 
   return {
@@ -192,7 +198,12 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
       return startHold(restore);
     },
 
-    /** 快照 → 执行动作 → 钉住。返回动作的返回值 */
+    /**
+     * 快照 → 执行动作 → 钉住。返回动作的返回值
+     * @template T
+     * @param {() => T} action
+     * @returns {T}
+     */
     run(action) {
       const restore = freshAnchor();
       const result = action();
@@ -231,6 +242,7 @@ export function createScrollPin(el, { hold = HOLD_MS } = {}) {
  *
  * @param {Element} host  组件宿主（往上找滚动容器、也用于「按在里面不算用户滚动」）
  * @param {Element} panel 浮层面板（`popover` 元素；浏览器自己关闭时也会在它上面发 toggle）
+ * @param {{ hold?: number }} [options] 透传给 `createScrollPin`
  */
 export function attachFloatingScrollGuard(host, panel, options) {
   const pin = createScrollPin(host, options);

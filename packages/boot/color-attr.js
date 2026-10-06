@@ -19,15 +19,34 @@ import { contrast, mix, parseHex, readToken, readableOn, triple, warnOnce } from
 /** 六个语义名：和 `packages/README.md` 的 color 维度一致 */
 const SEMANTIC = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
 
-/** 我们已经为哪些宿主写过哪些属性（清的时候只清自己的） */
+/**
+ * 一个接线器的配置。slug 不在构造时给，首次 apply 时从标签名补（`mc-button` → `button`）
+ * @typedef {object} ColorConfig
+ * @property {string} [slug]
+ * @property {string[]} slots 该组件声明的色槽后缀
+ * @property {string[]} names 该组件接受的语义取值
+ * @property {'slots' | 'fg'} mode
+ */
+
+/**
+ * 我们已经为哪些宿主写过哪些属性（清的时候只清自己的）
+ * @type {WeakMap<HTMLElement, string[]>}
+ */
 const painted = new WeakMap();
 
-/** 一个宿主只会由它自己那个组件装配 —— 用来跳过 watch 的首次触发（P5） */
+/**
+ * 一个宿主只会由它自己那个组件装配 —— 用来跳过 watch 的首次触发（P5）
+ * @type {WeakSet<HTMLElement>}
+ */
 const seen = new WeakSet();
 
-/** tag → 配置。主题观察器靠它把 `[color]` 元素对回各自的槽位 */
+/**
+ * tag → 配置。主题观察器靠它把 `[color]` 元素对回各自的槽位
+ * @type {Map<string, ColorConfig>}
+ */
 const configs = new Map();
 
+/** @type {boolean | null} */
 let themeWatcher = null;
 
 /** 只有真的声明了 `-subtle-fill` 的组件才需要它；装一次、全页共用 */
@@ -35,7 +54,9 @@ function ensureThemeWatcher() {
   if (themeWatcher) return;
   themeWatcher = true;
   const reapply = () => {
-    for (const el of document.querySelectorAll('[color]')) {
+    /** @type {NodeListOf<HTMLElement>} 宿主都是自定义元素 —— querySelectorAll 默认给 Element，而它写不了内联 style */
+    const hosts = document.querySelectorAll('[color]');
+    for (const el of hosts) {
       const config = configs.get(el.tagName.toLowerCase());
       if (config) apply(el, el.getAttribute('color'), config);
     }
@@ -47,6 +68,11 @@ function ensureThemeWatcher() {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', reapply);
 }
 
+/**
+ * @param {HTMLElement} host
+ * @param {string} name CSS 变量名
+ * @param {string} value
+ */
 function write(host, name, value) {
   host.style.setProperty(name, value);
   const list = painted.get(host) ?? [];
@@ -54,12 +80,20 @@ function write(host, name, value) {
   painted.set(host, list);
 }
 
-/** 撤掉本文件写过的东西 —— 元素回到 CSS（语义色 / 组件默认） */
+/**
+ * 撤掉本文件写过的东西 —— 元素回到 CSS（语义色 / 组件默认）
+ * @param {HTMLElement} host
+ */
 function unpaint(host) {
   for (const name of painted.get(host) ?? []) host.style.removeProperty(name);
   painted.delete(host);
 }
 
+/**
+ * @param {HTMLElement} host
+ * @param {string | null} raw color 属性的原值（语义名 / hex / 别的什么）
+ * @param {ColorConfig} config
+ */
 function apply(host, raw, config) {
   if (!config.slug) {
     const tag = host.tagName.toLowerCase();
@@ -86,6 +120,7 @@ function apply(host, raw, config) {
     return;
   }
 
+  /** @param {string} name @returns {string} */
   const slot = (name) => `--mc-${config.slug}-${name}`;
   write(host, slot('fill'), triple(rgb));
   write(host, slot('on-fill'), triple(readableOn(rgb)));
@@ -121,11 +156,19 @@ export function colorAttr({ slots = [], names = SEMANTIC, mode = 'slots' } = {})
   if (mode === 'slots' && slots.includes('subtle-fill')) ensureThemeWatcher();
 
   return {
-    /** 在组件的 attached() 里调：构造期已过，可以写宿主 style（P31） */
+    /**
+     * 在组件的 attached() 里调：构造期已过，可以写宿主 style（P31）
+     * @param {HTMLElement} host
+     * @param {string | null} value
+     */
     sync(host, value) {
       apply(host, value, config);
     },
-    /** 在组件的 watch.color 里调；首次触发落在构造期，跳过（P5） */
+    /**
+     * 在组件的 watch.color 里调；首次触发落在构造期，跳过（P5）
+     * @param {HTMLElement} host
+     * @param {string | null} value
+     */
     change(host, value) {
       if (!seen.has(host)) {
         seen.add(host);

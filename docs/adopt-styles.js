@@ -10,14 +10,21 @@ const SHEETS = ['../packages/boot/mosaic.css', '../packages/boot/shadow-base.css
   (f) => new URL(f, HERE).href,
 );
 
-/** 已加载的样式表；null 表示还在路上或加载失败 */
+/**
+ * 已加载的样式表；null 表示还在路上或加载失败
+ * @type {CSSStyleSheet[] | null}
+ */
 let loaded = null;
 
-/** 样式表就绪之前创建的 shadow root，先收着，稍后补 adopt */
+/**
+ * 样式表就绪之前创建的 shadow root，先收着，稍后补 adopt
+ * @type {Set<ShadowRoot>}
+ */
 const pending = new Set();
 
 const nativeAttach = Element.prototype.attachShadow;
 
+/** @param {ShadowRootInit} init */
 Element.prototype.attachShadow = function (init) {
   const root = nativeAttach.call(this, init);
   if (!init || init.mode !== 'open') return root;
@@ -26,11 +33,17 @@ Element.prototype.attachShadow = function (init) {
   return root;
 };
 
+/** @param {ShadowRoot} root */
 function adopt(root) {
+  if (!loaded) return;
   if (root.adoptedStyleSheets.includes(loaded[0])) return;
   root.adoptedStyleSheets = [...root.adoptedStyleSheets, ...loaded];
 }
 
+/**
+ * @param {string} url
+ * @returns {Promise<CSSStyleSheet>}
+ */
 async function loadSheet(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`取 ${url} 失败：HTTP ${res.status}`);
@@ -56,8 +69,10 @@ if (loaded) {
   pending.clear();
 
   // 补扫：补丁装上之前就创建好的 shadow root。querySelectorAll 不跨边界，只能递归
+  /** @param {Element | ShadowRoot} node */
   const walk = (node) => {
-    const sr = node.shadowRoot;
+    // ShadowRoot 自己没有 shadowRoot —— 只有 Element 那条路要看它
+    const sr = node instanceof ShadowRoot ? null : node.shadowRoot;
     if (sr) {
       adopt(sr);
       walk(sr);

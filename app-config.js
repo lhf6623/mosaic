@@ -17,7 +17,10 @@ export const loading = () => `
     加载中…
   </div>`;
 
-/** 加载失败时的兜底。同样只能用内联样式 */
+/**
+ * 加载失败时的兜底。同样只能用内联样式
+ * @param {{ src?: string, error?: Error }} info 失败上下文：src = 加载失败的地址，error = 抛出来的那个
+ */
 export const fail = ({ src, error }) => `
   <div style="margin:2rem 0;padding:1rem 1.25rem;border-left:3px solid rgb(var(--mc-color-danger,#d01723));border-radius:.375rem;background:rgb(var(--mc-color-danger-subtle,#fff2f1));font-size:.875rem">
     <strong>页面加载失败</strong><br />

@@ -1,32 +1,36 @@
 /* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
  *
- * 运行时数据源：mc-icon 组件按名查它（本地查不到才走远程）。
- * 运行时从不请求它 —— 组件靠 CSS 类名 `mc-icon-<名字>` 命中本地图标。
+ * 图标数据的可读副本：这里有什么名字，发出去的 mosaic.css 里就有对应的 .mc-icon-<名字> 规则。
+ * 运行时并不加载它 —— mc-icon 靠 CSS 类名命中本地图标（判定方式见 packages/icon/README.md）。
+ * 留这份文件的用处只有一个：让 tsc 的 checkJs 守住生成器的输出形状（见 tsconfig.json）。
  *
  * 上游：Lucide · ISC（ISC）
  * 署名与来源见同目录的 icons.license.txt。
  */
 
-/** 单个图标的图形数据（Iconify 的 IconifyIcon 形状，transforms 已由 getIconData 解析） */
-export type IconifyIconData = {
-  body: string;
-  width?: number;
-  height?: number;
-  left?: number;
-  top?: number;
-  rotate?: number;
-  hFlip?: boolean;
-  vFlip?: boolean;
-};
+/**
+ * 单个图标的图形数据（Iconify 的 IconifyIcon 形状，transforms 已由 getIconData 解析）
+ * @typedef {object} IconifyIconData
+ * @property {string} body
+ * @property {number} [width]
+ * @property {number} [height]
+ * @property {number} [left]
+ * @property {number} [top]
+ * @property {number} [rotate]
+ * @property {boolean} [hFlip]
+ * @property {boolean} [vFlip]
+ */
 
-export type MosaicIconSet = {
-  prefix: string;
-  width: number;
-  height: number;
-  icons: Record<string, IconifyIconData>;
-};
+/**
+ * @typedef {object} MosaicIconSet
+ * @property {string} prefix
+ * @property {number} width
+ * @property {number} height
+ * @property {Record<string, IconifyIconData>} icons
+ */
 
-const iconSet: MosaicIconSet = {
+/** @type {MosaicIconSet} */
+const iconSet = {
   prefix: 'icon',
   width: 24,
   height: 24,

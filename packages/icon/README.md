@@ -18,7 +18,7 @@
 | `api.md`             | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
 | `demos/`             | 11 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
 | `test/`              | 组件自己的冒烟套件（1 个文件）                                                |
-| `icons.generated.ts` | 构建产物 / 附属文件                                                           |
+| `icons.generated.js` | 构建产物 / 附属文件                                                           |
 | `icons.license.txt`  | 构建产物 / 附属文件                                                           |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。

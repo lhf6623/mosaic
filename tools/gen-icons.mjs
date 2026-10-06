@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * mosaic — 内置图标生成器：清单 + 上游图标数据 → 三份提交进仓库的产物：icons.generated.ts（运行时数据源，
- * mc-icon 按名查它、从不发请求）、icons.generated.css（每条一个 data-URI mask，类名 mc-icon-<名字>）、
+ * mosaic — 内置图标生成器：清单 + 上游图标数据 → 三份提交进仓库的产物：icons.generated.js（图标数据的可读副本 +
+ * JSDoc 类型，运行时并不加载它）、icons.generated.css（每条一个 data-URI mask，类名 mc-icon-<名字>）、
  * icons.license.txt（来源与许可）。三条守卫都是「缺输入必须大声失败」，而且是**构建期**就红：
  * ① 上游名必须真的存在（含别名解析）；② license.spdx 必须在白名单里（GPL / CC-BY-NC / 需署名的 CC-BY 进不来）；
  * ③ 生成的类名不能和组件已有的类名撞车。
@@ -164,35 +164,39 @@ if (styledClashes.length) {
 /* ---------- 写出产物 ---------- */
 
 const srcInfo = sets.get(ICON_SOURCE).info;
-const collectionTs = `/* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
+const collectionJs = `/* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
  *
- * 运行时数据源：mc-icon 组件按名查它（本地查不到才走远程）。
- * 运行时从不请求它 —— 组件靠 CSS 类名 \`mc-icon-<名字>\` 命中本地图标。
+ * 图标数据的可读副本：这里有什么名字，发出去的 mosaic.css 里就有对应的 .mc-icon-<名字> 规则。
+ * 运行时并不加载它 —— mc-icon 靠 CSS 类名命中本地图标（判定方式见 packages/icon/README.md）。
+ * 留这份文件的用处只有一个：让 tsc 的 checkJs 守住生成器的输出形状（见 tsconfig.json）。
  *
  * 上游：${srcInfo.name} · ${srcInfo.license?.title ?? '?'}（${srcInfo.license?.spdx ?? '?'}）
  * 署名与来源见同目录的 icons.license.txt。
  */
 
-/** 单个图标的图形数据（Iconify 的 IconifyIcon 形状，transforms 已由 getIconData 解析） */
-export type IconifyIconData = {
-  body: string;
-  width?: number;
-  height?: number;
-  left?: number;
-  top?: number;
-  rotate?: number;
-  hFlip?: boolean;
-  vFlip?: boolean;
-};
+/**
+ * 单个图标的图形数据（Iconify 的 IconifyIcon 形状，transforms 已由 getIconData 解析）
+ * @typedef {object} IconifyIconData
+ * @property {string} body
+ * @property {number} [width]
+ * @property {number} [height]
+ * @property {number} [left]
+ * @property {number} [top]
+ * @property {number} [rotate]
+ * @property {boolean} [hFlip]
+ * @property {boolean} [vFlip]
+ */
 
-export type MosaicIconSet = {
-  prefix: string;
-  width: number;
-  height: number;
-  icons: Record<string, IconifyIconData>;
-};
+/**
+ * @typedef {object} MosaicIconSet
+ * @property {string} prefix
+ * @property {number} width
+ * @property {number} height
+ * @property {Record<string, IconifyIconData>} icons
+ */
 
-const iconSet: MosaicIconSet = {
+/** @type {MosaicIconSet} */
+const iconSet = {
   prefix: 'icon',
   width: ${sets.get(ICON_SOURCE).data.width ?? 24},
   height: ${sets.get(ICON_SOURCE).data.height ?? 24},
@@ -271,13 +275,13 @@ ${Object.entries(icons)
 `;
 
 mkdirSync(OUT_DIR, { recursive: true });
-writeFileSync(resolve(OUT_DIR, 'icons.generated.ts'), collectionTs);
+writeFileSync(resolve(OUT_DIR, 'icons.generated.js'), collectionJs);
 writeFileSync(resolve(OUT_DIR, 'icons.generated.css'), iconCss);
 writeFileSync(resolve(OUT_DIR, 'icons.license.txt'), licenseLines.join('\n'));
 const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
 console.log(
   `\n[mosaic] 内置图标：${Object.keys(icons).length} 个 · 来源 ${usedSets.join(' + ')}\n` +
-    `         packages/icon/icons.generated.ts   ${kb(collectionTs)}\n` +
+    `         packages/icon/icons.generated.js    ${kb(collectionJs)}\n` +
     `         packages/icon/icons.generated.css  ${kb(iconCss)}\n` +
     `         packages/icon/icons.license.txt    ${kb(licenseLines.join('\n'))}\n`,
 );

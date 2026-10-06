@@ -57,7 +57,7 @@ ofa 会把声明过的字符串属性以空值写到宿主上，"有没有给标
 之前，注入的 script 就变成 ofa 眼里的「第一个 script」，组件直接报「加载组件模块出错」（实测：
 VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
 tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
-（同理，图标数据放 `packages/icon/icons.generated.ts` —— 生成物，只有 tools/gen-icons.mjs 读它。）
+（同理，图标数据放 `packages/icon/icons.generated.js` —— 生成物，只有 tools/gen-icons.mjs 写它。）
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。
 关闭按钮是 32×32 命中区的原生按钮（Mosaic 对小控件的下限），用负外边距抵消掉超出行高的那 6px，

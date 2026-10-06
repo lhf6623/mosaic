@@ -29,6 +29,7 @@ const RE_UL = /^\s*[-*]\s+(.*)$/;
 const RE_FENCE = /^\s*```/;
 const RE_SEP_CELL = /^:?-{1,}:?$/;
 
+/** @param {unknown} text @returns {string} */
 const escapeHtml = (text) =>
   String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -36,6 +37,9 @@ const escapeHtml = (text) =>
  * md 里的相对链接 → 站点上点得开的链接。
  * md 住在组件单元里（`packages/<slug>/api.md`），它指向仓库内其它文件的相对链接在站点上是
  * 404 —— 仓库外的读者该去 GitHub 看那份源文件（与 docs/pages/specs.html 同一口径）。
+ * @param {unknown} href
+ * @param {string} [baseUrl] md 自身的 URL（解析相对链接要用）
+ * @returns {string}
  */
 export function resolveLink(href, baseUrl) {
   const raw = String(href ?? '').trim();
@@ -54,7 +58,12 @@ export function resolveLink(href, baseUrl) {
   }
 }
 
-/** 行内：先整体转义，再认 `code` / 链接 / 粗体 —— 顺序反了会让 `<mc-button>` 变成真标签 */
+/**
+ * 行内：先整体转义，再认 `code` / 链接 / 粗体 —— 顺序反了会让 `<mc-button>` 变成真标签
+ * @param {unknown} text
+ * @param {string} [baseUrl]
+ * @returns {string}
+ */
 export function inline(text, baseUrl = '') {
   let out = escapeHtml(text);
   // 行内 code 最先认：里面的 * 不该被当强调
@@ -70,6 +79,8 @@ export function inline(text, baseUrl = '') {
 /**
  * `| a | b |` → ['a', 'b']（首尾的竖线不算单元格）。
  * 支持 GFM 的转义竖线 `\|`：单元格里的 TS 联合类型（`'sm' \| 'md'`）不会被拆成两格。
+ * @param {string} line
+ * @returns {string[]}
  */
 export function splitRow(line) {
   const cells = [];
@@ -92,8 +103,14 @@ export function splitRow(line) {
   return cells.map((item) => item.trim());
 }
 
+/** @param {string[]} cells @returns {boolean} */
 const isSeparator = (cells) => cells.length > 0 && cells.every((c) => RE_SEP_CELL.test(c));
 
+/**
+ * @param {string[]} rows 表格的原始行（含表头与分隔行）
+ * @param {string} baseUrl
+ * @returns {string}
+ */
 function renderTable(rows, baseUrl) {
   const grid = rows.map(splitRow);
   const head = grid[0];
@@ -114,6 +131,8 @@ function renderTable(rows, baseUrl) {
 
 /**
  * md 全文 → 参考区 HTML。
+ * @param {unknown} text
+ * @param {{ baseUrl?: string }} [options]
  * @returns {{ html: string, sections: string[], skipped: string[] }}
  *   `sections` = 渲染出来的节名（按出现顺序）；`skipped` = 被白名单挡下的节名（调试用）。
  */
@@ -129,10 +148,18 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
   const out = [];
   const sections = [];
   const skipped = [];
-  let current = null; // 当前节名；null = 不在白名单节里（内容丢弃）
+  /**
+   * 当前节名；null = 不在白名单节里（内容丢弃）
+   * @type {string | null}
+   */
+  let current = null;
+  /** @type {string[]} */
   let para = [];
+  /** @type {string[]} */
   let list = [];
+  /** @type {string[]} */
   let table = [];
+  /** @type {string[] | null} */
   let fence = null;
 
   const flush = () => {
