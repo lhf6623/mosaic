@@ -301,7 +301,9 @@
     .doc-brand {
       font-weight: var(--mc-weight-semibold);
       font-size: var(--mc-text-lg);
-      letter-spacing: -0.01em;
+      /* 和首页字标同一个手法：Archivo 的宽度轴拉宽一档，字标才有自己的声音（不引第二个家族） */
+      font-variation-settings: 'wdth' 110;
+      letter-spacing: -0.025em;
       color: rgb(var(--mc-color-fg));
       text-decoration: none;
     }

@@ -14,8 +14,8 @@
 
 .doc-body h1 {
   margin: 0 0 var(--mc-space-3);
-  font-size: var(--mc-text-3xl);
-  line-height: var(--mc-text-3xl-lh);
+  font-size: var(--mc-text-4xl);
+  line-height: var(--mc-text-4xl-lh);
   font-weight: var(--mc-weight-semibold);
   letter-spacing: -0.02em;
 }
@@ -24,8 +24,8 @@
   margin: var(--mc-space-12) 0 var(--mc-space-3);
   padding-top: var(--mc-space-6);
   border-top: 1px solid rgb(var(--mc-color-border));
-  font-size: var(--mc-text-xl);
-  line-height: var(--mc-text-xl-lh);
+  font-size: var(--mc-text-2xl);
+  line-height: var(--mc-text-2xl-lh);
   font-weight: var(--mc-weight-semibold);
 }
 
@@ -52,10 +52,12 @@
   max-width: 40em;
 }
 
+/* 正文用**前景色**、不用 fg-muted：16px 中文长段落压在 muted 上读起来发灰。
+   muted 留给真正的次要信息（导语、提示、表格单元格）。 */
 .doc-body p,
 .doc-body li {
   max-width: 44em;
-  color: rgb(var(--mc-color-fg-muted));
+  color: rgb(var(--mc-color-fg));
 }
 
 .doc-body li + li {
