@@ -47,7 +47,7 @@
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
       /* ⚠️ 面板不要写 border：边框只长在矩形上，轮廓会在三角那条边断掉；改用跟着整体轮廓的 drop-shadow（第一层当描边） */
       filter: drop-shadow(0 0 1px rgb(var(--mc-popover-panel-border)))
-        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
 
       /* 锚点与翻转：12 个方向上的贴合 + 空间不足时自动翻 */
       position-anchor: --mc-popover-anchor;

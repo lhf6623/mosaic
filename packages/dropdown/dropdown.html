@@ -51,7 +51,7 @@
       font-size: inherit;
       line-height: inherit;
       filter: drop-shadow(0 0 1px rgb(var(--mc-dropdown-panel-border)))
-        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
 
       /* 默认 bottom-start 写在基类里 —— ofa 里 `:host()` 嵌 `:not()` 静默失效（P14），挂到属性选择器上会整体失效 */
       position-anchor: --mc-dropdown-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */

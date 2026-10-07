@@ -174,7 +174,7 @@
       line-height: inherit;
       /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
       filter: drop-shadow(0 0 1px rgb(var(--mc-select-panel-border)))
-        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
 
       /* 锚点定位：锚是 shadow 内的 .mc-control。默认 bottom-start 写基类 —— ofa 里 `:host()` 嵌 `:not()` 会静默失效（P14） */
       position-anchor: --mc-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */

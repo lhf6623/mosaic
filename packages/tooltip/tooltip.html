@@ -41,7 +41,7 @@
       overflow-wrap: anywhere;
       /* 描边跟整体轮廓走（面板不画真 border）：两层里第一层是描边、第二层是投影 */
       filter: drop-shadow(0 0 1px rgb(var(--mc-tooltip-panel-border)))
-        drop-shadow(0 4px 12px rgb(0 0 0 / 0.16));
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
       position-anchor: --mc-tooltip-anchor;
       position-try-fallbacks:
         flip-block,

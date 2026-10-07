@@ -33,7 +33,7 @@
       --mc-menu-flyout-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
       --mc-menu-flyout-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
       --mc-menu-flyout-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
-      --mc-menu-flyout-shadow: 0 4px 12px rgb(0 0 0 / 0.16);
+      --mc-menu-flyout-shadow: var(--mc-shadow-panel, var(--mc-def-shadow-panel));
       --mc-menu-flyout-min-w: 8rem;
 
       /* 色槽：L3 组件令牌，默认引用 L2 语义令牌；按实例覆盖（style 上写 --mc-menu-*） */
@@ -112,7 +112,7 @@
         'border: 1px solid rgb(var(--mc-menu-flyout-border, var(--mc-def-color-border-strong)))',
         'border-radius: var(--mc-menu-flyout-radius, var(--mc-def-radius-lg))',
         'background-color: rgb(var(--mc-menu-flyout-bg, var(--mc-def-color-surface-raised)))',
-        'box-shadow: var(--mc-menu-flyout-shadow, 0 4px 12px rgb(0 0 0 / 0.16))',
+        'box-shadow: var(--mc-menu-flyout-shadow, var(--mc-shadow-panel, var(--mc-def-shadow-panel)))',
         'position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline',
       ].join('; ');
       /* 分组子项那一档缩进：行上写 --mc-item-step 覆盖默认的逐级步长（见 createNodes 的 step 形参） */
