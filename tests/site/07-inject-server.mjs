@@ -105,21 +105,23 @@ try {
     await injPage.goto(`http://127.0.0.1:${INJECT_PORT}/index.html`, { waitUntil: 'load' });
     await injPage.waitForTimeout(2200);
     const injState = await injPage.evaluate(() => {
-      const art = window.__deep('.poster-art');
+      /* 探针换成首页的零件带：不光要"标记在"，还要**组件真的升级了** ——
+         注入会提前闭合注释、抢走第一个 <script>，挂了的话带子里只剩没升级的裸标签。 */
+      const band = window.__deep('.hero-band');
+      const cells = band ? [...band.children] : [];
       return {
         h1: window.__deep('h1')?.textContent?.trim() ?? null,
-        art: art
-          ? ['far', 'mid', 'near']
-              .map((k) => art.querySelector(`[data-layer="${k}"]`)?.querySelectorAll('.art-bit').length ?? 0)
-              .join('/')
-          : null,
+        cells: cells.length,
+        upgraded: cells.filter((cell) =>
+          [...cell.querySelectorAll('*')].some((el) => customElements.get(el.localName)),
+        ).length,
       };
     });
 
     check(
       '页面模块在被 HTML 注入的服务器上仍能加载',
-      injState.h1 === 'Mosaic' && injState.art && !injState.art.startsWith('0/'),
-      `h1=${injState.h1} · 图案 ${injState.art}${injErrs.length ? ' · ' + injErrs[0] : ''}`,
+      injState.h1 === 'Mosaic' && injState.cells > 0 && injState.upgraded > 0,
+      `h1=${injState.h1} · 零件带 ${injState.upgraded}/${injState.cells} 格已升级${injErrs.length ? ' · ' + injErrs[0] : ''}`,
     );
 
     /* 组件本体走的是另一条路：<l-m src="…/*.html"> 拉的是**组件文件本身**，

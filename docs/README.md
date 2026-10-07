@@ -24,7 +24,7 @@
 
 | 样式                 | 住哪                                                                        |
 | -------------------- | --------------------------------------------------------------------------- |
-| 只被一个页面用       | 那个页面的 `<style>`（例：首页入口行的 `.poster-links`）                    |
+| 只被一个页面用       | 那个页面的 `<style>`（例：首页的 `.hero` / `.hero-band`）                   |
 | 被两个及以上页面共用 | `docs/content.css`                                                          |
 | 站点组件内部结构     | 组件自己的 `<style>`（shadow root），对外只暴露 CSS 变量与 `::part()`       |
 | 组件宿主的定位与尺寸 | 它所在的布局页（例：`doc-nav` / `doc-toc` 的定位在 `docs/doc-layout.html`） |
@@ -35,7 +35,7 @@
 
 ## 三、行内样式：只有三类例外
 
-1. **运行期才算得出的值**：首页方块的 `left` / `top` / `opacity`、色板每个色块的
+1. **运行期才算得出的值**：色板每个色块的
    `background-color` —— 值来自 JS，类名表达不了。
 2. **首帧兜底 UI**：`app-config.js` 的 `loading` / `fail` —— 它们落在 `o-app` 的 shadow root，
    而且发生在样式表就位之前，只能内联（见文件里的注释）。
@@ -60,12 +60,11 @@
 | `doc-toc`     | `docs/components/toc.html`     | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）       |
 | `doc-spec`    | `docs/components/spec.html`    | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
 | `doc-palette` | `docs/components/palette.html` | 「色彩」页的原始色阶色板                             |
-| `doc-poster`  | `docs/components/poster.html`  | 首页马赛克海报（图案 + 视差，内容由页面插槽）        |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
   组件自己的 `<style>`。
-- 站点级组件在 `docs/layout.html` 注册一次；只被一页用的（`doc-poster`）由那一页自己
-  `<l-m>` 引入。
+- 站点级组件在 `docs/layout.html` 注册一次；只被一页用的由那一页自己 `<l-m>` 引入
+  （现在没有这样的站点组件 —— 首页的零件带是页面自己的标记，不是组件）。
 
 ## 六、文件一览
 

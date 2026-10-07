@@ -67,7 +67,7 @@ export function repoPathOfUrl(url) {
 /** 并行度默认值：4 与 CPU 数取小 —— 每个 page 都要真渲染，开太多只会互相拖慢 */
 export const defaultJobs = () => Math.min(4, availableParallelism?.() ?? 4);
 
-/** 注入每个页面：穿透 shadow 的 __deep/__deepAll；pointermove 监听计数（验证切走首页时清理） */
+/** 注入每个页面：穿透 shadow 的 __deep/__deepAll；pointermove 监听计数（看组件切走时有没有摘干净） */
 export function pageHelpers() {
   window.__pointerMoveAdds = 0;
   window.__pointerMoveRemoves = 0;
@@ -247,8 +247,8 @@ export async function createHarness() {
           cards: all('.doc-comp-card').length,
           paletteRows: all('.doc-palette-row').length,
           buttons: all('mc-button').length,
-          cta: all('.poster-links > *').map((el) => el.textContent.trim()),
-          ctaTags: all('.poster-links > *').map((el) => el.tagName.toLowerCase()),
+          cta: all('.hero-cta > *').map((el) => el.textContent.trim()),
+          ctaTags: all('.hero-cta > *').map((el) => el.tagName.toLowerCase()),
         };
       });
 

@@ -2,37 +2,288 @@
   <link rel="stylesheet" href="../content.css" />
 
   <style>
-    .poster-links {
+    /* 首页 = 拼装台：上面一条**真零件带**（库本身，不是它的图案），下面身份 + 工作台（源码格 → 结果格）。
+       只被这一页用，样式就住这里（docs/README.md §二）。 */
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: var(--mc-space-3);
+      padding: var(--mc-space-6);
+      min-height: calc(100vh - var(--doc-topbar, 3.5rem));
+    }
+
+    /* ---- 零件带：每一格放一个活的组件，格宽 1 / 2 两档，自动排成两行 ---- */
+    .hero-band {
+      grid-area: 1 / 1 / 3 / 13;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(2, minmax(5rem, 1fr));
+      gap: var(--mc-space-3);
+    }
+
+    .band-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding-inline: var(--mc-space-3);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: 0.125rem;
+      background: rgb(var(--mc-color-surface));
+      /* 带子里的组件是**静态样例**，不是给这一页用的控件：inert 让它们不进 Tab 序、
+         不接受点击（键盘/指针都不会撞进去），视觉照旧。 */
+      pointer-events: none;
+    }
+
+    .band-wide {
+      grid-column: span 2;
+    }
+
+    .band-cell > mc-input,
+    .band-cell > mc-select,
+    .band-cell > mc-textarea,
+    .band-cell > mc-progress {
+      width: 100%;
+    }
+
+    .band-icons {
+      display: flex;
+      gap: var(--mc-space-4);
+      align-items: center;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: 1.25rem;
+    }
+
+    /* ---- 身份 ---- */
+    .hero-identity {
+      grid-area: 3 / 1 / 8 / 8;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .hero-wordmark {
+      margin: 0 0 var(--mc-space-6);
+      font-size: clamp(2.5rem, 5.4vw, 4.625rem);
+      line-height: 0.94;
+      font-weight: var(--mc-weight-semibold);
+      /* 宽度轴：Archivo 是可变字体，字标拉宽一档就有自己的声音，不用第二个家族 */
+      font-variation-settings: 'wdth' 112;
+      letter-spacing: -0.038em;
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .hero-promise {
+      margin: 0 0 var(--mc-space-3);
+      font-size: clamp(1.125rem, 1.9vw, 1.4375rem);
+      line-height: 1.5;
+      font-weight: var(--mc-weight-medium);
+      letter-spacing: -0.014em;
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .hero-sub {
+      margin: 0 0 var(--mc-space-8);
+      font-size: var(--mc-text-sm);
+      line-height: 1.7;
+      color: rgb(var(--mc-color-fg-muted));
+    }
+
+    .hero-cta {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
       gap: var(--mc-space-3);
+    }
+
+    /* ---- 工作台：左格是**贴进去的东西**，右格是**出来的东西** ---- */
+    .hero-bench {
+      grid-area: 4 / 8 / 7 / 13;
+      display: grid;
+      grid-template-columns: 1fr 11.625rem;
+      gap: var(--mc-space-3);
+      align-items: center;
+    }
+
+    .bench-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      height: 10.75rem;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: 0.125rem;
+      background: rgb(var(--mc-color-surface));
+    }
+
+    .bench-source {
+      padding-inline: var(--mc-space-6);
+    }
+
+    .bench-snippet {
+      margin: 0;
+      font-family: var(--mc-font-mono);
+      font-size: 0.78125rem;
+      line-height: 2.15;
+      white-space: pre;
+      color: rgb(var(--mc-color-fg-subtle));
+    }
+
+    .bench-snippet .tag {
+      color: rgb(var(--mc-color-primary));
+    }
+
+    .bench-snippet .key {
+      color: rgb(var(--mc-color-fg-muted));
+    }
+
+    .bench-snippet .punct {
+      color: rgb(var(--mc-color-fg-subtle));
+    }
+
+    /* ---- 窄屏：带子的列数变少，跨度规则照旧（1 / 2 档在任何列数下都成立），
+       身份与工作台落到带子下面 ---- */
+    @media (max-width: 78rem) {
+      .hero {
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: min-content;
+        gap: var(--mc-space-4);
+      }
+
+      /* ⚠️ 三块都要自己声明横跨整行：只写 grid-area: auto 的话，它们会被自动排进
+         **单列**（带子占一列、身份占下一列），窄屏上直接变成左右并排 + 文字出框。 */
+      .hero-band {
+        grid-area: auto;
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: 5.25rem;
+      }
+
+      .hero-identity {
+        grid-area: auto;
+        grid-column: 1 / -1;
+        padding-block: var(--mc-space-6);
+      }
+
+      .hero-bench {
+        grid-area: auto;
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr 11.625rem;
+      }
+    }
+
+    @media (max-width: 52rem) {
+      .hero {
+        grid-template-columns: repeat(2, 1fr);
+        padding: var(--mc-space-5);
+      }
+
+      /* 窄屏把顺序倒过来：手机上先给主张和入口，零件带退到下面 ——
+         17 个格子铺满 2 列要占掉一屏多，排在前面的话首屏全是控件、看不到一句话。 */
+      .hero-identity {
+        order: 1;
+        padding-block: var(--mc-space-4) 0;
+      }
+
+      .hero-bench {
+        order: 2;
+      }
+
+      .hero-band {
+        order: 3;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero-bench {
+        grid-template-columns: 1fr;
+      }
+
+      .bench-cell {
+        height: auto;
+        min-height: 6.5rem;
+      }
     }
   </style>
 
+  <!-- 零件带上的每一个组件都在这一页真的注册一遍：首页自己就是库的活样例 -->
   <l-m src="../../packages/button/button.html"></l-m>
-  <l-m src="../components/poster.html"></l-m>
+  <l-m src="../../packages/tag/tag.html"></l-m>
+  <l-m src="../../packages/badge/badge.html"></l-m>
+  <l-m src="../../packages/switch/switch.html"></l-m>
+  <l-m src="../../packages/checkbox/checkbox.html"></l-m>
+  <l-m src="../../packages/radio/radio.html"></l-m>
+  <l-m src="../../packages/progress/progress.html"></l-m>
+  <l-m src="../../packages/spinner/spinner.html"></l-m>
+  <l-m src="../../packages/input/input.html"></l-m>
+  <l-m src="../../packages/select/select.html"></l-m>
+  <l-m src="../../packages/textarea/textarea.html"></l-m>
+  <l-m src="../../packages/icon/icon.html"></l-m>
 
-  <doc-poster class="doc-body">
-    <h1 class="sr-only">Mosaic</h1>
+  <section class="hero">
+    <div class="hero-band" inert>
+      <div class="band-cell band-wide"><mc-input placeholder="搜索组件"></mc-input></div>
+      <div class="band-cell"><mc-tag>v0.1</mc-tag></div>
+      <div class="band-cell"><mc-badge color="danger">8</mc-badge></div>
+      <div class="band-cell band-wide"><mc-select></mc-select></div>
+      <div class="band-cell"><mc-spinner></mc-spinner></div>
+      <div class="band-cell"><mc-switch></mc-switch></div>
+      <div class="band-cell band-wide"><mc-checkbox>同意</mc-checkbox></div>
+      <div class="band-cell band-wide"><mc-radio>是</mc-radio></div>
 
-    <nav class="poster-links">
-      <mc-button color="primary" size="lg" on:click="openPage('docs/pages/install.html')">
-        快速开始
-      </mc-button>
-      <mc-button
-        variant="outline"
-        color="neutral"
-        size="lg"
-        on:click="openPage('packages/button/page.html')">
-        浏览组件
-      </mc-button>
-    </nav>
-  </doc-poster>
+      <div class="band-cell">
+        <span class="band-icons"><mc-icon name="github"></mc-icon></span>
+      </div>
+      <div class="band-cell band-wide"><mc-textarea placeholder="多行输入"></mc-textarea></div>
+      <div class="band-cell"><mc-tag color="success">通过</mc-tag></div>
+      <div class="band-cell"><mc-badge color="info">12</mc-badge></div>
+      <div class="band-cell band-wide"><mc-progress value="64"></mc-progress></div>
+      <div class="band-cell">
+        <span class="band-icons"><mc-icon name="menu"></mc-icon></span>
+      </div>
+      <div class="band-cell band-wide"><mc-checkbox>订阅</mc-checkbox></div>
+      <div class="band-cell"><mc-button>提交</mc-button></div>
+      <div class="band-cell">
+        <mc-button variant="outline" color="neutral">按钮</mc-button>
+      </div>
+    </div>
+
+    <div class="hero-identity">
+      <h1 class="hero-wordmark">Mosaic</h1>
+      <p class="hero-promise">引一个 ofa.js，按需引一个组件。</p>
+      <p class="hero-sub">30 个组件，没有 npm、没有打包器，也没有配置文件。</p>
+      <nav class="hero-cta">
+        <mc-button color="primary" size="lg" on:click="openInstall()">两行代码开始</mc-button>
+        <mc-button variant="outline" color="neutral" size="lg" on:click="openBrowse()">
+          浏览 30 个组件
+        </mc-button>
+      </nav>
+    </div>
+
+    <div class="hero-bench">
+      <div class="bench-cell bench-source">
+        <pre
+          class="bench-snippet"><span class="tag">&lt;l-m</span> <span class="key">src</span><span class="punct">=</span><span class="key">"…/button/button.html"</span><span class="tag">&gt;&lt;/l-m&gt;</span>
+<span class="tag">&lt;mc-button&gt;</span>提交<span class="tag">&lt;/mc-button&gt;</span></pre>
+      </div>
+      <div class="bench-cell"><mc-button>提交</mc-button></div>
+    </div>
+  </section>
 
   <script>
     import { hashOf } from '../routes.js';
+    import { TOPBAR, firstPageOf } from '../site-map.js';
+
+    /* 「浏览组件」落到组件分区的第一个页面。分区自己可能没有落地页（「组件」就是），
+       landing 的算法与外壳顶栏同一套（docs/layout.html），这里不抄第二份路径。 */
+    const componentsEntry = TOPBAR.find((entry) => entry.label === '组件');
+    const BROWSE_PATH =
+      (componentsEntry && (componentsEntry.path ?? firstPageOf(componentsEntry)?.path)) ??
+      'packages/button/page.html';
 
     export const parent = '../layout.html';
 
@@ -40,8 +291,12 @@
       data: {},
 
       proto: {
-        openPage(path) {
-          location.hash = hashOf(path);
+        openInstall() {
+          location.hash = hashOf('docs/pages/install.html');
+        },
+
+        openBrowse() {
+          location.hash = hashOf(BROWSE_PATH);
         },
       },
     });
