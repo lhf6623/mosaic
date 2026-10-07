@@ -11,7 +11,7 @@
     <h2>三层结构</h2>
     <!-- prettier-ignore -->
     <mc-code language="text">
-      L1 原始色阶   --mc-primary-500: 134 102 255;              ← "R G B" 通道三元组
+      L1 原始色阶   --mc-primary-500: 0 153 165;              ← "R G B" 通道三元组
                            ↓
       L2 语义令牌   --mc-color-primary: var(--mc-primary-600);  ← 同样只是三元组
                            ↓
@@ -27,7 +27,7 @@
       <!-- prettier-ignore -->
       <mc-code language="css" style="margin: 0.75rem 0 0">
         /* 存 */
-        :root     { --mc-color-primary: var(--mc-primary-600); }   /* 114 70 237 */
+        :root     { --mc-color-primary: var(--mc-primary-600); }   /* 0 128 138 */
         mc-button { --mc-button-fill: var(--mc-color-primary); }
 
         /* 用 */
@@ -36,7 +36,7 @@
       </mc-code>
       <p style="margin: 0.75rem 0 0">
         混着来的话会拼出
-        <code>rgb(rgb(114 70 237) / 1)</code>
+        <code>rgb(rgb(0 128 138) / 1)</code>
         这种
         <strong>非法 CSS</strong>
         ，整条声明在计算值阶段被丢弃 —— 类名在、规则在、就是不生效，控制台零报错。
@@ -288,7 +288,7 @@
     <mc-code language="javascript">
       // tools/gen-tokens.mjs
       const HUES = {
-        primary: { hue: 152, cmax: 0.185 },   // 288（紫罗兰）→ 152（绿）
+        primary: { hue: 152, cmax: 0.185 },   // 205（青釉）→ 152（绿）
         // ...
       };
     </mc-code>

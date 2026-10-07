@@ -1,6 +1,6 @@
 /* ============================================================================
  * Mosaic Design Tokens — 由 tools/gen-tokens.mjs 生成，请勿手工编辑
- * 品牌色相 288° (OKLCH) · 6 色族 × 11 档 · 重新生成：pnpm tokens
+ * 品牌色相 205° (OKLCH) · 6 色族 × 11 档 · 重新生成：pnpm tokens
  *
  * 三层结构，组件只允许消费第 2、3 层：
  *   L1 原始色阶  --mc-<family>-<step>   存 sRGB 通道三元组，配合 rgb(var(--x) / a) 支持透明度
@@ -45,29 +45,29 @@
   /* ---- L1 原始色阶 ------------------------------------------------ */
   :root {
     /* neutral */
-    --mc-neutral-50: 244 246 248; /* #f4f6f8 */
-    --mc-neutral-100: 232 235 238; /* #e8ebee */
-    --mc-neutral-200: 213 218 224; /* #d5dae0 */
-    --mc-neutral-300: 186 193 203; /* #bac1cb */
-    --mc-neutral-400: 150 160 176; /* #96a0b0 */
-    --mc-neutral-500: 124 136 154; /* #7c889a */
-    --mc-neutral-600: 101 113 131; /* #657183 */
-    --mc-neutral-700: 86 97 113; /* #566171 */
-    --mc-neutral-800: 70 79 92; /* #464f5c */
-    --mc-neutral-900: 60 67 77; /* #3c434d */
-    --mc-neutral-950: 35 39 46; /* #23272e */
+    --mc-neutral-50: 245 246 246; /* #f5f6f6 */
+    --mc-neutral-100: 233 235 235; /* #e9ebeb */
+    --mc-neutral-200: 214 218 219; /* #d6dadb */
+    --mc-neutral-300: 187 194 194; /* #bbc2c2 */
+    --mc-neutral-400: 152 162 163; /* #98a2a3 */
+    --mc-neutral-500: 126 138 139; /* #7e8a8b */
+    --mc-neutral-600: 103 115 116; /* #677374 */
+    --mc-neutral-700: 88 98 99; /* #586263 */
+    --mc-neutral-800: 72 80 81; /* #485051 */
+    --mc-neutral-900: 61 67 68; /* #3d4344 */
+    --mc-neutral-950: 36 40 40; /* #242828 */
     /* primary */
-    --mc-primary-50: 245 245 255; /* #f5f5ff */
-    --mc-primary-100: 233 232 255; /* #e9e8ff */
-    --mc-primary-200: 215 212 255; /* #d7d4ff */
-    --mc-primary-300: 189 182 255; /* #bdb6ff */
-    --mc-primary-400: 156 140 255; /* #9c8cff */
-    --mc-primary-500: 134 102 255; /* #8666ff */
-    --mc-primary-600: 114 70 237; /* #7246ed */
-    --mc-primary-700: 97 58 206; /* #613ace */
-    --mc-primary-800: 79 49 166; /* #4f31a6 */
-    --mc-primary-900: 66 45 137; /* #422d89 */
-    --mc-primary-950: 39 25 85; /* #271955 */
+    --mc-primary-50: 236 249 250; /* #ecf9fa */
+    --mc-primary-100: 216 240 243; /* #d8f0f3 */
+    --mc-primary-200: 183 227 232; /* #b7e3e8 */
+    --mc-primary-300: 131 207 216; /* #83cfd8 */
+    --mc-primary-400: 23 180 194; /* #17b4c2 */
+    --mc-primary-500: 0 153 165; /* #0099a5 */
+    --mc-primary-600: 0 128 138; /* #00808a */
+    --mc-primary-700: 0 109 118; /* #006d76 */
+    --mc-primary-800: 0 89 97; /* #005961 */
+    --mc-primary-900: 0 76 82; /* #004c52 */
+    --mc-primary-950: 0 45 50; /* #002d32 */
     /* info */
     --mc-info-50: 239 247 255; /* #eff7ff */
     --mc-info-100: 219 237 255; /* #dbedff */
@@ -161,6 +161,8 @@
     --mc-color-danger-active: var(--mc-danger-800);
     --mc-color-danger-subtle: var(--mc-danger-50);
     --mc-color-danger-fg: 255 255 255;
+    --mc-shadow-panel: 0 4px 12px rgb(0 0 0 / 0.16);
+    --mc-shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.24);
   }
 
   /* ---- L2 语义令牌 · 暗色 ---------------------------------------- */
@@ -207,6 +209,8 @@
     --mc-color-danger-active: var(--mc-danger-100);
     --mc-color-danger-subtle: var(--mc-danger-950);
     --mc-color-danger-fg: var(--mc-neutral-950);
+    --mc-shadow-panel: 0 6px 18px rgb(0 0 0 / 0.55);
+    --mc-shadow-overlay: 0 16px 40px rgb(0 0 0 / 0.62);
   }
 
   /* 跟随系统不在令牌表里：那是使用者自己读 prefers-color-scheme 再写 data-theme 的事。
@@ -231,6 +235,10 @@
     --mc-text-2xl-lh: 2rem;
     --mc-text-3xl: 1.875rem;
     --mc-text-3xl-lh: 2.25rem;
+    --mc-text-4xl: 2.25rem;
+    --mc-text-4xl-lh: 2.5rem;
+    --mc-text-5xl: 3rem;
+    --mc-text-5xl-lh: 3.25rem;
 
     --mc-weight-normal: 400;
     --mc-weight-medium: 500;

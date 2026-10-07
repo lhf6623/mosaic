@@ -7,30 +7,30 @@
  *
  * 加载方式：由 tools/build-css.mjs 装配进 packages/boot/component-base.css，
  * 每个组件在自己的模板里 <link> 那一份（shadow 作用域，不外溢到宿主页面）。
- * 共 93 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
+ * 共 99 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
  * ========================================================================== */
 
 @layer mosaic.tokens {
   :host {
-    --mc-def-color-bg: 244 246 248;
+    --mc-def-color-bg: 245 246 246;
     --mc-def-color-surface: 255 255 255;
     --mc-def-color-surface-raised: 255 255 255;
-    --mc-def-color-surface-sunken: 232 235 238;
-    --mc-def-color-fg: 60 67 77;
-    --mc-def-color-fg-muted: 101 113 131;
-    --mc-def-color-fg-subtle: 124 136 154;
+    --mc-def-color-surface-sunken: 233 235 235;
+    --mc-def-color-fg: 61 67 68;
+    --mc-def-color-fg-muted: 103 115 116;
+    --mc-def-color-fg-subtle: 126 138 139;
     --mc-def-color-fg-inverted: 255 255 255;
-    --mc-def-color-border: 213 218 224;
-    --mc-def-color-border-strong: 186 193 203;
-    --mc-def-color-ring: 134 102 255;
+    --mc-def-color-border: 214 218 219;
+    --mc-def-color-border-strong: 187 194 194;
+    --mc-def-color-ring: 0 153 165;
     --mc-def-color-overlay: 15 18 30;
-    --mc-def-color-neutral: 213 218 224;
-    --mc-def-color-neutral-fg: 60 67 77;
+    --mc-def-color-neutral: 214 218 219;
+    --mc-def-color-neutral-fg: 61 67 68;
     --mc-def-color-overlay-alpha: 0.45;
-    --mc-def-color-primary: 114 70 237;
-    --mc-def-color-primary-hover: 97 58 206;
-    --mc-def-color-primary-active: 79 49 166;
-    --mc-def-color-primary-subtle: 245 245 255;
+    --mc-def-color-primary: 0 128 138;
+    --mc-def-color-primary-hover: 0 109 118;
+    --mc-def-color-primary-active: 0 89 97;
+    --mc-def-color-primary-subtle: 236 249 250;
     --mc-def-color-primary-fg: 255 255 255;
     --mc-def-color-info: 0 116 193;
     --mc-def-color-info-hover: 0 99 166;
@@ -52,6 +52,8 @@
     --mc-def-color-danger-active: 146 20 25;
     --mc-def-color-danger-subtle: 255 242 241;
     --mc-def-color-danger-fg: 255 255 255;
+    --mc-def-shadow-panel: 0 4px 12px rgb(0 0 0 / 0.16);
+    --mc-def-shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.24);
     --mc-def-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     --mc-def-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --mc-def-text-xs: 0.75rem;
@@ -68,6 +70,10 @@
     --mc-def-text-2xl-lh: 2rem;
     --mc-def-text-3xl: 1.875rem;
     --mc-def-text-3xl-lh: 2.25rem;
+    --mc-def-text-4xl: 2.25rem;
+    --mc-def-text-4xl-lh: 2.5rem;
+    --mc-def-text-5xl: 3rem;
+    --mc-def-text-5xl-lh: 3.25rem;
     --mc-def-weight-normal: 400;
     --mc-def-weight-medium: 500;
     --mc-def-weight-semibold: 600;

@@ -116,8 +116,10 @@ const C_CURVE = {
 
 /** 六个色族：hue 是 OKLCH 色相角，cmax 是该色相在 sRGB 里的彩度上限。换品牌色只改 primary.hue 重跑 */
 const HUES = {
-  neutral: { hue: 258, cmax: 0.032 }, // 微冷灰，与 primary 同色相 → 界面更"整"
-  primary: { hue: 288, cmax: 0.235 }, // Mosaic 品牌色：紫罗兰，避开满地蓝
+  neutral: { hue: 205, cmax: 0.014 }, // 微冷灰，与 primary 同色相 → 界面更"整"
+  /* Mosaic 品牌色：青釉（湖蓝）。色轮上 info 248 / success 152 / warning 72 / danger 26 已经占住，
+     170–210 是唯一不与任何语义色打架的窗口（与 success 差 53°、与 info 差 43°）。 */
+  primary: { hue: 205, cmax: 0.15 },
   info: { hue: 248, cmax: 0.198 },
   success: { hue: 152, cmax: 0.185 },
   warning: { hue: 72, cmax: 0.168 },
@@ -191,6 +193,12 @@ const THEMES = {
     'color-danger-active': ref('danger', 800),
     'color-danger-subtle': ref('danger', 50),
     'color-danger-fg': '255 255 255',
+
+    /* 浮层高度：面板（锚定弹层）与覆盖层（对话框 / 提示条）两档。
+       为什么是令牌：暗底上 16% 的黑阴影等于没有 —— 亮色够用的值在暗色下必须换，这是**主题差异**，
+       跟颜色一样只能落在令牌层；组件里写死 rgb(0 0 0 / .16) 就永远切不动。 */
+    'shadow-panel': '0 4px 12px rgb(0 0 0 / 0.16)',
+    'shadow-overlay': '0 12px 32px rgb(0 0 0 / 0.24)',
   },
   dark: {
     'color-bg': ref('neutral', 950),
@@ -239,6 +247,10 @@ const THEMES = {
     'color-danger-active': ref('danger', 100),
     'color-danger-subtle': ref('danger', 950),
     'color-danger-fg': ref('neutral', 950),
+
+    /* 暗色要更重更散：黑阴影落在深灰面上几乎不可见，抬高不透明度 + 加大扩散才撑得住层级 */
+    'shadow-panel': '0 6px 18px rgb(0 0 0 / 0.55)',
+    'shadow-overlay': '0 16px 40px rgb(0 0 0 / 0.62)',
   },
 };
 
@@ -266,6 +278,10 @@ const SCALARS = {
   'text-2xl-lh': '2rem',
   'text-3xl': '1.875rem',
   'text-3xl-lh': '2.25rem',
+  'text-4xl': '2.25rem',
+  'text-4xl-lh': '2.5rem',
+  'text-5xl': '3rem',
+  'text-5xl-lh': '3.25rem',
 
   'weight-normal': '400',
   'weight-medium': '500',

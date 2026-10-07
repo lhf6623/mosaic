@@ -89,6 +89,12 @@ const utils = await page.evaluate(() => {
   const text = sr.querySelector('.text-muted');
   const box = sr.querySelector('.bg-surface');
 
+  /* 期望值**从令牌现算**，不写死色值：色板是生成出来的，重定身份（改 tools/gen-tokens.mjs 的 HUES）
+     不该让这条守卫跟着报假警 —— 它要守的是「工具类接对了令牌」，不是「令牌恰好是这个色」。
+     同一个做法见 packages/loading-bar/test 的 tokens 探针。 */
+  const root = getComputedStyle(document.documentElement);
+  const tokenRgb = (name) => `rgb(${root.getPropertyValue(name).trim().split(/\s+/).join(', ')})`;
+
   // 必须在这里把值读成普通字符串 —— 下面的 host.remove() 会让活对象读空
   const out = {
     display: getComputedStyle(row).display,
@@ -96,6 +102,11 @@ const utils = await page.evaluate(() => {
     textColor: getComputedStyle(text).color,
     bg: getComputedStyle(box).backgroundColor,
     border: getComputedStyle(box).borderColor,
+    expected: {
+      textColor: tokenRgb('--mc-color-fg-muted'),
+      bg: tokenRgb('--mc-color-surface'),
+      border: tokenRgb('--mc-color-border'),
+    },
   };
   host.remove();
   return out;
@@ -104,15 +115,19 @@ const utils = await page.evaluate(() => {
 check('工具类生效：display:flex', utils.display === 'flex', `display = ${utils.display}`);
 check('工具类生效：gap-2 = 8px', utils.gap === '8px', `gap = ${utils.gap}`);
 check(
-  '语义色工具类生效：text-muted → neutral-600',
-  utils.textColor === 'rgb(101, 113, 131)',
-  `text-muted = ${utils.textColor}`,
+  '语义色工具类生效：text-muted → --mc-color-fg-muted',
+  utils.textColor === utils.expected.textColor,
+  `text-muted = ${utils.textColor} · 令牌 = ${utils.expected.textColor}`,
 );
-check('语义色工具类生效：bg-surface', utils.bg === 'rgb(255, 255, 255)', `bg-surface = ${utils.bg}`);
 check(
-  '语义色工具类生效：border-border → neutral-200',
-  utils.border === 'rgb(213, 218, 224)',
-  `border-border = ${utils.border}`,
+  '语义色工具类生效：bg-surface',
+  utils.bg === utils.expected.bg,
+  `bg-surface = ${utils.bg} · 令牌 = ${utils.expected.bg}`,
+);
+check(
+  '语义色工具类生效：border-border → --mc-color-border',
+  utils.border === utils.expected.border,
+  `border-border = ${utils.border} · 令牌 = ${utils.expected.border}`,
 );
 
 /* ------------------------------------------------------------------ *
@@ -126,14 +141,18 @@ const tokenInherits = await page.evaluate(() => {
   const value = getComputedStyle(sr.querySelector('.text-muted')).getPropertyValue(
     '--mc-color-fg-muted',
   );
+  // 期望值同样现算：比的是「继承下去了」，不是「值等于某个数」
+  const expected = getComputedStyle(document.documentElement)
+    .getPropertyValue('--mc-color-fg-muted')
+    .trim();
   host.remove();
-  return value;
+  return { value: value.trim(), expected };
 });
 // 令牌存的是裸通道三元组（不是完整颜色），这是全局约定，见 packages/color/README.md
 check(
   '令牌跨 shadow 边界继承',
-  tokenInherits.trim() === '101 113 131',
-  `--mc-color-fg-muted = ${tokenInherits.trim()}`,
+  tokenInherits.value === tokenInherits.expected && tokenInherits.value !== '',
+  `--mc-color-fg-muted = ${tokenInherits.value} · 根上 = ${tokenInherits.expected}`,
 );
 
 /* ------------------------------------------------------------------ *
