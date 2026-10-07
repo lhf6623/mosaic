@@ -15,6 +15,15 @@ body {
   padding: 0;
 }
 
+/* 站点字体（框架默认是 system-ui，见 token-defaults.css）。
+   这些是**文档站的资产**，不随组件发布：使用者不会因为引了一个 <mc-button> 就多下 110KB。
+   拉丁走 Archivo（可变字体：wght 100–900 + wdth 62–125，字宽当结构用），中文走系统栈 ——
+   CJK webfont 单字重就数 MB，与"免安装、免构建"的调性直接冲突，中文的个性交给排版承担。 */
+:root {
+  --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 /* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此从顶栏下面开始，不会伸进头部） */
 html {
   height: 100%;

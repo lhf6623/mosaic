@@ -527,6 +527,13 @@ export default async function run({ page, visit, check }) {
       panelBg: panelCs.backgroundColor,
       radius: panelCs.borderTopLeftRadius,
       fontFamily: panelCs.fontFamily.split(',')[0],
+      /* 期望值从令牌现算：字体是**站点级**的事（文档站用 Archivo 覆盖了 --mc-font-sans），
+         写死 system-ui 的话，站点一换字体这条守卫就报假警 —— 它要守的是「面板接了令牌」。 */
+      tokenFont: getComputedStyle(document.documentElement)
+        .getPropertyValue('--mc-font-sans')
+        .split(',')[0]
+        .trim()
+        .replace(/["']/g, ''),
       /* ⚠️ UA 给 `[popover]` 的是 `border: solid`（宽度 medium = 3px、颜色 currentColor）：
          面板不显式写 `border: 0` 就会长出一圈 3px 边框（实测亮色 rgb(60 67 77)）。 */
       border: `${panelCs.borderTopWidth} ${panelCs.borderTopStyle}`,
@@ -570,7 +577,10 @@ export default async function run({ page, visit, check }) {
   );
   check(
     '面板样式走令牌（背景是 surface 色、圆角、字体都是项目令牌）',
-    /^rgb\(/.test(arrow.panelBg) && /px$/.test(arrow.radius) && /system-ui|-apple-system/.test(arrow.fontFamily),
+    /^rgb\(/.test(arrow.panelBg) &&
+      /px$/.test(arrow.radius) &&
+      arrow.fontFamily === arrow.tokenFont &&
+      arrow.tokenFont !== '',
     JSON.stringify(arrow),
   );
   /* 面板不画真边框（UA 那条 `border: solid` 必须被显式清零），描边由 drop-shadow 跟整体轮廓做 ——

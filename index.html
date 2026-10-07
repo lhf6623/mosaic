@@ -13,6 +13,15 @@
     <script src="./docs/theme-boot.js"></script>
 
     <link rel="stylesheet" href="./packages/boot/mosaic.css" />
+    <!-- 站点自带字体：只覆盖文档站的 --mc-font-sans / --mc-font-mono，
+         框架默认（token-defaults.css）保持 system-ui —— 使用者引组件不该多出一次网络请求 -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="./docs/fonts/archivo-var-latin.woff2"
+      crossorigin />
+    <link rel="stylesheet" href="./docs/fonts/fonts.css" />
     <link rel="stylesheet" href="./docs/shell.css" />
 
     <!-- ofa.js 必须排在站点样式注入器之前：模块按文档顺序执行 -->
