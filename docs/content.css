@@ -49,14 +49,12 @@
   font-size: var(--mc-text-lg);
   line-height: var(--mc-text-lg-lh);
   color: rgb(var(--mc-color-fg-muted));
-  max-width: 40em;
 }
 
 /* 正文用**前景色**、不用 fg-muted：16px 中文长段落压在 muted 上读起来发灰。
    muted 留给真正的次要信息（导语、提示、表格单元格）。 */
 .doc-body p,
 .doc-body li {
-  max-width: 44em;
   color: rgb(var(--mc-color-fg));
 }
 
