@@ -1,0 +1,57 @@
+<template component>
+  <mc-form on:submit="save($event)">
+    <mc-form-item label="用户名" name="user.name" rules='[{"required":true,"trigger":"input"}]'>
+      <!-- 文本类的值是字符串，sync:value 双向没有信息损失 -->
+      <mc-input sync:value="form.user.name"></mc-input>
+    </mc-form-item>
+    <mc-form-item
+      label="同意条款"
+      name="agree"
+      rules='[{"required":true,"message":"要同意才能提交"}]'>
+      <!-- 布尔类用「单向 + change 回写」：载荷里的 checked 是真布尔（sync:checked 会绕成属性字符串，容易丢信息） -->
+      <mc-checkbox :checked="form.agree" on:change="form.agree = $event.data.checked">
+        同意条款
+      </mc-checkbox>
+    </mc-form-item>
+    <mc-form-item>
+      <div class="flex flex-wrap items-center gap-3">
+        <mc-button type="submit">提交</mc-button>
+        <mc-button variant="outline" on:click="swap()">换一份数据（代替重置）</mc-button>
+        <span class="text-sm text-muted">{{last}}</span>
+      </div>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    data.form：
+    <strong>{{form.user.name}}</strong>
+    ｜ 同意：
+    <strong>{{form.agree ? '是' : '否'}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-binding',
+
+      /* 数据就在自己的 data 里；控件用 ofa 原生的绑定读写它（容器不碰数据） */
+      data: { form: { user: { name: '张三' }, agree: false }, last: '' },
+
+      proto: {
+        save(event) {
+          /* 受控用法：this.form 已经是最新的，直接交给接口就行（这里只是显示一下） */
+          this.last = '提交 → ' + JSON.stringify(event.data.value);
+        },
+        swap() {
+          /* 想"重置"就换一份数据：绑定会把控件推回去 */
+          this.form = { user: { name: '李四' }, agree: true };
+          /* ⚠️ 换数据只动"值"，不碰"校验状态"（容器不持有数据、也不监听你的数据）——
+             刚才红着的行会一直红，要自己收起：容器认 clear-validate 事件，也有同名方法 */
+          this.formEl().clearValidate();
+        },
+        formEl() {
+          return this.ele.shadowRoot.querySelector('mc-form');
+        },
+      },
+    });
+  </script>
+</template>

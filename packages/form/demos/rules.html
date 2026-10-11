@@ -1,0 +1,104 @@
+<template component>
+  <mc-form :rules="formRules" on:submit="save($event)" on:invalid="mark($event)">
+    <!-- ① 声明式快捷键：一个 required 属性（顺带把标签的 * 带出来） -->
+    <mc-form-item label="用户名" name="username" required>
+      <mc-input placeholder="required 属性"></mc-input>
+    </mc-form-item>
+
+    <!-- ② 行上的 rules 属性：JSON 文本，绑在这一行（位置绑定，连 name 都不用写） -->
+    <mc-form-item
+      label="备注"
+      rules='[{"required":true,"message":"备注不能为空","trigger":"blur"}]'>
+      <mc-input placeholder="rules 属性（行上）"></mc-input>
+    </mc-form-item>
+
+    <!-- ③ 容器上的 rules 属性：按字段名（见下面 data.formRules） -->
+    <mc-form-item label="邮箱" name="email">
+      <mc-input placeholder="容器 rules 属性（按字段名）"></mc-input>
+    </mc-form-item>
+
+    <!-- ⑤ 混合：同一个字段，属性里写必填 + 文案，property 里补异步 validator -->
+    <mc-form-item label="手机号" name="phone">
+      <mc-input placeholder="属性 + property 混着写"></mc-input>
+    </mc-form-item>
+
+    <!-- ④ property：带函数的（跨字段）只能挂宿主 property -->
+    <mc-form-item label="确认邮箱" name="confirm">
+      <mc-input placeholder="property 里跨字段比对"></mc-input>
+    </mc-form-item>
+
+    <mc-form-item>
+      <div class="flex flex-wrap items-center gap-3">
+        <mc-button type="submit">提交</mc-button>
+        <mc-button variant="outline" on:click="check()">只调 validate()</mc-button>
+        <!-- 清校验状态：全部（事件）/ 单个（方法给字段名） -->
+        <mc-button variant="outline" on:click="clearAll()">清掉全部校验</mc-button>
+        <mc-button variant="outline" on:click="clearOne()">只清「用户名」</mc-button>
+        <span class="text-sm text-muted">{{last}}</span>
+      </div>
+    </mc-form-item>
+  </mc-form>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-rules',
+
+      data: {
+        last: '（还没校验过）',
+
+        /* ③ 容器上的 rules 属性（用 :rules 绑上去）：标签属性是文本，所以这里只能放声明式键 */
+        formRules: {
+          email: [{ required: true, message: '邮箱要填', trigger: ['input', 'blur'] }],
+
+          /* ⑤ 混合：同一个字段，属性里先写必填与文案 …… */
+          phone: [{ required: true, message: '手机号要填' }],
+        },
+      },
+
+      ready() {
+        /* ④ …… property 里补「带函数」的那部分（⑤ 手机号也续在这条线上：属性拦空值，函数管格式与查重） */
+        this.ele.shadowRoot.querySelector('mc-form').rules = {
+          phone: {
+            trigger: 'blur',
+            validator: async (rule, value) => {
+              if (!/^1\d{10}$/.test(value)) return '要 11 位手机号';
+              await new Promise((resolve) => setTimeout(resolve, 200)); // 假装的远程查重
+              return value.endsWith('0000') ? '这个号已经被占用了' : '';
+            },
+          },
+          confirm: {
+            trigger: 'blur',
+            validator: (rule, value, form) =>
+              value === form.getValue().email ? '' : '两次输入的邮箱不一致',
+          },
+        };
+      },
+
+      proto: {
+        save(event) {
+          this.last = '提交成功 ' + JSON.stringify(event.data.value);
+        },
+        mark(event) {
+          this.last = '没过：' + event.data.fields.join(' / ');
+        },
+        async check() {
+          const form = this.form();
+          this.last = 'validate() → ' + (await form.validate());
+        },
+        form() {
+          return this.ele.shadowRoot.querySelector('mc-form');
+        },
+        /* 全部：派发一个冒泡的 clear-validate（等价于 form.clearValidate()） */
+        clearAll() {
+          this.form().dispatchEvent(new CustomEvent('clear-validate', { bubbles: true }));
+          this.last = 'clear-validate → 错误提示都收起了';
+        },
+        /* 单个：给字段名就只清那一行（名字与 getValue() 的键同一口径） */
+        clearOne() {
+          this.form().clearValidate('username');
+          this.last = "clearValidate('username') → 只收起「用户名」那行";
+        },
+      },
+    });
+  </script>
+</template>

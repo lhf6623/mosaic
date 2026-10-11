@@ -4,7 +4,8 @@
 > 源码 `./radio.html` + `./radio-group.html` · **已实现**
 
 单选项，**容器 + 子项**两个标签：`mc-radio-group` 管互斥、方向、尺寸与事件，`mc-radio` 只是
-一格（圆圈 + 文案）。**初始值写在 `default-value` 属性上，运行时值走宿主 DOM property `value`**
+一格（圆圈 + 文案）。**非受控的初始值写在 `default-value` 属性上；受控就绑 `:value="form.plan"` / `sync:value="form.plan"`**，
+运行时值读写宿主 DOM property `value`
 （`group.value = 'b'` 立刻生效；`group.setAttribute('value', …)` 不是运行时通道）。
 `default-value` **只在挂载那一刻读一次** —— 之后改属性不会回头覆盖运行时值（规范 1.4：
 标签属性是初始值，运行时要改用 property；同 `mc-input` 的口径）。
@@ -21,14 +22,15 @@
 
 ## 属性
 
-| 名称            | 值                     | 默认  | 说明                                                                           |
-| --------------- | ---------------------- | ----- | ------------------------------------------------------------------------------ |
-| `default-value` | `string`               | —     | **`mc-radio-group`**：HTML 初始值，对应哪个 `mc-radio` 的 `value`              |
-| `name`          | `string`               | —     | **`mc-radio-group`**：字段名，转发给每个子项内部的原生 radio                   |
-| `direction`     | `'row' \| 'column'`    | `row` | **`mc-radio-group`**：横排 / 竖排                                              |
-| `disabled`      | `boolean`              | —     | 组上写 = 整组不可选（转发内部原生 radio 的 `disabled`）；子项上写 = 只禁这一格 |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md`  | **`mc-radio-group`**：控件高 / 内边距 / 字号，靠自定义属性继承给子项           |
-| `value`         | `string`               | —     | **`mc-radio`**：这一项的值，跟组的选中值比对                                   |
+| 名称            | 值                     | 默认  | 说明                                                                                                         |
+| --------------- | ---------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
+| `default-value` | `string`               | —     | **`mc-radio-group`**：HTML 初始值，对应哪个 `mc-radio` 的 `value`                                            |
+| `value`         | `string`               | —     | **`mc-radio-group`**：绑定通道（ofa 的 `:value` / `sync:value`）同时也是运行时值的投影，外部读它不会拿到陈值 |
+| `name`          | `string`               | —     | **`mc-radio-group`**：字段名，转发给每个子项内部的原生 radio                                                 |
+| `direction`     | `'row' \| 'column'`    | `row` | **`mc-radio-group`**：横排 / 竖排                                                                            |
+| `disabled`      | `boolean`              | —     | 组上写 = 整组不可选（转发内部原生 radio 的 `disabled`）；子项上写 = 只禁这一格                               |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md`  | **`mc-radio-group`**：控件高 / 内边距 / 字号，靠自定义属性继承给子项                                         |
+| `value`         | `string`               | —     | **`mc-radio`**：这一项的值，跟组的选中值比对                                                                 |
 
 ## 事件
 

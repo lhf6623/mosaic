@@ -1,0 +1,38 @@
+<template component>
+  <style>
+    /* 三个 part 各自改一处；选择器带上 .skin —— 否则下面那条默认对照也会被改掉 */
+    .skin::part(base) {
+      padding: var(--mc-space-3);
+      border: 1px dashed rgb(var(--mc-color-border-strong));
+      border-radius: var(--mc-radius-md);
+    }
+    .skin::part(label) {
+      color: rgb(var(--mc-color-primary));
+      font-weight: var(--mc-weight-medium);
+    }
+    .skin::part(error) {
+      font-style: italic;
+    }
+  </style>
+
+  <div class="flex flex-col gap-4">
+    <mc-form class="skin" rules='{"a":[{"required":true,"message":"改过的不能为空"}]}'>
+      <mc-form-item label="改过的" name="a">
+        <mc-input placeholder="点提交看错误文案"></mc-input>
+      </mc-form-item>
+      <mc-form-item>
+        <mc-button type="submit">提交</mc-button>
+      </mc-form-item>
+    </mc-form>
+
+    <mc-form>
+      <mc-form-item label="默认对照" name="b">
+        <mc-input></mc-input>
+      </mc-form-item>
+    </mc-form>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-form-part' });
+  </script>
+</template>

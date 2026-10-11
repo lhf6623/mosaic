@@ -1,0 +1,47 @@
+<template component>
+  <mc-form>
+    <mc-form-item label="开启通知" name="notify">
+      <mc-switch checked-value="1" unchecked-value="0"></mc-switch>
+    </mc-form-item>
+    <mc-form-item label="运行模式" name="mode">
+      <mc-switch checked-value="on" unchecked-value="off"></mc-switch>
+    </mc-form-item>
+    <mc-form-item label="只给开着时的值" name="only">
+      <mc-switch checked-value="1"></mc-switch>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    收集到的值：
+    <strong>{{json}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-switch-custom-value',
+
+      /* 组件就绪之前先这么显示：下面会在就绪后补一次真实值 */
+      data: { json: '（组件就绪后读一次）' },
+
+      ready() {
+        /* checked-value / unchecked-value 这一对：开着给前者、关着给后者（没写 checked-value 就还是布尔）。
+           ⚠️ mc-form / mc-switch 都是**异步注册**的：ready 这一刻它们可能还没升级完（没有 getValue / formValue），
+           直接读会抛错 —— 首帧就停在 {}、change 监听也挂不上。所以等两边都就绪再开始。 */
+        const form = this.ele.shadowRoot.querySelector('mc-form');
+        const switches = [...this.ele.shadowRoot.querySelectorAll('mc-switch')];
+        const read = () => {
+          this.json = JSON.stringify(form.getValue());
+        };
+        const start = () => {
+          const ready =
+            typeof form.getValue === 'function' &&
+            switches.every((el) => typeof el.formValue === 'function');
+          if (!ready) return requestAnimationFrame(start);
+          read();
+          form.addEventListener('change', read);
+        };
+        start();
+      },
+    });
+  </script>
+</template>

@@ -28,18 +28,19 @@ el.addEventListener('change', (e) => console.log(e.data.value));
 
 ## 属性
 
-| 名称            | 值                                                                          | 默认   | 说明                                         |
-| --------------- | --------------------------------------------------------------------------- | ------ | -------------------------------------------- |
-| `type`          | `'text' \| 'password' \| 'email' \| 'number' \| 'search' \| 'tel' \| 'url'` | `text` | 转发给内部原生 `<input>` 的 `type`           |
-| `default-value` | `string`                                                                    | —      | HTML 里的初始值；之后改它**不会**覆盖当前值  |
-| `placeholder`   | `string`                                                                    | —      | 占位符                                       |
-| `name`          | `string`                                                                    | —      | 表单字段名，转发给内部原生 `<input>`         |
-| `size`          | `'sm' \| 'md' \| 'lg'`                                                      | `md`   | 尺寸；高度取 `--mc-control-h-*`              |
-| `maxlength`     | `number`                                                                    | —      | 最大长度，转发给内部原生 `<input>`           |
-| `clearable`     | `boolean`                                                                   | —      | 有内容时右侧出现 × 原生按钮                  |
-| `disabled`      | `boolean`                                                                   | —      | 禁用，转发给内部原生 `<input>` 的 `disabled` |
-| `readonly`      | `boolean`                                                                   | —      | 只读，转发给内部原生 `<input>` 的 `readonly` |
-| `invalid`       | `boolean`                                                                   | —      | 校验失败：边框取 `--mc-color-danger`         |
+| 名称            | 值                                                                          | 默认   | 说明                                                                                                                                                     |
+| --------------- | --------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`          | `'text' \| 'password' \| 'email' \| 'number' \| 'search' \| 'tel' \| 'url'` | `text` | 转发给内部原生 `<input>` 的 `type`                                                                                                                       |
+| `value`         | `string`                                                                    | —      | **绑定通道**：ofa 原生的 `<mc-input :value="form.name">`（单向）/ `sync:value="form.name"`（双向）落在这个属性上；写它会铺进内部原生 input，输入会写回它 |
+| `default-value` | `string`                                                                    | —      | HTML 里的初始值；之后改它**不会**覆盖当前值                                                                                                              |
+| `placeholder`   | `string`                                                                    | —      | 占位符                                                                                                                                                   |
+| `name`          | `string`                                                                    | —      | 表单字段名，转发给内部原生 `<input>`                                                                                                                     |
+| `size`          | `'sm' \| 'md' \| 'lg'`                                                      | `md`   | 尺寸；高度取 `--mc-control-h-*`                                                                                                                          |
+| `maxlength`     | `number`                                                                    | —      | 最大长度，转发给内部原生 `<input>`                                                                                                                       |
+| `clearable`     | `boolean`                                                                   | —      | 有内容时右侧出现 × 原生按钮                                                                                                                              |
+| `disabled`      | `boolean`                                                                   | —      | 禁用，转发给内部原生 `<input>` 的 `disabled`                                                                                                             |
+| `readonly`      | `boolean`                                                                   | —      | 只读，转发给内部原生 `<input>` 的 `readonly`                                                                                                             |
+| `invalid`       | `boolean`                                                                   | —      | 校验失败：边框取 `--mc-color-danger`                                                                                                                     |
 
 ## 事件
 

@@ -1,0 +1,47 @@
+<template component>
+  <mc-form>
+    <mc-form-item label="订阅邮件" name="subscribe">
+      <mc-checkbox checked-value="1" unchecked-value="0"></mc-checkbox>
+    </mc-form-item>
+    <mc-form-item label="同意条款" name="agree">
+      <mc-checkbox checked-value="yes" unchecked-value="no"></mc-checkbox>
+    </mc-form-item>
+    <mc-form-item label="只给勾上时的值" name="only">
+      <mc-checkbox checked-value="on"></mc-checkbox>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    收集到的值：
+    <strong>{{json}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-checkbox-custom-value',
+
+      /* 组件就绪之前先这么显示：下面会在就绪后补一次真实值 */
+      data: { json: '（组件就绪后读一次）' },
+
+      ready() {
+        /* checked-value / unchecked-value 这一对：勾上给前者、没勾给后者（没写 checked-value 就还是布尔）。
+           ⚠️ mc-form / mc-checkbox 都是**异步注册**的：ready 这一刻它们可能还没升级完（没有 getValue / formValue），
+           直接读会抛错 —— 首帧就停在 {}、change 监听也挂不上。所以等两边都就绪再开始。 */
+        const form = this.ele.shadowRoot.querySelector('mc-form');
+        const boxes = [...this.ele.shadowRoot.querySelectorAll('mc-checkbox')];
+        const read = () => {
+          this.json = JSON.stringify(form.getValue());
+        };
+        const start = () => {
+          const ready =
+            typeof form.getValue === 'function' &&
+            boxes.every((el) => typeof el.formValue === 'function');
+          if (!ready) return requestAnimationFrame(start);
+          read();
+          form.addEventListener('change', read);
+        };
+        start();
+      },
+    });
+  </script>
+</template>

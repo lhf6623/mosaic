@@ -4,6 +4,9 @@
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
     <l-m src="./switch.html"></l-m>
+    <l-m src="../form/form.html"></l-m>
+    <l-m src="../form/form-item.html"></l-m>
+    <l-m src="./demos/custom-value.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/disabled.html"></l-m>
@@ -27,17 +30,50 @@
         文案写在标签里（默认插槽）；
         <code>on:change</code>
         的载荷是
-        <code>$event.data.checked</code>
-        。它不是复选框（要勾多项或半选就用
+        <code>$event.data</code>
+        （
+        <code>{ checked, value }</code>
+        ）。它不是复选框（要勾多项或半选就用
         <code>mc-checkbox</code>
-        ）；开关也不带
-        <code>value</code>
-        —— 要提交就自己配一个隐藏字段。
+        ）；
+        <code>checked</code>
+        是受控 / 运行时状态，只想给**非受控初值**就写
+        <code>default-checked</code>
+        （挂载读一次，之后不再参与）；要交
+        <code>"1"</code>
+        /
+        <code>"0"</code>
+        这种值看下一条「自定义值」。
       </p>
       <demo-switch-basic></demo-switch-basic>
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
           <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自定义值</h3>
+      <p class="doc-hint">
+        给
+        <code>checked-value</code>
+        与
+        <code>unchecked-value</code>
+        ：表单收集时开着给前者、关着给后者（不写就是布尔
+        <code>true</code>
+        /
+        <code>false</code>
+        ）。这一对专管「这个控件交出什么值」，
+        <code>on:change</code>
+        的载荷仍是
+        <code>{ checked }</code>
+        。
+      </p>
+      <demo-switch-custom-value></demo-switch-custom-value>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/custom-value.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>

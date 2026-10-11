@@ -143,6 +143,9 @@
       tag: 'mc-textarea',
 
       attrs: {
+        /* 绑定通道：ofa 原生的 `:value="form.memo"`（单向）/ `sync:value="form.memo"`（双向）落在这个属性上。
+           默认 null（同 mc-input）：ofa 不会凭空写一个空属性出来，"属性在不在"才可靠（P32）。 */
+        value: null,
         // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
         defaultValue: '',
         placeholder: '',
@@ -176,8 +179,11 @@
           set: (v) => {
             this._input.value = String(v ?? '');
             this.applyState();
+            this.reflectBoundValue();
           },
         });
+        // 升级前 ofa 的绑定可能已经写好了 value 属性：补一次同步
+        this.applyBoundValue();
       },
 
       attached() {
@@ -191,11 +197,23 @@
       },
 
       watch: {
+        /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 textarea 立刻跟上 */
+        value() {
+          this.applyBoundValue();
+        },
         // 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫
         autoResize() {
           this.bindAutoResize();
         },
         maxlength() {
+          this.applyState();
+        },
+        /* 这两个只走 CSS（:host([invalid]) / :host([auto-resize])），也要收一次 */
+        invalid() {
+          this.applyState();
+        },
+        autoResize() {
+          this.bindAutoResize();
           this.applyState();
         },
       },
@@ -207,6 +225,23 @@
       },
 
       proto: {
+        /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺进内部原生 textarea —— 单向「数据 → DOM」这一半 */
+        applyBoundValue() {
+          if (!this._input) return;
+          const bound = this.ele.getAttribute('value');
+          if (bound === null || this._input.value === bound) return;
+          this._input.value = bound;
+          this.applyState();
+        },
+
+        /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」那一半 */
+        reflectBoundValue() {
+          if (!this._input) return;
+          const now = this._input.value;
+          if (this.ele.getAttribute('value') === now) return;
+          this.ele.setAttribute('value', now);
+        },
+
         /** 初始值只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）：声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached()，由 _defaultApplied 记账 */
         applyDefaultValue() {
           if (this._defaultApplied === true || !this._input) return;
@@ -256,10 +291,22 @@
           el.style.height = `${height}px`;
         },
 
+        /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
+            宿主属性要 attached 之后才能写（P31），所以这一拍在 applyState 里、_mounted 之后做。 */
+        normalizeBoolAttrs() {
+          for (const name of ['disabled', 'readonly', 'invalid', 'auto-resize']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
+        },
+
         /** data-has-* 是 CSS 唯一的输入；字数统计也在这里刷新 */
         applyState() {
           // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
           if (!this._mounted) return;
+          this.normalizeBoolAttrs();
           this.mirror('data-has-value', this._input.value !== '');
           this.mirror('data-has-prefix', this.slotHasContent('prefix'));
           this.mirror('data-has-suffix', this.slotHasContent('suffix'));
@@ -288,6 +335,8 @@
         onInput(event) {
           event.stopPropagation();
           this.applyState();
+          /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
+          this.reflectBoundValue();
           this.emit('input', {
             data: { value: this._input.value },
             bubbles: true,
@@ -298,6 +347,7 @@
         /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
         onChange() {
           this.applyState();
+          this.reflectBoundValue();
           this.emit('change', {
             data: { value: this._input.value },
             bubbles: true,

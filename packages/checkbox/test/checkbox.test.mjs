@@ -348,6 +348,78 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(focus),
   );
 
+  /* ---------- 自定义值：checked-value / unchecked-value 这一对（formValue() 是给 mc-form 的协议） ---------- */
+  await page
+    .waitForFunction(() => !!customElements.get('mc-form') && !!customElements.get('mc-form-item'), {
+      timeout: 8000,
+    })
+    .catch(() => {});
+  const custom = await page.evaluate(async () => {
+    const form = document.createElement('mc-form');
+    form.innerHTML =
+      '<mc-form-item label="成对" name="pair">' +
+      '<mc-checkbox checked-value="1" unchecked-value="0"></mc-checkbox></mc-form-item>' +
+      '<mc-form-item label="只给勾上时的值" name="only">' +
+      '<mc-checkbox checked-value="yes"></mc-checkbox></mc-form-item>' +
+      '<mc-form-item label="没写这一对" name="plain">' +
+      '<mc-checkbox></mc-checkbox></mc-form-item>';
+    document.body.append(form);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const [pair, only, plain] = form.querySelectorAll('mc-checkbox');
+    const before = { value: form.getValue(), pair: pair.formValue(), only: only.formValue(), plain: plain.formValue() };
+    pair.checked = true;
+    only.checked = true;
+    plain.checked = true;
+    const after = { value: form.getValue(), pair: pair.formValue(), only: only.formValue(), plain: plain.formValue() };
+    form.remove();
+    return { before, after };
+  });
+  check(
+    'formValue()：写了 checked-value 就是「checked-value / unchecked-value」这一对（只给前者时没勾给空串），不写仍旧是布尔',
+    custom.before.pair === '0' &&
+      custom.before.only === '' &&
+      custom.before.plain === false &&
+      custom.after.pair === '1' &&
+      custom.after.only === 'yes' &&
+      custom.after.plain === true &&
+      JSON.stringify(custom.before.value) === JSON.stringify({ pair: '0', only: '', plain: false }) &&
+      JSON.stringify(custom.after.value) === JSON.stringify({ pair: '1', only: 'yes', plain: true }),
+    JSON.stringify(custom),
+  );
+
+  /* ---------- 非受控初值：default-checked 只在挂载时读一次 ---------- */
+  const defaultChecked = await page.evaluate(async () => {
+    const early = document.createElement("mc-checkbox");
+    early.setAttribute("default-checked", "");
+    early.id = "cb-default-checked";
+    document.body.append(early);
+    const late = document.createElement("mc-checkbox");
+    late.id = "cb-default-late";
+    document.body.append(late);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const atMount = { early: early.checked, late: late.checked };
+    /* 挂载之后再补属性：不该改变状态（读一次） */
+    late.setAttribute("default-checked", "");
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const afterLateAdd = late.checked;
+    /* 点一下：非受控下 DOM 是真相，宿主 checked 属性跟着走 */
+    early.shadowRoot.querySelector("label").click();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    const afterClick = { checked: early.checked, attr: early.hasAttribute("checked") };
+    early.remove();
+    late.remove();
+    return { atMount, afterLateAdd, afterClick };
+  });
+  check(
+    "default-checked 是非受控初值：挂载时读一次就落成 checked（之后补属性不再生效），点了仍旧跟着走",
+    defaultChecked.atMount.early === true &&
+      defaultChecked.atMount.late === false &&
+      defaultChecked.afterLateAdd === false &&
+      defaultChecked.afterClick.checked === false &&
+      defaultChecked.afterClick.attr === false,
+    JSON.stringify(defaultChecked),
+  );
+
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => {
     document.getElementById('checkbox-probe')?.remove();

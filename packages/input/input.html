@@ -164,6 +164,9 @@
 
       attrs: {
         type: 'text',
+        /* 绑定通道：ofa 原生的 `:value="form.name"`（单向）/ `sync:value="form.name"`（双向）落在这个属性上。
+           默认 null（同 mc-form 的 rules）：ofa 不会凭空写一个空属性出来，"属性在不在"才可靠（P32）。 */
+        value: null,
         // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
         defaultValue: '',
         placeholder: '',
@@ -193,8 +196,11 @@
           set: (v) => {
             this._input.value = String(v ?? '');
             this.applyState();
+            this.reflectBoundValue();
           },
         });
+        // 升级前 ofa 的绑定可能已经写好了 value 属性（P6）：补一次同步
+        this.applyBoundValue();
       },
 
       attached() {
@@ -212,6 +218,10 @@
       },
 
       watch: {
+        /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 input 立刻跟上 */
+        value() {
+          this.applyBoundValue();
+        },
         // 三个都会改变"× 该不该在"，而首次触发落在构造期（P5）—— applyState 自己有守卫
         clearable() {
           this.applyState();
@@ -222,9 +232,30 @@
         readonly() {
           this.applyState();
         },
+        /* invalid 只走 CSS（:host([invalid])），也要收一次：绑定的 "false" 不能被当成"有" */
+        invalid() {
+          this.applyState();
+        },
       },
 
       proto: {
+        /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺到内部原生 input —— 单向「数据 → DOM」的这一半 */
+        applyBoundValue() {
+          if (!this._input) return;
+          const bound = this.ele.getAttribute('value');
+          if (bound === null || this._input.value === bound) return;
+          this._input.value = bound;
+          this.applyState();
+        },
+
+        /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」的那一半 */
+        reflectBoundValue() {
+          if (!this._input) return;
+          const now = this._input.value;
+          if (this.ele.getAttribute('value') === now) return;
+          this.ele.setAttribute('value', now);
+        },
+
         /** 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached() —— 由 _defaultApplied 记账，谁先到谁生效。 */
         applyDefaultValue() {
           if (this._defaultApplied === true || !this._input) return;
@@ -235,16 +266,35 @@
           this._defaultApplied = true;
         },
 
+        /** 布尔状态的读法：ofa 的绑定会把 false 给成数据里的 false 或属性上的 "false" —— 都不算"有" */
+        boolOn(key) {
+          const raw = this[key];
+          return raw !== null && raw !== false && raw !== 'false';
+        },
+
+        /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
+            宿主属性要 attached 之后才能写（P31），所以这一拍在 applyState 里、_mounted 之后做。 */
+        normalizeBoolAttrs() {
+          if (!this._mounted) return;
+          for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
+        },
+
         applyState() {
           // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
           if (!this._mounted) return;
+          this.normalizeBoolAttrs();
           const value = this._input.value;
           // × 是一个派生事实：可清 + 有内容 + 没被禁用 / 只读
           this.mirror(
             'data-has-clear',
-            this.clearable !== null &&
-              this.disabled === null &&
-              this.readonly === null &&
+            this.boolOn('clearable') &&
+              !this.boolOn('disabled') &&
+              !this.boolOn('readonly') &&
               value !== '',
           );
           this.mirror('data-has-prefix', this.slotHasContent('prefix'));
@@ -270,6 +320,8 @@
         onInput(event) {
           event.stopPropagation();
           this.applyState();
+          /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
+          this.reflectBoundValue();
           this.emit('input', {
             data: { value: this._input.value },
             bubbles: true,
@@ -280,6 +332,7 @@
         /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
         onChange() {
           this.applyState();
+          this.reflectBoundValue();
           this.emit('change', {
             data: { value: this._input.value },
             bubbles: true,

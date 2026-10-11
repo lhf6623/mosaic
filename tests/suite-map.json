@@ -635,6 +635,10 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/routes.js",
@@ -658,6 +662,7 @@
       "packages/icon/icons.generated.css",
       "packages/input/api.md",
       "packages/input/demos/basic.html",
+      "packages/input/demos/binding.html",
       "packages/input/demos/clearable.html",
       "packages/input/demos/events.html",
       "packages/input/demos/maxlength.html",
@@ -670,6 +675,7 @@
       "packages/input/input.html",
       "packages/input/page.html",
       "packages/input/test/input.test.mjs",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -684,6 +690,10 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/routes.js",
@@ -704,6 +714,7 @@
       "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -730,6 +741,10 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/routes.js",
@@ -747,6 +762,7 @@
       "packages/checkbox/api.md",
       "packages/checkbox/checkbox.html",
       "packages/checkbox/demos/basic.html",
+      "packages/checkbox/demos/custom-value.html",
       "packages/checkbox/demos/disabled.html",
       "packages/checkbox/demos/events.html",
       "packages/checkbox/demos/indeterminate.html",
@@ -759,8 +775,11 @@
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/dropdown/dropdown.html",
+      "packages/form/form-item.html",
+      "packages/form/form.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -771,14 +790,16 @@
       "docs/adopt-styles.js",
       "docs/components/nav.html",
       "docs/components/palette.html",
-      "docs/components/poster.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -791,13 +812,13 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
-      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -823,6 +844,10 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/routes.js",
@@ -841,14 +866,18 @@
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
       "packages/dropdown/dropdown.html",
+      "packages/form/form-item.html",
+      "packages/form/form.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/switch/api.md",
       "packages/switch/demos/basic.html",
+      "packages/switch/demos/custom-value.html",
       "packages/switch/demos/disabled.html",
       "packages/switch/demos/events.html",
       "packages/switch/demos/part.html",
@@ -866,6 +895,10 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
       "docs/routes.js",
@@ -886,6 +919,7 @@
       "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -1606,6 +1640,71 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html"
+    ],
+    "packages/form/test/form.test.mjs": [
+      "app-config.js",
+      "docs/adopt-styles.js",
+      "docs/components/nav.html",
+      "docs/components/palette.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
+      "docs/layout.html",
+      "docs/lib/md-spec.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/component-base.css",
+      "packages/boot/mosaic.css",
+      "packages/boot/scroll-pin.js",
+      "packages/boot/shadow-base.css",
+      "packages/button/button.html",
+      "packages/checkbox/checkbox.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
+      "packages/form/api.md",
+      "packages/form/demos/basic.html",
+      "packages/form/demos/binding.html",
+      "packages/form/demos/events.html",
+      "packages/form/demos/grid.html",
+      "packages/form/demos/hide-error.html",
+      "packages/form/demos/methods.html",
+      "packages/form/demos/nested.html",
+      "packages/form/demos/part.html",
+      "packages/form/demos/rules.html",
+      "packages/form/demos/values.html",
+      "packages/form/form-item.html",
+      "packages/form/form.html",
+      "packages/form/page.html",
+      "packages/form/test/form.test.mjs",
+      "packages/grid/grid-item.html",
+      "packages/grid/grid.html",
+      "packages/icon/icon.html",
+      "packages/icon/icons.generated.css",
+      "packages/input/input.html",
+      "packages/loading-bar/loading-bar.js",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/popover/popover.html",
+      "packages/radio/radio-group.html",
+      "packages/radio/radio.html",
+      "packages/scroll-bar/scroll-bar.html",
+      "packages/select/option.html",
+      "packages/select/select.html",
+      "packages/switch/switch.html",
+      "packages/textarea/textarea.html"
     ]
   },
   "byFile": {
@@ -1621,6 +1720,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1656,6 +1756,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1691,6 +1792,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1726,6 +1828,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1754,7 +1857,6 @@
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/radio/test/radio.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/07-inject-server.mjs"
     ],
@@ -1770,6 +1872,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1805,6 +1908,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1840,6 +1944,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1875,6 +1980,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1898,6 +2004,42 @@
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
     ],
+    "docs/fonts/archivo-var-latin.woff2": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/textarea/test/textarea.test.mjs"
+    ],
+    "docs/fonts/fonts.css": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/textarea/test/textarea.test.mjs"
+    ],
+    "docs/fonts/plex-400-latin.woff2": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/textarea/test/textarea.test.mjs"
+    ],
+    "docs/fonts/plex-500-latin.woff2": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/input/test/input.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/switch/test/switch.test.mjs",
+      "packages/textarea/test/textarea.test.mjs"
+    ],
     "docs/layout.html": [
       "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
@@ -1910,6 +2052,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1945,6 +2088,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -1979,7 +2123,6 @@
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/radio/test/radio.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/07-inject-server.mjs"
     ],
@@ -1998,6 +2141,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2033,6 +2177,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2068,6 +2213,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2110,6 +2256,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2145,6 +2292,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2180,6 +2328,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2303,6 +2452,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2338,6 +2488,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2373,6 +2524,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2408,6 +2560,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2443,6 +2596,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2478,6 +2632,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2548,13 +2703,13 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs",
-      "packages/radio/test/radio.test.mjs",
       "packages/table/test/table.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "tests/site/01-load-shell.mjs",
@@ -2663,9 +2818,13 @@
       "packages/checkbox/test/checkbox.test.mjs"
     ],
     "packages/checkbox/checkbox.html": [
-      "packages/checkbox/test/checkbox.test.mjs"
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs"
     ],
     "packages/checkbox/demos/basic.html": [
+      "packages/checkbox/test/checkbox.test.mjs"
+    ],
+    "packages/checkbox/demos/custom-value.html": [
       "packages/checkbox/test/checkbox.test.mjs"
     ],
     "packages/checkbox/demos/disabled.html": [
@@ -2708,6 +2867,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2809,6 +2969,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2844,6 +3005,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -2972,6 +3134,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3032,6 +3195,55 @@
     "packages/empty/test/empty.test.mjs": [
       "packages/empty/test/empty.test.mjs"
     ],
+    "packages/form/api.md": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/basic.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/binding.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/events.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/grid.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/hide-error.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/methods.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/nested.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/part.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/rules.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/demos/values.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/form-item.html": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/switch/test/switch.test.mjs"
+    ],
+    "packages/form/form.html": [
+      "packages/checkbox/test/checkbox.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/switch/test/switch.test.mjs"
+    ],
+    "packages/form/page.html": [
+      "packages/form/test/form.test.mjs"
+    ],
+    "packages/form/test/form.test.mjs": [
+      "packages/form/test/form.test.mjs"
+    ],
     "packages/grid/api.md": [
       "packages/grid/test/grid.test.mjs"
     ],
@@ -3051,9 +3263,11 @@
       "packages/grid/test/grid.test.mjs"
     ],
     "packages/grid/grid-item.html": [
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs"
     ],
     "packages/grid/grid.html": [
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs"
     ],
     "packages/grid/page.html": [
@@ -3110,6 +3324,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3145,6 +3360,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3180,6 +3396,9 @@
     "packages/input/demos/basic.html": [
       "packages/input/test/input.test.mjs"
     ],
+    "packages/input/demos/binding.html": [
+      "packages/input/test/input.test.mjs"
+    ],
     "packages/input/demos/clearable.html": [
       "packages/input/test/input.test.mjs"
     ],
@@ -3208,6 +3427,7 @@
       "packages/input/test/input.test.mjs"
     ],
     "packages/input/input.html": [
+      "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs"
     ],
     "packages/input/page.html": [
@@ -3242,9 +3462,16 @@
       "tests/site/01-load-shell.mjs"
     ],
     "packages/loading-bar/loading-bar.js": [
+      "packages/checkbox/test/checkbox.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
+      "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/radio/test/radio.test.mjs",
+      "packages/select/test/select.test.mjs",
+      "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
+      "packages/textarea/test/textarea.test.mjs",
       "tests/site/01-load-shell.mjs",
       "tests/site/06-boot-palette.mjs",
       "tests/site/07-inject-server.mjs"
@@ -3303,6 +3530,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3338,6 +3566,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3480,6 +3709,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3564,9 +3794,11 @@
       "packages/radio/test/radio.test.mjs"
     ],
     "packages/radio/radio-group.html": [
+      "packages/form/test/form.test.mjs",
       "packages/radio/test/radio.test.mjs"
     ],
     "packages/radio/radio.html": [
+      "packages/form/test/form.test.mjs",
       "packages/radio/test/radio.test.mjs"
     ],
     "packages/radio/test/radio.test.mjs": [
@@ -3605,6 +3837,7 @@
       "packages/dialog/test/dialog.test.mjs",
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
+      "packages/form/test/form.test.mjs",
       "packages/grid/test/grid.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3659,12 +3892,14 @@
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/option.html": [
+      "packages/form/test/form.test.mjs",
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/page.html": [
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/select.html": [
+      "packages/form/test/form.test.mjs",
       "packages/select/test/select.test.mjs"
     ],
     "packages/select/test/select.test.mjs": [
@@ -3701,6 +3936,9 @@
     "packages/switch/demos/basic.html": [
       "packages/switch/test/switch.test.mjs"
     ],
+    "packages/switch/demos/custom-value.html": [
+      "packages/switch/test/switch.test.mjs"
+    ],
     "packages/switch/demos/disabled.html": [
       "packages/switch/test/switch.test.mjs"
     ],
@@ -3717,6 +3955,7 @@
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/switch.html": [
+      "packages/form/test/form.test.mjs",
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [
@@ -3865,6 +4104,7 @@
       "packages/textarea/test/textarea.test.mjs"
     ],
     "packages/textarea/textarea.html": [
+      "packages/form/test/form.test.mjs",
       "packages/textarea/test/textarea.test.mjs"
     ],
     "packages/tooltip/api.md": [

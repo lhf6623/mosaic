@@ -1,0 +1,269 @@
+<template page>
+  <link rel="stylesheet" href="../content.css" />
+  <div class="doc-body">
+    <h1>受控与非受控</h1>
+    <p class="doc-lead">
+      表单的值从哪来，只有两种答案：
+      <strong>在你自己的数据里</strong>
+      （受控），或者
+      <strong>在控件里</strong>
+      （非受控）。 先定这一件事，后面怎么写都是推论。
+    </p>
+
+    <h2>一眼分清</h2>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>受控（绑了）</th>
+          <th>非受控（没绑）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>真相在哪</td>
+          <td>
+            你的
+            <code>data</code>
+            ：
+            <code>form.name</code>
+          </td>
+          <td>
+            控件内部的原生
+            <code>&lt;input&gt;</code>
+            /
+            <code>&lt;select&gt;</code>
+            / checkbox
+          </td>
+        </tr>
+        <tr>
+          <td>初值</td>
+          <td>数据本身就是初值（绑定会推进去）</td>
+          <td>
+            <code>default-value</code>
+            /
+            <code>default-checked</code>
+            ，挂载时读一次
+          </td>
+        </tr>
+        <tr>
+          <td>取值</td>
+          <td>你的数据就是最新值</td>
+          <td>
+            提交时读快照：
+            <code>$event.data.value</code>
+            /
+            <code>getValue()</code>
+          </td>
+        </tr>
+        <tr>
+          <td>回到初值</td>
+          <td>
+            换一份数据，绑定自动推回控件（值会回，
+            <strong>校验状态不会</strong>
+            ，见下面那条）
+          </td>
+          <td>自己把控件改回去</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>受控：数据在你手里，控件绑它</h2>
+
+    <p>
+      数据放在自己的
+      <code>data</code>
+      里，控件用 ofa.js 原生的绑定读写它 —— 这就是
+      <code>sync:</code>
+      与
+      <code>:</code>
+      的用武之地：
+    </p>
+
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;template component&gt;
+        &lt;mc-form on:submit="save()"&gt;
+          &lt;mc-form-item label="用户名" name="user.name" rules='[{"required":true,"trigger":"input"}]'&gt;
+            &lt;mc-input sync:value="form.user.name"&gt;&lt;/mc-input&gt;
+          &lt;/mc-form-item&gt;
+
+          &lt;mc-form-item label="同意条款" name="agree" rules='[{"required":true,"message":"要同意才能提交"}]'&gt;
+            &lt;mc-checkbox :checked="form.agree" on:change="form.agree = $event.data.checked"&gt;
+              同意条款
+            &lt;/mc-checkbox&gt;
+          &lt;/mc-form-item&gt;
+
+          &lt;mc-form-item&gt;
+            &lt;mc-button type="submit"&gt;提交&lt;/mc-button&gt;
+          &lt;/mc-form-item&gt;
+        &lt;/mc-form&gt;
+
+        &lt;script&gt;
+          export default async () =&gt; ({
+            data: { form: { user: { name: '' }, agree: false } },
+            proto: {
+              save() {
+                /* 受控：this.form 已经是最新的，直接交给接口 */
+                fetch('/api', { method: 'POST', body: JSON.stringify(this.form) });
+              },
+            },
+          });
+        &lt;/script&gt;
+      &lt;/template&gt;
+    </mc-code>
+
+    <p>
+      两种绑定的分工：
+      <code>sync:value="form.user.name"</code>
+      是
+      <strong>双向</strong>
+      （打字就地写回数据，改数据也推回控件）；只要跟随、不要回写就写
+      <code>:value="form.user.name"</code>
+      。
+    </p>
+
+    <p class="doc-hint">
+      开关类（
+      <code>mc-checkbox</code>
+      /
+      <code>mc-switch</code>
+      ）多写一句
+      <code>on:change="form.agree = $event.data.checked"</code>
+      ：布尔值走属性往返会被 ofa 绕成字符串 （
+      <code>checked="false"</code>
+      ），而
+      <code>$event.data.checked</code>
+      是真布尔，最稳。 文本类没有这个损耗，直接
+      <code>sync:value</code>
+      就行。
+    </p>
+
+    <h2>非受控：真相在控件里</h2>
+
+    <p>
+      不绑数据，初值写在属性上（挂载读一次），提交时取一份快照 ——
+      适合几格的小表单、或者不关心数据流的地方：
+    </p>
+
+    <!-- prettier-ignore -->
+    <mc-code language="html">
+      &lt;mc-form on:submit="send($event)"&gt;
+        &lt;mc-form-item label="姓名" name="name" required&gt;
+          &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
+        &lt;/mc-form-item&gt;
+
+        &lt;mc-form-item label="备注" rules='[{"required":true}]'&gt;
+          &lt;mc-textarea rows="2"&gt;&lt;/mc-textarea&gt;
+        &lt;/mc-form-item&gt;
+
+        &lt;mc-form-item&gt;
+          &lt;mc-button type="submit"&gt;发送&lt;/mc-button&gt;
+        &lt;/mc-form-item&gt;
+      &lt;/mc-form&gt;
+
+      &lt;script&gt;
+        export default async () =&gt; ({
+          proto: {
+            send(event) {
+              /* 非受控：event.data.value 就是那份快照 */
+              fetch('/api', { method: 'POST', body: JSON.stringify(event.data.value) });
+            },
+          },
+        });
+      &lt;/script&gt;
+    </mc-code>
+
+    <p class="doc-hint">
+      <code>event.data.value</code>
+      就是非受控那份快照，与
+      <code>form.getValue()</code>
+      同一份； 受控时用不着它 —— 你的数据已经是最新的了。
+    </p>
+
+    <h2>几件容易踩的事</h2>
+
+    <ul>
+      <li>
+        <strong>数据不要跨组件传。</strong>
+        ofa 的
+        <code>:model="form"</code>
+        到了组件里会变成 JSON 文本，不是那个对象；所以数据留在自己的
+        <code>data</code>
+        里，让控件直接绑它。
+      </li>
+      <li>
+        <strong>绑定表达式只认组件声明过的属性。</strong>
+        写
+        <code>:value</code>
+        /
+        <code>:checked</code>
+        /
+        <code>:disabled</code>
+        这些名字才生效，拼错或自己发明一个名字会被静默丢掉。
+      </li>
+      <li>
+        <strong>受控字段的类型要稳定。</strong>
+        一直是字符串（勾选类一直是布尔），别在
+        <code>undefined</code>
+        和具体值之间跳。
+      </li>
+      <li>
+        <strong>布尔绑成 false 会写成「假值属性」。</strong>
+        <code>:disabled="false"</code>
+        在 DOM 上是
+        <code>disabled="false"</code>
+        —— 组件已经把这种写法规范化掉了， 你按
+        <code>el.disabled</code>
+        或者「属性在不在」判断都准。
+      </li>
+      <li>
+        <strong>容器不内置重置。</strong>
+        受控就换一份数据（
+        <code>this.form = structuredClone(this.initial)</code>
+        ），非受控就自己清控件。
+      </li>
+      <li>
+        <strong>换一份数据 ≠ 清校验状态。</strong>
+        容器不持有数据、也不监听你的数据，所以换完值那些红边框还在 —— 要一起收起就调
+        <code>form.clearValidate()</code>
+        （只清某一行就给字段名：
+        <code>form.clearValidate('user.name')</code>
+        ） ，或者往容器派发一个冒泡的
+        <code>clear-validate</code>
+        （表单内部按钮派发也收得到，带
+        <code>detail.fields</code>
+        同样能指定字段）。 在飞的异步校验也会被一并作废。
+      </li>
+    </ul>
+
+    <h2>表单容器管什么</h2>
+
+    <p>
+      <code>mc-form</code>
+      不持有数据，只做
+      <strong>规则与时机</strong>
+      ：
+      <code>rules</code>
+      从哪来、 什么时候校验（
+      <code>trigger</code>
+      ）、
+      <code>validate()</code>
+      /
+      <code>submit()</code>
+      、错误归到哪个字段。
+      <code>getValue()</code>
+      是非受控的取值口。 每个控件能绑哪些名字、初值属性叫什么，见对应组件的 API 文档里的
+      <code>value</code>
+      /
+      <code>default-value</code>
+      两行。
+    </p>
+  </div>
+  <script>
+    export const parent = '../doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

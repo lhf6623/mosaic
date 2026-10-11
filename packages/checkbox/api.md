@@ -11,6 +11,8 @@ switch 是**立刻生效的开关**（只有开 / 关，没有半选）。
 <mc-checkbox checked>同意用户协议</mc-checkbox>
 <mc-checkbox value="email" invalid>邮箱通知</mc-checkbox>
 <mc-checkbox indeterminate>全选（已选 2 / 5）</mc-checkbox>
+<!-- 自定义值：勾上给 "1"、没勾给 "0"（表单收集时就是这两个值，不再是布尔） -->
+<mc-checkbox name="agree" checked-value="1" unchecked-value="0">同意</mc-checkbox>
 ```
 
 `checked` / `indeterminate` **既是初始值也是运行时状态**：HTML 里写属性，JS 里读写同一个
@@ -25,14 +27,17 @@ DOM property（`el.checked = true` / `el.indeterminate = true` 写完立刻生�
 
 ## 属性
 
-| 名称            | 值                     | 默认 | 说明                                                    |
-| --------------- | ---------------------- | ---- | ------------------------------------------------------- |
-| `value`         | `string`               | —    | 表单值；跟原生 checkbox 的 `value` 一个意思             |
-| `checked`       | `boolean`              | —    | 选中                                                    |
-| `indeterminate` | `boolean`              | —    | 半选（横杠），优先于 `checked` 显示                     |
-| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 input（<kbd>Tab</kbd> 会跳过）     |
-| `invalid`       | `boolean`              | —    | 校验失败，把方框换成危险色                              |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 控件高 / 内边距 / 字号；三档之外用宿主 `style="…"` 覆盖 |
+| 名称              | 值                     | 默认 | 说明                                                                                                                                             |
+| ----------------- | ---------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `value`           | `string`               | —    | 本项的值：**只在同名一组里**当身份值报出去（组外的单个控件不用它，给了也还是布尔）                                                               |
+| `checked-value`   | `string`               | —    | 自定义值：勾上时给的值。**写了它**，`mc-form` 收集单个控件时就给「`checked-value` / 没勾给 `unchecked-value`」，不写则给布尔（`true` / `false`） |
+| `unchecked-value` | `string`               | —    | 自定义值：没勾上时给的值；`checked-value` 为空时不参与                                                                                           |
+| `default-checked` | `boolean`              | —    | **非受控初值**（同 `mc-input` 的 `default-value`）：只在挂载时读一次，之后改它不再生效；受控用法写 `checked`，别两个都写                         |
+| `checked`         | `boolean`              | —    | 选中（受控 / 运行时状态：宿主属性就是唯一真相，点了就跟着变）                                                                                    |
+| `indeterminate`   | `boolean`              | —    | 半选（横杠），优先于 `checked` 显示                                                                                                              |
+| `disabled`        | `boolean`              | —    | 禁用，转发给内部原生 input（<kbd>Tab</kbd> 会跳过）                                                                                              |
+| `invalid`         | `boolean`              | —    | 校验失败，把方框换成危险色                                                                                                                       |
+| `size`            | `'sm' \| 'md' \| 'lg'` | `md` | 控件高 / 内边距 / 字号；三档之外用宿主 `style="…"` 覆盖                                                                                          |
 
 ## 事件
 

@@ -329,8 +329,19 @@ dialog.open = true; // ✅
 
 **布尔属性推荐走 `setAttribute` / `removeAttribute`** —— 属性是 ofa 观察的通道
 （少数直接改不触发更新的 property 例外）。
-组件**可以**为布尔属性提供一个立即同步的 property 访问器 —— `mc-collapse-item` 的 `open` 就是
-（`el.open = true` 写完立刻生效，不必等属性反射那一拍）。
+
+> ⚠️ **ofa 的布尔绑定会把 `false` 写成 `attr="false"`**（属性仍然存在）—— `:checked="expr"` /
+> `sync:checked` / `:disabled="expr"` 都这样。视图组件里有两条应对，**两条都要做**：
+>
+> 1. **读**的时候别只看"属性在不在"：`const raw = this.ele.getAttribute(name); return raw !== null && raw !== 'false';`
+>    （`mc-checkbox` / `mc-switch` 的 `boolAttr()` 就是这个）；
+> 2. **规范化**属性，让 CSS 选择器（`:host([disabled])` / `:host([checked])` / `:host([required])`）判得准：
+>    挂载后把 `="false"` 摘掉、其余非空值统一成空串（`normalizeBoolAttrs()`，各状态组件一份，
+>    宿主属性必须在 `attached` 之后写 —— P31）。
+>
+> 这样"存在即真"在 JS 与 CSS 两侧同时成立，受控地绑成 `false` 时样式与行为都不会错。
+> 组件**可以**为布尔属性提供一个立即同步的 property 访问器 —— `mc-collapse-item` 的 `open` 就是
+> （`el.open = true` 写完立刻生效，不必等属性反射那一拍）。
 
 ```js
 btn.setAttribute('disabled', '');
@@ -438,6 +449,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | ✅ 已实现 |
 | [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | ✅ 已实现 |
 | [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | ✅ 已实现 |
+| [Form](./form/api.md)                 | `mc-form` / `mc-form-item`             | `form/`        | ✅ 已实现 |
 | [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | ✅ 已实现 |
 | [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | ✅ 已实现 |
 | [Message](./message/api.md)（命令式） | `message()`                            | `message/`     | ✅ 已实现 |
@@ -460,17 +472,20 @@ item.open = true; // 组件提供了访问器时同样可以
 > ① 表单控件的**跨组件共用约定**（本节）② 实现相对草案的**出入清单**（第八节，对账用、含理由）。
 > 共用约定见上面第五节；浮层结论见 [`popover/api.md`](./popover/api.md)。
 
-| 名称            | 说明                                       |
-| --------------- | ------------------------------------------ |
-| `name`          | 表单字段名                                 |
-| `default-value` | HTML 初始值（attribute，只在挂载时读一次） |
-| `value`         | 运行时值（宿主 DOM property）              |
-| `disabled`      | 状态布尔：禁用                             |
-| `readonly`      | 状态布尔：只读                             |
-| `required`      | 状态布尔：必填                             |
-| `invalid`       | 状态布尔：校验失败                         |
-| `size`          | `sm` `md` `lg`                             |
-| `placeholder`   | 占位符                                     |
+| 名称              | 说明                                                                                                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`            | 表单字段名                                                                                                                                    |
+| `default-value`   | HTML 初始值（attribute，只在挂载时读一次）                                                                                                    |
+| `default-checked` | 开关类的 HTML 初始值（同上，只在挂载时读一次）；`checked` 则是受控 / 运行时状态                                                               |
+| `value`           | 运行时值（宿主 DOM property）；同名一组里是「本项的身份值」；被 ofa 的 `:value` / `sync:value` 绑定时它就是**绑定通道**（读、写、回写都走它） |
+| `checked-value`   | 开关类专用：写了它才启用自定义值（勾上 / 开着时给的值）                                                                                       |
+| `unchecked-value` | 开关类专用：没勾 / 关着时给的值（配 `checked-value` 用）                                                                                      |
+| `disabled`        | 状态布尔：禁用                                                                                                                                |
+| `readonly`        | 状态布尔：只读                                                                                                                                |
+| `required`        | 状态布尔：必填                                                                                                                                |
+| `invalid`         | 状态布尔：校验失败                                                                                                                            |
+| `size`            | `sm` `md` `lg`                                                                                                                                |
+| `placeholder`     | 占位符                                                                                                                                        |
 
 | 名称             | 类型                                                   | 说明                                          |
 | ---------------- | ------------------------------------------------------ | --------------------------------------------- |
@@ -490,24 +505,27 @@ item.open = true; // 组件提供了访问器时同样可以
 
 **校验态不用独立的错误色板**，用 `invalid` 布尔 + `--mc-color-danger`。
 
+编排这六个控件的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
+`mc-form-item` 上都认，失败时容器给控件挂 `invalid`、给行显示文案。
+
 ---
 
 ## 八、实现与草案的出入（对账用）
 
-| 单元                        | 出入与理由                                                                                                                                                                                                      |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mc-progress`               | 不套表单那套 `default-value` / `value` 约定：进度条不接受输入、不参与提交、没有 `change`，它的属性就是**当前**进度（同 `mc-collapse-item` 的 `open`）；`value` / `max` 另给宿主 property 访问器。               |
-| `mc-input` / `mc-textarea`  | 转发内部原生元素用 `attr:` 而不是 `:prop`（见上）；原生 `input` 转发前先 `stopPropagation()`。                                                                                                                  |
-| `mc-checkbox` / `mc-switch` | 布尔态是**单一** observed 属性（`checked`）而不是 `checked` + `default-checked`：两个属性必然漂移，`mc-collapse-item` 已是先例。                                                                                |
-| `mc-radio`                  | 原生「同 name 成组」跨 shadow 不成立，所以唯一真相是子项宿主上的 `checked`、由组维护；`mc-radio` 的 `checked` 是镜像 property，不进 api.md 属性表。                                                             |
-| `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                     |
-| `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。 |
-| `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                        |
-| `mc-tooltip`                | `trigger="hover"` 时 **hover 与 focus 都触发**（键盘可达）；不 emit 事件（气泡是纯展示）。                                                                                                                      |
-| `mc-tabs`                   | 草案没定面板怎么给：实现是「默认插槽放 `mc-tab` 标签 + `slot="panel"` 且带 `value` 的子元素当面板」，非激活面板挂 `hidden` 常驻 DOM。                                                                           |
-| `mc-table`                  | `data` 撞 ofa 元素代理的保留名、**不能进 `attrs`**：只做宿主 property + 组件自己听属性；行模板放具名 `<template>` —— HTML 解析器会把 `tr` 里的自定义元素搬出去。                                                |
-| `mc-grid`                   | 草案写「无插槽无 part」，但容器必须有真实 `<slot>` 才能投影子项，所以 api.md 有「插槽」一节。                                                                                                                   |
-| `mc-badge` / `mc-spinner`   | 属性名 / 取值 / 默认值与草案逐字一致；只多了实现层的组件令牌（登记在各自 README 的令牌表）。                                                                                                                    |
+| 单元                        | 出入与理由                                                                                                                                                                                                                                                        |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mc-progress`               | 不套表单那套 `default-value` / `value` 约定：进度条不接受输入、不参与提交、没有 `change`，它的属性就是**当前**进度（同 `mc-collapse-item` 的 `open`）；`value` / `max` 另给宿主 property 访问器。                                                                 |
+| `mc-input` / `mc-textarea`  | 转发内部原生元素用 `attr:` 而不是 `:prop`（见上）；原生 `input` 转发前先 `stopPropagation()`。                                                                                                                                                                    |
+| `mc-checkbox` / `mc-switch` | `checked` 是**受控 / 运行时状态**（唯一的 observed 布尔），`default-checked` 只作**非受控初值**：挂载时读一次就把 `checked` 落成宿主属性，之后**不再参与**（所以不存在"两个属性漂移"——漂移的前提是两个都持续观察，`mc-collapse-item` 那个先例说的正是持续观察）。 |
+| `mc-radio`                  | 原生「同 name 成组」跨 shadow 不成立，所以唯一真相是子项宿主上的 `checked`、由组维护；`mc-radio` 的 `checked` 是镜像 property，不进 api.md 属性表。                                                                                                               |
+| `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                                                                       |
+| `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。                                                   |
+| `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                                                                          |
+| `mc-tooltip`                | `trigger="hover"` 时 **hover 与 focus 都触发**（键盘可达）；不 emit 事件（气泡是纯展示）。                                                                                                                                                                        |
+| `mc-tabs`                   | 草案没定面板怎么给：实现是「默认插槽放 `mc-tab` 标签 + `slot="panel"` 且带 `value` 的子元素当面板」，非激活面板挂 `hidden` 常驻 DOM。                                                                                                                             |
+| `mc-table`                  | `data` 撞 ofa 元素代理的保留名、**不能进 `attrs`**：只做宿主 property + 组件自己听属性；行模板放具名 `<template>` —— HTML 解析器会把 `tr` 里的自定义元素搬出去。                                                                                                  |
+| `mc-grid`                   | 草案写「无插槽无 part」，但容器必须有真实 `<slot>` 才能投影子项，所以 api.md 有「插槽」一节。                                                                                                                                                                     |
+| `mc-badge` / `mc-spinner`   | 属性名 / 取值 / 默认值与草案逐字一致；只多了实现层的组件令牌（登记在各自 README 的令牌表）。                                                                                                                                                                      |
 
 ---
 

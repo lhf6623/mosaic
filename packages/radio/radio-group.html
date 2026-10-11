@@ -49,6 +49,9 @@
       tag: 'mc-radio-group',
 
       attrs: {
+        /* 绑定通道：ofa 原生的 `:value="form.plan"`（单向）/ `sync:value="form.plan"`（双向）落在这个属性上（同 mc-input）。
+           默认 null：ofa 不会凭空写空属性；属性本身也是运行时值的投影（syncValueAttr 会长它）。 */
+        value: null,
         // HTML 里的初始值（kebab：default-value）；运行时值走宿主 property value（规范 1.4）
         defaultValue: '',
         // 这一组的表单字段名，转发给每个子项内部的原生 radio
@@ -80,9 +83,12 @@
         this.ele.addEventListener('click', this._onClick);
         this.ele.addEventListener('keydown', this._onKeydown);
 
-        // 初始选中：给了 default-value 就选它，否则把已带 checked 的子项规范成唯一一个
+        /* 初始选中：绑了 value 属性（受控）就以它为准，其次 default-value，都没有就把已带 checked 的子项规范成唯一一个 */
+        const bound = this.ele.getAttribute('value');
         const initial = (this.ele.getAttribute('default-value') ?? '').trim();
-        if (initial !== '')
+        if (bound !== null)
+          this.applySelection((radio) => this.radioValue(radio) === bound.trim(), false);
+        else if (initial !== '')
           this.applySelection((radio) => this.radioValue(radio) === initial, false);
         else this.normalizeChecked();
       },
@@ -100,6 +106,12 @@
 
       watch: {
         /* ⚠️ 没有 watch.defaultValue：标签属性只是**初始值**（规范 1.4），挂载时读一次就完；否则模板重渲染会把刚点的选中冲掉 */
+        /* value 则是绑定通道：数据一变就重选（挂载前先跳过，那时子项还没收集完，写回属性会踩 P31） */
+        value() {
+          if (!this._mounted) return;
+          const bound = (this.ele.getAttribute('value') ?? '').trim();
+          this.applySelection((radio) => bound !== '' && this.radioValue(radio) === bound, false);
+        },
         name() {
           this.syncChildren();
         },
@@ -163,9 +175,19 @@
           for (const radio of this.radios()) radio.syncGroupState?.();
         },
 
+        /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：点击 / 方向键的判断才准 */
+        normalizeBoolAttrs() {
+          if (!this._mounted) return;
+          const raw = this.ele.getAttribute('disabled');
+          if (raw === null || raw === '') return;
+          if (raw === 'false') this.ele.removeAttribute('disabled');
+          else this.ele.setAttribute('disabled', '');
+        },
+
         /** 宿主 value 属性跟着运行时值走，外部 getAttribute('value') 不会是陈的 */
         syncValueAttr() {
           if (!this._mounted) return;
+          this.normalizeBoolAttrs();
           const value = this.groupValue();
           if (this.ele.getAttribute('value') !== value) this.ele.setAttribute('value', value);
         },

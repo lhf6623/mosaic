@@ -560,6 +560,25 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(parts),
   );
 
+  /* ---------- 绑定通道：value 属性 ↔ 选中项 ---------- */
+  const binding = await page.evaluate(async () => {
+    const el = document.createElement("mc-select");
+    el.innerHTML = '<mc-option value="a">A</mc-option><mc-option value="b">B</mc-option>';
+    document.body.append(el);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    el.setAttribute("value", "b");
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    const byAttr = el.value;
+    el.value = "a";
+    const afterWrite = { value: el.value, attr: el.getAttribute("value") };
+    el.remove();
+    return { byAttr, afterWrite };
+  });
+  check(
+    "绑定通道：写 value 属性会重选（ofa 的 :value），改运行时值会回写成属性（sync:value 靠它写回数据）",
+    binding.byAttr === "b" && binding.afterWrite.value === "a" && binding.afterWrite.attr === "a",
+    JSON.stringify(binding),
+  );
   /* 收尾：拆探针（量完最后删掉） */
   await page.evaluate(() => {
     document.getElementById('select-probe')?.remove();

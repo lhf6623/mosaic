@@ -1,0 +1,46 @@
+<template component>
+  <mc-form on:submit="save($event)">
+    <mc-grid cols="2" gap="md">
+      <mc-grid-item>
+        <mc-form-item label="姓" name="last">
+          <mc-input placeholder="张"></mc-input>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="名" name="first">
+          <mc-input placeholder="三"></mc-input>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item span="2">
+        <mc-form-item label="地址" name="address">
+          <mc-input placeholder="跨两列（span=2）"></mc-input>
+        </mc-form-item>
+      </mc-grid-item>
+    </mc-grid>
+
+    <mc-form-item>
+      <div class="flex items-center gap-3">
+        <mc-button type="submit">提交</mc-button>
+      </div>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次提交：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-grid',
+
+      data: { last: '（还没提交）' },
+
+      proto: {
+        save(event) {
+          this.last = JSON.stringify(event.data.value);
+        },
+      },
+    });
+  </script>
+</template>

@@ -4,12 +4,15 @@
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
     <l-m src="./checkbox.html"></l-m>
+    <l-m src="../form/form.html"></l-m>
+    <l-m src="../form/form-item.html"></l-m>
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/indeterminate.html"></l-m>
     <l-m src="./demos/disabled.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/validation.html"></l-m>
     <l-m src="./demos/events.html"></l-m>
+    <l-m src="./demos/custom-value.html"></l-m>
     <l-m src="./demos/part.html"></l-m>
     <h1>
       Checkbox
@@ -27,7 +30,9 @@
       <h3>基本用法</h3>
       <p class="doc-hint">
         <code>checked</code>
-        既是初始值也是运行时状态；
+        是受控 / 运行时状态（属性就是唯一真相，点了就跟着变）；只想给一个**非受控初值**就写
+        <code>default-checked</code>
+        （挂载读一次，之后不再参与）。
         <code>value</code>
         是提交时带出去的值。 文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
       </p>
@@ -75,6 +80,31 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
           <mc-code language="html" src="./demos/sizes.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>自定义值</h3>
+      <p class="doc-hint">
+        给
+        <code>checked-value</code>
+        与
+        <code>unchecked-value</code>
+        就能交出
+        <code>"1"</code>
+        /
+        <code>"0"</code>
+        这种字符串（表单收集时按勾没勾上在两者之间选）；不写
+        <code>checked-value</code>
+        就还是布尔 ——
+        <code>value</code>
+        是另一回事：它只在同名一组里当身份值。
+      </p>
+      <demo-checkbox-custom-value></demo-checkbox-custom-value>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/custom-value.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>

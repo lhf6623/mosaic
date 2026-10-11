@@ -1,0 +1,315 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <l-m src="./form.html"></l-m>
+    <l-m src="./form-item.html"></l-m>
+    <l-m src="../input/input.html"></l-m>
+    <l-m src="../textarea/textarea.html"></l-m>
+    <l-m src="../select/select.html"></l-m>
+    <l-m src="../select/option.html"></l-m>
+    <l-m src="../checkbox/checkbox.html"></l-m>
+    <l-m src="../switch/switch.html"></l-m>
+    <l-m src="../radio/radio.html"></l-m>
+    <l-m src="../radio/radio-group.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="../grid/grid.html"></l-m>
+    <l-m src="../grid/grid-item.html"></l-m>
+    <l-m src="./demos/basic.html"></l-m>
+    <l-m src="./demos/grid.html"></l-m>
+    <l-m src="./demos/rules.html"></l-m>
+    <l-m src="./demos/hide-error.html"></l-m>
+    <l-m src="./demos/values.html"></l-m>
+    <l-m src="./demos/nested.html"></l-m>
+    <l-m src="./demos/binding.html"></l-m>
+    <l-m src="./demos/methods.html"></l-m>
+    <l-m src="./demos/events.html"></l-m>
+    <l-m src="./demos/part.html"></l-m>
+    <h1>
+      Form
+      <code>mc-form</code>
+      /
+      <code>mc-form-item</code>
+    </h1>
+    <p class="doc-lead">
+      表单，容器 + 一行两个标签：容器管提交 / 重置 / 取值 / 校验，行管标签与错误文案 ——
+      控件还是那几个表单单元，容器只按
+      <code>name</code>
+      和
+      <code>value</code>
+      /
+      <code>checked</code>
+      读它们。多列表单套
+      <code>mc-grid</code>
+      ，容器自己不提供排布维度。
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">
+        <code>submit</code>
+        只是一个事件：容器不做真提交，值在
+        <code>$event.data.value</code>
+        里交出去。
+        <code>mc-form</code>
+        里没有
+        <code>&lt;form&gt;</code>
+        —— 控件各住自己的 shadow root，原生表单那套跨不过边界。
+      </p>
+      <demo-form-basic></demo-form-basic>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/basic.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>栅格排布</h3>
+      <p class="doc-hint">
+        容器**不管排布**：多列、跨列都是栅格的活 —— 把
+        <code>mc-form-item</code>
+        放进
+        <code>mc-grid-item</code>
+        就行，
+        <code>cols</code>
+        定列数、
+        <code>span</code>
+        定这一格跨几列；窄屏想自动折行就改用
+        <code>min-item-width</code>
+        。
+      </p>
+      <demo-form-grid></demo-form-grid>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/grid.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>校验规则</h3>
+      <p class="doc-hint">
+        一份表单里把三种写法都摆出来：① 行上的
+        <code>required</code>
+        属性（最省事，顺带画出标签的星号）；② 行上的
+        <code>rules</code>
+        属性（JSON 文本，绑在这一行，连 name 都不用写）；③ 容器上的
+        <code>rules</code>
+        （
+        <code>:rules</code>
+        绑的就是它的属性通道；带
+        <code>validator</code>
+        函数的那部分只能挂 property —— 标签属性是文本，JSON 装不下函数）。 ⑤
+        同一个字段**两种都写**时两条都跑、
+        属性在前：属性先拦（空值直接短路，函数不会被调用），过了才轮到 property 的函数。
+        提交时**所有**规则都跑，写
+        <code>trigger</code>
+        才在平时提前报；校验是异步的，所以
+        <code>validate()</code>
+        /
+        <code>submit()</code>
+        都返回 Promise。
+        **每一行都预留一行错误位**（它同时是行间距），所以报错、收起都不会让整表跳；想只留位置、不显示文案就写
+        <code>hide-error</code>
+        。 报红之后想收起：
+        <code>form.clearValidate()</code>
+        清全部（或往容器派发一个冒泡的
+        <code>clear-validate</code>
+        ），给字段名就只清那一个 ——
+        <code>form.clearValidate('username')</code>
+        ；在飞的异步校验会一并作废，不会清完又被晚回的结果标红。
+      </p>
+      <demo-form-rules></demo-form-rules>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/rules.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>隐藏错误文案</h3>
+      <p class="doc-hint">
+        容器上写
+        <code>hide-error</code>
+        ：报错时**只留位置、不显示文案** —— 控件照样收
+        <code>invalid</code>
+        （红边框还在）、
+        <code>invalid</code>
+        事件照样报字段。 底部那一格本来就常驻、兼作行间距，所以显示 / 隐藏文案**表高一点都不变**；
+        点「隐藏文案 / 显示文案」可以当场来回切。
+      </p>
+      <demo-form-hide-error></demo-form-hide-error>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/hide-error.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>取值</h3>
+      <p class="doc-hint">
+        <code>getValue()</code>
+        按
+        <code>name</code>
+        汇总：单个
+        <code>mc-checkbox</code>
+        /
+        <code>mc-switch</code>
+        给布尔，**写了
+        <code>checked-value</code>
+        就给「
+        <code>checked-value</code>
+        /
+        <code>unchecked-value</code>
+        」这一对**（
+        <code>"1"</code>
+        /
+        <code>"0"</code>
+        这种），同名多个给数组（取各自
+        <code>value</code>
+        ——
+        <code>value</code>
+        只在组里当身份值），其余给字符串；禁用控件不算。
+      </p>
+      <demo-form-values></demo-form-values>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/values.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>嵌套字段名</h3>
+      <p class="doc-hint">
+        字段名里的
+        <code>.</code>
+        是路径：一段一个属性，纯数字段是数组下标 —— 接口要嵌套对象时不用自己拼。没有点的名字照旧平铺
+        （与原生
+        <code>FormData</code>
+        同一口径）；
+        <code>a..b</code>
+        这种空段，或
+        <code>__proto__</code>
+        这类段名，整条退回字面键。
+      </p>
+      <demo-form-nested></demo-form-nested>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/nested.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>数据绑定（受控）</h3>
+      <p class="doc-hint">
+        数据放在自己的
+        <code>data</code>
+        里，控件用 ofa 原生的
+        <code>sync:value="form.user.name"</code>
+        /
+        <code>sync:checked="form.agree"</code>
+        绑它 —— 打字就地写回数据，换一份数据就自动推回控件（这就是"重置"的正解）。只跟随、不回写就写
+        <code>:value="form.user.name"</code>
+        。 容器**不持有数据**：它只从控件读值去校验，提交时你直接用
+        <code>this.form</code>
+        。
+      </p>
+      <demo-form-binding></demo-form-binding>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/binding.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>提交</h3>
+      <p class="doc-hint">
+        <code>submit()</code>
+        与点
+        <code>type="submit"</code>
+        的按钮、按
+        <kbd>Enter</kbd>
+        是同一条路；
+        <code>getValue()</code>
+        是**非受控**用法的取值口（受控时你的数据就是值，不必调它）。容器**不内置重置** ——
+        受控时换一份数据就行（收起错误提示见上一节「校验规则」）。
+      </p>
+      <demo-form-methods></demo-form-methods>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/methods.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>事件回调</h3>
+      <p class="doc-hint">
+        两条都由容器发：校验过发
+        <code>submit</code>
+        （载荷就是
+        <code>getValue()</code>
+        那份对象）、没过发
+        <code>invalid</code>
+        （
+        <code>$event.data.fields</code>
+        是失败字段）。 原生的
+        <code>focus</code>
+        /
+        <code>blur</code>
+        /
+        <code>keydown</code>
+        照样穿到宿主上，容器不转发也不拦（
+        <kbd>Enter</kbd>
+        除外，那是提交）。
+      </p>
+      <demo-form-events></demo-form-events>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/events.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>内部样式</h3>
+      <p class="doc-hint">
+        只有标了
+        <code>part</code>
+        的节点才能从外面用
+        <code>::part(名字)</code>
+        改：整行是
+        <code>base</code>
+        、标签是
+        <code>label</code>
+        、错误文案是
+        <code>error</code>
+        ；行距与「标签 / 控件」之间的间距是令牌（见单元 README）。
+      </p>
+      <demo-form-part></demo-form-part>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/part.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到分区布局页（三栏 + 左右栏目录都在它那里）；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

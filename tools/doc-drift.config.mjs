@@ -625,6 +625,40 @@ const rules = [
     },
   },
   {
+    /* 有的单元会开一个「数据驱动」的开关（如 `mc-form` 的规则对象、`mc-table` 的列定义）：键清单写在
+       README 的表里、代码按 `x.<键>` 读 —— 两边对账，防「文档写了没人认」与「代码读了没文档」。
+       约定：README 里那张表的第一列表头写 `键`；代码侧按 `<变量>.<键>` 的访问提取（这里是 `rule.`）。 */
+    type: 'custom',
+    id: 'rule-object-keys',
+    title: '组件文档 · 数据驱动的键清单（README 的「键」表 ↔ 代码里的 rule.<键>）',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const readme = `packages/${c.slug}/README.md`;
+        if (!io.exists(readme)) continue;
+        const table = mdTables(io.read(readme)).find((t) => t.header[0] === '键');
+        if (!table) continue; // 这个单元没有这种开关
+        const docKeys = new Set(
+          table.rows.map((row) => (row.cells[0] ?? '').replace(/[`*]/g, '').trim()).filter(Boolean),
+        );
+        const codeKeys = new Set(
+          [...c.facts.lines.join('\n').matchAll(/\brule\.(\w+)/g)].map((match) => match[1]),
+        );
+        for (const key of docKeys) {
+          if (!codeKeys.has(key)) {
+            problems.push(`${readme}：键 \`${key}\` 在组件代码里没有对应的 rule.${key} —— 死承诺`);
+          }
+        }
+        for (const key of codeKeys) {
+          if (!docKeys.has(key)) {
+            problems.push(
+              `packages/${c.slug}：代码读了 rule.${key}，${readme} 的「键」表里没有 —— 漏承诺`,
+            );
+          }
+        }
+      }
+    },
+  },
+  {
     /* `mc-loading-bar` 默认**钉在视口顶部**，而组件文档页会把演示**一起渲染出来**：除了那一条，其余都
        必须 `position="static"`，否则永远压在整页顶上、还互相盖住（踩过一次，像「点完成不消失」）。 */
     type: 'custom',

@@ -102,16 +102,45 @@ export default async function run({ page, visit, check }) {
     return out;
   });
   check(
-    'default-value 是初始值（createElement 之后再写属性也算）、property value 是运行时值：写立刻进内部原生 input，读也读它，且不反射成属性',
+    'default-value 是初始值（createElement 之后再写属性也算）、property value 是运行时值：写立刻进内部原生 input，读也读它，并回写成属性（ofa 的 :value / sync:value 观察的就是这个属性）',
     probe.initAttr === '初始值' &&
       value.init === '初始值' &&
       value.before === '' &&
       value.innerBefore === '' &&
       value.afterWrite === '张三' &&
       value.innerAfterWrite === '张三' &&
-      value.reflected === null &&
+      value.reflected === '张三' &&
       value.afterInnerWrite === '内部改的',
     JSON.stringify({ initAttr: probe.initAttr, ...value }),
+  );
+
+  /* ---------- 绑定通道：属性 → 内部（单向那一半）、打字 → 属性（双向那一半）---------- */
+  const binding = await page.evaluate(async () => {
+    const el = document.getElementById('i-value');
+    const inner = el.shadowRoot.querySelector('.mc-input');
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 60));
+    /* ofa 的 watch 是异步的（批处理），改完属性要等一拍再读 */
+    el.setAttribute('value', '从属性来');
+    await tick();
+    const byAttr = { host: el.value, inner: inner.value };
+    inner.value = '';
+    inner.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await tick();
+    const byTyping = { host: el.value, attr: el.getAttribute('value') };
+    el.removeAttribute('value');
+    await tick();
+    const afterRemove = { host: el.value, attr: el.getAttribute('value') };
+    return { byAttr, byTyping, afterRemove };
+  });
+  check(
+    '绑定通道：写 value 属性会铺进内部原生 input（ofa 的 :value 那条），内部改动会写回属性（sync:value 那条）；属性摘掉不动当前值',
+    binding.byAttr.host === '从属性来' &&
+      binding.byAttr.inner === '从属性来' &&
+      binding.byTyping.host === '' &&
+      binding.byTyping.attr === '' &&
+      binding.afterRemove.host === '' &&
+      binding.afterRemove.attr === null,
+    JSON.stringify(binding),
   );
 
   /* ---------- 事件：真实的键盘输入 + 失焦，document 级记账 ---------- */

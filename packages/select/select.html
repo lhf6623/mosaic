@@ -276,7 +276,10 @@
         tag: 'mc-select',
 
         attrs: {
-          /* 初始值在 HTML 属性 default-value；运行时值走宿主 DOM property `value`（见 ready），所以 `value` 不进 attrs */
+          /* 绑定通道：ofa 原生的 `:value="form.city"`（单向）/ `sync:value="form.city"`（双向）落在这个属性上（同 mc-input）。
+             默认 null：ofa 不会凭空写一个空属性，"属性在不在"才可靠（P32）；不给就是非受控，初值走 default-value。 */
+          value: null,
+          /* 初始值在 HTML 属性 default-value（非受控）；运行时值走宿主 DOM property `value`（见 ready） */
           defaultValue: '',
           placeholder: '请选择',
           /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-select multiple> 失效 */
@@ -306,7 +309,8 @@
           this._returnFocus = false;
           this._seen = new Set();
 
-          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值，写 = 直接改选中态；刻意不反射成宿主属性 */
+          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 选中项的值，写 = 直接改选中态，
+             并回写成 value 属性（ofa 的 sync:value 观察的就是它） */
           Object.defineProperty(this.ele, 'value', {
             configurable: true,
             get: () => this.readValue(),
@@ -353,9 +357,35 @@
           },
           defaultValue() {
             if (this.skipInit('defaultValue')) return;
-            /* 使用者显式写过 value 之后，属性不再改写运行时值（同原生控件的 default-* 语义） */
+            /* 使用者显式写过 value（或绑了 value 属性）之后，default-value 不再改写运行时值 */
             if (this._touched) return;
             this.applySelection(this.parseValues(this.ele.getAttribute('default-value') ?? ''));
+            this.syncDisplay();
+          },
+          /* ofa 的绑定写的就是这个属性：数据一变就重选（受控模式下它比 default-value 优先） */
+          value() {
+            if (this.skipInit('value')) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null) return;
+            this._touched = true;
+            this.applySelection(this.parseValues(raw));
+            this.syncDisplay();
+          },
+          /* 这几个只走 CSS / 点击时的判断：绑定的 "false" 要收一下（normalizeBoolAttrs） */
+          disabled() {
+            if (this.skipInit('disabled')) return;
+            this.syncDisplay();
+          },
+          readonly() {
+            if (this.skipInit('readonly')) return;
+            this.syncDisplay();
+          },
+          invalid() {
+            if (this.skipInit('invalid')) return;
+            this.syncDisplay();
+          },
+          clearable() {
+            if (this.skipInit('clearable')) return;
             this.syncDisplay();
           },
         },
@@ -387,9 +417,14 @@
 
           /** 用 querySelectorAll 而不是 slot.assignedElements：`o-fill` 渲染的条目住它自己 light DOM 里，后者只给到容器（P12） */
           collectOptions() {
-            const previous = this._initialized
-              ? new Set(this.readValueArray())
-              : this.parseValues(this.ele.getAttribute('default-value') ?? '');
+            /* 绑了 value 属性（受控）就以它为准；否则：已初始化 → 沿用当前选中项，首次挂载 → default-value */
+            const bound = this.ele.getAttribute('value');
+            const previous =
+              bound !== null
+                ? this.parseValues(bound)
+                : this._initialized
+                  ? new Set(this.readValueArray())
+                  : this.parseValues(this.ele.getAttribute('default-value') ?? '');
             this._initialized = true;
 
             this._items = [...this.ele.querySelectorAll('mc-option')].map((el) => ({
@@ -461,11 +496,33 @@
             this._touched = true;
             this.applySelection(this.parseValues(next));
             this.syncDisplay();
+            this.reflectBoundValue();
+          },
+
+          /** 把当前选中项写回 value 属性，让 ofa 的 sync:value 观察得到（multiple 用逗号串，与 default-value 同一口径） */
+          reflectBoundValue() {
+            const now = this.readValue();
+            const text = Array.isArray(now) ? now.join(',') : String(now ?? '');
+            if (this.ele.getAttribute('value') === text) return;
+            this.ele.setAttribute('value', text);
           },
 
           /* ---------- 显示 ---------- */
 
+          /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
+              宿主属性要 attached 之后才能写（P31），_live 就是那个门槛（同 mc-input 的 _mounted）。 */
+          normalizeBoolAttrs() {
+            if (!this._live) return;
+            for (const name of ['disabled', 'readonly', 'invalid', 'clearable']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
+
           syncDisplay() {
+            this.normalizeBoolAttrs();
             const selected = this._items.filter(
               (item) => item.row.getAttribute('data-selected') === 'true',
             );
@@ -658,6 +715,7 @@
               }
             }
             this.syncDisplay();
+            this.reflectBoundValue();
             this.emitChange();
             /* 单选：值先落定、change 先发，再收面板（事件顺序 change → close） */
             if (!this.isMultiple()) {
@@ -683,6 +741,7 @@
             this._touched = true;
             this.applySelection(new Set());
             this.syncDisplay();
+            this.reflectBoundValue();
             this.emit('clear', { bubbles: true, composed: true });
             this.emitChange();
             this._control.focus({ preventScroll: true });

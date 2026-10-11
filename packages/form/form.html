@@ -1,0 +1,565 @@
+<!-- mc-form — 表单容器（同目录还有 form-item.html）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 + 两档间距。子项在另一个 shadow root 里，选择器够不到它，只能靠自定义属性继承（同 mc-radio-group）——
+      默认值写在**容器**上，使用者在 mc-form（或任何祖先）的 style 上覆写才到得了每一行。
+      ⚠️ 容器**不管排布**：几列 / 怎么摆是 mc-grid 的事，这里只留「一行里标签与控件怎么叠」。 */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+
+      --mc-form-item-gap: var(--mc-space-2, var(--mc-def-space-2));
+    }
+
+    /* 2. 默认就是一列竖着叠：多列请在外面套 <mc-grid>，见文档页「栅格排布」。
+       ⚠️ 这里**不给行间距**：行与行之间那段留白由 mc-form-item 底部的错误位撑起来（见那个单元）——
+       两边都留就会变成"没校验信息时白多一段"，而且报错时整表高度会跳 */
+    .mc-base {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+
+  <div class="mc-base" part="base"><slot></slot></div>
+
+  <script>
+    /** 单行输入框（回车 = 提交）；textarea 与原生 checkbox 那种「回车没意义」的控件不在里面 */
+    const TEXT_INPUTS = ['text', 'search', 'email', 'password', 'tel', 'url', 'number'];
+
+    /** 名字里的危险段：`__proto__` 这种不展开成路径，整条按字面键（免得顺手改写原型） */
+    const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+    /** 原生事件 → 规则的 `trigger` 名（blur 不冒泡，所以听 focusout） */
+    const TRIGGER_OF = { input: 'input', change: 'change', focusout: 'blur' };
+
+    export default async () => ({
+      tag: 'mc-form',
+
+      attrs: {
+        /* 校验规则：属性写法是 JSON 文本（同 mc-table 的 columns），运行时对象（带 validator 函数）用 property。
+           ⚠️ 模板里的 `:rules="某对象"` 也会被 ofa 序列化成 JSON 文本写进这个属性 —— 所以绑定的对象里放不了函数。 */
+        rules: null,
+        /* 只留位置、不显示错误文案（红边框与 invalid 事件照常）。底部的错误位高度**不变** —— 那一格是行间距，
+           所以隐藏文案不会让整张表变矮 / 跳动 */
+        hideError: null,
+      },
+
+      ready() {
+        /* 命令式入口挂在**宿主元素**上（同 mc-input 的 value / mc-radio 的 syncGroupState）：
+           proto 里那些是组件内部用的，外面调不到 —— 使用者写的是 form.validate() */
+        for (const name of ['validate', 'getValue', 'submit', 'clearValidate']) {
+          /* ⚠️ 参数要透传：clearValidate('b') 是"只清 b"，写成 () => this[name]() 会把参数吃掉（全清） */
+          this.expose(name, (...args) => this[name](...args));
+        }
+
+        /* rules 的 property 通道收成访问器：赋值时重算一次必填星号（ofa 观察不到 expando） */
+        this._rules = this.ele.rules;
+        Object.defineProperty(this.ele, 'rules', {
+          configurable: true,
+          get: () => this._rules,
+          set: (value) => {
+            this._rules = value;
+            this.syncRequired();
+          },
+        });
+      },
+
+      attached() {
+        this._runs = new Map(); // 实时校验的序号：异步规则会晚回，只认最后一次
+        /* 清校验状态记的是"这一轮别落状态"：整表清过 / 这几个字段被点清过（每轮 checkAll 开头归零） */
+        this._clearedAll = false;
+        this._cleared = new Set();
+        this._messages = new Map(); // 已经报出来的文案：hide-error 切换时要重画
+        this._onInput = (event) => this.onFieldEvent(event);
+        this._onChange = (event) => this.onFieldEvent(event);
+        this._onFocusout = (event) => this.onFieldEvent(event);
+        this._onClick = (event) => this.onClick(event);
+        this._onKeydown = (event) => this.onKeydown(event);
+        /* 清校验状态是个**指令**：谁往容器（或容器里的元素）派发 clear-validate 就生效 —— 事件冒泡到宿主这一层 */
+        this._onClearValidate = (event) => this.clearValidate(event.detail?.fields);
+        this.ele.addEventListener('input', this._onInput);
+        this.ele.addEventListener('change', this._onChange);
+        this.ele.addEventListener('focusout', this._onFocusout);
+        this.ele.addEventListener('click', this._onClick);
+        this.ele.addEventListener('keydown', this._onKeydown);
+        this.ele.addEventListener('clear-validate', this._onClearValidate);
+
+        /* 行后来才插进来 / 子项晚升级：都要重算一次必填星号 */
+        this._onSlotChange = () => this.syncRequired();
+        this.ele.shadowRoot
+          .querySelector('slot')
+          ?.addEventListener('slotchange', this._onSlotChange);
+        this.syncRequired();
+      },
+
+      watch: {
+        /* rules 属性变了：重算必填星号 */
+        rules() {
+          this.syncRequired();
+        },
+        /* hide-error 切换：已经报出来的文案立刻收起 / 展开（那一格高度不变） */
+        hideError() {
+          this.syncErrorTexts();
+        },
+      },
+
+      detached() {
+        this.ele.shadowRoot
+          .querySelector('slot')
+          ?.removeEventListener('slotchange', this._onSlotChange);
+        this.ele.removeEventListener('input', this._onInput);
+        this.ele.removeEventListener('change', this._onChange);
+        this.ele.removeEventListener('focusout', this._onFocusout);
+        this.ele.removeEventListener('click', this._onClick);
+        this.ele.removeEventListener('keydown', this._onKeydown);
+        this.ele.removeEventListener('clear-validate', this._onClearValidate);
+      },
+
+      proto: {
+        /** 把内部方法挂成宿主元素上的 DOM 方法 */
+        expose(name, fn) {
+          Object.defineProperty(this.ele, name, { configurable: true, value: fn });
+        },
+
+        /* ---------- 值：谁是控件、怎么读 ---------- */
+
+        /** 值载体：轻 DOM 里真的有 value / checked 的元素（原生 input / select / textarea 与库里的控件都算）。
+            ⚠️ 不能靠「有没有 name 属性」认控件 —— ofa 会把声明过的字符串属性按空值写到宿主上（P32），
+            于是每个 mc-input 都带着 name="" 坐在那儿。另：嵌套的只认外层（mc-radio 在 mc-radio-group 里） */
+        carriers() {
+          const all = [...this.ele.querySelectorAll('*')].filter((el) => this.isCarrier(el));
+          return all.filter((el) => !all.some((other) => other !== el && other.contains(el)));
+        },
+
+        isCarrier(el) {
+          if (el.localName === 'mc-form-item') return false; // 容器不是控件
+          if (el.closest('mc-form') !== this.ele) return false; // 嵌套的 mc-form 各管各的
+          if (['input', 'select', 'textarea'].includes(el.localName)) return true;
+          return 'value' in el || 'checked' in el;
+        },
+
+        /** 字段名：先看最近那个 mc-form-item 的 name，再看元素自己的 —— **没有名字的就不进值表** */
+        nameOf(el) {
+          const item = el.closest('mc-form-item');
+          const scoped = item && item.closest('mc-form') === this.ele ? item : null;
+          return (scoped?.getAttribute('name') || el.getAttribute('name') || '').trim();
+        },
+
+        /** 进值表的控件 = 有字段名的值载体（名字在 item 上、在控件上、或两边都写都认） */
+        controls() {
+          return this.carriers().filter((el) => this.nameOf(el) !== '');
+        },
+
+        /** 开关类控件：值语义是「勾没勾上」。⚠️ 原生 input 的 checked IDL 与 type 无关（text 也有），只能按 type 判 */
+        isToggle(el) {
+          if (el.localName === 'input') return el.type === 'checkbox';
+          return el.localName === 'mc-checkbox' || el.localName === 'mc-switch';
+        },
+
+        /** property 优先、属性兜底：还没升级完的控件只有属性可读 */
+        readValue(el) {
+          return typeof el.value === 'string' ? el.value : (el.getAttribute('value') ?? '');
+        },
+
+        /** 同名多控件的单条贡献：勾上的取自己的 value，没写 value 的按原生口径给 'on' */
+        entryValue(el) {
+          const value = this.readValue(el);
+          return value === '' ? 'on' : value;
+        },
+
+        /** 字段名 → 值（同名的合成数组、禁用不算）：Map 形态 —— getValue() 与规则拿到的是同一份 */
+        collectFlat() {
+          const groups = new Map();
+          for (const el of this.controls()) {
+            if (el.hasAttribute('disabled')) continue;
+            /* 原生 radio 只有选中的那个算数（同 FormData） */
+            if (el.localName === 'input' && el.type === 'radio' && !el.checked) continue;
+            const name = this.nameOf(el);
+            if (!groups.has(name)) groups.set(name, []);
+            groups.get(name).push(el);
+          }
+          const value = new Map();
+          for (const [name, list] of groups) value.set(name, this.groupValue(list));
+          return value;
+        },
+
+        /** 汇总成对象（submit 的 data.value 就是它；非受控用法的取值口）：字段名带 `.` 的按路径嵌进去 */
+        collect() {
+          const value = {};
+          for (const [name, itemValue] of this.collectFlat()) this.assign(value, name, itemValue);
+          return value;
+        },
+
+        /** 同一字段名下所有控件的值：一个就是它本身（单个开关类由控件自己定：布尔，或 checked-value / unchecked-value），多个给数组 */
+        groupValue(list) {
+          if (list.length === 1) {
+            const one = list[0];
+            if (this.isToggle(one)) {
+              /* 控件的 formValue()：给了 value 就是自定义值那一对，没给就是布尔（原生 checkbox 走兜底） */
+              return typeof one.formValue === 'function' ? one.formValue() : !!one.checked;
+            }
+            return this.readValue(one);
+          }
+          return list
+            .filter((el) => !this.isToggle(el) || el.checked)
+            .map((el) => this.entryValue(el));
+        },
+
+        /** 字段名 → 路径段；null = 按字面键（没有点、有空段、或段名是危险键） */
+        pathOf(name) {
+          if (!name.includes('.')) return null;
+          const parts = name.split('.');
+          if (parts.length < 2) return null;
+          if (parts.some((part) => part === '' || UNSAFE_KEYS.has(part))) return null;
+          return parts;
+        },
+
+        /** 落值：平铺名直接写键；`a.b` / `list.0.name` 走到路径末端再写（路上撞到标量就换掉，last-wins） */
+        assign(target, name, itemValue) {
+          const path = this.pathOf(name);
+          if (!path) {
+            target[name] = itemValue;
+            return;
+          }
+          let node = target;
+          for (let i = 0; i < path.length - 1; i += 1) {
+            const key = path[i];
+            const wantArray = /^\d+$/.test(path[i + 1]); // 下一段是数字 → 这一段装数组
+            let child = node[key];
+            if (typeof child !== 'object' || child === null || Array.isArray(child) !== wantArray) {
+              child = wantArray ? [] : {};
+              node[key] = child;
+            }
+            node = child;
+          }
+          const last = path[path.length - 1];
+          if (Array.isArray(node) && /^\d+$/.test(last)) node[Number(last)] = itemValue;
+          else node[last] = itemValue;
+        },
+
+        /* ---------- 行与字段 ---------- */
+
+        /** 表单自己的 mc-form-item（嵌套的 mc-form 不算） */
+        items() {
+          return [...this.ele.querySelectorAll('mc-form-item')].filter(
+            (item) => item.closest('mc-form') === this.ele,
+          );
+        },
+
+        /** 必填星号：容器当唯一写手（它才知道"按字段名配的 required"）——
+            规则表里任何一条写了 `{ required: true }`，对应那一行就画星（required 属性 / 行内 rules / 容器 rules 都算） */
+        syncRequired() {
+          for (const item of this.items()) {
+            const control = item.control?.() ?? null;
+            if (!control) continue; // 没控件的行由它自己算（见 mc-form-item 的 star）
+            const field = { item, control, name: this.nameOf(control) };
+            item.toggleAttribute(
+              'data-required',
+              this.rulesFor(field).some((rule) => rule.required === true),
+            );
+          }
+        },
+
+        /** 每个 mc-form-item 一行 + 没套 item 的裸控件一条；名字取 item 的 name，没有就取控件自己的 */
+        fields() {
+          const items = this.items();
+          const fields = [];
+          for (const item of items) {
+            const control = item.control?.();
+            if (control) fields.push({ item, control, name: this.nameOf(control) });
+          }
+          for (const control of this.carriers()) {
+            if (items.some((wrap) => wrap.contains(control))) continue;
+            fields.push({ item: null, control, name: this.nameOf(control) });
+          }
+          return fields;
+        },
+
+        /** 规则拿到的那份值：有名字就用汇总值（同名组是数组），没名字就看这一行那个控件 */
+        fieldValue(field, values) {
+          if (field.name !== '') return values.get(field.name);
+          return this.controlValue(field.control);
+        },
+
+        controlValue(control) {
+          if (!control) return undefined;
+          return this.isToggle(control) ? !!control.checked : this.readValue(control);
+        },
+
+        /* ---------- 规则对象 ---------- */
+
+        /** 一个字段的规则表：required 属性（最前）→ 行内 rules（属性 → property）→ 容器 rules[字段名]（属性 → property） */
+        rulesFor(field) {
+          const rules = [];
+          if (field.item?.hasAttribute('required')) rules.push({ required: true });
+          if (field.item) {
+            rules.push(
+              ...this.ruleList(field.item.getAttribute('rules')),
+              ...this.ruleList(field.item.rules),
+            );
+          }
+          if (field.name !== '') {
+            const fromAttr = this.attrRules(field.name);
+            const fromProp = this.ruleList(this.ele.rules?.[field.name]);
+            rules.push(...fromAttr, ...fromProp);
+          }
+          return rules;
+        },
+
+        /** 容器 rules 属性的那一条（JSON 文本里的 `{ 字段名: 规则 }`；写坏了只 warn，不炸整页） */
+        attrRules(name) {
+          const raw = this.ele.getAttribute('rules');
+          if (!raw) return [];
+          let parsed = null;
+          try {
+            parsed = JSON.parse(raw);
+          } catch (error) {
+            console.warn('[mosaic] mc-form 的 rules 属性不是合法 JSON：', error.message);
+            return [];
+          }
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return [];
+          return this.ruleList(parsed[name]);
+        },
+
+        /** 规则通道都收「一个」或「数组」，也都收 JSON 文本；函数是 { validator } 的简写 */
+        ruleList(raw) {
+          let value = raw;
+          if (typeof value === 'string') {
+            try {
+              value = JSON.parse(value);
+            } catch {
+              return [];
+            }
+          }
+          if (!value) return [];
+          const list = Array.isArray(value) ? value : [value];
+          return list
+            .map((rule) => (typeof rule === 'function' ? { validator: rule } : rule))
+            .filter((rule) => !!rule && typeof rule === 'object');
+        },
+
+        /** 空值口径：同名组看空数组 / 开关类看勾没勾上（自定义值时值是字符串，不能拿它判空）/ 其余看 trim */
+        isEmptyValue(control, value) {
+          if (Array.isArray(value)) return value.length === 0;
+          if (typeof value === 'boolean') return !value;
+          if (this.isToggle(control)) return !control.checked;
+          return value === undefined || value === null || String(value).trim() === '';
+        },
+
+        /** 一条规则的结果：'' = 通过，否则是文案。
+            validator 返回非空字符串就用它（比 message 更具体）、返回 false 用 message 或兜底、
+            抛异常 / reject 用 error.message（不静默也不炸整轮） */
+        async ruleMessage(field, rule, value) {
+          if (rule.required && this.isEmptyValue(field.control, value))
+            return this.ruleText(field, rule, 'required');
+          if (typeof rule.validator !== 'function') return '';
+          let result = '';
+          try {
+            result = await rule.validator(rule, value, this.ele);
+          } catch (error) {
+            return String(error?.message ?? error);
+          }
+          if (typeof result === 'string') return result;
+          if (result === false) return this.ruleText(field, rule, 'validator');
+          return ''; // true / undefined / null = 过
+        },
+
+        /** 没拿到「现成的一句话」时用哪句：规则自己的 message 优先，没写才用内置兜底 */
+        ruleText(field, rule, kind) {
+          if (typeof rule.message === 'string' && rule.message !== '') return rule.message;
+          const subject = field.item?.getAttribute('label') || field.name || '此项';
+          return subject + (kind === 'required' ? '不能为空' : '格式不正确');
+        },
+
+        /** 依次跑，第一条失败胜出 */
+        async firstError(field, rules, value) {
+          for (const rule of rules) {
+            const message = await this.ruleMessage(field, rule, value);
+            if (message !== '') return message;
+          }
+          return '';
+        },
+
+        /** 实时校验只跑 trigger 命中的那些规则；不写 trigger = 只在提交时跑 */
+        triggersOf(rule) {
+          const trigger = rule.trigger;
+          if (!trigger) return [];
+          return Array.isArray(trigger) ? trigger : [trigger];
+        },
+
+        /* ---------- 状态 ---------- */
+
+        /** 落状态：控件上的 invalid 是控件自己的接口（红边框），错误文案归 form-item。
+            文案会记一份（_messages），好让 `hide-error` 切换时能立刻重画 */
+        markInvalid(field, message) {
+          this._messages?.set(field.control, message);
+          field.control.setAttribute('invalid', '');
+          field.item?.showError?.(this.hideErrorOn() ? '' : message);
+        },
+
+        markValid(field) {
+          this._messages?.delete(field.control);
+          field.control.removeAttribute('invalid');
+          field.item?.clearError?.();
+        },
+
+        /** `hide-error` 开着没：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 ="false"） */
+        hideErrorOn() {
+          const raw = this.ele.getAttribute('hide-error');
+          return raw !== null && raw !== 'false';
+        },
+
+        /** 切换 `hide-error` 时，把已经报出来的那几行重画一遍（收起 / 展开文案，高度都不变） */
+        syncErrorTexts() {
+          if (!this._messages) return;
+          const hide = this.hideErrorOn();
+          for (const field of this.fields()) {
+            const message = this._messages.get(field.control);
+            if (message) field.item?.showError?.(hide ? '' : message);
+          }
+        },
+
+        /** 清校验状态：**不传 = 全部**；给字段名（`user.name` 这种路径也算）或名字数组 = 只清这几个。
+            触发方式还有事件：往容器（或容器内部）派发冒泡的 `clear-validate`，`detail.fields` 同样能指定字段。
+            在飞的校验一并作废：整表清 → 实时校验序号表清空；按字段清 → 只重置那几个载体的序号；
+            全量校验这一轮**只记结论、不落状态**（checkAll 里看 _clearedAll / _cleared）。 */
+        clearValidate(fields) {
+          const names = this.normalizeNames(fields);
+          if (names === null) {
+            this._clearedAll = true;
+            this._runs?.clear();
+          } else {
+            for (const name of names) this._cleared.add(name);
+          }
+          for (const field of this.fields()) {
+            if (!field.control || this.rulesFor(field).length === 0) continue;
+            if (names !== null && !names.includes(field.name)) continue;
+            if (names !== null) this._runs?.delete(field.control);
+            this.markValid(field);
+          }
+        },
+
+        /** 清校验的参数归一：没给 → null（全部）；字符串 / 数组 → 字段名数组 */
+        normalizeNames(fields) {
+          if (fields === undefined || fields === null) return null;
+          const list = Array.isArray(fields) ? fields : [fields];
+          return list.map((name) => String(name));
+        },
+
+        /* ---------- 编排：提交时全跑；平时只跑 trigger 命中的 ---------- */
+
+        /** 全量校验：只碰「有规则」的行，返回失败的清单。
+            ⚠️ 一边 await 一边可能有人 clearValidate()：中途被清过的字段**只记结论、不落状态** ——
+            否则异步规则晚回会把刚清掉的红边框又画上。清一次的效力只到这一轮结束（开头归零）。 */
+        async checkAll() {
+          this._clearedAll = false;
+          this._cleared.clear();
+          const values = this.collectFlat();
+          const failed = [];
+          for (const field of this.fields()) {
+            const control = field.control;
+            if (!control) continue;
+            const rules = this.rulesFor(field);
+            if (rules.length === 0) continue;
+            if (control.hasAttribute('disabled')) {
+              this.markValid(field);
+              continue;
+            }
+            const message = await this.firstError(field, rules, this.fieldValue(field, values));
+            const quiet = this._clearedAll || this._cleared.has(field.name);
+            if (message === '') {
+              if (!quiet) this.markValid(field);
+            } else {
+              if (!quiet) this.markInvalid(field, message);
+              failed.push(field);
+            }
+          }
+          return failed;
+        },
+
+        /** 校验全部规则并落状态，返回是否全部通过（异步规则会 await） */
+        async validate() {
+          return (await this.checkAll()).length === 0;
+        },
+
+        /** 按字段名汇总当前值 */
+        getValue() {
+          return this.collect();
+        },
+
+        /** 走一遍校验：过就发 submit，不过就发 invalid（不真提交，交出去是使用者的活） */
+        async submit() {
+          const failed = await this.checkAll();
+          if (failed.length) {
+            this.emit('invalid', {
+              data: { fields: failed.map((field) => field.name) },
+              bubbles: true,
+              composed: true,
+            });
+            return;
+          }
+          this.emit('submit', {
+            data: { value: this.collect() },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 实时校验：按事件的 trigger 跑命中的规则；异步晚回时只认最后一次（序号守卫） */
+        onFieldEvent(event) {
+          const trigger = TRIGGER_OF[event.type];
+          if (!trigger) return;
+          const path = event.composedPath();
+          const carrier = this.carriers().find((el) => path.includes(el));
+          if (!carrier) return;
+          const field = this.fields().find(
+            (item) => item.control === carrier || !!item.item?.contains(carrier),
+          );
+          if (!field?.control || field.control.hasAttribute('disabled')) return;
+          const rules = this.rulesFor(field).filter((rule) =>
+            this.triggersOf(rule).includes(trigger),
+          );
+          if (rules.length === 0) return;
+          const seq = (this._runs.get(carrier) ?? 0) + 1;
+          this._runs.set(carrier, seq);
+          const value = this.fieldValue(field, this.collectFlat());
+          this.firstError(field, rules, value).then((message) => {
+            if (this._runs.get(carrier) !== seq) return; // 后来那一跑压着，丢掉旧结果
+            if (message === '') this.markValid(field);
+            else this.markInvalid(field, message);
+          });
+        },
+
+        /** 提交按钮：type 走 mc-button 的原生语义，click 自带 composed，穿得出它自己的 shadow */
+        onClick(event) {
+          const button = event.composedPath().find((node) => node.localName === 'mc-button');
+          if (!button) return;
+          if ((button.getAttribute('type') ?? 'button') !== 'submit') return;
+          event.preventDefault(); // 外层若有真 <form>，别让它再提交一次
+          this.submit();
+        },
+
+        /** 单行输入框里回车 = 提交（textarea 里是换行）；按钮自己的回车走 click 那条路，不重复 */
+        onKeydown(event) {
+          if (event.key !== 'Enter' || event.isComposing || event.defaultPrevented) return;
+          const path = event.composedPath();
+          if (path.some((node) => node.localName === 'mc-textarea')) return;
+          if (!path.some((node) => this.isTextField(node))) return;
+          event.preventDefault();
+          this.submit();
+        },
+
+        isTextField(node) {
+          if (node.localName === 'mc-input') return true;
+          if (node.localName !== 'input') return false;
+          return TEXT_INPUTS.includes(node.type);
+        },
+      },
+    });
+  </script>
+</template>

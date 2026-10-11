@@ -50,6 +50,14 @@ export const SITE = [
             summary: '不需要 npm 与打包器：最小用法、引组件的方式、自托管与大陆访问。',
           },
           {
+            order: 15,
+            type: 'page',
+            label: '受控与非受控',
+            path: 'docs/pages/controlled.html',
+            summary:
+              '表单的值从哪来：数据在你手里（控件绑 sync:value），还是在控件里（default-value + 提交取快照）。',
+          },
+          {
             order: 20,
             type: 'page',
             label: '支持的平台',
@@ -253,6 +261,14 @@ export const SITE = [
             path: 'packages/select/page.html',
             type: 'component',
             summary: '下拉选择。最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
+          },
+          {
+            order: 70,
+            label: 'Form',
+            zh: '表单',
+            path: 'packages/form/page.html',
+            type: 'component',
+            summary: '表单容器：把提交 / 重置 / 取值 / 校验从使用者手里收上来。',
           },
         ],
       },

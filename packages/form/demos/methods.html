@@ -1,0 +1,40 @@
+<template component>
+  <mc-form id="methods-form" on:submit="sent($event)">
+    <mc-form-item label="标题" name="title">
+      <mc-input default-value="原始标题"></mc-input>
+    </mc-form-item>
+    <mc-form-item label="备注" name="memo">
+      <mc-textarea rows="2"></mc-textarea>
+    </mc-form-item>
+    <mc-form-item>
+      <div class="flex flex-wrap items-center gap-3">
+        <mc-button on:click="send()">submit()</mc-button>
+        <mc-button variant="outline" on:click="peek()">getValue()</mc-button>
+        <span class="text-sm text-muted">{{last}}</span>
+      </div>
+    </mc-form-item>
+  </mc-form>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-methods',
+
+      data: { last: '（还没调过）' },
+
+      proto: {
+        form() {
+          return this.ele.shadowRoot.querySelector('#methods-form');
+        },
+        send() {
+          this.form().submit();
+        },
+        sent(event) {
+          this.last = 'submit → ' + JSON.stringify(event.data.value);
+        },
+        peek() {
+          this.last = 'getValue() → ' + JSON.stringify(this.form().getValue());
+        },
+      },
+    });
+  </script>
+</template>

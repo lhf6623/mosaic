@@ -1,0 +1,63 @@
+<template component>
+  <mc-form id="values-form">
+    <mc-form-item label="昵称" name="nick">
+      <mc-input default-value="阿吉"></mc-input>
+    </mc-form-item>
+    <mc-form-item label="城市" name="city">
+      <mc-select default-value="hz">
+        <mc-option value="hz">杭州</mc-option>
+        <mc-option value="sh">上海</mc-option>
+      </mc-select>
+    </mc-form-item>
+    <mc-form-item label="订阅" name="digest">
+      <!-- 单个开关控件不给自定义值 → 布尔 -->
+      <mc-checkbox checked>每周摘要</mc-checkbox>
+    </mc-form-item>
+    <mc-form-item label="通知" name="notify">
+      <mc-switch checked></mc-switch>
+    </mc-form-item>
+    <mc-form-item label="风险等级" name="risk">
+      <!-- checked-value / unchecked-value 这一对 → 交出字符串 -->
+      <mc-switch checked-value="1" unchecked-value="0"></mc-switch>
+    </mc-form-item>
+    <mc-form-item label="订阅邮件" name="mail">
+      <mc-checkbox checked-value="yes" unchecked-value="no"></mc-checkbox>
+    </mc-form-item>
+    <mc-form-item label="套餐" name="plan">
+      <mc-radio-group default-value="b">
+        <mc-radio value="a">月付</mc-radio>
+        <mc-radio value="b">年付</mc-radio>
+      </mc-radio-group>
+    </mc-form-item>
+    <mc-form-item label="标签">
+      <!-- 同名一组：value 是组内的身份值，只收勾上的那几项 -->
+      <div class="flex items-center gap-4">
+        <mc-checkbox name="tag" value="hot" checked>热门</mc-checkbox>
+        <mc-checkbox name="tag" value="new" checked>新品</mc-checkbox>
+      </div>
+    </mc-form-item>
+    <mc-form-item>
+      <mc-button on:click="read()">读一次 getValue()</mc-button>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    当前值：
+    <strong>{{json}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-values',
+
+      data: { json: '（还没读过）' },
+
+      proto: {
+        read() {
+          const form = this.ele.shadowRoot.querySelector('#values-form');
+          this.json = JSON.stringify(form.getValue());
+        },
+      },
+    });
+  </script>
+</template>

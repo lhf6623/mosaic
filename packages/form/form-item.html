@@ -1,0 +1,205 @@
+<!-- mc-form-item — 表单里的一行（同目录还有 form.html）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主。⚠️ 间距通道（--mc-form-item-gap）的默认值写在 **mc-form** 上，这里只读不写 ——
+      写了就盖掉继承来的值，使用者在容器 style 上的覆写永远到不了（同 mc-radio-group） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+
+    /* 2. 一行 = 标签 +（控件 + 错误文案），**竖向叠**（这一层不提供排布维度；多列用 mc-grid）。
+      真要把标签挪到左边，走内部样式：mc-form-item::part(base) { flex-direction: row } + ::part(label) { width: 6rem } */
+    .mc-base {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-form-item-gap, var(--mc-space-2, var(--mc-def-space-2)));
+    }
+    /* 标签与错误文案的元素都**常驻 DOM**（P10），文案本身由 data 渲染（{{label}} / {{error}}）——
+      脚本不写 textContent，只把"要不要显示"的结论镜像到宿主属性上（P33） */
+    .mc-label {
+      display: none;
+      flex: none;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+    }
+    /* 标签与必填星号都没有的那一行不占位：属性在不在不能当条件（P32），由脚本镜像成宿主属性（P33） */
+    :host([data-has-label]) .mc-label {
+      display: inline-flex;
+    }
+    .mc-required {
+      display: none;
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
+    }
+    /* 必填星号：required 属性、这一行的 rules、或容器按字段名配的 required 都算（见 star 计算属性） */
+    :host([data-required]) .mc-required {
+      display: inline;
+    }
+    .mc-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      /* ⚠️ 这里**不留 gap**：控件与错误文案之间那点空隙由错误位自己撑（见下面 .mc-error） */
+      min-width: 0;
+    }
+    /* 错误位**每一行都常驻一行高度**：有文案时装文案，没文案时它就是行与行之间的天然留白 ——
+       所以容器不需要再给行间距，报错 / 收起也不改变任何高度。留多高由 --mc-form-item-error-h 定 */
+    .mc-error {
+      display: block;
+      margin: 0;
+      min-height: var(--mc-form-item-error-h, var(--mc-text-xs-lh, 1rem));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      line-height: var(--mc-text-xs-lh, var(--mc-def-text-xs-lh));
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
+    }
+  </style>
+
+  <div class="mc-base" part="base">
+    <div class="mc-label" part="label">
+      <span class="mc-required">*</span>
+      <span class="mc-label-text">{{label}}</span>
+    </div>
+    <div class="mc-body">
+      <slot></slot>
+      <p class="mc-error" part="error">{{error}}</p>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-form-item',
+
+      attrs: {
+        // 标签文案（必填星号由 required 带出来，不用自己写）；没有标签也没有星号时这一列不占位
+        label: '',
+        // 字段名：不写就取内部控件自己的 name。校验规则在 mc-form.rules 上，这一层只负责显示
+        name: '',
+        // 必填的声明式简写：等价于规则表最前面一条 { required: true }；布尔默认值必须是 null（P1）
+        required: null,
+        /* 这一行的规则：属性写法是 **JSON 文本**（`规则 | 规则[]`），运行时对象走 property `item.rules = …`；
+           两个通道都写时属性在前。带 validator 函数的只能走 property（JSON 会把函数丢掉） */
+        rules: null,
+      },
+
+      /* 这一行自己的状态：error 是错误文案（由 data 渲染），其余结论都在 syncState 里推出来 */
+      data: { error: '' },
+
+      ready() {
+        /* 跨标签的那三个接口挂在**宿主元素**上（同 mc-radio 的 syncGroupState）：mc-form 拿的是元素，
+           proto 里的方法它调不到 */
+        for (const name of ['control', 'showError', 'clearError']) {
+          Object.defineProperty(this.ele, name, {
+            configurable: true,
+            value: (...args) => this[name](...args),
+          });
+        }
+
+        /* rules 的 property 通道收成访问器：赋值时重算结论（ofa 观察不到 expando） */
+        this._rules = this.ele.rules;
+        Object.defineProperty(this.ele, 'rules', {
+          configurable: true,
+          get: () => this._rules,
+          set: (value) => {
+            this._rules = value;
+            this.syncState();
+          },
+        });
+      },
+
+      attached() {
+        this._mounted = true; // 宿主属性只能在这之后写（P31）
+        this.syncState();
+      },
+
+      watch: {
+        // 首次触发落在构造期（P5）—— syncState 自带 _mounted 守卫
+        label() {
+          this.syncState();
+        },
+        required() {
+          this.syncState();
+        },
+        rules() {
+          this.syncState();
+        },
+        error() {
+          this.syncState();
+        },
+      },
+
+      proto: {
+        /** 这一行的控件 = 默认插槽里第一个「有值语义」的元素子节点（轻 DOM 直查，不伸手进别的 shadow root）。
+            ⚠️ 使用者把控件包了一层（一排 checkbox）时往下找一个带 name 的 —— 否则 mc-form 找不到这一行的控件 */
+        control() {
+          const children = [...this.ele.children].filter(
+            (el) => !['script', 'template', 'style'].includes(el.localName),
+          );
+          const direct = children.find((el) => 'value' in el || 'checked' in el);
+          if (direct) return direct;
+          const nested = children.map((el) => el.querySelector?.('[name]')).find(Boolean);
+          return nested ?? children[0] ?? null;
+        },
+
+        /** 一个布尔属性的"值感知"读法：裸属性（=""/无值）算开；ofa 的绑定会把 false 写成 ="false"（属性还在，P32） */
+        boolOn(raw) {
+          return raw !== null && raw !== 'false';
+        },
+
+        /** 必填星号画不画：required 属性 / 这一行的 rules / 容器配的 required，任一命中就画 */
+        get star() {
+          return (
+            this.boolOn(this.ele.getAttribute('required')) ||
+            this.rulesRequire(this.rules) ||
+            this.rulesRequire(this._rules) ||
+            this.boolOn(this.ele.getAttribute('data-required'))
+          );
+        },
+
+        /** 规则表（JSON 文本 / 对象 / 数组 / `{validator}` 的简写）里有没有 `required: true` */
+        rulesRequire(raw) {
+          if (!raw) return false;
+          let list = raw;
+          if (typeof raw === 'string') {
+            try {
+              list = JSON.parse(raw);
+            } catch {
+              return false;
+            }
+          }
+          const rules = Array.isArray(list) ? list : [list];
+          return rules.some((rule) => !!rule && typeof rule === 'object' && rule.required === true);
+        },
+
+        /** 把 data 推出来的结论镜像到宿主属性上（CSS 靠它显隐，P33）：标签列占不占位 / 星号 / 这一行有没有错 */
+        syncState() {
+          if (this._mounted !== true) return;
+          this.mirror('data-has-label', (this.label ?? '') !== '' || this.star);
+          this.mirror('data-required', this.star);
+          this.mirror('data-invalid', (this.error ?? '') !== '');
+        },
+
+        /** mc-form 校验失败时调它：只写数据，文案由模板 {{error}} 跟上（渲染在下一拍） */
+        showError(message) {
+          this.error = message;
+        },
+
+        clearError() {
+          this.error = '';
+        },
+
+        /** 只在真的变了时才写宿主 —— 否则每次校验都白触发一轮样式重算 */
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>

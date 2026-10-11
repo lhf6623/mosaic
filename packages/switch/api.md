@@ -10,6 +10,8 @@ switch 是一个即时生效的状态位（设置项、启用 / 停用）。
 ```html
 <mc-switch checked on:change="enabled = $event.data.checked">开启通知</mc-switch>
 <mc-switch size="sm">紧凑开关</mc-switch>
+<!-- 自定义值：开着给 "1"、关着给 "0"（表单收集时就是这两个值，不再是布尔） -->
+<mc-switch name="enabled" checked-value="1" unchecked-value="0"></mc-switch>
 ```
 
 `checked` **既是初始值也是运行时状态**：HTML 里写属性，JS 里读写同一个 DOM property
@@ -19,11 +21,14 @@ switch 是一个即时生效的状态位（设置项、启用 / 停用）。
 
 ## 属性
 
-| 名称       | 值                     | 默认 | 说明                                                             |
-| ---------- | ---------------------- | ---- | ---------------------------------------------------------------- |
-| `checked`  | `boolean`              | —    | 打开                                                             |
-| `disabled` | `boolean`              | —    | 禁用，转发给内部原生 input（键盘可感知）                         |
-| `size`     | `'sm' \| 'md' \| 'lg'` | `md` | 控件高 / 内边距 / 字号 / 轨道三件套；也可用宿主 `style="…"` 覆盖 |
+| 名称              | 值                     | 默认 | 说明                                                                                                                                     |
+| ----------------- | ---------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `checked-value`   | `string`               | —    | 自定义值：开着时给的值。**写了它**，`mc-form` 收集时就给「`checked-value` / 关着给 `unchecked-value`」，不写则给布尔（`true` / `false`） |
+| `unchecked-value` | `string`               | —    | 自定义值：关着时给的值；`checked-value` 为空时不参与                                                                                     |
+| `default-checked` | `boolean`              | —    | **非受控初值**（同 `mc-input` 的 `default-value`）：只在挂载时读一次，之后改它不再生效；受控用法写 `checked`，别两个都写                 |
+| `checked`         | `boolean`              | —    | 打开（受控 / 运行时状态：宿主属性就是唯一真相，点了就跟着变）                                                                            |
+| `disabled`        | `boolean`              | —    | 禁用，转发给内部原生 input（键盘可感知）                                                                                                 |
+| `size`            | `'sm' \| 'md' \| 'lg'` | `md` | 控件高 / 内边距 / 字号 / 轨道三件套；也可用宿主 `style="…"` 覆盖                                                                         |
 
 ## 事件
 

@@ -158,7 +158,13 @@
       tag: 'mc-checkbox',
 
       attrs: {
+        // 本项的值：**只在同名一组里**当身份值报出去（组外的单个控件不用它，给了也还是布尔）
         value: '',
+        // 自定义值那一对：写了 checked-value 就启用（单个控件勾上给前者、没勾给后者）；不写就是布尔
+        checkedValue: '',
+        uncheckedValue: '',
+        /* 非受控初值（同 mc-input 的 default-value）：只在挂载时读一次；受控用法写 checked 就好，别两个都写 */
+        defaultChecked: null,
         // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-checkbox checked> 失效
         checked: null,
         indeterminate: null,
@@ -190,9 +196,23 @@
           },
         });
 
+        /* 跨标签的取值协议：mc-form 收集「单个开关」时调它（同 form-item 的 control / showError 那类宿主方法） */
+        Object.defineProperty(this.ele, 'formValue', {
+          configurable: true,
+          value: () => this.formValue(),
+        });
+
         this.applyChecked();
         this.applyIndeterminate();
         this.applyDisabled();
+      },
+
+      attached() {
+        this._mounted = true; // 宿主属性只能在这之后写（P31）
+        // 非受控初值在这一拍读：宿主属性要 attached 之后才能写（P31），createElement 之后再写属性也照样读到
+        this.applyDefaultChecked();
+        this.applyChecked();
+        this.applyChecked();
       },
 
       watch: {
@@ -209,19 +229,65 @@
       },
 
       proto: {
+        /** 表单收集这一项时给的值：写了 checked-value 就是「勾上给 checked-value、没勾给 unchecked-value」，不写就是布尔 */
+        formValue() {
+          const checkedValue = this.readPair('checkedValue', 'checked-value');
+          if (checkedValue === '') return !!this._native.checked;
+          return this._native.checked
+            ? checkedValue
+            : this.readPair('uncheckedValue', 'unchecked-value');
+        },
+
+        /** 自定义值那一对怎么读：property 优先、属性兜底（同 mc-input 那套读法） */
+        readPair(prop, attr) {
+          return typeof this.ele[prop] === 'string'
+            ? this.ele[prop]
+            : (this.ele.getAttribute(attr) ?? '');
+        },
+
+        /** 非受控初值：`default-checked` 只在挂载时读一次（同 mc-input 的 `default-value`）。受控用法写 `checked`，别两个都写 */
+        applyDefaultChecked() {
+          if (this._defaultCheckedApplied === true) return;
+          if (!this.ele.hasAttribute('default-checked')) return;
+          this._defaultCheckedApplied = true;
+          // 只在 attached() 里调：这一拍写宿主属性才不会踩 P31；写进去之后 checked 属性就是唯一真相
+          this.ele.setAttribute('checked', '');
+          this.applyChecked();
+        },
+
+        /** 布尔属性的读法：**存在且值不是字符串 "false"**。ofa 的 `:checked="expr"` / `sync:checked` 会把 false 写成
+            `checked="false"`（属性还在），按"存在即真"读就会把受控的 false 当成勾上（实测踩过） */
+        boolAttr(name) {
+          const raw = this.ele.getAttribute(name);
+          return raw !== null && raw !== 'false';
+        },
+
+        /** 把绑定写法 `checked="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([checked]) 才判得准。
+            宿主属性要 attached 之后才能写（P31）。 */
+        normalizeBoolAttrs() {
+          if (!this._mounted) return;
+          for (const name of ['checked', 'indeterminate', 'invalid"', 'disabled']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
+        },
+
         /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
         applyChecked() {
-          const want = this.ele.hasAttribute('checked');
+          this.normalizeBoolAttrs();
+          const want = this.boolAttr('checked');
           if (this._native.checked !== want) this._native.checked = want;
         },
 
         applyIndeterminate() {
-          const want = this.ele.hasAttribute('indeterminate');
+          const want = this.boolAttr('indeterminate');
           if (this._native.indeterminate !== want) this._native.indeterminate = want;
         },
 
         applyDisabled() {
-          this._native.disabled = this.ele.hasAttribute('disabled');
+          this._native.disabled = this.boolAttr('disabled');
         },
 
         /** 原生 change → 声明式状态 + 对外事件。半选被点击后浏览器会清掉 .indeterminate，宿主属性要跟上 */

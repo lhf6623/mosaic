@@ -6,8 +6,9 @@
 多行输入框。和 [`mc-input`](../input/api.md) 的分工：高度由 `rows` 与内容决定（另有自动增高与字数
 统计），单行那套定高、横向滚动的行为归 input。
 
-**值怎么读写**：HTML 里的初始值走属性 `default-value`，运行时值走宿主 DOM property `value`
-（`el.value = '第一行\n第二行'` / `el.value`）—— `value` 不是属性，标签上写 `value="…"` 不生效。
+**值怎么读写**：非受控的初值走属性 `default-value`；受控就把控件绑到你的数据上 ——
+ofa 的 `:value="form.memo"`（单向）/ `sync:value="form.memo"`（双向）写的就是 `value` 属性
+（内部原生 textarea 的真相没变，读写仍走宿主 property `el.value`）。
 
 ```html
 <mc-textarea placeholder="说点什么" rows="4"></mc-textarea>
@@ -24,18 +25,19 @@ el.addEventListener('input', (e) => console.log(e.data.value));
 
 ## 属性
 
-| 名称            | 值                     | 默认 | 说明                                                    |
-| --------------- | ---------------------- | ---- | ------------------------------------------------------- |
-| `default-value` | `string`               | —    | HTML 里的初始值；之后改它**不会**覆盖当前值             |
-| `placeholder`   | `string`               | —    | 占位符                                                  |
-| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                 |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位    |
-| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`             |
-| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复  |
-| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计 |
-| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`         |
-| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`         |
-| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`                    |
+| 名称            | 值                     | 默认 | 说明                                                                                                                                                     |
+| --------------- | ---------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`         | `string`               | —    | **绑定通道**：ofa 的 `<mc-textarea :value="form.memo">`（单向）/ `sync:value="form.memo"`（双向）落在这个属性上；写它铺进内部原生 textarea，输入会写回它 |
+| `default-value` | `string`               | —    | **非受控初值**；之后改它**不会**覆盖当前值                                                                                                               |
+| `placeholder`   | `string`               | —    | 占位符                                                                                                                                                   |
+| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                                                                                                                  |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位                                                                                                     |
+| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`                                                                                                              |
+| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复                                                                                                   |
+| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计                                                                                                  |
+| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`                                                                                                          |
+| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`                                                                                                          |
+| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`                                                                                                                     |
 
 ## 事件
 

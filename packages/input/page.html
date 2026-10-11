@@ -7,6 +7,7 @@
     <l-m src="./demos/basic.html"></l-m>
     <l-m src="./demos/sizes.html"></l-m>
     <l-m src="./demos/value.html"></l-m>
+    <l-m src="./demos/binding.html"></l-m>
     <l-m src="./demos/slots.html"></l-m>
     <l-m src="./demos/clearable.html"></l-m>
     <l-m src="./demos/type.html"></l-m>
@@ -65,11 +66,15 @@
     <section class="doc-demo">
       <h3>运行时值</h3>
       <p class="doc-hint">
-        组件不把值反射成属性：读
+        读
         <code>el.value</code>
         、写
         <code>el.value = '…'</code>
-        都是立刻生效的内部原生控件。 它也不参与原生
+        都立刻生效（真相在内部原生控件上），同时会回写成
+        <code>value</code>
+        属性 —— ofa 的
+        <code>sync:value</code>
+        观察的就是这个属性。 它也不参与原生
         <code>&lt;form&gt;</code>
         提交（shadow 里的原生控件不在表单范围内，
         <code>name</code>
@@ -81,6 +86,23 @@
       <mc-collapse class="doc-demo-code">
         <mc-collapse-item header="查看代码">
           <mc-code language="html" src="./demos/value.html"></mc-code>
+        </mc-collapse-item>
+      </mc-collapse>
+    </section>
+
+    <section class="doc-demo">
+      <h3>数据绑定</h3>
+      <p class="doc-hint">
+        用 ofa 原生的写法就能双向绑：<
+        <code>mc-input sync:value="form.name"</code>
+        > 打字会写回你的数据，改数据也会推回控件；只要单向跟随就写
+        <code>:value="form.name"</code>
+        。
+      </p>
+      <demo-input-binding></demo-input-binding>
+      <mc-collapse class="doc-demo-code">
+        <mc-collapse-item header="查看代码">
+          <mc-code language="html" src="./demos/binding.html"></mc-code>
         </mc-collapse-item>
       </mc-collapse>
     </section>

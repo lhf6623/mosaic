@@ -1,0 +1,37 @@
+<template component>
+  <mc-form
+    rules='{"username":[{"required":true,"message":"用户名不能为空"}]}'
+    on:submit="onSubmit($event)"
+    on:invalid="onInvalid($event)">
+    <mc-form-item label="用户名" name="username">
+      <mc-input placeholder="清空后提交试试"></mc-input>
+    </mc-form-item>
+    <mc-form-item>
+      <div class="flex items-center gap-3">
+        <mc-button type="submit">提交</mc-button>
+      </div>
+    </mc-form-item>
+  </mc-form>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-form-events',
+
+      data: { last: '（还没交互）' },
+
+      proto: {
+        onSubmit(event) {
+          this.last = 'submit → ' + JSON.stringify(event.data.value);
+        },
+        onInvalid(event) {
+          this.last = 'invalid → ' + event.data.fields.join(' / ');
+        },
+      },
+    });
+  </script>
+</template>

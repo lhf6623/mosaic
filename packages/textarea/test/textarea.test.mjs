@@ -124,16 +124,42 @@ export default async function run({ page, visit, check }) {
     return out;
   });
   check(
-    'default-value 是初始值（createElement 之后再写属性也算）、property value 是运行时值：写立刻进内部原生 textarea，读也读它，且不反射成属性（换行照原样）',
+    'default-value 是初始值（createElement 之后再写属性也算）、property value 是运行时值：写立刻进内部原生 textarea，读也读它，并回写成属性（换行照原样）',
     probe.initAttr === '初始文案' &&
       value.init === '初始文案' &&
       value.before === '' &&
       value.innerBefore === '' &&
       value.afterWrite === '第一行\n第二行' &&
       value.innerAfterWrite === '第一行\n第二行' &&
-      value.reflected === null &&
+      value.reflected === '第一行\n第二行' &&
       value.afterInnerWrite === '内部改的',
     JSON.stringify({ initAttr: probe.initAttr, ...value }),
+  );
+
+  /* ---------- 绑定通道：属性 → 内部（单向那一半）、打字 → 属性（双向那一半） ---------- */
+  const binding = await page.evaluate(async () => {
+    const el = document.getElementById('t-value');
+    const inner = el.shadowRoot.querySelector('.mc-input');
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 60));
+    el.setAttribute('value', '从属性来');
+    await tick();
+    const byAttr = { host: el.value, inner: inner.value };
+    inner.value = '';
+    inner.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await tick();
+    const byTyping = { host: el.value, attr: el.getAttribute('value') };
+    el.value = '第一行\n第二行';
+    el.removeAttribute('value');
+    await tick();
+    return { byAttr, byTyping };
+  });
+  check(
+    '绑定通道：写 value 属性会铺进内部原生 textarea（ofa 的 :value），内部改动会写回属性（sync:value）',
+    binding.byAttr.host === '从属性来' &&
+      binding.byAttr.inner === '从属性来' &&
+      binding.byTyping.host === '' &&
+      binding.byTyping.attr === '',
+    JSON.stringify(binding),
   );
 
   /* ---------- 事件：真实键盘输入 + 失焦 ---------- */
