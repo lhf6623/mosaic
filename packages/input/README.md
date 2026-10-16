@@ -79,15 +79,15 @@ expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属�
 
 ## 令牌
 
-| 令牌                      | 默认                        | 作用                                  |
-| ------------------------- | --------------------------- | ------------------------------------- |
-| `--mc-input-bg`           | `--mc-color-surface-sunken` | 输入区底色                            |
-| `--mc-input-border`       | `--mc-color-border-strong`  | 常态边框，也是禁用态边框              |
-| `--mc-input-border-hover` | `--mc-color-fg-subtle`      | hover 边框                            |
-| `--mc-input-placeholder`  | `--mc-color-fg-subtle`      | 占位符颜色                            |
-| `--mc-input-affix-color`  | `--mc-color-fg-muted`       | `prefix` / `suffix` 插槽容器的颜色    |
-| `--mc-input-clear-color`  | `--mc-color-fg-subtle`      | × 的颜色（hover / active 是它的叠加） |
-| `--mc-input-gap`          | `--mc-space-2`              | 前后缀、输入区、× 之间的间距          |
+| 令牌                      | 默认                       | 作用                                  |
+| ------------------------- | -------------------------- | ------------------------------------- |
+| `--mc-input-bg`           | `--mc-color-surface`       | 输入区底色                            |
+| `--mc-input-border`       | `--mc-color-border-strong` | 常态边框，也是禁用态边框              |
+| `--mc-input-border-hover` | `--mc-color-fg-subtle`     | hover 边框                            |
+| `--mc-input-placeholder`  | `--mc-color-fg-subtle`     | 占位符颜色                            |
+| `--mc-input-affix-color`  | `--mc-color-fg-muted`      | `prefix` / `suffix` 插槽容器的颜色    |
+| `--mc-input-clear-color`  | `--mc-color-fg-subtle`     | × 的颜色（hover / active 是它的叠加） |
+| `--mc-input-gap`          | `--mc-space-2`             | 前后缀、输入区、× 之间的间距          |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
