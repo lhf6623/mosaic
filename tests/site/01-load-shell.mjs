@@ -269,8 +269,8 @@ const sideNavState = () =>
       正文: Math.round(window.__deep('.doc-main').scrollTop),
       reveal: bar.getAttribute('data-reveal'),
       条子透明度: getComputedStyle(bar.shadowRoot.querySelector('[part="bar"]')).opacity,
-      /* 菜单里第一条与顶栏下沿的距离（只在 scrollTop = 0 时有意义）：宿主只让开顶栏那一条，
-         不再垫额外的 space-6，所以这个数应当是 0。 */
+      /* 菜单里第一条与顶栏下沿的距离。换页会把当前条目居中，所以这个数只在滚到顶时有意义
+         —— 它在这里只是诊断值；那条断言在下面的 sideGap 里，那边会先把菜单滚回 0 再量。 */
       首条余量: (() => {
         const first = nav.shadowRoot.querySelector('mc-menu-item');
         const topbar = window.__deep('.doc-top');
@@ -332,22 +332,30 @@ if (wideNav) {
     JSON.stringify(forwardedSide),
   );
 
-  /* 上下都不留额外间距：顶上只让开顶栏（首条余量 0，在 sideNavState 里量过），
-     底下滚到底时最后一条贴栏底。宿主 <doc-nav> 上不再垫 padding —— 菜单条目自己带内边距。 */
+  /* 上下都不留额外间距：顶上只让开顶栏（首条余量 0），底下滚到底时最后一条贴栏底。
+     宿主 <doc-nav> 上不再垫 padding —— 菜单条目自己带内边距。
+     ⚠️ 顶上那条先在代码里滚回 0 再量：换页会把当前条目居中（见第 10 节），
+        这一栏的初始位置不再保证是「停在顶部」，拿此刻的位置量会量到一个负数。 */
   const sideGap = await page.evaluate(`(() => {
     const nav = window.__deepAll('doc-nav').find((n) => !n.closest('.doc-menu-panel'));
     const vp = nav.shadowRoot.querySelector('mc-scroll-bar').shadowRoot.querySelector('[part="viewport"]');
+    const first = nav.shadowRoot.querySelector('mc-menu-item');
+    const topbar = window.__deep('.doc-top');
+    vp.scrollTop = 0;
+    const 首条余量 = Math.round(first.getBoundingClientRect().top - topbar.getBoundingClientRect().bottom);
+    vp.scrollTop = vp.scrollHeight; // 到底
     const items = nav.shadowRoot.querySelectorAll('mc-menu-item');
     const last = items[items.length - 1];
     return {
+      首条余量,
       到底: vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 1,
       底部余量: Math.round(nav.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom),
     };
   })()`);
   check(
     '宽屏：左栏上下都不留额外间距（首条贴顶栏下沿、滚到底时末条贴栏底）',
-    Math.abs(wideNav.首条余量) <= 4 && sideGap.到底 && Math.abs(sideGap.底部余量) <= 4,
-    JSON.stringify({ 首条余量: wideNav.首条余量, ...sideGap }),
+    Math.abs(sideGap.首条余量) <= 4 && sideGap.到底 && Math.abs(sideGap.底部余量) <= 4,
+    JSON.stringify(sideGap),
   );
 }
 
@@ -562,7 +570,101 @@ check(
   JSON.stringify(await navBarState()),
 );
 
+/* ⓒ 原地跳（目标就是当前这一页）不该把加载条卡死 —— 用户报的就是这条：首页地址是
+      #/docs/pages/home.html 时点左上角 Mosaic。ofa 对「同一页」不发 router-change（_navigate 提前
+      return），loading 却已经开跑了：只认 router-change 收尾的话条子会永远停在 loading。
+      外壳在**捕获阶段**把这类 olink 点击掐掉（docs/layout.html）。 */
+await visit(page, '/index.html#/docs/pages/home.html');
+await routerReady();
+await page.waitForTimeout(900);
+await page.evaluate(`(() => {
+  ${shellRoot}.querySelector('.doc-brand').click();
+})()`);
+await page.waitForTimeout(1200);
+const brandSamePage = await page.evaluate(`(() => ({
+  hash: decodeURIComponent(location.hash),
+  bar: document.querySelector('body > mc-loading-bar')?.getAttribute('state') ?? null,
+}))()`);
+check(
+  '原地跳不卡加载条：首页点左上角 Mosaic 不发起导航',
+  brandSamePage.bar !== 'loading' && brandSamePage.hash === '#/docs/pages/home.html',
+  JSON.stringify(brandSamePage),
+);
+
+/* ⓓ 同类第二处：hash 还空着时点顶栏「首页」—— 入口是 mc-button + openEntry()，不走 olink，所以
+      另有守卫。query 只是强制一份新文档（只改 hash 不算重新加载），站点行为与 /index.html 一致。 */
+await visit(page, '/index.html?landing=1');
+await routerReady();
+await page.waitForTimeout(900);
+await page.evaluate(`(() => {
+  const root = ${shellRoot};
+  [...root.querySelectorAll('.doc-top-nav mc-button')]
+    .find((b) => b.textContent.trim() === '首页')
+    .click();
+})()`);
+await page.waitForTimeout(1200);
+const entrySamePage = await page.evaluate(`(() => ({
+  hash: decodeURIComponent(location.hash),
+  bar: document.querySelector('body > mc-loading-bar')?.getAttribute('state') ?? null,
+}))()`);
+check(
+  '原地跳不卡加载条：首页点顶栏「首页」也不发起导航',
+  entrySamePage.bar !== 'loading' && entrySamePage.hash === '',
+  JSON.stringify(entrySamePage),
+);
+
+/* ⓔ 拦的是「原地跳」而不是所有 olink：从组件页点 Mosaic 照常回首页 */
+await visit(page, '/index.html#/packages/button/page.html');
+await routerReady();
+await page.waitForTimeout(1200);
+await page.evaluate(`(() => {
+  ${shellRoot}.querySelector('.doc-brand').click();
+})()`);
+await page
+  .waitForFunction(
+    () => decodeURIComponent(location.hash).endsWith('/docs/pages/home.html'),
+    { timeout: 8000 },
+  )
+  .catch(() => {});
+const brandFromChild = await page.evaluate(`(() => ({
+  hash: decodeURIComponent(location.hash),
+  h1: window.__deepAll('h1')[0]?.textContent?.trim() ?? null,
+}))()`);
+check(
+  '从别的页面点 Mosaic 照常回首页（没把正常导航一起拦掉）',
+  brandFromChild.hash === '#/docs/pages/home.html' && brandFromChild.h1 === 'Mosaic',
+  JSON.stringify(brandFromChild),
+);
+
 // 复位视口，别把后面的断言（如果有）留在窄屏
 await page.setViewportSize({ width: 1280, height: 900 });
 await page.waitForTimeout(200);
+
+/* ------------------------------------------------------------------ *
+ * 10. 左栏当前条目居中（第 8.x 节）：换页后把选中的那条滚到这一栏的竖直中间
+ *     量的是**中段**的页面：首尾的页面会先撞到滚动边界（浏览器自己夹住），那里量不到 0。
+ * ------------------------------------------------------------------ */
+await visit(page, '/index.html#/packages/switch/page.html');
+await page.waitForTimeout(1200);
+const navCentered = await page.evaluate(`(() => {
+  const nav = window.__deepAll('doc-nav').find((n) => !n.closest('.doc-menu-panel'));
+  const vp = nav?.shadowRoot?.querySelector('mc-scroll-bar')?.shadowRoot?.querySelector('[part="viewport"]');
+  const row = nav?.shadowRoot?.querySelector('mc-menu-item[current]');
+  if (!vp || !row) return null;
+  const V = vp.getBoundingClientRect(), R = row.getBoundingClientRect();
+  return {
+    当前条目: row.getAttribute('label'),
+    偏差: Math.round(R.top + R.height / 2 - (V.top + V.height / 2)),
+    菜单: Math.round(vp.scrollTop),
+    可滚: vp.scrollHeight - vp.clientHeight,
+  };
+})()`);
+check(
+  '宽屏：换页后左栏把当前条目滚到竖直中间',
+  navCentered !== null &&
+    navCentered.当前条目 === '开关（Switch）' &&
+    Math.abs(navCentered.偏差) <= 4 &&
+    navCentered.菜单 > 0,
+  JSON.stringify(navCentered),
+);
 }

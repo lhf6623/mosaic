@@ -1,0 +1,341 @@
+<!--
+  <doc-search> —— 顶栏搜索：搜的是**整个菜单**（docs/site-map.js 的 PAGES = 全部可导航页面），选中即跳那一页。
+  形态与 mc-select 同路数：输入框常驻顶栏，**列表只回答「你在找什么」** —— 空查询不列全量、直接不挂列表。
+  ⚠️ 面板刻意不用 mc-popover：它内部是 popover="auto"，而 auto 的 light dismiss 会把「点自己这个输入框」
+     也当成一次外部点击 —— 那一下只是想挪光标，列表不该收（mc-select 为同一条用了 manual，见 P20）。
+     自己开合就得自己收口：点空白 / Esc 在下面关。
+  ⚠️ 结果行是运行时造的，拿不到 olink 的编译期前缀改写，地址一律由这里改 hash，并且**跳过「原地跳」**：
+     目标就是当前这一页时不能再发导航 —— ofa 对同一页不发 router-change，加载条会永远停在 loading（守卫同 docs/layout.html）。
+-->
+<template component>
+  <style>
+    /* 宽度由外壳给（顶栏那一行放多宽是外壳的事，见 docs/layout.html）；这里只负责把输入框铺满 */
+    :host {
+      display: inline-flex;
+    }
+
+    /* 锚点载体：面板以它为基准。⚠️ inline-flex 而不是 inline-block —— 后者的行盒基线会带一条缝，而锚点几何就是定位基准 */
+    .field {
+      display: inline-flex;
+      anchor-name: --doc-search-anchor; /* @internal：给 position-anchor 用的标识 */
+    }
+
+    mc-input {
+      width: var(--doc-search-width, 13rem);
+    }
+
+    /* 面板：结果列表。锚在输入框下沿、右沿对齐。
+       ⚠️ 面板右沿贴的是**输入框**的右沿，而它右边还站着 GitHub / 主题 / 窄屏菜单那几个控件（约 9rem）
+       加顶栏内边距（1.25rem）：窄屏上写死 20rem 会把面板左沿顶出视口（anchor 定位只会翻转、不会平移）。
+       所以下限跟着视口走，宽屏那档仍是 20rem。 */
+    .panel {
+      /* ⚠️ 这三条必须显式写：UA 给 [popover] 的 inset / margin 会吃掉锚点定位，border 是 medium（3px）currentColor */
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      border: 0;
+
+      box-sizing: border-box;
+      min-width: min(20rem, calc(100vw - 11rem));
+      max-width: min(24rem, calc(100vw - var(--mc-space-8)));
+      padding: var(--mc-space-2);
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface-raised));
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-sans);
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+      /* 不画 border：轮廓用 drop-shadow，跟着整体形状走（同 mc-popover 的口径） */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-color-border-strong)))
+        drop-shadow(var(--mc-shadow-panel));
+
+      position-anchor: --doc-search-anchor;
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+      top: anchor(bottom);
+      right: anchor(right);
+      /* 面板顶要落到顶栏下沿：值由外壳给（只有它知道顶栏多高） */
+      margin-top: var(--doc-search-offset, var(--mc-space-2));
+    }
+
+    /* 结果行：o-fill 是 display: contents，行就是这个 flex 列的项 */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--mc-space-3);
+      width: 100%;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border: 0;
+      border-radius: var(--mc-radius-sm);
+      background: none;
+      color: rgb(var(--mc-color-fg));
+      font-family: inherit;
+      font-size: var(--mc-text-sm);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    /* 悬停与键盘高亮同一档底色：指针与方向键走同一套「当前项」观感 */
+    .row:hover,
+    .row[data-active] {
+      background-color: rgb(var(--mc-color-surface-sunken));
+    }
+
+    .row-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row-section {
+      flex: none;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs);
+    }
+
+    /* 列表限高、条子由 mc-scroll-bar 画 —— 同左栏：max-height 挂 viewport 上，宿主跟着内容走 */
+    mc-scroll-bar::part(viewport) {
+      max-height: 15rem;
+    }
+
+    .empty {
+      margin: var(--mc-space-3);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+      text-align: center;
+    }
+  </style>
+
+  <span class="field">
+    <mc-input
+      id="field"
+      size="sm"
+      placeholder="搜索菜单"
+      clearable
+      on:input="onInput($event)"
+      on:keydown="onKeydown($event)"
+      on:focusin="onFocusin()">
+      <mc-icon slot="prefix" name="search"></mc-icon>
+    </mc-input>
+  </span>
+
+  <!-- popover="manual"：进 top layer + 锚点定位，但不吃 auto 的 light dismiss（开合全由下面这套收口） -->
+  <div class="panel" id="panel" popover="manual">
+    <mc-scroll-bar label="搜索结果">
+      <div class="list" id="list">
+        <o-fill :value="results" fill-key="path">
+          <button
+            class="row"
+            type="button"
+            attr:data-active="$data.active"
+            attr:data-path="$data.path">
+            <span class="row-label">{{$data.label}}</span>
+            <span class="row-section">{{$data.section}}</span>
+          </button>
+        </o-fill>
+      </div>
+    </mc-scroll-bar>
+
+    <o-if :value="empty">
+      <p class="empty">没有匹配的菜单项</p>
+    </o-if>
+  </div>
+
+  <script>
+    /* 开合原生浮层时浏览器可能顺手滚一下页面（火狐实测，同 mc-popover / mc-select） */
+    import { attachFloatingScrollGuard } from '../../packages/boot/scroll-pin.js';
+    import { PAGES, displayName } from '../site-map.js';
+    import { hashOf, route } from '../routes.js';
+
+    /** 一个词在某一档上的得分；0 = 这一档没匹配上。档位差就是结果顺序：名字 > 中文名 > 路径 / 分区 > 摘要 */
+    const fieldScore = (page, term) => {
+      const label = page.label.toLowerCase();
+      const zh = page.zh ?? '';
+      if (label === term) return 100;
+      if (label.startsWith(term)) return 80;
+      if (zh.startsWith(term)) return 70;
+      if (label.includes(term)) return 60;
+      if (zh.includes(term)) return 50;
+      if (page.path.toLowerCase().includes(term)) return 30;
+      if (page.section.toLowerCase().includes(term)) return 20;
+      if ((page.summary ?? '').toLowerCase().includes(term)) return 10;
+      return 0;
+    };
+
+    export default () => ({
+      /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断，文件一改名就注册失败，而外层只报 "wrong module address"（P40） */
+      tag: 'doc-search',
+
+      data: {
+        /* 有输入但一条都没命中：列表挂着、内容是空态 */
+        empty: false,
+        results: [],
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._field = root.querySelector('#field');
+        this._panel = root.querySelector('#panel');
+        this._list = root.querySelector('#list');
+
+        /* 结果行是 o-fill 现造的，点击走**事件委托**（同外壳顶栏入口）：行上只放 data-path ——
+           行那一层的 `on:` 绑定拿不到 $data，而路径恰好就在 $data 里。 */
+        this._onListClick = (event) => {
+          const path = event.target?.closest?.('[data-path]')?.dataset?.path;
+          if (path) this.pick(path);
+        };
+        this._list.addEventListener('click', this._onListClick);
+
+        /* 老浏览器没有 popover API 时不炸：面板挂不出来，输入框照常能用（同 mc-popover 的降级口径） */
+        this._popoverOk = typeof this._panel?.showPopover === 'function';
+        if (this._popoverOk) this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+
+        /* manual 的代价：点空白 / Esc 得自己收口。按在输入框或面板里的不算外部点击 */
+        this._onDocPointerDown = (event) => {
+          if (!this.isOpen()) return;
+          const path = event.composedPath();
+          if (path.includes(this._field) || path.includes(this._panel)) return;
+          this.hide();
+        };
+        document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+        this._onDocKeydown = (event) => {
+          if (event.key === 'Escape' && this.isOpen()) this.hide();
+        };
+        document.addEventListener('keydown', this._onDocKeydown);
+
+        this._query = '';
+        this._active = 0;
+      },
+
+      detached() {
+        document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+        document.removeEventListener('keydown', this._onDocKeydown);
+        this._scrollGuard?.dispose();
+        this._list?.removeEventListener('click', this._onListClick);
+      },
+
+      proto: {
+        isOpen() {
+          return this._popoverOk && this._panel.matches(':popover-open');
+        },
+
+        /* 显示 / 收起原生浮层：包在滚动守卫里，免得浏览器顺手把页面滚一下 */
+        show() {
+          if (this._popoverOk && !this.isOpen())
+            this._scrollGuard.run(() => this._panel.showPopover());
+        },
+
+        hide() {
+          if (this._popoverOk && this.isOpen())
+            this._scrollGuard.run(() => this._panel.hidePopover());
+        },
+
+        onInput(event) {
+          this._query = event.data?.value ?? event.target?.value ?? '';
+          this.applyQuery();
+        },
+
+        /** 重新聚焦时输入框里还有字，就把列表挂回来：点空白关掉之后不用重敲一遍 */
+        onFocusin() {
+          if (this._query.trim()) this.applyQuery();
+        },
+
+        onKeydown(event) {
+          if (!this.isOpen()) return; // 列表没挂：↑↓ / 回车 / Esc 不归这里接管
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            this.move(event.key === 'ArrowDown' ? 1 : -1);
+          } else if (event.key === 'Enter') {
+            event.preventDefault();
+            const row = this.results[this._active];
+            if (row) this.pick(row.path);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            this.hide();
+          }
+        },
+
+        /** 过滤 + 排序（同分保持菜单顺序）。空查询直接收摊：列表只回答「你在找什么」 */
+        applyQuery() {
+          const terms = this._query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+          if (!terms.length) {
+            this.results = [];
+            this.empty = false;
+            this.hide();
+            return;
+          }
+
+          const scoreOf = (page) => {
+            let total = 0;
+            for (const term of terms) {
+              const score = fieldScore(page, term);
+              if (!score) return 0; // 有一个词没匹配上就不算命中
+              total += score;
+            }
+            return total;
+          };
+
+          const ranked = PAGES.map((page, index) => ({ page, score: scoreOf(page), index }));
+          const hits = ranked.filter((hit) => hit.score > 0);
+          hits.sort((a, b) => b.score - a.score || a.index - b.index);
+
+          this.results = hits.map(({ page }) => ({
+            path: page.path,
+            label: displayName(page),
+            section: page.section,
+            active: false,
+          }));
+          this.empty = this.results.length === 0;
+          this._active = 0;
+          this.markActive();
+          this.show();
+        },
+
+        /** 方向键：环回（到底再按下回到第一条） */
+        move(step) {
+          const count = this.results.length;
+          if (!count) return;
+          this._active = (this._active + step + count) % count;
+          this.markActive();
+        },
+
+        /** 「当前项」写在行数据上（o-fill 按 fill-key 复用节点，只改真正变了的那两行） */
+        markActive() {
+          this.results.forEach((row, index) => {
+            const active = index === this._active;
+            if (row.active !== active) row.active = active;
+          });
+          this._list?.querySelector('[data-active]')?.scrollIntoView({ block: 'nearest' });
+        },
+
+        /** 选中：收起列表 + 清空输入，再跳页。
+            ⚠️ 目标就是当前这一页时不能再发导航（见文件头注释）。 */
+        pick(path) {
+          this.clear();
+          if (route() === path) return;
+          location.hash = hashOf(path);
+        },
+
+        /** 回到干净状态。清输入走 mc-input 的宿主 property（官方运行时写法）—— 直接改内部原生 input
+            的话，× 的显隐是它自己 applyState 管的，会留在那儿。 */
+        clear() {
+          this._query = '';
+          this._field.value = '';
+          this.results = [];
+          this.empty = false;
+          this.hide();
+        },
+      },
+    });
+  </script>
+</template>

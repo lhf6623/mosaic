@@ -13,6 +13,7 @@ import { READY, slugOf } from '../../docs/site-map.js';
 /** 站点套件：顺序就是开工顺序（并行后各套件各一页，这个顺序只影响谁先起跑） */
 const SITE = [
   ['site/01-load-shell.mjs', '站点 · 加载与外壳'],
+  ['site/02-search.mjs', '站点 · 顶栏搜索'],
   ['site/06-boot-palette.mjs', '站点 · 启动与色板'],
   ['site/07-inject-server.mjs', '站点 · HTML 注入免疫'],
   ['site/10-nav-data.mjs', '站点 · 导航数据对账'],

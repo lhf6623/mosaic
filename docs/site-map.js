@@ -448,7 +448,7 @@ const hasChildren = (node) => Array.isArray(node.children);
 /**
  * 有没有自己的文档页。**唯一**的实现状态判断：菜单 / 卡片 / 面包屑 / 翻页都用它
  * @param {NavNode} node
- * @returns {boolean}
+ * @returns {node is NavNode & { path: string }}
  */
 export const hasPage = (node) => typeof node.path === 'string';
 
@@ -529,6 +529,35 @@ export const READY = (() => {
   walk(NAV, (node) => {
     if (node.type === 'component' && hasPage(node)) out.push(node);
   });
+  return out;
+})();
+
+/**
+ * 菜单显示名：分组只写组名，组件写「按钮（Button）」，其余原样 label。
+ * 左栏（docs/components/nav.html）与顶栏搜索（docs/components/search.html）共用 —— 同一个东西在两处得叫同一个名字。
+ * @param {NavNode} node
+ * @returns {string}
+ */
+export const displayName = (node) => {
+  if (node.children) return node.label;
+  return node.zh ? `${node.zh}（${node.label}）` : node.label;
+};
+
+/** **工具面**：搜索索引 —— 全部可导航的页面（站点页 + 组件），按菜单顺序，带分区标签链。
+ *  「整个菜单都搜得到」由它保证：与 NAV 同一棵树、hidden 沿树继承，所以搜到的集合 = 菜单里点得到的集合。
+ *  分区链（如「组件 · 表单」）在结果行里当副标题，用来分清同名 / 同类的落点。 */
+export const PAGES = (() => {
+  /** @type {(NavNode & { path: string; section: string })[]} */
+  const out = [];
+  /** @param {NavNode[]} nodes @param {string[]} trail */
+  const collect = (nodes, trail) => {
+    for (const node of nodes) {
+      if (node.hidden === true) continue;
+      if (node.children) collect(node.children, [...trail, node.label]);
+      else if (hasPage(node)) out.push({ ...node, section: trail.join(' · ') });
+    }
+  };
+  collect(NAV, []);
   return out;
 })();
 

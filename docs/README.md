@@ -19,6 +19,12 @@
 - 换页的加载条是 `mc-loading-bar`，接线在 `app-config.js`：ofa 每次导航开始都会调 `loading`
   （olink 的 pushState 导航**不发 hashchange**，接在别处会漏掉它），结束信号是 `router-change`；
   慢过一小会儿才露（阈值就在 `app-config.js` 里），快导航不闪。
+- 目标就是当前这一页的导航**不发 `router-change`**（ofa 拿不到新页面就直接返回），加载条会永远卡在
+  loading —— 所以「原地跳」一律不发起：外壳在**捕获阶段**掐掉这类 `olink` 点击，顶栏入口在
+  `openEntry()` 里守卫（首页地址是 `#/docs/pages/home.html` 时点左上角 Mosaic 就是这条）。
+- 左栏（`docs/components/nav.html`）换页后把**当前条目滚到竖直中间**：这一栏装的是整棵导航树，
+  当前页常常落在视口外。首尾的页面会先撞到滚动边界，那时这个动作退化成「保证它可见」；
+  用户自己滚过之后不会被任何自动动作拽回去（只在换页与「视口重新有高度」时动手）。
 
 ## 二、样式归属：一句话一条规则
 
@@ -45,12 +51,13 @@
 
 ## 四、单一来源
 
-| 事实                    | 唯一来源                                              |
-| ----------------------- | ----------------------------------------------------- |
-| hash 地址（含部署前缀） | `docs/routes.js` 的 `hashOf()` / `route()`            |
-| 导航树、顶栏入口、分区  | `docs/site-map.js`                                    |
-| 原始色阶色值            | 运行时读 `packages/color/tokens.css`（`doc-palette`） |
-| 组件参考表              | 各单元的 `api.md`（`doc-spec` 渲染，页面不手抄）      |
+| 事实                       | 唯一来源                                              |
+| -------------------------- | ----------------------------------------------------- |
+| hash 地址（含部署前缀）    | `docs/routes.js` 的 `hashOf()` / `route()`            |
+| 导航树、顶栏入口、分区     | `docs/site-map.js`                                    |
+| 原始色阶色值               | 运行时读 `packages/color/tokens.css`（`doc-palette`） |
+| 组件参考表                 | 各单元的 `api.md`（`doc-spec` 渲染，页面不手抄）      |
+| 顶栏搜索的候选（整个菜单） | `docs/site-map.js` 的 `PAGES`（菜单点得到 = 搜得到）  |
 
 ## 五、站点组件
 
@@ -61,6 +68,7 @@
 | `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
 | `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                             |
 | `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差               |
+| `doc-search`      | `docs/components/search.html`      | 顶栏搜索：搜整个菜单，输入才出列表，选中跳那一页     |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
   组件自己的 `<style>`。

@@ -4,7 +4,7 @@
     /* 外壳的脚本：页面模块也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL），
        所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。这里同时是**站点级行为**的归属地：
          · 换页复位：把 `.doc-main` 滚回顶部；· 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。 */
-    import { hashOf } from './routes.js';
+    import { hashOf, repoPathOf, route } from './routes.js';
     import { TOPBAR, firstPageOf, locate, menuOf } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
@@ -96,6 +96,24 @@
         };
         this._topNav?.addEventListener('click', this._onTopNavClick);
 
+        /* 原地跳（目标就是当前这一页）的 olink 链接：捕获阶段掐掉这次导航。
+           ⚠️ ofa 对「同一页」不发 router-change（它的 _navigate 拿不到新页面就直接 return），
+           而 loading 那一刻已经开跑了 —— 收尾信号永远不来，加载条会一直停在 loading。
+           首页地址是 #/docs/pages/home.html 时点左上角 Mosaic 就是这条（点的就是当前地址）。
+           两个不显然的点：① 链接住在各层 shadow root 里，document 上 event.target 早被重定向成宿主，
+           只能用 composedPath() 把它捞出来；② 必须捕获阶段 —— ofa 的 olink 处理器挂在页面 shadow root 上，
+           冒泡到那儿就晚了（它看到 defaultPrevented 会自己放弃这次导航）。 */
+        this._onDocClick = (event) => {
+          if (event.defaultPrevented || event.button !== 0) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          const anchor = event
+            .composedPath()
+            .find((node) => node instanceof HTMLAnchorElement && node.hasAttribute('olink'));
+          if (!anchor || anchor.hasAttribute('target') || anchor.hasAttribute('download')) return;
+          if (repoPathOf(anchor.href) === route()) event.preventDefault();
+        };
+        document.addEventListener('click', this._onDocClick, true);
+
         /* 路由变化：只改 links[i].current 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，04 套件盯着这条），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
@@ -109,6 +127,7 @@
         this._unwatch?.();
         document.removeEventListener('wheel', this._onWheel);
         this._topNav?.removeEventListener('click', this._onTopNavClick);
+        document.removeEventListener('click', this._onDocClick, true);
         this._mq?.removeEventListener('change', this._onMQ);
         this._sysMQ?.removeEventListener('change', this._onSysMQ);
       },
@@ -116,6 +135,9 @@
       proto: {
         /** 顶栏入口：改 hash 切页（不整页刷新）。hashOf 负责带上部署前缀（开发 / · Pages /mosaic/） */
         openEntry(path) {
+          /* 目标就是当前这一页就别发起导航：改 hash 也是一次导航，ofa 同样不发 router-change，
+             加载条又会卡住（首页 hash 为空时点「首页」就是这条：地址变了、页面没换）。 */
+          if (route() === path) return;
           location.hash = hashOf(path);
         },
 
@@ -318,6 +340,20 @@
       gap: var(--mc-space-2);
     }
 
+    /* 搜索框与旁边的图标控件都不参与 flex 伸缩：顶栏放不下时让 <nav> 收缩（它自己 overflow-x 滚）。
+       搜索框不被压成零，它自己那条宽度跟着视口缩（见下面的 --doc-search-width）。 */
+    .doc-top-actions doc-search {
+      flex: none;
+      /* 搜索框多宽：宽屏一档 13rem；窄屏跟着视口缩，下限 4.5rem（还能看清在打什么，输入本身会横向滚）。
+         20rem ≈ 品牌 + 顶栏内边距 + 两组间距 + 右侧那三个图标控件 + 留给顶栏入口的一条；
+         再窄就轮到入口让位了 —— 手机上一行塞不下「搜索 + 入口」两件事，入口那一支首页上还有两个入口可走。
+         这条不写媒体查询：跟着视口连续缩，省掉一条与外壳断点重复的 @media。 */
+      --doc-search-width: clamp(4.5rem, calc(100vw - 20rem), 13rem);
+      /* 搜索面板与输入框的间距：输入框在 3.5rem 高的顶栏里垂直居中，它下面还剩 0.875rem，
+         用组件默认的 0.5rem 会让面板顶部压住顶栏下沿 6px。顶栏多高只有外壳知道，所以值由这里给。 */
+      --doc-search-offset: var(--mc-space-4);
+    }
+
     .doc-github {
       display: inline-flex;
       align-items: center;
@@ -378,6 +414,7 @@
   <!-- 文档站自己的组件在 docs/components/ 下：标签名由组件里显式声明的 tag 决定（约定 doc- + 文件名；不写 tag 会按文件名推断出非法元素名，见 ofa-pitfalls P40）。左栏 <doc-nav>、右栏 <doc-toc> 都用 mc-menu 渲染 -->
   <l-m src="./components/nav.html"></l-m>
   <l-m src="./components/toc.html"></l-m>
+  <l-m src="./components/search.html"></l-m>
   <l-m src="../packages/menu/menu.html"></l-m>
   <l-m src="../packages/menu/menu-item.html"></l-m>
   <!-- 左右两栏与窄屏菜单浮层里的滚动条都由它画：<doc-nav> / <doc-toc> 内部各包了一层（见 docs/components/）。
@@ -387,6 +424,8 @@
   <!-- 顶栏右侧的主题切换：项目自己的下拉**菜单**（mc-dropdown；菜单项用已注册的 mc-menu-item） -->
   <l-m src="../packages/dropdown/dropdown.html"></l-m>
   <l-m src="../packages/popover/popover.html"></l-m>
+  <!-- 顶栏搜索的输入框：mc-input 由它引入（注册在这里，不在组件里靠碰巧） -->
+  <l-m src="../packages/input/input.html"></l-m>
   <!-- 面包屑已从组件页去掉：mc-breadcrumb 由它自己的文档页按需注册 -->
   <!-- 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面（页面上不再手抄表格），渲染进 light DOM，右栏 <doc-toc> 才收得到那几节的标题 -->
   <l-m src="./components/spec.html"></l-m>
@@ -412,6 +451,9 @@
 
       <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf） -->
       <div class="doc-top-actions">
+        <!-- 搜索框：搜整个菜单（docs/components/search.html），选中即跳那一页 -->
+        <doc-search></doc-search>
+
         <a
           class="doc-github"
           href="https://github.com/lhf6623/mosaic"
