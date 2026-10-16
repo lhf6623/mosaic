@@ -136,9 +136,9 @@
       <p class="doc-hint">
         容器上写
         <code>hide-error</code>
-        ：报错时**只留位置、不显示文案** —— 控件照样收
+        ：报错时**只留位置、不显示文案** —— 控件照样被挂上
         <code>invalid</code>
-        （红边框还在）、
+        属性（红边框还在）、容器的
         <code>invalid</code>
         事件照样报字段。 底部那一格本来就常驻、兼作行间距，所以显示 / 隐藏文案**表高一点都不变**；
         点「隐藏文案 / 显示文案」可以当场来回切。
@@ -262,7 +262,11 @@
         <code>invalid</code>
         （
         <code>$event.data.fields</code>
-        是失败字段）。 原生的
+        是失败字段）。 容器**发**的只有这两个；
+        <code>invalid</code>
+        事件说的是「整表没过」，控件上那个
+        <code>invalid</code>
+        是**属性**（红边框）。 原生的
         <code>focus</code>
         /
         <code>blur</code>
