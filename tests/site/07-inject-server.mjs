@@ -105,10 +105,10 @@ try {
     await injPage.goto(`http://127.0.0.1:${INJECT_PORT}/index.html`, { waitUntil: 'load' });
     await injPage.waitForTimeout(2200);
     const injState = await injPage.evaluate(() => {
-      /* 探针换成首页的零件带：不光要"标记在"，还要**组件真的升级了** ——
-         注入会提前闭合注释、抢走第一个 <script>，挂了的话带子里只剩没升级的裸标签。 */
-      const band = window.__deep('.hero-band');
-      const cells = band ? [...band.children] : [];
+      /* 探针用首页的中心区（字标 + 两个入口按钮）：不光要"标记在"，还要**组件真的升级了** ——
+         注入会提前闭合注释、抢走第一个 <script>，挂了的话中心那两个入口只剩没升级的裸标签。 */
+      const core = window.__deep('.hero-core');
+      const cells = core ? [...core.children] : [];
       return {
         h1: window.__deep('h1')?.textContent?.trim() ?? null,
         cells: cells.length,
@@ -121,7 +121,7 @@ try {
     check(
       '页面模块在被 HTML 注入的服务器上仍能加载',
       injState.h1 === 'Mosaic' && injState.cells > 0 && injState.upgraded > 0,
-      `h1=${injState.h1} · 零件带 ${injState.upgraded}/${injState.cells} 格已升级${injErrs.length ? ' · ' + injErrs[0] : ''}`,
+      `h1=${injState.h1} · 首页中心 ${injState.upgraded}/${injState.cells} 已升级${injErrs.length ? ' · ' + injErrs[0] : ''}`,
     );
 
     /* 组件本体走的是另一条路：<l-m src="…/*.html"> 拉的是**组件文件本身**，

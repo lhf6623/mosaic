@@ -28,6 +28,9 @@
       top: 0;
       height: 100%;
       z-index: var(--mc-z-sticky); /* 顶栏比它高一档，见 layout.html */
+      /* 两栏给一层**框架底色**（见 shell.css 的 --doc-frame-bg）：它们本来是透明的、吃 body 的底色，
+         亮色下框架与正文同为白，分隔靠这层的 border-right；暗色下框架是纯黑、正文是 surface，靠明度差分开。 */
+      background-color: var(--doc-frame-bg);
       /* 只让开顶栏那一条，**不加额外间距**：菜单自己每项都有内边距，再垫一档上下都会显脏。
          顶栏这 3.5rem 是让位不是间距 —— 去掉的话前几条会钻到顶栏底下（顶栏不透明、压在上面）。 */
       padding-top: var(--doc-topbar, 3.5rem);

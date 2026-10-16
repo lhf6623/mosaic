@@ -22,6 +22,16 @@ body {
 :root {
   --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* 文档站的「框架底色」：顶栏 + 左右两栏共用一层纯色，用于和正文拉开层次。
+     亮色纯白：框架与正文同为 surface，层次靠两栏 / 顶栏自己的边框，不上色。
+     曾经用 color-mix 混品牌色做「极淡的青」，但那份底色会跟着品牌色一起漂，观感很脏 —— 站点色就该是死值。 */
+  --doc-frame-bg: #fff;
+}
+
+/* 暗色反过来：框架沉到纯黑，正文是 surface（neutral-900），层次来自明度差而不是描边 */
+:root[data-theme='dark'] {
+  --doc-frame-bg: #000;
 }
 
 /* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此从顶栏下面开始，不会伸进头部） */
@@ -34,7 +44,7 @@ body {
   height: 100%;
   overflow: hidden;
 
-  background-color: rgb(var(--mc-color-bg));
+  background-color: var(--doc-frame-bg);
   color: rgb(var(--mc-color-fg));
   font-family: var(--mc-font-sans);
   font-size: var(--mc-text-base);

@@ -24,7 +24,7 @@
 
 | 样式                 | 住哪                                                                        |
 | -------------------- | --------------------------------------------------------------------------- |
-| 只被一个页面用       | 那个页面的 `<style>`（例：首页的 `.hero` / `.hero-band`）                   |
+| 只被一个页面用       | 那个页面的 `<style>`（例：首页的 `.hero` / `.hero-core`）                   |
 | 被两个及以上页面共用 | `docs/content.css`                                                          |
 | 站点组件内部结构     | 组件自己的 `<style>`（shadow root），对外只暴露 CSS 变量与 `::part()`       |
 | 组件宿主的定位与尺寸 | 它所在的布局页（例：`doc-nav` / `doc-toc` 的定位在 `docs/doc-layout.html`） |
@@ -54,17 +54,18 @@
 
 ## 五、站点组件
 
-| 标签          | 文件                           | 干什么                                               |
-| ------------- | ------------------------------ | ---------------------------------------------------- |
-| `doc-nav`     | `docs/components/nav.html`     | 左栏 / 窄屏浮层菜单                                  |
-| `doc-toc`     | `docs/components/toc.html`     | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）       |
-| `doc-spec`    | `docs/components/spec.html`    | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
-| `doc-palette` | `docs/components/palette.html` | 「色彩」页的原始色阶色板                             |
+| 标签              | 文件                               | 干什么                                               |
+| ----------------- | ---------------------------------- | ---------------------------------------------------- |
+| `doc-nav`         | `docs/components/nav.html`         | 左栏 / 窄屏浮层菜单                                  |
+| `doc-toc`         | `docs/components/toc.html`         | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）       |
+| `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
+| `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                             |
+| `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差               |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
   组件自己的 `<style>`。
 - 站点级组件在 `docs/layout.html` 注册一次；只被一页用的由那一页自己 `<l-m>` 引入
-  （现在没有这样的站点组件 —— 首页的零件带是页面自己的标记，不是组件）。
+  （`doc-block-field` 就是 —— 只有首页在用，所以由首页自己引，别的页面不必为此多下一份）。
 
 ## 六、文件一览
 

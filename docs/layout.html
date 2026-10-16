@@ -245,7 +245,8 @@
       height: var(--doc-topbar);
       padding-inline: var(--mc-space-5);
       border-bottom: 1px solid rgb(var(--mc-color-border));
-      background-color: rgb(var(--mc-color-surface));
+      /* 顶栏与两侧栏同属「框架」，用同一个底色（见 shell.css 的 --doc-frame-bg）—— 正文区留白，三块才分得开 */
+      background-color: var(--doc-frame-bg);
     }
 
     .doc-top-nav {

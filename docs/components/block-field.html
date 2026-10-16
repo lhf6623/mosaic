@@ -1,0 +1,205 @@
+<!--
+  <doc-block-field> —— 一层「方块场」：四层方块（实心 / 空心）各自跟随鼠标位移，做视差背景。
+  首页 `.hero` 拿它当底；组件自己铺满宿主（`position: absolute; inset: 0`），页面只要给它一个定位祖先。
+
+  ⚠️ 方块是**运行时随机撒**的（直接建 DOM，不走 data）：它们是纯装饰，没有"数据"可言，
+  而视差本身就得每帧直接改层的 transform —— 走 o-fill 反而多一层。旋钮见下面的 count / hole / span。
+-->
+<template component>
+  <style>
+    :host {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      /* 装饰层：不吃指针，也不进 Tab 序列（全是 div，本来也聚焦不到） */
+      pointer-events: none;
+    }
+
+    /* 一层：inset 撑满，方块在层内绝对定位；层整体按 data-depth 平移 = 视差 */
+    .layer {
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+    }
+
+    /* 越远的层越虚、越淡（位移差给层次，虚实给纵深） */
+    .layer--1 {
+      filter: blur(1.6px);
+      opacity: 0.5;
+    }
+
+    .layer--2 {
+      filter: blur(0.8px);
+      opacity: 0.66;
+    }
+
+    .layer--3 {
+      filter: blur(0.2px);
+      opacity: 0.85;
+    }
+
+    .layer--4 {
+      filter: none;
+      opacity: 1;
+    }
+
+    /* 方块：位置 / 大小 / 角度 / 透明度都由脚本随机写在行内 */
+    .block {
+      position: absolute;
+      transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+      border-radius: var(--mc-radius-sm);
+    }
+
+    .block[data-kind='fill'] {
+      background-color: rgb(var(--c));
+    }
+
+    .block[data-kind='line'] {
+      border: 2px solid rgb(var(--c));
+    }
+
+    /* 颜色映射到语义令牌，跟主题走（亮暗自动翻转），组件里不写死任何色值 */
+    .block[data-c='primary'] {
+      --c: var(--mc-color-primary);
+    }
+
+    .block[data-c='info'] {
+      --c: var(--mc-color-info);
+    }
+
+    .block[data-c='success'] {
+      --c: var(--mc-color-success);
+    }
+
+    .block[data-c='warning'] {
+      --c: var(--mc-color-warning);
+    }
+
+    .block[data-c='danger'] {
+      --c: var(--mc-color-danger);
+    }
+
+    .block[data-c='neutral'] {
+      --c: var(--mc-color-border-strong);
+    }
+
+    /* 关掉动效偏好：方块保持静止（位置照旧随机，只是不跟随鼠标） */
+    @media (prefers-reduced-motion: reduce) {
+      .layer {
+        transform: none !important;
+      }
+    }
+  </style>
+
+  <!-- 四层，data-depth 决定跟随鼠标的位移幅度：越近动得越多 -->
+  <div class="layer layer--1" data-depth="10"></div>
+  <div class="layer layer--2" data-depth="20"></div>
+  <div class="layer layer--3" data-depth="34"></div>
+  <div class="layer layer--4" data-depth="56"></div>
+
+  <script>
+    const COLORS = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
+
+    /** 每层的方块数：最远那层最多，逐层 -1（远层密、近层疏） */
+    const DEFAULT_COUNT = 9;
+
+    /** 中心禁区的半径（比例）——「中间要空一些」 */
+    const DEFAULT_HOLE = 0.3;
+
+    /** 位移倍率：整体调视差的幅度 */
+    const DEFAULT_SPAN = 1;
+
+    /** 四周留一圈：方块以自身中心定位，不留边距的话大块会被视口切掉半截 */
+    const PAD = 0.07;
+
+    const inHole = (x, y, hole) => {
+      const dx = (x - 0.5) / hole;
+      const dy = (y - 0.5) / hole;
+      return dx * dx + dy * dy < 1;
+    };
+
+    /** 掷一个避开中心禁区、也不贴边的坐标（试满 40 次就认了，免得死循环） */
+    function scatter(hole) {
+      for (let i = 0; i < 40; i++) {
+        const x = PAD + Math.random() * (1 - 2 * PAD);
+        const y = PAD + Math.random() * (1 - 2 * PAD);
+        if (!inHole(x, y, hole)) return { x, y };
+      }
+      return { x: PAD, y: PAD };
+    }
+
+    export default () => ({
+      tag: 'doc-block-field',
+
+      data: {},
+
+      ready() {
+        const ele = this.ele;
+        const root = ele.shadowRoot ?? ele;
+        const layers = [...root.querySelectorAll('.layer')];
+        if (!layers.length) return;
+
+        /* ⚠️ 读属性走 getAttribute：ready() 这一刻 ofa 还没把 attrs 铺进 this */
+        const count = Number(ele.getAttribute('count')) || DEFAULT_COUNT;
+        const hole = Number(ele.getAttribute('hole')) || DEFAULT_HOLE;
+        const span = Number(ele.getAttribute('span')) || DEFAULT_SPAN;
+
+        /* ---- 1. 每层撒方块：大小 / 颜色 / 实心空心 / 角度全随机 ---- */
+        layers.forEach((layer, index) => {
+          const n = Math.max(1, count - index);
+          for (let i = 0; i < n; i++) {
+            const { x, y } = scatter(hole);
+            const block = document.createElement('div');
+
+            block.className = 'block';
+            /* 小的多、大的少：三次方让大块偶尔才出现，免得画面被几块大色块占满 */
+            const size = 1 + Math.random() ** 3 * 5.5;
+            block.dataset.kind = Math.random() < 0.45 ? 'line' : 'fill';
+            block.dataset.c = COLORS[Math.floor(Math.random() * COLORS.length)];
+            block.style.cssText =
+              `left:${(x * 100).toFixed(2)}%;top:${(y * 100).toFixed(2)}%;` +
+              `width:${size.toFixed(2)}rem;height:${size.toFixed(2)}rem;` +
+              `--r:${(Math.random() < 0.35 ? Math.random() * 90 - 45 : 0).toFixed(1)}deg;` +
+              `opacity:${(0.5 + Math.random() * 0.5).toFixed(2)}`;
+            layer.appendChild(block);
+          }
+        });
+
+        /* ---- 2. 视差：鼠标位置 → 各层按 depth 平移，位移过一遍 lerp（松手不弹） ---- */
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        let px = 0.5;
+        let py = 0.5;
+        let cx = 0;
+        let cy = 0;
+
+        this._onMove = (event) => {
+          px = event.clientX / window.innerWidth;
+          py = event.clientY / window.innerHeight;
+        };
+
+        this._frame = () => {
+          const tx = (px - 0.5) * 2;
+          const ty = (py - 0.5) * 2;
+          cx += (tx - cx) * 0.08;
+          cy += (ty - cy) * 0.08;
+          for (const layer of layers) {
+            const depth = Number(layer.dataset.depth ?? 20) * span;
+            layer.style.transform = `translate3d(${(cx * depth).toFixed(2)}px, ${(cy * depth).toFixed(2)}px, 0)`;
+          }
+          this._raf = requestAnimationFrame(this._frame);
+        };
+
+        window.addEventListener('pointermove', this._onMove, { passive: true });
+        this._raf = requestAnimationFrame(this._frame);
+      },
+
+      /* 挂在 window 上的监听必须摘干净：组件被换掉时留着就是泄漏（站点规范 §七） */
+      detached() {
+        if (this._onMove) window.removeEventListener('pointermove', this._onMove);
+        if (this._raf) cancelAnimationFrame(this._raf);
+      },
+    });
+  </script>
+</template>
