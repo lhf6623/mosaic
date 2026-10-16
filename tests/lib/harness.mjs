@@ -44,7 +44,7 @@ function repoFiles() {
 }
 
 /** URL → 仓库相对路径；不是本机文件 / 不在仓库里（favicon、CDN）返回 null */
-export function repoPathOfUrl(url) {
+function repoPathOfUrl(url) {
   let parsed;
   try {
     parsed = new URL(url);
@@ -67,21 +67,8 @@ export function repoPathOfUrl(url) {
 /** 并行度默认值：4 与 CPU 数取小 —— 每个 page 都要真渲染，开太多只会互相拖慢 */
 export const defaultJobs = () => Math.min(4, availableParallelism?.() ?? 4);
 
-/** 注入每个页面：穿透 shadow 的 __deep/__deepAll；pointermove 监听计数（看组件切走时有没有摘干净） */
+/** 注入每个页面：穿透 shadow 的 __deep / __deepAll —— 组件页的断言全靠它 */
 export function pageHelpers() {
-  window.__pointerMoveAdds = 0;
-  window.__pointerMoveRemoves = 0;
-  const add = window.addEventListener.bind(window);
-  const remove = window.removeEventListener.bind(window);
-  window.addEventListener = (type, ...rest) => {
-    if (type === 'pointermove') window.__pointerMoveAdds++;
-    return add(type, ...rest);
-  };
-  window.removeEventListener = (type, ...rest) => {
-    if (type === 'pointermove') window.__pointerMoveRemoves++;
-    return remove(type, ...rest);
-  };
-
   window.__deep = (sel, root = document) => {
     for (const el of root.querySelectorAll(sel)) return el;
     for (const el of root.querySelectorAll('*')) {
@@ -136,8 +123,8 @@ export async function createHarness() {
     const files = new Set();
 
     /* 先落到站点再挂监听：有些套件开头直接 goTop / goHash（假定页面已经在站点上）。
-       这次加载刻意不算进 problems —— 01 号套件断言 problems.length === 0，
-       它量的是自己那次 visit，不是这一跳。
+       这次加载刻意不算进 problems —— 每条套件量的是自己那次 visit，不是这一跳
+       （跑器在套件收尾时统一补一条「这一页没有 404 / 报错」）。
        录制地图时再多等一步 networkidle：落地这一跳的**后续懒加载**（路由页、<l-m> 拉的组件）
        不该算成「套件碰过的文件」，否则 node-only 套件会按调度随机沾上一堆噪声。 */
     await page.goto(`${BASE}/index.html`, { waitUntil: 'load' }).catch(() => {});
@@ -182,7 +169,7 @@ export async function createHarness() {
     }
 
     /* 路由就绪 = 顶栏入口已经渲染出来（layout 的 ready 跑完）。冷启动时 ofa.js 还在从 CDN 下来，
-       这之前点顶栏、改 hash 都是空操作 —— 筛着单跑某条站点套件就会踩到（没有前面的套件把它带热）。
+       这之前点顶栏、改 hash 都是空操作 —— 单跑某个套件时就会踩到（没有别的套件把它带热）。
        ⚠️ 数量以 docs/site-map.js 的 TOPBAR 为准，别写死数字：2026-09 顶栏从 5 条收成 3 条，
        写死的那版就一直等满 10s 然后被 .catch 静默吞掉（守卫等于失效，还白等 10 秒）。 */
     const routerReady = (target = page) =>

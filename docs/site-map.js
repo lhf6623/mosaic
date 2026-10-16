@@ -466,7 +466,7 @@ export const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/packages/RE
 export const TOPBAR = NAV.filter((entry) => entry.hidden !== true);
 
 /* 子树里第一个有页面的条目（按左栏顺序，跳过 hidden）—— 分区自己没落地页时，顶栏入口落到这里。
- * ⚠️ **不能**把子节点的 path 直接抄到分区上：那会造出重复路由（10 号套件明令禁止），而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
+ * ⚠️ **不能**把子节点的 path 直接抄到分区上：那会造出重复路由，而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
  */
 /**
  * @param {NavNode} node

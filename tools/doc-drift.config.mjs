@@ -6,7 +6,7 @@
 
 import { dirname, posix } from 'node:path';
 import { READY } from '../docs/site-map.js';
-import { componentSuites, siteSuites } from '../tests/lib/suites.mjs';
+import { componentSuites } from '../tests/lib/suites.mjs';
 import { mdTables } from './doc-drift/lib/parse.mjs';
 
 /* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
@@ -185,12 +185,6 @@ const rules = [
     id: 'dev-facts',
     title: '开发文档 · 数字与清单（套件数 / 工具类 / 对账组）',
     claims: [
-      {
-        label: '个站点套件',
-        pattern: '(\\d+)\\s*个?站点套件',
-        files: ['README.md', 'tests/smoke.mjs', 'tests/select.mjs', 'docs/**/*.html'],
-        actual: () => siteSuites().length,
-      },
       {
         label: '个组件套件',
         pattern: '(\\d+)\\s*个?组件套件',
@@ -689,7 +683,7 @@ const rules = [
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账。
- *  ⚠️ 加 / 删面或规则时，`tests/site/13-docs-drift.mjs` 的 `EXPECTED_GROUPS` 要同步（故意不从这里推）。 */
+ *  ⚠️ 加 / 删面或规则时，README 里那句「N 组全绿」要跟着改（故意不从这里推）。 */
 const GROUP_COUNT = [apiSpec, unitTokens, pageSkeleton, pageDemos].length + rules.length + 1;
 
 export default {

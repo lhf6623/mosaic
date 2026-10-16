@@ -2,6 +2,8 @@
   <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（options 的 current）。
   整包数据交给 mc-menu 的 `options`（行由组件自己渲染），这里不再手写菜单项；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
   ⚠️ 路由变化整包换 options：菜单会重建列表（一栏就几十行，换来的是单一渲染源）—— 改这里时请手动验一次；mc-menu / mc-scroll-bar 由外壳 docs/layout.html 统一 <l-m> 进来。
+  两种模式：默认渲染**当前分区**（左栏、几十行）；`full` 渲染**整棵树**（窄屏浮层的「全部菜单」，
+  顶层分区是可开合的行 + 手风琴，当前这一支默认展开）—— 两种模式只差喂给 mc-menu 的 options。
   换页后把当前页那一条**滚到这一栏的竖直中间**（centerCurrent）：一栏装的是整棵导航树，不居中就得自己翻。
 -->
 <template component>
@@ -41,7 +43,7 @@
   </mc-scroll-bar>
 
   <script>
-    import { displayName, menuOf, hasPage, SPEC_URL } from '../site-map.js';
+    import { displayName, menuOf, hasPage, SPEC_URL, TOPBAR } from '../site-map.js';
     import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
@@ -62,7 +64,8 @@
       };
     };
 
-    /** 左栏的行：分组节点 → 带 children 的 group（标题 + 组内条目常显、缩进一档）；其余就是一条链接 */
+    /** 一个分区的行：分组节点 → 带 children 的 group（标题 + 组内条目常显、缩进一档）；其余就是一条链接。
+        左栏用它渲染**当前分区**，窄屏「全部菜单」用它渲染每个分区那一支。 */
     const optionsOf = (entry, current) =>
       menuOf(entry).map((node) =>
         node.children
@@ -70,6 +73,21 @@
               type: 'group',
               label: displayName(node),
               children: node.children.map((page) => optionOf(page, current)),
+            }
+          : optionOf(node, current),
+      );
+
+    /** 全部菜单（窄屏浮层）的顶层：整棵树，顶层分区是可开合的行、**当前这一支默认展开**（配 mc-menu 的
+        accordion，同层只开一支）；子树沿用 optionsOf —— 与左栏同一套渲染，两种模式只差「喂什么数据」。
+        展开认 label 不认对象：TOPBAR 里的顶层节点和 routeState 的 entry 是同一批对象，但这里刻意不靠它，
+        免得以后哪一步做了拷贝就静默失效（顶层 label 唯一）。 */
+    const fullOptionsOf = (current, entry) =>
+      TOPBAR.map((node) =>
+        node.children
+          ? {
+              label: displayName(node),
+              expanded: entry ? node.label === entry.label : false,
+              children: optionsOf(node, current),
             }
           : optionOf(node, current),
       );
@@ -82,6 +100,10 @@
       ready() {
         this._menu = this.ele.shadowRoot.querySelector('#nav-menu');
         this._bar = this.ele.shadowRoot.querySelector('mc-scroll-bar');
+        /* 窄屏浮层那份用 full 模式：整棵树 + 手风琴（同层只开一支，当前分区默认展开）。
+           模式是外壳在标记上写死的（<doc-nav full>），读一次就够。 */
+        this._full = this.ele.hasAttribute('full');
+        if (this._full) this._menu.setAttribute('accordion', '');
         /* 行是 mc-menu 自己渲染的（它可能晚于 doc-nav 升级完），所以居中的**时机**就认它的子节点：
            一落 DOM 就重新居中。不用赌「options 写下去那一拍行已经在了」—— 换页整包换 options 也走这条。
            MutationObserver 的回调在渲染完成后跑，读几何前不必再等帧。 */
@@ -114,7 +136,12 @@
         renderRows() {
           /* ⚠️ 别再调一次 locate()：routeState() 里已经是它算好的结果（entry = 当前页所在分区，node = 当前页自己） */
           const { path: current, entry } = routeState();
-          this._menu.options = entry ? optionsOf(entry, current) : [];
+          /* full 模式（窄屏浮层）喂整棵树，其余喂当前分区 —— 两种模式只有这一处差别 */
+          this._menu.options = this._full
+            ? fullOptionsOf(current, entry)
+            : entry
+              ? optionsOf(entry, current)
+              : [];
         },
 
         /** 这一栏真正的滚动视口：滚的是 mc-scroll-bar 里的 viewport，宿主 <doc-nav> 自己不滚 */

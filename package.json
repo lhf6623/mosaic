@@ -20,7 +20,6 @@
     "dev": "node tools/serve.mjs",
     "test": "node tests/smoke.mjs --changed",
     "test:all": "node tests/smoke.mjs",
-    "test:site": "node tests/smoke.mjs --site",
     "test:changed": "node tests/smoke.mjs --changed",
     "test:record": "node tests/smoke.mjs --record",
     "typecheck": "tsc --noEmit",

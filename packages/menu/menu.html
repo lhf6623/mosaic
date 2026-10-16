@@ -375,6 +375,9 @@
             /* 内联模式：子菜单挂在行后面，靠 hidden 开合 */
             if (!this.flyoutChildren()) {
               sub.setAttribute('hidden', '');
+              /* options 里写 expanded: true 的父级行开场就是展开的（窄屏「全部菜单」用当前分区那一条）。
+                 手风琴下同层只留一个：多个 expanded 时后面的赢 —— 与手动点开的规则完全一致。 */
+              if (data.expanded === true) this.openSub(pair);
               return [el, sub];
             }
 

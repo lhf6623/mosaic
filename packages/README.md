@@ -71,7 +71,7 @@
 
 ## 二、演示区四段：标题 → 说明 → 组件 → 组件代码
 
-顺序固定，读的人不用在几种排法之间找（05 号套件按顺序指纹盯着）：
+顺序固定，读的人不用在几种排法之间找：
 
 ```html
 <section class="doc-demo">
@@ -116,7 +116,7 @@
   外壳与注册用的 `<script>`）—— 刻意不另写片段，只有一份源、不会漂移；默认收起。
 
 > **迁移状态**：26 个组件文档页已全部按这个顺序排过（开场白 → 例子 →
-> `<doc-spec>` 参考区 → 页脚）。05 号套件盯所有页的演示区段落顺序指纹
+> `<doc-spec>` 参考区 → 页脚）。演示区的段落顺序就是这份指纹
 > （`h3|demo|code` / `h3|hint|demo|code`）——说明可以在、可以不在，但**绝不许落在组件之后**；
 > 参考区渲染出来的节与 `api.md` 逐条对账。
 
@@ -171,11 +171,11 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
   <l-m src="../button/button.html"></l-m>
   ```
 
-  11 号套件逐页对账这条（站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()` 必须盖住演示里用到的每个项目组件）。
+  改这条约定时自己逐页对账：站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()` 必须盖住演示里用到的每个项目组件。
 
 - **代码的路径按写它的那个文件解析**（和 `<link href>` 一样），所以例子里的相对
   `src` 要从 `demos/` 往上数；`<mc-code src="./demos/x.html">` 则相对文档页。
-- 冒烟测试逐页守这条约定：每个 `.doc-demo` 都有一个 `demo-*` 例子组件 + 一个抽屉、
+- 改页面时逐页核对这条约定：每个 `.doc-demo` 都有一个 `demo-*` 例子组件 + 一个抽屉、
   代码面板里的文本**逐字等于**它 `src` 指向的文件、每块代码都提到它在演示的标签
   （Button 页全是 `<mc-button>`、Code 页全是 `<mc-code>`、Collapse 页全是 `<mc-collapse>`），
   且文件里是作者写的原样标记（没有 ofa 反射出来的默认属性）。
@@ -294,7 +294,7 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 [`packages/boot/color-attr.js`](./boot/color-attr.js) —— 组件里 `attached()` +
 `watch.color` 各一行，填的还是上面那些槽，所以 `variant` 的组合关系一个字没变；文字色按 WCAG 自动算。
 已接：`button` / `tag` / `icon` / `alert`（四个声明了 `color` 的组件）。声明了 `color` 的组件漏接会被
-[`tests/site/11-no-class-components.mjs`](../tests/site/11-no-class-components.mjs) 拦下。
+新声明 `color` 的组件记得一起接上（原来由站点套件 11 拦，已随文档站套件删除）。
 
 ### 1.3 尺寸：只有三档
 

@@ -4,12 +4,12 @@
  *
  * 用法（先起 `pnpm dev`）：
  *   pnpm test                默认：只跑**本次改动**命中的套件（选测中间层，见 tests/select.mjs）；
- *                            工作区干净时转全量 —— 干净多半是「刚提交、要收尾」，那时静默只跑
- *                            两个 node-only 守卫是这套机制唯一危险的失效方向
+ *                            工作区干净时转全量 —— 干净多半是「刚提交、要收尾」，
+ *                            静默跳过的漏测是这套机制唯一危险的失效方向
  *                            ⚠️ 所以别在干净工作区上跑裸 `pnpm test`（等于自己起了全量）：
  *                            除非对方明确要求，要验就带筛选（`pnpm test popover`）
  *   pnpm test origin/main    跟某个 ref 比（提交之后想验自己这批就用这条；显式 ref 照常选测）
- *   pnpm test:all            全量：8 个站点套件 + 每个 READY 组件的套件（**只在明确要求时**跑这条）
+ *   pnpm test:all            全量：每个 READY 组件的套件（**只在明确要求时**跑这条）
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）
  *   node tests/smoke.mjs --jobs 6        临时加大并行度（可用 JOBS=6 代替）
  *   pnpm test --list         只列出会跑哪些套件（可与其它参数组合预览），不启动浏览器
@@ -18,12 +18,10 @@
  *                                        = 只跑并只重录这些套件、其余条目合并保留（新增组件时用这条，
  *                                        收尾从一次全量降成一次单套件）。两种都忽略 --changed
  *                                        例：`node tests/smoke.mjs popover --record`
- *   node tests/smoke.mjs --site          只跑站点套件
- *   node tests/smoke.mjs --site nav      只跑站点套件里匹配 "nav" 的（04 / 10）——
- *                                        位置参数同时按「套件文件 / 标签是否包含它」过滤；
- *                                        一个站点套件都没匹配上时退回「站点全部 + 该组件」，保住
- *                                        `--site button` 这种老用法
- *   node tests/smoke.mjs menu            只跑 menu 组件套件；`menu --site` 就是它还加站点套件
+ *   node tests/smoke.mjs menu            只跑 menu 组件套件（位置参数就是组件 slug，可给多个）
+ *
+ * ⚠️ 文档站（docs/）那批套件已按「站点定型、不再大改」的取舍整体删掉 —— 连同 --site 与选测守卫。
+ *    需要时从 git 历史里取回（提交信息里能搜到 #site）。
  *
  * 并行模型：一个套件 = 一个 page，都挂在同一个 browser context 上（CDN 缓存共享，只下一次）。
  * 套件之间没有顺序依赖，所以输出按**完成顺序**成块打印，收尾再给一张按定义顺序的用时表。
@@ -60,7 +58,7 @@ const takeValue = (...names) => {
 
 const onlyList = takeFlag('--list');
 const record = takeFlag('--record');
-if (record) process.env.MOSAIC_RECORD = '1'; // 让 12 号守卫知道「地图马上就要重录，别对账」
+if (record) process.env.MOSAIC_RECORD = '1'; // 录地图时告诉 harness：这一轮别做对账
 const jobsRaw = takeValue('--jobs', '-j') ?? process.env.JOBS;
 const jobs = Math.max(1, Math.min(8, Number.parseInt(jobsRaw ?? '', 10) || defaultJobs()));
 
@@ -73,28 +71,12 @@ if (changedAt > -1) {
   argv.splice(changedAt, changedRef === 'HEAD' && next === undefined ? 1 : 2);
 }
 
-// --site 只跑站点；同时给了 slug 就两边都跑
+/* 位置参数是组件 slug（可给多个；不给就是全部）。`--site` 那套随文档站套件一起删了。 */
 const positional = argv.filter((a) => !a.startsWith('-'));
 const wanted = positional;
-const onlySite = argv.includes('--site') && wanted.length === 0;
-const includeSite = argv.includes('--site') || wanted.length === 0;
-const includeComponents = !onlySite;
 
 const all = allSuites();
-
-/* 位置参数先当站点套件过滤（套件路径或标签包含它就留下）。一个都没命中时说明给的是组件 slug，
-   按老规矩跑全部站点 —— 于是 `--site button` 仍是「站点全部 + button 组件套件」。 */
-const pickedSite = wanted.length
-  ? all.filter((s) => s.kind === 'site' && wanted.some((w) => s.path.includes(w) || s.label.includes(w)))
-  : all.filter((s) => s.kind === 'site');
-
-let suites = [];
-if (includeSite) suites.push(...(pickedSite.length ? pickedSite : all.filter((s) => s.kind === 'site')));
-if (includeComponents) {
-  suites.push(
-    ...all.filter((s) => s.kind === 'component' && (!wanted.length || wanted.includes(s.slug))),
-  );
-}
+let suites = all.filter((s) => !wanted.length || wanted.includes(s.slug));
 
 /* 录制：没给过滤就是整份重录（跑全量）；给了过滤就**只录这些套件、其余条目合并保留** ——
    新增一个组件时，收尾从「一次全量」降到「一次单套件」。见下面写地图那段。 */
@@ -108,8 +90,8 @@ if (changedRef !== undefined && !record) {
     console.log(`\n\x1b[33m取不到 git 改动（ref=${changedRef}）→ 全量\x1b[0m`);
   } else if (!changed.length && changedRef === 'HEAD') {
     /* 隐式 --changed（`pnpm test` 的默认）+ 工作区干净：无从判断你在测什么。
-       这时按**全量**走 —— 干净的工作区通常就是「刚提交、准备收尾」，而要是只跑两个
-       node-only 守卫，漏测是静默的（这套机制唯一危险的失效方向）。
+       这时按**全量**走 —— 干净的工作区通常就是「刚提交、准备收尾」，静默跳过是
+       这套机制唯一危险的失效方向。
        只想验自己这批提交：`pnpm test origin/main`（显式 ref 照常选测）。 */
     console.log(
       `\n\x1b[1m▌选测\x1b[0m \x1b[2m工作区干净 → 全量（想跟分支比：pnpm test origin/main）\x1b[0m`,
@@ -159,9 +141,8 @@ if (!suites.length) {
   }
   console.error(
     `\n没有匹配的套件：${process.argv.slice(2).join(' ') || '(空)'}\n` +
-      `  站点套件：${all.filter((s) => s.kind === 'site').map((s) => s.path.replace('tests/site/', '').replace('.mjs', '')).join(' / ')}\n` +
-      `  组件套件：${all.filter((s) => s.kind === 'component').map((s) => s.slug).join(' / ')}\n` +
-      `  例：--site nav · --site 10 · menu · --changed\n`,
+      `  组件套件：${all.map((s) => s.slug).join(' / ')}\n` +
+      `  例：menu · input · --changed · --list\n`,
   );
   process.exit(1);
 }
@@ -260,13 +241,11 @@ const worker = async () => {
        只在**出问题**时补一条失败，全绿时不占断言数（汇总仍在轮末打印）。
 
        ⚠️ **跨组件的公共契约到此为止，别再加一层浏览器契约套件**。理由（2026-09 实测）：
-         · 剩下的公共面在 node-only 那边 —— tests/site/13-docs-drift.mjs 把 api.md / 令牌表 /
-           插槽 part 与组件代码对账，tests/site/11-no-class-components.mjs 守组件的写法不变量；
          · 浏览器里的断言按「归一化后同形」统计，跨套件重复的只有 9%（32 条），其中 17 条
            就是这条「无 404」（已上移），其余 343 条是组件特有行为（badge 的 max 截断、
            tabs 的 Home/End、dialog 的焦点陷阱…），**没有可收的**；
-         · 而「每页各跑一遍」的公共套件，成本等于已删的 05 号（走 26 个文档页要 62s），
-           为几条断言付这个时间不划算 —— 这也是它被删掉的原因之一。
+         · 「每页各跑一遍」的公共套件成本极高（曾经那条走 26 个文档页要 62s），为几条断言
+           付这个时间不划算 —— 文档站那批套件就是这么整体删掉的。
        将来若真要做，正确形态是一张**最小夹具页**（一页同时挂 N 个组件、不经外壳 + 路由 +
        三栏 + doc-spec，估计 3~5s），那顺带还能让组件套件摆脱对站点的依赖。 */
     if (tally.problems.length) {
@@ -295,7 +274,7 @@ if (record) {
   map.suites ??= {};
   for (const o of outcomes) {
     /* 三部分：真正请求过的文件 + 套件文件自己 + **静态 import 闭包**
-       （node-only 套件不请求 HTTP，它们 import 的 site-map.js / select.mjs 只能这样进地图） */
+       （静态 import 进来的模块不吃 HTTP，只能这样进地图） */
     map.suites[o.path] = [...new Set([...o.files, o.path, ...importClosure(o.path)])].sort();
   }
   /* byFile 是 suites 的反查索引，**整份重建**（部分录制时旧条目也一起参与重建） */
@@ -343,7 +322,7 @@ if (problems.length) {
   const uniq = [...new Set(problems)];
   console.log(
     `\n\x1b[2m（各套件 page 上累积了 ${problems.length} 条 console/HTTP 问题、去重后 ${uniq.length} 条；` +
-      `首页那几条由第 1 个套件断言，其余仅供参考）\x1b[0m`,
+      `仅供参考）\x1b[0m`,
   );
   for (const p of uniq.slice(0, 5)) console.log(`\x1b[2m  ${p}\x1b[0m`);
   if (uniq.length > 5) console.log(`\x1b[2m  …还有 ${uniq.length - 5} 条\x1b[0m`);

@@ -1,208 +1,6 @@
 {
   "version": 1,
   "suites": {
-    "tests/site/01-load-shell.mjs": [
-      "app-config.js",
-      "docs/adopt-styles.js",
-      "docs/components/block-field.html",
-      "docs/components/nav.html",
-      "docs/components/palette.html",
-      "docs/components/search.html",
-      "docs/components/spec.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/fonts/archivo-var-latin.woff2",
-      "docs/fonts/fonts.css",
-      "docs/fonts/plex-400-latin.woff2",
-      "docs/fonts/plex-500-latin.woff2",
-      "docs/layout.html",
-      "docs/lib/md-spec.mjs",
-      "docs/pages/faq.html",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/color-attr.js",
-      "packages/boot/color-math.js",
-      "packages/boot/component-base.css",
-      "packages/boot/mosaic.css",
-      "packages/boot/scroll-pin.js",
-      "packages/boot/shadow-base.css",
-      "packages/button/api.md",
-      "packages/button/button.html",
-      "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
-      "packages/button/demos/hex.html",
-      "packages/button/demos/inline.html",
-      "packages/button/demos/override.html",
-      "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
-      "packages/button/demos/states.html",
-      "packages/button/demos/type.html",
-      "packages/button/demos/variants.html",
-      "packages/button/page.html",
-      "packages/code/api.md",
-      "packages/code/code.html",
-      "packages/code/demos/attribute.html",
-      "packages/code/demos/basic.html",
-      "packages/code/demos/binding.html",
-      "packages/code/demos/box-model.html",
-      "packages/code/demos/highlight-demo.js",
-      "packages/code/demos/hljs-base.html",
-      "packages/code/demos/line-numbers.html",
-      "packages/code/demos/markup.html",
-      "packages/code/demos/max-height.html",
-      "packages/code/demos/part.html",
-      "packages/code/demos/runtime.html",
-      "packages/code/demos/soft-wrap.html",
-      "packages/code/demos/src.html",
-      "packages/code/demos/theme.html",
-      "packages/code/page.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/dropdown/dropdown.html",
-      "packages/form/form-item.html",
-      "packages/form/form.html",
-      "packages/icon/icon.html",
-      "packages/icon/icons.generated.css",
-      "packages/input/input.html",
-      "packages/loading-bar/loading-bar.html",
-      "packages/loading-bar/loading-bar.js",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/popover/popover.html",
-      "packages/scroll-bar/scroll-bar.html",
-      "packages/switch/api.md",
-      "packages/switch/demos/basic.html",
-      "packages/switch/demos/custom-value.html",
-      "packages/switch/demos/disabled.html",
-      "packages/switch/demos/events.html",
-      "packages/switch/demos/part.html",
-      "packages/switch/demos/sizes.html",
-      "packages/switch/page.html",
-      "packages/switch/switch.html",
-      "tests/site/01-load-shell.mjs"
-    ],
-    "tests/site/06-boot-palette.mjs": [
-      "app-config.js",
-      "docs/adopt-styles.js",
-      "docs/components/nav.html",
-      "docs/components/palette.html",
-      "docs/components/spec.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/lib/md-spec.mjs",
-      "docs/pages/intro.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/boot/color-attr.js",
-      "packages/boot/color-math.js",
-      "packages/boot/component-base.css",
-      "packages/boot/mosaic.css",
-      "packages/boot/scroll-pin.js",
-      "packages/boot/shadow-base.css",
-      "packages/boot/tone.js",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/color/page.html",
-      "packages/color/tokens.css",
-      "packages/dropdown/dropdown.html",
-      "packages/icon/icon.html",
-      "packages/icon/icons.generated.css",
-      "packages/loading-bar/loading-bar.js",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/popover/popover.html",
-      "packages/scroll-bar/scroll-bar.html",
-      "packages/tag/tag.html",
-      "tests/site/06-boot-palette.mjs"
-    ],
-    "tests/site/07-inject-server.mjs": [
-      "app-config.js",
-      "docs/adopt-styles.js",
-      "docs/components/nav.html",
-      "docs/components/palette.html",
-      "docs/components/poster.html",
-      "docs/components/spec.html",
-      "docs/components/toc.html",
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/layout.html",
-      "docs/lib/md-spec.mjs",
-      "docs/pages/home.html",
-      "docs/routes.js",
-      "docs/shell.css",
-      "docs/site-map.js",
-      "docs/state/route.js",
-      "docs/theme-boot.js",
-      "index.html",
-      "packages/alert/alert.html",
-      "packages/alert/api.md",
-      "packages/alert/demos/closable.html",
-      "packages/alert/demos/colors.html",
-      "packages/alert/demos/customize.html",
-      "packages/alert/demos/events.html",
-      "packages/alert/demos/heading.html",
-      "packages/alert/demos/hex.html",
-      "packages/alert/demos/icon-custom.html",
-      "packages/alert/demos/icon.html",
-      "packages/alert/demos/part.html",
-      "packages/alert/demos/variants.html",
-      "packages/alert/page.html",
-      "packages/boot/color-attr.js",
-      "packages/boot/color-math.js",
-      "packages/boot/component-base.css",
-      "packages/boot/mosaic.css",
-      "packages/boot/scroll-pin.js",
-      "packages/boot/shadow-base.css",
-      "packages/button/button.html",
-      "packages/code/code.html",
-      "packages/collapse/collapse-item.html",
-      "packages/collapse/collapse.html",
-      "packages/dropdown/dropdown.html",
-      "packages/icon/icon.html",
-      "packages/icon/icons.generated.css",
-      "packages/loading-bar/loading-bar.js",
-      "packages/menu/menu-item.html",
-      "packages/menu/menu.html",
-      "packages/popover/popover.html",
-      "packages/scroll-bar/scroll-bar.html",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "tests/site/10-nav-data.mjs": [
-      "docs/site-map.js",
-      "tests/site/10-nav-data.mjs"
-    ],
-    "tests/site/11-no-class-components.mjs": [
-      "docs/site-map.js",
-      "tests/site/11-no-class-components.mjs"
-    ],
-    "tests/site/12-affected.mjs": [
-      "docs/site-map.js",
-      "tests/lib/suites.mjs",
-      "tests/select.mjs",
-      "tests/site/12-affected.mjs"
-    ],
-    "tests/site/13-docs-drift.mjs": [
-      "docs/site-map.js",
-      "tests/lib/suites.mjs",
-      "tests/site/13-docs-drift.mjs",
-      "tools/doc-drift.config.mjs",
-      "tools/doc-drift/drift.mjs",
-      "tools/doc-drift/lib/parse.mjs",
-      "tools/doc-drift/lib/version.mjs"
-    ],
     "packages/button/test/button.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
@@ -1722,36 +1520,6 @@
       "packages/select/select.html",
       "packages/switch/switch.html",
       "packages/textarea/textarea.html"
-    ],
-    "tests/site/02-search.mjs": [
-      "docs/content.css",
-      "docs/doc-layout.html",
-      "docs/fonts/plex-400-latin.woff2",
-      "docs/fonts/plex-500-latin.woff2",
-      "docs/pages/install.html",
-      "docs/snippets/quick-start.html",
-      "packages/boot/component-base.css",
-      "packages/button/api.md",
-      "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
-      "packages/button/demos/hex.html",
-      "packages/button/demos/inline.html",
-      "packages/button/demos/override.html",
-      "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
-      "packages/button/demos/states.html",
-      "packages/button/demos/type.html",
-      "packages/button/demos/variants.html",
-      "packages/button/page.html",
-      "packages/icon/icons.generated.css",
-      "packages/scroll-bar/api.md",
-      "packages/scroll-bar/demos/always-visible.html",
-      "packages/scroll-bar/demos/basic.html",
-      "packages/scroll-bar/demos/customize.html",
-      "packages/scroll-bar/demos/events.html",
-      "packages/scroll-bar/demos/horizontal.html",
-      "packages/scroll-bar/page.html",
-      "tests/site/02-search.mjs"
     ]
   },
   "byFile": {
@@ -1786,10 +1554,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/adopt-styles.js": [
       "packages/alert/test/alert.test.mjs",
@@ -1822,13 +1587,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "docs/components/block-field.html": [
-      "tests/site/01-load-shell.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
@@ -1861,10 +1620,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/components/palette.html": [
       "packages/alert/test/alert.test.mjs",
@@ -1897,20 +1653,13 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/components/poster.html": [
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
-      "packages/popover/test/popover.test.mjs",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "docs/components/search.html": [
-      "tests/site/01-load-shell.mjs"
+      "packages/popover/test/popover.test.mjs"
     ],
     "docs/components/spec.html": [
       "packages/alert/test/alert.test.mjs",
@@ -1943,10 +1692,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/components/toc.html": [
       "packages/alert/test/alert.test.mjs",
@@ -1979,10 +1725,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/content.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2015,11 +1758,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/doc-layout.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2052,11 +1791,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/fonts/archivo-var-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
@@ -2065,8 +1800,7 @@
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/switch/test/switch.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/textarea/test/textarea.test.mjs"
     ],
     "docs/fonts/fonts.css": [
       "packages/checkbox/test/checkbox.test.mjs",
@@ -2075,8 +1809,7 @@
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/switch/test/switch.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/textarea/test/textarea.test.mjs"
     ],
     "docs/fonts/plex-400-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
@@ -2085,9 +1818,7 @@
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/switch/test/switch.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/textarea/test/textarea.test.mjs"
     ],
     "docs/fonts/plex-500-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
@@ -2096,9 +1827,7 @@
       "packages/radio/test/radio.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/switch/test/switch.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/textarea/test/textarea.test.mjs"
     ],
     "docs/layout.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2131,10 +1860,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/lib/md-spec.mjs": [
       "packages/alert/test/alert.test.mjs",
@@ -2167,13 +1893,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "docs/pages/faq.html": [
-      "tests/site/01-load-shell.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/pages/guide.html": [
       "packages/code/test/code.test.mjs"
@@ -2182,15 +1902,7 @@
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
-      "packages/popover/test/popover.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "docs/pages/install.html": [
-      "tests/site/02-search.mjs"
-    ],
-    "docs/pages/intro.html": [
-      "tests/site/06-boot-palette.mjs"
+      "packages/popover/test/popover.test.mjs"
     ],
     "docs/routes.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2223,10 +1935,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/shell.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2259,10 +1968,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/site-map.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2295,18 +2001,10 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs",
-      "tests/site/10-nav-data.mjs",
-      "tests/site/11-no-class-components.mjs",
-      "tests/site/12-affected.mjs",
-      "tests/site/13-docs-drift.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/snippets/quick-start.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "docs/state/route.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2339,10 +2037,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/theme-boot.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2375,10 +2070,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "index.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2411,62 +2103,46 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/alert/alert.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/api.md": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/closable.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/colors.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/customize.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/events.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/heading.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/hex.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/icon-custom.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/icon.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/part.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/demos/variants.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/page.html": [
-      "packages/alert/test/alert.test.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/alert/test/alert.test.mjs"
     ],
     "packages/alert/test/alert.test.mjs": [
       "packages/alert/test/alert.test.mjs"
@@ -2535,10 +2211,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/boot/color-math.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2571,10 +2244,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/boot/component-base.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2607,11 +2277,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2644,10 +2310,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/boot/scroll-pin.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2680,10 +2343,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/boot/shadow-base.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2716,13 +2376,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
-    ],
-    "packages/boot/tone.js": [
-      "tests/site/06-boot-palette.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/breadcrumb/api.md": [
       "packages/breadcrumb/test/breadcrumb.test.mjs"
@@ -2757,9 +2411,7 @@
     "packages/button/api.md": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/button.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -2777,86 +2429,62 @@
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs",
       "packages/table/test/table.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/colors.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/hex.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/inline.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/override.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/sizes.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/slots.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/states.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/type.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/variants.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/page.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/test/button.test.mjs": [
       "packages/button/test/button.test.mjs"
@@ -2929,8 +2557,7 @@
       "packages/checkbox/test/checkbox.test.mjs"
     ],
     "packages/code/api.md": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/code.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2963,70 +2590,52 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/code/demos/attribute.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/basic.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/binding.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/box-model.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/highlight-demo.js": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/hljs-base.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/line-numbers.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/markup.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/max-height.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/part.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/runtime.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/soft-wrap.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/src.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/theme.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/page.html": [
-      "packages/code/test/code.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/code/test/code.test.mjs"
     ],
     "packages/code/test/code.test.mjs": [
       "packages/code/test/code.test.mjs"
@@ -3065,10 +2674,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/collapse/collapse.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3101,10 +2707,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/collapse/demos/accordion.html": [
       "packages/collapse/test/collapse.test.mjs"
@@ -3138,12 +2741,6 @@
     ],
     "packages/collapse/test/collapse.test.mjs": [
       "packages/collapse/test/collapse.test.mjs"
-    ],
-    "packages/color/page.html": [
-      "tests/site/06-boot-palette.mjs"
-    ],
-    "packages/color/tokens.css": [
-      "tests/site/06-boot-palette.mjs"
     ],
     "packages/dialog/api.md": [
       "packages/dialog/test/dialog.test.mjs"
@@ -3230,10 +2827,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/dropdown/page.html": [
       "packages/dropdown/test/dropdown.test.mjs"
@@ -3308,14 +2902,12 @@
     "packages/form/form-item.html": [
       "packages/checkbox/test/checkbox.test.mjs",
       "packages/form/test/form.test.mjs",
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/form/form.html": [
       "packages/checkbox/test/checkbox.test.mjs",
       "packages/form/test/form.test.mjs",
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/form/page.html": [
       "packages/form/test/form.test.mjs"
@@ -3422,10 +3014,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/icon/icons.generated.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3458,11 +3047,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/02-search.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/icon/page.html": [
       "packages/icon/test/icon.test.mjs"
@@ -3508,8 +3093,7 @@
     ],
     "packages/input/input.html": [
       "packages/form/test/form.test.mjs",
-      "packages/input/test/input.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/input/test/input.test.mjs"
     ],
     "packages/input/page.html": [
       "packages/input/test/input.test.mjs"
@@ -3539,8 +3123,7 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.html": [
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.js": [
       "packages/checkbox/test/checkbox.test.mjs",
@@ -3552,10 +3135,7 @@
       "packages/select/test/select.test.mjs",
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
-      "packages/textarea/test/textarea.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/textarea/test/textarea.test.mjs"
     ],
     "packages/loading-bar/page.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
@@ -3630,10 +3210,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/menu/menu.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3666,10 +3243,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/menu/page.html": [
       "packages/menu/test/menu.test.mjs"
@@ -3809,10 +3383,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/popover/test/popover.test.mjs": [
       "packages/popover/test/popover.test.mjs"
@@ -3886,32 +3457,25 @@
       "packages/radio/test/radio.test.mjs"
     ],
     "packages/scroll-bar/api.md": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/demos/always-visible.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/demos/basic.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/demos/customize.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/demos/events.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/demos/horizontal.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/page.html": [
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "tests/site/02-search.mjs"
+      "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
     "packages/scroll-bar/scroll-bar.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3944,10 +3508,7 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs",
-      "tests/site/01-load-shell.mjs",
-      "tests/site/06-boot-palette.mjs",
-      "tests/site/07-inject-server.mjs"
+      "packages/tooltip/test/tooltip.test.mjs"
     ],
     "packages/scroll-bar/test/scroll-bar.test.mjs": [
       "packages/scroll-bar/test/scroll-bar.test.mjs"
@@ -4019,41 +3580,32 @@
       "packages/spinner/test/spinner.test.mjs"
     ],
     "packages/switch/api.md": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/basic.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/custom-value.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/disabled.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/events.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/part.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/demos/sizes.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/page.html": [
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/switch.html": [
       "packages/form/test/form.test.mjs",
-      "packages/switch/test/switch.test.mjs",
-      "tests/site/01-load-shell.mjs"
+      "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [
       "packages/switch/test/switch.test.mjs"
@@ -4161,8 +3713,7 @@
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/tag/tag.html": [
-      "packages/tag/test/tag.test.mjs",
-      "tests/site/06-boot-palette.mjs"
+      "packages/tag/test/tag.test.mjs"
     ],
     "packages/tag/test/tag.test.mjs": [
       "packages/tag/test/tag.test.mjs"
@@ -4233,49 +3784,6 @@
     ],
     "tests/lib/harness.mjs": [
       "packages/code/test/code.test.mjs"
-    ],
-    "tests/lib/suites.mjs": [
-      "tests/site/12-affected.mjs",
-      "tests/site/13-docs-drift.mjs"
-    ],
-    "tests/select.mjs": [
-      "tests/site/12-affected.mjs"
-    ],
-    "tests/site/01-load-shell.mjs": [
-      "tests/site/01-load-shell.mjs"
-    ],
-    "tests/site/02-search.mjs": [
-      "tests/site/02-search.mjs"
-    ],
-    "tests/site/06-boot-palette.mjs": [
-      "tests/site/06-boot-palette.mjs"
-    ],
-    "tests/site/07-inject-server.mjs": [
-      "tests/site/07-inject-server.mjs"
-    ],
-    "tests/site/10-nav-data.mjs": [
-      "tests/site/10-nav-data.mjs"
-    ],
-    "tests/site/11-no-class-components.mjs": [
-      "tests/site/11-no-class-components.mjs"
-    ],
-    "tests/site/12-affected.mjs": [
-      "tests/site/12-affected.mjs"
-    ],
-    "tests/site/13-docs-drift.mjs": [
-      "tests/site/13-docs-drift.mjs"
-    ],
-    "tools/doc-drift.config.mjs": [
-      "tests/site/13-docs-drift.mjs"
-    ],
-    "tools/doc-drift/drift.mjs": [
-      "tests/site/13-docs-drift.mjs"
-    ],
-    "tools/doc-drift/lib/parse.mjs": [
-      "tests/site/13-docs-drift.mjs"
-    ],
-    "tools/doc-drift/lib/version.mjs": [
-      "tests/site/13-docs-drift.mjs"
     ]
   }
 }

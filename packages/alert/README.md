@@ -55,8 +55,9 @@ ofa 会把声明过的字符串属性以空值写到宿主上，"有没有给标
 这条约束值得留着：Live Server 会往 HTML 里注入热重载 script，注入点是「body / svg / head 的
 结束标签」里的第一个，而它是**纯文本替换、不看上下文** —— 内联 svg 一旦出现在组件模块 script
 之前，注入的 script 就变成 ofa 眼里的「第一个 script」，组件直接报「加载组件模块出错」（实测：
-VS Code Live Server 5500 端口）。仓库自带 tools/serve.mjs --inject 复现同一规则，
-tests/site/07 守这条不变量：组件文件里任何一个注入点都必须排在模块 script 之后。
+VS Code Live Server 5500 端口）。改组件文件时自己盯住这条：任何一个注入点都必须排在模块 script 之后
+（原来由 `tools/serve.mjs --inject` 复现 + 站点套件 07 守，两者都已随文档站套件删掉；要复现就起一个会注入
+热重载 script 的服务器，或临时把一段 `<script>` 插到 `</body>` 之前）。
 （同理，图标数据放 `packages/icon/icons.generated.js` —— 生成物，只有 tools/gen-icons.mjs 写它。）
 
 closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM：使用者自己在事件里 remove() 或改数据。

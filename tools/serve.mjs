@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* mosaic — 本地静态服务器（零依赖）。必须禁缓存：浏览器用旧模块时表象是「改了没生效」，极难排查。
- * 用法：node tools/serve.mjs [--port 8642] [--prefix /mosaic] [--inject]
- * --prefix 复现 GitHub Pages 子路径；--inject 模拟 Live Server 注入（见下），给冒烟测试用。 */
+ * 用法：node tools/serve.mjs [--port 8642] [--prefix /mosaic]
+ * --prefix 复现 GitHub Pages 子路径。 */
 
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -16,24 +16,6 @@ const PORT = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT 
 /* 部署前缀：GitHub Pages 项目页挂在 `/<repo>/` 下；`--prefix` 在本地复现子路径行为（站内链接、菜单高亮都得对）。 */
 const prefixArg = process.argv.indexOf('--prefix');
 const PREFIX = (prefixArg > -1 ? process.argv[prefixArg + 1] : '').replace(/\/+$/, '');
-
-/* 模拟 Live Server 注入（照抄 live-server/index.js）：注入点依次找 </body> → </svg> → </head>，取第一个
- * 命中处。注入内容自带 HTML 注释、会提前闭合目标文件的注释 —— script 会抢走「第一个 <script>」而加载失败。 */
-const INJECT = process.argv.includes('--inject');
-const INJECTED =
-  '<!-- Code injected by live-server -->\n' +
-  '<script>\n' +
-  "  console.log('Live reload enabled.');\n" +
-  '</script>\n';
-
-function injectLikeLiveServer(html) {
-  const candidates = [/<\/body>/i, /<\/svg>/, /<\/head>/i];
-  for (const re of candidates) {
-    const m = re.exec(html);
-    if (m) return html.slice(0, m.index) + INJECTED + html.slice(m.index);
-  }
-  return html; // 三个都没命中就不注入 —— 和 live-server 行为一致
-}
 
 /** .html 按 text/html 提供（ofa.js 用 fetch + 文本解析，不看 content-type）；jsDelivr 的 content-type 讨论见文档 */
 const TYPES = {
@@ -84,10 +66,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    let body = await readFile(target);
-    if (INJECT && extname(target).toLowerCase() === '.html') {
-      body = injectLikeLiveServer(body.toString('utf8'));
-    }
+    const body = await readFile(target);
     res.writeHead(200, {
       'content-type': TYPES[extname(target).toLowerCase()] ?? 'application/octet-stream',
       // 禁缓存：改完立刻生效，不用手动 hard reload

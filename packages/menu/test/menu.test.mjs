@@ -636,6 +636,48 @@ export default async function run({ page, visit, check }) {
     };
   })();
 
+  /* options 的 expanded：开场展开；手风琴下同层只留一个（同层多个 expanded 时后面的赢）。
+     单独再搭两个菜单跑：一个带 accordion、一个不带，免得搅乱上面那套共享探针状态。 */
+  const expandedOption = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const make = (accordion) => {
+      const menu = document.createElement('mc-menu');
+      if (accordion) menu.setAttribute('accordion', '');
+      menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
+      /* 挂载前赋的 property 走 _presetOptions 那条路（P31）：两行都声明 expanded，手风琴下应当只剩后一行开着 */
+      menu.options = [
+        { label: '甲', expanded: true, children: [{ label: '甲一', href: '#a' }] },
+        { label: '乙', expanded: true, children: [{ label: '乙一', href: '#b' }] },
+      ];
+      document.body.append(menu);
+      return menu;
+    };
+    const read = (menu) => ({
+      expandedRows: [...menu.querySelectorAll(':scope > mc-menu-item')].map((row) =>
+        row.hasAttribute('data-expanded'),
+      ),
+      hiddenSubs: [...menu.querySelectorAll(':scope > mc-menu')].map((sub) =>
+        sub.hasAttribute('hidden'),
+      ),
+    });
+    const accordion = make(true);
+    const plain = make(false);
+    await wait(400);
+    const out = { accordion: read(accordion), plain: read(plain) };
+    accordion.remove();
+    plain.remove();
+    return out;
+  });
+
+  check(
+    'options 的 expanded：父级行开场就展开；手风琴下同层只留一个（后面的赢）',
+    JSON.stringify(expandedOption.plain.expandedRows) === JSON.stringify([true, true]) &&
+      JSON.stringify(expandedOption.plain.hiddenSubs) === JSON.stringify([false, false]) &&
+      JSON.stringify(expandedOption.accordion.expandedRows) === JSON.stringify([false, true]) &&
+      JSON.stringify(expandedOption.accordion.hiddenSubs) === JSON.stringify([true, false]),
+    JSON.stringify(expandedOption),
+  );
+
   check(
     'mc-menu / mc-menu-item 注册并渲染出实例，容器开 part="list"',
     menu.basic.upgraded && menu.basic.items >= 40 && menu.basic.menus >= 8 && menu.basic.listPart === 'list',

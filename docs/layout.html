@@ -5,7 +5,7 @@
        所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。这里同时是**站点级行为**的归属地：
          · 换页复位：把 `.doc-main` 滚回顶部；· 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。 */
     import { hashOf, repoPathOf, route } from './routes.js';
-    import { TOPBAR, firstPageOf, locate, menuOf } from './site-map.js';
+    import { TOPBAR, firstPageOf, locate } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
     const THEME_KEY = 'mosaic-doc-theme';
@@ -47,7 +47,6 @@
         ...initialTheme(),
         menuOpen: false,
         narrowMenuOpen: false,
-        hasMenu: false,
         narrow: false,
         showMenu: false,
         links: [],
@@ -62,7 +61,7 @@
           return landing ? { path: landing, label: entry.label, current: null } : null;
         }).filter(Boolean);
         /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与 docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
-           ⚠️ 必须排在 syncMenuButton() **之前**：showMenu = hasMenu && narrow，而 narrow 是这里才有的；反过来窄屏全新加载时 narrow 还是初值 false，
+           ⚠️ 必须排在 syncShowMenu() **之前**：showMenu = narrow，而 narrow 是这里才有的；反过来窄屏全新加载时 narrow 还是初值 false，
            按钮就会「刷新后不见了，resize 一下又出来」。 */
         this._mq = window.matchMedia('(max-width: 52rem)');
         this.narrow = this._mq.matches;
@@ -80,7 +79,7 @@
         this._sysMQ.addEventListener('change', this._onSysMQ);
 
         this.syncTopNav();
-        this.syncMenuButton();
+        this.syncShowMenu();
 
         /* 侧栏滚到底后把滚轮接力给正文带。
            ⚠️ 不能用 event.target：跨了两层 shadow 之后它在 document 层被重定向成外层宿主（实测是 o-page），只能用 composedPath() 认 <doc-nav> / <doc-toc> */
@@ -114,10 +113,9 @@
         };
         document.addEventListener('click', this._onDocClick, true);
 
-        /* 路由变化：只改 links[i].current 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM，04 套件盯着这条），顺带把正文带滚回顶部 */
+        /* 路由变化：只改 links[i].current 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
-          this.syncMenuButton();
           this.hideNarrowMenu();
           this.resetScroll();
         });
@@ -195,16 +193,10 @@
           }
         },
 
-        /* 窄屏那颗菜单按钮露不露：看**当前分区有没有左栏菜单**（首页那种没有，就不该出现一个点开是空的浮层）。与宽度无关 —— 宽度由 CSS 的媒体查询管。 */
-        syncMenuButton() {
-          const entry = locate(routeState().path)?.entry ?? null;
-          this.hasMenu = entry ? menuOf(entry).length > 0 : false;
-          this.syncShowMenu();
-        },
-
-        /** 露不露那颗按钮 = 这一页有菜单 **且** 处在窄屏 */
+        /* 窄屏那颗菜单按钮露不露：浮层里是**全部菜单**（整棵导航树），任何页面都有内容 —— 所以只看宽度，
+           不再问「当前分区有没有菜单」（老口径下首页那颗按钮不出现，现在首页也要有）。 */
         syncShowMenu() {
-          this.showMenu = this.hasMenu && this.narrow;
+          this.showMenu = this.narrow;
         },
 
         /* 路由一变就把窄屏菜单收起来 —— 点条目本质就是导航，收在这里比在点击上判路径稳：
@@ -271,13 +263,25 @@
       background-color: var(--doc-frame-bg);
     }
 
+    /* 一级入口与搜索**同一组**：小屏时这一组只留下搜索（入口由右上角那颗菜单按钮的「全部菜单」承担），
+       两者一起进退 —— 顶栏变窄时不会先掉一个孤零零的入口。 */
+    .doc-top-main {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-5);
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
     .doc-top-nav {
       display: flex;
       align-items: center;
       /* 一级入口之间留一档：它们是无底无框的文字按钮，`--mc-space-1`（4px）时「首页 文档 组件」三个词会糊成一句，读起来像面包屑而不是三个可点入口 */
       gap: var(--mc-space-3);
       min-width: 0;
-      flex: 1 1 auto;
+      /* 不拉伸：让「三个入口 + 搜索」贴在一起成为一簇，右侧留白交给 .doc-top-actions 的 margin-left:auto。
+         顶栏真的放不下时它自己收窄 + 横向滚（min-width:0 + overflow-x）。 */
+      flex: 0 1 auto;
       overflow-x: auto;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
@@ -331,7 +335,7 @@
       text-decoration: none;
     }
 
-    /* 顶栏右侧的一对控件：仓库入口 + 主题切换，贴在一起 */
+    /* 顶栏右侧那一组：仓库入口 + 主题切换 + 窄屏菜单，贴在一起 */
     .doc-top-actions {
       margin-left: auto;
       flex: none;
@@ -340,9 +344,19 @@
       gap: var(--mc-space-2);
     }
 
-    /* 搜索框与旁边的图标控件都不参与 flex 伸缩：顶栏放不下时让 <nav> 收缩（它自己 overflow-x 滚）。
+    /* ⚠️ 那三颗必须落在同一条水平线上：mc-dropdown / mc-popover 是自定义元素，宿主默认 display:block，
+       而里面那颗 mc-button 是 inline 级 —— 不把宿主按 flex 居中，行盒的行距会全堆在按钮下面，
+       ☰ 的中心比 GitHub 图标高 2px（实测 25.5 vs 27.5）。 */
+    .doc-top-actions mc-dropdown,
+    .doc-top-actions mc-popover {
+      display: flex;
+      align-items: center;
+      flex: none;
+    }
+
+    /* 搜索框不参与 flex 伸缩：顶栏放不下时让 <nav> 收缩（它自己 overflow-x 滚）。
        搜索框不被压成零，它自己那条宽度跟着视口缩（见下面的 --doc-search-width）。 */
-    .doc-top-actions doc-search {
+    .doc-top-main doc-search {
       flex: none;
       /* 搜索框多宽：宽屏一档 13rem；窄屏跟着视口缩，下限 4.5rem（还能看清在打什么，输入本身会横向滚）。
          20rem ≈ 品牌 + 顶栏内边距 + 两组间距 + 右侧那三个图标控件 + 留给顶栏入口的一条；
@@ -352,6 +366,18 @@
       /* 搜索面板与输入框的间距：输入框在 3.5rem 高的顶栏里垂直居中，它下面还剩 0.875rem，
          用组件默认的 0.5rem 会让面板顶部压住顶栏下沿 6px。顶栏多高只有外壳知道，所以值由这里给。 */
       --doc-search-offset: var(--mc-space-4);
+    }
+
+    /* 小屏（与 docs/doc-layout.html 藏左栏同一条断点）：顶栏那三个一级入口让位 —— 它们由右上角菜单按钮的
+       「全部菜单」承担，搜索留在原位并吃掉让出来的宽度（17rem ≈ 品牌 + 右侧三颗控件 + 内边距与间距）。 */
+    @media (max-width: 52rem) {
+      .doc-top-nav {
+        display: none;
+      }
+
+      .doc-top-main doc-search {
+        --doc-search-width: clamp(4.5rem, calc(100vw - 17rem), 13rem);
+      }
     }
 
     .doc-github {
@@ -437,23 +463,26 @@
     <header class="doc-top">
       <a class="doc-brand" href="./pages/home.html" olink>Mosaic</a>
 
-      <!-- 一级菜单就是页面本身（入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
-      <nav class="doc-top-nav">
-        <!-- 入口是 mc-button（inline 形态），不是 <a>：导航改由 openEntry() 改 hash。
+      <!-- 一级入口 + 搜索同一组（小屏时入口让位、搜索留下，见 .doc-top-main）；一级菜单就是页面本身
+           （入口来自 TOPBAR，由 ready() 拼成 data.links 后交给模板）；二级菜单不在这里，哪个页面需要就自己放 <doc-nav> -->
+      <div class="doc-top-main">
+        <nav class="doc-top-nav">
+          <!-- 入口是 mc-button（inline 形态），不是 <a>：导航改由 openEntry() 改 hash。
              ⚠️ 这是**有意**放弃 href 的（中键 / 右键复制链接 / 状态栏预览都没有了），换来的是「顶栏每一处都由项目自己的组件渲染」；改回锚点前先看提交记录里的取舍。
              -->
-        <o-fill :value="links" fill-key="path">
-          <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path">
-            {{$data.label}}
-          </mc-button>
-        </o-fill>
-      </nav>
+          <o-fill :value="links" fill-key="path">
+            <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path">
+              {{$data.label}}
+            </mc-button>
+          </o-fill>
+        </nav>
 
-      <!-- 右侧一对控件：仓库入口 + 主题切换。GitHub 是**外链**（不用 olink / hashOf） -->
-      <div class="doc-top-actions">
         <!-- 搜索框：搜整个菜单（docs/components/search.html），选中即跳那一页 -->
         <doc-search></doc-search>
+      </div>
 
+      <!-- 右侧一组控件：仓库入口 + 主题切换 + 窄屏菜单。GitHub 是**外链**（不用 olink / hashOf） -->
+      <div class="doc-top-actions">
         <a
           class="doc-github"
           href="https://github.com/lhf6623/mosaic"
@@ -501,8 +530,9 @@
           </mc-menu-item>
         </mc-dropdown>
 
-        <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 管的是「这一页有没有菜单」—— 首页那种没有左栏的页面，不该出现一个点开是空的浮层。
-             面板里放的是**同一个 <doc-nav> 组件**：窄屏那份与左栏那份共用渲染与数据。 -->
+        <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 只看窄屏 ——
+             浮层里是**全部菜单**（整棵导航树），任何页面都有内容，首页也不例外。
+             面板里放的是**同一个 <doc-nav> 组件**，加 full：整棵树 + 手风琴，当前分区默认展开。 -->
         <o-if :value="showMenu">
           <mc-popover
             class="doc-menu"
@@ -513,7 +543,7 @@
               <mc-icon name="menu"></mc-icon>
             </mc-button>
             <div slot="panel" class="doc-menu-panel">
-              <doc-nav></doc-nav>
+              <doc-nav full></doc-nav>
             </div>
           </mc-popover>
         </o-if>

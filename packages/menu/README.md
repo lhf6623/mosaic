@@ -97,6 +97,10 @@ property 传数组 —— 和 `mc-table` 的 `columns` 同一条路：property �
 （`type: 'group'`）带 `children` → 标题不可交互、组内条目**常显**并缩进一档（`doc-nav` 的左栏
 就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。
 
+`expanded: true`：父级行开场就展开。`accordion` 下同层只留一个，多个 `expanded` 时**后面的赢**
+（与手动点开的规则一致）—— 窄屏「全部菜单」用它把当前分区默认摊开。只在普通（内联）模式有意义：
+压缩态的浮层子菜单归 hover / focus 管。
+
 ### `menu-item.html`
 
 mc-menu-item — 菜单项（配合 mc-menu 使用）

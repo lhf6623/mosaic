@@ -410,9 +410,9 @@
  * Mosaic 工具类子集 —— 手写（以前由 UnoCSS 生成 376 条，全仓真正引用到的只有 43 条）。
  * 要加一条就来这里加一行；产物 `packages/boot/mosaic.css` 由 tools/build-css.mjs 装配。
  *
- * ⚠️ 加类名前搜一遍 `tests/`：测试会往页面里注入标记（01 号套件用 `bg-surface` /
- *    `border-border` / `text-primary` 验语义色），只搜 docs/ 与 packages/ 会漏。
- * 两条约束：颜色只走语义令牌（**禁止原始色阶**，色阶不随主题切换，11 号套件拦着）；
+ * ⚠️ 加类名前搜一遍 `docs/` 与 `packages/`：页面里的标记也吃工具类，只搜组件目录会漏
+ *    （`bg-surface` / `border-border` / `text-primary` 这类既被组件页演示区用、也被站点页用）。
+ * 两条约束：颜色只走语义令牌（**禁止原始色阶**，色阶不随主题切换）；
  * 组件本体应该写真 CSS，工具类是给"用页面写标记"的人用的。
  * 层：mosaic.utilities（层顺序在 packages/color/tokens.css 里一次性钉死）。
  * ========================================================================== */
