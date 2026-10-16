@@ -26,7 +26,10 @@ packages/*/test/
 
 # 演示文件：里面 mc-code 的文本是**逐字展示**的样例代码，prettier 会把它的换行压掉
 # （实测：JSON 被压成两行、bash 丢了所有换行），而它本身就是要展示的内容。
-# packages/*/demos/*.html
+# 2026-10 定：整份忽略，而不是逐个内联块加 prettier-ignore 注释 —— 那种标记只有 prettier 认，
+# 编辑器的 HTML 格式化器照旧重排，而这里的内容经不起一次手滑（一次全仓格式化挂掉 code 套件 4 条）。
+# 代价：这些 demo 的 <script> 与属性折行得手写保持风格。
+packages/*/demos/*.html
 
 # 对账引擎的**仓库副本**（从 skill `doc-code-drift` 拷进来的，与 skill 里那份逐字节相同）。
 # 它不该被本仓的 prettier 重排 —— 一排就和 skill 那份分叉，「引擎副本是最新的」再也没法用比字节来验。
