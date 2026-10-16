@@ -44,7 +44,10 @@ export default async function run({ page, visit, check }) {
         const host = document.createElement('mc-popover');
         for (const [k, v] of Object.entries(attrs)) host.setAttribute(k, v);
         /* 放在视口正中：四周都有空间，12 个方向才量得到「未翻转」的贴合数学 */
-        host.style.cssText = 'position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);';
+        /* z-index 压过页面内容：首页的 .hero-core 是 position:relative + z-index:10，
+           探针（z-index auto）会被盖住，命中测试就落到 o-page 上（真实指针那条踩过）。 */
+        host.style.cssText =
+          'position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 9999;';
         host.innerHTML = `${triggerHtml}<div slot="panel">${panelHtml}</div>`;
         document.body.append(host);
         window.__pop = host;
@@ -267,7 +270,8 @@ export default async function run({ page, visit, check }) {
   const realPointer = await page.evaluate(() => {
     const pop = window.__pop;
     /* 第 3 节把这台宿主挪到了右下角；真机点击换回视口正中（那里没有别的东西盖着） */
-    pop.style.cssText = 'position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);';
+    pop.style.cssText =
+      'position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 9999;';
     pop.setAttribute('trigger', 'click');
     window.__realEvents = [];
     for (const type of ['open', 'close']) {

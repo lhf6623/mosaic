@@ -236,10 +236,10 @@ const crumb = await (async () => {
         window.__deepAll('.doc-top-nav mc-button')
           .find((b) => b.hasAttribute('data-current'))
           ?.textContent.trim() ?? null,
+      /* 当前项挂在**行**上（mc-menu-item[data-current]，见 menu-item 的状态镜像出口）：
+         options 重做之后内置 <a> 只是行里的控件，它身上没有 data-current —— 老选择器恒为 null。 */
       nav:
-        window.__inside('doc-nav', 'a')
-          .find((a) => a.hasAttribute('data-current'))
-          ?.textContent.trim() ?? null,
+        window.__inside('doc-nav', 'mc-menu-item[data-current]')[0]?.getAttribute('label') ?? null,
     };
   });
 

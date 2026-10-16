@@ -373,10 +373,11 @@ check(
 );
 
 /* 迁移完成：文档站的代码块全部由 mc-code 渲染，`.doc-code` 样式已退场。
-   这条走主 page，先把它带到站点入口 —— 单飞跑本套件时主 page 还停在 about:blank，__deepAll 是 goto 才注入的 */
+   这条走主 page，先把它带到站点入口 —— 单飞跑本套件时主 page 还停在 about:blank，__deepAll 是 goto 才注入的。
+   ⚠️ 别再用 guide.html：那一页在「文档分区重做」时就删了（68024ef），导航过去只有 404。
+   内联块看 component-theme（3 块），src 那条另走 install（它读 ./snippets/quick-start.html）。 */
 await visit(page, '/index.html');
-await goHash('docs/pages/guide.html');
-// 其中一块走 src（片段文件异步到达），等所有块都渲染出内容再断言
+await goHash('docs/pages/component-theme.html');
 await page
   .waitForFunction(
     () => {
@@ -404,7 +405,18 @@ check(
   JSON.stringify(migrated),
 );
 
-/* src：内容 = 片段文件本身（不用实体转义），并按后缀推断语言 */
+/* src：内容 = 片段文件本身（不用实体转义），并按后缀推断语言。
+   这一块在 install 页（它读 ./snippets/quick-start.html），先把主 page 带过去。 */
+await goHash('docs/pages/install.html');
+await page
+  .waitForFunction(
+    () =>
+      window
+        .__deepAll('mc-code')
+        .some((el) => (el.getAttribute('src') || '').includes('quick-start')),
+    { timeout: 8000 },
+  )
+  .catch(() => {});
 const srcSnippet = await (async () => {
   const fileText = await (await fetch(`${BASE}/docs/snippets/quick-start.html`)).text();
   const state = await page.evaluate(() => {

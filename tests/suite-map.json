@@ -52,17 +52,23 @@
     "packages/code/test/code.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/block-field.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
-      "docs/components/poster.html",
+      "docs/components/search.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
       "docs/layout.html",
       "docs/lib/md-spec.mjs",
-      "docs/pages/guide.html",
+      "docs/pages/component-theme.html",
       "docs/pages/home.html",
+      "docs/pages/install.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -100,6 +106,8 @@
       "packages/dropdown/dropdown.html",
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
+      "packages/input/input.html",
+      "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
@@ -1589,6 +1597,9 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs"
     ],
+    "docs/components/block-field.html": [
+      "packages/code/test/code.test.mjs"
+    ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
       "packages/badge/test/badge.test.mjs",
@@ -1656,10 +1667,12 @@
       "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/components/poster.html": [
-      "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs"
+    ],
+    "docs/components/search.html": [
+      "packages/code/test/code.test.mjs"
     ],
     "docs/components/spec.html": [
       "packages/alert/test/alert.test.mjs",
@@ -1795,6 +1808,7 @@
     ],
     "docs/fonts/archivo-var-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/radio/test/radio.test.mjs",
@@ -1804,6 +1818,7 @@
     ],
     "docs/fonts/fonts.css": [
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/radio/test/radio.test.mjs",
@@ -1813,6 +1828,7 @@
     ],
     "docs/fonts/plex-400-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/radio/test/radio.test.mjs",
@@ -1822,6 +1838,7 @@
     ],
     "docs/fonts/plex-500-latin.woff2": [
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/radio/test/radio.test.mjs",
@@ -1895,7 +1912,7 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs"
     ],
-    "docs/pages/guide.html": [
+    "docs/pages/component-theme.html": [
       "packages/code/test/code.test.mjs"
     ],
     "docs/pages/home.html": [
@@ -1903,6 +1920,9 @@
       "packages/message/test/message.test.mjs",
       "packages/pagination/test/pagination.test.mjs",
       "packages/popover/test/popover.test.mjs"
+    ],
+    "docs/pages/install.html": [
+      "packages/code/test/code.test.mjs"
     ],
     "docs/routes.js": [
       "packages/alert/test/alert.test.mjs",
@@ -3092,6 +3112,7 @@
       "packages/input/test/input.test.mjs"
     ],
     "packages/input/input.html": [
+      "packages/code/test/code.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs"
     ],
@@ -3127,6 +3148,7 @@
     ],
     "packages/loading-bar/loading-bar.js": [
       "packages/checkbox/test/checkbox.test.mjs",
+      "packages/code/test/code.test.mjs",
       "packages/empty/test/empty.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/input/test/input.test.mjs",
