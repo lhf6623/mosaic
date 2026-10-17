@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-2">
+  <mc-space block wrap-items>
     <mc-button on:click="toggleOpen()">{{open ? '收起' : '展开'}}</mc-button>
     <mc-popover
       trigger="manual"
@@ -17,7 +17,7 @@
         。
       </div>
     </mc-popover>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

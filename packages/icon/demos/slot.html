@@ -1,14 +1,14 @@
 <template component>
-  <div class="flex flex-col gap-3 text-sm">
-    <p class="flex items-center gap-2">
+  <mc-space direction="vertical" block class="text-sm">
+    <mc-space block>
       <mc-icon name="search" size="lg">🔍</mc-icon>
       插槽里放自己的字符，内置图形让位。
-    </p>
-    <p class="flex items-center gap-2">
+    </mc-space>
+    <mc-space block>
       <mc-icon name="trash" size="lg"><span class="text-xs">删除</span></mc-icon>
       插槽里放任意元素也一样。
-    </p>
-  </div>
+    </mc-space>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-icon-slot' });

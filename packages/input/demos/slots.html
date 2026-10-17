@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-input placeholder="金额">
       <span slot="prefix">¥</span>
       <span slot="suffix">元</span>
@@ -8,7 +8,7 @@
       <span slot="suffix">@mosaic.dev</span>
     </mc-input>
     <mc-input placeholder="没有前后缀，间距不会多出来"></mc-input>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-input-slots' });

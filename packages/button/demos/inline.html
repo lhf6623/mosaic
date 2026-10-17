@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <p>
       正文里可以直接放一个
       <mc-button inline size="lg" color="primary">行内按钮</mc-button>
@@ -22,17 +22,17 @@
       。图标跟文字一样跟着这一行的基线走。
     </p>
 
-    <div class="flex flex-wrap items-center gap-4">
+    <mc-space block wrap-items>
       <mc-button inline size="sm">小字</mc-button>
       <mc-button inline>常规</mc-button>
       <mc-button inline size="lg">大字</mc-button>
-    </div>
+    </mc-space>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <mc-space block wrap-items>
       <mc-button variant="ghost">ghost（有盒子）</mc-button>
       <mc-button inline>inline（盒子交给文字）</mc-button>
-    </div>
-  </div>
+    </mc-space>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-button-inline' });

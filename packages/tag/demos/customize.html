@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-tag color="primary" style="--mc-tag-radius: var(--mc-radius-full)">全圆角</mc-tag>
     <mc-tag
       color="primary"
@@ -14,7 +14,7 @@
       ">
       换浅底色槽
     </mc-tag>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-tag-customize' });

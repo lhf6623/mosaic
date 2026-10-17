@@ -16,10 +16,10 @@
     }
   </style>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-switch class="part-custom" checked>这条用 ::part(track) / ::part(thumb) 改过</mc-switch>
     <mc-switch checked>默认对照</mc-switch>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-switch-part' });

@@ -15,7 +15,7 @@
     }
   </style>
 
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <mc-form class="skin" rules='{"a":[{"required":true,"message":"改过的不能为空"}]}'>
       <mc-form-item label="改过的" name="a">
         <mc-input placeholder="点提交看错误文案"></mc-input>
@@ -30,7 +30,7 @@
         <mc-input></mc-input>
       </mc-form-item>
     </mc-form>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-form-part' });

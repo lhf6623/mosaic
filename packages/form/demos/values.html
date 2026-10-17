@@ -31,10 +31,10 @@
     </mc-form-item>
     <mc-form-item label="标签">
       <!-- 同名一组：value 是组内的身份值，只收勾上的那几项 -->
-      <div class="flex items-center gap-4">
+      <mc-space block>
         <mc-checkbox name="tag" value="hot" checked>热门</mc-checkbox>
         <mc-checkbox name="tag" value="new" checked>新品</mc-checkbox>
-      </div>
+      </mc-space>
     </mc-form-item>
     <mc-form-item>
       <mc-button on:click="read()">读一次 getValue()</mc-button>

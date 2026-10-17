@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
+  <mc-space block wrap-items>
     <mc-popover trigger="click" placement="bottom-start">
       <mc-button variant="outline">点击（默认）</mc-button>
       <div slot="panel">点触发元素开合，点空白 / Esc 关。</div>
@@ -12,7 +12,7 @@
       <mc-button variant="outline">受控（manual）</mc-button>
       <div slot="panel">只认 open 属性与 show() / hide()，点触发元素没反应。</div>
     </mc-popover>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-popover-trigger' });

@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-input placeholder="正常"></mc-input>
     <mc-input disabled default-value="禁用"></mc-input>
     <mc-input readonly default-value="只读"></mc-input>
     <mc-input invalid default-value="校验失败"></mc-input>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-input-states' });

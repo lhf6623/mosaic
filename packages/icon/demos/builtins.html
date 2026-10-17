@@ -3,10 +3,10 @@
        用原生 <button>：这里要的是「键盘可达 + 语义正确」，不是演示 mc-button ——
        本页的 <l-m> 只注册了 mc-icon，不为一条演示把整个按钮组件拉进页面。
        复制成功 / 失败用 message 报（直接 import，容器由它自己挂到 body 上）。 -->
-  <div class="flex flex-col gap-6">
-    <div class="flex flex-col gap-2">
+  <mc-space direction="vertical" block>
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">方向与折叠</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -79,12 +79,12 @@
           <mc-icon name="arrow-right" class="text-lg"></mc-icon>
           arrow-right
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">语义状态</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -125,12 +125,12 @@
           <mc-icon name="help" class="text-lg"></mc-icon>
           help
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">通用操作</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -291,12 +291,12 @@
           <mc-icon name="settings" class="text-lg"></mc-icon>
           settings
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">对象与信息</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -393,12 +393,12 @@
           <mc-icon name="bell" class="text-lg"></mc-icon>
           bell
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">空态</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -407,12 +407,12 @@
           <mc-icon name="empty" class="text-lg"></mc-icon>
           empty
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">主题与播放</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -445,11 +445,11 @@
           <mc-icon name="pause" class="text-lg"></mc-icon>
           pause
         </button>
-      </div>
-    </div>
-    <div class="flex flex-col gap-2">
+      </mc-space>
+    </mc-space>
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">财务</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -530,12 +530,12 @@
           <mc-icon name="scale" class="text-lg"></mc-icon>
           scale
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">报表</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -592,11 +592,11 @@
           <mc-icon name="file-spreadsheet" class="text-lg"></mc-icon>
           file-spreadsheet
         </button>
-      </div>
-    </div>
-    <div class="flex flex-col gap-2">
+      </mc-space>
+    </mc-space>
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">品牌 · 开发与代码</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -661,12 +661,12 @@
           <mc-icon name="svelte" class="text-lg"></mc-icon>
           svelte
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">品牌 · 国内互联网</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -747,12 +747,12 @@
           <mc-icon name="baidu" class="text-lg"></mc-icon>
           baidu
         </button>
-      </div>
-    </div>
+      </mc-space>
+    </mc-space>
 
-    <div class="flex flex-col gap-2">
+    <mc-space direction="vertical" block>
       <p class="text-xs text-muted">品牌 · 国际</p>
-      <div class="flex flex-wrap items-start gap-1">
+      <mc-space block wrap-items align="start">
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm cursor-pointer border-0 bg-transparent text-muted hover:bg-surface-sunken text-left"
@@ -801,9 +801,9 @@
           <mc-icon name="x" class="text-lg"></mc-icon>
           x
         </button>
-      </div>
-    </div>
-  </div>
+      </mc-space>
+    </mc-space>
+  </mc-space>
 
   <script>
     /* 复制成功与否用 message 报一次 —— 顺带是 message 的真实用法示例：

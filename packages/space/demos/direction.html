@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-6">
+  <mc-space direction="vertical" block>
     <div>
       <p class="text-xs text-muted mb-2">direction="horizontal"（默认）</p>
       <mc-space>
@@ -17,7 +17,7 @@
         <mc-button size="sm">三</mc-button>
       </mc-space>
     </div>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-space-direction' });

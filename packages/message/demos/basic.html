@@ -1,12 +1,12 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-2">
+  <mc-space block wrap-items>
     <mc-icon name="info"></mc-icon>
     <mc-button on:click="say('neutral')">普通提示</mc-button>
     <mc-button color="info" variant="outline" on:click="say('info')">信息</mc-button>
     <mc-button color="success" variant="outline" on:click="say('success')">成功</mc-button>
     <mc-button color="warning" variant="outline" on:click="say('warning')">警告</mc-button>
     <mc-button color="danger" variant="outline" on:click="say('error')">错误</mc-button>
-  </div>
+  </mc-space>
 
   <script>
     import message from '../../message/message.js';

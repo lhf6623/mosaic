@@ -19,7 +19,7 @@
     }
   </style>
 
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button on:click="open = true">改 ::part()</mc-button>
     <mc-dialog
       heading="内部样式"
@@ -34,7 +34,7 @@
       </p>
       <mc-button slot="footer" on:click="open = false">关闭</mc-button>
     </mc-dialog>
-  </div>
+  </mc-space>
   <script>
     export default async () => ({
       tag: 'demo-dialog-part',

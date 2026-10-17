@@ -15,14 +15,14 @@
     }
   </style>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-tabs default-value="a">
       <mc-tab value="a">标签 A</mc-tab>
       <mc-tab value="b">标签 B</mc-tab>
       <div slot="panel" value="a">指示条、标签条、面板容器都从外面用 ::part() 改过。</div>
       <div slot="panel" value="b">标签按钮的字重走 mc-tab 的 part="base"。</div>
     </mc-tabs>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-tabs-part' });

@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
+  <mc-space block wrap-items>
     <!-- 不写 color 就是 current：跟着外层文字色走 -->
     <mc-spinner></mc-spinner>
     <mc-spinner color="primary"></mc-spinner>
@@ -17,7 +17,7 @@
       <mc-spinner></mc-spinner>
       次要
     </span>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-spinner-colors' });

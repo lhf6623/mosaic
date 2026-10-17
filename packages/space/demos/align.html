@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <div>
       <p class="text-xs text-muted mb-2">align="start"</p>
       <mc-space align="start">
@@ -39,7 +39,7 @@
         <mc-button inline size="lg">大字</mc-button>
       </mc-space>
     </div>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-space-align' });

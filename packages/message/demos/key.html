@@ -1,9 +1,9 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-2">
+  <mc-space block wrap-items>
     <mc-icon name="upload"></mc-icon>
     <mc-button on:click="start()">开始上传（同 key 更新）</mc-button>
     <mc-button on:click="finish()">立刻完成</mc-button>
-  </div>
+  </mc-space>
 
   <script>
     import message from '../../message/message.js';

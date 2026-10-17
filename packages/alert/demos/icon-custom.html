@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-alert color="warning">
       <mc-icon slot="icon" name="clock"></mc-icon>
       换成别的图标：
@@ -12,7 +12,7 @@
       <code>icon</code>
       也一样 —— 插槽优先，内置图形不出现。
     </mc-alert>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-alert-icon-custom' });

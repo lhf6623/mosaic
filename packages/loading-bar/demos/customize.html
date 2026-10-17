@@ -11,7 +11,7 @@
     }
   </style>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <!-- 令牌：爬升终点改成 40%，一眼看清「它停在 reach 上」 -->
     <mc-loading-bar
       class="mc-custom"
@@ -28,7 +28,7 @@
       state="loading"
       position="static"
       style="--mc-loading-bar-track: var(--mc-color-surface-sunken)"></mc-loading-bar>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-loading-bar-customize' });

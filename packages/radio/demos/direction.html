@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <div>
       <p class="mb-2 text-sm text-muted">direction="row"（默认）</p>
       <mc-radio-group name="row" default-value="b">
@@ -17,7 +17,7 @@
         <mc-radio value="c">选项 C</mc-radio>
       </mc-radio-group>
     </div>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-radio-direction' });

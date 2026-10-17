@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <mc-grid cols="3">
       <mc-grid-item><mc-card padding="sm">1</mc-card></mc-grid-item>
       <mc-grid-item><mc-card padding="sm">2</mc-card></mc-grid-item>
@@ -16,7 +16,7 @@
       <mc-grid-item><mc-card padding="sm">5</mc-card></mc-grid-item>
       <mc-grid-item><mc-card padding="sm">6</mc-card></mc-grid-item>
     </mc-grid>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-grid-cols' });

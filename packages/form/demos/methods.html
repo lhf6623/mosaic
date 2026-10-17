@@ -7,11 +7,11 @@
       <mc-textarea rows="2"></mc-textarea>
     </mc-form-item>
     <mc-form-item>
-      <div class="flex flex-wrap items-center gap-3">
+      <mc-space block wrap-items>
         <mc-button on:click="send()">submit()</mc-button>
         <mc-button variant="outline" on:click="peek()">getValue()</mc-button>
         <span class="text-sm text-muted">{{last}}</span>
-      </div>
+      </mc-space>
     </mc-form-item>
   </mc-form>
 

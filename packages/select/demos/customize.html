@@ -28,7 +28,7 @@
     }
   </style>
 
-  <div id="customize-demo" class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items id="customize-demo">
     <mc-select placeholder="选择城市">
       <mc-option value="bj">北京</mc-option>
       <mc-option value="sh">上海</mc-option>
@@ -37,7 +37,7 @@
     <span class="tip tip-empty">还没选</span>
     <span class="tip tip-filled">已选好 ✓</span>
     <span class="tip tip-open">展开中</span>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-select-customize' });

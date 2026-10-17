@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-tabs default-value="a" on:change="picked = $event.data.value">
       <mc-tab value="a">标签 A</mc-tab>
       <mc-tab value="b">标签 B</mc-tab>
@@ -10,7 +10,7 @@
       最近一次 change：
       <strong>{{picked}}</strong>
     </p>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-pagination total="42" page-size="10" default-current="2" disabled></mc-pagination>
     <p class="text-sm text-muted">
       整条都点不动，键盘也进不来，翻页事件不会发。
     </p>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-pagination-disabled' });

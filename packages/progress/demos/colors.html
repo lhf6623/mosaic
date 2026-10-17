@@ -1,11 +1,11 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-progress value="60" color="primary"></mc-progress>
     <mc-progress value="60" color="info"></mc-progress>
     <mc-progress value="60" color="success"></mc-progress>
     <mc-progress value="60" color="warning"></mc-progress>
     <mc-progress value="60" color="danger"></mc-progress>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-progress-colors' });

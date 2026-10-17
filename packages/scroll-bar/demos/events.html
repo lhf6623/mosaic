@@ -8,11 +8,11 @@
         border: 1px solid rgb(var(--mc-color-border));
         border-radius: var(--mc-radius-md);
       ">
-      <div class="flex flex-col gap-2 p-3">
+      <mc-space direction="vertical" block>
         <o-fill :value="rows" fill-key="$key">
           <div>{{$data}}</div>
         </o-fill>
-      </div>
+      </mc-space>
     </mc-scroll-bar>
   </div>
 

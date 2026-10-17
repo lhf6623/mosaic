@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button on:click="openDialog()">打开</mc-button>
     <mc-dialog
       heading="事件回调"
@@ -16,7 +16,7 @@
         。
       </p>
     </mc-dialog>
-  </div>
+  </mc-space>
 
   <p class="mt-3 text-sm text-muted">
     最近一次事件：

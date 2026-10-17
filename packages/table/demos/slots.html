@@ -1,13 +1,13 @@
 <template component>
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <mc-table id="empty">
-      <div slot="empty" class="flex items-center gap-2 p-4">没有匹配的记录，换个关键词试试</div>
+      <mc-space block class="p-4" slot="empty">没有匹配的记录，换个关键词试试</mc-space>
     </mc-table>
 
     <mc-table id="loading" loading>
-      <div slot="loading" class="flex items-center gap-2 p-4">正在同步…</div>
+      <mc-space block class="p-4" slot="loading">正在同步…</mc-space>
     </mc-table>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

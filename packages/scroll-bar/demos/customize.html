@@ -15,7 +15,7 @@
     }
   </style>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <!-- 令牌：条子更粗、滑块更长、留白更大 -->
     <mc-scroll-bar
       class="mc-area"
@@ -25,11 +25,11 @@
         --mc-scroll-bar-min-thumb: 4rem;
         --mc-scroll-bar-gutter: 3px;
       ">
-      <div class="flex flex-col gap-2">
+      <mc-space direction="vertical" block>
         <o-fill :value="lines" fill-key="$key">
           <div>{{$data}}</div>
         </o-fill>
-      </div>
+      </mc-space>
     </mc-scroll-bar>
 
     <!-- 只换滑块颜色 -->
@@ -39,13 +39,13 @@
         --mc-scroll-bar-thumb: var(--mc-color-success);
         --mc-scroll-bar-thumb-hover: var(--mc-color-success);
       ">
-      <div class="flex flex-col gap-2 p-3">
+      <mc-space direction="vertical" block>
         <o-fill :value="lines" fill-key="$key">
           <div>{{$data}}</div>
         </o-fill>
-      </div>
+      </mc-space>
     </mc-scroll-bar>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

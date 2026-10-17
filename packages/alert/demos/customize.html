@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-alert
       heading="改内边距与圆角"
       style="--mc-alert-pad-y: var(--mc-space-4); --mc-alert-radius: var(--mc-radius-lg)">
@@ -27,7 +27,7 @@
       style="border-inline-start-width: 4px; border-inline-start-color: rgb(var(--mc-color-info))">
       宿主本来就留着一圈 1px 透明的线，想加色条直接改那一侧。
     </mc-alert>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-alert-customize' });

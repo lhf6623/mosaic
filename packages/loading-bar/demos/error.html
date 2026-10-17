@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap items-center gap-3">
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
       <mc-button on:click="start()">开始</mc-button>
       <mc-button variant="outline" on:click="finish()">成功</mc-button>
       <mc-button variant="outline" on:click="fail()">出错</mc-button>
-    </div>
+    </mc-space>
 
     <!-- 成功与出错是**同一个收尾**（先滑到 100% 再淡出），只差填充色。
          ⚠️ 这条必须 position="static"：默认那种钉在**视口顶部**，而一个文档页会把所有演示
@@ -24,7 +24,7 @@
         --mc-loading-bar-fade: 60s;
         --mc-loading-bar-error: var(--mc-color-warning);
       "></mc-loading-bar>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

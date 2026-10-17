@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-pagination total="85" page-size="10" default-current="3" sizer></mc-pagination>
     <mc-pagination
       total="5000"
@@ -12,7 +12,7 @@
       <code>page-sizes</code>
       ，所以候选项就是列出来的那几个。换条数后当前页不变（只有越界才夹回），并会发一次 `change`。
     </p>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-pagination-sizer' });

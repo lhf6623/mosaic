@@ -1,11 +1,11 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-alert color="info" icon heading="信息">primary / info / neutral 共用这个信息圆。</mc-alert>
     <mc-alert color="success" icon heading="成功">对勾。</mc-alert>
     <mc-alert color="warning" icon heading="警告">三角叹号。</mc-alert>
     <mc-alert color="danger" icon heading="危险">叉圆。</mc-alert>
     <mc-alert color="danger" heading="不加 icon">就没有图标，只有一块色面。</mc-alert>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-alert-icon' });

@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button on:click="open = 'sm'">sm</mc-button>
     <mc-button on:click="open = 'md'">md</mc-button>
     <mc-button on:click="open = 'lg'">lg</mc-button>
@@ -13,7 +13,7 @@
     <mc-dialog size="lg" heading="lg" attr:open="open === 'lg' ? '' : null" on:close="open = null">
       <p>44rem 宽，放得下表格或两栏内容。</p>
     </mc-dialog>
-  </div>
+  </mc-space>
   <script>
     export default async () => ({
       tag: 'demo-dialog-sizes',

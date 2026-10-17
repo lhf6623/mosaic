@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button style="height: 48px; border-radius: 9999px; padding-inline: 2rem">
       胶囊大按钮
     </mc-button>
@@ -7,7 +7,7 @@
     <mc-button style="--mc-button-fill: 16 185 129; --mc-button-accent: 16 185 129">
       换色槽
     </mc-button>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-button-override' });

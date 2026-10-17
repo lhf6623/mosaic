@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button on:click="start()">开始</mc-button>
     <mc-button variant="outline" on:click="finish()">完成</mc-button>
-  </div>
+  </mc-space>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <!-- 放进卡片：它只占自己那 4px，表达「这一块在刷新」 -->
     <div
       style="
@@ -13,10 +13,10 @@
         overflow: hidden;
       ">
       <mc-loading-bar attr:state="phase" position="static"></mc-loading-bar>
-      <div class="flex flex-col gap-1 p-3">
+      <mc-space direction="vertical" block>
         <span>成员列表</span>
         <span class="text-xs text-muted">这一条只说这一块（收尾的样子见「出错」那一节）</span>
-      </div>
+      </mc-space>
     </div>
 
     <!-- 盖在容器上沿：static 只是把定位交回文档流，想盖上去自己写内联样式 -->
@@ -31,12 +31,12 @@
         attr:state="phase"
         position="static"
         style="position: absolute; inset-inline: 0; top: 0"></mc-loading-bar>
-      <div class="flex flex-col gap-1 p-3">
+      <mc-space direction="vertical" block>
         <span>详情面板</span>
         <span class="text-xs text-muted">条子盖在面板上沿，不占布局</span>
-      </div>
+      </mc-space>
     </div>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

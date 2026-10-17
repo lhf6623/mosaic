@@ -1,12 +1,12 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-select multiple clearable placeholder="多选城市" default-value="bj,gz" style="width: 260px">
       <mc-option value="bj">北京</mc-option>
       <mc-option value="sh">上海</mc-option>
       <mc-option value="gz">广州</mc-option>
       <mc-option value="sz">深圳</mc-option>
     </mc-select>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-select-multiple' });

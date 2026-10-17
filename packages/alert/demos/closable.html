@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-alert closable color="info" heading="可关闭" on:close="onClose($event)">
       点右侧 × 移除这一条。
     </mc-alert>
@@ -13,7 +13,7 @@
     <mc-alert closable variant="solid" color="danger" on:close="onClose($event)">
       实心外观也可以关。
     </mc-alert>
-  </div>
+  </mc-space>
 
   <p class="mt-3 text-sm text-muted">
     点 × 移除；最近一次

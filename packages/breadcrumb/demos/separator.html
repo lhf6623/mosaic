@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col items-start gap-3">
+  <mc-space direction="vertical" block align="start">
     <mc-breadcrumb separator="&gt;">
       <mc-breadcrumb-item>
         <a href="../../../docs/pages/home.html" olink>首页</a>
@@ -15,7 +15,7 @@
       <mc-breadcrumb-item><a href="../../button/page.html" olink>组件</a></mc-breadcrumb-item>
       <mc-breadcrumb-item current>面包屑</mc-breadcrumb-item>
     </mc-breadcrumb>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-breadcrumb-separator' });

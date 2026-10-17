@@ -14,11 +14,11 @@
       </mc-checkbox>
     </mc-form-item>
     <mc-form-item>
-      <div class="flex flex-wrap items-center gap-3">
+      <mc-space block wrap-items>
         <mc-button type="submit">提交</mc-button>
         <mc-button variant="outline" on:click="swap()">换一份数据（代替重置）</mc-button>
         <span class="text-sm text-muted">{{last}}</span>
-      </div>
+      </mc-space>
     </mc-form-item>
   </mc-form>
 

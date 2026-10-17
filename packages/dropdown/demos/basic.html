@@ -1,12 +1,12 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-dropdown trigger="click">
       <mc-button slot="trigger" variant="outline">打开菜单</mc-button>
       <mc-menu-item><button type="button">个人资料</button></mc-menu-item>
       <mc-menu-item><button type="button">账号设置</button></mc-menu-item>
       <mc-menu-item><button type="button" disabled>退出登录</button></mc-menu-item>
     </mc-dropdown>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-dropdown-basic' });

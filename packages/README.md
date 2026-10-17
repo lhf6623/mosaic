@@ -156,16 +156,19 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - **例子是组件，不是片段**，所以它里面的 ofa 绑定照常编译（`:code="boundSnippet"`、
   `on:open="…"`），而且**可以单独打开、单独测**（`doc-playground` 按组件规范编译文件，
   不是把 `innerHTML` 塞进去）。
-- 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** ——
-  例子内部一律用工具类（`flex flex-wrap items-center gap-3`，工具类子集里有）。
+- 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** —— 例子内部的
+  排版优先用 `mc-space`（站点外壳已注册），其余工具类照常用（`text-sm`、`p-4` 这些）。
+- **成组排列优先用 `mc-space`**：行 / 列、间距、换行、主轴与交叉轴对齐都交给它；不要再手写
+  `flex flex-col gap-3` 这类布局工具类。`gap` 可写三档令牌或数字（px）。
 - **例子不给组件化妆。** 演示行为时，内容用项目自己的组件（按钮 / 卡片）或纯文本，
   别手写 `.cell` / `.chip` 这类装饰层；`<style>` 只留给以样式为主题的演示
   （`part` / 自定义外观）—— 否则读者分不清是组件在起作用，还是示例的样式在起作用。
 - **`doc-playground` 是站点级组件**：在 `docs/layout.html` 注册一次，组件文档页不用为演示
   写任何 `<l-m>`。
 - ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的只有
-  `mc-code` / `mc-icon` / `mc-collapse(-item)` / `mc-menu(-item)` / `mc-breadcrumb(-item)` /
-  `mc-card` / `doc-playground` 那一批，**不含 `mc-button`**。漏了的话 ofa 的
+  `mc-code` / `mc-icon` / `mc-space` / `mc-collapse(-item)` / `mc-menu(-item)` /
+  `mc-scroll-bar` / `mc-dropdown` / `mc-popover` / `mc-input` / `doc-playground` 那一批，
+  **不含 `mc-button` / `mc-card` / `mc-breadcrumb`**。漏了的话 ofa 的
   `*:not(:defined){display:none}` 会把没注册的标签连同文字一起藏掉 —— 不报错，只是演示区里
   那排按钮整个消失；而且同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就空白
   （首页碰巧注册过 `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过）。

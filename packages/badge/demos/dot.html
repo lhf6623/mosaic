@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-badge dot></mc-badge>
     <mc-badge dot color="info"></mc-badge>
     <mc-badge dot color="success"></mc-badge>
@@ -8,7 +8,7 @@
     <mc-badge dot size="sm" color="danger"></mc-badge>
     <!-- dot 打开时内容整块不显示：这里的「99」不该出现 -->
     <mc-badge dot color="danger">99</mc-badge>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-badge-dot' });

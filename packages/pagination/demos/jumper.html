@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-pagination
       total="85"
       page-size="10"
@@ -11,7 +11,7 @@
       <strong>{{picked}}</strong>
       页。
     </p>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({

@@ -8,13 +8,13 @@
       <mc-input placeholder="点提交看效果：红框在、文案不在"></mc-input>
     </mc-form-item>
     <mc-form-item>
-      <div class="flex flex-wrap items-center gap-3">
+      <mc-space block wrap-items>
         <mc-button type="submit">提交</mc-button>
         <mc-button variant="outline" on:click="toggle()">
           {{showError ? '显示文案' : '隐藏文案'}}
         </mc-button>
         <span class="text-sm text-muted">{{last}}</span>
-      </div>
+      </mc-space>
     </mc-form-item>
   </mc-form>
 

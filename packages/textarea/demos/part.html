@@ -21,7 +21,7 @@
     }
   </style>
 
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-textarea class="part-custom" maxlength="30" rows="2" placeholder="内部样式">
       <span slot="prefix">#</span>
       <span slot="suffix">条</span>
@@ -30,7 +30,7 @@
       <span slot="prefix">#</span>
       <span slot="suffix">条</span>
     </mc-textarea>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-textarea-part' });

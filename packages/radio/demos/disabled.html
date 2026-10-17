@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <div>
       <p class="mb-2 text-sm text-muted">
         整组禁用（
@@ -24,7 +24,7 @@
         <mc-radio value="c">可用</mc-radio>
       </mc-radio-group>
     </div>
-  </div>
+  </mc-space>
 
   <p class="mt-3 text-sm text-muted">
     两种禁用都转发给内部原生 radio 的

@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
+  <mc-space block wrap-items>
     <mc-popover placement="bottom-start">
       <mc-button variant="outline">默认（带箭头）</mc-button>
       <div slot="panel">不写属性也有小三角，跟着 placement 贴在对面那条边上。</div>
@@ -12,7 +12,7 @@
       <mc-button variant="outline">arrow="none"（关掉）</mc-button>
       <div slot="panel">写 arrow="none" 才没有三角。</div>
     </mc-popover>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-popover-arrow' });

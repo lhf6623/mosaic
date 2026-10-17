@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button on:click="toggle()">{{open ? '收起' : '展开'}}</mc-button>
 
     <mc-dropdown
@@ -13,7 +13,7 @@
         <a href="../page.html" olink>Esc / 点空白 / 再点触发元素都发 close</a>
       </mc-menu-item>
     </mc-dropdown>
-  </div>
+  </mc-space>
 
   <p class="mt-3 text-sm text-muted">
     最近一次事件：

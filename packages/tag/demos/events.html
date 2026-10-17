@@ -1,9 +1,9 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-2">
+  <mc-space block wrap-items>
     <mc-tag checkable selected color="primary" on:change="markChange($event)">已实现</mc-tag>
     <mc-tag checkable color="primary" on:change="markChange($event)">待建</mc-tag>
     <mc-tag closable color="danger" on:close="markClose($event)">已废弃</mc-tag>
-  </div>
+  </mc-space>
 
   <p class="mt-3 text-sm text-muted">
     最近一次事件：

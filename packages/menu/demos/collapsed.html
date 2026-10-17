@@ -1,9 +1,9 @@
 <template component>
-  <div class="flex flex-wrap items-start gap-3">
+  <mc-space block wrap-items align="start">
     <mc-button on:click="toggle()">{{collapsed ? '展开' : '压缩'}}</mc-button>
 
     <mc-menu id="collapsed-menu" attr:collapsed="collapsed ? '' : null"></mc-menu>
-  </div>
+  </mc-space>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';

@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-textarea rows="2" placeholder="正常"></mc-textarea>
     <mc-textarea rows="2" disabled default-value="禁用"></mc-textarea>
     <mc-textarea rows="2" readonly default-value="只读"></mc-textarea>
     <mc-textarea rows="2" invalid default-value="校验失败"></mc-textarea>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-textarea-states' });

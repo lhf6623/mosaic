@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-4">
+  <mc-space direction="vertical" block>
     <p style="font-size: 24px; color: rgb(var(--mc-color-primary))">
       父元素给字号和颜色，图标跟着变
       <mc-icon name="bell"></mc-icon>
     </p>
-    <p class="flex items-center gap-3">
+    <mc-space block>
       <mc-icon name="star" style="font-size: 40px; color: rgb(var(--mc-color-warning))"></mc-icon>
       <span class="text-xs">
         宿主
@@ -15,8 +15,8 @@
         <code>color</code>
         定颜色
       </span>
-    </p>
-  </div>
+    </mc-space>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-icon-styles' });

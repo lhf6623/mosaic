@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap items-center gap-2">
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
       <mc-icon name="clock"></mc-icon>
       <mc-button on:click="short()">1 秒后自己走</mc-button>
       <mc-button on:click="sticky()">不自动关（手动关）</mc-button>
-    </div>
+    </mc-space>
 
     <!-- { close } 句柄是能调的：用它做「页面上唯一那个能调 close() 的开关」，
          不给的话这条就只剩"点消息条自己"一条路 -->
@@ -13,7 +13,7 @@
       <mc-button size="sm" variant="ghost" on:click="closeSticky()">close()</mc-button>
       <span class="text-xs">{{closedCount ? `已关 ${closedCount} 次` : '还没关过'}}</span>
     </p>
-  </div>
+  </mc-space>
 
   <script>
     import message from '../../message/message.js';

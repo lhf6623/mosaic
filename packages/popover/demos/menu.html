@@ -1,5 +1,5 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
+  <mc-space block wrap-items>
     <mc-popover
       placement="bottom-start"
       style="--mc-popover-panel-min-width: 12rem; --mc-popover-panel-pad: var(--mc-space-2)">
@@ -21,7 +21,7 @@
     <span class="text-sm text-muted">
       面板里放的是项目自己的 mc-menu —— 这就是移动端菜单的做法。
     </span>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-popover-menu' });

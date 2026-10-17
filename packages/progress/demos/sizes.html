@@ -1,10 +1,10 @@
 <template component>
-  <div class="flex flex-col gap-3">
+  <mc-space direction="vertical" block>
     <mc-progress value="60" size="sm"></mc-progress>
     <mc-progress value="60" size="md"></mc-progress>
     <mc-progress value="60" size="sm" color="success" indeterminate></mc-progress>
     <mc-progress value="60" size="md" color="success" indeterminate></mc-progress>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-progress-sizes' });

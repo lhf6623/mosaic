@@ -1,11 +1,11 @@
 <template component>
-  <div class="flex flex-wrap items-center gap-4">
+  <mc-space block wrap-items>
     <!-- 外部样式：整个图形恒为 1em，所以 font-size 是唯一的尺寸旋钮 -->
     <mc-spinner style="font-size: 32px"></mc-spinner>
     <!-- 令牌：环的粗细与转速 -->
     <mc-spinner style="--mc-spinner-thickness: 0.25em"></mc-spinner>
     <mc-spinner style="--mc-spinner-duration: 2s"></mc-spinner>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-spinner-customize' });

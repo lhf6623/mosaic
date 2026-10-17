@@ -8,7 +8,7 @@
     }
   </style>
 
-  <div id="part-demo" class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items id="part-demo">
     <mc-dropdown>
       <mc-button slot="trigger" variant="outline">改 ::part(panel)</mc-button>
       <mc-menu-item>
@@ -18,7 +18,7 @@
         <a href="../page.html" olink>菜单项还是它自己的样子</a>
       </mc-menu-item>
     </mc-dropdown>
-  </div>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-dropdown-part' });
