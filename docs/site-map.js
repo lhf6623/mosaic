@@ -266,7 +266,8 @@ export const SITE = [
             zh: '单选按钮',
             path: 'packages/radio/page.html',
             type: 'component',
-            summary: '单选按钮组。',
+            summary:
+              '单选按钮组。容器 mc-radio-group 管互斥 / 方向 / 尺寸与 change 事件，子项 mc-radio 是一格。',
           },
           {
             order: 50,
