@@ -1,0 +1,140 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <l-m src="./space.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+    <l-m src="../card/card.html"></l-m>
+    <h1>
+      Space
+      <code>mc-space</code>
+    </h1>
+    <p class="doc-lead">
+      一维间距容器：把一组元素排成一行或一列，相邻元素之间留同一档间距 ——
+      只负责间距与排列，不画外框。
+    </p>
+
+    <h2>例子</h2>
+
+    <section class="doc-demo">
+      <h3>基本用法</h3>
+      <p class="doc-hint">默认横向一行，间距 md（16px），交叉轴居中。</p>
+      <doc-playground src="./demos/basic.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>方向</h3>
+      <p class="doc-hint">
+        纵向时宿主改成一列，默认把子项拉伸到同一宽度；要按内容宽度排就写
+        <code>align="start"</code>
+        。
+      </p>
+      <doc-playground src="./demos/direction.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>间距</h3>
+      <p class="doc-hint">
+        <code>gap</code>
+        有三档令牌（
+        <code>sm</code>
+        /
+        <code>md</code>
+        /
+        <code>lg</code>
+        ），也可以直接写数字（单位 px，如
+        <code>gap="10"</code>
+        ）—— 数值不用再覆盖 CSS 变量。
+      </p>
+      <doc-playground src="./demos/gap.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>对齐</h3>
+      <p class="doc-hint">
+        不写
+        <code>align</code>
+        时横向居中、纵向拉伸；
+        <code>baseline</code>
+        让不同字号的文字按基线对齐。
+      </p>
+      <doc-playground src="./demos/align.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>主轴分布</h3>
+      <p class="doc-hint">
+        <code>justify</code>
+        管主轴、
+        <code>align</code>
+        管交叉轴；除 start / center / end 外还有 between / around / evenly 三种分布。
+        演示容器限宽，所以能看出来。
+      </p>
+      <doc-playground src="./demos/justify.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>反向</h3>
+      <p class="doc-hint">
+        <code>reverse-order</code>
+        只翻主轴方向：横向从右往左、纵向从下往上；间距与对齐语义不变。
+      </p>
+      <doc-playground src="./demos/reverse-order.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>换行</h3>
+      <p class="doc-hint">
+        写
+        <code>wrap-items</code>
+        后空间不够就换行，行距与列距共用同一个
+        <code>gap</code>
+        。宿主默认是
+        <code>inline-flex</code>
+        ，会按内容撑开 —— 演示里用
+        <code>max-width</code>
+        给它一个上限。
+      </p>
+      <doc-playground src="./demos/wrap.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>撑满</h3>
+      <p class="doc-hint">
+        写
+        <code>block</code>
+        后宿主变成
+        <code>display: flex</code>
+        、宽度 100%；不写时是行内的
+        <code>inline-flex</code>
+        ，只占内容宽度。
+      </p>
+      <doc-playground src="./demos/block.html"></doc-playground>
+    </section>
+
+    <section class="doc-demo">
+      <h3>外部样式</h3>
+      <p class="doc-hint">
+        宿主
+        <code>style</code>
+        的优先级高于属性：
+        <code>gap: 6px</code>
+        盖过
+        <code>gap="lg"</code>
+        。任意数值优先用
+        <code>gap="10"</code>
+        ，不必再覆盖令牌。
+      </p>
+      <doc-playground src="./demos/external-style.html"></doc-playground>
+    </section>
+
+    <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

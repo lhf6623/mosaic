@@ -158,6 +158,9 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
   不是把 `innerHTML` 塞进去）。
 - 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** ——
   例子内部一律用工具类（`flex flex-wrap items-center gap-3`，工具类子集里有）。
+- **例子不给组件化妆。** 演示行为时，内容用项目自己的组件（按钮 / 卡片）或纯文本，
+  别手写 `.cell` / `.chip` 这类装饰层；`<style>` 只留给以样式为主题的演示
+  （`part` / 自定义外观）—— 否则读者分不清是组件在起作用，还是示例的样式在起作用。
 - **`doc-playground` 是站点级组件**：在 `docs/layout.html` 注册一次，组件文档页不用为演示
   写任何 `<l-m>`。
 - ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的只有
@@ -340,6 +343,10 @@ dialog.open = true; // ✅
 > 这样"存在即真"在 JS 与 CSS 两侧同时成立，受控地绑成 `false` 时样式与行为都不会错。
 > 组件**可以**为布尔属性提供一个立即同步的 property 访问器 —— `mc-collapse-item` 的 `open` 就是
 > （`el.open = true` 写完立刻生效，不必等属性反射那一拍）。
+>
+> ⚠️ **`attrs` 的键不要撞 ofa 元素 API 的方法名**（如 `wrap` / `reverse`）：同名键在挂载时会把
+> 方法函数写进属性（`mc-space` 因此把它们命名为 `wrap-items` / `reverse-order`）。新增属性前
+> 先确认 ofa 的代理上没有同名方法。
 
 ```js
 btn.setAttribute('disabled', '');
@@ -460,6 +467,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | ✅ 已实现 |
 | [Table](./table/api.md)               | `mc-table`                             | `table/`       | ✅ 已实现 |
 | [Grid](./grid/api.md)                 | `mc-grid` / `mc-grid-item`             | `grid/`        | ✅ 已实现 |
+| [Space](./space/api.md)               | `mc-space`                             | `space/`       | ✅ 已实现 |
 | [Pagination](./pagination/api.md)     | `mc-pagination`                        | `pagination/`  | ✅ 已实现 |
 
 ---
@@ -523,6 +531,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | `mc-tabs`                   | 草案没定面板怎么给：实现是「默认插槽放 `mc-tab` 标签 + `slot="panel"` 且带 `value` 的子元素当面板」，非激活面板挂 `hidden` 常驻 DOM。                                                                                                                             |
 | `mc-table`                  | `data` 撞 ofa 元素代理的保留名、**不能进 `attrs`**：只做宿主 property + 组件自己听属性；行模板放具名 `<template>` —— HTML 解析器会把 `tr` 里的自定义元素搬出去。                                                                                                  |
 | `mc-grid`                   | 草案写「无插槽无 part」，但容器必须有真实 `<slot>` 才能投影子项，所以 api.md 有「插槽」一节。                                                                                                                                                                     |
+| `mc-space`                  | 换行属性 `wrap` → **`wrap-items`**、反向属性 `reverse` → **`reverse-order`**：两者都撞 ofa 元素 API 的同名方法（挂载时会把函数写进属性），改名规避；数据键 `wrapItems` / `reverseOrder`。`gap` 除三档外收数字（px，JS 写内部变量 `--mc-space-gap`）。             |
 | `mc-badge` / `mc-spinner`   | 属性名 / 取值 / 默认值与草案逐字一致；只多了实现层的组件令牌（登记在各自 README 的令牌表）。                                                                                                                                                                      |
 
 ---

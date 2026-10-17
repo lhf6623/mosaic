@@ -398,8 +398,9 @@ const rules = [
     id: 'api-value-ts',
     title: '组件文档 · API 规范「值」列写 TS 类型',
     run: ({ io, components, problems }) => {
+      /* 字面量联合里可以混 number（如 `'sm' | 'md' | 'lg' | number`）—— 以前只认纯字面量联合。 */
       const OK =
-        /^(?:boolean|string|number|number \| string|\(\) => void|'[^']*'(?: \| '[^']*')*)$/;
+        /^(?:\(\) => void|(?:'[^']*'|number|string|boolean)(?: \| (?:'[^']*'|number|string|boolean))*)$/;
       for (const c of components) {
         const api = 'packages/' + c.slug + '/api.md';
         if (!io.exists(api)) continue;

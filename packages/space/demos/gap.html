@@ -1,0 +1,43 @@
+<template component>
+  <div class="flex flex-col gap-4">
+    <div>
+      <p class="text-xs text-muted mb-2">gap="sm"（8px）</p>
+      <mc-space gap="sm">
+        <span>A</span>
+        <span>B</span>
+        <span>C</span>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">gap="md"（默认，16px）</p>
+      <mc-space>
+        <span>A</span>
+        <span>B</span>
+        <span>C</span>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">gap="lg"（24px）</p>
+      <mc-space gap="lg">
+        <span>A</span>
+        <span>B</span>
+        <span>C</span>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">gap="10"（数字，10px）</p>
+      <mc-space gap="10">
+        <span>A</span>
+        <span>B</span>
+        <span>C</span>
+      </mc-space>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-space-gap' });
+  </script>
+</template>

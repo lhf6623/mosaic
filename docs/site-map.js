@@ -392,6 +392,15 @@ export const SITE = [
             summary: '栅格。',
           },
           {
+            order: 42,
+            label: 'Space',
+            zh: '间距',
+            path: 'packages/space/page.html',
+            type: 'component',
+            summary:
+              '间距。横向 / 纵向排列一组元素，间距支持三档令牌或数字；另有主轴分布、交叉轴对齐、反向、换行与撑满。',
+          },
+          {
             order: 45,
             label: 'Pagination',
             zh: '分页',

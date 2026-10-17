@@ -1,27 +1,10 @@
 <template component>
-  <style>
-    .narrow {
-      width: 460px;
-      max-width: 100%;
-      padding: var(--mc-space-3);
-      border: 1px dashed rgb(var(--mc-color-border-strong));
-      border-radius: var(--mc-radius-md);
-    }
-    .cell {
-      padding: var(--mc-space-3);
-      border: 1px solid rgb(var(--mc-color-border));
-      border-radius: var(--mc-radius-md);
-      background-color: rgb(var(--mc-color-surface-sunken));
-      text-align: center;
-    }
-  </style>
-
-  <div class="narrow">
+  <div style="width: 460px; max-width: 100%">
     <mc-grid min-item-width="10rem">
-      <mc-grid-item class="cell">宽一点</mc-grid-item>
-      <mc-grid-item class="cell">就换列</mc-grid-item>
-      <mc-grid-item class="cell">窄一点</mc-grid-item>
-      <mc-grid-item class="cell">就多列</mc-grid-item>
+      <mc-grid-item><mc-card padding="sm">宽一点</mc-card></mc-grid-item>
+      <mc-grid-item><mc-card padding="sm">就换列</mc-card></mc-grid-item>
+      <mc-grid-item><mc-card padding="sm">窄一点</mc-card></mc-grid-item>
+      <mc-grid-item><mc-card padding="sm">就多列</mc-card></mc-grid-item>
     </mc-grid>
   </div>
 

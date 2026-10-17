@@ -1,0 +1,153 @@
+<!-- mc-space — 一维间距容器；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 横向的行内 flex：间距只落在 gap 上，不加外边距（首尾不补，换行也对） */
+    :host {
+      display: inline-flex;
+      box-sizing: border-box;
+      gap: var(--mc-space-gap, var(--mc-space-4, var(--mc-def-space-4)));
+      justify-content: flex-start;
+      align-items: center;
+      vertical-align: middle;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+
+    /* 2. gap 三档：与 mc-grid 同一条映射（sm / md / lg → space-2 / 4 / 6）。
+       数字由 JS 写宿主的 --mc-space-gap，base 那条读它（见 applyGap） */
+    :host([gap='sm']) {
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+    }
+    :host([gap='lg']) {
+      gap: var(--mc-space-6, var(--mc-def-space-6));
+    }
+
+    /* 3. 纵向：列方向，默认把子项拉满宽度（一列按钮 / 输入框不用逐个写 width） */
+    :host([direction='vertical']) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    /* 4. 反向：只翻主轴方向，横向 row-reverse、纵向 column-reverse。
+       ⚠️ 属性不叫 reverse：ofa 的元素 API 自带 reverse() 方法（同 wrap） */
+    :host([reverse-order]) {
+      flex-direction: row-reverse;
+    }
+    :host([direction='vertical'][reverse-order]) {
+      flex-direction: column-reverse;
+    }
+
+    /* 5. 主轴分布 justify-content（align 管的是交叉轴；默认 flex-start 写在 base） */
+    :host([justify='center']) {
+      justify-content: center;
+    }
+    :host([justify='end']) {
+      justify-content: flex-end;
+    }
+    :host([justify='between']) {
+      justify-content: space-between;
+    }
+    :host([justify='around']) {
+      justify-content: space-around;
+    }
+    :host([justify='evenly']) {
+      justify-content: space-evenly;
+    }
+
+    /* 6. 交叉轴对齐：显式值盖过方向给的默认（同为 0-2-0，靠源码顺序分胜负，见 P14） */
+    :host([align='start']) {
+      align-items: flex-start;
+    }
+    :host([align='center']) {
+      align-items: center;
+    }
+    :host([align='end']) {
+      align-items: flex-end;
+    }
+    :host([align='baseline']) {
+      align-items: baseline;
+    }
+    :host([align='stretch']) {
+      align-items: stretch;
+    }
+
+    /* 7. 换行：行距与列距共用同一个 gap。
+       ⚠️ 属性不叫 wrap：ofa 的元素 API 自带 wrap() 方法，同名键在挂载时会把函数写进属性（实测） */
+    :host([wrap-items]) {
+      flex-wrap: wrap;
+    }
+
+    /* 8. 撑满父容器：行内 flex 变块级 flex */
+    :host([block]) {
+      display: flex;
+      width: 100%;
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-space',
+
+      attrs: {
+        direction: 'horizontal',
+        gap: 'md',
+        justify: 'start',
+        align: null,
+        // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-space wrap-items> 失效
+        // 不叫 wrap / reverse：ofa 元素 API 有同名方法，会在挂载时把函数写进属性（见上方 CSS 注释）
+        wrapItems: null,
+        reverseOrder: null,
+        block: null,
+      },
+
+      attached() {
+        // 宿主属性等构造期结束再写（P31）；首次触发落在构造期（P5），这里补一次
+        this._mounted = true;
+        this.normalizeBoolAttrs();
+        this.applyGap();
+      },
+
+      watch: {
+        gap() {
+          if (this._mounted) this.applyGap();
+        },
+        wrapItems() {
+          if (this._mounted) this.normalizeBoolAttrs();
+        },
+        reverseOrder() {
+          if (this._mounted) this.normalizeBoolAttrs();
+        },
+        block() {
+          if (this._mounted) this.normalizeBoolAttrs();
+        },
+      },
+
+      proto: {
+        /**
+         * gap 的数字通道：**只收纯数字**（按 px，如 gap="10"），写进宿主 style 的
+         * --mc-space-gap，base 的 gap 读它。sm / md / lg 与非法值（包括 12px / 0.75rem
+         * 这类带单位的字符串）都删掉变量，交回 CSS 属性选择器 / 默认 md（同 mc-grid 的 cols）。
+         */
+        applyGap() {
+          const raw = String(this.gap ?? '').trim();
+          const pxValue = /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(raw) ? `${raw}px` : '';
+          if (pxValue) this.ele.style.setProperty('--mc-space-gap', pxValue);
+          else this.ele.style.removeProperty('--mc-space-gap');
+        },
+
+        /** 收掉 ofa 布尔绑定写出来的 `wrap-items="false"` / `reverse-order="false"` / `block="false"`：CSS 的 :host([…]) 只认属性在不在（同 P1） */
+        normalizeBoolAttrs() {
+          for (const name of ['wrap-items', 'reverse-order', 'block']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
+        },
+      },
+    });
+  </script>
+</template>

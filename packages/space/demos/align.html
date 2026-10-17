@@ -1,0 +1,47 @@
+<template component>
+  <div class="flex flex-col gap-3">
+    <div>
+      <p class="text-xs text-muted mb-2">align="start"</p>
+      <mc-space align="start">
+        <mc-button size="sm">小</mc-button>
+        <mc-button size="lg">大</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">align="center"</p>
+      <mc-space align="center">
+        <mc-button size="sm">小</mc-button>
+        <mc-button size="lg">大</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">align="end"</p>
+      <mc-space align="end">
+        <mc-button size="sm">小</mc-button>
+        <mc-button size="lg">大</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">align="stretch"</p>
+      <mc-space align="stretch">
+        <mc-card padding="sm">一行</mc-card>
+        <mc-card padding="sm">第一行<br />第二行</mc-card>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">align="baseline"</p>
+      <mc-space align="baseline">
+        <mc-button inline size="sm">小字</mc-button>
+        <mc-button inline size="lg">大字</mc-button>
+      </mc-space>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-space-align' });
+  </script>
+</template>

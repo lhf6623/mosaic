@@ -1,0 +1,61 @@
+<template component>
+  <div class="flex flex-col gap-3" style="width: 24rem; max-width: 100%">
+    <div>
+      <p class="text-xs text-muted mb-2">justify="start"（默认）</p>
+      <mc-space block justify="start">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">justify="center"</p>
+      <mc-space block justify="center">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">justify="end"</p>
+      <mc-space block justify="end">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">justify="between"</p>
+      <mc-space block justify="between">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">justify="around"</p>
+      <mc-space block justify="around">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">justify="evenly"</p>
+      <mc-space block justify="evenly">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-space-justify' });
+  </script>
+</template>

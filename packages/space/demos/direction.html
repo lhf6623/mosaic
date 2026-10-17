@@ -1,0 +1,25 @@
+<template component>
+  <div class="flex flex-col gap-6">
+    <div>
+      <p class="text-xs text-muted mb-2">direction="horizontal"（默认）</p>
+      <mc-space>
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+
+    <div>
+      <p class="text-xs text-muted mb-2">direction="vertical"</p>
+      <mc-space direction="vertical">
+        <mc-button size="sm">一</mc-button>
+        <mc-button size="sm">二</mc-button>
+        <mc-button size="sm">三</mc-button>
+      </mc-space>
+    </div>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-space-direction' });
+  </script>
+</template>
