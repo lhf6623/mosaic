@@ -1,0 +1,16 @@
+<template component>
+  <div>
+    <p class="text-xs text-muted mb-2">一块「头像 + 两行文字」的卡片占位</p>
+    <mc-space align="start">
+      <mc-skeleton variant="circle" width="2.5rem" height="2.5rem"></mc-skeleton>
+      <mc-space direction="vertical">
+        <mc-skeleton width="9rem" height="0.875rem"></mc-skeleton>
+        <mc-skeleton width="6rem" height="0.875rem"></mc-skeleton>
+      </mc-space>
+    </mc-space>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-skeleton-basic' });
+  </script>
+</template>

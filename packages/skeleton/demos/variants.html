@@ -1,0 +1,20 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">variant="rect"（默认）</p>
+      <mc-skeleton width="100%" height="1.25rem"></mc-skeleton>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">variant="text"</p>
+      <mc-skeleton variant="text" width="12rem"></mc-skeleton>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">variant="circle"</p>
+      <mc-skeleton variant="circle" width="2.5rem" height="2.5rem"></mc-skeleton>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-skeleton-variants' });
+  </script>
+</template>

@@ -71,15 +71,22 @@
 顺序固定，读的人不用在几种排法之间找：
 
 ```html
-<section class="doc-demo">
-  <h3>语义色</h3>
-  <!-- ① 标题：中文名，尽量短，不带英文（英文去属性表里查） -->
-  <p class="doc-hint">六个语义色，颜色是按钮唯一决定「语气」的维度。</p>
-  <!-- ② 说明：可选。是导语不是脚注，写「在看之前该知道什么」 -->
-  <doc-playground src="./demos/colors.html"></doc-playground>
-  <!-- ③ 可编辑示例：组件读这份文件做初始预览；展开后的编辑 / 运行 / 重置都基于同一份源 -->
-</section>
+<!-- 所有演示区先包一层 <doc-demos>：宽屏按列流式排、窄屏一列，只算位置不搬 DOM，
+     标题顺序与右栏目录始终一致；漏了这层会退回「一条一条竖着排」 -->
+<doc-demos>
+  <section class="doc-demo">
+    <h3>语义色</h3>
+    <!-- ① 标题：中文名，尽量短，不带英文（英文去属性表里查） -->
+    <p class="doc-hint">六个语义色，颜色是按钮唯一决定「语气」的维度。</p>
+    <!-- ② 说明：可选。是导语不是脚注，写「在看之前该知道什么」 -->
+    <doc-playground src="./demos/colors.html"></doc-playground>
+    <!-- ③ 可编辑示例：组件读这份文件做初始预览；展开后的编辑 / 运行 / 重置都基于同一份源 -->
+  </section>
+</doc-demos>
 ```
+
+**`<doc-demos>` 这层不能省。** 它是演示区的布局容器（`docs/components/demos.html`）：宽屏按列流式排、窄屏一列；
+漏掉时页面不会报错，只会退回「一条一条竖着排」的老样子 —— `page-skeleton` 守卫查不出来，只能靠这条约定。
 
 - **① 标题 = API 名的中文，尽量短**：一个演示讲一个属性 / 插槽 / 事件时，标题就是它的中文名
   （`尺寸`、`禁用`、`手风琴`、`自定义头部`）。英文属性名不进标题 —— 那是属性表的事，
@@ -445,6 +452,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | ✅ 已实现 |
 | [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | ✅ 已实现 |
 | [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | ✅ 已实现 |
+| [Skeleton](./skeleton/api.md)         | `mc-skeleton`                          | `skeleton/`    | ✅ 已实现 |
 | [Empty](./empty/api.md)               | `mc-empty`                             | `empty/`       | ✅ 已实现 |
 | [Input](./input/api.md)               | `mc-input`                             | `input/`       | ✅ 已实现 |
 | [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | ✅ 已实现 |

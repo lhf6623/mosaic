@@ -22,3 +22,22 @@
 - **可选** —— `mosaic.css` 给**你自己的页面**提供工具类与完整令牌表（含亮色 / 暗色两态）。
 
 > `0.1.0` 是计划中的首个版本，仓库还没有 tag —— 首次发布前这些 URL 会 404。
+
+## 开发
+
+```bash
+pnpm dev     # 本地起文档站（http://127.0.0.1:8642；复现子路径加 --prefix /mosaic）
+pnpm check   # 静态守卫：tsc / 文档与代码对账 / 生成物新鲜度 / 体积 / markdownlint / prettier
+```
+
+测试按「改动 → 该跑哪些套件」选，**不要默认全量**：
+
+- `pnpm test`：默认入口（= `pnpm test:changed`）。用 `tests/suite-map.json` 的依赖地图 + 兜底策略，
+  只跑本次改动命中的套件，并打印每个文件的命中原因；工作区干净时会转全量。
+- `node tests/smoke.mjs <slug>`：只跑一个组件的套件，适合单组件迭代（也不会被别的套件偶发干扰）。
+- `pnpm test:all`：全量（约 2 分钟，含 35s 预热）。**只在明确要求、或改了共享面时**跑——
+  `docs/site-map.js`、`tests/suite-map.json`、文档站外壳 / 布局、`packages/boot/` 与令牌。
+- `node tests/smoke.mjs <slug> --record`：新增组件 / 依赖变化后重录该套件的依赖地图；`pnpm test:record` 重录整份。
+
+纯文档改动（`.md`、导语文案）跑 `pnpm check` 就够；浏览器套件只测运行时，不读这些文件。
+选测逻辑的细节见 `tests/select.mjs` 与 `tests/smoke.mjs` 文件头。

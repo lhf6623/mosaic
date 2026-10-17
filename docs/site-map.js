@@ -311,6 +311,15 @@ export const SITE = [
             summary:
               '加载条。state 一个入口（idle / loading / done / error）：在跑就缓慢爬升（到不了 100%），收尾先滑到 100% 再淡出，成功与出错同一条路、只差色；默认钉在视口顶部，也可放进容器；不吃指针。',
           },
+          {
+            order: 50,
+            label: 'Skeleton',
+            zh: '骨架屏',
+            path: 'packages/skeleton/page.html',
+            type: 'component',
+            summary:
+              '骨架屏：加载时先把内容的位置占住。矩形 / 文本行 / 圆形三档形状，宽高、底色与扫光都可配；减弱动效下自动关掉扫光。',
+          },
         ],
       },
       {

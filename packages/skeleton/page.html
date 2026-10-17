@@ -1,0 +1,75 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <div class="doc-body">
+    <l-m src="./skeleton.html"></l-m>
+    <h1>
+      Skeleton
+      <code>mc-skeleton</code>
+    </h1>
+    <p class="doc-lead">骨架屏：加载时先把内容的位置占住，形状、尺寸与配色都能直接配。</p>
+
+    <h2>例子</h2>
+
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          一块占位可以拆成任意组合：圆形头像 + 两行文字，用
+          <code>mc-space</code>
+          摆即可。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>形状</h3>
+        <p class="doc-hint">
+          <code>variant</code>
+          三档：
+          <code>rect</code>
+          （默认） /
+          <code>text</code>
+          /
+          <code>circle</code>
+          。
+        </p>
+        <doc-playground src="./demos/variants.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <p class="doc-hint">
+          <code>size</code>
+          三档与 button / input 同一套控件高（28 / 36 / 44）；
+          <code>width</code>
+          /
+          <code>height</code>
+          收 CSS 长度，写了就盖过
+          <code>size</code>
+          。
+        </p>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          底色 / 扫光 / 圆角都是 L3 令牌，在宿主上覆盖即可；宽高也可以直接写
+          <code>style</code>
+          ；
+          <code>no-animation</code>
+          可关掉扫光。
+        </p>
+        <doc-playground src="./demos/external-style.html"></doc-playground>
+      </section>
+    </doc-demos>
+
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

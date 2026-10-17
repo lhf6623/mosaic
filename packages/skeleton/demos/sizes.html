@@ -1,0 +1,21 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">size="sm" / 默认（md）/ size="lg"：28 / 36 / 44</p>
+      <mc-space align="end">
+        <mc-skeleton size="sm" width="4rem"></mc-skeleton>
+        <mc-skeleton width="4rem"></mc-skeleton>
+        <mc-skeleton size="lg" width="4rem"></mc-skeleton>
+        <mc-skeleton variant="circle" size="lg"></mc-skeleton>
+      </mc-space>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">width / height 精确覆盖：width="12rem" height="1rem"</p>
+      <mc-skeleton width="12rem" height="1rem"></mc-skeleton>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-skeleton-sizes' });
+  </script>
+</template>

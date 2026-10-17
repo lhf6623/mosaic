@@ -1,0 +1,27 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">默认令牌</p>
+      <mc-skeleton width="12rem" height="2rem"></mc-skeleton>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">覆盖 --mc-skeleton-bg / --mc-skeleton-shine / --mc-skeleton-radius</p>
+      <mc-skeleton
+        width="12rem"
+        height="2rem"
+        style="--mc-skeleton-bg: 0 128 138; --mc-skeleton-radius: var(--mc-radius-full)"></mc-skeleton>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">也可以直接写宿主 style（宽高同理）</p>
+      <mc-skeleton style="width: 8rem; height: 1rem; --mc-skeleton-bg: 154 99 0"></mc-skeleton>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">no-animation：静态占位，不扫光</p>
+      <mc-skeleton no-animation width="12rem" height="2rem"></mc-skeleton>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-skeleton-external-style' });
+  </script>
+</template>

@@ -1,0 +1,138 @@
+<!-- mc-skeleton — 骨架屏占位块；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 占位块；宽默认 100%、高跟 size，width / height 属性由 JS 写成宿主内联样式 */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      /* 宽高是属性给死的：在 flex 行里不能被同桌的贪婪兄弟挤扁（浏览器默认 flex-shrink: 1） */
+      flex: none;
+      width: 100%;
+      /* 高度跟着 size 走（与 button / input 同一套控件高）；text 单独按文字行高，见下面 */
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+
+      /* L3 组件令牌：形状只改圆角，底色与扫光亮色都可从外面覆盖 */
+      --mc-skeleton-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-skeleton-shine: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-skeleton-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+    }
+
+    /* 2. size 三档：与其它组件同一套控件高（sm 28 / md 36 / lg 44），显式 height 会盖过它 */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+    }
+
+    /* 3. 形状三档：矩形（默认）/ 文本行 / 圆形 */
+    :host([variant='text']) {
+      /* 文本行跟文字走：一行字的高度，不占控件高（size 对 text 不生效） */
+      height: 1em;
+      --mc-skeleton-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+    }
+    :host([variant='circle']) {
+      /* 没显式 width / height 时，用高度当宽度 → 正圆（宽高都写死时以属性为准） */
+      width: fit-content;
+      aspect-ratio: 1;
+      --mc-skeleton-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+    }
+
+    /* 4. 占位块 + 扫光；动画只在本层，减弱动效偏好下直接关掉 */
+    .bone {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--mc-skeleton-radius);
+      background-color: rgb(var(--mc-skeleton-bg));
+    }
+    .bone::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(var(--mc-skeleton-shine) / 60%),
+        transparent
+      );
+      animation: mc-skeleton-shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes mc-skeleton-shimmer {
+      to {
+        transform: translateX(100%);
+      }
+    }
+    /* 开关：no-animation 存在即关（绑定写法 no-animation="false" 在脚本里归一化掉） */
+    :host([no-animation]) .bone::after {
+      animation: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bone::after {
+        animation: none;
+      }
+    }
+  </style>
+
+  <div class="bone"></div>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-skeleton',
+
+      attrs: {
+        variant: 'rect', // rect | text | circle
+        size: 'md', // sm | md | lg；盒子形状的高度档（text 不认）
+        width: null, // CSS 长度；null = 不写 → 100%
+        height: null, // CSS 长度；null = 不写 → 跟 size
+        // 布尔属性默认值必须是 null（P1）：存在即关扫光
+        noAnimation: null,
+      },
+
+      attached() {
+        this._mounted = true;
+        this.normalizeBoolAttrs();
+        this.applySize();
+      },
+
+      watch: {
+        noAnimation() {
+          if (this._mounted) this.normalizeBoolAttrs();
+        },
+
+        width() {
+          if (this._mounted) this.applySize();
+        },
+        height() {
+          if (this._mounted) this.applySize();
+        },
+      },
+
+      proto: {
+        /** ofa 的布尔绑定会把 false 写成 no-animation="false"：摘掉，CSS :host([no-animation]) 才判得准（P31） */
+        normalizeBoolAttrs() {
+          const raw = this.ele.getAttribute('no-animation');
+          if (raw === null) return;
+          if (raw === 'false' || raw === '0') this.ele.removeAttribute('no-animation');
+          else if (raw !== '') this.ele.setAttribute('no-animation', '');
+        },
+
+        /** width / height → 宿主内联宽高；空值删掉，交回 CSS 默认（100% / 跟 size） */
+        applySize() {
+          const set = (prop, value) => {
+            const raw = String(value ?? '').trim();
+            if (raw) this.ele.style.setProperty(prop, raw);
+            else this.ele.style.removeProperty(prop);
+          };
+          set('width', this.width);
+          set('height', this.height);
+        },
+      },
+    });
+  </script>
+</template>
