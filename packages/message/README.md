@@ -16,7 +16,7 @@
 | `message.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`    | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`       | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`       | 4 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`       | 4 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
 | `test/`        | 组件自己的冒烟套件（1 个文件）                                                |
 | `message.js`   | 构建产物 / 附属文件                                                           |
 

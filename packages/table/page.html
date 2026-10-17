@@ -5,18 +5,8 @@
     <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button 要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
     <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./table.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/runtime.html"></l-m>
-    <l-m src="./demos/striped.html"></l-m>
-    <l-m src="./demos/hoverable.html"></l-m>
-    <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/border.html"></l-m>
-    <l-m src="./demos/loading.html"></l-m>
-    <l-m src="./demos/empty.html"></l-m>
-    <l-m src="./demos/slots.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Table
       <code>mc-table</code>
@@ -45,12 +35,7 @@
         <code>document.querySelector('#t').data = […]</code>
         。 单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
       </p>
-      <demo-table-basic></demo-table-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -61,34 +46,19 @@
         <code>data</code>
         property。
       </p>
-      <demo-table-runtime></demo-table-runtime>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/runtime.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/runtime.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>条纹</h3>
       <p class="doc-hint">偶数行换底色，长表格里更好找行。</p>
-      <demo-table-striped></demo-table-striped>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/striped.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/striped.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>悬停</h3>
       <p class="doc-hint">鼠标停在哪一行，哪一行亮起来。</p>
-      <demo-table-hoverable></demo-table-hoverable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hoverable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hoverable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -102,12 +72,7 @@
         <code>--mc-table-cell-pad-y</code>
         自己写。
       </p>
-      <demo-table-size></demo-table-size>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/size.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/size.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -120,12 +85,7 @@
         <code>0</code>
         。
       </p>
-      <demo-table-border></demo-table-border>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/border.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/border.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -138,12 +98,7 @@
         <code>mc-spinner</code>
         + 一行「加载中…」）：表格留在原位不跳版，层里的内容居中。
       </p>
-      <demo-table-loading></demo-table-loading>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/loading.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/loading.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -157,12 +112,7 @@
         <code>empty-text</code>
         换掉。
       </p>
-      <demo-table-empty></demo-table-empty>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/empty.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/empty.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -176,12 +126,7 @@
         <code>slot="loading"</code>
         就整块换成你的。
       </p>
-      <demo-table-slots></demo-table-slots>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slots.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slots.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -199,12 +144,7 @@
         <code>cell</code>
         ）。
       </p>
-      <demo-table-part></demo-table-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性/方法/事件/配置/插槽/part）由 api.md 渲染，不在这里手抄 -->

@@ -6,15 +6,7 @@
     <l-m src="./select.html"></l-m>
     <l-m src="./option.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/clearable.html"></l-m>
-    <l-m src="./demos/multiple.html"></l-m>
-    <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <h1>
       Select
       <code>mc-select</code>
@@ -46,22 +38,12 @@
         画进面板），两个标签都要注册；面板需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+
         / Firefox 125+），否则不会弹。
       </p>
-      <demo-select-basic></demo-select-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-select-sizes></demo-select-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -74,12 +56,7 @@
         <code>change</code>
         。
       </p>
-      <demo-select-clearable></demo-select-clearable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/clearable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/clearable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -95,12 +72,7 @@
         <code>default-value</code>
         属性仍是逗号分隔的字符串；面板不会自己收起。
       </p>
-      <demo-select-multiple></demo-select-multiple>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/multiple.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/multiple.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -113,12 +85,7 @@
         <code>invalid</code>
         只把边框换成危险色。
       </p>
-      <demo-select-states></demo-select-states>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/states.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/states.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -142,12 +109,7 @@
         <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
-      <demo-select-events></demo-select-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -165,12 +127,7 @@
         <code>[data-empty]</code>
         ，外层 CSS 直接勾它， 旁边三个提示就是这么跟着亮灭的。
       </p>
-      <demo-select-customize></demo-select-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -188,12 +145,7 @@
         <code>::part()</code>
         ：演示里面板展开时，触发框会多一圈高亮。
       </p>
-      <demo-select-part></demo-select-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性/方法/事件/配置/插槽/part）由 api.md 渲染，不在这里手抄 -->

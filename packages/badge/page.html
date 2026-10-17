@@ -2,15 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./badge.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/colors.html"></l-m>
-    <l-m src="./demos/hex.html"></l-m>
-    <l-m src="./demos/variants.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/dot.html"></l-m>
-    <l-m src="./demos/max.html"></l-m>
     <h1>
       Badge
       <code>mc-badge</code>
@@ -32,12 +25,7 @@
         <code>closable</code>
         。
       </p>
-      <demo-badge-basic></demo-badge-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -51,12 +39,7 @@
         <code>mc-tag</code>
         。
       </p>
-      <demo-badge-colors></demo-badge-colors>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/colors.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/colors.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -69,12 +52,7 @@
         <code>outline</code>
         只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
       </p>
-      <demo-badge-variants></demo-badge-variants>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/variants.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/variants.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -86,12 +64,7 @@
         <code>md</code>
         两档：高度 16 / 20px，字号 10 / 12px。
       </p>
-      <demo-badge-sizes></demo-badge-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -102,12 +75,7 @@
         <code>dot</code>
         时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
       </p>
-      <demo-badge-dot></demo-badge-dot>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/dot.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/dot.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -118,12 +86,7 @@
         <code>99+</code>
         。只认纯数字内容。
       </p>
-      <demo-badge-max></demo-badge-max>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/max.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/max.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -136,12 +99,7 @@
         <code>#fc0</code>
         ）：浅底按主题派生， 实心上的文字色按对比度自动给。
       </p>
-      <demo-badge-hex></demo-badge-hex>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hex.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hex.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->

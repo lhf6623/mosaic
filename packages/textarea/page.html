@@ -2,16 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./textarea.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/rows.html"></l-m>
-    <l-m src="./demos/auto-resize.html"></l-m>
-    <l-m src="./demos/counter.html"></l-m>
-    <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Textarea
       <code>mc-textarea</code>
@@ -34,12 +26,7 @@
         <code>default-value</code>
         是初始值，只读一次；之后改属性不会回头覆盖当前值。
       </p>
-      <demo-textarea-basic></demo-textarea-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -49,22 +36,12 @@
         <code>rows</code>
         一样时它们看起来一样高。
       </p>
-      <demo-textarea-sizes></demo-textarea-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>行数</h3>
-      <demo-textarea-rows></demo-textarea-rows>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/rows.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/rows.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -73,12 +50,7 @@
         <code>auto-resize</code>
         跟着内容长高，不再出现滚动条；第二条是关闭时的对照。
       </p>
-      <demo-textarea-auto-resize></demo-textarea-auto-resize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/auto-resize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/auto-resize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -90,12 +62,7 @@
         <code>当前/上限</code>
         ，它随输入实时更新。
       </p>
-      <demo-textarea-counter></demo-textarea-counter>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/counter.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/counter.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -111,12 +78,7 @@
         <code>invalid</code>
         只是把边框换成危险色。
       </p>
-      <demo-textarea-states></demo-textarea-states>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/states.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/states.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -139,12 +101,7 @@
         <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
-      <demo-textarea-events></demo-textarea-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -156,12 +113,7 @@
         <code>::part(名字)</code>
         改样式。
       </p>
-      <demo-textarea-part></demo-textarea-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性/事件/插槽/part）由 api.md 渲染，不在这里手抄 -->

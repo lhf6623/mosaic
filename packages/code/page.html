@@ -6,20 +6,7 @@
          要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
     <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/src.html"></l-m>
-    <l-m src="./demos/attribute.html"></l-m>
-    <l-m src="./demos/binding.html"></l-m>
-    <l-m src="./demos/runtime.html"></l-m>
-    <l-m src="./demos/line-numbers.html"></l-m>
-    <l-m src="./demos/markup.html"></l-m>
-    <l-m src="./demos/max-height.html"></l-m>
-    <l-m src="./demos/soft-wrap.html"></l-m>
-    <l-m src="./demos/theme.html"></l-m>
-    <l-m src="./demos/hljs-base.html"></l-m>
-    <l-m src="./demos/box-model.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <h1>
       Code
       <code>mc-code</code>
@@ -34,12 +21,7 @@
     <section class="doc-demo">
       <h3>基本用法</h3>
       <p class="doc-hint">点右上角主题按钮：配色会跟着换成另一份官方主题。</p>
-      <demo-code-basic></demo-code-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -55,12 +37,7 @@
         <code>&lt;link href&gt;</code>
         一样）；长片段放独立文件就不用转义。
       </p>
-      <demo-code-src></demo-code-src>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/src.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/src.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -72,12 +49,7 @@
         <code>&amp;lt;</code>
         。
       </p>
-      <demo-code-attribute></demo-code-attribute>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/attribute.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/attribute.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -89,12 +61,7 @@
         <code>data</code>
         。
       </p>
-      <demo-code-binding></demo-code-binding>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/binding.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/binding.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -108,32 +75,17 @@
         <code>el.code</code>
         是当前原文（已 dedent）。
       </p>
-      <demo-code-runtime></demo-code-runtime>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/runtime.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/runtime.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>行号</h3>
-      <demo-code-line-numbers></demo-code-line-numbers>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/line-numbers.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/line-numbers.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>标记语言</h3>
-      <demo-code-markup></demo-code-markup>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/markup.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/markup.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -142,34 +94,19 @@
         <code>max-height="120"</code>
         ：超出部分在组件内部滚动，滚到底后继续滚页面。
       </p>
-      <demo-code-max-height></demo-code-max-height>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/max-height.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/max-height.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>长行折行</h3>
       <p class="doc-hint">长行折行，而不是横向滚动。</p>
-      <demo-code-soft-wrap></demo-code-soft-wrap>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/soft-wrap.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/soft-wrap.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>官方主题</h3>
       <p class="doc-hint">同一页面上可以并存多种配色。</p>
-      <demo-code-theme></demo-code-theme>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/theme.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/theme.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -180,23 +117,13 @@
         <code>build/</code>
         目录；不写就用内置的同一个 CDN，换镜像或自托管时改这一条。
       </p>
-      <demo-code-hljs-base></demo-code-hljs-base>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hljs-base.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hljs-base.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>外部样式</h3>
       <p class="doc-hint">改的都在宿主上，不用跨 shadow 边界。</p>
-      <demo-code-box-model></demo-code-box-model>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/box-model.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/box-model.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -216,12 +143,7 @@
         <code>line</code>
         ）。
       </p>
-      <demo-code-part></demo-code-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由规范 md 渲染，不在这里手抄 ——

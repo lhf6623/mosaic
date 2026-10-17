@@ -7,7 +7,7 @@
 
 **状态**：已实现 · 标签 `mc-collapse` · 目录 `packages/collapse/`
 
-折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘与焦点不用自己写。
+折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。
 
 ## 单元里有什么
 
@@ -17,7 +17,7 @@
 | `collapse-item.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`          | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`             | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`             | 9 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）               |
+| `demos/`             | 9 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
 | `test/`              | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。

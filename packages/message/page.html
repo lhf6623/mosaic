@@ -6,11 +6,7 @@
          没注册的标签会连同文字一起被藏掉、还不报错 —— 站点外壳也不含 mc-button，深链 + 刷新时更明显。 -->
     <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/duration.html"></l-m>
-    <l-m src="./demos/closable.html"></l-m>
-    <l-m src="./demos/key.html"></l-m>
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <h1>
       Message
       <code>message()</code>
@@ -32,12 +28,7 @@
         <code>{ close }</code>
         。默认 3 秒后自己走。
       </p>
-      <demo-message-basic></demo-message-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -54,12 +45,7 @@
         <code>close()</code>
         按钮走的就是第二条。
       </p>
-      <demo-message-duration></demo-message-duration>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/duration.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/duration.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -74,12 +60,7 @@
         ×，停止的时机归任务方管。下面那个按钮点一下开始、再点一下就是「任务方来取消」
         （消息自己给不出的能力，只有代码有）。
       </p>
-      <demo-message-closable></demo-message-closable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/closable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/closable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -94,12 +75,7 @@
         <code>onClose</code>
         里停掉生产端的定时器 —— 否则关掉之后下一拍又推回来，看着就是关不掉。
       </p>
-      <demo-message-key></demo-message-key>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/key.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/key.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->

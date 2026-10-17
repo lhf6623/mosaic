@@ -2,17 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./pagination.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/disabled.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/jumper.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
-    <l-m src="./demos/siblings.html"></l-m>
-    <l-m src="./demos/sizer.html"></l-m>
-    <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/slots.html"></l-m>
     <h1>
       Pagination
       <code>mc-pagination</code>
@@ -34,12 +25,7 @@
         <code>current</code>
         ）；85 条、每页 10 条就是 9 页，超出的页码会被夹回最后一页。
       </p>
-      <demo-pagination-basic></demo-pagination-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -49,33 +35,18 @@
         <code>sibling-count</code>
         决定当前页两侧各留几个页码。
       </p>
-      <demo-pagination-siblings></demo-pagination-siblings>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/siblings.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/siblings.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-pagination-size></demo-pagination-size>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/size.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/size.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>禁用</h3>
       <p class="doc-hint">所有按钮都点不动，也不会发 change；键盘同样进不来。</p>
-      <demo-pagination-disabled></demo-pagination-disabled>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/disabled.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/disabled.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -90,12 +61,7 @@
         <code>current</code>
         不算。
       </p>
-      <demo-pagination-events></demo-pagination-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -106,12 +72,7 @@
         多一个「跳至 __ 页」输入框：回车或失焦提交，越界夹回第一页 /
         最后一页；提交后输入框清空，占位符显示当前页。
       </p>
-      <demo-pagination-jumper></demo-pagination-jumper>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/jumper.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/jumper.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -131,12 +92,7 @@
         <code>mc-select</code>
         。
       </p>
-      <demo-pagination-sizer></demo-pagination-sizer>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizer.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizer.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -147,12 +103,7 @@
         <code>suffix</code>
         两个具名插槽在页码条两侧，跟宿主横排一行。
       </p>
-      <demo-pagination-slots></demo-pagination-slots>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slots.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slots.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -180,12 +131,7 @@
         <code>select</code>
         ）。
       </p>
-      <demo-pagination-part></demo-pagination-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不在这里手抄 -->

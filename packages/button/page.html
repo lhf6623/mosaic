@@ -2,19 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./button.html"></l-m>
-    <!-- 可编辑示例（站点组件）：本页先接一个做样板，其余演示仍是「查看代码」抽屉 -->
-    <l-m src="../../docs/components/playground.html"></l-m>
-    <l-m src="./demos/variants.html"></l-m>
-    <l-m src="./demos/inline.html"></l-m>
-    <l-m src="./demos/hex.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/type.html"></l-m>
-    <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/slots.html"></l-m>
-    <l-m src="./demos/block.html"></l-m>
-    <l-m src="./demos/override.html"></l-m>
     <h1>
       Button
       <code>mc-button</code>
@@ -33,12 +22,7 @@
 
     <section class="doc-demo">
       <h3>外观 × 颜色</h3>
-      <demo-button-variants></demo-button-variants>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/variants.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/variants.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -56,14 +40,13 @@
         —— 它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
         放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了
         <code>size="lg"</code>
-        。
+        。图标走
+        <code>prefix</code>
+        /
+        <code>suffix</code>
+        插槽，字号与颜色都跟按钮文字走（见第二段）。
       </p>
-      <demo-button-inline></demo-button-inline>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/inline.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/inline.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -76,22 +59,12 @@
         <code>#fc0</code>
         ）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
       </p>
-      <demo-button-hex></demo-button-hex>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hex.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hex.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-button-sizes></demo-button-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -110,12 +83,7 @@
         <code>button</code>
         （不会误提交）。
       </p>
-      <demo-button-type></demo-button-type>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/type.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/type.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -125,12 +93,7 @@
         <kbd>Tab</kbd>
         走一遍能看到焦点环。
       </p>
-      <demo-button-states></demo-button-states>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/states.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/states.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -142,22 +105,12 @@
         <code>slot="suffix"</code>
         ，文字照旧放默认插槽。
       </p>
-      <demo-button-slots></demo-button-slots>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slots.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slots.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>撑满宽度</h3>
-      <demo-button-block></demo-button-block>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/block.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/block.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -171,12 +124,7 @@
         <code>--mc-button-accent</code>
         。
       </p>
-      <demo-button-override></demo-button-override>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/override.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/override.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->

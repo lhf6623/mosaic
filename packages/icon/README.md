@@ -11,15 +11,16 @@
 
 ## 单元里有什么
 
-| 文件                 | 角色                                                                          |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `icon.html`          | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
-| `page.html`          | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
-| `api.md`             | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`             | 11 个演示（页面上的活样例与 `<mc-code src>` 引用**同一个文件**）              |
-| `test/`              | 组件自己的冒烟套件（1 个文件）                                                |
-| `icons.generated.js` | 构建产物 / 附属文件                                                           |
-| `icons.license.txt`  | 构建产物 / 附属文件                                                           |
+| 文件                  | 角色                                                                          |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `icon.html`           | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
+| `page.html`           | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
+| `api.md`              | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
+| `demos/`              | 11 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                   |
+| `test/`               | 组件自己的冒烟套件（1 个文件）                                                |
+| `icons.generated.css` | 构建产物 / 附属文件                                                           |
+| `icons.generated.js`  | 构建产物 / 附属文件                                                           |
+| `icons.license.txt`   | 构建产物 / 附属文件                                                           |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
 
@@ -109,9 +110,3 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 ## 改这个单元之前
 
 - 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
-- 内置集两个来源：语义图标 **Lucide（ISC）**、品牌图标 **simple-icons（CC0）**；署名与来源见
-  [`icons.license.txt`](./icons.license.txt)，品牌标记的**商标归各自公司所有**（只作「这是哪个平台」的
-  标识，别用来暗示合作或背书）。清单的唯一真相源是
-  [`tools/icon-manifest.mjs`](../../tools/icon-manifest.mjs) —— **加图标 = 加一行 + `pnpm icons`**，
-  使用者的 HTML 一个字都不用改；加品牌前先看 [`tools/check-size.mjs`](../../tools/check-size.mjs)
-  （品牌 path 比 lucide 大一个量级，平均 1.4 KB CSS/个）。

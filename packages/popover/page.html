@@ -6,17 +6,8 @@
          演示用到它就必须本页注册：漏了 `*:not(:defined){display:none}` 会把标签连同文字藏掉且不报错（P44）。 -->
     <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./popover.html"></l-m>
-    <l-m src="./demos/placement.html"></l-m>
-    <l-m src="./demos/trigger.html"></l-m>
-    <l-m src="./demos/controlled.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/arrow.html"></l-m>
-    <l-m src="./demos/flip.html"></l-m>
-    <l-m src="./demos/menu.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Popover
       <code>mc-popover</code>
@@ -44,12 +35,7 @@
         <code>filter</code>
         困住。
       </p>
-      <demo-popover-placement></demo-popover-placement>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/placement.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/placement.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -68,12 +54,7 @@
         <code>show()</code>
         ，受控开合就走它）。 默认插槽只放一个触发元素 —— 放多个时面板会按整块对齐。
       </p>
-      <demo-popover-trigger></demo-popover-trigger>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/trigger.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/trigger.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -96,12 +77,7 @@
         <code>close</code>
         ，使用者把那边的状态收回去 —— 外面那个按钮就是这套写法。
       </p>
-      <demo-popover-controlled></demo-popover-controlled>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/controlled.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/controlled.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -129,12 +105,7 @@
         <code>addEventListener</code>
         监听。
       </p>
-      <demo-popover-events></demo-popover-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -148,12 +119,7 @@
         <code>arrow="none"</code>
         关掉。
       </p>
-      <demo-popover-arrow></demo-popover-arrow>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/arrow.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/arrow.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -161,12 +127,7 @@
       <p class="doc-hint">
         下面三个触发元素分别贴着视口的底边、右边、右下角 —— 面板会自己翻到放得下的那一侧。
       </p>
-      <demo-popover-flip></demo-popover-flip>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/flip.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/flip.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -176,12 +137,7 @@
         <code>mc-menu</code>
         就是一个下拉菜单。
       </p>
-      <demo-popover-menu></demo-popover-menu>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/menu.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/menu.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -191,12 +147,7 @@
         <code>--mc-popover-*</code>
         令牌。
       </p>
-      <demo-popover-customize></demo-popover-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -208,12 +159,7 @@
         <code>::part(arrow)</code>
         （小三角）能从外面改。
       </p>
-      <demo-popover-part></demo-popover-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->

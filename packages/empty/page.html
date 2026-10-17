@@ -2,15 +2,9 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./empty.html"></l-m>
     <l-m src="../button/button.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/description.html"></l-m>
-    <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/footer.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Empty
       <code>mc-empty</code>
@@ -21,12 +15,7 @@
 
     <section class="doc-demo">
       <h3>基本用法</h3>
-      <demo-empty-basic></demo-empty-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -36,22 +25,12 @@
         <code>description</code>
         属性写一句，或者往默认插槽里放内容（插槽赢）。
       </p>
-      <demo-empty-description></demo-empty-description>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/description.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/description.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-empty-size></demo-empty-size>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/size.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/size.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -61,12 +40,7 @@
         <code>slot="footer"</code>
         放一个按钮。不给就整块不占位，不占那一段间距。
       </p>
-      <demo-empty-footer></demo-empty-footer>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/footer.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/footer.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -76,12 +50,7 @@
         <code>style</code>
         或页面 CSS 上。
       </p>
-      <demo-empty-customize></demo-empty-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -101,12 +70,7 @@
         <code>footer</code>
         四个）。
       </p>
-      <demo-empty-part></demo-empty-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->

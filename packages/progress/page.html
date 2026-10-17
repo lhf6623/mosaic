@@ -2,15 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./progress.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/max.html"></l-m>
-    <l-m src="./demos/indeterminate.html"></l-m>
-    <l-m src="./demos/colors.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Progress
       <code>mc-progress</code>
@@ -22,12 +15,7 @@
     <!-- 每个演示区四段：标题 → 说明 → 组件 → 代码；取词规则见 packages/README.md「演示区四段」。 -->
     <section class="doc-demo">
       <h3>基本用法</h3>
-      <demo-progress-basic></demo-progress-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -39,12 +27,7 @@
         <code>value / max</code>
         ，超出上限会被夹到 100%。
       </p>
-      <demo-progress-max></demo-progress-max>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/max.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/max.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -55,12 +38,7 @@
         <code>value</code>
         （比例交给动画）。
       </p>
-      <demo-progress-indeterminate></demo-progress-indeterminate>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/indeterminate.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/indeterminate.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -70,12 +48,7 @@
         <code>primary</code>
         ；颜色只往填充槽里填值，所以换色不用动结构。
       </p>
-      <demo-progress-colors></demo-progress-colors>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/colors.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/colors.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -89,12 +62,7 @@
         <code>display: block</code>
         ，宽度由父容器决定 —— 行内 / flex 布局里想让它铺满，就给它一个能撑开的容器。
       </p>
-      <demo-progress-sizes></demo-progress-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -104,12 +72,7 @@
         <code>style="…"</code>
         ）。
       </p>
-      <demo-progress-customize></demo-progress-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -121,12 +84,7 @@
         <code>::part(bar)</code>
         就能改它（下面第二条没改，作对照）。
       </p>
-      <demo-progress-part></demo-progress-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->

@@ -2,15 +2,9 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="../button/button.html"></l-m>
     <l-m src="./loading-bar.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/imperative.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/container.html"></l-m>
-    <l-m src="./demos/error.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
     <h1>
       Loading Bar
       <code>mc-loading-bar</code>
@@ -35,12 +29,7 @@
         <strong>视口顶部</strong>
         （不在演示区里）：点「开始加载」看它爬升， 点「完成」看它滑满淡出。
       </p>
-      <demo-loading-bar-basic></demo-loading-bar-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -71,12 +60,7 @@
         <code>done()</code>
         就把条子收掉 ——「还有几件事没完」得由调用方自己记账。
       </p>
-      <demo-loading-bar-imperative></demo-loading-bar-imperative>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/imperative.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/imperative.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -86,12 +70,7 @@
         出错用主题的 danger。这一下很快，所以下面两条把淡出拉长到 60s 才看得住颜色。
         三条都在这个演示区里 —— 钉在视口顶部那一种只在本页第一个演示里，一页只该有一条。
       </p>
-      <demo-loading-bar-error></demo-loading-bar-error>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/error.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/error.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -100,12 +79,7 @@
         <code>size="sm"</code>
         是 2px，默认 4px；长度永远铺满（它跟着容器走，与控件那套高度无关）。
       </p>
-      <demo-loading-bar-sizes></demo-loading-bar-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -116,12 +90,7 @@
         <code>position: absolute</code>
         就行（组件不去猜容器）。
       </p>
-      <demo-loading-bar-container></demo-loading-bar-container>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/container.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/container.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -131,12 +100,7 @@
         <code>part="bar"</code>
         ，圆角 / 渐变直接改它；颜色、轨道底色、爬升终点 各有令牌 —— 下面三条分别演示这三件事。
       </p>
-      <demo-loading-bar-customize></demo-loading-bar-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->

@@ -2,17 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./tag.html"></l-m>
-    <l-m src="./demos/colors.html"></l-m>
-    <l-m src="./demos/hex.html"></l-m>
-    <l-m src="./demos/variants.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/closable.html"></l-m>
-    <l-m src="./demos/checkable.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
     <h1>
       Tag
       <code>mc-tag</code>
@@ -29,12 +20,7 @@
         <strong>中性</strong>
         —— 标签是分类标记，语义色应当在需要强调时才用；六个色值都有。
       </p>
-      <demo-tag-colors></demo-tag-colors>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/colors.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/colors.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -47,12 +33,7 @@
         <code>#fc0</code>
         ）：浅底按主题派生， 文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
       </p>
-      <demo-tag-hex></demo-tag-hex>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hex.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hex.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -65,12 +46,7 @@
         <code>outline</code>
         只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
       </p>
-      <demo-tag-variants></demo-tag-variants>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/variants.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/variants.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -91,12 +67,7 @@
         <code>overflow: hidden</code>
         ）。
       </p>
-      <demo-tag-sizes></demo-tag-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -115,12 +86,7 @@
         <code>remove()</code>
         就是使用者那一半。
       </p>
-      <demo-tag-closable></demo-tag-closable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/closable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/closable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -135,12 +101,7 @@
         <code>subtle</code>
         才看得出变化。
       </p>
-      <demo-tag-checkable></demo-tag-checkable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/checkable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/checkable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -159,12 +120,7 @@
         <code>remove()</code>
         。
       </p>
-      <demo-tag-events></demo-tag-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -174,12 +130,7 @@
         <code>style="…"</code>
         ），不用跨 shadow 边界。
       </p>
-      <demo-tag-customize></demo-tag-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -193,12 +144,7 @@
         <code>close</code>
         ）。
       </p>
-      <demo-tag-part></demo-tag-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性/方法/事件/配置/插槽/part）由 api.md 渲染，不在这里手抄 -->

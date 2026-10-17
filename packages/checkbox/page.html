@@ -2,18 +2,10 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./checkbox.html"></l-m>
     <l-m src="../form/form.html"></l-m>
     <l-m src="../form/form-item.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/indeterminate.html"></l-m>
-    <l-m src="./demos/disabled.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/validation.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/custom-value.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Checkbox
       <code>mc-checkbox</code>
@@ -36,12 +28,7 @@
         <code>value</code>
         是提交时带出去的值。 文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
       </p>
-      <demo-checkbox-basic></demo-checkbox-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -56,32 +43,17 @@
         <code>false</code>
         算），点一下就清掉半选。
       </p>
-      <demo-checkbox-indeterminate></demo-checkbox-indeterminate>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/indeterminate.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/indeterminate.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>禁用</h3>
-      <demo-checkbox-disabled></demo-checkbox-disabled>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/disabled.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/disabled.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-checkbox-sizes></demo-checkbox-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -101,12 +73,7 @@
         <code>value</code>
         是另一回事：它只在同名一组里当身份值。
       </p>
-      <demo-checkbox-custom-value></demo-checkbox-custom-value>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/custom-value.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/custom-value.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -115,12 +82,7 @@
         <code>invalid</code>
         只声明「颜色」，不做校验。
       </p>
-      <demo-checkbox-validation></demo-checkbox-validation>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/validation.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/validation.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -144,12 +106,7 @@
         <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
-      <demo-checkbox-events></demo-checkbox-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -167,12 +124,7 @@
         <code>base</code>
         。
       </p>
-      <demo-checkbox-part></demo-checkbox-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->

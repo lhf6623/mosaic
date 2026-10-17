@@ -182,13 +182,26 @@ export function nextDemoTag() {
 }
 
 /**
- * 把编辑后的 demo 源码编译成组件并注册，返回可直接 createElement 的 tag。
- * @param {{ text: string, url: string }} options text = 编辑器里的源码，url = demo 文件地址
+ * 合法自定义元素名（小写、以字母开头、必须带连字符）
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+const isCustomTag = (value) =>
+  typeof value === 'string' && /^[a-z][a-z0-9]*-[a-z0-9-]+$/.test(value);
+
+/**
+ * 把 demo 源码编译成组件并注册，返回可直接 createElement 的 tag。
+ *
+ * `reuseTag = true`（初始预览用）保留 demo 文件自己声明的标签（如 `demo-alert-colors`）：
+ * 测试按这个标签查页面里的演示，SPA 间来回换页时标签已经注册过、直接复用定义即可。
+ * 编辑后的预览一律换新标签（自定义元素不能重复注册）。
+ *
+ * @param {{ text: string, url: string, reuseTag?: boolean }} options
+ *   text = 编辑器里的源码 / 文件内部源码，url = demo 文件地址
  * @returns {Promise<string>}
  */
-export async function compileDemo({ text, url }) {
+export async function compileDemo({ text, url, reuseTag = false }) {
   const { markup, script } = parseDemoSource(text);
-  const tag = nextDemoTag();
   /** @type {Record<string, any>} */
   let config = {};
 
@@ -208,6 +221,10 @@ export async function compileDemo({ text, url }) {
       URL.revokeObjectURL(blobUrl);
     }
   }
+
+  const tag = reuseTag && isCustomTag(config.tag) ? config.tag : nextDemoTag();
+  /* 换页回来时同一个 demo 标签已经注册过（自定义元素不能重复注册）：直接复用那个定义 */
+  if (customElements.get(tag)) return tag;
 
   const ofa = /** @type {any} */ (globalThis).$;
   if (!ofa?.register) throw new Error('ofa.js 的 $.register 不可用（页面没加载 ofa？）');

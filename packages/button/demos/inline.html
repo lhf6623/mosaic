@@ -8,6 +8,20 @@
       也一样。
     </p>
 
+    <p>
+      图标也走插槽（字号、颜色都归按钮管）：
+      <mc-button inline size="lg" color="primary">
+        <mc-icon slot="prefix" name="edit"></mc-icon>
+        编辑
+      </mc-button>
+      ；
+      <mc-button inline size="lg" color="info">
+        查看文档
+        <mc-icon slot="suffix" name="arrow-right"></mc-icon>
+      </mc-button>
+      。图标跟文字一样跟着这一行的基线走。
+    </p>
+
     <div class="flex flex-wrap items-center gap-4">
       <mc-button inline size="sm">小字</mc-button>
       <mc-button inline>常规</mc-button>

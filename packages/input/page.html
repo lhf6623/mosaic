@@ -4,17 +4,6 @@
   <div class="doc-body">
     <l-m src="../button/button.html"></l-m>
     <l-m src="./input.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/value.html"></l-m>
-    <l-m src="./demos/binding.html"></l-m>
-    <l-m src="./demos/slots.html"></l-m>
-    <l-m src="./demos/clearable.html"></l-m>
-    <l-m src="./demos/type.html"></l-m>
-    <l-m src="./demos/maxlength.html"></l-m>
-    <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
     <h1>
       Input
       <code>mc-input</code>
@@ -45,22 +34,12 @@
         <code>input</code>
         已被组件拦掉，不会收到两次。
       </p>
-      <demo-input-basic></demo-input-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-input-sizes></demo-input-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -82,12 +61,7 @@
         <code>el.value</code>
         。
       </p>
-      <demo-input-value></demo-input-value>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/value.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/value.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -99,12 +73,7 @@
         <code>:value="form.name"</code>
         。
       </p>
-      <demo-input-binding></demo-input-binding>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/binding.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/binding.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -115,12 +84,7 @@
         <code>slot="suffix"</code>
         放单位或图标；空着的那一侧不占位， 第三条就是没有前后缀时的间距。
       </p>
-      <demo-input-slots></demo-input-slots>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slots.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slots.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -135,12 +99,7 @@
         <code>change</code>
         。
       </p>
-      <demo-input-clearable></demo-input-clearable>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/clearable.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/clearable.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -151,12 +110,7 @@
         <code>&lt;input&gt;</code>
         ，键盘与输入法跟着它走。
       </p>
-      <demo-input-type></demo-input-type>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/type.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/type.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -165,12 +119,7 @@
         <code>maxlength</code>
         转发给内部原生控件，超出的字符根本输不进去。
       </p>
-      <demo-input-maxlength></demo-input-maxlength>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/maxlength.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/maxlength.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -186,12 +135,7 @@
         <code>invalid</code>
         只是把边框换成危险色。
       </p>
-      <demo-input-states></demo-input-states>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/states.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/states.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -226,12 +170,7 @@
         <code>clear</code>
         三条。
       </p>
-      <demo-input-events></demo-input-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -243,12 +182,7 @@
         <code>::part(名字)</code>
         改样式。
       </p>
-      <demo-input-part></demo-input-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->

@@ -2,22 +2,11 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./menu.html"></l-m>
     <l-m src="./menu-item.html"></l-m>
     <!-- 演示里的按钮 -->
     <l-m src="../button/button.html"></l-m>
-    <l-m src="./demos/options.html"></l-m>
-    <l-m src="./demos/nested.html"></l-m>
-    <l-m src="./demos/icon.html"></l-m>
-    <l-m src="./demos/groups.html"></l-m>
-    <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/collapsed.html"></l-m>
-    <l-m src="./demos/accordion.html"></l-m>
-    <l-m src="./demos/states.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
-    <l-m src="./demos/slot.html"></l-m>
     <h1>
       Menu
       <code>mc-menu</code>
@@ -76,12 +65,7 @@
         <code>data-*</code>
         留在行上给宿主钩子用）。
       </p>
-      <demo-menu-options></demo-menu-options>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/options.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/options.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -94,12 +78,7 @@
         <code>level</code>
         ，行内边距也不用自己叠。父级行是开合开关，不导航。
       </p>
-      <demo-menu-nested></demo-menu-nested>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/nested.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/nested.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -114,12 +93,7 @@
         <code>name</code>
         语法（内置图标零请求、查不到才远程取一次）。图标落在行的左端、不占点击区 —— 整行照旧可点。
       </p>
-      <demo-menu-icon></demo-menu-icon>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/icon.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/icon.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -140,12 +114,7 @@
         <code>children</code>
         就是一条纯标题。
       </p>
-      <demo-menu-groups></demo-menu-groups>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/groups.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/groups.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -167,12 +136,7 @@
         <code>options</code>
         渲染出来的整棵树跟着变 —— 嵌套的子菜单也拿同一套通道。
       </p>
-      <demo-menu-size></demo-menu-size>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/size.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/size.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -190,12 +154,7 @@
         <kbd>Esc</kbd>
         或点外面关掉。
       </p>
-      <demo-menu-collapsed></demo-menu-collapsed>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/collapsed.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/collapsed.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -207,12 +166,7 @@
         <code>mc-collapse</code>
         的口径，嵌套层各管各的）：点「表单」，「组件」自己收起来。
       </p>
-      <demo-menu-accordion></demo-menu-accordion>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/accordion.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/accordion.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -227,12 +181,7 @@
         <code>href</code>
         —— 点不动，也进不了焦点顺序。
       </p>
-      <demo-menu-states></demo-menu-states>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/states.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/states.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -254,12 +203,7 @@
         <code>[data-disabled]</code>
         ，外层从这儿补东西。
       </p>
-      <demo-menu-customize></demo-menu-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -273,12 +217,7 @@
         <code>list</code>
         一个）。
       </p>
-      <demo-menu-part></demo-menu-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -297,12 +236,7 @@
         <code>&lt;mc-menu-item&gt;</code>
         —— 这条路能表达全部状态，但菜单项、层级、开合都要自己管。
       </p>
-      <demo-menu-slot></demo-menu-slot>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slot.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slot.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->

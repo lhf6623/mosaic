@@ -2,14 +2,9 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./breadcrumb.html"></l-m>
     <l-m src="./breadcrumb-item.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/separator.html"></l-m>
-    <l-m src="./demos/long.html"></l-m>
-    <l-m src="./demos/customize.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Breadcrumb
       <code>mc-breadcrumb</code>
@@ -39,12 +34,7 @@
         <code>o-if</code>
         包一层，分隔符会静默消失。
       </p>
-      <demo-breadcrumb-basic></demo-breadcrumb-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -58,12 +48,7 @@
         <code>--mc-breadcrumb-sep</code>
         令牌 —— 值是 CSS 字符串，要带引号。 两条通道同时写时属性优先；写回默认值时以令牌为准。
       </p>
-      <demo-breadcrumb-separator></demo-breadcrumb-separator>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/separator.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/separator.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -73,12 +58,7 @@
         <code>style</code>
         上， 令牌靠继承进每一级，不用碰组件内部。
       </p>
-      <demo-breadcrumb-customize></demo-breadcrumb-customize>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/customize.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/customize.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -88,12 +68,7 @@
         <code>flex-wrap</code>
         ），不会撑破容器。
       </p>
-      <demo-breadcrumb-long></demo-breadcrumb-long>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/long.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/long.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -109,12 +84,7 @@
         <code>&lt;ol&gt;</code>
         ）能从外面改。
       </p>
-      <demo-breadcrumb-part></demo-breadcrumb-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->

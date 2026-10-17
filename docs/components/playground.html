@@ -402,9 +402,11 @@
           this.setStatus('正在加载示例…');
           let tag;
           try {
+            /* 初始预览保留 demo 文件自己的标签（测试按它查页面里的演示；换页回来直接复用定义） */
             tag = await compileDemo({
               text: this._source.parsed.inner,
               url: this._source.url,
+              reuseTag: true,
             });
           } catch (error) {
             if (seq !== this._runSeq || !this._mounted) return;

@@ -110,8 +110,9 @@
 
 /* ---------- 演示区 ---------- */
 
-/* 一个演示区的段落顺序固定（标题 → 说明 → 组件 → 代码），但**说明是可选的**：一眼看得明白的例子不写，
- * 写了就必须在组件之前。标题取词规则见 packages/README.md §二；本组只服务组件文档页。 */
+/* 一个演示区的段落顺序固定（标题 → 说明 → 可编辑示例），但**说明是可选的**：一眼看得明白的例子不写，
+ * 写了就必须在示例之前。标题取词规则见 packages/README.md §二；本组只服务组件文档页。
+ * 示例本身的样式（预览 / 编辑抽屉 / 编辑器）住在 <doc-playground> 的 shadow root 里，这里只管卡片外壳。 */
 
 .doc-demo {
   margin: var(--mc-space-5) 0;
@@ -129,31 +130,6 @@
  * `.doc-hint` 的公共样式配的是「跟在框尾」的场合（「色彩」页那种），别混用。 */
 .doc-demo > .doc-hint {
   margin: 0 0 var(--mc-space-4);
-}
-
-/* 演示区的「查看代码」抽屉 —— 作者用项目自己的折叠面板写在页面里。
- * 容器默认是卡片外观，抽屉只要一条分隔线：外部声明赢过组件的 :host；头部 / 内容区是组件内部结构，只能走 ::part()。 */
-.doc-demo-code {
-  margin-top: var(--mc-space-4);
-  border: 0;
-  border-top: 1px solid rgb(var(--mc-color-border));
-  border-radius: 0;
-  background-color: transparent;
-}
-
-.doc-demo-code mc-collapse-item::part(header) {
-  color: rgb(var(--mc-color-fg-muted));
-  font-weight: var(--mc-weight-normal);
-}
-
-/* 留白交给代码块自己，免得和 mc-code 的边框内边距叠成两层 */
-.doc-demo-code mc-collapse-item::part(body) {
-  padding: 0;
-}
-
-/* 代码块贴住抽屉（上面那条 mc-code 的块级外边距在这里归零） */
-.doc-demo-code mc-code {
-  margin-block: 0;
 }
 
 /* ---------- 表格 ---------- */

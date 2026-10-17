@@ -75,9 +75,10 @@ for (const slug of SLUGS) {
     .filter((e) => e.isFile() && !e.name.endsWith('.html'))
     .map((e) => e.name)
     .filter((n) => n !== 'api.md' && n !== 'README.md');
-  const demoCount = entries.some((e) => e.name === 'demos')
-    ? fs.readdirSync(`${dir}/demos`).length
-    : 0;
+  /** demos/ 里只有 .html 算演示；别的（如 code 的 highlight-demo.js）是演示读的样例文件 */
+  const demoFiles = entries.some((e) => e.name === 'demos') ? fs.readdirSync(`${dir}/demos`) : [];
+  const demoCount = demoFiles.filter((n) => n.endsWith('.html')).length;
+  const demoExtras = demoFiles.filter((n) => !n.endsWith('.html'));
   const testCount = entries.some((e) => e.name === 'test')
     ? fs.readdirSync(`${dir}/test`).length
     : 0;
@@ -93,10 +94,14 @@ for (const slug of SLUGS) {
     `| \`page.html\` | **入口二**：文档站加载（注册在 [\`docs/site-map.js\`](../../docs/site-map.js)） |`,
   );
   rows.push(`| \`api.md\` | 接口规范 —— 由 \`<doc-spec>\` 渲染进页面参考区 |`);
-  if (demoCount)
+  if (demoCount) {
+    const extras = demoExtras.length
+      ? ' + ' + demoExtras.map((n) => `\`demos/${n}\``).join(' / ') + '（演示读的样例文件）'
+      : '';
     rows.push(
-      `| \`demos/\` | ${demoCount} 个演示（页面上的活样例与 \`<mc-code src>\` 引用**同一个文件**） |`,
+      `| \`demos/\` | ${demoCount} 个演示（页面用 \`<doc-playground src>\` 读**同一份文件**）${extras} |`,
     );
+  }
   if (testCount) rows.push(`| \`test/\` | 组件自己的冒烟套件（${testCount} 个文件） |`);
   for (const f of otherFiles) rows.push(`| \`${f}\` | 构建产物 / 附属文件 |`);
 

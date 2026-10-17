@@ -52,8 +52,9 @@
 **命令式入口的「方法」也并进这一节**（2026-10 收的）：`loadingBar.start()` / `show()` 这类调用写在
 同一张表里，名称写调用式、类型写 TS 签名（见 §三）。
 
-- 正文最前是 `<l-m>` 注册（本组件 + 所有 `demos/*.html` + 页面用到而外壳没注册的组件）；
-  之后依次是 `<h1>` / `.doc-lead`、`<h2>例子</h2>`、`<doc-spec src="./api.md">`。
+- 正文最前是 `<l-m>` 注册（本组件 + 页面用到而外壳没注册的组件；**演示不用注册**，页面写
+  `<doc-playground src>` 即可）；之后依次是 `<h1>` / `.doc-lead`、`<h2>例子</h2>`、
+  `<doc-spec src="./api.md">`。
 - 页首只留 `<h1>` + 一句 `doc-lead`，**不要把参考表写在例子前面**：
   先看能做什么（例子），再查怎么配（参考区）。
   ⚠️ **页首没有徽标了**（2026-09 去掉的 `doc-badges`）：「已实现 / `packages/xxx/`」这类胶囊
@@ -61,17 +62,18 @@
   文档页不再单独抄一遍。
 - 实现说明（为什么这么分层、底层用了什么机制）不进文档页 —— 留在组件文件头与同单元 `README.md` 的「设计取舍」节。
 - 每个演示的标题与 `.doc-hint` 留在 `<section>` 里；演示之间不插属性表。
-- 页面里**内联的 `<mc-code>` 文本是逐字展示的** —— 整份 `packages/*/demos/*.html` 都在
-  `.prettierignore` 里（2026-10 定的：`pnpm format` 曾把 7 个 demo 的样例挤行，code 套件连挂 4 条），
-  所以内联样例直接写、**不需要 `<!-- prettier-ignore -->`**；代价是这些 demo 的 `<script>`
-  与属性折行也得手写保持风格。长片段改用 `src="…"` 仍然更省事。
+- **`<mc-code>` 文本是逐字展示的**（「色彩」页那种内联样例、以及 demo 文件里演示 `mc-code`
+  的样例）—— 整份 `packages/*/demos/*.html` 都在 `.prettierignore` 里（2026-10 定的：
+  `pnpm format` 曾把 7 个 demo 的样例挤行，code 套件连挂 4 条），所以内联样例直接写、
+  **不需要 `<!-- prettier-ignore -->`**；代价是这些 demo 的 `<script>` 与属性折行也得手写保持风格。
+  长片段改用 `src="…"` 仍然更省事。
   ⚠️ `.prettierignore` 只有 **Prettier** 认：编辑器用的格式化器不是 Prettier（VSCode 没装 /
   没用 Prettier 扩展时，「格式化文档」走的就是内置那份）时它照旧会重排 —— 块内多个空格被并成一个、
   相对缩进被抹平。块里是要**逐字展示**的原文，重排 = 文档内容变了（`mc-code` 只 dedent 掉最小公共
   缩进，少掉的 2 空格就是渲染出来的层级）。改这几个文件前确认编辑器用的格式化器是 Prettier
   （即 `pnpm format` 跑的那份）。
 
-## 二、演示区四段：标题 → 说明 → 组件 → 组件代码
+## 二、演示区三段：标题 → 说明 → 可编辑示例
 
 顺序固定，读的人不用在几种排法之间找：
 
@@ -81,14 +83,8 @@
   <!-- ① 标题：中文名，尽量短，不带英文（英文去属性表里查） -->
   <p class="doc-hint">六个语义色，颜色是按钮唯一决定「语气」的维度。</p>
   <!-- ② 说明：可选。是导语不是脚注，写「在看之前该知道什么」 -->
-  <demo-button-colors></demo-button-colors>
-  <!-- ③ 组件：活样例（独立的 demos/*.html 组件） -->
-  <mc-collapse class="doc-demo-code">
-    <mc-collapse-item header="查看代码">
-      <mc-code language="html" src="./demos/colors.html"></mc-code>
-    </mc-collapse-item>
-  </mc-collapse>
-  <!-- ④ 组件代码：默认收起的抽屉，内容就是 ③ 那份文件 -->
+  <doc-playground src="./demos/colors.html"></doc-playground>
+  <!-- ③ 可编辑示例：组件读这份文件做初始预览；展开后的编辑 / 运行 / 重置都基于同一份源 -->
 </section>
 ```
 
@@ -112,20 +108,19 @@
   ⚠️ 另一种「看起来有用」的重复：别把演示展开后已经写着的句子再抄一遍
   （导语与演示正文撞车＝同一条信息两遍）。
   它在演示区里的间距由 `content.css` 的 `.doc-demo > .doc-hint` 给。
-- **③ 例子是一个独立的 ofa 组件文件**（`demos/*.html`）：可单独打开、单独测，
-  一个演示一个文件，代码面板引用同一份（见下）。
-- **④ 组件代码**：`<mc-code src>` 读的就是 ③ 那份文件的**原文**（含 `<template component>`
-  外壳与注册用的 `<script>`）—— 刻意不另写片段，只有一份源、不会漂移；默认收起。
-- ⚠️ **样例内联在 `<mc-code>` 里时（不给 `src`）直接写、不用加任何标记** ——
-  `packages/*/demos/*.html` 整份在 `.prettierignore` 里，`pnpm format` 不碰它。
-  为什么这么定：2026-10 那次全仓格式化把 7 个 demo 的样例挤行了（`basic.html` 的代码行被并进上一行
-  注释、`max-height.html` 的 9 行 JSON 塌成 2 行），code 套件连挂 4 条 —— 逐块加 `prettier-ignore`
-  只防得住 prettier 自己，防不住编辑器内置的 HTML 格式化器。代价与编辑器注意事项见
-  §一「内联的 `<mc-code>` 文本」那条；长片段给 `src` 仍然更省事。
+- **③ 可编辑示例是一个独立的 ofa 组件文件**（`demos/*.html`）：可单独打开、单独测，一个演示
+  一个文件。文档页只写 `<doc-playground src="./demos/x.html">` —— **不再写 `<l-m>`、也不再写
+  `<demo-x>` 标签**：组件自己读这份文件、运行时编译出初始预览，展开后的编辑 / 运行 / 重置都用
+  同一份源，没有第二份片段会漂移。
+- ⚠️ **标题与 `.doc-hint` 必须留在页面里**：`doc-toc` 只扫页面 shadow root 的 `h2` / `h3`，
+  收进 `doc-playground` 会让整页目录少掉所有演示标题（同 `doc-spec` 的理由）。
+- ⚠️ **`demos/*.html` 仍整份在 `.prettierignore` 里**：演示内部可能用 `<mc-code>` 逐字展示
+  代码片段，prettier 会把换行压掉（2026-10 全仓格式化挂过 code 套件 4 条）。与编辑器无关了，
+  但这条忽略继续有效，也别给 demo 文件加逐块 `prettier-ignore`。
 
-> **迁移状态**：26 个组件文档页已全部按这个顺序排过（开场白 → 例子 →
-> `<doc-spec>` 参考区 → 页脚）。演示区的段落顺序就是这份指纹
-> （`h3|demo|code` / `h3|hint|demo|code`）——说明可以在、可以不在，但**绝不许落在组件之后**；
+> **迁移状态**：全部组件文档页已按这个结构排过（开场白 → 例子 → `<doc-spec>` 参考区 → 页脚），
+> 每个演示区就是一条 `<doc-playground src>`。演示区的段落顺序就是这份指纹
+> （`h3|playground` / `h3|hint|playground`）——说明可以在、可以不在，但**绝不许落在示例之后**；
 > 参考区渲染出来的节与 `api.md` 逐条对账。
 
 ⚠️ **覆盖线**：组件代码里有的**属性** / **命名插槽** / **part**，都至少要有一个演示真的用到它 ——
@@ -134,7 +129,8 @@
 反过来，加了属性 / 插槽 / part 却没演示，这里就红。
 
 **例子住在 `packages/{name}/demos/*.html`，一个演示一个文件**，文件本身就是
-ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引进来再写标签：
+ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` 引用它，
+**不写 `<l-m>`、也不写标签**：
 
 ```html
 <!-- demos/colors.html -->
@@ -153,26 +149,23 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
   bash 丢了所有换行）。它本身就是要展示的内容，照旧手写。
 - **一个演示文件只讲一件事。** 同一件事的多个变体可以放一起（六种颜色、三档尺寸），
   但**两个不同的 API / 特性要拆成两个文件、两节**（`max-height` 与 `soft-wrap`、
-  `code` 属性与 `:code` 绑定）—— 一个文件里塞两件事，"查看代码"给出的就不是一个
+  `code` 属性与 `:code` 绑定）—— 一个文件里塞两件事，可编辑示例给出的就不是一个
   能直接抄的例子了。
-- **代码面板与活样例引用同一个文件**：`<mc-code src="./demos/colors.html">` 读的就是
-  上面那份文件（`mc-code` 的 `src` 早就有这能力）。所以"演示的代码"只有一份，
-  改例子 = 改代码面板，**没有第二处会漂移**。
+- **只有一份源**：`<doc-playground src="./demos/x.html">` 读的就是上面那份文件 ——
+  初始预览、编辑器里的文本、重置都用它；改例子 = 改文件，**没有第二处会漂移**。
 - **例子是组件，不是片段**，所以它里面的 ofa 绑定照常编译（`:code="boundSnippet"`、
-  `on:open="…"`），而且**可以单独打开、单独测**。
-  ⚠️ 反过来不成立：ofa.js **不编译运行时注入的 HTML**（`innerHTML` 塞进去的
-  `{{ }}` / `:prop` 全是死的），所以"纯片段 + 注入"那条路会让演示里的绑定静默失效。
+  `on:open="…"`），而且**可以单独打开、单独测**（`doc-playground` 按组件规范编译文件，
+  不是把 `innerHTML` 塞进去）。
 - 例子的 DOM 在自己的 shadow root 里，**页面级的 `.doc-row` 这类样式够不着** ——
   例子内部一律用工具类（`flex flex-wrap items-center gap-3`，工具类子集里有）。
-- 抽屉就是**项目自己的折叠面板**，作者直接写在页面里（`content.css` 里那几条把容器
-  的卡片外观压成一条分隔线，头部/内容区走 `::part()`）。它是站点级依赖，
-  和 `mc-code` / `mc-collapse` 一起在 `docs/layout.html` 注册一次。
+- **`doc-playground` 是站点级组件**：在 `docs/layout.html` 注册一次，组件文档页不用为演示
+  写任何 `<l-m>`。
 - ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的只有
   `mc-code` / `mc-icon` / `mc-collapse(-item)` / `mc-menu(-item)` / `mc-breadcrumb(-item)` /
-  `mc-card` 那一批，**不含 `mc-button`**。漏了的话 ofa 的 `*:not(:defined){display:none}`
-  会把没注册的标签连同文字一起藏掉 —— 不报错，只是演示区里那排按钮整个消失；而且
-  同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就空白（首页碰巧注册过
-  `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过）。
+  `mc-card` / `doc-playground` 那一批，**不含 `mc-button`**。漏了的话 ofa 的
+  `*:not(:defined){display:none}` 会把没注册的标签连同文字一起藏掉 —— 不报错，只是演示区里
+  那排按钮整个消失；而且同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就空白
+  （首页碰巧注册过 `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过）。
   写法照 `packages/card/page.html`，正文最前面一行：
 
   ```html
@@ -181,12 +174,12 @@ ofa.js 组件（`<template component>` + 一行 `tag`），页面用 `<l-m>` 引
 
   改这条约定时自己逐页对账：站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()` 必须盖住演示里用到的每个项目组件。
 
-- **代码的路径按写它的那个文件解析**（和 `<link href>` 一样），所以例子里的相对
-  `src` 要从 `demos/` 往上数；`<mc-code src="./demos/x.html">` 则相对文档页。
-- 改页面时逐页核对这条约定：每个 `.doc-demo` 都有一个 `demo-*` 例子组件 + 一个抽屉、
-  代码面板里的文本**逐字等于**它 `src` 指向的文件、每块代码都提到它在演示的标签
-  （Button 页全是 `<mc-button>`、Code 页全是 `<mc-code>`、Collapse 页全是 `<mc-collapse>`），
-  且文件里是作者写的原样标记（没有 ofa 反射出来的默认属性）。
+- **路径**：`<doc-playground src="./demos/x.html">` 相对**文档页**解析；demo 文件内部的相对
+  `src` / `href` / `import` 由 `docs/lib/demo-runtime.mjs` 按 demo 文件地址重写 —— 写例子时
+  仍然按 demo 文件所在目录数（从 `demos/` 往上）。
+- 改页面时逐页核对：每个 `.doc-demo` 恰好一条 `<doc-playground src>`、页面里没有
+  `<l-m src="./demos/">` 与 `<demo-*>` 标签、`src` 指向的文件存在；标题 / 说明留在页面里
+  （右栏目录靠它）。
 
 ## 三、参考区（属性 / 事件 / 插槽 / part）：写进 `api.md`，只放表
 

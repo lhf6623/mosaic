@@ -2,15 +2,6 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/accordion.html"></l-m>
-    <l-m src="./demos/size.html"></l-m>
-    <l-m src="./demos/disabled.html"></l-m>
-    <l-m src="./demos/rich-header.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
-    <l-m src="./demos/nested.html"></l-m>
-    <l-m src="./demos/style-override.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Collapse
       <code>mc-collapse</code>
@@ -37,32 +28,17 @@
         <code>title</code>
         —— 后者是全局 HTML 属性，悬停会弹浏览器原生 tooltip。
       </p>
-      <demo-collapse-basic></demo-collapse-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>手风琴</h3>
-      <demo-collapse-accordion></demo-collapse-accordion>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/accordion.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/accordion.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-collapse-size></demo-collapse-size>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/size.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/size.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -72,22 +48,12 @@
         <kbd>Tab</kbd>
         也会跳过。
       </p>
-      <demo-collapse-disabled></demo-collapse-disabled>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/disabled.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/disabled.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>自定义头部</h3>
-      <demo-collapse-rich-header></demo-collapse-rich-header>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/rich-header.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/rich-header.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -99,23 +65,13 @@
         <code>name</code>
         属性。
       </p>
-      <demo-collapse-events></demo-collapse-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>嵌套</h3>
       <p class="doc-hint">子项里再放一个容器：内层自己互斥，不会影响外层已经展开的分支。</p>
-      <demo-collapse-nested></demo-collapse-nested>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/nested.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/nested.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -125,12 +81,7 @@
         <code>style="…"</code>
         直接压过去，不用跨 shadow 边界。
       </p>
-      <demo-collapse-style-override></demo-collapse-style-override>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/style-override.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/style-override.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -148,12 +99,7 @@
         <code>::part(body)</code>
         上。
       </p>
-      <demo-collapse-part></demo-collapse-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->

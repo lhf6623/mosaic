@@ -2,16 +2,10 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；代码面板引用同一份文件 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./switch.html"></l-m>
     <l-m src="../form/form.html"></l-m>
     <l-m src="../form/form-item.html"></l-m>
-    <l-m src="./demos/custom-value.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/disabled.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
-    <l-m src="./demos/events.html"></l-m>
     <h1>
       Switch
       <code>mc-switch</code>
@@ -45,12 +39,7 @@
         <code>"0"</code>
         这种值看下一条「自定义值」。
       </p>
-      <demo-switch-basic></demo-switch-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -70,32 +59,17 @@
         <code>{ checked }</code>
         。
       </p>
-      <demo-switch-custom-value></demo-switch-custom-value>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/custom-value.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/custom-value.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-switch-sizes></demo-switch-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>禁用</h3>
-      <demo-switch-disabled></demo-switch-disabled>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/disabled.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/disabled.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -119,12 +93,7 @@
         <code>on:focus</code>
         直接写就行 —— 这里演的是组件自己发的那几条。
       </p>
-      <demo-switch-events></demo-switch-events>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/events.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/events.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -141,12 +110,7 @@
         的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
         改轨道长度不用再改第二条规则。
       </p>
-      <demo-switch-part></demo-switch-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区（属性/事件/插槽/part）由 api.md 渲染，不在这里手抄 -->

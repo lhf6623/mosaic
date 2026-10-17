@@ -3,17 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <l-m src="./icon.html"></l-m>
-    <l-m src="./demos/basic.html"></l-m>
-    <l-m src="./demos/builtins.html"></l-m>
-    <l-m src="./demos/sizes.html"></l-m>
-    <l-m src="./demos/colors.html"></l-m>
-    <l-m src="./demos/hex.html"></l-m>
-    <l-m src="./demos/remote.html"></l-m>
-    <l-m src="./demos/source.html"></l-m>
-    <l-m src="./demos/src.html"></l-m>
-    <l-m src="./demos/slot.html"></l-m>
-    <l-m src="./demos/styles.html"></l-m>
-    <l-m src="./demos/part.html"></l-m>
     <h1>
       Icon
       <code>mc-icon</code>
@@ -26,12 +15,7 @@
 
     <section class="doc-demo">
       <h3>基本用法</h3>
-      <demo-icon-basic></demo-icon-basic>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/basic.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/basic.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -46,32 +30,17 @@
         <code>name</code>
         。
       </p>
-      <demo-icon-builtins></demo-icon-builtins>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/builtins.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/builtins.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>尺寸</h3>
-      <demo-icon-sizes></demo-icon-sizes>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/sizes.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/sizes.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>语义色</h3>
-      <demo-icon-colors></demo-icon-colors>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/colors.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/colors.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -84,12 +53,7 @@
         <code>current</code>
         与六个语义名照旧。
       </p>
-      <demo-icon-hex></demo-icon-hex>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/hex.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/hex.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -105,12 +69,7 @@
         <code>lucide:search</code>
         的集名等于内置来源集，退化成裸名后命中内置，不联网。
       </p>
-      <demo-icon-remote></demo-icon-remote>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/remote.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/remote.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -123,12 +82,7 @@
         <code>icon-base</code>
         指到自托管镜像。
       </p>
-      <demo-icon-source></demo-icon-source>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/source.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/source.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -138,23 +92,13 @@
         直接给一个 SVG 地址（相对路径按页面解析），给了它就不再查内置；这里用 data
         URI，免得示例依赖网络。
       </p>
-      <demo-icon-src></demo-icon-src>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/src.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/src.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
       <h3>自定义图形</h3>
       <p class="doc-hint">默认插槽有内容时，内置 / 远程图形让位 —— 不想加依赖时用它。</p>
-      <demo-icon-slot></demo-icon-slot>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/slot.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/slot.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -166,12 +110,7 @@
         <code>color</code>
         就是颜色，都是原生 CSS。
       </p>
-      <demo-icon-styles></demo-icon-styles>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/styles.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/styles.html"></doc-playground>
     </section>
 
     <section class="doc-demo">
@@ -184,12 +123,7 @@
         <code>::part(glyph)</code>
         改它的内部样式，这里让它转起来。
       </p>
-      <demo-icon-part></demo-icon-part>
-      <mc-collapse class="doc-demo-code">
-        <mc-collapse-item header="查看代码">
-          <mc-code language="html" src="./demos/part.html"></mc-code>
-        </mc-collapse-item>
-      </mc-collapse>
+      <doc-playground src="./demos/part.html"></doc-playground>
     </section>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
