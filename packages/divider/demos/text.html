@@ -1,0 +1,20 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">align="start"</p>
+      <mc-divider align="start">左侧标题</mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">默认（居中）</p>
+      <mc-divider>中间文字</mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">align="end"</p>
+      <mc-divider align="end">右侧文字</mc-divider>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-divider-text' });
+  </script>
+</template>

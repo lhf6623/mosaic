@@ -1,0 +1,17 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">默认令牌</p>
+      <mc-divider>默认颜色、1px 粗</mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">覆盖 --mc-divider-color / --mc-divider-width / --mc-divider-text-gap</p>
+      <mc-divider
+        style="--mc-divider-color: 0 128 138; --mc-divider-width: 3px; --mc-divider-text-gap: 1.5rem">自定义线段与文字间距</mc-divider>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-divider-external-style' });
+  </script>
+</template>

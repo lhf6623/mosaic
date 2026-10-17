@@ -1,0 +1,160 @@
+<!-- mc-divider — 分割线（水平 / 竖直，可带中间文字）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 一条线 + 中间内容的三段式 flex；线色 / 粗细 / 文字间距都是可覆盖的 L3 令牌 */
+    :host {
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+
+      --mc-divider-color: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-divider-width: 1px;
+      --mc-divider-text-gap: var(--mc-space-3, var(--mc-def-space-3));
+    }
+
+    /* 2. 间距：水平线留上下、竖线留左右。sm / md / lg 走属性选择器，数字由 JS 写
+       --mc-divider-spacing（见 applySpacing；回到三档时删掉，交回 CSS） */
+    :host(:not([direction='vertical'])) {
+      margin-block: var(--mc-divider-spacing, var(--mc-space-4, var(--mc-def-space-4)));
+    }
+    :host([spacing='sm']) {
+      --mc-divider-spacing: var(--mc-space-2, var(--mc-def-space-2));
+    }
+    :host([spacing='lg']) {
+      --mc-divider-spacing: var(--mc-space-6, var(--mc-def-space-6));
+    }
+
+    /* 3. 竖线：三段改成纵向，贴父级交叉轴拉满（父级 flex 行里的高度由最高的一项决定）；
+       不在 flex 行里时退化成 min-height: 1em 的一小段 */
+    :host([direction='vertical']) {
+      display: inline-flex;
+      flex-direction: column;
+      align-self: stretch;
+      min-height: 1em;
+      vertical-align: middle;
+      margin-inline: var(--mc-divider-spacing, var(--mc-space-4, var(--mc-def-space-4)));
+    }
+
+    /* 4. 线段：水平线是一条上边框（高 0），竖线是一条左 / 右边框（宽 0），间距都走 flex。
+       另一条边显式写 0 宽：border-style 一改成 dashed，初始宽度 medium 就会显形（3px 的假线） */
+    .mc-line {
+      flex: 1 1 0;
+      height: 0;
+      border-block-start: var(--mc-divider-width) solid rgb(var(--mc-divider-color));
+      border-inline-start: 0;
+    }
+    :host([direction='vertical']) .mc-line {
+      flex: 1 1 auto;
+      width: 0;
+      height: auto;
+      border-block-start: 0;
+      border-inline-start: var(--mc-divider-width) solid rgb(var(--mc-divider-color));
+    }
+
+    /* 5. 线型：只改两条候选边的 style（水平线用上边、竖线用左边），另一边宽度是 0，不会冒出来 */
+    :host([variant='dashed']) .mc-line {
+      border-block-start-style: dashed;
+      border-inline-start-style: dashed;
+    }
+    :host([variant='dotted']) .mc-line {
+      border-block-start-style: dotted;
+      border-inline-start-style: dotted;
+    }
+
+    /* 6. 中间内容：空的时候不占位（两段线自然接上）；有内容才让出文字间距。
+       data-has-content 由脚本按 slot 分到的节点镜像到宿主（P32：不能只看属性在不在） */
+    .mc-content {
+      flex: 0 0 auto;
+    }
+    :host([data-has-content]:not([direction='vertical'])) .mc-content {
+      padding-inline: var(--mc-divider-text-gap);
+    }
+    :host([data-has-content][direction='vertical']) .mc-content {
+      padding-block: var(--mc-divider-text-gap);
+    }
+
+    /* 7. 文字位置：center 两侧等长；start / end 把短的那段线缩到 5%（Ant 同款比例，窄容器也不至于消失），
+       只在水平 + 有内容时生效 —— 竖线没有「左右」可对齐 */
+    :host([data-has-content]:not([direction='vertical'])[align='start']) .mc-line-start {
+      flex: 0 0 5%;
+    }
+    :host([data-has-content]:not([direction='vertical'])[align='end']) .mc-line-end {
+      flex: 0 0 5%;
+    }
+  </style>
+
+  <span class="mc-line mc-line-start" part="line"></span>
+  <div class="mc-content"><slot></slot></div>
+  <span class="mc-line mc-line-end" part="line"></span>
+
+  <script>
+    export default async () => ({
+      tag: 'mc-divider',
+
+      attrs: {
+        // 方向：horizontal（横线，默认）/ vertical（竖线）
+        direction: 'horizontal',
+        // 线型：solid（默认）/ dashed / dotted
+        variant: 'solid',
+        // 与线 / 竖直方向的留白：三档令牌或纯数字（按 px）
+        spacing: 'md',
+        // 中间内容的位置：start / center（默认）/ end；只在水平线 + 有内容时生效
+        align: 'center',
+      },
+
+      ready() {
+        // 这时 shadow 已建好（同 mc-card）；分到节点的变化靠 slotchange 感知
+        this._slot = this.ele.shadowRoot.querySelector('slot');
+      },
+
+      attached() {
+        // 宿主属性等构造期结束再写（P31）；首次 slotchange 不一定在挂载前发生，这里补一次
+        this._mounted = true;
+        this._onSlotChange = () => this.applyContent();
+        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this.applyContent();
+        this.applySpacing();
+      },
+
+      detached() {
+        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+      },
+
+      watch: {
+        spacing() {
+          if (this._mounted) this.applySpacing();
+        },
+      },
+
+      proto: {
+        /** 默认插槽有没有实质内容 → 宿主 data-has-content（CSS 只认这个属性） */
+        applyContent() {
+          const nodes = this._slot?.assignedNodes() ?? [];
+          const has = nodes.some(
+            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+          );
+          this.mirror('data-has-content', has);
+        },
+
+        /** spacing 的数字通道：纯数字按 px 写 --mc-divider-spacing；三档 / 非法值删掉变量，交回 CSS（同 mc-space / mc-grid） */
+        applySpacing() {
+          const raw = String(this.spacing ?? '').trim();
+          const pxValue = /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(raw) ? raw + 'px' : '';
+          if (pxValue) this.ele.style.setProperty('--mc-divider-spacing', pxValue);
+          else this.ele.style.removeProperty('--mc-divider-spacing');
+        },
+
+        mirror(name, on) {
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+      },
+    });
+  </script>
+</template>

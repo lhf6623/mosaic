@@ -1,0 +1,24 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">spacing="sm"（8px）</p>
+      <mc-divider spacing="sm"></mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">不写 spacing（默认 md，16px）</p>
+      <mc-divider></mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">spacing="lg"（24px）</p>
+      <mc-divider spacing="lg"></mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">spacing="10"（纯数字，10px）</p>
+      <mc-divider spacing="10"></mc-divider>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-divider-spacing' });
+  </script>
+</template>

@@ -403,7 +403,7 @@ export const SITE = [
       {
         order: 70,
         label: '布局',
-        summary: '安排空间与结构：栅格、间距、折叠面板、滚动条',
+        summary: '安排空间与结构：栅格、间距、分割线、折叠面板、滚动条',
         children: [
           {
             order: 10,
@@ -424,6 +424,15 @@ export const SITE = [
           },
           {
             order: 30,
+            label: 'Divider',
+            zh: '分割线',
+            path: 'packages/divider/page.html',
+            type: 'component',
+            summary:
+              '分割线。水平 / 竖直两个方向，线上可放一段文字（位置可调）；线型、留白与线色都能配。',
+          },
+          {
+            order: 40,
             label: 'Collapse',
             zh: '折叠面板',
             path: 'packages/collapse/page.html',
@@ -432,7 +441,7 @@ export const SITE = [
               '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。',
           },
           {
-            order: 40,
+            order: 50,
             label: 'Scroll Bar',
             zh: '滚动条',
             path: 'packages/scroll-bar/page.html',

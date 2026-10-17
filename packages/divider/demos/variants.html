@@ -1,0 +1,20 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <div>
+      <p class="text-xs text-muted mb-2">solid（默认）</p>
+      <mc-divider></mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">variant="dashed"</p>
+      <mc-divider variant="dashed"></mc-divider>
+    </div>
+    <div>
+      <p class="text-xs text-muted mb-2">variant="dotted"</p>
+      <mc-divider variant="dotted"></mc-divider>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-divider-variants' });
+  </script>
+</template>
