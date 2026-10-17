@@ -57,6 +57,17 @@ mc-button — Mosaic 参考组件实现
 - **颜色必须跟按钮文字色**：`filled` 取 `--mc-button-on-fill`、`outline` / `ghost` 取 `--mc-button-accent`，
   由 `color: inherit` 绑定。在按钮里 **`mc-icon` 自己的 `color` 属性会被压掉** —— 按钮的标签是整体，
   里面不该出现第二种颜色。按钮外的图标不受影响。
+- **loading 时 spinner 占 `prefix` 的位置**：加载中 `prefix` 槽隐藏（否则 spinner 会和 prefix 图标
+  并排出现两个）；loader 在 DOM 里就排在 prefix 槽前面，prefix 一让开它正好落回那一格。
+  `suffix` 与文字不受影响。
+
+**行内形态的文字基线取默认插槽里的文字**：flex 容器的基线默认取「第一个 flex 项」，prefix 图标排在
+文字前面时文字会被顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）。默认插槽包一层
+`.mc-label`，只在 `:host([inline])` 下给它 `align-self: baseline` 让它单独参与基线 —— 图标放前 /
+放后 / 没有图标，文字都落在同一条正文基线上；prefix / suffix 图标仍按 `align-items: center` 居中、
+不参与基线。
+⚠️ `align-self: baseline` **不能写在基础选择器上**：固定高度的基本按钮里只有一个 baseline 项、
+没有基线组可对齐，会回退到 start，文字直接被顶到按钮上沿（2026-10 踩过）。
 
 **定制**：视觉全部在 `:host` 上，直接写原生 CSS 即可。
 

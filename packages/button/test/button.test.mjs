@@ -66,6 +66,10 @@ export default async function run({ page, visit, check }) {
     put('row-states', 'st-default', {});
     put('row-states', 'st-disabled', { disabled: true, id: 'st-disabled' });
     put('row-states', 'st-loading', { loading: true });
+    put('row-states', 'st-loading-prefix', { loading: true }, '正在保存…');
+    document
+      .getElementById('st-loading-prefix')
+      .insertAdjacentHTML('afterbegin', '<mc-icon slot="prefix" name="download"></mc-icon>');
     put('row-states', 'st-submit', { type: 'submit' });
 
     put('row-slots', 'sl-slots', {}, '');
@@ -85,6 +89,29 @@ export default async function run({ page, visit, check }) {
     window.__btnClicks = [];
     document.addEventListener('click', (e) => window.__btnClicks.push(e.target.id || e.target.tagName));
     put('row-block', 'cl-click', {}, '点我');
+
+    /* inline 基线：prefix / suffix 图标不应该改变文字在正文行里的位置。
+       曾经 flex 容器基线取「第一个 flex 项」—— prefix 图标排在前面会把文字顶高 4px。 */
+    const baselineRow = document.createElement('p');
+    baselineRow.id = 'inline-baseline';
+    baselineRow.style.cssText = 'margin:0;font-size:16px;line-height:24px;white-space:nowrap';
+    baselineRow.append(document.createTextNode('基线：'));
+    const putIconInline = (id, slot) => {
+      const el = document.createElement('mc-button');
+      el.id = id;
+      el.setAttribute('inline', '');
+      el.setAttribute('size', 'lg');
+      const icon = document.createElement('mc-icon');
+      icon.setAttribute('name', 'edit');
+      icon.setAttribute('slot', slot);
+      el.append(icon, document.createTextNode('编辑'));
+      baselineRow.append(el);
+      return el;
+    };
+    putIconInline('bi-prefix', 'prefix');
+    baselineRow.append(document.createTextNode('；'));
+    putIconInline('bi-suffix', 'suffix');
+    host.append(baselineRow);
   });
 
   /* ---------- 语义色：色槽的值必须就是令牌的值 ---------- */
@@ -288,16 +315,57 @@ export default async function run({ page, visit, check }) {
     `${restColor} → ${JSON.stringify(inlineHover)}`,
   );
 
+  /* 行内基线：prefix 图标排在前面时，文字应该和 suffix 那颗落在同一条基线上 */
+  const inlineBaseline = await page.evaluate(() => {
+    const textTop = (id) => {
+      const el = document.getElementById(id);
+      const node = [...el.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      return range.getBoundingClientRect().top;
+    };
+    return { prefix: textTop('bi-prefix'), suffix: textTop('bi-suffix') };
+  });
+  check(
+    'inline 的基线取文字：prefix / suffix 图标不改变文字在行里的位置',
+    Math.abs(inlineBaseline.prefix - inlineBaseline.suffix) <= 1,
+    `prefix ${inlineBaseline.prefix.toFixed(2)} · suffix ${inlineBaseline.suffix.toFixed(2)}`,
+  );
+
+  /* 文字垂直居中：label 的 align-self: baseline 只该在行内形态生效 —— 基本按钮不能被顶到上沿 */
+  const vertical = await page.evaluate(() => {
+    const gap = (id) => {
+      const el = document.getElementById(id);
+      const node = [...el.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const tr = range.getBoundingClientRect();
+      const hr = el.getBoundingClientRect();
+      return { top: tr.top - hr.top, bottom: hr.bottom - tr.bottom };
+    };
+    return { md: gap('c-primary'), outline: gap('v-outline'), sm: gap('s-sm'), lg: gap('s-lg') };
+  });
+  check(
+    '文字在按钮里垂直居中（上下间隙差 ≤ 1.5px；行内形态的基线对齐不串到基本按钮）',
+    Object.values(vertical).every((g) => Math.abs(g.top - g.bottom) <= 1.5),
+    JSON.stringify(vertical),
+  );
+
   /* ---------- 状态：转发给内部原生 button ---------- */
   const states = await page.evaluate(() => {
     const native = (id) => document.getElementById(id).shadowRoot.querySelector('.mc-native');
     const loader = document.getElementById('st-loading').shadowRoot.querySelector('.mc-loader');
+    const loadingPrefix = document.getElementById('st-loading-prefix');
     return {
       disabled: native('st-disabled').disabled,
       disabledCursor: getComputedStyle(document.getElementById('st-disabled')).cursor,
       disabledOpacity: getComputedStyle(document.getElementById('st-disabled')).opacity,
       loading: native('st-loading').disabled,
       loaderDisplay: getComputedStyle(loader).display,
+      loaderPrefixDisplay: getComputedStyle(
+        loadingPrefix.shadowRoot.querySelector('.mc-loader'),
+      ).display,
+      prefixHidden: getComputedStyle(loadingPrefix.querySelector('mc-icon')).display,
       submitType: native('st-submit').type,
       defaultType: native('st-default').type,
     };
@@ -310,6 +378,11 @@ export default async function run({ page, visit, check }) {
       states.disabledOpacity === '0.5' &&
       states.loaderDisplay !== 'none',
     JSON.stringify(states),
+  );
+  check(
+    'loading 的 spinner 占 prefix 的位置（prefix 槽隐藏，不会并排出现两个图标）',
+    states.loaderPrefixDisplay !== 'none' && states.prefixHidden === 'none',
+    `loader ${states.loaderPrefixDisplay} · prefix ${states.prefixHidden}`,
   );
   check(
     'type 逐字转发（submit / reset / button），默认 button',

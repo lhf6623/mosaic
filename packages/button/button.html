@@ -191,10 +191,29 @@
     :host([loading]) .mc-loader {
       display: inline-flex;
     }
+    /* loading 时 spinner 占 prefix 的位置：prefix 槽先让开，否则两个图标一起出现。
+       loader 在 DOM 里就排在 prefix 槽前面，prefix 一藏，它自然落在原来那一格。 */
+    :host([loading]) ::slotted([slot='prefix']) {
+      display: none;
+    }
     @keyframes mc-btn-spin {
       to {
         transform: rotate(360deg);
       }
+    }
+
+    /* 默认插槽的盒子：只给行内形态当「文字基线」的落点，其它形态保持原来的居中。
+       ⚠️ 不能把 align-self: baseline 写在基础选择器上：固定高度的按钮里只有一个 baseline 项、
+       没有基线组可对齐，会回退到 start —— 文字直接被顶到按钮上沿（基本按钮全部遭殃）。 */
+    .mc-label {
+      min-width: 0;
+    }
+
+    /* 行内形态：flex 容器的基线改取**文字**基线。不这么做时容器基线取「第一个 flex 项」，
+       prefix 图标排在前面就把文字顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）；
+       prefix / suffix 图标仍按 align-items: center 居中、不参与基线。 */
+    :host([inline]) .mc-label {
+      align-self: baseline;
     }
 
     ::slotted([slot='prefix']),
@@ -215,7 +234,7 @@
   <span class="mc-layer"></span>
   <span class="mc-loader mc-icon-spinner"></span>
   <slot name="prefix"></slot>
-  <slot></slot>
+  <span class="mc-label"><slot></slot></span>
   <slot name="suffix"></slot>
 
   <script>

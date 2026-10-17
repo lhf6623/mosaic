@@ -16,16 +16,16 @@
 
 ## 属性
 
-| 名称       | 值                                                                       | 默认      | 说明                                                                 |
-| ---------- | ------------------------------------------------------------------------ | --------- | -------------------------------------------------------------------- |
-| `color`    | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger' \| 'neutral'` | `primary` | 语义色；也可以是 hex（`#fff000` / `#fc0`），此时文字色按对比度自动给 |
-| `variant`  | `'filled' \| 'outline' \| 'ghost'`                                       | `filled`  | 外观样式                                                             |
-| `size`     | `'sm' \| 'md' \| 'lg'`                                                   | `md`      | 尺寸                                                                 |
-| `type`     | `'button' \| 'submit' \| 'reset'`                                        | `button`  | 转发给内部原生 button                                                |
-| `disabled` | `boolean`                                                                | —         | 禁用                                                                 |
-| `loading`  | `boolean`                                                                | —         | 加载中，显示 spinner 且不可点                                        |
-| `block`    | `boolean`                                                                | —         | 撑满父容器宽度                                                       |
-| `inline`   | `boolean`                                                                | —         | **行内文字按钮**形态：盒子交给文字，`size` 只选文字档位              |
+| 名称       | 值                                                                       | 默认      | 说明                                                                                |
+| ---------- | ------------------------------------------------------------------------ | --------- | ----------------------------------------------------------------------------------- |
+| `color`    | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger' \| 'neutral'` | `primary` | 语义色；也可以是 hex（`#fff000` / `#fc0`），此时文字色按对比度自动给                |
+| `variant`  | `'filled' \| 'outline' \| 'ghost'`                                       | `filled`  | 外观样式                                                                            |
+| `size`     | `'sm' \| 'md' \| 'lg'`                                                   | `md`      | 尺寸                                                                                |
+| `type`     | `'button' \| 'submit' \| 'reset'`                                        | `button`  | 转发给内部原生 button                                                               |
+| `disabled` | `boolean`                                                                | —         | 禁用                                                                                |
+| `loading`  | `boolean`                                                                | —         | 加载中，显示 spinner 且不可点；spinner 占 `prefix` 的位置，加载中 `prefix` 插槽隐藏 |
+| `block`    | `boolean`                                                                | —         | 撑满父容器宽度                                                                      |
+| `inline`   | `boolean`                                                                | —         | **行内文字按钮**形态：盒子交给文字，`size` 只选文字档位                             |
 
 ## 插槽
 
