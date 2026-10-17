@@ -1,0 +1,640 @@
+<!--
+  <doc-playground> —— 组件文档页的「可编辑示例」。
+  用法：<doc-playground src="./demos/colors.html"></doc-playground>
+
+  页面只写一行：组件自己读 demo 文件、运行时编译成初始预览；编辑后走同一条编译路径换掉预览，
+  「重置」用文件原文重新渲染。页面里不再需要 <l-m src="./demos/x.html"> 与 <demo-x> 标签 ——
+  一份源、一条渲染路径，静态 / 动态两份预览不会打架。
+  为什么不是「查看代码 + 只读」：读者要的是改一行看效果。抽屉里是一个真编辑器，改动停下 500ms
+  （或 Cmd/Ctrl+Enter）就在**原位**重编译预览。编辑器与预览都在同页 —— demo 本来就是页内组件，
+  同页编译和它同一套信任模型，不用 iframe / 虚拟文件系统。
+  编译细节在 docs/lib/demo-runtime.mjs：读的还是 demos/*.html 那一份源，没有第二份片段会漂移。
+
+  ⚠️ 约定：
+    · 标题 / 说明留在页面里（<h3> / .doc-hint），不进组件 —— 右栏 <doc-toc> 只扫页面 shadow root 里的
+      h2/h3，收进组件 shadow 会让整页目录少掉这些条目（同 doc-spec 的理由）；
+    · 首屏预览也走运行时编译，编译失败时错误直接显示在预览区（不能白屏）；
+    · 「重置」只是把编辑器文本换回文件原文、用原文重新渲染，不重新加载页面、也不写回文件（站点没有后端）。
+-->
+<template component>
+  <style>
+    :host {
+      display: block;
+    }
+
+    /* 预览区：初始预览与编辑后的预览都渲染在这里（同一条运行时编译路径） */
+    .live {
+      min-height: 2rem;
+    }
+
+    /* 首屏编译失败时的兜底提示（不能白屏；错误同时写进编辑抽屉的错误区） */
+    .load-error {
+      margin: 0;
+      color: rgb(var(--mc-color-danger));
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+    }
+
+    /* ---------- 编辑示例：一行控制条（展开 / 运行 / 重置 / 复制）+ 编辑器 ---------- */
+    .drawer {
+      margin-top: var(--mc-space-4);
+      border-top: 1px solid rgb(var(--mc-color-border));
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-2);
+      min-height: 42px;
+      padding: var(--mc-space-1) 0;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+    }
+
+    /* 标签把右侧那组按钮顶到行尾；收起时行里只剩标签 +（改过才有的）胶囊 + 展开 */
+    .bar-label {
+      margin-right: auto;
+    }
+
+    /* 改过且还没重置：一个小胶囊，免得读者滚回来不知道现在看的是不是官方样例 */
+    .dirty {
+      display: none;
+      padding: 0 var(--mc-space-2);
+      border: 1px solid rgb(var(--mc-color-warning));
+      border-radius: var(--mc-radius-full);
+      color: rgb(var(--mc-color-warning));
+      font-size: var(--mc-text-xs);
+      line-height: 1.6;
+    }
+
+    :host([data-dirty]) .dirty {
+      display: inline-flex;
+    }
+
+    /* ---------- 编辑器 ---------- */
+    .panel[hidden] {
+      display: none;
+    }
+
+    .status {
+      min-width: 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs);
+      line-height: var(--mc-text-xs-lh);
+    }
+
+    :host([data-state='error']) .status {
+      color: rgb(var(--mc-color-danger));
+    }
+
+    .actions {
+      display: flex;
+      flex: none;
+      flex-wrap: wrap;
+      gap: var(--mc-space-2);
+    }
+
+    /* 图标按钮：方形、只放一个图标，提示信息走 title / aria-label */
+    .btn mc-icon {
+      font-size: 15px;
+    }
+
+    /* 收起态：复制常驻（不用展开就能拿走源码），状态栏与运行 / 重置展开后才出现 */
+    :host(:not([data-open])) .status,
+    :host(:not([data-open])) [data-act='run'],
+    :host(:not([data-open])) [data-act='reset'] {
+      display: none;
+    }
+
+    /* 无边框：只留图标本身，悬停 / 聚焦时才出现底色 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-md);
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-muted));
+      font-family: inherit;
+      font-size: var(--mc-text-xs);
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 1px;
+    }
+
+    /* 运行是主操作：图标用强调色，悬停底也按主色系给 */
+    .btn-primary {
+      color: rgb(var(--mc-color-primary));
+    }
+
+    .btn-primary:hover {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      color: rgb(var(--mc-color-primary));
+    }
+
+    /* 复制成功 / 失败只换图标与颜色，不写文字提示；3 秒后由脚本恢复 */
+    .btn[data-feedback='copied'] {
+      color: rgb(var(--mc-color-success));
+    }
+
+    .btn[data-feedback='failed'] {
+      color: rgb(var(--mc-color-danger));
+    }
+
+    /* 编辑器盒：高度固定，滚动交给 CM / textarea 自己 —— 免得代码一长把整页推走 */
+    .editor-host {
+      height: 300px;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      overflow: hidden;
+    }
+
+    /* CM 的样式（含主题）由 code-editor.mjs 注入到本 shadow root，这里只兜底降级用的 textarea */
+    .fallback-editor {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border: 0;
+      resize: none;
+      background: transparent;
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-mono);
+      font-size: var(--mc-text-sm);
+      line-height: 1.7;
+      tab-size: 2;
+      outline: none;
+    }
+
+    .error {
+      margin: var(--mc-space-2) 0 0;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      max-height: 10rem;
+      overflow: auto;
+      border-left: 2px solid rgb(var(--mc-color-danger));
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-danger-subtle));
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-mono);
+      font-size: var(--mc-text-xs);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .error[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 40rem) {
+      .editor-host {
+        height: 240px;
+      }
+    }
+  </style>
+
+  <!-- 预览：初始渲染与编辑后的运行结果都落在这里，每次 replaceChildren 换掉 -->
+  <div class="live" part="preview"></div>
+
+  <!-- 收起 = 只有「编辑」图标按钮；展开后「运行 / 重置 / 复制 / 收起」与状态出现在同一行 -->
+  <div class="drawer" part="drawer">
+    <div class="bar" part="bar">
+      <span class="bar-label">编辑示例</span>
+      <span class="dirty" part="dirty">已修改</span>
+      <span class="status" part="status" aria-live="polite"></span>
+      <div class="actions" id="actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-act="run"
+          title="运行示例"
+          aria-label="运行示例">
+          <mc-icon name="play" aria-hidden="true"></mc-icon>
+        </button>
+        <button
+          type="button"
+          class="btn"
+          data-act="reset"
+          title="重置为文件原文"
+          aria-label="重置为文件原文">
+          <mc-icon name="refresh" aria-hidden="true"></mc-icon>
+        </button>
+        <button type="button" class="btn" data-act="copy" title="复制源码" aria-label="复制源码">
+          <mc-icon name="copy" aria-hidden="true"></mc-icon>
+        </button>
+        <button
+          type="button"
+          class="btn"
+          data-act="toggle"
+          aria-expanded="false"
+          aria-controls="panel"
+          title="展开编辑"
+          aria-label="展开编辑">
+          <mc-icon name="edit" aria-hidden="true"></mc-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel" hidden>
+      <div class="editor-host" id="editor-host" part="editor"></div>
+      <pre class="error" id="error" part="error" hidden></pre>
+    </div>
+  </div>
+
+  <script>
+    import { compileDemo, loadDemoText, parseDemoSource } from '../lib/demo-runtime.mjs';
+    import { mountCodeEditor } from '../lib/code-editor.mjs';
+
+    /* 改动停下多久自动跑。太短：每敲一个字都重编译；太长：没有「改了立刻看到」的爽感 */
+    const RUN_DELAY = 500;
+
+    /** 复制反馈（图标切换）保持多久 */
+    const COPY_FEEDBACK_MS = 3000;
+
+    /* 提示里只显示当前平台那一个键：Mac / iOS 是 Cmd，其余是 Ctrl（不让读者自己二选一） */
+    const IS_MAC = /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent);
+    const MOD_KEY = IS_MAC ? 'Cmd' : 'Ctrl';
+
+    /** 编辑器就绪 / 重置后状态栏的默认提示（外层 <template component> 由站点自动补，不显示在编辑器里） */
+    const HINT = `改动自动运行 · ${MOD_KEY} + Enter 立即运行`;
+
+    /* 主题信号全页只盯一份：整站 200 多个示例，一个实例一个 MutationObserver 太浪费。
+       实例集合 + 一个观察者，换主题时统一把「暗色」落到各宿主的 data-dark 上。 */
+    const darkTargets = new Set();
+    /** @type {MutationObserver | undefined} */
+    let themeObserver;
+    /** @type {MediaQueryList | undefined} */
+    let themeMq;
+
+    const syncAllDark = () => {
+      for (const target of darkTargets) target.syncDark();
+    };
+
+    const watchTheme = (target) => {
+      darkTargets.add(target);
+      if (!themeObserver) {
+        themeObserver = new MutationObserver(syncAllDark);
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-theme', 'class', 'style'],
+        });
+        themeMq = window.matchMedia?.('(prefers-color-scheme: dark)');
+        themeMq?.addEventListener?.('change', syncAllDark);
+      }
+      target.syncDark();
+    };
+
+    const unwatchTheme = (target) => {
+      darkTargets.delete(target);
+      if (darkTargets.size) return;
+      themeObserver?.disconnect();
+      themeObserver = undefined;
+      themeMq?.removeEventListener?.('change', syncAllDark);
+      themeMq = undefined;
+    };
+
+    export default () => ({
+      /* ⚠️ 显式 tag：不写按文件名推断，文件一改名就注册失败（P40） */
+      tag: 'doc-playground',
+
+      attrs: {
+        /* 示例文件地址；ofa 编译页面时已把相对地址改写成绝对地址 */
+        src: '',
+      },
+
+      watch: {
+        src() {
+          if (this._mounted) this.loadSource();
+        },
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._live = root.querySelector('.live');
+        this._panel = root.querySelector('#panel');
+        this._statusEl = root.querySelector('.status');
+        this._errorEl = root.querySelector('.error');
+        this._editorHost = root.querySelector('#editor-host');
+        this._actions = root.querySelector('#actions');
+
+        this._mounted = true;
+        this._open = false;
+        this._runSeq = 0;
+        this._loadToken = 0;
+        /** 文件原文编译出来的 tag：重置时直接复用（不用再 fetch / 编译） */
+        this._baseTag = undefined;
+
+        this._onAction = (event) => this.onAction(event);
+        this._actions.addEventListener('click', this._onAction);
+
+        /* 运行按钮的 tooltip 带当前平台的快捷键；复制按钮的反馈只换图标（见 flashCopy） */
+        const runBtn = this._actions.querySelector('[data-act="run"]');
+        if (runBtn) runBtn.title = `运行示例（${MOD_KEY} + Enter）`;
+        this._copyBtn = this._actions.querySelector('[data-act="copy"]');
+
+        /* 语法配色要走 :host([data-dark]) —— shadow 里看不到 <html data-theme>，只能自己把它落成宿主属性。
+           颜色令牌本身会自动跟随主题，这里只服务 CM 的 github 配色。观察者是全页共享的（见模块顶部）。 */
+        watchTheme(this);
+
+        if (String(this.src ?? '').trim()) this.loadSource();
+      },
+
+      detached() {
+        this._mounted = false;
+        clearTimeout(this._runTimer);
+        clearTimeout(this._copyTimer);
+        unwatchTheme(this);
+        this._actions?.removeEventListener('click', this._onAction);
+        this._editor?.destroy();
+        this._editor = undefined;
+      },
+
+      proto: {
+        /** 取示例文件 → 缓存原文与「编辑器里显示的源码」；换了 src 就整块重来 */
+        async loadSource() {
+          const raw = String(this.src ?? '').trim();
+          if (!raw) return;
+          let url;
+          try {
+            url = new URL(raw, document.baseURI).href;
+          } catch {
+            return;
+          }
+          if (this._source?.loaded && this._source.url === url) return;
+
+          const token = ++this._loadToken;
+          this._source = { url, loaded: false };
+          this._baseTag = undefined;
+          try {
+            const text = await loadDemoText(url);
+            if (token !== this._loadToken || !this._mounted) return;
+            const parsed = parseDemoSource(text);
+            this._source = { url, text, parsed, loaded: true };
+            if (this._editor) this._editor.setValue(parsed.inner);
+            await this.renderBase();
+          } catch (error) {
+            if (token !== this._loadToken) return;
+            this.showPreviewError(error);
+            this.showError(error);
+            this.setStatus('示例文件加载失败', 'error');
+          }
+        },
+
+        /** 编译文件原文并渲染初始预览；结果 tag 留着给「重置」复用 */
+        async renderBase() {
+          if (!this._source?.loaded) return;
+          const seq = ++this._runSeq;
+          this.setStatus('正在加载示例…');
+          let tag;
+          try {
+            tag = await compileDemo({
+              text: this._source.parsed.inner,
+              url: this._source.url,
+            });
+          } catch (error) {
+            if (seq !== this._runSeq || !this._mounted) return;
+            this.showPreviewError(error);
+            this.showError(error);
+            this.setStatus('示例加载失败', 'error');
+            return;
+          }
+          if (seq !== this._runSeq || !this._mounted) return;
+          this._baseTag = tag;
+          this.renderBaseElement();
+          this.hideError();
+          this.ele.removeAttribute('data-dirty');
+          this.setStatus(this._editor ? HINT : '');
+        },
+
+        renderBaseElement() {
+          if (!this._baseTag) return;
+          this._live.replaceChildren(document.createElement(this._baseTag));
+        },
+
+        /** 首屏 / 重置失败时的预览区兜底：文字直接给在示例位置，不能白屏 */
+        showPreviewError(error) {
+          const message = error instanceof Error ? error.message : String(error);
+          const note = document.createElement('p');
+          note.className = 'load-error';
+          note.textContent = `示例加载失败：${message}`;
+          this._live.replaceChildren(note);
+        },
+
+        /** 第一次展开抽屉才建编辑器（CM 懒加载）；重复展开复用同一个实例 */
+        openEditor() {
+          if (this._editorPromise) return this._editorPromise;
+          this._editorPromise = this.createEditor().catch((error) => {
+            this._editorPromise = undefined;
+            this.showError(error);
+            this.setStatus('编辑器加载失败', 'error');
+          });
+          return this._editorPromise;
+        },
+
+        async createEditor() {
+          if (!this._source?.loaded) await this.loadSource();
+          if (!this._source?.loaded) return;
+          this.setStatus('正在加载编辑器…');
+          const editor = await mountCodeEditor(this._editorHost, {
+            value: this._source.parsed.inner,
+            onChange: () => this.onEdit(),
+            onRun: () => this.run(),
+          });
+          if (!this._mounted) {
+            editor.destroy();
+            return;
+          }
+          this._editor = editor;
+          this.setStatus(HINT);
+        },
+
+        /** 用户改动：先标「已修改」，停下 RUN_DELAY 毫秒后自动跑 */
+        onEdit() {
+          if (this._suppress) return;
+          const changed =
+            Boolean(this._editor) &&
+            Boolean(this._source?.loaded) &&
+            this._editor.getValue() !== this._source.parsed.inner;
+          this.ele.toggleAttribute('data-dirty', changed);
+          this.setStatus('已修改 · 即将自动运行');
+          clearTimeout(this._runTimer);
+          this._runTimer = setTimeout(() => this.run(), RUN_DELAY);
+        },
+
+        /** 编译并替换预览。失败时保留上一次成功的预览 + 显示错误，不把页面搞成白块 */
+        async run() {
+          clearTimeout(this._runTimer);
+          this._runTimer = undefined;
+          if (!this._editor || !this._source?.loaded) return;
+
+          const text = this._editor.getValue();
+          const seq = ++this._runSeq;
+          const started = performance.now();
+          this.setStatus('正在编译…');
+
+          let tag;
+          try {
+            tag = await compileDemo({ text, url: this._source.url });
+          } catch (error) {
+            if (seq !== this._runSeq) return; // 期间又跑了一次：这次结果作废
+            this.showError(error);
+            this.setStatus('编译失败', 'error');
+            return;
+          }
+          if (seq !== this._runSeq || !this._mounted) return;
+
+          try {
+            const next = document.createElement(tag);
+            this._live.replaceChildren(next);
+          } catch (error) {
+            if (seq !== this._runSeq) return;
+            this.showError(error);
+            this.setStatus('示例渲染失败', 'error');
+            return;
+          }
+
+          this.ele.toggleAttribute('data-dirty', text !== this._source.parsed.inner);
+          this.hideError();
+          this.setStatus(`预览已更新 · ${Math.max(1, Math.round(performance.now() - started))}ms`);
+        },
+
+        /** 重置：编辑器文本回原文、预览用原文重新渲染（不刷新页面、不写回文件） */
+        reset() {
+          clearTimeout(this._runTimer);
+          this._runTimer = undefined;
+          this._runSeq += 1;
+          this.hideError();
+          this.setStatus(HINT);
+          if (this._editor && this._source?.loaded) {
+            this._suppress = true;
+            this._editor.setValue(this._source.parsed.inner);
+            this._suppress = false;
+          }
+          this.ele.removeAttribute('data-dirty');
+          if (this._baseTag) this.renderBaseElement();
+          else this.renderBase();
+        },
+
+        /** 复制源码。反馈只换图标（✓ / ✕）三秒，不写状态栏文字；收起态直接复制文件原文 */
+        async copy() {
+          if (!this._editor && !this._source?.loaded) await this.loadSource();
+          const text = this._editor?.getValue() ?? this._source?.parsed?.inner;
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            this.flashCopy(true);
+          } catch {
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.append(area);
+            area.select();
+            try {
+              document.execCommand('copy');
+              this.flashCopy(true);
+            } catch {
+              this.flashCopy(false);
+            }
+            area.remove();
+          }
+        },
+
+        /** 复制按钮的临时反馈：图标换成 ✓ / ✕、颜色跟语义色走，三秒后恢复 */
+        flashCopy(ok) {
+          const btn = this._copyBtn;
+          if (!btn) return;
+          clearTimeout(this._copyTimer);
+          btn.dataset.feedback = ok ? 'copied' : 'failed';
+          btn.querySelector('mc-icon')?.setAttribute('name', ok ? 'check' : 'x');
+          const label = ok ? '已复制' : '复制失败';
+          btn.title = label;
+          btn.setAttribute('aria-label', label);
+          this._copyTimer = setTimeout(() => this.resetCopy(), COPY_FEEDBACK_MS);
+        },
+
+        resetCopy() {
+          clearTimeout(this._copyTimer);
+          this._copyTimer = undefined;
+          const btn = this._copyBtn;
+          if (!btn) return;
+          delete btn.dataset.feedback;
+          btn.querySelector('mc-icon')?.setAttribute('name', 'copy');
+          btn.title = '复制源码';
+          btn.setAttribute('aria-label', '复制源码');
+        },
+
+        /** 展开 / 收起：同一行里换出「运行 / 重置 / 复制」与状态，编辑器在下面展开 */
+        setOpen(open) {
+          this._open = open;
+          this.ele.toggleAttribute('data-open', open);
+          this._panel.hidden = !open;
+          const toggle = this._actions.querySelector('[data-act="toggle"]');
+          if (toggle) {
+            const label = open ? '收起编辑' : '展开编辑';
+            toggle.querySelector('mc-icon')?.setAttribute('name', open ? 'close' : 'edit');
+            toggle.title = label;
+            toggle.setAttribute('aria-label', label);
+            toggle.setAttribute('aria-expanded', String(open));
+          }
+          if (open) this.openEditor();
+        },
+
+        toggle() {
+          this.setOpen(!this._open);
+        },
+
+        onAction(event) {
+          const act = event.target?.closest?.('[data-act]')?.dataset?.act;
+          if (act === 'run') this.run();
+          else if (act === 'reset') this.reset();
+          else if (act === 'copy') this.copy();
+          else if (act === 'toggle') this.toggle();
+        },
+
+        setStatus(text, tone) {
+          this._statusEl.textContent = text;
+          if (tone) this.ele.dataset.state = tone;
+          else this.ele.removeAttribute('data-state');
+        },
+
+        showError(error) {
+          this._errorEl.textContent = error instanceof Error ? error.message : String(error);
+          this._errorEl.hidden = false;
+          console.warn('[mosaic] doc-playground 示例编译失败：', error);
+        },
+
+        hideError() {
+          this._errorEl.hidden = true;
+          this._errorEl.textContent = '';
+        },
+
+        /** 亮暗：读 color-scheme（令牌层切主题就是切它，且继承、穿得进 shadow root），退到系统偏好 */
+        syncDark() {
+          const scheme = (getComputedStyle(this.ele).colorScheme || '').toLowerCase();
+          const dark = scheme.includes('dark')
+            ? true
+            : scheme.includes('light')
+              ? false
+              : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
+          this.ele.toggleAttribute('data-dark', dark);
+        },
+      },
+    });
+  </script>
+</template>

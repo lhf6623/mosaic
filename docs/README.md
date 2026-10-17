@@ -42,6 +42,8 @@
 - 加规则前先问一句：**是不是只有一个页面在用？** 是就写回那个页面。
 - `docs/content.css` 是给「站点页 + 组件文档页」共用的正文样式准备的；`.doc-demo` /
   `.doc-demo-code` 只服务组件文档页，等组件页改版时随演示组件一起迁走。
+  编辑示例（`doc-playground`）的抽屉与编辑器样式已经住在组件自己的 shadow root 里，
+  页面这边只剩 `.doc-demo` 的卡片外观；`.doc-demo-code` 只服务还没迁过去的「查看代码」抽屉。
 
 ## 三、行内样式：只有三类例外
 
@@ -65,14 +67,15 @@
 
 ## 五、站点组件
 
-| 标签              | 文件                               | 干什么                                               |
-| ----------------- | ---------------------------------- | ---------------------------------------------------- |
-| `doc-nav`         | `docs/components/nav.html`         | 左栏 / 窄屏浮层菜单                                  |
-| `doc-toc`         | `docs/components/toc.html`         | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）       |
-| `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到） |
-| `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                             |
-| `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差               |
-| `doc-search`      | `docs/components/search.html`      | 顶栏搜索：搜整个菜单，输入才出列表，选中跳那一页     |
+| 标签              | 文件                               | 干什么                                                                |
+| ----------------- | ---------------------------------- | --------------------------------------------------------------------- |
+| `doc-nav`         | `docs/components/nav.html`         | 左栏 / 窄屏浮层菜单                                                   |
+| `doc-toc`         | `docs/components/toc.html`         | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）                        |
+| `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到）                  |
+| `doc-playground`  | `docs/components/playground.html`  | 组件文档页的可编辑示例（官方活样例 + 编辑抽屉，运行时编译 demo 文件） |
+| `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                                              |
+| `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差                                |
+| `doc-search`      | `docs/components/search.html`      | 顶栏搜索：搜整个菜单，输入才出列表，选中跳那一页                      |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
   组件自己的 `<style>`。
@@ -98,7 +101,8 @@ docs/
   components/           站点组件（见上一节）
   pages/                站点页（清单与分组见 site-map.js）
   snippets/             可复制的片段（quick-start.html 等）
-  lib/                  站点内部工具（md-spec 渲染器）
+  lib/                  站点内部工具（md-spec 渲染器 / 示例运行时编译 / 代码编辑器）
+  vendor/               第三方只读资产（CodeMirror，编辑示例用；provenance 见 codemirror/SOURCES.txt）
 ```
 
 ## 七、最少代码：抽组件的阈值

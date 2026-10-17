@@ -31,6 +31,9 @@ packages/*/test/
 # 代价：这些 demo 的 <script> 与属性折行得手写保持风格。
 packages/*/demos/*.html
 
+# 第三方只读资产：原样 vendor（CodeMirror 压缩产物 + LICENSE），格式化只会上游分叉
+docs/vendor/
+
 # 对账引擎的**仓库副本**（从 skill `doc-code-drift` 拷进来的，与 skill 里那份逐字节相同）。
 # 它不该被本仓的 prettier 重排 —— 一排就和 skill 那份分叉，「引擎副本是最新的」再也没法用比字节来验。
 # 本仓自己的约定在 tools/doc-drift.config.mjs（那份照常格式化）。

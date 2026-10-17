@@ -1,0 +1,17 @@
+CodeMirror 5.65.20 (MIT)
+https://github.com/codemirror/codemirror5 · https://www.npmjs.com/package/codemirror/v/5.65.20
+
+文档站「可编辑示例」用的编辑器。只搬运行必需的几份，全部来自 jsDelivr 的 npm 包
+（.min.js / .min.css 是 jsDelivr 用 Terser 生成的压缩版）：
+
+  lib/codemirror.min.js / lib/codemirror.min.css
+  mode/xml/xml.min.js
+  mode/javascript/javascript.min.js
+  mode/css/css.min.js
+  mode/htmlmixed/htmlmixed.min.js
+  addon/edit/closebrackets.min.js
+  addon/edit/closetag.min.js
+  LICENSE
+
+为什么放本地而不是 CDN：编辑抽屉是「点开就要用」的东西，走 CDN 首开要等好几秒
+（实测 jsDelivr 单文件 1–5s）；这几个文件总共约 240 KB，本地服务器直接出。
