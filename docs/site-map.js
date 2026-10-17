@@ -109,10 +109,10 @@ export const SITE = [
       {
         order: 10,
         label: '基础',
-        summary: '最常用的展示与操作单元',
+        summary: '最先会用到的基础单元：色彩令牌、按钮、图标',
         children: [
           {
-            order: 5,
+            order: 10,
             type: 'page',
             label: '色彩',
             path: 'packages/color/page.html',
@@ -120,22 +120,13 @@ export const SITE = [
               '色彩与设计令牌：色板由 OKLCH 生成（6 色族 × 11 档），语义令牌每族只留一档，构建期强制跑 WCAG 对比度自检。',
           },
           {
-            order: 10,
+            order: 20,
             label: 'Button',
             zh: '按钮',
             path: 'packages/button/page.html',
             type: 'component',
             summary:
               '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；另有行内文字形态（inline）。',
-          },
-          {
-            order: 20,
-            label: 'Code',
-            zh: '代码',
-            path: 'packages/code/page.html',
-            type: 'component',
-            summary:
-              '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
           },
           {
             order: 30,
@@ -146,8 +137,15 @@ export const SITE = [
             summary:
               '图标。先查内置、查不到再远程取一次；颜色继承 currentColor、尺寸跟随 font-size，取不到也只留一个不跳版的空位。',
           },
+        ],
+      },
+      {
+        order: 20,
+        label: '数据展示',
+        summary: '把内容摆出来：卡片、标签、徽标、表格与代码',
+        children: [
           {
-            order: 40,
+            order: 10,
             label: 'Card',
             zh: '卡片',
             path: 'packages/card/page.html',
@@ -156,7 +154,7 @@ export const SITE = [
               '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
           {
-            order: 45,
+            order: 20,
             label: 'Tag',
             zh: '标签',
             path: 'packages/tag/page.html',
@@ -165,7 +163,7 @@ export const SITE = [
               '分类 / 状态标签。语义色 × 浅底 / 实心 / 描边三个维度，可选可关（checkable / closable）。',
           },
           {
-            order: 50,
+            order: 30,
             label: 'Badge',
             zh: '徽标',
             path: 'packages/badge/page.html',
@@ -173,24 +171,31 @@ export const SITE = [
             summary: '徽标。默认浅底，比实心更不抢视线；支持纯圆点与数值上限。',
           },
           {
-            order: 60,
-            label: 'Spinner',
-            zh: '加载指示',
-            path: 'packages/spinner/page.html',
+            order: 40,
+            label: 'Table',
+            zh: '表格',
+            path: 'packages/table/page.html',
             type: 'component',
-            summary: '加载指示。跟随当前文字色与字号。',
+            summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
           },
           {
-            order: 65,
-            label: 'Empty',
-            zh: '空态',
-            path: 'packages/empty/page.html',
+            order: 50,
+            label: 'Code',
+            zh: '代码',
+            path: 'packages/code/page.html',
             type: 'component',
             summary:
-              '空态。没有内容可显示时的一块占位：内置图形 + 一行文案 + 可选操作区，三档尺寸。',
+              '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
           },
+        ],
+      },
+      {
+        order: 30,
+        label: '导航',
+        summary: '在页面与层级之间移动：菜单、面包屑、标签页、分页',
+        children: [
           {
-            order: 70,
+            order: 10,
             label: 'Menu',
             zh: '菜单',
             path: 'packages/menu/page.html',
@@ -199,7 +204,7 @@ export const SITE = [
               '数据驱动的垂直菜单：给 options 传对象数组，分组 / 图标 / 层级缩进 / 二级菜单都由容器渲染；可压缩成图标栏（子菜单浮层弹出），也可以开手风琴。',
           },
           {
-            order: 80,
+            order: 20,
             label: 'Breadcrumb',
             zh: '面包屑',
             path: 'packages/breadcrumb/page.html',
@@ -207,12 +212,29 @@ export const SITE = [
             summary:
               '面包屑。容器 + 每一级两个标签；一级里的链接由使用者写在插槽里，当前页写 current，组件不造链接。',
           },
+          {
+            order: 30,
+            label: 'Tabs',
+            zh: '标签页',
+            path: 'packages/tabs/page.html',
+            type: 'component',
+            summary: '标签页。',
+          },
+          {
+            order: 40,
+            label: 'Pagination',
+            zh: '分页',
+            path: 'packages/pagination/page.html',
+            type: 'component',
+            summary:
+              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至某页」输入跳转与「每页 N 条」选择器，翻页发 change。',
+          },
         ],
       },
       {
-        order: 20,
+        order: 40,
         label: '表单',
-        summary: '值的读写遵循统一约定：标签属性是初始值，DOM property 是运行时状态',
+        summary: '收集与校验输入：输入框、选择、开关与表单容器',
         children: [
           {
             order: 10,
@@ -273,9 +295,9 @@ export const SITE = [
         ],
       },
       {
-        order: 30,
+        order: 50,
         label: '反馈',
-        summary: '把状态告诉使用者',
+        summary: '告诉使用者正在发生什么：提示、消息、进度、加载与空态',
         children: [
           {
             order: 10,
@@ -287,20 +309,20 @@ export const SITE = [
           },
           {
             order: 20,
-            label: 'Progress',
-            zh: '进度条',
-            path: 'packages/progress/page.html',
-            type: 'component',
-            summary: '进度条。支持不确定态。',
-          },
-          {
-            order: 30,
             label: 'Message',
             zh: '消息条',
             path: 'packages/message/page.html',
             // 命令式：入口是 message() 这个函数，容器标签由模块自己创建，使用者不用写标签
             type: 'component',
             summary: '命令式消息条：从顶部落下来一条，几秒后自己走；同 key 更新不叠加。',
+          },
+          {
+            order: 30,
+            label: 'Progress',
+            zh: '进度条',
+            path: 'packages/progress/page.html',
+            type: 'component',
+            summary: '进度条。支持不确定态。',
           },
           {
             order: 40,
@@ -313,6 +335,14 @@ export const SITE = [
           },
           {
             order: 50,
+            label: 'Spinner',
+            zh: '加载指示',
+            path: 'packages/spinner/page.html',
+            type: 'component',
+            summary: '加载指示。跟随当前文字色与字号。',
+          },
+          {
+            order: 60,
             label: 'Skeleton',
             zh: '骨架屏',
             path: 'packages/skeleton/page.html',
@@ -320,16 +350,24 @@ export const SITE = [
             summary:
               '骨架屏：加载时先把内容的位置占住。矩形 / 文本行 / 圆形三档形状，宽高、底色与扫光都可配；减弱动效下自动关掉扫光。',
           },
+          {
+            order: 70,
+            label: 'Empty',
+            zh: '空态',
+            path: 'packages/empty/page.html',
+            type: 'component',
+            summary:
+              '空态。没有内容可显示时的一块占位：内置图形 + 一行文案 + 可选操作区，三档尺寸。',
+          },
         ],
       },
       {
-        order: 40,
+        order: 60,
         label: '浮层',
-        summary:
-          '浮层：图层问题已验完 —— 用原生 popover（top layer）+ CSS 锚点定位，不挂 body、不用 z-index',
+        summary: '浮在页面上方的一层：弹出层、对话框、下拉菜单、提示气泡',
         children: [
           {
-            order: 5,
+            order: 10,
             label: 'Popover',
             zh: '浮层',
             path: 'packages/popover/page.html',
@@ -337,7 +375,7 @@ export const SITE = [
             summary: '通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。',
           },
           {
-            order: 10,
+            order: 20,
             label: 'Dialog',
             zh: '对话框',
             path: 'packages/dialog/page.html',
@@ -345,7 +383,7 @@ export const SITE = [
             summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',
           },
           {
-            order: 20,
+            order: 30,
             label: 'Dropdown',
             zh: '下拉菜单',
             path: 'packages/dropdown/page.html',
@@ -353,7 +391,7 @@ export const SITE = [
             summary: '下拉菜单。',
           },
           {
-            order: 30,
+            order: 40,
             label: 'Tooltip',
             zh: '提示气泡',
             path: 'packages/tooltip/page.html',
@@ -363,37 +401,12 @@ export const SITE = [
         ],
       },
       {
-        order: 50,
+        order: 70,
         label: '布局',
-        summary: '组织内容',
+        summary: '安排空间与结构：栅格、间距、折叠面板、滚动条',
         children: [
           {
             order: 10,
-            label: 'Collapse',
-            zh: '折叠面板',
-            path: 'packages/collapse/page.html',
-            type: 'component',
-            summary:
-              '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。',
-          },
-          {
-            order: 20,
-            label: 'Tabs',
-            zh: '标签页',
-            path: 'packages/tabs/page.html',
-            type: 'component',
-            summary: '标签页。',
-          },
-          {
-            order: 30,
-            label: 'Table',
-            zh: '表格',
-            path: 'packages/table/page.html',
-            type: 'component',
-            summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
-          },
-          {
-            order: 40,
             label: 'Grid',
             zh: '栅格',
             path: 'packages/grid/page.html',
@@ -401,7 +414,7 @@ export const SITE = [
             summary: '栅格。',
           },
           {
-            order: 42,
+            order: 20,
             label: 'Space',
             zh: '间距',
             path: 'packages/space/page.html',
@@ -410,16 +423,16 @@ export const SITE = [
               '间距。横向 / 纵向排列一组元素，间距支持三档令牌或数字；另有主轴分布、交叉轴对齐、反向、换行与撑满。',
           },
           {
-            order: 45,
-            label: 'Pagination',
-            zh: '分页',
-            path: 'packages/pagination/page.html',
+            order: 30,
+            label: 'Collapse',
+            zh: '折叠面板',
+            path: 'packages/collapse/page.html',
             type: 'component',
             summary:
-              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至某页」输入跳转与「每页 N 条」选择器，翻页发 change。',
+              '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。',
           },
           {
-            order: 50,
+            order: 40,
             label: 'Scroll Bar',
             zh: '滚动条',
             path: 'packages/scroll-bar/page.html',
