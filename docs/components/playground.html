@@ -138,13 +138,39 @@
       color: rgb(var(--mc-color-danger));
     }
 
-    /* 编辑器盒：高度固定，滚动交给 CM / textarea 自己 —— 免得代码一长把整页推走 */
+    /* 编辑器盒：高度由 JS 按内容自适应（min/max 见下面的常量），无 JS 时退到 300px */
     .editor-host {
-      height: 300px;
+      height: var(--doc-playground-editor-h, 300px);
+      position: relative;
       border: 1px solid rgb(var(--mc-color-border));
       border-radius: var(--mc-radius-md);
       background-color: rgb(var(--mc-color-surface-sunken));
       overflow: hidden;
+    }
+
+    /* 首次打开才下载 CodeMirror：盖一层明显的加载态（状态栏那行字太弱），挂载完成后由脚本隐藏 */
+    .editor-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--mc-space-2);
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+
+    .editor-loading[hidden] {
+      display: none;
+    }
+
+    .editor-loading-hint {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs);
     }
 
     .fallback-editor {
@@ -232,7 +258,14 @@
     </div>
 
     <div class="panel" id="panel" hidden>
-      <div class="editor-host" id="editor-host" part="editor"></div>
+      <div class="editor-host" id="editor-host" part="editor">
+        <!-- 首次打开要下载 CodeMirror：状态栏那行小字太弱，盖一层明显的加载态 -->
+        <div class="editor-loading" id="editor-loading" role="status" hidden>
+          <mc-spinner color="primary"></mc-spinner>
+          <span>正在加载编辑器…</span>
+          <span class="editor-loading-hint">首次打开会慢一点</span>
+        </div>
+      </div>
       <pre class="error" id="error" part="error" hidden></pre>
     </div>
   </div>
@@ -309,12 +342,15 @@
         this._statusEl = root.querySelector('.status');
         this._errorEl = root.querySelector('.error');
         this._editorHost = root.querySelector('#editor-host');
+        this._loadingEl = root.querySelector('#editor-loading');
         this._actions = root.querySelector('#actions');
 
         this._mounted = true;
         this._open = false;
         this._runSeq = 0;
         this._loadToken = 0;
+        this._fitRaf = 0;
+        this._loadingTimer = 0;
         /** 文件原文编译出来的 tag：重置时直接复用（不用再 fetch / 编译） */
         this._baseTag = undefined;
 
@@ -328,6 +364,13 @@
         /* 语法配色走 :host([data-dark])：shadow 里看不到 <html data-theme>，只能自己落到宿主上（令牌本身会自动跟主题） */
         watchTheme(this);
 
+        /* 视口高度变了，自适应上限跟着变；宽度变了要先 refresh 让 CM 重新折行 */
+        this._onResize = () => {
+          this._editor?.refresh();
+          this.scheduleFit();
+        };
+        window.addEventListener('resize', this._onResize);
+
         if (String(this.src ?? '').trim()) this.loadSource();
       },
 
@@ -335,6 +378,9 @@
         this._mounted = false;
         clearTimeout(this._runTimer);
         clearTimeout(this._copyTimer);
+        clearTimeout(this._loadingTimer);
+        cancelAnimationFrame(this._fitRaf);
+        window.removeEventListener('resize', this._onResize);
         unwatchTheme(this);
         this._actions?.removeEventListener('click', this._onAction);
         this._editor?.destroy();
@@ -362,7 +408,10 @@
             if (token !== this._loadToken || !this._mounted) return;
             const parsed = parseDemoSource(text);
             this._source = { url, text, parsed, loaded: true };
-            if (this._editor) this._editor.setValue(parsed.inner);
+            if (this._editor) {
+              this._editor.setValue(parsed.inner);
+              this.scheduleFit();
+            }
             await this.renderBase();
           } catch (error) {
             if (token !== this._loadToken) return;
@@ -429,17 +478,24 @@
           if (!this._source?.loaded) await this.loadSource();
           if (!this._source?.loaded) return;
           this.setStatus('正在加载编辑器…');
-          const editor = await mountCodeEditor(this._editorHost, {
-            value: this._source.parsed.inner,
-            onChange: () => this.onEdit(),
-            onRun: () => this.run(),
-          });
+          this.showEditorLoading();
+          let editor;
+          try {
+            editor = await mountCodeEditor(this._editorHost, {
+              value: this._source.parsed.inner,
+              onChange: () => this.onEdit(),
+              onRun: () => this.run(),
+            });
+          } finally {
+            this.hideEditorLoading();
+          }
           if (!this._mounted) {
             editor.destroy();
             return;
           }
           this._editor = editor;
           this.setStatus(HINT);
+          this.scheduleFit();
         },
 
         /** 用户改动：先标「已修改」，停下 RUN_DELAY 毫秒后自动跑 */
@@ -451,6 +507,7 @@
             this._editor.getValue() !== this._source.parsed.inner;
           this.ele.toggleAttribute('data-dirty', changed);
           this.setStatus('已修改 · 即将自动运行');
+          this.scheduleFit();
           clearTimeout(this._runTimer);
           this._runTimer = setTimeout(() => this.run(), RUN_DELAY);
         },
@@ -505,6 +562,7 @@
             this._suppress = false;
           }
           this.ele.removeAttribute('data-dirty');
+          this.scheduleFit();
           if (this._baseTag) this.renderBaseElement();
           else this.renderBase();
         },
@@ -571,7 +629,46 @@
             toggle.setAttribute('aria-label', label);
             toggle.setAttribute('aria-expanded', String(open));
           }
-          if (open) this.openEditor();
+          if (open) {
+            this.openEditor();
+            this.scheduleFit();
+          }
+        },
+
+        /** 首次加载才显示：晚 150ms 再亮，缓存命中时不会闪一下 */
+        showEditorLoading() {
+          if (!this._loadingEl || this._editor) return;
+          clearTimeout(this._loadingTimer);
+          this._loadingTimer = setTimeout(() => {
+            this._loadingEl.hidden = false;
+          }, 150);
+        },
+
+        hideEditorLoading() {
+          clearTimeout(this._loadingTimer);
+          if (this._loadingEl) this._loadingEl.hidden = true;
+        },
+
+        /** rAF 合并：连续敲字 / 拖窗口时不用每次都量 */
+        scheduleFit() {
+          if (this._fitRaf) return;
+          this._fitRaf = requestAnimationFrame(() => {
+            this._fitRaf = 0;
+            this.fitEditorHeight();
+          });
+        },
+
+        /** 高度 = 内容高度：不设上下限，量到多高就写多高（+2 是盒子的上下边框） */
+        fitEditorHeight() {
+          const host = this._editorHost;
+          const editor = this._editor;
+          if (!host || !editor) return;
+          const content = Math.ceil(editor.getContentHeight());
+          if (!content) return; // 面板还藏着 / 量不到高：先不动
+          const next = `${content + 2}px`;
+          if (host.style.height === next) return;
+          host.style.height = next;
+          editor.refresh();
         },
 
         toggle() {

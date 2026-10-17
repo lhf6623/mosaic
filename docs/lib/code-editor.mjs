@@ -174,6 +174,8 @@ function injectStyle(root, css) {
  * @property {(value: string) => void} setValue
  * @property {() => void} focus
  * @property {() => void} destroy
+ * @property {() => number} getContentHeight 内容总高（px），给调用方做自适应高度
+ * @property {() => void} refresh 容器尺寸变化后重排
  */
 
 /**
@@ -198,6 +200,8 @@ export async function mountCodeEditor(container, options = {}) {
     /** @type {any} */
     const cm = CodeMirror(container, {
       value,
+      /* 高度跟随 .editor-host（它由 doc-playground 按内容自适应）；CM 默认 300px 会盖掉容器 */
+      height: '100%',
       mode: 'htmlmixed',
       lineNumbers: true,
       lineWrapping: true,
@@ -235,6 +239,11 @@ export async function mountCodeEditor(container, options = {}) {
         muting = false;
       },
       focus: () => cm.focus(),
+      getContentHeight: () => {
+        const sizer = cm.getWrapperElement()?.querySelector('.CodeMirror-sizer');
+        return sizer ? sizer.getBoundingClientRect().height : 0;
+      },
+      refresh: () => cm.refresh(),
       destroy: () => {
         cm.getWrapperElement()?.remove();
       },
@@ -277,6 +286,14 @@ function mountFallback(container, { value, onChange, onRun }) {
       textarea.value = next;
     },
     focus: () => textarea.focus(),
+    getContentHeight: () => {
+      const prev = textarea.style.height;
+      textarea.style.height = 'auto';
+      const height = textarea.scrollHeight;
+      textarea.style.height = prev;
+      return height;
+    },
+    refresh: () => {},
     destroy: () => {
       textarea.removeEventListener('input', onInput);
       textarea.removeEventListener('keydown', onKeydown);
@@ -291,6 +308,8 @@ function inertEditor() {
     getValue: () => '',
     setValue: () => {},
     focus: () => {},
+    getContentHeight: () => 0,
+    refresh: () => {},
     destroy: () => {},
   };
 }
