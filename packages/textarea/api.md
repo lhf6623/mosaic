@@ -25,26 +25,26 @@ el.addEventListener('input', (e) => console.log(e.data.value));
 
 ## 属性
 
-| 名称            | 值                     | 默认 | 说明                                                                                                                                                     |
-| --------------- | ---------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `value`         | `string`               | —    | **绑定通道**：ofa 的 `<mc-textarea :value="form.memo">`（单向）/ `sync:value="form.memo"`（双向）落在这个属性上；写它铺进内部原生 textarea，输入会写回它 |
-| `default-value` | `string`               | —    | **非受控初值**；之后改它**不会**覆盖当前值                                                                                                               |
-| `placeholder`   | `string`               | —    | 占位符                                                                                                                                                   |
-| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                                                                                                                  |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位                                                                                                     |
-| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`                                                                                                              |
-| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复                                                                                                   |
-| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计                                                                                                  |
-| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`                                                                                                          |
-| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`                                                                                                          |
-| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`                                                                                                                     |
+| 名称            | 值                     | 默认 | 说明                                                                                                |
+| --------------- | ---------------------- | ---- | --------------------------------------------------------------------------------------------------- |
+| `value`         | `string`               | —    | 值：绑定写这里 —— `sync:value="form.memo"` 双向、`:value` 单向；写它铺进内部 textarea，输入会写回它 |
+| `default-value` | `string`               | —    | **非受控初值**；之后改它**不会**覆盖当前值                                                          |
+| `placeholder`   | `string`               | —    | 占位符                                                                                              |
+| `name`          | `string`               | —    | 表单字段名，转发给内部原生 `<textarea>`                                                             |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md` | 尺寸：`min-height` 取 `--mc-control-h-*`，字号随档位                                                |
+| `rows`          | `number`               | `3`  | 行数，转发给内部原生 `<textarea>` 的 `rows`                                                         |
+| `auto-resize`   | `boolean`              | —    | 输入时把高度设成内容高度（`scrollHeight`），关掉即恢复                                              |
+| `maxlength`     | `number`               | —    | 最大长度；**给了它才显示**右下角的 `当前/上限` 字数统计                                             |
+| `disabled`      | `boolean`              | —    | 禁用，转发给内部原生 `<textarea>` 的 `disabled`                                                     |
+| `readonly`      | `boolean`              | —    | 只读，转发给内部原生 `<textarea>` 的 `readonly`                                                     |
+| `invalid`       | `boolean`              | —    | 校验失败：边框取 `--mc-color-danger`                                                                |
 
 ## 事件
 
 | 名称     | 类型                                                   | 说明                                                                   |
 | -------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
 | `input`  | `(event: Event & { data: { value: string } }) => void` | 每次输入；`$event.data.value` 是当前值，`$event.target.value` 也读得到 |
-| `change` | `(event: Event & { data: { value: string } }) => void` | 值确定变化（失焦 / 回车）；原生 `change` 穿不出 shadow，由组件转发     |
+| `change` | `(event: Event & { data: { value: string } }) => void` | 值确定变化时触发（失焦 / 回车），冒泡 + `composed`                     |
 
 ## 插槽
 

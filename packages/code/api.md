@@ -47,17 +47,17 @@
 
 ## 属性
 
-| 名称              | 值                 | 默认             | 说明                                                                                                             |
-| ----------------- | ------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `src`             | `string`           | —                | **片段文件**：优先级最高；缺 `language` 时按文件后缀推断。同一 URL 多处引用只取一次                              |
-| `code`            | `string`           | —                | 代码文本，可多行；不写则读**标签里的纯文本**。`<` 都要写 `&lt;`                                                  |
-| `language`        | `string`           | —                | 语言 id 或别名（`js` `ts` `html` `css` `json` `bash` `py` `md`…）；空 / `text` / `none` 表示不高亮               |
-| `line-numbers`    | `boolean`          | —                | 行号列（`position: sticky`）。行号是真实的 DOM 文本（`<span part="line">`），只靠 `user-select: none` 不参与复制 |
-| `max-height`      | `number \| string` | —                | 数字按 px，或写 CSS 长度；超出时在组件内部滚动；块内滚到底后滚轮会继续滚页面（不会把滚动锁在组件里）             |
-| `soft-wrap`       | `boolean`          | —                | 长行折行，而不是横向滚动                                                                                         |
-| `hljs-theme`      | `string`           | `github`         | highlight.js 官方主题名（亮色）                                                                                  |
-| `hljs-theme-dark` | `string`           | `github-dark`    | highlight.js 官方主题名（暗色）                                                                                  |
-| `hljs-base`       | `string`           | 内置固定版本 CDN | highlight.js 的 `build/` 目录地址（自托管 / 换镜像）                                                             |
+| 名称              | 值                 | 默认             | 说明                                                                                                 |
+| ----------------- | ------------------ | ---------------- | ---------------------------------------------------------------------------------------------------- |
+| `src`             | `string`           | —                | **片段文件**：优先级最高；缺 `language` 时按文件后缀推断。同一 URL 多处引用只取一次                  |
+| `code`            | `string`           | —                | 代码文本，可多行；不写则读**标签里的纯文本**。`<` 都要写 `&lt;`                                      |
+| `language`        | `string`           | —                | 语言 id 或别名（`js` `ts` `html` `css` `json` `bash` `py` `md`…）；空 / `text` / `none` 表示不高亮   |
+| `line-numbers`    | `boolean`          | —                | 显示行号；行号不参与复制（`user-select: none`），整列 `position: sticky` 跟着滚                      |
+| `max-height`      | `number \| string` | —                | 数字按 px，或写 CSS 长度；超出时在组件内部滚动；块内滚到底后滚轮会继续滚页面（不会把滚动锁在组件里） |
+| `soft-wrap`       | `boolean`          | —                | 长行折行，而不是横向滚动                                                                             |
+| `hljs-theme`      | `string`           | `github`         | highlight.js 官方主题名（亮色）                                                                      |
+| `hljs-theme-dark` | `string`           | `github-dark`    | highlight.js 官方主题名（暗色）                                                                      |
+| `hljs-base`       | `string`           | 内置固定版本 CDN | highlight.js 的 `build/` 目录地址（自托管 / 换镜像）                                                 |
 
 ## part
 

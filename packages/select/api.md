@@ -34,17 +34,17 @@ dropdown 是**菜单**（触发元素 + 菜单项）；select 是**表单控件*
 
 ### mc-select
 
-| 名称            | 值                     | 默认     | 说明                                                                                                                           |
-| --------------- | ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `default-value` | `string`               | `''`     | HTML 初始值；`multiple` 时是逗号分隔的多个值（`"bj,sh"`）                                                                      |
-| `value`         | `string`               | —        | **绑定通道**：ofa 的 `:value="form.city"`（单向）/ `sync:value="form.city"`（双向）落在这个属性上（默认 null，不给就是非受控） |
-| `placeholder`   | `string`               | `请选择` | 没有选中项时显示的文案                                                                                                         |
-| `multiple`      | `boolean`              | —        | 多选：`value` property 变 `string[]`，面板不自己收起                                                                           |
-| `clearable`     | `boolean`              | —        | 有值时右端出现 ×；点它清空并发 `clear`                                                                                         |
-| `disabled`      | `boolean`              | —        | 禁用：不进焦点、不弹面板                                                                                                       |
-| `readonly`      | `boolean`              | —        | 只读：可聚焦，但不弹面板                                                                                                       |
-| `invalid`       | `boolean`              | —        | 校验失败：边框换成 `--mc-color-danger`                                                                                         |
-| `size`          | `'sm' \| 'md' \| 'lg'` | `md`     | 控件高度 / 字号 / 行高（对外只动宿主高度，`style="height:…"` 也压得住）                                                        |
+| 名称            | 值                     | 默认     | 说明                                                                                        |
+| --------------- | ---------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `default-value` | `string`               | `''`     | HTML 初始值；`multiple` 时是逗号分隔的多个值（`"bj,sh"`）                                   |
+| `value`         | `string`               | —        | 值：绑定写这里 —— `sync:value="form.city"` 双向、`:value` 单向；默认 `null`，不给就是非受控 |
+| `placeholder`   | `string`               | `请选择` | 没有选中项时显示的文案                                                                      |
+| `multiple`      | `boolean`              | —        | 多选：`value` property 变 `string[]`，面板不自己收起                                        |
+| `clearable`     | `boolean`              | —        | 有值时右端出现 ×；点它清空并发 `clear`                                                      |
+| `disabled`      | `boolean`              | —        | 禁用：不进焦点、不弹面板                                                                    |
+| `readonly`      | `boolean`              | —        | 只读：可聚焦，但不弹面板                                                                    |
+| `invalid`       | `boolean`              | —        | 校验失败：边框换成 `--mc-color-danger`                                                      |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md`     | 控件高度 / 字号 / 行高（对外只动宿主高度，`style="height:…"` 也压得住）                     |
 
 ### mc-option
 
