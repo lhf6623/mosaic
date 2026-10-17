@@ -2,6 +2,7 @@
   <!--
     组件文档页的**分区布局页**：左栏菜单 + 正文 + 右栏本页目录。packages/<slug>/page.html 用 `export const parent` 挂上来，上面还有一层外壳 docs/layout.html。
     ⚠️ 左右两栏是 position: fixed（不在文档流里），正文靠 .doc-content 的 padding 留位；两栏高度固定 100%（注释见下面的 <style>）。
+    左栏可收起：把手在栏右沿，状态只在内存（刷新复位，不落盘）；小屏仍由 @media 隐藏、菜单走顶栏浮层。
   -->
   <style>
     /* ---------- 浮动侧栏 + 正文留位 ----------
@@ -60,6 +61,65 @@
       padding-inline: 15rem 15rem;
     }
 
+    /* 左栏把手：贴在栏右沿（顶栏下方），收起后停靠视口左缘。状态由宿主属性 data-nav-hidden 驱动，
+       不落盘（刷新复位）；小屏由下面的 @media 把左栏和把手一起交给顶栏浮层。 */
+    .doc-nav-handle {
+      position: fixed;
+      top: calc(var(--doc-topbar, 3.5rem) + 0.75rem);
+      left: 15rem;
+      z-index: calc(var(--mc-z-sticky) + 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: var(--doc-frame-bg);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: 15px;
+      cursor: pointer;
+      transform: translateX(-50%);
+    }
+
+    .doc-nav-handle:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .doc-nav-handle:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring));
+      outline-offset: 1px;
+    }
+
+    :host([data-nav-hidden]) doc-nav {
+      transform: translateX(-100%);
+    }
+
+    :host([data-nav-hidden]) .doc-nav-handle {
+      left: 0;
+      transform: none;
+      border-left: 0;
+      border-radius: 0 var(--mc-radius-md) var(--mc-radius-md) 0;
+    }
+
+    :host([data-nav-hidden]) .doc-split > .doc-content {
+      padding-left: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      doc-nav,
+      .doc-nav-handle,
+      .doc-split > .doc-content {
+        transition:
+          transform 0.2s ease,
+          left 0.2s ease,
+          padding-left 0.2s ease,
+          border-radius 0.2s ease;
+      }
+    }
+
     /* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
        这里只能作用到宿主标签本身；那些规则写在 docs/components/nav.html 的 <style> 里。 */
 
@@ -81,6 +141,10 @@
         display: none;
       }
 
+      .doc-nav-handle {
+        display: none;
+      }
+
       .doc-split > .doc-content {
         padding-inline: 0;
       }
@@ -94,12 +158,59 @@
     </div>
 
     <doc-toc></doc-toc>
+
+    <button
+      type="button"
+      class="doc-nav-handle"
+      aria-expanded="true"
+      aria-label="隐藏左侧菜单"
+      title="隐藏左侧菜单">
+      <mc-icon name="chevron-left"></mc-icon>
+    </button>
   </div>
 
   <script>
     // 挂在文档站外壳下面（相对本文件解析）
     export const parent = './layout.html';
 
-    export default () => ({ data: {} });
+    /* 不落盘：SPA 内保持（模块级变量），刷新复位；小屏仍由 @media 接管 */
+    let navHidden = false;
+
+    export default () => ({
+      data: {},
+
+      ready() {
+        this._nav = this.ele.shadowRoot.querySelector('doc-nav');
+        this._handle = this.ele.shadowRoot.querySelector('.doc-nav-handle');
+        this._onToggle = () => this.toggleNav();
+        this._handle?.addEventListener('click', this._onToggle);
+        this.applyNavState();
+      },
+
+      detached() {
+        this._handle?.removeEventListener('click', this._onToggle);
+      },
+
+      proto: {
+        toggleNav() {
+          navHidden = !navHidden;
+          this.applyNavState();
+        },
+
+        /** 宿主属性驱动 CSS（左栏滑出 / 正文让位 / 把手换边）；inert 保证收起的菜单不会被 Tab 聚焦 */
+        applyNavState() {
+          this.ele.toggleAttribute('data-nav-hidden', navHidden);
+          this._nav?.toggleAttribute('inert', navHidden);
+          if (!this._handle) return;
+          const label = navHidden ? '显示左侧菜单' : '隐藏左侧菜单';
+          this._handle.title = label;
+          this._handle.setAttribute('aria-label', label);
+          this._handle.setAttribute('aria-expanded', String(!navHidden));
+          this._handle
+            .querySelector('mc-icon')
+            ?.setAttribute('name', navHidden ? 'chevron-right' : 'chevron-left');
+        },
+      },
+    });
   </script>
 </template>
