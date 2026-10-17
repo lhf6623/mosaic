@@ -1,5 +1,5 @@
 <!--
-  <doc-search> —— 顶栏搜索：搜整个菜单（docs/site-map.js 的 PAGES），选中即跳页；空查询不列全量。
+  <doc-search> —— 顶栏搜索：搜整个菜单（docs/site-map.js 的 PAGES），选中即跳页；空查询 / 无匹配都不挂面板。
   ⚠️ 面板不用 mc-popover（auto 的 light dismiss 会把「点自己的输入框」当成外部点击），用 popover="manual"，点空白 / Esc 自己收口。
   ⚠️ 结果行是运行时造的，地址在这里改 hash；目标就是当前页时跳过 —— 同页不发 router-change，加载条会卡在 loading。
 -->
@@ -100,13 +100,6 @@
     mc-scroll-bar::part(viewport) {
       max-height: 15rem;
     }
-
-    .empty {
-      margin: var(--mc-space-3);
-      color: rgb(var(--mc-color-fg-subtle));
-      font-size: var(--mc-text-sm);
-      text-align: center;
-    }
   </style>
 
   <span class="field">
@@ -138,10 +131,6 @@
         </o-fill>
       </div>
     </mc-scroll-bar>
-
-    <o-if :value="empty">
-      <p class="empty">没有匹配的菜单项</p>
-    </o-if>
   </div>
 
   <script>
@@ -170,7 +159,6 @@
       tag: 'doc-search',
 
       data: {
-        empty: false,
         results: [],
       },
 
@@ -257,12 +245,11 @@
           }
         },
 
-        /** 过滤 + 排序（同分保持菜单顺序）；空查询直接收摊 */
+        /** 过滤 + 排序（同分保持菜单顺序）；空查询 / 没有命中都直接收摊，不挂空面板 */
         applyQuery() {
           const terms = this._query.trim().toLowerCase().split(/\s+/).filter(Boolean);
           if (!terms.length) {
             this.results = [];
-            this.empty = false;
             this.hide();
             return;
           }
@@ -287,8 +274,11 @@
             section: page.section,
             active: false,
           }));
-          this.empty = this.results.length === 0;
           this._active = 0;
+          if (!this.results.length) {
+            this.hide();
+            return;
+          }
           this.markActive();
           this.show();
         },
@@ -322,7 +312,6 @@
           this._query = '';
           this._field.value = '';
           this.results = [];
-          this.empty = false;
           this.hide();
         },
       },
