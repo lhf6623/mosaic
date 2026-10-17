@@ -1,7 +1,7 @@
 <template component>
   <!-- 12 个 placement 全列出来：中间留空，上 / 下 / 左 / 右各三个（-start / 居中 / -end）。
        一次只开一个面板（点空白、Esc 或再点触发元素就关），所以它们不会互相压。
-       ⚠️ 上 / 下两行必须**整行铺开**，不能挤在一格里换行：换行后行距只剩 gap（32px），
+       ⚠️ 上 / 下两行必须**整行铺开**，不能挤在一格里换行：换行后行距只剩默认 gap（md，16px），
        上一行弹出的面板（52px 高 + 8px 间距）会盖住下一行的按钮，那一行就点不着了（实测）。 -->
   <mc-space direction="vertical" block align="center">
     <mc-space block wrap-items justify="center">

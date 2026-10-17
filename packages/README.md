@@ -12,13 +12,6 @@
 
 ---
 
-组件文档页（`packages/<slug>/page.html`）怎么写：固定的 `<h2>` 骨架、演示区的四段结构、
-参考区（属性 / 事件 / 插槽 / part）的表格口径。组件接口本身以各单元的 [`api.md`](./button/api.md) 为准。
-
-> **读这份的场合**：写或改任何组件文档页、加一个新组件页、调整演示区结构。
-
----
-
 ## 一、页面骨架：开场白 → 例子 → 参考区（由 `api.md` 渲染）
 
 **文档页只写用法。** 每一页都按下面的顺序排，读的人不用在几种排法之间找。
@@ -135,9 +128,9 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 ```html
 <!-- demos/colors.html -->
 <template component>
-  <div class="flex flex-wrap items-center gap-3">
+  <mc-space block wrap-items>
     <mc-button color="primary">主要</mc-button>
-  </div>
+  </mc-space>
   <script>
     export default async () => ({ tag: 'demo-button-colors' });
   </script>
@@ -160,6 +153,8 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
   排版优先用 `mc-space`（站点外壳已注册），其余工具类照常用（`text-sm`、`p-4` 这些）。
 - **成组排列优先用 `mc-space`**：行 / 列、间距、换行、主轴与交叉轴对齐都交给它；不要再手写
   `flex flex-col gap-3` 这类布局工具类。`gap` 可写三档令牌或数字（px）。
+- **能用默认值就不写属性**：默认 `gap` 是 `md`（16px），横向 `align="center"`、`justify="start"`
+  也都是默认 —— 不写；只有需要非默认值时才写属性。例子要像使用者会写的代码，属性越少越好。
 - **例子不给组件化妆。** 演示行为时，内容用项目自己的组件（按钮 / 卡片）或纯文本，
   别手写 `.cell` / `.chip` 这类装饰层；`<style>` 只留给以样式为主题的演示
   （`part` / 自定义外观）—— 否则读者分不清是组件在起作用，还是示例的样式在起作用。
