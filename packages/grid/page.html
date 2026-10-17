@@ -16,67 +16,69 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        容器 + 子项两个标签搭起来，
-        <code>cols="2"</code>
-        就是两列。子项要能压缩：里面放长内容时给子元素
-        <code>min-width: 0</code>
-        （或
-        <code>class="min-w-0"</code>
-        ），否则长文本会把列撑宽。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          容器 + 子项两个标签搭起来，
+          <code>cols="2"</code>
+          就是两列。子项要能压缩：里面放长内容时给子元素
+          <code>min-width: 0</code>
+          （或
+          <code>class="min-w-0"</code>
+          ），否则长文本会把列撑宽。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>列数</h3>
-      <p class="doc-hint">
-        <code>cols</code>
-        直接给列数；同一个容器里多出来的子项自动换行。
-      </p>
-      <doc-playground src="./demos/cols.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>列数</h3>
+        <p class="doc-hint">
+          <code>cols</code>
+          直接给列数；同一个容器里多出来的子项自动换行。
+        </p>
+        <doc-playground src="./demos/cols.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>间距</h3>
-      <p class="doc-hint">
-        <code>gap</code>
-        只有三档，分别对应
-        <code>--mc-space-2</code>
-        /
-        <code>--mc-space-4</code>
-        /
-        <code>--mc-space-6</code>
-        —— 想更细就覆盖宿主的
-        <code>gap</code>
-        。
-      </p>
-      <doc-playground src="./demos/gap.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>间距</h3>
+        <p class="doc-hint">
+          <code>gap</code>
+          有三档令牌（
+          <code>sm</code>
+          /
+          <code>md</code>
+          /
+          <code>lg</code>
+          ），也可以直接写数字（单位 px，如
+          <code>gap="10"</code>
+          ）—— 数值不用再覆盖 CSS 变量。
+        </p>
+        <doc-playground src="./demos/gap.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>最小宽度自适应</h3>
-      <p class="doc-hint">
-        不写列数、只给
-        <code>min-item-width</code>
-        ：容器窄了就少几列，宽了就多几列，不用写断点。
-      </p>
-      <doc-playground src="./demos/min-width.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>最小宽度自适应</h3>
+        <p class="doc-hint">
+          不写列数、只给
+          <code>min-item-width</code>
+          ：容器窄了就少几列，宽了就多几列，不用写断点。
+        </p>
+        <doc-playground src="./demos/min-width.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>跨列</h3>
-      <p class="doc-hint">
-        子项上的
-        <code>span</code>
-        就是
-        <code>grid-column: span n</code>
-        。
-      </p>
-      <doc-playground src="./demos/span.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>跨列</h3>
+        <p class="doc-hint">
+          子项上的
+          <code>span</code>
+          就是
+          <code>grid-column: span n</code>
+          。
+        </p>
+        <doc-playground src="./demos/span.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

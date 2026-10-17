@@ -15,76 +15,78 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        <code>name</code>
-        是字段名，
-        <code>default-value</code>
-        是初始选中项 —— 同一页可以有多个互不干扰的组。 组只认直接子项（用
-        <code>o-if</code>
-        /
-        <code>o-fill</code>
-        包一层就互斥失效）；不在组里的 radio 只能切换自己。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          <code>name</code>
+          是字段名，
+          <code>default-value</code>
+          是初始选中项 —— 同一页可以有多个互不干扰的组。 组只认直接子项（用
+          <code>o-if</code>
+          /
+          <code>o-fill</code>
+          包一层就互斥失效）；不在组里的 radio 只能切换自己。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>方向</h3>
-      <doc-playground src="./demos/direction.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>方向</h3>
+        <doc-playground src="./demos/direction.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>禁用</h3>
-      <doc-playground src="./demos/disabled.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>禁用</h3>
+        <doc-playground src="./demos/disabled.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        用
-        <kbd>←</kbd>
-        <kbd>→</kbd>
-        在组内走一遍也能看到变化。
-        <code>change</code>
-        只在组上发一次，载荷是
-        <code>$event.data.value</code>
-        —— 子项不会各自再发一遍。 原生的
-        <code>focus</code>
-        /
-        <code>blur</code>
-        /
-        <code>keydown</code>
-        这些
-        <code>composed</code>
-        事件本来就会穿到宿主上（不用组件转发），
-        <code>on:focus</code>
-        直接写就行 —— 这里演的是组件自己发的那几条。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          用
+          <kbd>←</kbd>
+          <kbd>→</kbd>
+          在组内走一遍也能看到变化。
+          <code>change</code>
+          只在组上发一次，载荷是
+          <code>$event.data.value</code>
+          —— 子项不会各自再发一遍。 原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          这些
+          <code>composed</code>
+          事件本来就会穿到宿主上（不用组件转发），
+          <code>on:focus</code>
+          直接写就行 —— 这里演的是组件自己发的那几条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组与子项各有自己的
-        <code>part</code>
-        ：
-        <code>::part(circle)</code>
-        改圆圈、
-        <code>::part(label)</code>
-        改文案、
-        <code>::part(base)</code>
-        改整格 / 整行。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组与子项各有自己的
+          <code>part</code>
+          ：
+          <code>::part(circle)</code>
+          改圆圈、
+          <code>::part(label)</code>
+          改文案、
+          <code>::part(base)</code>
+          改整格 / 整行。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->
     <doc-spec src="./api.md"></doc-spec>

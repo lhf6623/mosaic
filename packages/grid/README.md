@@ -31,14 +31,15 @@
 `:host { display: grid }` + 一个默认插槽：被投影的子项就是栅格项，组件不包裹、不搬动它们
 （所以子项上的 `class` / `style` 照常生效，`span` 也只是给宿主写一个变量）。
 
-### 列数与最小宽度：JS 写宿主上的内部变量
+### 列数、最小宽度与数字间距：JS 写宿主上的内部变量
 
-`grid-template-columns` 要吃的是**运行时的数字 / 长度**，所以 `cols` 与 `min-item-width`
-在 `attached()` 与 `watch` 里换算成宿主 style 上的两个内部变量：
+`grid-template-columns` / `gap` 要吃的都是**运行时的数字 / 长度**，所以 `cols`、
+`min-item-width` 与数字 `gap` 在 `attached()` 与 `watch` 里换算成宿主 style 上的内部变量：
 
 ```css
 :host {
   grid-template-columns: repeat(var(--mc-grid-cols, 1), minmax(0, 1fr)); /* @internal */
+  gap: var(--mc-grid-gap, var(--mc-space-4, var(--mc-def-space-4)));
 }
 :host([min-item-width]) {
   grid-template-columns: repeat(
@@ -51,8 +52,11 @@
 - **只能在 `attached()` 之后写宿主**：`ready()` 还在构造期，往宿主写 style 会抛
   `NotSupportedError`，所以 `watch` 一律先过 `_mounted` 守卫
   （顺带把首次触发也挡掉）。
-- 回到默认值（`cols` 删掉、`min-item-width` 空）时**删掉变量**而不是写兜底值：
+- 回到默认值（`cols` 删掉、`min-item-width` 空、`gap` 不是纯数字）时**删掉变量**而不是写兜底值：
   写同一个变量会把使用者写在 `style` 上的覆盖抹掉。
+- **`gap` 的数字通道同一条路**：三档（`sm` / `md` / `lg`）交给 CSS 属性选择器；纯数字
+  （按 px，如 `gap="10"`）在 `applyGap()` 里写进宿主的 `--mc-grid-gap`，非法值
+  （`12px` / `0.75rem` 这类带单位的字符串）落回默认 `md`（与 `mc-space` 的 `applyGap` 一致）。
 - `min-item-width` 的开关走属性选择器（`[min-item-width]`）—— 否定选择器在 `:host` 里会静默失效；它是 `null` 默认的字符串属性，
   没写就**不会**被 ofa 反射出来（那条规则只对非空默认值成立）。
 
@@ -63,20 +67,21 @@
 
 ### 没有 `part`，没有 `size`
 
-容器只有"列 + 间距"两件事，视觉都在 `:host` 上：直接 `style="gap: 10px"` 或覆盖
-`--mc-space-*` 就够，不必再开一层 `part`。尺寸同理 —— 每个栅格项的样子由使用者的内容决定。
+容器只有"列 + 间距"两件事，视觉都在 `:host` 上：间距用 `gap` 属性（三档令牌或数字 px）
+就够，不必再开一层 `part`。尺寸同理 —— 每个栅格项的样子由使用者的内容决定。
 
 ## 令牌
 
-| 令牌              | 默认    | 作用                                                         |
-| ----------------- | ------- | ------------------------------------------------------------ |
-| `--mc-grid-cols`  | `1`     | 列数（`/* @internal */`：JS 按 `cols` 写，不是覆盖点）       |
-| `--mc-grid-min-w` | `12rem` | 最小子项宽度（`/* @internal */`：JS 按 `min-item-width` 写） |
-| `--mc-grid-span`  | `1`     | 跨列数（`/* @internal */`：JS 按 `span` 写）                 |
+| 令牌              | 默认                   | 作用                                                         |
+| ----------------- | ---------------------- | ------------------------------------------------------------ |
+| `--mc-grid-cols`  | `1`                    | 列数（`/* @internal */`：JS 按 `cols` 写，不是覆盖点）       |
+| `--mc-grid-min-w` | `12rem`                | 最小子项宽度（`/* @internal */`：JS 按 `min-item-width` 写） |
+| `--mc-grid-gap`   | `--mc-space-4`（16px） | 数字 `gap` 的落点（`/* @internal */`：JS 按 `gap` 写）       |
+| `--mc-grid-span`  | `1`                    | 跨列数（`/* @internal */`：JS 按 `span` 写）                 |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
-> 三条都是**内部变量**：值是 JS 按属性算出来的，使用者要改列 / 间距应该改属性，
+> 四条都是**内部变量**：值是 JS 按属性算出来的，使用者要改列 / 间距应该改属性，
 > 而不是直接覆盖它们（`api.md` 的属性表才是接口面）。
 
 ## 相邻单元

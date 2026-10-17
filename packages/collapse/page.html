@@ -13,94 +13,96 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        容器 + 子项两个标签搭起来：第二项写了
-        <code>open</code>
-        ，首屏就是展开的；点头部或按
-        <kbd>Enter</kbd>
-        /
-        <kbd>空格</kbd>
-        都能开合。 头部文案用
-        <code>header</code>
-        ，别用
-        <code>title</code>
-        —— 后者是全局 HTML 属性，悬停会弹浏览器原生 tooltip。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          容器 + 子项两个标签搭起来：第二项写了
+          <code>open</code>
+          ，首屏就是展开的；点头部或按
+          <kbd>Enter</kbd>
+          /
+          <kbd>空格</kbd>
+          都能开合。 头部文案用
+          <code>header</code>
+          ，别用
+          <code>title</code>
+          —— 后者是全局 HTML 属性，悬停会弹浏览器原生 tooltip。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>手风琴</h3>
-      <doc-playground src="./demos/accordion.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>手风琴</h3>
+        <doc-playground src="./demos/accordion.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/size.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/size.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>禁用</h3>
-      <p class="doc-hint">
-        点不动，
-        <kbd>Tab</kbd>
-        也会跳过。
-      </p>
-      <doc-playground src="./demos/disabled.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>禁用</h3>
+        <p class="doc-hint">
+          点不动，
+          <kbd>Tab</kbd>
+          也会跳过。
+        </p>
+        <doc-playground src="./demos/disabled.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>自定义头部</h3>
-      <doc-playground src="./demos/rich-header.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>自定义头部</h3>
+        <doc-playground src="./demos/rich-header.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        事件挂在容器上就能收到所有子项的通知，
-        <code>$event.data.name</code>
-        是子项的
-        <code>name</code>
-        属性。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          事件挂在容器上就能收到所有子项的通知，
+          <code>$event.data.name</code>
+          是子项的
+          <code>name</code>
+          属性。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>嵌套</h3>
-      <p class="doc-hint">子项里再放一个容器：内层自己互斥，不会影响外层已经展开的分支。</p>
-      <doc-playground src="./demos/nested.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>嵌套</h3>
+        <p class="doc-hint">子项里再放一个容器：内层自己互斥，不会影响外层已经展开的分支。</p>
+        <doc-playground src="./demos/nested.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        样式写在宿主上，一句
-        <code>style="…"</code>
-        直接压过去，不用跨 shadow 边界。
-      </p>
-      <doc-playground src="./demos/style-override.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          样式写在宿主上，一句
+          <code>style="…"</code>
+          直接压过去，不用跨 shadow 边界。
+        </p>
+        <doc-playground src="./demos/style-override.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式（这里开了
-        <code>header</code>
-        /
-        <code>body</code>
-        两个）。 组件不做高度过渡：要动画自己加在
-        <code>::part(body)</code>
-        上。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式（这里开了
+          <code>header</code>
+          /
+          <code>body</code>
+          两个）。 组件不做高度过渡：要动画自己加在
+          <code>::part(body)</code>
+          上。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

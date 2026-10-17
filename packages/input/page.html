@@ -19,171 +19,173 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        第二条的
-        <code>default-value</code>
-        是初始值，只读一次；之后改属性不会回头覆盖当前值。
-        <code>input</code>
-        /
-        <code>change</code>
-        的载荷都在
-        <code>$event.data.value</code>
-        ；原生那条不带头载荷的
-        <code>input</code>
-        已被组件拦掉，不会收到两次。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          第二条的
+          <code>default-value</code>
+          是初始值，只读一次；之后改属性不会回头覆盖当前值。
+          <code>input</code>
+          /
+          <code>change</code>
+          的载荷都在
+          <code>$event.data.value</code>
+          ；原生那条不带头载荷的
+          <code>input</code>
+          已被组件拦掉，不会收到两次。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>运行时值</h3>
-      <p class="doc-hint">
-        读
-        <code>el.value</code>
-        、写
-        <code>el.value = '…'</code>
-        都立刻生效（真相在内部原生控件上），同时会回写成
-        <code>value</code>
-        属性 —— ofa 的
-        <code>sync:value</code>
-        观察的就是这个属性。 它也不参与原生
-        <code>&lt;form&gt;</code>
-        提交（shadow 里的原生控件不在表单范围内，
-        <code>name</code>
-        只是转发）—— 提交时自己取
-        <code>el.value</code>
-        。
-      </p>
-      <doc-playground src="./demos/value.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>运行时值</h3>
+        <p class="doc-hint">
+          读
+          <code>el.value</code>
+          、写
+          <code>el.value = '…'</code>
+          都立刻生效（真相在内部原生控件上），同时会回写成
+          <code>value</code>
+          属性 —— ofa 的
+          <code>sync:value</code>
+          观察的就是这个属性。 它也不参与原生
+          <code>&lt;form&gt;</code>
+          提交（shadow 里的原生控件不在表单范围内，
+          <code>name</code>
+          只是转发）—— 提交时自己取
+          <code>el.value</code>
+          。
+        </p>
+        <doc-playground src="./demos/value.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>数据绑定</h3>
-      <p class="doc-hint">
-        用 ofa 原生的写法就能双向绑：<
-        <code>mc-input sync:value="form.name"</code>
-        > 打字会写回你的数据，改数据也会推回控件；只要单向跟随就写
-        <code>:value="form.name"</code>
-        。
-      </p>
-      <doc-playground src="./demos/binding.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>数据绑定</h3>
+        <p class="doc-hint">
+          用 ofa 原生的写法就能双向绑：<
+          <code>mc-input sync:value="form.name"</code>
+          > 打字会写回你的数据，改数据也会推回控件；只要单向跟随就写
+          <code>:value="form.name"</code>
+          。
+        </p>
+        <doc-playground src="./demos/binding.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>前后缀插槽</h3>
-      <p class="doc-hint">
-        <code>slot="prefix"</code>
-        /
-        <code>slot="suffix"</code>
-        放单位或图标；空着的那一侧不占位， 第三条就是没有前后缀时的间距。
-      </p>
-      <doc-playground src="./demos/slots.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>前后缀插槽</h3>
+        <p class="doc-hint">
+          <code>slot="prefix"</code>
+          /
+          <code>slot="suffix"</code>
+          放单位或图标；空着的那一侧不占位， 第三条就是没有前后缀时的间距。
+        </p>
+        <doc-playground src="./demos/slots.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>可清除</h3>
-      <p class="doc-hint">
-        <code>clearable</code>
-        只在有内容时给 ×；点它会发
-        <code>clear</code>
-        ，并补发
-        <code>input</code>
-        与
-        <code>change</code>
-        。
-      </p>
-      <doc-playground src="./demos/clearable.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>可清除</h3>
+        <p class="doc-hint">
+          <code>clearable</code>
+          只在有内容时给 ×；点它会发
+          <code>clear</code>
+          ，并补发
+          <code>input</code>
+          与
+          <code>change</code>
+          。
+        </p>
+        <doc-playground src="./demos/clearable.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>输入类型</h3>
-      <p class="doc-hint">
-        <code>type</code>
-        逐字转发给内部原生
-        <code>&lt;input&gt;</code>
-        ，键盘与输入法跟着它走。
-      </p>
-      <doc-playground src="./demos/type.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>输入类型</h3>
+        <p class="doc-hint">
+          <code>type</code>
+          逐字转发给内部原生
+          <code>&lt;input&gt;</code>
+          ，键盘与输入法跟着它走。
+        </p>
+        <doc-playground src="./demos/type.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>长度限制</h3>
-      <p class="doc-hint">
-        <code>maxlength</code>
-        转发给内部原生控件，超出的字符根本输不进去。
-      </p>
-      <doc-playground src="./demos/maxlength.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>长度限制</h3>
+        <p class="doc-hint">
+          <code>maxlength</code>
+          转发给内部原生控件，超出的字符根本输不进去。
+        </p>
+        <doc-playground src="./demos/maxlength.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>状态</h3>
-      <p class="doc-hint">
-        四个状态布尔都转发给内部原生控件：
-        <code>disabled</code>
-        用原生
-        <code>disabled</code>
-        （
-        <kbd>Tab</kbd>
-        会跳过），
-        <code>invalid</code>
-        只是把边框换成危险色。
-      </p>
-      <doc-playground src="./demos/states.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>状态</h3>
+        <p class="doc-hint">
+          四个状态布尔都转发给内部原生控件：
+          <code>disabled</code>
+          用原生
+          <code>disabled</code>
+          （
+          <kbd>Tab</kbd>
+          会跳过），
+          <code>invalid</code>
+          只是把边框换成危险色。
+        </p>
+        <doc-playground src="./demos/states.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        <code>input</code>
-        每打一个字都发、
-        <code>change</code>
-        在失焦 / 回车时发（载荷都是
-        <code>$event.data.value</code>
-        ）；点可清除的 × 先发
-        <code>clear</code>
-        ，紧接着补发
-        <code>input</code>
-        与
-        <code>change</code>
-        。 原生的
-        <code>focus</code>
-        /
-        <code>blur</code>
-        /
-        <code>keydown</code>
-        这些
-        <code>composed</code>
-        事件本来就会穿到宿主上，直接
-        <code>on:focus</code>
-        写就行（演示里挂了这三个）；组件自己发的只有
-        <code>input</code>
-        /
-        <code>change</code>
-        /
-        <code>clear</code>
-        三条。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          <code>input</code>
+          每打一个字都发、
+          <code>change</code>
+          在失焦 / 回车时发（载荷都是
+          <code>$event.data.value</code>
+          ）；点可清除的 × 先发
+          <code>clear</code>
+          ，紧接着补发
+          <code>input</code>
+          与
+          <code>change</code>
+          。 原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          这些
+          <code>composed</code>
+          事件本来就会穿到宿主上，直接
+          <code>on:focus</code>
+          写就行（演示里挂了这三个）；组件自己发的只有
+          <code>input</code>
+          /
+          <code>change</code>
+          /
+          <code>clear</code>
+          三条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区由规范 md 渲染，不在这里手抄 —— 唯一手写源是本单元自己的 api.md，改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

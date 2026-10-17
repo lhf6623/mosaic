@@ -13,65 +13,67 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>文案</h3>
-      <p class="doc-hint">
-        两种给法：
-        <code>description</code>
-        属性写一句，或者往默认插槽里放内容（插槽赢）。
-      </p>
-      <doc-playground src="./demos/description.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>文案</h3>
+        <p class="doc-hint">
+          两种给法：
+          <code>description</code>
+          属性写一句，或者往默认插槽里放内容（插槽赢）。
+        </p>
+        <doc-playground src="./demos/description.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/size.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/size.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>操作区</h3>
-      <p class="doc-hint">
-        空态里通常要给一条出路：
-        <code>slot="footer"</code>
-        放一个按钮。不给就整块不占位，不占那一段间距。
-      </p>
-      <doc-playground src="./demos/footer.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>操作区</h3>
+        <p class="doc-hint">
+          空态里通常要给一条出路：
+          <code>slot="footer"</code>
+          放一个按钮。不给就整块不占位，不占那一段间距。
+        </p>
+        <doc-playground src="./demos/footer.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        图形色、行间距、内边距各有一条 L3 令牌，写在宿主
-        <code>style</code>
-        或页面 CSS 上。
-      </p>
-      <doc-playground src="./demos/customize.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          图形色、行间距、内边距各有一条 L3 令牌，写在宿主
+          <code>style</code>
+          或页面 CSS 上。
+        </p>
+        <doc-playground src="./demos/customize.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式（这里开了
-        <code>base</code>
-        /
-        <code>image</code>
-        /
-        <code>description</code>
-        /
-        <code>footer</code>
-        四个）。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式（这里开了
+          <code>base</code>
+          /
+          <code>image</code>
+          /
+          <code>description</code>
+          /
+          <code>footer</code>
+          四个）。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

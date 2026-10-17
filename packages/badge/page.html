@@ -12,95 +12,97 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        徽标只是标记，
-        <strong>不交互</strong>
-        —— 要能点、能关、能选中，用
-        <code>mc-tag</code>
-        的
-        <code>checkable</code>
-        /
-        <code>closable</code>
-        。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          徽标只是标记，
+          <strong>不交互</strong>
+          —— 要能点、能关、能选中，用
+          <code>mc-tag</code>
+          的
+          <code>checkable</code>
+          /
+          <code>closable</code>
+          。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>语义色</h3>
-      <p class="doc-hint">
-        默认
-        <code>primary</code>
-        ；徽标
-        <strong>没有中性色</strong>
-        —— 中性场景交给
-        <code>mc-tag</code>
-        。
-      </p>
-      <doc-playground src="./demos/colors.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>语义色</h3>
+        <p class="doc-hint">
+          默认
+          <code>primary</code>
+          ；徽标
+          <strong>没有中性色</strong>
+          —— 中性场景交给
+          <code>mc-tag</code>
+          。
+        </p>
+        <doc-playground src="./demos/colors.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外观</h3>
-      <p class="doc-hint">
-        <code>subtle</code>
-        （默认）浅底深字；
-        <code>solid</code>
-        底色满铺；
-        <code>outline</code>
-        只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
-      </p>
-      <doc-playground src="./demos/variants.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外观</h3>
+        <p class="doc-hint">
+          <code>subtle</code>
+          （默认）浅底深字；
+          <code>solid</code>
+          底色满铺；
+          <code>outline</code>
+          只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+        </p>
+        <doc-playground src="./demos/variants.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <p class="doc-hint">
-        只有
-        <code>sm</code>
-        /
-        <code>md</code>
-        两档：高度 16 / 20px，字号 10 / 12px。
-      </p>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <p class="doc-hint">
+          只有
+          <code>sm</code>
+          /
+          <code>md</code>
+          两档：高度 16 / 20px，字号 10 / 12px。
+        </p>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>圆点</h3>
-      <p class="doc-hint">
-        <code>dot</code>
-        只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。 打开
-        <code>dot</code>
-        时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
-      </p>
-      <doc-playground src="./demos/dot.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>圆点</h3>
+        <p class="doc-hint">
+          <code>dot</code>
+          只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。 打开
+          <code>dot</code>
+          时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
+        </p>
+        <doc-playground src="./demos/dot.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>数值上限</h3>
-      <p class="doc-hint">
-        <code>max</code>
-        给数字上限：内容超过它就显示
-        <code>99+</code>
-        。只认纯数字内容。
-      </p>
-      <doc-playground src="./demos/max.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>数值上限</h3>
+        <p class="doc-hint">
+          <code>max</code>
+          给数字上限：内容超过它就显示
+          <code>99+</code>
+          。只认纯数字内容。
+        </p>
+        <doc-playground src="./demos/max.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>hex 颜色</h3>
-      <p class="doc-hint">
-        <code>color</code>
-        也直接收 hex（
-        <code>#fff000</code>
-        /
-        <code>#fc0</code>
-        ）：浅底按主题派生， 实心上的文字色按对比度自动给。
-      </p>
-      <doc-playground src="./demos/hex.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>hex 颜色</h3>
+        <p class="doc-hint">
+          <code>color</code>
+          也直接收 hex（
+          <code>#fff000</code>
+          /
+          <code>#fc0</code>
+          ）：浅底按主题派生， 实心上的文字色按对比度自动给。
+        </p>
+        <doc-playground src="./demos/hex.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

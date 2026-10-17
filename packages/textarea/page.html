@@ -19,102 +19,104 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        第二条的
-        <code>default-value</code>
-        是初始值，只读一次；之后改属性不会回头覆盖当前值。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          第二条的
+          <code>default-value</code>
+          是初始值，只读一次；之后改属性不会回头覆盖当前值。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <p class="doc-hint">
-        三档改的是最小高度、内边距与字号；
-        <code>rows</code>
-        一样时它们看起来一样高。
-      </p>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <p class="doc-hint">
+          三档改的是最小高度、内边距与字号；
+          <code>rows</code>
+          一样时它们看起来一样高。
+        </p>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>行数</h3>
-      <doc-playground src="./demos/rows.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>行数</h3>
+        <doc-playground src="./demos/rows.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>自动增高</h3>
-      <p class="doc-hint">
-        <code>auto-resize</code>
-        跟着内容长高，不再出现滚动条；第二条是关闭时的对照。
-      </p>
-      <doc-playground src="./demos/auto-resize.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>自动增高</h3>
+        <p class="doc-hint">
+          <code>auto-resize</code>
+          跟着内容长高，不再出现滚动条；第二条是关闭时的对照。
+        </p>
+        <doc-playground src="./demos/auto-resize.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>字数统计</h3>
-      <p class="doc-hint">
-        给了
-        <code>maxlength</code>
-        才显示右下角的
-        <code>当前/上限</code>
-        ，它随输入实时更新。
-      </p>
-      <doc-playground src="./demos/counter.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>字数统计</h3>
+        <p class="doc-hint">
+          给了
+          <code>maxlength</code>
+          才显示右下角的
+          <code>当前/上限</code>
+          ，它随输入实时更新。
+        </p>
+        <doc-playground src="./demos/counter.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>状态</h3>
-      <p class="doc-hint">
-        四个状态布尔都转发给内部原生控件：
-        <code>disabled</code>
-        用原生
-        <code>disabled</code>
-        （
-        <kbd>Tab</kbd>
-        会跳过），
-        <code>invalid</code>
-        只是把边框换成危险色。
-      </p>
-      <doc-playground src="./demos/states.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>状态</h3>
+        <p class="doc-hint">
+          四个状态布尔都转发给内部原生控件：
+          <code>disabled</code>
+          用原生
+          <code>disabled</code>
+          （
+          <kbd>Tab</kbd>
+          会跳过），
+          <code>invalid</code>
+          只是把边框换成危险色。
+        </p>
+        <doc-playground src="./demos/states.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        <code>input</code>
-        每打一个字都发、
-        <code>change</code>
-        在失焦 / 回车时发； 两个的载荷都是
-        <code>$event.data.value</code>
-        。 原生的
-        <code>focus</code>
-        /
-        <code>blur</code>
-        /
-        <code>keydown</code>
-        这些
-        <code>composed</code>
-        事件本来就会穿到宿主上（不用组件转发），
-        <code>on:focus</code>
-        直接写就行 —— 这里演的是组件自己发的那几条。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          <code>input</code>
+          每打一个字都发、
+          <code>change</code>
+          在失焦 / 回车时发； 两个的载荷都是
+          <code>$event.data.value</code>
+          。 原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          这些
+          <code>composed</code>
+          事件本来就会穿到宿主上（不用组件转发），
+          <code>on:focus</code>
+          直接写就行 —— 这里演的是组件自己发的那几条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性/事件/插槽/part）由 api.md 渲染，不在这里手抄 -->
     <doc-spec src="./api.md"></doc-spec>

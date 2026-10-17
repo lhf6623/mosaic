@@ -16,134 +16,137 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>语义色</h3>
-      <p class="doc-hint">
-        六个色值都有；不写
-        <code>color</code>
-        就是
-        <code>primary</code>
-        。
-      </p>
-      <doc-playground src="./demos/colors.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>语义色</h3>
+        <p class="doc-hint">
+          六个色值都有；不写
+          <code>color</code>
+          就是
+          <code>primary</code>
+          。
+        </p>
+        <doc-playground src="./demos/colors.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>hex 颜色</h3>
-      <p class="doc-hint">
-        <code>color</code>
-        也直接收 hex（
-        <code>#fff000</code>
-        /
-        <code>#fc0</code>
-        ）：浅底按主题派生， 文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
-      </p>
-      <doc-playground src="./demos/hex.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>hex 颜色</h3>
+        <p class="doc-hint">
+          <code>color</code>
+          也直接收 hex（
+          <code>#fff000</code>
+          /
+          <code>#fc0</code>
+          ）：浅底按主题派生，
+          文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
+        </p>
+        <doc-playground src="./demos/hex.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外观</h3>
-      <p class="doc-hint">
-        <code>subtle</code>
-        （默认）浅底深字，最不抢视线；
-        <code>solid</code>
-        底色满铺；
-        <code>outline</code>
-        只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
-      </p>
-      <doc-playground src="./demos/variants.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外观</h3>
+        <p class="doc-hint">
+          <code>subtle</code>
+          （默认）浅底深字，最不抢视线；
+          <code>solid</code>
+          底色满铺；
+          <code>outline</code>
+          只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
+        </p>
+        <doc-playground src="./demos/variants.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>标题</h3>
-      <p class="doc-hint">
-        纯文本标题用
-        <code>heading</code>
-        ，富内容用
-        <code>slot="title"</code>
-        ；两者都没有时标题块不占位。
-      </p>
-      <doc-playground src="./demos/heading.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>标题</h3>
+        <p class="doc-hint">
+          纯文本标题用
+          <code>heading</code>
+          ，富内容用
+          <code>slot="title"</code>
+          ；两者都没有时标题块不占位。
+        </p>
+        <doc-playground src="./demos/heading.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>图标</h3>
-      <p class="doc-hint">
-        <code>icon</code>
-        打开左侧图标：四个语义图形，
-        <code>primary</code>
-        /
-        <code>info</code>
-        /
-        <code>neutral</code>
-        共用信息圆。
-      </p>
-      <doc-playground src="./demos/icon.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>图标</h3>
+        <p class="doc-hint">
+          <code>icon</code>
+          打开左侧图标：四个语义图形，
+          <code>primary</code>
+          /
+          <code>info</code>
+          /
+          <code>neutral</code>
+          共用信息圆。
+        </p>
+        <doc-playground src="./demos/icon.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>自定义图标</h3>
-      <p class="doc-hint">
-        <code>slot="icon"</code>
-        有内容就让内置图形让位。
-      </p>
-      <doc-playground src="./demos/icon-custom.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>自定义图标</h3>
+        <p class="doc-hint">
+          <code>slot="icon"</code>
+          有内容就让内置图形让位。
+        </p>
+        <doc-playground src="./demos/icon-custom.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>可关闭</h3>
-      <p class="doc-hint">
-        <code>closable</code>
-        在右侧加一个原生
-        <code>&lt;button&gt;</code>
-        ；点击只发
-        <code>close</code>
-        ，组件
-        <strong>不自己删 DOM</strong>
-        ，例子里的
-        <code>remove()</code>
-        就是使用者那一半。
-      </p>
-      <doc-playground src="./demos/closable.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>可关闭</h3>
+        <p class="doc-hint">
+          <code>closable</code>
+          在右侧加一个原生
+          <code>&lt;button&gt;</code>
+          ；点击只发
+          <code>close</code>
+          ，组件
+          <strong>不自己删 DOM</strong>
+          ，例子里的
+          <code>remove()</code>
+          就是使用者那一半。
+        </p>
+        <doc-playground src="./demos/closable.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        只有
-        <code>close</code>
-        一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
-        <code>event.target</code>
-        。组件
-        <strong>不删 DOM</strong>
-        ：要它消失，在事件里自己
-        <code>remove()</code>
-        。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          只有
+          <code>close</code>
+          一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
+          <code>event.target</code>
+          。组件
+          <strong>不删 DOM</strong>
+          ：要它消失，在事件里自己
+          <code>remove()</code>
+          。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句
-        <code>style="…"</code>
-        ），不用跨 shadow 边界。
-      </p>
-      <doc-playground src="./demos/customize.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句
+          <code>style="…"</code>
+          ），不用跨 shadow 边界。
+        </p>
+        <doc-playground src="./demos/customize.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

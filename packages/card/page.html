@@ -13,78 +13,80 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        头尾写
-        <code>slot="header"</code>
-        /
-        <code>slot="footer"</code>
-        ，其余进默认插槽； 头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，
-        <code>inset</code>
-        按
-        <code>--mc-card-border-w</code>
-        取负值盖住边框那圈，
-        <code>cursor</code>
-        要显式写。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          头尾写
+          <code>slot="header"</code>
+          /
+          <code>slot="footer"</code>
+          ，其余进默认插槽； 头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，
+          <code>inset</code>
+          按
+          <code>--mc-card-border-w</code>
+          取负值盖住边框那圈，
+          <code>cursor</code>
+          要显式写。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>头部与分隔线</h3>
-      <doc-playground src="./demos/sections.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>头部与分隔线</h3>
+        <doc-playground src="./demos/sections.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外观</h3>
-      <p class="doc-hint">
-        <code>outline</code>
-        适合放在已经有底色的容器里（侧栏、弹层内部）。
-      </p>
-      <doc-playground src="./demos/variants.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外观</h3>
+        <p class="doc-hint">
+          <code>outline</code>
+          适合放在已经有底色的容器里（侧栏、弹层内部）。
+        </p>
+        <doc-playground src="./demos/variants.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内边距</h3>
-      <p class="doc-hint">
-        <code>none</code>
-        是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。 要让图片或
-        <code>padding="none"</code>
-        的整块内容跟着圆角裁，在宿主
-        <code>style</code>
-        上加
-        <code>overflow: hidden</code>
-        。
-      </p>
-      <doc-playground src="./demos/padding.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内边距</h3>
+        <p class="doc-hint">
+          <code>none</code>
+          是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。 要让图片或
+          <code>padding="none"</code>
+          的整块内容跟着圆角裁，在宿主
+          <code>style</code>
+          上加
+          <code>overflow: hidden</code>
+          。
+        </p>
+        <doc-playground src="./demos/padding.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        颜色、圆角、内边距都在宿主上改（L3 令牌或一句
-        <code>style="…"</code>
-        ），不用跨 shadow 边界。 卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
-      </p>
-      <doc-playground src="./demos/customize.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          颜色、圆角、内边距都在宿主上改（L3 令牌或一句
+          <code>style="…"</code>
+          ），不用跨 shadow 边界。 卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
+        </p>
+        <doc-playground src="./demos/customize.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式（这里开了
-        <code>header</code>
-        /
-        <code>footer</code>
-        两个）。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式（这里开了
+          <code>header</code>
+          /
+          <code>footer</code>
+          两个）。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 方法 / 事件 / 配置 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

@@ -18,114 +18,116 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        <code>checked</code>
-        是受控 / 运行时状态（属性就是唯一真相，点了就跟着变）；只想给一个**非受控初值**就写
-        <code>default-checked</code>
-        （挂载读一次，之后不再参与）。
-        <code>value</code>
-        是提交时带出去的值。 文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          <code>checked</code>
+          是受控 / 运行时状态（属性就是唯一真相，点了就跟着变）；只想给一个**非受控初值**就写
+          <code>default-checked</code>
+          （挂载读一次，之后不再参与）。
+          <code>value</code>
+          是提交时带出去的值。 文案写在默认插槽里：里面的链接会被当成链接，点文案则是切换选中。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>半选</h3>
-      <p class="doc-hint">
-        <code>indeterminate</code>
-        用来表达「部分选中」；它和
-        <code>checked</code>
-        同时存在时， 横杠优先显示。
-        <code>indeterminate</code>
-        是纯视觉状态（原生 checkbox 没有这个属性，提交时按
-        <code>false</code>
-        算），点一下就清掉半选。
-      </p>
-      <doc-playground src="./demos/indeterminate.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>半选</h3>
+        <p class="doc-hint">
+          <code>indeterminate</code>
+          用来表达「部分选中」；它和
+          <code>checked</code>
+          同时存在时， 横杠优先显示。
+          <code>indeterminate</code>
+          是纯视觉状态（原生 checkbox 没有这个属性，提交时按
+          <code>false</code>
+          算），点一下就清掉半选。
+        </p>
+        <doc-playground src="./demos/indeterminate.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>禁用</h3>
-      <doc-playground src="./demos/disabled.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>禁用</h3>
+        <doc-playground src="./demos/disabled.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>自定义值</h3>
-      <p class="doc-hint">
-        给
-        <code>checked-value</code>
-        与
-        <code>unchecked-value</code>
-        就能交出
-        <code>"1"</code>
-        /
-        <code>"0"</code>
-        这种字符串（表单收集时按勾没勾上在两者之间选）；不写
-        <code>checked-value</code>
-        就还是布尔 ——
-        <code>value</code>
-        是另一回事：它只在同名一组里当身份值。
-      </p>
-      <doc-playground src="./demos/custom-value.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>自定义值</h3>
+        <p class="doc-hint">
+          给
+          <code>checked-value</code>
+          与
+          <code>unchecked-value</code>
+          就能交出
+          <code>"1"</code>
+          /
+          <code>"0"</code>
+          这种字符串（表单收集时按勾没勾上在两者之间选）；不写
+          <code>checked-value</code>
+          就还是布尔 ——
+          <code>value</code>
+          是另一回事：它只在同名一组里当身份值。
+        </p>
+        <doc-playground src="./demos/custom-value.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>校验态</h3>
-      <p class="doc-hint">
-        <code>invalid</code>
-        只声明「颜色」，不做校验。
-      </p>
-      <doc-playground src="./demos/validation.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>校验态</h3>
+        <p class="doc-hint">
+          <code>invalid</code>
+          只声明「颜色」，不做校验。
+        </p>
+        <doc-playground src="./demos/validation.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        勾选状态确定变化时发
-        <code>change</code>
-        ，载荷在
-        <code>$event.data</code>
-        里 （
-        <code>{ checked, value }</code>
-        ）—— 点文案、敲空格、点方框都算。 原生的
-        <code>focus</code>
-        /
-        <code>blur</code>
-        /
-        <code>keydown</code>
-        这些
-        <code>composed</code>
-        事件本来就会穿到宿主上（不用组件转发），
-        <code>on:focus</code>
-        直接写就行 —— 这里演的是组件自己发的那几条。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          勾选状态确定变化时发
+          <code>change</code>
+          ，载荷在
+          <code>$event.data</code>
+          里 （
+          <code>{ checked, value }</code>
+          ）—— 点文案、敲空格、点方框都算。 原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          这些
+          <code>composed</code>
+          事件本来就会穿到宿主上（不用组件转发），
+          <code>on:focus</code>
+          直接写就行 —— 这里演的是组件自己发的那几条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式 —— 方框是
-        <code>box</code>
-        、文案容器是
-        <code>label</code>
-        、整行是
-        <code>base</code>
-        。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式 —— 方框是
+          <code>box</code>
+          、文案容器是
+          <code>label</code>
+          、整行是
+          <code>base</code>
+          。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

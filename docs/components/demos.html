@@ -1,0 +1,115 @@
+<!-- <doc-demos> —— 组件文档页「例子」区的容器：宽屏按列流式排，窄屏一列。
+     用法：页面里用 <doc-demos> 包一组 <section class="doc-demo">。
+     ⚠️ 只算**视觉位置**，不搬动子节点：右栏 <doc-toc> 按页面 DOM 顺序出目录、锚点也按 DOM 顺序；
+        一旦把 demo 塞进列容器，目录就变成「列优先」，和实际阅读顺序对不上（这也是不用 CSS columns 的原因）。
+     ⚠️ 定位用 left / top，不用 transform：transform 会给 demo 里的 popover / dropdown 建 containing block，
+        浮层的定位会跟着塌。
+     ⚠️ 分列规则是轮转（第 1 项进第 1 列、第 2 项进第 2 列……），第一行就是目录顺序、整体最接近目录；
+        高度差极大时仍可能有一两处上下错位 —— 「多列 + 无空洞 + 变高卡片」不可能同时严格成立。 -->
+<template component>
+  <style>
+    /* 自定义元素默认 inline；宽屏时子项绝对定位，宿主高度由 JS 按最长一列写 */
+    :host {
+      display: block;
+      position: relative;
+      --doc-demos-gap: var(--mc-space-5, 20px);
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    /** 两列 / 三列的宽度阈值：按宿主**可用宽度**算（1080p 办公机正文约 1356 → 两列各 668） */
+    const TWO_COLS = 1320;
+    const THREE_COLS = 2300;
+    /** 读不到令牌时的兜底间距（与 --mc-space-5 一致） */
+    const GAP_FALLBACK = 20;
+
+    export default () => ({
+      tag: 'doc-demos',
+
+      attached() {
+        this._items = [...this.ele.children].filter((el) => el.classList?.contains('doc-demo'));
+        if (!this._items.length) return;
+
+        this._raf = 0;
+        this._ro = new ResizeObserver(() => this.schedule());
+        /* 宿主宽度变了要重算列数；子项高度变了（编辑器展开 / 字体、图片加载）要重排位置 */
+        this._ro.observe(this.ele);
+        for (const el of this._items) this._ro.observe(el);
+        this.schedule();
+      },
+
+      detached() {
+        this._ro?.disconnect();
+        cancelAnimationFrame(this._raf);
+      },
+
+      proto: {
+        /** rAF 合并：展开编辑器 / 拖窗口时 ResizeObserver 会连发很多次 */
+        schedule() {
+          if (this._raf) return;
+          this._raf = requestAnimationFrame(() => {
+            this._raf = 0;
+            this.layout();
+          });
+        },
+
+        /** 间距：宿主上的 --doc-demos-gap 可能是 px 也可能是 rem，换算成数字给 JS 用 */
+        gapPx() {
+          const raw = getComputedStyle(this.ele).getPropertyValue('--doc-demos-gap').trim();
+          const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+          const value = parseFloat(raw);
+          if (!Number.isFinite(value)) return GAP_FALLBACK;
+          return raw.endsWith('rem') ? value * rootFont : value;
+        },
+
+        layout() {
+          const items = this._items;
+          const width = this.ele.clientWidth;
+          if (!items?.length || width <= 0) return;
+
+          const gap = this.gapPx();
+          const allowed = width >= THREE_COLS ? 3 : width >= TWO_COLS ? 2 : 1;
+          /* 子项比列数少时收列：只有一个 demo 还分两列，右列会空着 */
+          const cols = Math.min(allowed, items.length);
+
+          /* 单列 = 普通文档流：清掉所有内联定位，交回 CSS（无 JS 时的样子也是它） */
+          if (cols === 1) {
+            for (const el of items) {
+              for (const prop of ['position', 'left', 'top', 'width', 'margin', 'box-sizing']) {
+                el.style.removeProperty(prop);
+              }
+            }
+            this.ele.style.removeProperty('height');
+            this.ele.removeAttribute('data-masonry');
+            return;
+          }
+
+          const itemWidth = (width - (cols - 1) * gap) / cols;
+
+          /* 1) 先统一宽度（高度由内容撑），再读高度：写-读分两批，避免逐项强制 reflow */
+          for (const el of items) {
+            el.style.position = 'absolute';
+            el.style.width = `${itemWidth}px`;
+            el.style.margin = '0';
+            el.style.boxSizing = 'border-box';
+          }
+          const heights = items.map((el) => el.offsetHeight);
+
+          /* 2) 轮转分列 + 列内堆叠：每列独立记高度，矮卡片底下不会留行空洞 */
+          const colHeights = new Array(cols).fill(0);
+          items.forEach((el, i) => {
+            const col = i % cols;
+            el.style.left = `${col * (itemWidth + gap)}px`;
+            el.style.top = `${colHeights[col]}px`;
+            colHeights[col] += heights[i] + gap;
+          });
+
+          this.ele.style.height = `${Math.max(...colHeights) - gap}px`;
+          this.ele.setAttribute('data-masonry', '');
+        },
+      },
+    });
+  </script>
+</template>

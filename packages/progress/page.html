@@ -13,79 +13,81 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>数值上限</h3>
-      <p class="doc-hint">
-        默认
-        <code>max="100"</code>
-        ；比例 =
-        <code>value / max</code>
-        ，超出上限会被夹到 100%。
-      </p>
-      <doc-playground src="./demos/max.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>数值上限</h3>
+        <p class="doc-hint">
+          默认
+          <code>max="100"</code>
+          ；比例 =
+          <code>value / max</code>
+          ，超出上限会被夹到 100%。
+        </p>
+        <doc-playground src="./demos/max.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>不确定态</h3>
-      <p class="doc-hint">
-        <code>indeterminate</code>
-        打开后填充条自己滑：不知道还要多久时用它，不要编一个假比例。 此时不要再写
-        <code>value</code>
-        （比例交给动画）。
-      </p>
-      <doc-playground src="./demos/indeterminate.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>不确定态</h3>
+        <p class="doc-hint">
+          <code>indeterminate</code>
+          打开后填充条自己滑：不知道还要多久时用它，不要编一个假比例。 此时不要再写
+          <code>value</code>
+          （比例交给动画）。
+        </p>
+        <doc-playground src="./demos/indeterminate.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>语义色</h3>
-      <p class="doc-hint">
-        默认
-        <code>primary</code>
-        ；颜色只往填充槽里填值，所以换色不用动结构。
-      </p>
-      <doc-playground src="./demos/colors.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>语义色</h3>
+        <p class="doc-hint">
+          默认
+          <code>primary</code>
+          ；颜色只往填充槽里填值，所以换色不用动结构。
+        </p>
+        <doc-playground src="./demos/colors.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <p class="doc-hint">
-        只有
-        <code>sm</code>
-        /
-        <code>md</code>
-        两档轨道高：4 / 8px。宿主是
-        <code>display: block</code>
-        ，宽度由父容器决定 —— 行内 / flex 布局里想让它铺满，就给它一个能撑开的容器。
-      </p>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <p class="doc-hint">
+          只有
+          <code>sm</code>
+          /
+          <code>md</code>
+          两档轨道高：4 / 8px。宿主是
+          <code>display: block</code>
+          ，宽度由父容器决定 —— 行内 / flex 布局里想让它铺满，就给它一个能撑开的容器。
+        </p>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        轨道高、圆角、轨道底色、不确定态的转速都在宿主上（L3 令牌或一句
-        <code>style="…"</code>
-        ）。
-      </p>
-      <doc-playground src="./demos/customize.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          轨道高、圆角、轨道底色、不确定态的转速都在宿主上（L3 令牌或一句
+          <code>style="…"</code>
+          ）。
+        </p>
+        <doc-playground src="./demos/customize.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        填充条是组件内部唯一的元素，标了
-        <code>part</code>
-        ：从外面用
-        <code>::part(bar)</code>
-        就能改它（下面第二条没改，作对照）。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          填充条是组件内部唯一的元素，标了
+          <code>part</code>
+          ：从外面用
+          <code>::part(bar)</code>
+          就能改它（下面第二条没改，作对照）。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区由规范 md 渲染，唯一手写源是本单元的 api.md -->
     <doc-spec src="./api.md"></doc-spec>

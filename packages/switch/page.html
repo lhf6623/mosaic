@@ -18,100 +18,102 @@
 
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        文案写在标签里（默认插槽）；
-        <code>on:change</code>
-        的载荷是
-        <code>$event.data</code>
-        （
-        <code>{ checked, value }</code>
-        ）。它不是复选框（要勾多项或半选就用
-        <code>mc-checkbox</code>
-        ）；
-        <code>checked</code>
-        是受控 / 运行时状态，只想给**非受控初值**就写
-        <code>default-checked</code>
-        （挂载读一次，之后不再参与）；要交
-        <code>"1"</code>
-        /
-        <code>"0"</code>
-        这种值看下一条「自定义值」。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          文案写在标签里（默认插槽）；
+          <code>on:change</code>
+          的载荷是
+          <code>$event.data</code>
+          （
+          <code>{ checked, value }</code>
+          ）。它不是复选框（要勾多项或半选就用
+          <code>mc-checkbox</code>
+          ）；
+          <code>checked</code>
+          是受控 / 运行时状态，只想给**非受控初值**就写
+          <code>default-checked</code>
+          （挂载读一次，之后不再参与）；要交
+          <code>"1"</code>
+          /
+          <code>"0"</code>
+          这种值看下一条「自定义值」。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>自定义值</h3>
-      <p class="doc-hint">
-        给
-        <code>checked-value</code>
-        与
-        <code>unchecked-value</code>
-        ：表单收集时开着给前者、关着给后者（不写就是布尔
-        <code>true</code>
-        /
-        <code>false</code>
-        ）。这一对专管「这个控件交出什么值」，
-        <code>on:change</code>
-        的载荷仍是
-        <code>{ checked }</code>
-        。
-      </p>
-      <doc-playground src="./demos/custom-value.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>自定义值</h3>
+        <p class="doc-hint">
+          给
+          <code>checked-value</code>
+          与
+          <code>unchecked-value</code>
+          ：表单收集时开着给前者、关着给后者（不写就是布尔
+          <code>true</code>
+          /
+          <code>false</code>
+          ）。这一对专管「这个控件交出什么值」，
+          <code>on:change</code>
+          的载荷仍是
+          <code>{ checked }</code>
+          。
+        </p>
+        <doc-playground src="./demos/custom-value.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>禁用</h3>
-      <doc-playground src="./demos/disabled.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>禁用</h3>
+        <doc-playground src="./demos/disabled.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        状态变化时发
-        <code>change</code>
-        ，载荷
-        <code>$event.data.checked</code>
-        ；开关只有状态位、没有
-        <code>value</code>
-        。 原生的
-        <code>focus</code>
-        /
-        <code>blur</code>
-        /
-        <code>keydown</code>
-        这些
-        <code>composed</code>
-        事件本来就会穿到宿主上（不用组件转发），
-        <code>on:focus</code>
-        直接写就行 —— 这里演的是组件自己发的那几条。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          状态变化时发
+          <code>change</code>
+          ，载荷
+          <code>$event.data.checked</code>
+          ；开关只有状态位、没有
+          <code>value</code>
+          。 原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          这些
+          <code>composed</code>
+          事件本来就会穿到宿主上（不用组件转发），
+          <code>on:focus</code>
+          直接写就行 —— 这里演的是组件自己发的那几条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        轨道是
-        <code>track</code>
-        、滑块是
-        <code>thumb</code>
-        、整行是
-        <code>base</code>
-        —— 没有开
-        <code>part</code>
-        的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
-        改轨道长度不用再改第二条规则。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          轨道是
+          <code>track</code>
+          、滑块是
+          <code>thumb</code>
+          、整行是
+          <code>base</code>
+          —— 没有开
+          <code>part</code>
+          的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
+          改轨道长度不用再改第二条规则。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性/事件/插槽/part）由 api.md 渲染，不在这里手抄 -->
     <doc-spec src="./api.md"></doc-spec>

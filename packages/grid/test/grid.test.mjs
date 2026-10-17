@@ -1,5 +1,5 @@
 /**
- * mc-grid / mc-grid-item · 栅格：cols 分列、gap 三档映射令牌、min-item-width 自适应、
+ * mc-grid / mc-grid-item · 栅格：cols 分列、gap 三档映射令牌 + 数字 px、min-item-width 自适应、
  * span 跨列（packages/grid）。
  */
 
@@ -37,6 +37,8 @@ export default async function run({ page, visit, check }) {
       <mc-grid id="p-gap-sm" gap="sm"><mc-grid-item>s</mc-grid-item><mc-grid-item>s</mc-grid-item></mc-grid>
       <mc-grid id="p-gap-md"><mc-grid-item>m</mc-grid-item><mc-grid-item>m</mc-grid-item></mc-grid>
       <mc-grid id="p-gap-lg" gap="lg"><mc-grid-item>l</mc-grid-item><mc-grid-item>l</mc-grid-item></mc-grid>
+      <mc-grid id="p-gap-num" gap="10"><mc-grid-item>n</mc-grid-item><mc-grid-item>n</mc-grid-item></mc-grid>
+      <mc-grid id="p-gap-bad" gap="12px"><mc-grid-item>b</mc-grid-item><mc-grid-item>b</mc-grid-item></mc-grid>
       <mc-grid id="p-span" cols="4" style="width:400px">
         <mc-grid-item id="p-s0" span="2">跨两列</mc-grid-item>
         <mc-grid-item id="p-s1">1</mc-grid-item>
@@ -75,7 +77,17 @@ export default async function run({ page, visit, check }) {
         tops: items.map((item) => Math.round(item.top)),
         widths: items.map((item) => Math.round(item.width)),
         gapTokens: { sm: token('p-tok-sm'), md: token('p-tok-md'), lg: token('p-tok-lg') },
-        gaps: { sm: gapOf('p-gap-sm'), md: gapOf('p-gap-md'), lg: gapOf('p-gap-lg') },
+        gaps: {
+          sm: gapOf('p-gap-sm'),
+          md: gapOf('p-gap-md'),
+          lg: gapOf('p-gap-lg'),
+          num: gapOf('p-gap-num'),
+          bad: gapOf('p-gap-bad'),
+        },
+        gapVars: {
+          num: document.getElementById('p-gap-num').style.getPropertyValue('--mc-grid-gap'),
+          bad: document.getElementById('p-gap-bad').style.getPropertyValue('--mc-grid-gap'),
+        },
         span: {
           gridColumn: getComputedStyle(document.getElementById('p-s0')).gridColumn,
           width0: Math.round(box('p-s0').width),
@@ -117,6 +129,14 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ gaps: m.gaps, tokens: m.gapTokens }),
   );
   check(
+    'gap 收数字（按 px）：gap="10" → 10px 且内部变量落成 10px；带单位的非法值落回 md 且不留变量',
+    m.gaps.num === '10px' &&
+      m.gapVars.num === '10px' &&
+      m.gaps.bad === m.gapTokens.md &&
+      m.gapVars.bad === '',
+    JSON.stringify({ num: m.gaps.num, bad: m.gaps.bad, vars: m.gapVars }),
+  );
+  check(
     'span=2：grid-column 是 span 2，宽度约等于两列 + 一个 gap，且和后面的项同一行',
     m.span.gridColumn.includes('span 2') &&
       Math.abs(m.span.width0 - (m.span.width1 * 2 + parseFloat(m.span.gap))) <= 2 &&
@@ -147,6 +167,28 @@ export default async function run({ page, visit, check }) {
     '运行时改 cols 换列数；回到默认时不留下内部变量（用者的 style 覆盖不会被盖住）',
     runtime.two === 2 && runtime.one === 1 && runtime.inline === '',
     JSON.stringify(runtime),
+  );
+
+  /* 运行时改 gap：数字立刻生效；回三档时删掉内部变量、落回 md */
+  const runtimeGap = await page.evaluate(async () => {
+    const grid = document.getElementById('p-gap-lg');
+    grid.setAttribute('gap', '10');
+    await new Promise((r) => setTimeout(r, 200));
+    const num = getComputedStyle(grid).gap;
+    const numVar = grid.style.getPropertyValue('--mc-grid-gap');
+    grid.setAttribute('gap', 'md');
+    await new Promise((r) => setTimeout(r, 200));
+    const md = getComputedStyle(grid).gap;
+    const mdVar = grid.style.getPropertyValue('--mc-grid-gap');
+    return { num, numVar, md, mdVar };
+  });
+  check(
+    '运行时改 gap：数字立刻生效；回三档时删掉内部变量、落回 md',
+    runtimeGap.num === '10px' &&
+      runtimeGap.numVar === '10px' &&
+      runtimeGap.md === m.gapTokens.md &&
+      runtimeGap.mdVar === '',
+    JSON.stringify(runtimeGap),
   );
 
   /* 对照组：span=1 的项不该跨列 */

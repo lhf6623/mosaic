@@ -15,117 +15,119 @@
     </p>
     <h2>例子</h2>
 
-    <section class="doc-demo">
-      <h3>语义色</h3>
-      <doc-playground src="./demos/colors.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>语义色</h3>
+        <doc-playground src="./demos/colors.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外观 × 颜色</h3>
-      <doc-playground src="./demos/variants.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外观 × 颜色</h3>
+        <doc-playground src="./demos/variants.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>行内文字按钮</h3>
-      <p class="doc-hint">
-        <code>inline</code>
-        是
-        <strong>形态</strong>
-        （不是
-        <code>variant</code>
-        的取值）：盒子交给文字，
-        <code>size</code>
-        只选字号，所以它跟着正文基线走、三档高度一样。
-        <strong>别和实心按钮并排</strong>
-        —— 它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
-        放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了
-        <code>size="lg"</code>
-        。图标走
-        <code>prefix</code>
-        /
-        <code>suffix</code>
-        插槽，字号与颜色都跟按钮文字走（见第二段）。
-      </p>
-      <doc-playground src="./demos/inline.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>行内文字按钮</h3>
+        <p class="doc-hint">
+          <code>inline</code>
+          是
+          <strong>形态</strong>
+          （不是
+          <code>variant</code>
+          的取值）：盒子交给文字，
+          <code>size</code>
+          只选字号，所以它跟着正文基线走、三档高度一样。
+          <strong>别和实心按钮并排</strong>
+          —— 它没有控制高度，跟控件排一行会矮一截（例子里最后一行就是对照）。
+          放进正文时字号要跟上下文走：本页正文是 16px，所以上面那两颗用了
+          <code>size="lg"</code>
+          。图标走
+          <code>prefix</code>
+          /
+          <code>suffix</code>
+          插槽，字号与颜色都跟按钮文字走（见第二段）。
+        </p>
+        <doc-playground src="./demos/inline.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>hex 颜色</h3>
-      <p class="doc-hint">
-        <code>color</code>
-        也直接收 hex（
-        <code>#fff000</code>
-        /
-        <code>#fc0</code>
-        ）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
-      </p>
-      <doc-playground src="./demos/hex.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>hex 颜色</h3>
+        <p class="doc-hint">
+          <code>color</code>
+          也直接收 hex（
+          <code>#fff000</code>
+          /
+          <code>#fc0</code>
+          ）：文字色按对比度自动给， 非 hex 的值只报警告、不给颜色。
+        </p>
+        <doc-playground src="./demos/hex.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>尺寸</h3>
-      <doc-playground src="./demos/sizes.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>表单类型</h3>
-      <p class="doc-hint">
-        <code>type</code>
-        转发给内部原生
-        <code>&lt;button&gt;</code>
-        ；放进
-        <code>&lt;form&gt;</code>
-        才生效 ——
-        <code>submit</code>
-        提交、
-        <code>reset</code>
-        还原， 不写默认
-        <code>button</code>
-        （不会误提交）。
-      </p>
-      <doc-playground src="./demos/type.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>表单类型</h3>
+        <p class="doc-hint">
+          <code>type</code>
+          转发给内部原生
+          <code>&lt;button&gt;</code>
+          ；放进
+          <code>&lt;form&gt;</code>
+          才生效 ——
+          <code>submit</code>
+          提交、
+          <code>reset</code>
+          还原， 不写默认
+          <code>button</code>
+          （不会误提交）。
+        </p>
+        <doc-playground src="./demos/type.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>状态</h3>
-      <p class="doc-hint">
-        用
-        <kbd>Tab</kbd>
-        走一遍能看到焦点环。
-      </p>
-      <doc-playground src="./demos/states.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>状态</h3>
+        <p class="doc-hint">
+          用
+          <kbd>Tab</kbd>
+          走一遍能看到焦点环。
+        </p>
+        <doc-playground src="./demos/states.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>图标插槽</h3>
-      <p class="doc-hint">
-        图标写在
-        <code>slot="prefix"</code>
-        /
-        <code>slot="suffix"</code>
-        ，文字照旧放默认插槽。
-      </p>
-      <doc-playground src="./demos/slots.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>图标插槽</h3>
+        <p class="doc-hint">
+          图标写在
+          <code>slot="prefix"</code>
+          /
+          <code>slot="suffix"</code>
+          ，文字照旧放默认插槽。
+        </p>
+        <doc-playground src="./demos/slots.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>撑满宽度</h3>
-      <doc-playground src="./demos/block.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>撑满宽度</h3>
+        <doc-playground src="./demos/block.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>外部样式</h3>
-      <p class="doc-hint">
-        样式写在宿主上，一句
-        <code>style="…"</code>
-        直接压过去；换色槽是
-        <code>--mc-button-fill</code>
-        /
-        <code>--mc-button-accent</code>
-        。
-      </p>
-      <doc-playground src="./demos/override.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          样式写在宿主上，一句
+          <code>style="…"</code>
+          直接压过去；换色槽是
+          <code>--mc-button-fill</code>
+          /
+          <code>--mc-button-accent</code>
+          。
+        </p>
+        <doc-playground src="./demos/override.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
     <doc-spec src="./api.md"></doc-spec>

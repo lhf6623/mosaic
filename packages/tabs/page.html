@@ -18,57 +18,59 @@
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
-    <section class="doc-demo">
-      <h3>基本用法</h3>
-      <p class="doc-hint">
-        <code>default-value</code>
-        指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
-      </p>
-      <doc-playground src="./demos/basic.html"></doc-playground>
-    </section>
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          <code>default-value</code>
+          指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>禁用</h3>
-      <p class="doc-hint">
-        点不动，方向键与
-        <kbd>Home</kbd>
-        /
-        <kbd>End</kbd>
-        也会跳过它。
-      </p>
-      <doc-playground src="./demos/disabled.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>禁用</h3>
+        <p class="doc-hint">
+          点不动，方向键与
+          <kbd>Home</kbd>
+          /
+          <kbd>End</kbd>
+          也会跳过它。
+        </p>
+        <doc-playground src="./demos/disabled.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>事件回调</h3>
-      <p class="doc-hint">
-        <code>change</code>
-        只在激活项真的变了时发，载荷是
-        <code>$event.data.value</code>
-        。
-      </p>
-      <doc-playground src="./demos/events.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          <code>change</code>
+          只在激活项真的变了时发，载荷是
+          <code>$event.data.value</code>
+          。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
 
-    <section class="doc-demo">
-      <h3>内部样式</h3>
-      <p class="doc-hint">
-        组件内部默认改不动：只有标了
-        <code>part</code>
-        的节点，才能从外面用
-        <code>::part(名字)</code>
-        改样式（这里开了
-        <code>list</code>
-        /
-        <code>indicator</code>
-        /
-        <code>panel</code>
-        ，标签自己的
-        <code>base</code>
-        也在）。
-      </p>
-      <doc-playground src="./demos/part.html"></doc-playground>
-    </section>
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式（这里开了
+          <code>list</code>
+          /
+          <code>indicator</code>
+          /
+          <code>panel</code>
+          ，标签自己的
+          <code>base</code>
+          也在）。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
 
     <!-- 参考区（属性/方法/事件/配置/插槽/part）由 api.md 渲染，不在这里手抄 -->
     <doc-spec src="./api.md"></doc-spec>
