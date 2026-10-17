@@ -93,10 +93,13 @@
           }
           const heights = items.map((el) => el.offsetHeight);
 
-          /* 轮转分列（1→第 1 列、2→第 2 列…）：第一行即目录顺序；列内独立堆叠，不留行空洞 */
+          /* 分列：最短列优先（等高时按轮转顺序）。下一块总去当前最矮的列 —— 一块特别高的 demo
+             不会把一列撑爆、另一列底部空一大片；列内顺序即目录顺序，视觉顺序也不会被打乱 */
           const colHeights = new Array(cols).fill(0);
           items.forEach((el, i) => {
-            const col = i % cols;
+            const preferred = i % cols;
+            const min = Math.min(...colHeights);
+            const col = colHeights[preferred] === min ? preferred : colHeights.indexOf(min);
             el.style.left = `${col * (itemWidth + gap)}px`;
             el.style.top = `${colHeights[col]}px`;
             colHeights[col] += heights[i] + gap;
