@@ -3,18 +3,18 @@
  * Mosaic 端到端冒烟测试入口（playwright-core + 系统 Chrome）。
  *
  * 用法（先起 `pnpm dev`）：
- *   pnpm test                默认：只跑**本次改动**命中的套件（选测中间层，见 tests/select.mjs）；
- *                            工作区干净时转全量 —— 干净多半是「刚提交、要收尾」，
- *                            静默跳过的漏测是这套机制唯一危险的失效方向
- *                            ⚠️ 所以别在干净工作区上跑裸 `pnpm test`（等于自己起了全量）：
- *                            除非对方明确要求，要验就带筛选（`pnpm test popover`）
+ *   pnpm test                默认：只跑**本次改动**命中的套件（选测中间层，见 tests/select.mjs）。
+ *                            工作区干净 → 什么都不跑（**不会**自动转全量）；
+ *                            这次改动若被判定为全量（共享面 / 依赖地图缺失），入口会拒绝执行并退出 1 ——
+ *                            全量必须显式，见下面两条。
  *   pnpm test origin/main    跟某个 ref 比（提交之后想验自己这批就用这条；显式 ref 照常选测）
- *   pnpm test:all            全量：每个 READY 组件的套件（**只在明确要求时**跑这条）
+ *   pnpm test:all            全量：每个 READY 组件的套件。**只在明确要求时跑**；
+ *                            `node tests/smoke.mjs`（不带过滤）是另一个等价的显式入口
  *   node tests/smoke.mjs --jobs 1        串行跑（排查「以为是并行引发的时序问题」时用）
  *   node tests/smoke.mjs --jobs 6        临时加大并行度（可用 JOBS=6 代替）
  *   pnpm test --list         只列出会跑哪些套件（可与其它参数组合预览），不启动浏览器
  *   node tests/smoke.mjs --record        重录依赖地图 tests/suite-map.json：
- *                                        不给过滤 = 跑全量整份重录；给了过滤（如 `popover --record`）
+ *                                        不给过滤 = 跑全量整份重录（显式动作）；给了过滤（如 `popover --record`）
  *                                        = 只跑并只重录这些套件、其余条目合并保留（新增组件时用这条，
  *                                        收尾从一次全量降成一次单套件）。两种都忽略 --changed
  *                                        例：`node tests/smoke.mjs popover --record`
@@ -83,60 +83,79 @@ let suites = all.filter((s) => !wanted.length || wanted.includes(s.slug));
 const partialRecord = record && wanted.length > 0;
 
 /* 选测中间层：改动 → 该跑哪些套件（依赖地图 + 兜底策略，见 tests/select.mjs）
-   录制时不做选测过滤：录制要的是「这套件碰过哪些文件」，跳着跑会漏。 */
+   录制时不做选测过滤：录制要的是「这套件碰过哪些文件」，跳着跑会漏。
+   ⚠️ 全量只有显式入口（`pnpm test:all` / 不带过滤的 `node tests/smoke.mjs` / `--record` 整份重录）。
+   默认 --changed 入口在两种情况下**不跑**：没有改动可测，或选择结果被判成全量。 */
+let autoFull = false;
+/** @type {{ file: string, why: string }[]} */
+let autoFullWhy = [];
 if (changedRef !== undefined && !record) {
   const changed = changedFiles(changedRef);
   if (changed === null) {
-    console.log(`\n\x1b[33m取不到 git 改动（ref=${changedRef}）→ 全量\x1b[0m`);
-  } else if (!changed.length && changedRef === 'HEAD') {
-    /* 隐式 --changed（`pnpm test` 的默认）+ 工作区干净：无从判断你在测什么。
-       这时按**全量**走 —— 干净的工作区通常就是「刚提交、准备收尾」，静默跳过是
-       这套机制唯一危险的失效方向。
-       只想验自己这批提交：`pnpm test origin/main`（显式 ref 照常选测）。 */
-    console.log(
-      `\n\x1b[1m▌选测\x1b[0m \x1b[2m工作区干净 → 全量（想跟分支比：pnpm test origin/main）\x1b[0m`,
+    console.error(
+      `\n\x1b[31m取不到 git 改动（ref=${changedRef}）\x1b[0m → 不跑测试。\n` +
+        `  \x1b[2m要全量请显式 pnpm test:all；只验某个组件：node tests/smoke.mjs <slug>\x1b[0m\n`,
     );
-  } else {
-    const map = loadMap();
-    const picked = selectSuites({ changed, suites, map });
-    const labels = new Map(suites.map((s) => [s.path, s.label]));
+    process.exit(1);
+  }
+  if (!changed.length) {
+    /* 隐式 --changed（`pnpm test` 的默认）或显式 ref 没有差异：没有可测的改动。
+       不再自动转全量 —— 全量必须是显式命令。 */
     console.log(
-      `\n\x1b[1m▌选测\x1b[0m \x1b[2m--changed ${changedRef} · 改动 ${changed.length} 个文件 → ` +
-        `命中 ${picked.selected.length}/${suites.length} 个套件${picked.full ? '（共享面 → 全部）' : ''}\x1b[0m`,
+      `\n\x1b[1m▌选测\x1b[0m \x1b[2m工作区${changedRef === 'HEAD' ? '' : `与 ${changedRef} `}没有改动 → 不跑测试。` +
+        `要全量请显式 pnpm test:all；只验某个组件：node tests/smoke.mjs <slug>\x1b[0m\n`,
     );
-    for (const note of picked.notes.slice(0, 8)) {
-      const hit =
-        note.suites === 'all' || note.suites === 'none'
-          ? note.suites
-          : note.suites.map((p) => labels.get(p) ?? p).join(' / ');
-      console.log(`\x1b[2m  ${note.file} → ${note.why}${hit === 'all' || hit === 'none' ? '' : `：${hit}`}\x1b[0m`);
-    }
-    if (picked.notes.length > 8) console.log(`\x1b[2m  …另有 ${picked.notes.length - 8} 条命中\x1b[0m`);
-    suites = suites.filter((s) => picked.selected.includes(s.path));
+    process.exit(0);
+  }
+  const map = loadMap();
+  const picked = selectSuites({ changed, suites, map });
+  const labels = new Map(suites.map((s) => [s.path, s.label]));
+  console.log(
+    `\n\x1b[1m▌选测\x1b[0m \x1b[2m--changed ${changedRef} · 改动 ${changed.length} 个文件 → ` +
+      `命中 ${picked.selected.length}/${suites.length} 个套件${picked.full ? '（共享面 → 全部）' : ''}\x1b[0m`,
+  );
+  for (const note of picked.notes.slice(0, 8)) {
+    const hit =
+      note.suites === 'all' || note.suites === 'none'
+        ? note.suites
+        : note.suites.map((p) => labels.get(p) ?? p).join(' / ');
+    console.log(`\x1b[2m  ${note.file} → ${note.why}${hit === 'all' || hit === 'none' ? '' : `：${hit}`}\x1b[0m`);
+  }
+  if (picked.notes.length > 8) console.log(`\x1b[2m  …另有 ${picked.notes.length - 8} 条命中\x1b[0m`);
+  suites = suites.filter((s) => picked.selected.includes(s.path));
+  /* 选择结果 = 全部套件（共享面 / 未知面 / 地图缺失）：默认入口不自动开跑，交给显式全量。
+     指定了 slug 的除外 —— 那是使用者显式收窄到这些组件。 */
+  if (picked.full && !wanted.length) {
+    autoFull = true;
+    autoFullWhy = picked.notes
+      .filter((note) => note.suites === 'all')
+      .slice(0, 6)
+      .map((note) => ({ file: note.file, why: note.why }));
   }
 }
 
 /* 显式全量（`node tests/smoke.mjs` / `pnpm test:all`）且工作区脏时提示一句：
-   默认那条命令（`pnpm test`）只跑改动命中的范围，这里直接把能省多少算出来 ——
-   免得「跑全量」又变回肌肉记忆。
-   ⚠️ 全量是**按需**动作：除非对方明确要求，别自己起；干净工作区上跑裸 `pnpm test` 就是一次全量。 */
+   默认入口只跑改动命中的范围，这里把能省多少算出来 —— 免得「全量」变肌肉记忆。
+   ⚠️ 全量是**显式**动作：默认 `pnpm test` 在判定为全量时拒绝执行，不会自己起。 */
 if (!record && changedRef === undefined && suites.length === all.length) {
   const dirty = changedFiles('HEAD') ?? [];
   if (dirty.length) {
     const picked = selectSuites({ changed: dirty, suites: all, map: loadMap() });
     console.log(
       picked.full
-        ? `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动，但踩到了共享面 / 测试基座 —— ` +
-            `\x1b[2m这次选测也是全量，跑全量没问题\x1b[0m\n`
+        ? `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动，影响全部套件（共享面 / 测试基座）。` +
+            `\x1b[2m默认入口 pnpm test 会拒绝自动跑全量；你这次是显式全量，才真正开跑。\x1b[0m\n`
         : `\n\x1b[33m▌提示\x1b[0m 工作区有 ${dirty.length} 个改动：` +
-            `\x1b[2m只要 pnpm test 就只跑 ${picked.selected.length}/${all.length} 个套件（--list 先预览）\x1b[0m\n`,
+            `\x1b[2m默认入口 pnpm test 只会跑 ${picked.selected.length}/${all.length} 个套件（--list 先预览）\x1b[0m\n`,
     );
   }
 }
 
 if (!suites.length) {
   if (changedRef !== undefined) {
-    console.log('\n改动没有命中任何套件（要全量就去掉 --changed，或加 --record 重录地图）\n');
+    console.log(
+      '\n改动没有命中任何套件（没有可跑的；要全量请显式 pnpm test:all，或跑 node tests/smoke.mjs <slug>）\n',
+    );
     process.exit(0);
   }
   console.error(
@@ -155,6 +174,20 @@ if (onlyList) {
   );
   for (const s of suites) console.log(`  ${s.label.padEnd(26)} ${s.path}`);
   process.exit(0);
+}
+
+/* 默认入口拒绝自动全量：选择结果是全部套件时，把决定权交还给使用者（退出 1，避免「一条没跑也全绿」）。
+   --list 已经在上面退出，所以想先看清单的人仍然看得到。 */
+if (autoFull) {
+  console.error(
+    `\n\x1b[1m▌拒绝自动跑全量\x1b[0m 这次改动被判定为全量：\n` +
+      autoFullWhy.map((note) => `  · ${note.file} → ${note.why}`).join('\n') +
+      `\n\x1b[2m默认入口 pnpm test 只跑「改动命中的套件」，全量必须显式：\n` +
+      `  pnpm test:all                     确认要跑全量\n` +
+      `  pnpm test --list                  先看会跑哪些套件\n` +
+      `  node tests/smoke.mjs <slug>       只验某个组件\x1b[0m\n`,
+  );
+  process.exit(1);
 }
 
 const harness = await createHarness();

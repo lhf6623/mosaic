@@ -44,7 +44,7 @@ export function saveMap(map) {
 
 /**
  * 工作区 / 某个 ref 的改动清单（仓库相对路径，含未跟踪文件）。
- * 取不到（不是 git 仓库、ref 不存在）返回 null —— 调用方退回全量，绝不静默少跑。
+ * 取不到（不是 git 仓库、ref 不存在）返回 null —— 调用方直接报错退出：不自动转全量，也不静默少跑。
  */
 export function changedFiles(ref = 'HEAD') {
   const git = (args) => execFileSync('git', args, { cwd: repoRoot(), encoding: 'utf8' });
@@ -133,6 +133,9 @@ export function importClosure(entryPath, { only = true } = {}) {
  * `<l-m>` 拉组件、路由默认页都可能落在这一轮、也可能落在下一轮 —— 实测连录两次就不一样）。
  * 让采样结果来决定"运行时 / 令牌改了跑哪些套件"，等于把漏跑建立在录制运气上。
  * 组件目录内的文件不受影响：那些走地图精确命中 + 目录兜底（见 fallback）。
+ *
+ * ⚠️ 这一条选出来的是「全部套件」；`tests/smoke.mjs` 的默认 --changed 入口会对这个结果拒绝自动开跑，
+ *    要求改用显式的 `pnpm test:all` —— 全量不靠默认入口触发。
  */
 function sharedSurface(file) {
   // 测试基础设施：改了基座 / 跑器 / 地图本身，任何套件都可能受影响
@@ -271,8 +274,8 @@ function main() {
     const ref = argv[at + 1] && !argv[at + 1].startsWith('-') ? argv[at + 1] : 'HEAD';
     changed = changedFiles(ref);
     if (!changed) {
-      console.log(`取不到 git 改动（ref=${ref}）→ 全量`);
-      changed = [];
+      console.error(`取不到 git 改动（ref=${ref}）→ 不跑（要全量请显式 pnpm test:all）`);
+      process.exit(1);
     }
   } else if (argv.length) {
     changed = argv.filter((a) => !a.startsWith('-'));
@@ -282,11 +285,15 @@ function main() {
 
   const suites = allSuites();
   const byPath = new Map(suites.map((s) => [s.path, s]));
+  if (!changed.length) {
+    console.log('\n工作区没有改动 → 没有套件要跑（全量要显式：pnpm test:all）\n');
+    return;
+  }
   const { selected, notes, full } = selectSuites({ changed, suites });
 
   console.log(
     `\n改动 ${changed.length} 个文件 → 命中 ${selected.length}/${suites.length} 个套件` +
-      (full ? '（共享面 → 全部）' : '') +
+      (full ? '（共享面 → 全部；默认入口会拒绝自动跑，须显式 pnpm test:all）' : '') +
       '\n',
   );
   for (const note of notes) {
