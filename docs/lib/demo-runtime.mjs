@@ -1,20 +1,9 @@
 /**
  * demo-runtime.mjs —— 组件文档页「可编辑示例」的运行时编译（站点内部工具，不随组件发布）。
- *
- * 一段编辑后的 demo 源码怎么变成能渲染的组件：ofa 4.7.5 的 `$.register` 是公开 API
- * （它自己的 html 模块加载器最后一步就是调它），传入 `{ tag, temp, data, proto, ready, … }`
- * 即可注册一个组件。于是「编辑后看效果」不需要服务器、也不需要 iframe：
- * 把 demo 文件原文拆成 temp + 组件配置，换一个新 tag 注册出来就行。
- *
- * ofa 的 html 加载器平常替我们做的三件事，这里必须自己做：
- *   ① 去掉 `<template component>` 外壳，只把内部标记交给 temp；
- *   ② script 里的相对 import 改成绝对地址 —— 脚本走 blob 模块执行，blob 没有目录，
- *      `../../message/message.js` 这种地址解不出来；
- *   ③ 标记里的相对 href/src（含 <style> 的 url()）按 demo 文件地址重写 —— 同一份源码
- *      既可能从 `/packages/x/demos/` 下加载，也可能来自编辑器的内存文本。
- *
- * ⚠️ 示例文件仍是唯一源：编辑器里看到的、预览编译的都是 demos/*.html 的同一份文本，
- *    没有第二份片段会漂移。
+ * 用 ofa 的公开 API `$.register` 注册临时组件：把 demo 原文拆成 temp + 配置、换 tag 注册，不需要服务器 / iframe。
+ * 加载器平常替我们做的三件事自己做：① 去掉 `<template component>` 外壳；② script 的相对 import 改成绝对
+ * （blob 没有目录）；③ 标记里的相对 href / src / url() 按 demo 文件地址重写。
+ * ⚠️ demos/*.html 是唯一源，编辑器预览编译的是同一份文本。
  */
 
 /** 同一 URL 的源码只取一次（页面里可能既被示例加载、又被编辑器读） */

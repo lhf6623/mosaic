@@ -1,7 +1,6 @@
 /*
- * 首帧主题引导：必须是 head 内的**同步经典脚本**（module 会 defer，首帧先按亮色画一遍再跳暗色 = FOUC）。
- * 令牌表只有亮 / 暗两态，「自动」是本站自己接的：读系统偏好，落成 data-theme="light" / "dark"。
- * 与 docs/layout.html 的 applyTheme 同一套口径（那边管运行时切换，这里管首帧）。
+ * 首帧主题引导：必须是 head 内的同步经典脚本（module 会 defer，首帧先按亮色画一遍再跳暗色 = FOUC）。
+ * 「自动」读系统偏好落成 data-theme；与 layout.html 的 applyTheme 同一套口径（那边管运行时切换）。
  */
 (function () {
   var mode = 'auto';

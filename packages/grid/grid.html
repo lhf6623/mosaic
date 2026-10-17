@@ -12,8 +12,7 @@
       color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
     }
 
-    /* 2. gap 三档：只换间距，不动列。数字由 JS 写宿主的 --mc-grid-gap，base 那条读它
-       （见 applyGap()，与 mc-space 的数字通道同一条路） */
+    /* 2. gap 三档：只换间距，不动列（数字由 JS 写 --mc-grid-gap，见 applyGap） */
     :host([gap='sm']) {
       gap: var(--mc-space-2, var(--mc-def-space-2));
     }
@@ -76,11 +75,7 @@
           else this.ele.style.removeProperty('--mc-grid-min-w');
         },
 
-        /**
-         * gap 的数字通道：**只收纯数字**（按 px，如 gap="10"），写进宿主 style 的
-         * --mc-grid-gap，base 的 gap 读它。sm / md / lg 与非法值（包括 12px / 0.75rem
-         * 这类带单位的字符串）都删掉变量，交回 CSS 属性选择器 / 默认 md（同 mc-space 的 applyGap）。
-         */
+        /** gap 的数字通道：纯数字按 px 写 --mc-grid-gap；三档 / 非法值删掉变量，交回 CSS（同 mc-space） */
         applyGap() {
           const raw = String(this.gap ?? '').trim();
           const pxValue = /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(raw) ? `${raw}px` : '';

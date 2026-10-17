@@ -5,19 +5,11 @@
 
 export const SITE_ROOT = new URL('.', document.baseURI).pathname;
 
-/**
- * 站内 ID → hash 地址（带上部署前缀）
- * @param {string} [to] 仓库根相对路径，前导斜杠可有可无
- * @returns {string}
- */
+/** @param {string} [to] 站内 ID → hash 地址（带部署前缀；前导斜杠可有可无） */
 export const hashOf = (to) =>
   `#${SITE_ROOT.replace(/\/$/, '')}/${String(to ?? '').replace(/^\//, '')}`;
 
-/**
- * hash 地址 / 站内 ID → 仓库根相对路径（把部署前缀切掉）
- * @param {unknown} value 地址或 ID，什么都收 —— 不是字符串就按空串算
- * @returns {string}
- */
+/** @param {unknown} value hash 地址 / 站内 ID → 仓库根相对路径（切掉部署前缀；非字符串按空串算） */
 export const toRepoPath = (value) => {
   const raw = String(value ?? '')
     .replace(/^#\/?/, '')
@@ -29,12 +21,7 @@ export const toRepoPath = (value) => {
   return raw;
 };
 
-/* 任意 URL → 仓库根相对路径。给「手里只有地址」的地方用：页面模块的 `src`、`olink` 改写过的 `href`。
- * 布局页顶栏高亮就用它，不用再自己抄一份 pathOf。 */
-/**
- * @param {string | URL} url 任意地址（相对 / 绝对 / 只有 hash 都行）
- * @returns {string} 仓库根相对路径
- */
+/** @param {string | URL} url 任意 URL → 仓库根相对路径（页面 src、olink 改写的 href、顶栏高亮都用它） */
 export const repoPathOf = (url) => {
   const target = new URL(url, location.href);
   return toRepoPath(decodeURIComponent(target.hash || target.pathname));

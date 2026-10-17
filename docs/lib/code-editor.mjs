@@ -1,14 +1,7 @@
 /**
- * code-editor.mjs —— 文档站「可编辑示例」用的代码编辑器（站点内部工具，不随组件发布）。
- *
- * 编辑器是本地 vendor 的 CodeMirror 5（见 docs/vendor/codemirror/SOURCES.txt）：
- *   · 懒加载：第一次点开编辑抽屉才注入 core / 模式 / 插件，页面首屏不为它付钱；
- *   · 只在 shadow root 里生效：CM 的样式表取回后**和下面的主题一起**塞进一个 <style>，
- *     顺序在 CM 基础样式之后 —— 主题覆盖同权重靠后就能赢，不用 !important；
- *   · 失败降级成 textarea：CDN 不可达 / 取不到文件时仍然能改代码（只是没有高亮）。
- *
- * 对外只暴露一个 mountCodeEditor(container, options)，返回统一的控制器，
- * 调用方（doc-playground）不关心底下是 CM 还是 textarea。
+ * code-editor.mjs —— 文档站「可编辑示例」的代码编辑器（站点内部工具，不随组件发布）。
+ * 本地 vendor 的 CodeMirror 5：懒加载、样式只进 shadow root、失败降级成 textarea。
+ * 对外只暴露 mountCodeEditor(container, options)，返回统一控制器（调用方不关心底下是 CM 还是 textarea）。
  */
 
 const CM_BASE = new URL('../vendor/codemirror/', import.meta.url);

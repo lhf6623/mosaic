@@ -1,6 +1,6 @@
 /**
- * adopt-styles.js —— 文档站自己的样式注入器（站点资产，不随组件发布）：库里的组件自带 component-base.css，但文档站自己的 shadow 组件吃的是页面级 mosaic.css，而文档级 <link> 进不去 shadow root。
- * ⚠️ 补丁必须在任何 shadow root 建起来之前装好（本模块顶层即执行），所以 index.html 里要排在 ofa.js 之后。
+ * adopt-styles.js —— 文档站样式注入器（站点资产）：把页面级样式表 adopt 进 shadow root。
+ * ⚠️ 补丁必须在任何 shadow root 建起来之前装好（模块顶层执行），index.html 里排在 ofa.js 之后。
  */
 
 const HERE = new URL('.', import.meta.url);

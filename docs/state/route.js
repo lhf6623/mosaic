@@ -1,8 +1,7 @@
-/* 文档站**唯一的导航信号源**：监听只在这里挂（hashchange + router-change），消费方订阅同一个 store / 订阅表。
- * 以前 4 个文件各挂一遍（8 个监听），每处都要记得「olink 走 pushState、不触发 hashchange」（P28）—— 漏一个就是静默不更新。
- * 两种消费：routeState() 拿响应式对象（模板里可以按 {{nav.path}} 绑），onRouteChange(cb) 拿订阅（JS 里要派生的用）。
- * ⚠️ 三个不显然的点：懒创建（模块顶层调 $.stanz 依赖 ofa 的执行顺序）；创建即写入当前路由（组件可能比外壳更早 attach）；
- *   订阅表是自己的一张 Set（watch 的返回值能不能退订没有官方说明，而组件会随切页反复建/毁，退订必须可靠）。
+/* 文档站唯一的导航信号源：监听只在这里挂（hashchange + router-change），消费方订阅同一个 store / 订阅表。
+ * 两种消费：routeState() 拿响应式对象，onRouteChange(cb) 拿订阅。
+ * ⚠️ 三个不显然的点：懒创建（依赖 ofa 执行顺序）；创建即写入当前路由（组件可能比外壳更早 attach）；
+ *   订阅表是自有 Set（组件随切页反复建毁，退订必须可靠）。
  */
 
 import { locate } from '../site-map.js';

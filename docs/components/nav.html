@@ -1,43 +1,30 @@
 <!--
-  <doc-nav> —— 文档站左栏二级菜单：渲染哪一支（routeState 的 entry + menuOf）+ 谁是当前页（options 的 current）。
-  整包数据交给 mc-menu 的 `options`（行由组件自己渲染），这里不再手写菜单项；条目样式必须写在下面 <style> 里（组件模板自带 shadow root）。
-  ⚠️ 路由变化整包换 options：菜单会重建列表（一栏就几十行，换来的是单一渲染源）—— 改这里时请手动验一次；mc-menu / mc-scroll-bar 由外壳 docs/layout.html 统一 <l-m> 进来。
-  两种模式：默认渲染**当前分区**（左栏、几十行）；`full` 渲染**整棵树**（窄屏浮层的「全部菜单」，
-  顶层分区是可开合的行 + 手风琴，当前这一支默认展开）—— 两种模式只差喂给 mc-menu 的 options。
-  换页后把当前页那一条**滚到这一栏的竖直中间**（centerCurrent）：一栏装的是整棵导航树，不居中就得自己翻。
+  <doc-nav> —— 文档站左栏二级菜单（`full` 模式给窄屏浮层的「全部菜单」）。
+  整包数据交给 mc-menu 的 options（行由组件渲染）；条目样式只能写在本组件的 <style> 里。
+  ⚠️ 路由变化整包换 options，菜单会重建 —— 改这里请手验；换页后把当前条滚到栏内竖直中间。
 -->
 <template component>
   <style>
-    /* 未实现的组件压暗一档：状态经 options 的 attrs 落到行（mc-menu-item）宿主上 */
+    /* 未实现组件压暗一档：状态经 options 的 attrs 落到 mc-menu-item 宿主上 */
     mc-menu-item[data-status='planned'] {
       opacity: 0.72;
     }
 
-    /* 二级条目缩进一档（组件自己算：带 children 的 group 用 --mc-menu-group-indent，
-       默认 12px → 条目落在 28px），分组标题留在最左 —— 只有标题 + 子项拉不开层级，一栏读下来全是平的。
-       这里不再覆盖任何缩进令牌；真要改这一栏的深浅，覆盖 --mc-menu-group-indent 就行。 */
-
-    /* 滚动归 mc-scroll-bar：宿主 <doc-nav> 只管定位 + 尺寸（见 docs/doc-layout.html），滚的是这里面的 viewport。
-       高度接满宿主 —— 宽屏那栏是 fixed + height:100%，有确定高度，100% 解得开。
-       ⚠️ 浮层那份的宿主是 auto 高（外壳只给「最高到哪」），那时 100% 退回 auto：靠下面那条 max-height 封顶，
-       不能反过来把 max-height 挂在宿主上 —— 宿主 auto 高时 viewport 的 100% 同样解不开，撑不出滚动区，菜单会顶出浮层。 */
+    /* 高度接满宿主（宽屏那栏 fixed + 100%，解得开）；窄屏浮层宿主 auto 高时退回 auto，
+       由下面 viewport 的 max-height 封顶。⚠️ max-height 不能挂宿主 —— 否则 viewport 的 100% 解不开，菜单会顶出浮层。 */
     mc-scroll-bar {
       height: 100%;
     }
 
-    /* 两条都挂在 viewport 上，而不是宿主 <doc-nav> 上：
-       · max-height —— 窄屏浮层的「最高到哪」由外壳当令牌传进来（面板是浮层，菜单再长也不能撑满一屏）；
-         宽屏那栏不传，`none` 就是不限高，宿主已经是一屏高。
-       · padding-inline —— 条子贴的是 mc-scroll-bar 自己的右沿，宿主上的 padding 会把条子一起推离栏边，
-         所以 gutter 挪到这里（宿主 doc-nav 的 padding-inline 现在是 0）。浮层那份宿主没有 gutter
-         （面板自带内边距），外壳把 --doc-scroll-pad-x 设成 0。 */
+    /* 两条都挂 viewport，不挂宿主：max-height 是窄屏浮层的「最高到哪」（宽屏不传 = none）；
+       padding-inline 是 gutter（挂宿主会把条子一起推离栏边，浮层那份外壳把它设成 0）。 */
     mc-scroll-bar::part(viewport) {
       max-height: var(--doc-nav-max-height, none);
       padding-inline: var(--doc-scroll-pad-x, var(--mc-space-5));
     }
   </style>
 
-  <!-- 条子走组件默认的 hover（移入这一栏才淡入）：菜单是拿来读的，常驻一条会一直压在条目背景上 -->
+  <!-- 条子走组件默认的 hover：菜单是拿来读的，常驻一条会压在条目背景上 -->
   <mc-scroll-bar label="站点菜单">
     <mc-menu id="nav-menu"></mc-menu>
   </mc-scroll-bar>
@@ -47,8 +34,7 @@
     import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
-    /** 页面节点 → options 的一条：待建的不给死链（外链规范 + 待建 tooltip），压暗靠 attrs 里的 data-status。
-        链接走 options 的 href（最终地址）—— 行是运行时造的，olink 够不着。 */
+    /** 页面节点 → options 一条：待建的不给死链（外链规范 + 压暗），链接走 options.href（行是运行时造的，olink 够不着） */
     const optionOf = (page, current) => {
       const ready = hasPage(page);
       return {
@@ -64,8 +50,7 @@
       };
     };
 
-    /** 一个分区的行：分组节点 → 带 children 的 group（标题 + 组内条目常显、缩进一档）；其余就是一条链接。
-        左栏用它渲染**当前分区**，窄屏「全部菜单」用它渲染每个分区那一支。 */
+    /** 一个分区的行：带 children 的节点出 group（标题 + 组内条目），其余是链接（左栏与「全部菜单」共用） */
     const optionsOf = (entry, current) =>
       menuOf(entry).map((node) =>
         node.children
@@ -77,10 +62,7 @@
           : optionOf(node, current),
       );
 
-    /** 全部菜单（窄屏浮层）的顶层：整棵树，顶层分区是可开合的行、**当前这一支默认展开**（配 mc-menu 的
-        accordion，同层只开一支）；子树沿用 optionsOf —— 与左栏同一套渲染，两种模式只差「喂什么数据」。
-        展开认 label 不认对象：TOPBAR 里的顶层节点和 routeState 的 entry 是同一批对象，但这里刻意不靠它，
-        免得以后哪一步做了拷贝就静默失效（顶层 label 唯一）。 */
+    /** 全部菜单的顶层：整棵树、顶层分区可开合、当前这一支默认展开；展开认 label 不认对象（顶层 label 唯一） */
     const fullOptionsOf = (current, entry) =>
       TOPBAR.map((node) =>
         node.children
@@ -93,24 +75,19 @@
       );
 
     export default () => ({
-      /* ⚠️ 一定要显式写 tag：不写时 ofa 用文件名推断标签名，文件一改名/挪目录就会注册失败，
-         而外层只报 "wrong module address"，极难反查（见 ofa-pitfalls 的 P40） */
+      /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断标签名，文件一改名 / 挪目录就注册失败（P40） */
       tag: 'doc-nav',
 
       ready() {
         this._menu = this.ele.shadowRoot.querySelector('#nav-menu');
         this._bar = this.ele.shadowRoot.querySelector('mc-scroll-bar');
-        /* 窄屏浮层那份用 full 模式：整棵树 + 手风琴（同层只开一支，当前分区默认展开）。
-           模式是外壳在标记上写死的（<doc-nav full>），读一次就够。 */
+        /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
         if (this._full) this._menu.setAttribute('accordion', '');
-        /* 行是 mc-menu 自己渲染的（它可能晚于 doc-nav 升级完），所以居中的**时机**就认它的子节点：
-           一落 DOM 就重新居中。不用赌「options 写下去那一拍行已经在了」—— 换页整包换 options 也走这条。
-           MutationObserver 的回调在渲染完成后跑，读几何前不必再等帧。 */
+        /* 行由 mc-menu 渲染（可能晚于本组件升级）：监听子节点变化再居中，不赌 options 写下去那一拍 */
         this._mo = new MutationObserver(() => this.centerCurrent());
         this._mo.observe(this._menu, { childList: true });
-        /* 视口「0 高 → 有高度」这一跳补一次居中：窄屏浮层关着时换页算出的 scrollTop 被夹成了 0。
-           只补这一跳 —— 之后用户自己滚到哪就是哪，窗口 resize 不该把人拽回去。 */
+        /* 视口「0 高 → 有高度」这一跳补一次居中（浮层关着时换页算出的 scrollTop 被夹成 0） */
         this._shownH = 0;
         this._vpRo = new ResizeObserver(([entry]) => {
           const height = entry.contentRect.height;
@@ -118,7 +95,7 @@
           this._shownH = height;
         });
         this._vpRo.observe(this.ele);
-        /* 路由信号统一来自 docs/state/route.js（唯一挂 hashchange + router-change 的地方，见 P28）；这里只订阅 */
+        /* 路由信号统一来自 state/route.js，这里只订阅 */
         this._unwatch = onRouteChange(() => this.renderRows());
         this.renderRows();
       },
@@ -134,9 +111,8 @@
       proto: {
         /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
-          /* ⚠️ 别再调一次 locate()：routeState() 里已经是它算好的结果（entry = 当前页所在分区，node = 当前页自己） */
+          /* ⚠️ 别再调一次 locate()：routeState() 里已经是算好的 entry / node */
           const { path: current, entry } = routeState();
-          /* full 模式（窄屏浮层）喂整棵树，其余喂当前分区 —— 两种模式只有这一处差别 */
           this._menu.options = this._full
             ? fullOptionsOf(current, entry)
             : entry
@@ -149,9 +125,7 @@
           return this._bar?.shadowRoot?.querySelector('[part="viewport"]') ?? null;
         },
 
-        /** 把当前条目滚到这一栏的竖直中间。左栏装的是整棵导航树（几十行），当前页常常落在视口外，
-            不居中的话每次换页都得自己翻。这里是**唯一**写 scrollTop 的地方；
-            首尾的页面会先撞到滚动边界（浏览器自己夹住），那时这个动作退化成「保证它可见」。 */
+        /** 唯一写 scrollTop 的地方：把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
         centerCurrent() {
           cancelAnimationFrame(this._centerRaf);
           this._centerRaf = requestAnimationFrame(() => {

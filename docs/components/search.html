@@ -1,20 +1,16 @@
 <!--
-  <doc-search> —— 顶栏搜索：搜的是**整个菜单**（docs/site-map.js 的 PAGES = 全部可导航页面），选中即跳那一页。
-  形态与 mc-select 同路数：输入框常驻顶栏，**列表只回答「你在找什么」** —— 空查询不列全量、直接不挂列表。
-  ⚠️ 面板刻意不用 mc-popover：它内部是 popover="auto"，而 auto 的 light dismiss 会把「点自己这个输入框」
-     也当成一次外部点击 —— 那一下只是想挪光标，列表不该收（mc-select 为同一条用了 manual，见 P20）。
-     自己开合就得自己收口：点空白 / Esc 在下面关。
-  ⚠️ 结果行是运行时造的，拿不到 olink 的编译期前缀改写，地址一律由这里改 hash，并且**跳过「原地跳」**：
-     目标就是当前这一页时不能再发导航 —— ofa 对同一页不发 router-change，加载条会永远停在 loading（守卫同 docs/layout.html）。
+  <doc-search> —— 顶栏搜索：搜整个菜单（docs/site-map.js 的 PAGES），选中即跳页；空查询不列全量。
+  ⚠️ 面板不用 mc-popover（auto 的 light dismiss 会把「点自己的输入框」当成外部点击），用 popover="manual"，点空白 / Esc 自己收口。
+  ⚠️ 结果行是运行时造的，地址在这里改 hash；目标就是当前页时跳过 —— 同页不发 router-change，加载条会卡在 loading。
 -->
 <template component>
   <style>
-    /* 宽度由外壳给（顶栏那一行放多宽是外壳的事，见 docs/layout.html）；这里只负责把输入框铺满 */
+    /* 宽度由外壳给；这里只负责把输入框铺满 */
     :host {
       display: inline-flex;
     }
 
-    /* 锚点载体：面板以它为基准。⚠️ inline-flex 而不是 inline-block —— 后者的行盒基线会带一条缝，而锚点几何就是定位基准 */
+    /* 锚点载体：inline-flex 而不是 inline-block —— 后者的行盒基线会带一条缝，而锚点几何就是定位基准 */
     .field {
       display: inline-flex;
       anchor-name: --doc-search-anchor; /* @internal：给 position-anchor 用的标识 */
@@ -24,10 +20,8 @@
       width: var(--doc-search-width, 13rem);
     }
 
-    /* 面板：结果列表。锚在输入框下沿、右沿对齐。
-       ⚠️ 面板右沿贴的是**输入框**的右沿，而它右边还站着 GitHub / 主题 / 窄屏菜单那几个控件（约 9rem）
-       加顶栏内边距（1.25rem）：窄屏上写死 20rem 会把面板左沿顶出视口（anchor 定位只会翻转、不会平移）。
-       所以下限跟着视口走，宽屏那档仍是 20rem。 */
+    /* 面板锚在输入框下沿、右沿对齐。⚠️ 右沿贴的是输入框，右边还有 GitHub / 主题 / 菜单控件（约 9rem）
+       和顶栏内边距：min-width 跟着视口走，写死 20rem 在窄屏会把左沿顶出视口（anchor 只会翻转、不会平移）。 */
     .panel {
       /* ⚠️ 这三条必须显式写：UA 给 [popover] 的 inset / margin 会吃掉锚点定位，border 是 medium（3px）currentColor */
       position: fixed;
@@ -45,7 +39,7 @@
       font-family: var(--mc-font-sans);
       font-size: var(--mc-text-sm);
       line-height: var(--mc-text-sm-lh);
-      /* 不画 border：轮廓用 drop-shadow，跟着整体形状走（同 mc-popover 的口径） */
+      /* 不画 border：轮廓用 drop-shadow，跟着整体形状走（同 mc-popover） */
       filter: drop-shadow(0 0 1px rgb(var(--mc-color-border-strong)))
         drop-shadow(var(--mc-shadow-panel));
 
@@ -56,7 +50,7 @@
         flip-block flip-inline;
       top: anchor(bottom);
       right: anchor(right);
-      /* 面板顶要落到顶栏下沿：值由外壳给（只有它知道顶栏多高） */
+      /* 面板顶落到顶栏下沿：值由外壳给（只有它知道顶栏多高） */
       margin-top: var(--doc-search-offset, var(--mc-space-2));
     }
 
@@ -84,7 +78,7 @@
       cursor: pointer;
     }
 
-    /* 悬停与键盘高亮同一档底色：指针与方向键走同一套「当前项」观感 */
+    /* 悬停与键盘高亮同一档底色 */
     .row:hover,
     .row[data-active] {
       background-color: rgb(var(--mc-color-surface-sunken));
@@ -102,7 +96,7 @@
       font-size: var(--mc-text-xs);
     }
 
-    /* 列表限高、条子由 mc-scroll-bar 画 —— 同左栏：max-height 挂 viewport 上，宿主跟着内容走 */
+    /* 列表限高，条子由 mc-scroll-bar 画（max-height 挂 viewport，宿主跟着内容走） */
     mc-scroll-bar::part(viewport) {
       max-height: 15rem;
     }
@@ -128,7 +122,7 @@
     </mc-input>
   </span>
 
-  <!-- popover="manual"：进 top layer + 锚点定位，但不吃 auto 的 light dismiss（开合全由下面这套收口） -->
+  <!-- popover="manual"：进 top layer + 锚点定位，但不吃 auto 的 light dismiss（开合由下面收口） -->
   <div class="panel" id="panel" popover="manual">
     <mc-scroll-bar label="搜索结果">
       <div class="list" id="list">
@@ -156,7 +150,7 @@
     import { PAGES, displayName } from '../site-map.js';
     import { hashOf, route } from '../routes.js';
 
-    /** 一个词在某一档上的得分；0 = 这一档没匹配上。档位差就是结果顺序：名字 > 中文名 > 路径 / 分区 > 摘要 */
+    /** 一个词在某一档上的得分（0 = 没匹配上）；档位差决定结果顺序：名字 > 中文名 > 路径 / 分区 > 摘要 */
     const fieldScore = (page, term) => {
       const label = page.label.toLowerCase();
       const zh = page.zh ?? '';
@@ -172,11 +166,10 @@
     };
 
     export default () => ({
-      /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断，文件一改名就注册失败，而外层只报 "wrong module address"（P40） */
+      /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断，一改名就注册失败（P40） */
       tag: 'doc-search',
 
       data: {
-        /* 有输入但一条都没命中：列表挂着、内容是空态 */
         empty: false,
         results: [],
       },
@@ -187,19 +180,18 @@
         this._panel = root.querySelector('#panel');
         this._list = root.querySelector('#list');
 
-        /* 结果行是 o-fill 现造的，点击走**事件委托**（同外壳顶栏入口）：行上只放 data-path ——
-           行那一层的 `on:` 绑定拿不到 $data，而路径恰好就在 $data 里。 */
+        /* 行是 o-fill 现造的，点击走事件委托：行上只放 data-path（行那层的 on: 拿不到 $data） */
         this._onListClick = (event) => {
           const path = event.target?.closest?.('[data-path]')?.dataset?.path;
           if (path) this.pick(path);
         };
         this._list.addEventListener('click', this._onListClick);
 
-        /* 老浏览器没有 popover API 时不炸：面板挂不出来，输入框照常能用（同 mc-popover 的降级口径） */
+        /* 没有 popover API 时不炸：面板挂不出来，输入框照常能用（同 mc-popover 的降级口径） */
         this._popoverOk = typeof this._panel?.showPopover === 'function';
         if (this._popoverOk) this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
 
-        /* manual 的代价：点空白 / Esc 得自己收口。按在输入框或面板里的不算外部点击 */
+        /* manual 的代价：点空白 / Esc 自己收口；按在输入框或面板里的不算外部点击 */
         this._onDocPointerDown = (event) => {
           if (!this.isOpen()) return;
           const path = event.composedPath();
@@ -229,7 +221,7 @@
           return this._popoverOk && this._panel.matches(':popover-open');
         },
 
-        /* 显示 / 收起原生浮层：包在滚动守卫里，免得浏览器顺手把页面滚一下 */
+        /* 包在滚动守卫里，免得浏览器顺手把页面滚一下 */
         show() {
           if (this._popoverOk && !this.isOpen())
             this._scrollGuard.run(() => this._panel.showPopover());
@@ -245,7 +237,7 @@
           this.applyQuery();
         },
 
-        /** 重新聚焦时输入框里还有字，就把列表挂回来：点空白关掉之后不用重敲一遍 */
+        /** 重新聚焦时输入框里还有字，就把列表挂回来：点空白关掉后不用重敲 */
         onFocusin() {
           if (this._query.trim()) this.applyQuery();
         },
@@ -265,7 +257,7 @@
           }
         },
 
-        /** 过滤 + 排序（同分保持菜单顺序）。空查询直接收摊：列表只回答「你在找什么」 */
+        /** 过滤 + 排序（同分保持菜单顺序）；空查询直接收摊 */
         applyQuery() {
           const terms = this._query.trim().toLowerCase().split(/\s+/).filter(Boolean);
           if (!terms.length) {
@@ -318,16 +310,14 @@
           this._list?.querySelector('[data-active]')?.scrollIntoView({ block: 'nearest' });
         },
 
-        /** 选中：收起列表 + 清空输入，再跳页。
-            ⚠️ 目标就是当前这一页时不能再发导航（见文件头注释）。 */
+        /** 选中：收起 + 清空输入，再跳页（目标就是当前页时不发导航，见文件头） */
         pick(path) {
           this.clear();
           if (route() === path) return;
           location.hash = hashOf(path);
         },
 
-        /** 回到干净状态。清输入走 mc-input 的宿主 property（官方运行时写法）—— 直接改内部原生 input
-            的话，× 的显隐是它自己 applyState 管的，会留在那儿。 */
+        /** 回到干净状态。清输入走 mc-input 的宿主 property —— 直接改内部 input 的话，× 的显隐会留在那儿 */
         clear() {
           this._query = '';
           this._field.value = '';

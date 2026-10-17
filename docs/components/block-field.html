@@ -1,9 +1,7 @@
 <!--
-  <doc-block-field> —— 一层「方块场」：四层方块（实心 / 空心）各自跟随鼠标位移，做视差背景。
-  首页 `.hero` 拿它当底；组件自己铺满宿主（`position: absolute; inset: 0`），页面只要给它一个定位祖先。
-
-  ⚠️ 方块是**运行时随机撒**的（直接建 DOM，不走 data）：它们是纯装饰，没有"数据"可言，
-  而视差本身就得每帧直接改层的 transform —— 走 o-fill 反而多一层。旋钮见下面的 count / hole / span。
+  <doc-block-field> —— 一层「方块场」：四层方块跟随鼠标位移做视差背景（首页 `.hero` 拿它当底）。
+  自己铺满宿主（`position: absolute; inset: 0`），页面只要给它一个定位祖先。
+  ⚠️ 方块运行时随机撒、直接建 DOM：纯装饰，视差每帧改 transform，走 o-fill 反而多一层。
 -->
 <template component>
   <style>
@@ -16,14 +14,12 @@
       pointer-events: none;
     }
 
-    /* 一层：inset 撑满，方块在层内绝对定位；层整体按 data-depth 平移 = 视差 */
     .layer {
       position: absolute;
       inset: 0;
       will-change: transform;
     }
 
-    /* 越远的层越虚、越淡（位移差给层次，虚实给纵深） */
     .layer--1 {
       filter: blur(1.6px);
       opacity: 0.5;
@@ -44,7 +40,6 @@
       opacity: 1;
     }
 
-    /* 方块：位置 / 大小 / 角度 / 透明度都由脚本随机写在行内 */
     .block {
       position: absolute;
       transform: translate(-50%, -50%) rotate(var(--r, 0deg));
@@ -59,7 +54,6 @@
       border: 2px solid rgb(var(--c));
     }
 
-    /* 颜色映射到语义令牌，跟主题走（亮暗自动翻转），组件里不写死任何色值 */
     .block[data-c='primary'] {
       --c: var(--mc-color-primary);
     }
@@ -84,7 +78,6 @@
       --c: var(--mc-color-border-strong);
     }
 
-    /* 关掉动效偏好：方块保持静止（位置照旧随机，只是不跟随鼠标） */
     @media (prefers-reduced-motion: reduce) {
       .layer {
         transform: none !important;
@@ -92,7 +85,6 @@
     }
   </style>
 
-  <!-- 四层，data-depth 决定跟随鼠标的位移幅度：越近动得越多 -->
   <div class="layer layer--1" data-depth="10"></div>
   <div class="layer layer--2" data-depth="20"></div>
   <div class="layer layer--3" data-depth="34"></div>
@@ -107,7 +99,6 @@
     /** 中心禁区的半径（比例）——「中间要空一些」 */
     const DEFAULT_HOLE = 0.3;
 
-    /** 位移倍率：整体调视差的幅度 */
     const DEFAULT_SPAN = 1;
 
     /** 四周留一圈：方块以自身中心定位，不留边距的话大块会被视口切掉半截 */
@@ -145,7 +136,6 @@
         const hole = Number(ele.getAttribute('hole')) || DEFAULT_HOLE;
         const span = Number(ele.getAttribute('span')) || DEFAULT_SPAN;
 
-        /* ---- 1. 每层撒方块：大小 / 颜色 / 实心空心 / 角度全随机 ---- */
         layers.forEach((layer, index) => {
           const n = Math.max(1, count - index);
           for (let i = 0; i < n; i++) {
@@ -166,7 +156,6 @@
           }
         });
 
-        /* ---- 2. 视差：鼠标位置 → 各层按 depth 平移，位移过一遍 lerp（松手不弹） ---- */
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
         let px = 0.5;

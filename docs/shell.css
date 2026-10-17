@@ -1,6 +1,6 @@
 /* ============================================================================
- * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。刻意不分层：未分层声明赢过分层声明。
- * 滚动模型：**只有外壳的正文带 `.doc-main` 在滚**（`body{height:100%;overflow:hidden}`，见 docs/layout.html）；左右两栏是 `position: fixed`，不参与文档流。
+ * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。刻意不分层。
+ * 滚动模型：只有外壳的正文带 `.doc-main` 在滚（`body{height:100%;overflow:hidden}`）；左右两栏 fixed，不占文档流。
  * ========================================================================== */
 
 *,
@@ -15,17 +15,12 @@ body {
   padding: 0;
 }
 
-/* 站点字体（框架默认是 system-ui，见 token-defaults.css）。
-   这些是**文档站的资产**，不随组件发布：使用者不会因为引了一个 <mc-button> 就多下 110KB。
-   拉丁走 Archivo（可变字体：wght 100–900 + wdth 62–125，字宽当结构用），中文走系统栈 ——
-   CJK webfont 单字重就数 MB，与"免安装、免构建"的调性直接冲突，中文的个性交给排版承担。 */
+/* 站点字体是文档站资产，不随组件发布；拉丁走 Archivo，中文走系统栈（CJK webfont 太大，与免安装调性冲突） */
 :root {
   --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* 文档站的「框架底色」：顶栏 + 左右两栏共用一层纯色，用于和正文拉开层次。
-     亮色纯白：框架与正文同为 surface，层次靠两栏 / 顶栏自己的边框，不上色。
-     曾经用 color-mix 混品牌色做「极淡的青」，但那份底色会跟着品牌色一起漂，观感很脏 —— 站点色就该是死值。 */
+  /* 框架底色（顶栏 + 两栏共用）：亮色纯白，层次靠边框；暗色在下面沉到纯黑 */
   --doc-frame-bg: #fff;
 }
 
