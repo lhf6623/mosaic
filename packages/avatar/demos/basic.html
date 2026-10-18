@@ -1,0 +1,15 @@
+<template component>
+  <mc-space block wrap-items>
+    <!-- 有图显示图；图片加载中 / 失败都先显示兜底 -->
+    <mc-avatar src="./avatar.svg" name="张三" size="lg"></mc-avatar>
+    <!-- alt 不写时用 name -->
+    <mc-avatar src="./avatar.svg" alt="同事的照片" name="张三"></mc-avatar>
+    <!-- 没有图：兜底显示首字母 -->
+    <mc-avatar name="张三"></mc-avatar>
+    <mc-avatar></mc-avatar>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-avatar-basic' });
+  </script>
+</template>

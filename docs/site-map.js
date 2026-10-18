@@ -171,6 +171,15 @@ export const SITE = [
             summary: '徽标。挂在容器（按钮、头像…）的角上，也支持独立使用；圆点与数值上限都有。',
           },
           {
+            order: 35,
+            label: 'Avatar',
+            zh: '头像',
+            path: 'packages/avatar/page.html',
+            type: 'component',
+            summary:
+              '头像。有图显示图，没图 / 加载失败落到首字母或自定义兜底；尺寸、圆角与兜底色可配。',
+          },
+          {
             order: 40,
             label: 'Table',
             zh: '表格',

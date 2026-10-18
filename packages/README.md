@@ -302,7 +302,7 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 语义名照旧走 CSS（也只有它们随主题翻转），hex 走**共享接线器**
 [`packages/boot/color-attr.js`](./boot/color-attr.js) —— 组件里 `attached()` +
 `watch.color` 各一行，填的还是上面那些槽，所以 `variant` 的组合关系一个字没变；文字色按 WCAG 自动算。
-已接：`button` / `tag` / `icon` / `alert`（四个声明了 `color` 的组件）。声明了 `color` 的组件漏接会被
+已接：`button` / `tag` / `icon` / `alert` / `avatar`（五个声明了 `color` 的组件）。声明了 `color` 的组件漏接会被
 新声明 `color` 的组件记得一起接上（原来由站点套件 11 拦，已随文档站套件删除）。
 
 ### 1.3 尺寸：只有三档
@@ -453,6 +453,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Card](./card/api.md)                 | `mc-card`                              | `card/`        | ✅ 已实现 |
 | [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | ✅ 已实现 |
 | [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | ✅ 已实现 |
+| [Avatar](./avatar/api.md)             | `mc-avatar`                            | `avatar/`      | ✅ 已实现 |
 | [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | ✅ 已实现 |
 | [Skeleton](./skeleton/api.md)         | `mc-skeleton`                          | `skeleton/`    | ✅ 已实现 |
 | [Empty](./empty/api.md)               | `mc-empty`                             | `empty/`       | ✅ 已实现 |

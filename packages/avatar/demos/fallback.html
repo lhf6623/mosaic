@@ -1,0 +1,15 @@
+<template component>
+  <mc-space block wrap-items>
+    <!-- 非拉丁名取第一个字 -->
+    <mc-avatar name="张三"></mc-avatar>
+    <!-- 拉丁名取前两个词的首字母 -->
+    <mc-avatar name="John Doe"></mc-avatar>
+    <mc-avatar name="Alice"></mc-avatar>
+    <!-- 默认插槽优先于 name：自定义兜底内容 -->
+    <mc-avatar name="李雷">🐱</mc-avatar>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-avatar-fallback' });
+  </script>
+</template>

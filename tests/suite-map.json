@@ -2000,11 +2000,71 @@
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
       "packages/spinner/spinner.html"
+    ],
+    "packages/avatar/test/avatar.test.mjs": [
+      "app-config.js",
+      "docs/adopt-styles.js",
+      "docs/components/demos.html",
+      "docs/components/nav.html",
+      "docs/components/palette.html",
+      "docs/components/playground.html",
+      "docs/components/search.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
+      "docs/layout.html",
+      "docs/lib/code-editor.mjs",
+      "docs/lib/demo-runtime.mjs",
+      "docs/lib/md-spec.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/avatar/api.md",
+      "packages/avatar/avatar.html",
+      "packages/avatar/demos/avatar.svg",
+      "packages/avatar/demos/basic.html",
+      "packages/avatar/demos/colors.html",
+      "packages/avatar/demos/external-style.html",
+      "packages/avatar/demos/fallback.html",
+      "packages/avatar/demos/image-error.html",
+      "packages/avatar/demos/shapes.html",
+      "packages/avatar/demos/sizes.html",
+      "packages/avatar/page.html",
+      "packages/avatar/test/avatar.test.mjs",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/component-base.css",
+      "packages/boot/mosaic.css",
+      "packages/boot/scroll-pin.js",
+      "packages/boot/shadow-base.css",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
+      "packages/icon/icon.html",
+      "packages/icon/icons.generated.css",
+      "packages/input/input.html",
+      "packages/loading-bar/loading-bar.js",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/popover/popover.html",
+      "packages/scroll-bar/scroll-bar.html",
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ]
   },
   "byFile": {
     "app-config.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2041,6 +2101,7 @@
     ],
     "docs/adopt-styles.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2081,12 +2142,14 @@
       "packages/popover/test/popover.test.mjs"
     ],
     "docs/components/demos.html": [
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs"
     ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2123,6 +2186,7 @@
     ],
     "docs/components/palette.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2159,6 +2223,7 @@
     ],
     "docs/components/playground.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2195,6 +2260,7 @@
     ],
     "docs/components/search.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2231,6 +2297,7 @@
     ],
     "docs/components/spec.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2267,6 +2334,7 @@
     ],
     "docs/components/toc.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2303,6 +2371,7 @@
     ],
     "docs/content.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2339,6 +2408,7 @@
     ],
     "docs/doc-layout.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2375,6 +2445,7 @@
     ],
     "docs/fonts/archivo-var-latin.woff2": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2411,6 +2482,7 @@
     ],
     "docs/fonts/fonts.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2447,6 +2519,7 @@
     ],
     "docs/fonts/plex-400-latin.woff2": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2483,6 +2556,7 @@
     ],
     "docs/fonts/plex-500-latin.woff2": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2519,6 +2593,7 @@
     ],
     "docs/layout.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2555,6 +2630,7 @@
     ],
     "docs/lib/code-editor.mjs": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2591,6 +2667,7 @@
     ],
     "docs/lib/demo-runtime.mjs": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2627,6 +2704,7 @@
     ],
     "docs/lib/md-spec.mjs": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2674,6 +2752,7 @@
     ],
     "docs/routes.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2710,6 +2789,7 @@
     ],
     "docs/shell.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2746,6 +2826,7 @@
     ],
     "docs/site-map.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2785,6 +2866,7 @@
     ],
     "docs/state/route.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2821,6 +2903,7 @@
     ],
     "docs/theme-boot.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2857,6 +2940,7 @@
     ],
     "index.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -2933,6 +3017,42 @@
     "packages/alert/test/alert.test.mjs": [
       "packages/alert/test/alert.test.mjs"
     ],
+    "packages/avatar/api.md": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/avatar.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/avatar.svg": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/basic.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/colors.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/external-style.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/fallback.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/image-error.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/shapes.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/demos/sizes.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/page.html": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
+    "packages/avatar/test/avatar.test.mjs": [
+      "packages/avatar/test/avatar.test.mjs"
+    ],
     "packages/badge/api.md": [
       "packages/badge/test/badge.test.mjs"
     ],
@@ -2980,6 +3100,7 @@
     ],
     "packages/boot/color-attr.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3016,6 +3137,7 @@
     ],
     "packages/boot/color-math.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3052,6 +3174,7 @@
     ],
     "packages/boot/component-base.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3088,6 +3211,7 @@
     ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3124,6 +3248,7 @@
     ],
     "packages/boot/scroll-pin.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3160,6 +3285,7 @@
     ],
     "packages/boot/shadow-base.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3380,6 +3506,7 @@
     ],
     "packages/code/code.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3467,6 +3594,7 @@
     ],
     "packages/collapse/collapse-item.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3503,6 +3631,7 @@
     ],
     "packages/collapse/collapse.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3659,6 +3788,7 @@
     ],
     "packages/dropdown/dropdown.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3849,6 +3979,7 @@
     ],
     "packages/icon/icon.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3885,6 +4016,7 @@
     ],
     "packages/icon/icons.generated.css": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -3963,6 +4095,7 @@
     ],
     "packages/input/input.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4030,6 +4163,7 @@
     ],
     "packages/loading-bar/loading-bar.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4108,6 +4242,7 @@
     ],
     "packages/menu/menu-item.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4144,6 +4279,7 @@
     ],
     "packages/menu/menu.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4287,6 +4423,7 @@
     ],
     "packages/popover/popover.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4415,6 +4552,7 @@
     ],
     "packages/scroll-bar/scroll-bar.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4552,6 +4690,7 @@
     ],
     "packages/space/space.html": [
       "packages/alert/test/alert.test.mjs",
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
@@ -4608,6 +4747,7 @@
       "packages/spinner/test/spinner.test.mjs"
     ],
     "packages/spinner/spinner.html": [
+      "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",

@@ -1,0 +1,10 @@
+<template component>
+  <mc-space block wrap-items>
+    <!-- 坏掉的 data URI：真实场景就是地址写错 / 图片损坏，img 触发 error 后回到兜底 -->
+    <mc-avatar src="data:image/png;base64,AAAA" name="王五" color="info"></mc-avatar>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-avatar-image-error' });
+  </script>
+</template>
