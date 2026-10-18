@@ -11,7 +11,24 @@ https://github.com/codemirror/codemirror5 · https://www.npmjs.com/package/codem
   mode/htmlmixed/htmlmixed.min.js
   addon/edit/closebrackets.min.js
   addon/edit/closetag.min.js
+  addon/fold/foldcode.min.js
+  addon/fold/foldgutter.min.js / addon/fold/foldgutter.min.css
+  addon/fold/brace-fold.min.js
+  addon/fold/xml-fold.min.js
+  addon/fold/comment-fold.min.js
+  addon/edit/matchbrackets.min.js
+  addon/edit/matchtags.min.js
+  addon/comment/comment.min.js
+  addon/dialog/dialog.min.js / addon/dialog/dialog.min.css
+  addon/search/searchcursor.min.js / addon/search/search.min.js
+  addon/hint/show-hint.min.js / addon/hint/show-hint.min.css
+  addon/hint/xml-hint.min.js / addon/hint/html-hint.min.js
+  addon/hint/css-hint.min.js / addon/hint/javascript-hint.min.js
   LICENSE
 
 为什么放本地而不是 CDN：编辑抽屉是「点开就要用」的东西，走 CDN 首开要等好几秒
-（实测 jsDelivr 单文件 1–5s）；这几个文件总共约 240 KB，本地服务器直接出。
+（实测 jsDelivr 单文件 1–5s）；这些文件总共约 360 KB，本地服务器直接出。
+
+jsDelivr 的压缩产物末尾带 `//# sourceMappingURL=/sm/*.map`（CSS 是 `/*# ... */`），
+但 map 文件没有 vendor —— DevTools 打开编辑器时会因此报一串 404。这些注释已统一删掉；
+将来替换 / 新增 vendor 文件时，记得同样删掉那一行。

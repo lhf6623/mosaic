@@ -284,7 +284,7 @@
     const MOD_KEY = IS_MAC ? 'Cmd' : 'Ctrl';
 
     /** 编辑器就绪 / 重置后的默认提示（外层 <template component> 由站点自动补，不显示在编辑器里） */
-    const HINT = `改动自动运行 · ${MOD_KEY} + Enter 立即运行`;
+    const HINT = `改动自动运行 · ${MOD_KEY} + Enter 立即运行 · Ctrl-Space 补全`;
 
     /* 主题信号全页只盯一份：实例集合 + 一个观察者，换主题时统一落到各宿主的 data-dark */
     const darkTargets = new Set();
@@ -485,6 +485,8 @@
               value: this._source.parsed.inner,
               onChange: () => this.onEdit(),
               onRun: () => this.run(),
+              /* 折叠后内容变矮：跟着重算编辑区高度 */
+              onFold: () => this.scheduleFit(),
             });
           } finally {
             this.hideEditorLoading();

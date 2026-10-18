@@ -56,6 +56,28 @@ const THEME_CSS = `
   color: rgb(var(--mc-color-primary)) !important;
   text-decoration: underline;
 }
+/* 折叠：行号旁的三角 / 折叠后的占位符，配色跟当前主题走 */
+.cm-s-default .CodeMirror-foldgutter {
+  width: 0.9em;
+}
+.cm-s-default .CodeMirror-foldgutter-open,
+.cm-s-default .CodeMirror-foldgutter-folded {
+  color: rgb(var(--mc-color-fg-subtle));
+}
+.cm-s-default .CodeMirror-foldgutter-open:hover,
+.cm-s-default .CodeMirror-foldgutter-folded:hover {
+  color: rgb(var(--mc-color-fg));
+}
+.cm-s-default .CodeMirror-foldmarker {
+  padding: 0 4px;
+  border-radius: var(--mc-radius-sm, 4px);
+  background-color: rgb(var(--mc-color-primary-subtle));
+  color: rgb(var(--mc-color-primary));
+  font-family: var(--mc-font-mono, monospace);
+  line-height: 1;
+  text-shadow: none;
+  cursor: pointer;
+}
 .cm-s-default .cm-keyword,
 .cm-s-default .cm-type,
 .cm-s-default .cm-builtin {
@@ -115,13 +137,24 @@ function loadScript(src) {
   });
 }
 
-/** CM 的样式文本（基础样式 + 主题），只取一次 */
+/** CM 的样式文本（基础样式 + 官方折叠样式 + 主题），只取一次 */
 function loadCssText() {
   if (!cssPromise) {
-    cssPromise = fetch(new URL('lib/codemirror.min.css', CM_BASE)).then(async (res) => {
-      if (!res.ok) throw new Error(`编辑器样式加载失败：HTTP ${res.status}`);
-      return (await res.text()) + '\n' + THEME_CSS;
-    });
+    cssPromise = (async () => {
+      const files = [
+        'lib/codemirror.min.css',
+        'addon/fold/foldgutter.min.css',
+        'addon/dialog/dialog.min.css',
+        'addon/hint/show-hint.min.css',
+      ];
+      const parts = [];
+      for (const file of files) {
+        const res = await fetch(new URL(file, CM_BASE));
+        if (!res.ok) throw new Error(`编辑器样式加载失败：HTTP ${res.status}`);
+        parts.push(await res.text());
+      }
+      return parts.join('\n') + '\n' + THEME_CSS;
+    })();
     cssPromise.catch(() => {
       cssPromise = undefined; // 失败不缓存，允许下次重试
     });
@@ -142,6 +175,24 @@ async function loadCodeMirror() {
         'mode/htmlmixed/htmlmixed.min.js',
         'addon/edit/closebrackets.min.js',
         'addon/edit/closetag.min.js',
+        /* 折叠：行号旁三角 + HTML 标签 / JS·CSS 括号 / 注释各自的折叠范围 */
+        'addon/fold/foldcode.min.js',
+        'addon/fold/foldgutter.min.js',
+        'addon/fold/brace-fold.min.js',
+        'addon/fold/xml-fold.min.js',
+        'addon/fold/comment-fold.min.js',
+        /* 写作辅助：配对高亮、注释切换、搜索替换、补全 */
+        'addon/edit/matchbrackets.min.js',
+        'addon/edit/matchtags.min.js',
+        'addon/comment/comment.min.js',
+        'addon/dialog/dialog.min.js',
+        'addon/search/searchcursor.min.js',
+        'addon/search/search.min.js',
+        'addon/hint/show-hint.min.js',
+        'addon/hint/xml-hint.min.js',
+        'addon/hint/html-hint.min.js',
+        'addon/hint/css-hint.min.js',
+        'addon/hint/javascript-hint.min.js',
       ];
       for (const file of files) await loadScript(new URL(file, CM_BASE).href);
       return /** @type {any} */ (window).CodeMirror;
@@ -181,11 +232,11 @@ function injectStyle(root, css) {
 /**
  * 挂一个编辑器到 container（container 必须在 shadow root 里；否则 CM 样式会退化）。
  * @param {HTMLElement} container
- * @param {{ value?: string, onChange?: () => void, onRun?: () => void }} [options]
+ * @param {{ value?: string, onChange?: () => void, onRun?: () => void, onFold?: () => void }} [options]
  * @returns {Promise<CodeEditor>}
  */
 export async function mountCodeEditor(container, options = {}) {
-  const { value = '', onChange, onRun } = options;
+  const { value = '', onChange, onRun, onFold } = options;
   const rootNode = container.getRootNode();
 
   try {
@@ -197,6 +248,25 @@ export async function mountCodeEditor(container, options = {}) {
     if (!container.isConnected) return inertEditor();
 
     let muting = false;
+
+    /** 按光标处的内联模式选 hint：HTML 标签/属性、CSS 属性、JS 关键字 */
+    const autocomplete = (/** @type {any} */ editor) => {
+      const token = editor.getTokenAt(editor.getCursor(), true);
+      let mode = '';
+      try {
+        mode = CodeMirror.innerMode(editor.getMode(), token.state)?.mode?.name ?? '';
+      } catch {
+        mode = editor.getMode()?.name ?? '';
+      }
+      const hint =
+        (mode === 'javascript' && CodeMirror.hint.javascript) ||
+        (mode === 'css' && CodeMirror.hint.css) ||
+        CodeMirror.hint.html ||
+        CodeMirror.hint.auto;
+      if (hint) editor.showHint({ hint });
+      return true; // 拦掉浏览器默认行为
+    };
+
     /** @type {any} */
     const cm = CodeMirror(container, {
       value,
@@ -204,6 +274,12 @@ export async function mountCodeEditor(container, options = {}) {
       height: '100%',
       mode: 'htmlmixed',
       lineNumbers: true,
+      /* 行号右侧的折叠槽：三角点一下折 / 展开；Ctrl / Cmd 无关，用 Ctrl-Shift-[ / ] 也可以 */
+      foldGutter: true,
+      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+      /* 光标处括号 / 标签高亮；标签在开始与结束两边都亮 */
+      matchBrackets: true,
+      matchTags: { bothTags: true },
       lineWrapping: true,
       indentUnit: 2,
       tabSize: 2,
@@ -218,6 +294,20 @@ export async function mountCodeEditor(container, options = {}) {
           else editor.replaceSelection(' '.repeat(editor.getOption('indentUnit')));
         },
         'Shift-Tab': (/** @type {any} */ editor) => editor.indentSelection('subtract'),
+        /* 折叠 / 展开：和行号旁的三角同一套命令（Keyboard 也能用） */
+        'Ctrl-Shift-[': 'fold',
+        'Ctrl-Shift-]': 'unfold',
+        /* 注释切换：HTML 走 <!-- -->，内联 JS / CSS 走各自注释 */
+        'Ctrl-/': 'toggleComment',
+        'Cmd-/': 'toggleComment',
+        /* 搜索替换：面板由 dialog / search 插件给 */
+        'Ctrl-F': 'find',
+        'Cmd-F': 'find',
+        'Shift-Ctrl-F': 'replace',
+        'Shift-Cmd-F': 'replace',
+        /* 补全：Mac 的 Ctrl-Space 常被输入法占用，另给一个 Alt-/ */
+        'Ctrl-Space': autocomplete,
+        'Alt-/': autocomplete,
         'Cmd-Enter': () => onRun?.(),
         'Ctrl-Enter': () => onRun?.(),
         /* Tab 被编辑器吃掉了（缩进），Esc 是键盘用户离开编辑器的出口 */
@@ -228,8 +318,20 @@ export async function mountCodeEditor(container, options = {}) {
     cm.on('change', () => {
       if (!muting) onChange?.();
     });
+    /* 折叠 / 展开会改变内容高度：交给调用方重算编辑区高度（doc-playground 的 fitEditorHeight） */
+    cm.on('fold', () => onFold?.());
+    cm.on('unfold', () => onFold?.());
     /* 抽屉刚展开时量到的宽度可能还是 0：下一帧再量一次，行号 / 行宽才对 */
     requestAnimationFrame(() => cm.refresh());
+
+    /* 屏蔽浏览器「保存网页」：编辑区里（含搜索面板的输入框）Ctrl / Cmd + S 都不弹保存框。
+       挂在容器上而不是 extraKeys 上，是因为焦点可能在搜索框、不一定在 CodeMirror 的输入区。 */
+    const onSaveKey = (/** @type {KeyboardEvent} */ event) => {
+      if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 's') {
+        event.preventDefault();
+      }
+    };
+    container.addEventListener('keydown', onSaveKey);
 
     return {
       getValue: () => cm.getValue(),
@@ -245,6 +347,7 @@ export async function mountCodeEditor(container, options = {}) {
       },
       refresh: () => cm.refresh(),
       destroy: () => {
+        container.removeEventListener('keydown', onSaveKey);
         cm.getWrapperElement()?.remove();
       },
     };
