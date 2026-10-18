@@ -1,0 +1,70 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- 触发框插槽：prefix 是左侧附加物、chevron 换掉右端箭头（空着不占位 / 落回内置箭头） -->
+    <mc-tree-select id="with-slots" default-value="hz" placeholder="prefix + chevron">
+      <span slot="prefix">城市</span>
+      <span slot="chevron">▾</span>
+    </mc-tree-select>
+
+    <!-- 行模板插槽：option 换行正文；icon 换行首「展开 / 收起」图标（叶子不显示，展开时容器转 90°） -->
+    <mc-tree-select id="with-row-templates" default-value="hz" placeholder="option + icon">
+      <template slot="option">
+        <strong data-field="label" data-field-attr="title:label"></strong>
+        <em data-field="desc"></em>
+      </template>
+      <template slot="icon">
+        <span data-field="mark">▸</span>
+      </template>
+    </mc-tree-select>
+
+    <!-- 空态插槽：给了就顶掉 empty-text；最后一条用 empty-text 作对照 -->
+    <mc-tree-select id="empty-slot" placeholder="empty 插槽">
+      <em slot="empty">这棵树还没有数据</em>
+    </mc-tree-select>
+    <mc-tree-select
+      id="empty-text"
+      empty-text="empty-text 文案"
+      placeholder="empty-text 对照"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    /* desc / mark 是自定义字段：行模板里的 data-field 会先读节点原始数据。
+       mark 只对能展开的行有意义（叶子行不渲染 icon 模板）。 */
+    const CITIES = [
+      {
+        value: 'zj',
+        label: '浙江',
+        desc: '2 个城市',
+        mark: '▸',
+        children: [
+          { value: 'hz', label: '杭州', desc: '省会', mark: '▸' },
+          { value: 'nb', label: '宁波', desc: '计划单列市', mark: '▸' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        desc: '2 个城市',
+        mark: '▸',
+        children: [
+          { value: 'nj', label: '南京', desc: '省会', mark: '▸' },
+          { value: 'sz', label: '苏州', desc: '园林', mark: '▸' },
+        ],
+      },
+      { value: 'sh', label: '上海', desc: '直辖市', mark: '▸' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-slots',
+
+      ready() {
+        /* 前两条有数据：一条只换 prefix / chevron，一条换行正文 + 换行首展开图标 */
+        this.ele.shadowRoot.querySelector('#with-slots').options = CITIES;
+        this.ele.shadowRoot.querySelector('#with-row-templates').options = CITIES;
+        /* 后两条空数据：empty 插槽与 empty-text 各看一条 */
+        this.ele.shadowRoot.querySelector('#empty-slot').options = [];
+        this.ele.shadowRoot.querySelector('#empty-text').options = [];
+      },
+    });
+  </script>
+</template>

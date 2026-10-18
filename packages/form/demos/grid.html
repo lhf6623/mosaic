@@ -43,6 +43,11 @@
         </mc-form-item>
       </mc-grid-item>
       <mc-grid-item span="2">
+        <mc-form-item label="所在地区" name="region">
+          <mc-tree-select default-value="hz" placeholder="选择省 / 市"></mc-tree-select>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item span="2">
         <mc-form-item label="音量" name="volume">
           <mc-slider default-value="60"></mc-slider>
         </mc-form-item>
@@ -66,6 +71,24 @@
       tag: 'demo-form-grid',
 
       data: { last: '（还没提交）' },
+
+      ready() {
+        /* 树数据用 property 传（属性通道只作 JSON 初始值）；pre-upgrade 赋值会由组件在 ready 时收下 */
+        const tree = this.ele.shadowRoot.querySelector('mc-tree-select');
+        if (tree) {
+          tree.options = [
+            {
+              value: 'zj',
+              label: '浙江',
+              children: [
+                { value: 'hz', label: '杭州' },
+                { value: 'nb', label: '宁波' },
+              ],
+            },
+            { value: 'js', label: '江苏', children: [{ value: 'nj', label: '南京' }] },
+          ];
+        }
+      },
 
       proto: {
         save(event) {

@@ -5,7 +5,8 @@
  * 多两条工具类」慢慢涨。超了要么优化，要么**显式**提上限 —— 提上限这个动作必须出现在 diff 里。
  * 预算 = 当前值上浮约 10%。它拦的是无意增长，不是逼你优化。
  * 两条规则：① 共享产物（使用者必下的那几个）逐文件预算，raw + gzip 各一条线；
- * ② 任一组件本体（`packages/<slug>/*.html`，page.html 是文档页不算）≤ 40 KB。
+ * ② 任一组件本体（`packages/<slug>/*.html`，page.html 是文档页不算）默认 ≤ 40 KB；
+ *    确实比一般组件多背一大块能力的单元在 COMPONENT_RAW_LIMITS 里显式开例外。
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -39,6 +40,15 @@ const SHARED = [
 /** 组件本体单文件上限 */
 const COMPONENT_RAW = 40 * 1024;
 
+/**
+ * 单文件预算的例外：只放「确实比一般组件多一整块能力」的单元。
+ * 数值写在这里，让提上限这个动作也进 diff —— 别把全局上限本身调大。
+ */
+const COMPONENT_RAW_LIMITS = new Map([
+  // 树 + 浮层 + 异步加载 + 触发框 / 行模板插槽；2026-10 加完插槽后 50.6 KB（gzip 12.9 KB）
+  ['packages/tree-select/tree-select.html', 52 * 1024],
+]);
+
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 const problems = [];
 const rows = [];
@@ -68,9 +78,10 @@ for (const entry of readdirSync(join(ROOT, 'packages'), { withFileTypes: true })
     if (!name.endsWith('.html') || name === 'page.html') continue;
     const file = 'packages/' + slug + '/' + name;
     const size = statSync(join(ROOT, file)).size;
+    const limit = COMPONENT_RAW_LIMITS.get(file) ?? COMPONENT_RAW;
     bodies.push([file, size]);
-    if (size > COMPONENT_RAW) {
-      problems.push(file + '：' + kb(size) + '，超单文件上限 ' + kb(COMPONENT_RAW));
+    if (size > limit) {
+      problems.push(file + '：' + kb(size) + '，超单文件上限 ' + kb(limit));
     }
   }
 }
@@ -83,6 +94,13 @@ for (const row of rows) {
 console.log(
   '\n  组件本体单文件上限 ' +
     kb(COMPONENT_RAW) +
+    (COMPONENT_RAW_LIMITS.size
+      ? '（例外：' +
+        [...COMPONENT_RAW_LIMITS]
+          .map(([file, limit]) => file.replace('packages/', '') + ' ' + kb(limit))
+          .join('、') +
+        '）'
+      : '') +
     '；最大三个：' +
     bodies
       .slice(0, 3)

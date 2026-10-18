@@ -476,6 +476,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | ✅ 已实现 |
 | [Slider](./slider/api.md)             | `mc-slider`                            | `slider/`      | ✅ 已实现 |
 | [Rate](./rate/api.md)                 | `mc-rate`                              | `rate/`        | ✅ 已实现 |
+| [Tree Select](./tree-select/api.md)   | `mc-tree-select`                       | `tree-select/` | ✅ 已实现 |
 | [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | ✅ 已实现 |
 | [Form](./form/api.md)                 | `mc-form` / `mc-form-item`             | `form/`        | ✅ 已实现 |
 | [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | ✅ 已实现 |
@@ -535,7 +536,7 @@ item.open = true; // 组件提供了访问器时同样可以
 
 **校验态不用独立的错误色板**，用 `invalid` 布尔 + `--mc-color-danger`。
 
-编排这八个控件（含 `mc-slider` / `mc-rate`）的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
+编排这九个控件（含 `mc-slider` / `mc-rate` / `mc-tree-select`）的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
 `mc-form-item` 上都认，失败时容器给控件挂 `invalid`、给行显示文案。
 
 ---
@@ -551,6 +552,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | `mc-slider`                 | `value` property 是 **number**（其余表单控件给 string）；写值与初值按原生 range 的 step 归一，`mc-form` 收集时转字符串；键盘 / 拖拽来自原生 range，视觉自绘并开放 4 个 part。                                                                                            |
 | `mc-rate`                   | `value` property 同样是 **number**（0 = 未评分）；指针按星星的真实几何换算（原生 range 只做键盘 / 焦点，pointer-events: none），`mc-form` 收集时转字符串；半星是实心层裁 50%。                                                                                           |
 | `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                                                                              |
+| `mc-tree-select`            | 树数据用 property 传对象数组（属性只作 JSON 初始值）；第一版只做单选，多选 / 搜索 / `show-path` 留到下一版；禁用父级仍可展开、但整支不可选；`value` 是 string。                                                                                                          |
 | `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。                                                          |
 | `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                                                                                 |
 | `mc-tooltip`                | `trigger="hover"` 时 **hover 与 focus 都触发**（键盘可达）；不 emit 事件（气泡是纯展示）。                                                                                                                                                                               |

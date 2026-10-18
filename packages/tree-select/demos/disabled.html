@@ -1,0 +1,41 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- 整组件禁用：不进焦点、不弹面板 -->
+    <mc-tree-select id="whole-disabled" disabled default-value="hz" placeholder="整组件禁用"></mc-tree-select>
+    <!-- 节点禁用：宁波本身不可选，江苏整支（南京 / 苏州）继承禁用 -->
+    <mc-tree-select id="node-disabled" default-value="hz" placeholder="节点禁用"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    const OPTIONS = [
+      {
+        value: 'zj',
+        label: '浙江',
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波', disabled: true },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        disabled: true,
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-disabled',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#whole-disabled').options = OPTIONS;
+        this.ele.shadowRoot.querySelector('#node-disabled').options = OPTIONS;
+      },
+    });
+  </script>
+</template>

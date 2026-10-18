@@ -1,0 +1,45 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- 只有 placeholder：没有选中值时显示这句 -->
+    <mc-tree-select placeholder="选择城市"></mc-tree-select>
+    <!-- 非受控初值 + 可清除：有值后右端换成 × -->
+    <mc-tree-select clearable default-value="hz" placeholder="选择城市"></mc-tree-select>
+    <!-- value 也能写属性：它是绑定通道，挂载时同样当初始值读 -->
+    <mc-tree-select value="sz" placeholder="选择城市"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    /* 树数据用 property 传（同 mc-menu / mc-table）：属性通道只收 JSON 文本。
+       数据里不写层级 —— children 就是层级，缩进由容器自己算。 */
+    const OPTIONS = [
+      {
+        value: 'zj',
+        label: '浙江',
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波' },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-basic',
+
+      ready() {
+        for (const el of this.ele.shadowRoot.querySelectorAll('mc-tree-select')) {
+          el.options = OPTIONS;
+        }
+      },
+    });
+  </script>
+</template>

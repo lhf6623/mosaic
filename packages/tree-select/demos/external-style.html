@@ -1,0 +1,47 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- ① 触发框的三个令牌：底色 / 描边 / 圆角 -->
+    <mc-tree-select
+      id="control"
+      default-value="hz"
+      placeholder="触发框令牌"
+      style="--mc-tree-select-control-bg: var(--mc-color-primary-subtle); --mc-tree-select-control-border: var(--mc-color-primary); --mc-tree-select-control-radius: var(--mc-radius-full)"></mc-tree-select>
+    <!-- ② 面板与行的令牌：面板最大高 / 面板圆角 / 悬停底色 -->
+    <mc-tree-select
+      id="panel"
+      placeholder="面板令牌（点开看）"
+      style="--mc-tree-select-panel-max-h: 7rem; --mc-tree-select-panel-radius: 0; --mc-tree-select-option-bg-hover: var(--mc-color-primary-subtle)"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    const OPTIONS = [
+      {
+        value: 'zj',
+        label: '浙江',
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波' },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-external-style',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#control').options = OPTIONS;
+        this.ele.shadowRoot.querySelector('#panel').options = OPTIONS;
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,67 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- 数据里 expanded: true：点开面板时浙江这支已经是展开的 -->
+    <mc-tree-select id="by-data" placeholder="数据里 expanded: true"></mc-tree-select>
+    <!-- 选了杭州（孙节点）：打开面板时它的祖先会自动展开 -->
+    <mc-tree-select id="by-value" default-value="hz" placeholder="选中节点的祖先自动展开"></mc-tree-select>
+    <!-- 同样一棵树、不写 expanded、不选值：默认整棵收起 -->
+    <mc-tree-select id="by-default" placeholder="默认收起"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    const OPTIONS = [
+      {
+        value: 'zj',
+        label: '浙江',
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波' },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    /* expanded 只是展开状态的初值：组件读它，展开 / 收起的结果不写回数据 */
+    const OPTIONS_EXPANDED = [
+      {
+        value: 'zj',
+        label: '浙江',
+        expanded: true,
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波' },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        expanded: true,
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-expanded',
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#by-data').options = OPTIONS_EXPANDED;
+        this.ele.shadowRoot.querySelector('#by-value').options = OPTIONS;
+        this.ele.shadowRoot.querySelector('#by-default').options = OPTIONS;
+      },
+    });
+  </script>
+</template>

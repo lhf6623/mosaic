@@ -1,0 +1,1304 @@
+<!-- mc-tree-select — 树型选择；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。高度写在宿主上，style="height:…" 直接压得住 */
+    :host {
+      display: inline-flex;
+      position: relative; /* .mc-clear 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-tree-select-h);
+      /* 宽度不跟选中项的文字走：给一个最小宽，容器更宽时自动撑满（in-flow 的 inline-flex 会被拉伸） */
+      min-width: var(--mc-tree-select-min-w);
+      max-width: 100%;
+      vertical-align: middle;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
+      --mc-tree-select-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      --mc-tree-select-min-w: 10rem;
+      --mc-tree-select-control-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-tree-select-control-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-tree-select-control-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      --mc-tree-select-control-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-tree-select-offset: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-tree-select-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-tree-select-panel-border: var(
+        --mc-color-border-strong,
+        var(--mc-def-color-border-strong)
+      );
+      --mc-tree-select-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-tree-select-panel-pad: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-tree-select-panel-max-h: 16rem;
+      /* 面板滚动条：细、透明轨道、主题色滑块 —— 默认原生条在圆角面板里又白又厚 */
+      --mc-tree-select-scrollbar-w: 6px;
+      --mc-tree-select-scroll-thumb: var(
+        --mc-color-border-strong,
+        var(--mc-def-color-border-strong)
+      );
+      --mc-tree-select-scroll-thumb-hover: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-tree-select-indent-step: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-tree-select-option-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-tree-select-option-color: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-tree-select-option-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+      --mc-tree-select-option-bg-selected: var(
+        --mc-color-primary-subtle,
+        var(--mc-def-color-primary-subtle)
+      );
+      --mc-tree-select-option-color-selected: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-tree-select-placeholder-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-tree-select-icon-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-tree-select-clear-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-tree-select-clear-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+    }
+
+    /* 2. 尺寸：三档只动宿主高度与字号；数字 size 由脚本写 --mc-tree-select-h */
+    :host([size='sm']) {
+      --mc-tree-select-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+    }
+    :host([size='lg']) {
+      --mc-tree-select-h: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+    }
+
+    /* 3. 状态：禁用压暗、只读不改外观、invalid 只换边框色槽 */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([invalid]) {
+      --mc-tree-select-control-border: var(--mc-color-danger, var(--mc-def-color-danger));
+    }
+
+    /* 4. 触发框（part="base"）：视觉全在这里，使用者 style="…" 压得住宿主 */
+    .mc-control {
+      flex: 1 1 auto;
+      min-width: 0;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      padding-inline: var(--mc-tree-select-control-pad-x);
+      border: 1px solid rgb(var(--mc-tree-select-control-border));
+      border-radius: var(--mc-tree-select-control-radius);
+      background-color: rgb(var(--mc-tree-select-control-bg));
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      /* 锚点挂在这里（必须是自己 shadow 里的元素）：面板靠它做 CSS 锚点定位 */
+      anchor-name: --mc-tree-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+    }
+    .mc-control:focus-visible {
+      /* 焦点环用 ring 令牌，不用 currentColor（P16） */
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+    :host([disabled]) .mc-control {
+      cursor: not-allowed;
+    }
+    :host([readonly]) .mc-control {
+      cursor: default;
+    }
+
+    .mc-prefix {
+      display: none;
+      flex: none;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      color: rgb(var(--mc-tree-select-icon-color));
+    }
+    :host([data-has-prefix]) .mc-prefix {
+      display: inline-flex;
+    }
+    .mc-empty-wrap[hidden] {
+      display: none;
+    }
+    .mc-tree-spinner {
+      box-sizing: border-box;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: mc-tree-select-spin calc(var(--mc-duration-slow, var(--mc-def-duration-slow)) * 3)
+        linear infinite;
+    }
+    @keyframes mc-tree-select-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mc-tree-spinner {
+        animation: none;
+      }
+    }
+    .mc-row[data-loading] {
+      cursor: progress;
+    }
+    .mc-row[data-load-error] .mc-expand {
+      color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
+    }
+    .mc-value {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    :host([data-empty]) .mc-value {
+      color: rgb(var(--mc-tree-select-placeholder-color));
+    }
+    .mc-chevron {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      color: rgb(var(--mc-tree-select-icon-color));
+      transition: transform var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    :host([data-open]) .mc-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* 清除按钮：控制框的兄弟（不能嵌进 <button> 里），绝对定位压在右端 */
+    .mc-clear {
+      display: none;
+      position: absolute;
+      z-index: 1;
+      right: var(--mc-space-2, var(--mc-def-space-2));
+      top: 50%;
+      translate: 0 -50%;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: var(--mc-space-5, var(--mc-def-space-5));
+      height: var(--mc-space-5, var(--mc-def-space-5));
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: transparent;
+      color: rgb(var(--mc-tree-select-clear-color));
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mc-clear:hover {
+      background-color: rgb(var(--mc-tree-select-clear-bg-hover));
+    }
+    .mc-clear:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+    :host([clearable][data-filled]) .mc-clear {
+      display: inline-flex;
+    }
+    :host([clearable][data-filled]) .mc-chevron {
+      display: none;
+    }
+    :host([clearable][data-filled]) .mc-control {
+      padding-inline-end: var(--mc-space-8, var(--mc-def-space-8));
+    }
+
+    /* 5. 面板与树行 */
+    .mc-panel {
+      /* ⚠️ UA 给 [popover] 的 inset / margin / border / padding / 底色都要显式接管，否则那对 auto 会吃掉锚点定位 */
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      min-width: anchor-size(width);
+      max-width: min(24rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
+      padding: 0;
+      border: 0;
+      overflow: visible;
+      border-radius: var(--mc-tree-select-panel-radius);
+      background-color: rgb(var(--mc-tree-select-panel-bg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: inherit;
+      line-height: inherit;
+      /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-tree-select-panel-border)))
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
+
+      /* 锚点定位：锚是 shadow 内的 .mc-control。默认 bottom-start 写基类 */
+      position-anchor: --mc-tree-select-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+      position-try-fallbacks: flip-block;
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-tree-select-offset);
+    }
+
+    /* 滚动条复用 mc-scroll-bar：覆盖式、悬停淡入、不占内容宽，面板圆角也不会被原生滚动条切成方角 */
+    .mc-scroll {
+      display: block;
+      box-sizing: border-box;
+      padding: var(--mc-tree-select-panel-pad);
+      --mc-scroll-bar-w: var(--mc-tree-select-scrollbar-w);
+      --mc-scroll-bar-thumb: var(--mc-tree-select-scroll-thumb);
+      --mc-scroll-bar-thumb-hover: var(--mc-tree-select-scroll-thumb-hover);
+    }
+    .mc-scroll::part(viewport) {
+      max-height: min(
+        var(--mc-tree-select-panel-max-h),
+        calc(100vh - var(--mc-space-8, var(--mc-def-space-8)))
+      );
+    }
+
+    .mc-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+    }
+
+    .mc-empty {
+      padding: var(--mc-space-3, var(--mc-def-space-3));
+      color: rgb(var(--mc-tree-select-placeholder-color));
+      white-space: nowrap;
+    }
+
+    .mc-row {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      box-sizing: border-box;
+      min-height: var(--mc-tree-select-h);
+      /* 层级缩进：行上写 --mc-tree-row-level（数据里没有 level） */
+      padding-inline-start: calc(
+        var(--mc-tree-select-option-pad-x) + var(--mc-tree-select-indent-step) *
+          var(--mc-tree-row-level, 0)
+      );
+      padding-inline-end: var(--mc-space-3, var(--mc-def-space-3));
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      color: rgb(var(--mc-tree-select-option-color));
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mc-row:hover,
+    .mc-row[data-active] {
+      background-color: rgb(var(--mc-tree-select-option-bg-hover));
+    }
+    .mc-row[data-selected='true'] {
+      background-color: rgb(var(--mc-tree-select-option-bg-selected));
+      color: rgb(var(--mc-tree-select-option-color-selected));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
+    .mc-row[data-disabled='true'] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    /* 正向覆盖，不用 :host(:not(...))（P14）；禁用行悬停不亮，但展开箭头仍可用 */
+    .mc-row[data-disabled='true']:hover,
+    .mc-row[data-disabled='true'][data-active] {
+      background-color: transparent;
+    }
+
+    .mc-expand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      width: 1.25em;
+      height: 1.25em;
+      color: rgb(var(--mc-tree-select-icon-color));
+      transition: transform var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    /* 有子节点的行才挂图标类；展开时箭头转向 */
+    .mc-row[data-expanded] .mc-expand {
+      transform: rotate(90deg);
+    }
+    .mc-label {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+
+  <button
+    class="mc-control"
+    part="base"
+    type="button"
+    :disabled="disabled !== null"
+    on:click="onControlClick"
+    on:keydown="onKeyDown">
+    <span class="mc-prefix" part="prefix"><slot name="prefix"></slot></span>
+    <span class="mc-value"></span>
+    <!-- 自定义箭头：不给就落回内置下箭头；展开时整个容器转 180° -->
+    <span class="mc-chevron" part="chevron">
+      <slot name="chevron"><span class="mc-default-chevron mc-icon-chevron-down"></span></slot>
+    </span>
+  </button>
+
+  <button class="mc-clear" type="button" :disabled="disabled !== null" on:click="onClear">
+    <span class="mc-icon-close"></span>
+  </button>
+
+  <!-- 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位；刻意用 popover="manual"（auto 的 light dismiss 会「点第二次关不掉」） -->
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="manual"
+    on:toggle="onNativeToggle"
+    on:click="onPanelClick"
+    on:mousedown="onPanelMouseDown">
+    <mc-scroll-bar class="mc-scroll" axis="y">
+      <div class="mc-list"></div>
+      <div class="mc-empty-wrap">
+        <slot name="empty"><span class="mc-empty"></span></slot>
+      </div>
+    </mc-scroll-bar>
+  </div>
+
+  <!-- 行模板插槽：内容本身不渲染，只把 <template slot="option|icon"> 接进来，由脚本逐行克隆 -->
+  <div class="mc-templates" hidden>
+    <slot name="option"></slot>
+    <slot name="icon"></slot>
+  </div>
+
+  <script>
+    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+
+    export default async ({ load }) => {
+      /* 面板里的滚动条复用 mc-scroll-bar：它是独立组件，先注册再渲染面板 */
+      await load('../scroll-bar/scroll-bar.html');
+
+      return {
+        tag: 'mc-tree-select',
+
+        attrs: {
+          /* 数据源：property 主通道（同 mc-menu / mc-table）；属性通道只作 JSON 初始值 */
+          options: null,
+          /* 绑定通道：ofa 原生的 :value（单向）/ sync:value（双向）落在这个属性上（同 mc-input） */
+          value: null,
+          /* 初始值在 HTML 属性 default-value（非受控）；运行时值走宿主 DOM property value */
+          defaultValue: '',
+          placeholder: '请选择',
+          emptyText: '暂无数据',
+          /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-tree-select clearable> 失效 */
+          clearable: null,
+          disabled: null,
+          readonly: null,
+          invalid: null,
+          size: 'md',
+        },
+
+        ready() {
+          const root = this.ele.shadowRoot;
+          this._control = root.querySelector('.mc-control');
+          this._valueEl = root.querySelector('.mc-value');
+          this._clearEl = root.querySelector('.mc-clear');
+          this._panel = root.querySelector('.mc-panel');
+          this._list = root.querySelector('.mc-list');
+          this._emptyWrap = root.querySelector('.mc-empty-wrap');
+          this._emptyEl = root.querySelector('.mc-empty');
+          this._prefixSlot = root.querySelector('slot[name="prefix"]');
+          this._optionSlot = root.querySelector('slot[name="option"]');
+          this._iconSlot = root.querySelector('slot[name="icon"]');
+          this._optionTemplate = null;
+          this._iconTemplate = null;
+
+          this._roots = [];
+          this._nodes = [];
+          this._nodeByKey = new Map();
+          this._expandedKeys = new Set();
+          this._value = '';
+          this._active = null;
+          this._openState = false;
+          this._live = false;
+          this._initialized = false;
+          this._touched = false;
+          this._applied = false;
+          this._returnFocus = false;
+          this._seen = new Set();
+
+          /* 挂载前赋的 property（createElement 之后马上 el.options = …）先收下来；构造期不往宿主写属性（P31） */
+          this._presetOptions = Object.prototype.hasOwnProperty.call(this.ele, 'options')
+            ? this.ele.options
+            : undefined;
+          this._presetLoad = Object.prototype.hasOwnProperty.call(this.ele, 'load')
+            ? this.ele.load
+            : undefined;
+          this._load = typeof this._presetLoad === 'function' ? this._presetLoad : null;
+
+          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 当前值，写 = 直接改选中态 */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this.readValue(),
+            set: (next) => this.writeValue(next),
+          });
+
+          /* 数据源：property 一旦写过值，属性通道（含绑定后到的 JSON 文本）不再覆盖它（同 mc-menu / mc-table） */
+          Object.defineProperty(this.ele, 'options', {
+            configurable: true,
+            get: () => this._roots,
+            set: (value) => {
+              this._propOptions = true;
+              this.applyOptions(value);
+            },
+          });
+
+          /* 异步加载器：组件级 property（同 mc-table 的 data，不进 attrs）；换它要按新数据重算哪些节点是懒父级 */
+          Object.defineProperty(this.ele, 'load', {
+            configurable: true,
+            get: () => this._load,
+            set: (fn) => {
+              this._load = typeof fn === 'function' ? fn : null;
+              if (this._nodes.length || this._source !== undefined) this.applyOptions(this._source);
+            },
+          });
+
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run() */
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+          this._popoverOk = typeof this._panel?.showPopover === 'function';
+        },
+
+        attached() {
+          /* 到这里构造期已结束，才允许往宿主写属性（P31） */
+          this._live = true;
+          this.applySize();
+
+          /* 行模板先读一遍：后面 applyOptions() 渲染时要按它填每行 */
+          this.readTemplates();
+
+          /* 初始数据源：属性（JSON）→ 挂载前赋的 property（property 赢），同 mc-menu / mc-table */
+          if (!this._applied) {
+            this._applied = true;
+            if (!this._propOptions && this.ele.hasAttribute('options')) {
+              this.applyOptions(this.ele.getAttribute('options'));
+            }
+            if (this._presetOptions !== undefined) {
+              this._propOptions = true;
+              this.applyOptions(this._presetOptions);
+              this._presetOptions = undefined;
+            }
+            if (!this._propOptions && !this.ele.hasAttribute('options')) this.applyOptions([]);
+          }
+
+          /* options 的属性通道自己听：我们从不写这个属性，所以不会自激 */
+          this._attrMo = new MutationObserver(() => {
+            if (this._propOptions) return;
+            this.applyOptions(this.ele.getAttribute('options'));
+          });
+          this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
+
+          /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
+          this._onDocPointerDown = (event) => {
+            if (!this.isOpen()) return;
+            if (event.composedPath().includes(this.ele)) return;
+            this.closePanel();
+          };
+          document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+          /* prefix 插槽：有没有分到内容只有 JS 知道，镜像成宿主 data-has-prefix 给 CSS 用 */
+          this._onSlotChange = () => this.applySlotState();
+          this._prefixSlot?.addEventListener('slotchange', this._onSlotChange);
+          this.applySlotState();
+
+          /* 行模板插槽：分到的是 <template>，增删会触发 slotchange → 重读并重建行 */
+          this._onTemplateChange = () => this.refreshTemplates();
+          this._optionSlot?.addEventListener('slotchange', this._onTemplateChange);
+          this._iconSlot?.addEventListener('slotchange', this._onTemplateChange);
+
+          this.initValue();
+        },
+
+        detached() {
+          this._attrMo?.disconnect();
+          document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+          this._prefixSlot?.removeEventListener('slotchange', this._onSlotChange);
+          this._optionSlot?.removeEventListener('slotchange', this._onTemplateChange);
+          this._iconSlot?.removeEventListener('slotchange', this._onTemplateChange);
+          this._scrollGuard?.dispose();
+          if (this.isOpen()) this._panel.hidePopover();
+          this._live = false;
+        },
+
+        watch: {
+          /* ⚠️ ofa 初始化会把每条 watch 空跑一遍（P5），那次在构造期写宿主属性会抛 NotSupportedError（P31） */
+          value() {
+            if (!this._live || this.skipInit('value')) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null) return;
+            this._touched = true;
+            this.applyValue(raw);
+          },
+          defaultValue() {
+            if (!this._live || this.skipInit('defaultValue')) return;
+            if (this._touched) return;
+            this.applyValue(this.ele.getAttribute('default-value') ?? '');
+          },
+          placeholder() {
+            if (!this._live || this.skipInit('placeholder')) return;
+            this.syncDisplay();
+          },
+          emptyText() {
+            if (!this._live || this.skipInit('emptyText')) return;
+            this.syncDisplay();
+          },
+          clearable() {
+            if (!this._live || this.skipInit('clearable')) return;
+            this.syncDisplay();
+          },
+          disabled() {
+            if (!this._live || this.skipInit('disabled')) return;
+            this.syncDisplay();
+          },
+          readonly() {
+            if (!this._live || this.skipInit('readonly')) return;
+            this.syncDisplay();
+          },
+          invalid() {
+            if (!this._live || this.skipInit('invalid')) return;
+            this.syncDisplay();
+          },
+          // size 收纯数字：按 px 写 --mc-tree-select-h，sm / md / lg 仍交给 CSS
+          size() {
+            this.applySize();
+          },
+        },
+
+        proto: {
+          /** 每条 watch 的首次（构造期）触发都要跳过，但每条各跳一次（P5） */
+          skipInit(key) {
+            if (this._seen.has(key)) return false;
+            this._seen.add(key);
+            return true;
+          },
+
+          /** 数字 size 按 px 写宿主上的 --mc-tree-select-h（三档仍交给 CSS）；只删自己写过的那次 */
+          applySize() {
+            if (!this._live) return;
+            const raw = String(this.ele.getAttribute('size') ?? '').trim();
+            const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+            if (px) {
+              this.ele.style.setProperty('--mc-tree-select-h', px);
+              this._sizePx = true;
+            } else if (this._sizePx) {
+              this.ele.style.removeProperty('--mc-tree-select-h');
+              this._sizePx = false;
+            }
+          },
+
+          /* ---------- 数据源 ---------- */
+
+          /** 属性文本 / 数组 / null → 数组（同 mc-menu：属性通道只做 JSON 兼容） */
+          toOptions(value) {
+            if (value == null) return [];
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') {
+              const text = value.trim();
+              if (!text) return [];
+              try {
+                const parsed = JSON.parse(text);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch (error) {
+                console.warn(
+                  '[mosaic] mc-tree-select 的 options 不是合法 JSON：' + text.slice(0, 80),
+                );
+                return [];
+              }
+            }
+            return [];
+          },
+
+          applyOptions(value) {
+            const list = this.toOptions(value);
+            this._source = value;
+            this._roots = this.buildTree(list, null, 0, false, '');
+            this.flattenNodes();
+            this.renderRows();
+
+            if (this._initialized) {
+              this.expandAncestors(this.findNode(this._value));
+              this.applyExpansion();
+              this.syncRows();
+              this.syncDisplay();
+              if (this.isOpen()) this.setActive(this.initialActiveNode());
+              else if (this._active && !this._active.visible) this.setActive(null);
+            } else {
+              this.applyExpansion();
+              this.syncRows();
+              this.syncDisplay();
+            }
+          },
+
+          /**
+           * 数据 → 节点树；层级 / key / 禁用继承 / 懒加载状态都在这里算，数据里没有 level。
+           * 带 load 函数、又没有 children 的节点是「懒父级」：第一次展开时才去取子节点。
+           */
+          buildTree(list, parent, level, parentDisabled, prefix) {
+            const roots = [];
+            (Array.isArray(list) ? list : []).forEach((raw, index) => {
+              if (!raw || typeof raw !== 'object') return;
+              const key = prefix ? prefix + '.' + index : String(index);
+              /* children 是数组（含空数组）= 静态节点；没有 children、显式 lazy: true、组件又给了 load → 懒父级 */
+              const childrenRaw = Array.isArray(raw.children) ? raw.children : null;
+              const node = {
+                key,
+                raw,
+                value: String(raw.value ?? ''),
+                label: String(raw.label ?? ''),
+                disabled: parentDisabled || raw.disabled === true,
+                level,
+                parent,
+                children: [],
+                lazy: false,
+                loaded: true,
+                loading: false,
+                loadError: false,
+                expanded: false,
+                visible: false,
+                row: null,
+                expandEl: null,
+              };
+              if (raw.expanded === true) this._expandedKeys.add(key);
+              node.expanded = this._expandedKeys.has(key);
+              node.children = this.buildTree(
+                childrenRaw ?? [],
+                node,
+                level + 1,
+                node.disabled,
+                key,
+              );
+              node.lazy =
+                childrenRaw === null && raw.lazy === true && typeof this._load === 'function';
+              node.loaded = !node.lazy;
+              roots.push(node);
+            });
+            return roots;
+          },
+
+          /** 前台那份平铺表（键盘顺序 / 查找 / 状态同步都靠它）：按树的先序重排 */
+          flattenNodes() {
+            this._nodes = [];
+            this._nodeByKey.clear();
+            const walk = (nodes) => {
+              for (const node of nodes) {
+                this._nodes.push(node);
+                this._nodeByKey.set(node.key, node);
+                walk(node.children);
+              }
+            };
+            walk(this._roots);
+          },
+
+          findNode(value) {
+            if (value === '') return null;
+            return this._nodes.find((node) => node.value === value) ?? null;
+          },
+
+          /* ---------- 渲染 ---------- */
+
+          /** 行渲染在自己的 shadow 里（part="option"）：层级缩进走每行的 --mc-tree-row-level */
+          renderRows() {
+            this._list.textContent = '';
+            const fragment = document.createDocumentFragment();
+            const render = (nodes) => {
+              for (const node of nodes) {
+                const row = document.createElement('div');
+                row.className = 'mc-row';
+                row.setAttribute('part', 'option');
+                row.setAttribute('data-level', String(node.level));
+                row.setAttribute('data-selected', 'false');
+                row.dataset.key = node.key;
+                row.style.setProperty('--mc-tree-row-level', String(node.level));
+                const expandable = node.children.length > 0 || node.lazy;
+                if (expandable) row.setAttribute('data-expandable', '');
+
+                const expand = document.createElement('span');
+                expand.setAttribute('part', 'expand');
+                row.append(expand);
+                const label = document.createElement('span');
+                label.className = 'mc-label';
+                row.append(label);
+
+                node.row = row;
+                node.expandEl = expand;
+                node.labelEl = label;
+                this.syncNodeState(node);
+                this.renderNodeContent(node);
+                fragment.append(row);
+                render(node.children);
+              }
+            };
+            render(this._roots);
+            this._list.append(fragment);
+          },
+
+          /**
+           * 行模板：分到隐藏声明槽里的那两个 <template>（slot="option" / slot="icon"）。
+           * 同名的多个只认第一个 —— 后加的不会悄悄换掉已生效的那份。
+           */
+          readTemplates() {
+            const templateOf = (slot) =>
+              (slot?.assignedElements() ?? []).find((el) => el.tagName === 'TEMPLATE') ?? null;
+            const option = templateOf(this._optionSlot);
+            const icon = templateOf(this._iconSlot);
+            this._optionTemplate = this.templateHasContent(option) ? option : null;
+            this._iconTemplate = this.templateHasContent(icon) ? icon : null;
+          },
+
+          templateHasContent(template) {
+            return (
+              !!template &&
+              (template.content.children.length > 0 || template.content.textContent.trim() !== '')
+            );
+          },
+
+          /** 行模板增删后重建行（slotchange 触发） */
+          refreshTemplates() {
+            this.readTemplates();
+            if (!this._live || !this._nodes.length) return;
+            this.renderRows();
+            this.applyExpansion();
+            this.syncRows();
+            this.syncDisplay();
+            if (this.isOpen() && this._active) this.setActive(this._active);
+          },
+
+          /** 取节点字段做占位填充：优先原始数据（自定义字段如 iconClass 也在里面），再退到内部字段 */
+          nodeField(node, name) {
+            const raw = node.raw ?? {};
+            const value = raw[name] ?? node[name];
+            return value == null ? '' : String(value);
+          },
+
+          /**
+           * 一个行模板 → 这一行的内容：克隆后用 data-field / data-field-attr 填节点字段。
+           * data-field="label" 填文本；data-field-attr="class:iconClass" 把字段填进属性。
+           */
+          cloneTemplate(template, node) {
+            const fragment = template.content.cloneNode(true);
+            for (const el of fragment.querySelectorAll('[data-field], [data-field-attr]')) {
+              const field = el.getAttribute('data-field');
+              if (field) el.textContent = this.nodeField(node, field);
+              const pair = el.getAttribute('data-field-attr');
+              if (pair) {
+                const split = pair.indexOf(':');
+                if (split > 0)
+                  el.setAttribute(
+                    pair.slice(0, split),
+                    this.nodeField(node, pair.slice(split + 1)),
+                  );
+              }
+            }
+            return fragment;
+          },
+
+          /** 行正文：option 模板进 label 容器；没有模板就落回默认 label */
+          renderNodeContent(node) {
+            if (!node.labelEl) return;
+            node.labelEl.textContent = '';
+            if (this._optionTemplate) {
+              node.labelEl.append(this.cloneTemplate(this._optionTemplate, node));
+            } else {
+              node.labelEl.textContent = node.label;
+            }
+          },
+
+          /**
+           * 行首展开 / 收起图标：icon 模板优先（逐行克隆），否则内置右箭头；
+           * 加载中一律换成小转圈 —— 它比自定义图标更能说明正在发生什么。
+           */
+          renderExpandIcon(node) {
+            const expand = node.expandEl;
+            if (!expand) return;
+            expand.textContent = '';
+            expand.className = 'mc-expand';
+            if (node.loading) {
+              const spinner = document.createElement('span');
+              spinner.className = 'mc-tree-spinner';
+              expand.append(spinner);
+              return;
+            }
+            const expandable = node.children.length > 0 || node.lazy;
+            if (!expandable) return;
+            if (this._iconTemplate) {
+              expand.append(this.cloneTemplate(this._iconTemplate, node));
+            } else {
+              expand.classList.add('mc-icon-chevron-right');
+            }
+          },
+
+          /** 可见性：父级收起时整支 hidden（DOM 常驻，靠 hidden 显隐） */
+          applyExpansion() {
+            for (const node of this._nodes) {
+              const visible = node.parent ? node.parent.visible && node.parent.expanded : true;
+              node.visible = visible;
+              if (!node.row) continue;
+              node.row.hidden = !visible;
+              if (!node.children.length) continue;
+              if (node.expanded) node.row.setAttribute('data-expanded', '');
+              else node.row.removeAttribute('data-expanded');
+            }
+          },
+
+          /** 选中节点的祖先全部展开（打开面板 / 值变化时用） */
+          expandAncestors(node) {
+            let parent = node?.parent;
+            while (parent) {
+              this._expandedKeys.add(parent.key);
+              parent = parent.parent;
+            }
+            for (const item of this._nodes) item.expanded = this._expandedKeys.has(item.key);
+          },
+
+          /* ---------- 值 ---------- */
+
+          readValue() {
+            return this._value;
+          },
+
+          writeValue(next) {
+            this._touched = true;
+            this.applyValue(next);
+            this.reflectBoundValue();
+          },
+
+          applyValue(raw) {
+            this._value = String(raw ?? '').trim();
+            this.expandAncestors(this.findNode(this._value));
+            this.applyExpansion();
+            this.syncRows();
+            this.syncDisplay();
+          },
+
+          /** 初始值：value 属性优先，其次 default-value；没有就是空 */
+          initValue() {
+            const bound = this.ele.getAttribute('value');
+            const initial = this.ele.getAttribute('default-value');
+            if (bound !== null) {
+              this._touched = true;
+              this._value = String(bound).trim();
+            } else if (initial !== null) {
+              this._value = String(initial).trim();
+            }
+            this._initialized = true;
+            this.expandAncestors(this.findNode(this._value));
+            this.applyExpansion();
+            this.syncRows();
+            this.syncDisplay();
+          },
+
+          /** 把当前值写回 value 属性，让 ofa 的 sync:value 观察得到 */
+          reflectBoundValue() {
+            const text = String(this._value ?? '');
+            if (this.ele.getAttribute('value') === text) return;
+            this.ele.setAttribute('value', text);
+          },
+
+          /* ---------- 显示 ---------- */
+
+          /** 把绑定写法 disabled="false" 规范化掉：CSS 的 :host([disabled]) 才判得准（P31） */
+          normalizeBoolAttrs() {
+            if (!this._live) return;
+            for (const name of ['disabled', 'readonly', 'invalid', 'clearable']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
+
+          syncRows() {
+            const selected = this.findNode(this._value);
+            for (const node of this._nodes) {
+              if (!node.row) continue;
+              node.row.setAttribute('data-selected', node === selected ? 'true' : 'false');
+              if (node.disabled) node.row.setAttribute('data-disabled', 'true');
+              else node.row.removeAttribute('data-disabled');
+            }
+          },
+
+          syncDisplay() {
+            this.normalizeBoolAttrs();
+            const selected = this.findNode(this._value);
+            this.mirror('data-empty', !selected);
+            this.mirror('data-filled', !!selected);
+            if (this._valueEl) {
+              this._valueEl.textContent = selected ? selected.label : this.placeholderText();
+            }
+            if (this._emptyWrap) this._emptyWrap.hidden = this._nodes.length > 0;
+            if (this._emptyEl) this._emptyEl.textContent = this.emptyTextText();
+          },
+
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算（同 mc-input） */
+          slotHasContent(slot) {
+            return (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+          },
+
+          /** prefix 插槽有内容才占位（空插槽不白留一个 gap） */
+          applySlotState() {
+            this.mirror('data-has-prefix', this.slotHasContent(this._prefixSlot));
+          },
+
+          /** 声明过的字符串属性 ofa 可能反射成空串（P32）：「空 = 用默认文案」由这里兜 */
+          placeholderText() {
+            const own = this.ele.getAttribute('placeholder');
+            if (own) return own;
+            return this.placeholder || '请选择';
+          },
+
+          emptyTextText() {
+            const own = this.ele.getAttribute('empty-text');
+            if (own) return own;
+            return this.emptyText || '暂无数据';
+          },
+
+          /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (!this._live) return;
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+
+          /* ---------- 高亮与键盘 ---------- */
+
+          visibleNodes() {
+            return this._nodes.filter((node) => node.visible && node.row);
+          },
+
+          visibleEnabledNodes() {
+            return this._nodes.filter((node) => node.visible && node.row && !node.disabled);
+          },
+
+          firstEnabledNode() {
+            return this.visibleEnabledNodes()[0] ?? null;
+          },
+
+          lastEnabledNode() {
+            const all = this.visibleEnabledNodes();
+            return all[all.length - 1] ?? null;
+          },
+
+          initialActiveNode() {
+            const selected = this.findNode(this._value);
+            if (selected && selected.visible && !selected.disabled) return selected;
+            return this.firstEnabledNode();
+          },
+
+          setActive(node) {
+            this._active = node ?? null;
+            for (const item of this._nodes) {
+              if (!item.row) continue;
+              if (item === node) item.row.setAttribute('data-active', '');
+              else item.row.removeAttribute('data-active');
+            }
+            if (node?.row && this.isOpen()) node.row.scrollIntoView({ block: 'nearest' });
+          },
+
+          moveActive(delta) {
+            const all = this.visibleEnabledNodes();
+            if (!all.length) return;
+            const current = all.indexOf(this._active);
+            const next =
+              current < 0
+                ? all[delta > 0 ? 0 : all.length - 1]
+                : all[(current + delta + all.length) % all.length];
+            this.setActive(next);
+          },
+
+          /** 单行的加载 / 错误状态只改这一行，不重建整棵树 */
+          syncNodeState(node) {
+            if (!node.row || !node.expandEl) return;
+            node.row.toggleAttribute('data-loading', node.loading);
+            node.row.toggleAttribute('data-load-error', node.loadError);
+            this.renderExpandIcon(node);
+          },
+
+          /**
+           * 懒父级：第一次展开时调 node.load(node.raw) 取子节点；成功则展开、失败留下错误态（再点重试）。
+           * 失败会发 load-error（载荷 { value, error }），便于使用者上报 / 重试提示。
+           */
+          async loadNode(node) {
+            if (!node.lazy || node.loaded || node.loading || typeof this._load !== 'function')
+              return;
+            node.loading = true;
+            node.loadError = false;
+            this.syncNodeState(node);
+
+            try {
+              const children = await this._load(node.raw);
+              const list = Array.isArray(children) ? children : [];
+              node.children = this.buildTree(
+                list,
+                node,
+                node.level + 1,
+                node.disabled,
+                node.key + '>',
+              );
+              node.lazy = false;
+              node.loaded = true;
+              node.expanded = true;
+              this._expandedKeys.add(node.key);
+              this.flattenNodes();
+            } catch (error) {
+              node.loadError = true;
+              this.emit('load-error', {
+                data: { value: node.value, error },
+                bubbles: true,
+                composed: true,
+              });
+            } finally {
+              node.loading = false;
+              this.renderRows();
+              this.applyExpansion();
+              this.syncRows();
+              this.syncDisplay();
+              if (this.isOpen()) this.setActive(node.loaded ? node : this.initialActiveNode());
+            }
+          },
+
+          expandNode(node) {
+            if (!node.children.length) {
+              if (node.lazy && !node.loaded) this.loadNode(node);
+              return;
+            }
+            this._expandedKeys.add(node.key);
+            node.expanded = true;
+            this.applyExpansion();
+            this.setActive(node);
+          },
+
+          collapseNode(node) {
+            if (!node.children.length || !node.expanded) return;
+            this._expandedKeys.delete(node.key);
+            node.expanded = false;
+            this.applyExpansion();
+            if (this._active && !this._active.visible) this.setActive(this.initialActiveNode());
+            else this.setActive(this._active);
+          },
+
+          firstEnabledChild(node) {
+            if (!node.expanded) return null;
+            const all = this.visibleEnabledNodes();
+            const start = all.indexOf(node);
+            if (start < 0) return null;
+            for (let index = start + 1; index < all.length; index += 1) {
+              if (all[index].parent === node) return all[index];
+            }
+            return null;
+          },
+
+          /* ---------- 开合 ---------- */
+
+          isOpen() {
+            return this._panel?.matches(':popover-open') ?? false;
+          },
+
+          openPanel() {
+            if (!this._popoverOk || this.isOpen()) return;
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            this.expandAncestors(this.findNode(this._value));
+            this.applyExpansion();
+            /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
+            this._scrollGuard.run(() => this._panel.showPopover());
+            this._control.focus({ preventScroll: true });
+            this.setActive(this.initialActiveNode());
+            this.syncOpenUI(true);
+          },
+
+          closePanel() {
+            if (!this.isOpen()) return;
+            this._scrollGuard.run(() => this._panel.hidePopover());
+            this.setActive(null);
+            this.syncOpenUI(false);
+          },
+
+          syncOpenUI(open) {
+            const changed = this._openState !== open;
+            this._openState = open;
+            this.mirror('data-open', open);
+            if (!changed) return;
+            if (open) {
+              this.emit('open', { bubbles: true, composed: true });
+              return;
+            }
+            this.setActive(null);
+            if (this._returnFocus) {
+              this._returnFocus = false;
+              this._control?.focus({ preventScroll: true });
+            }
+            this.emit('close', { bubbles: true, composed: true });
+          },
+
+          /** 原生 toggle 只当兜底同步：状态与事件不靠它（排队发的 toggle 在「刚关就又开」的连招里会丢） */
+          onNativeToggle(event) {
+            const nowOpen = event.newState === 'open';
+            if (nowOpen && !this._active) this.setActive(this.initialActiveNode());
+            this.syncOpenUI(nowOpen);
+          },
+
+          /* ---------- 交互 ---------- */
+
+          onControlClick() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this.isOpen()) this.closePanel();
+            else this.openPanel();
+          },
+
+          onKeyDown(event) {
+            const key = event.key;
+            if (key === 'Escape') {
+              if (this.isOpen()) {
+                event.preventDefault();
+                this._returnFocus = true;
+                this.closePanel();
+              }
+              return;
+            }
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+
+            if (!this.isOpen()) {
+              if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End') {
+                event.preventDefault();
+                this.openPanel();
+                if (key === 'ArrowUp' || key === 'End') this.setActive(this.lastEnabledNode());
+                else this.setActive(this.initialActiveNode());
+              }
+              /* Enter / 空格交给原生 <button> 的 click，走 onControlClick */
+              return;
+            }
+
+            switch (key) {
+              case 'ArrowDown':
+                event.preventDefault();
+                this.moveActive(1);
+                break;
+              case 'ArrowUp':
+                event.preventDefault();
+                this.moveActive(-1);
+                break;
+              case 'Home':
+                event.preventDefault();
+                this.setActive(this.firstEnabledNode());
+                break;
+              case 'End':
+                event.preventDefault();
+                this.setActive(this.lastEnabledNode());
+                break;
+              case 'ArrowRight':
+                event.preventDefault();
+                if (this._active && (this._active.children.length || this._active.lazy)) {
+                  if (this._active.lazy && !this._active.loaded) {
+                    this.loadNode(this._active);
+                  } else if (this._active.expanded) {
+                    const child = this.firstEnabledChild(this._active);
+                    if (child) this.setActive(child);
+                  } else {
+                    this.expandNode(this._active);
+                  }
+                }
+                break;
+              case 'ArrowLeft':
+                event.preventDefault();
+                if (this._active) {
+                  if (this._active.expanded && this._active.children.length) {
+                    this.collapseNode(this._active);
+                  } else if (this._active.parent) {
+                    this.setActive(this._active.parent);
+                  }
+                }
+                break;
+              case 'Enter':
+              case ' ':
+              case 'Spacebar':
+                /* 不 preventDefault 的话，开着的面板会被这次 click 又关掉 */
+                event.preventDefault();
+                if (this._active) this.selectNode(this._active);
+                break;
+              default:
+                break;
+            }
+          },
+
+          /** 单选：选中即落值、发 change、收面板（事件顺序 change → close） */
+          selectNode(node) {
+            if (!node || node.disabled) return;
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            this._touched = true;
+            this._value = node.value;
+            this.reflectBoundValue();
+            this.syncRows();
+            this.syncDisplay();
+            this.emitChange();
+            this._returnFocus = true;
+            this.closePanel();
+          },
+
+          toggleNode(node) {
+            if (node.lazy && !node.loaded) {
+              this.loadNode(node);
+              return;
+            }
+            if (!node.children.length) return;
+            if (node.expanded) this.collapseNode(node);
+            else this.expandNode(node);
+          },
+
+          onPanelClick(event) {
+            const row = event.target?.closest?.('.mc-row');
+            if (!row) return;
+            const node = this._nodeByKey.get(row.dataset.key);
+            if (!node) return;
+            /* 懒节点还没有 children，但箭头同样归「开合 / 加载」，不是选中 */
+            if (event.target.closest?.('.mc-expand') && (node.children.length || node.lazy)) {
+              this.toggleNode(node);
+              return;
+            }
+            if (node.disabled) return;
+            this.selectNode(node);
+          },
+
+          /** 面板里没有可聚焦元素：压掉 mousedown 的默认聚焦，焦点留在触发框上，键盘才继续管用 */
+          onPanelMouseDown(event) {
+            event.preventDefault();
+          },
+
+          onClear() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this._value === '') return;
+            this._touched = true;
+            this._value = '';
+            this.reflectBoundValue();
+            this.syncRows();
+            this.syncDisplay();
+            this.emit('clear', { bubbles: true, composed: true });
+            this.emitChange();
+            this._control.focus({ preventScroll: true });
+          },
+
+          emitChange() {
+            /* 内部原生 change 穿不出 shadow（P19），所以由组件自己转发成一个 composed 的 change */
+            this.emit('change', {
+              data: { value: this.readValue() },
+              bubbles: true,
+              composed: true,
+            });
+          },
+        },
+      };
+    };
+  </script>
+</template>

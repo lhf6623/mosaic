@@ -1,0 +1,20 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <!-- empty-text 只在 options 为空时出现 -->
+    <mc-tree-select id="custom-empty" empty-text="没有可选的城市" placeholder="空数据"></mc-tree-select>
+    <!-- 不写 empty-text：用默认的「暂无数据」 -->
+    <mc-tree-select id="default-empty" placeholder="默认空态文案"></mc-tree-select>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-tree-select-empty',
+
+      ready() {
+        for (const el of this.ele.shadowRoot.querySelectorAll('mc-tree-select')) {
+          el.options = [];
+        }
+      },
+    });
+  </script>
+</template>

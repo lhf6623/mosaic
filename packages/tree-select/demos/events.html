@@ -1,0 +1,66 @@
+<template component>
+  <mc-space block wrap-items align="start">
+    <mc-tree-select
+      id="events"
+      clearable
+      default-value="hz"
+      on:change="onChange($event)"
+      on:clear="onClear()"
+      on:open="onOpen()"
+      on:close="onClose()"></mc-tree-select>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    const OPTIONS = [
+      {
+        value: 'zj',
+        label: '浙江',
+        children: [
+          { value: 'hz', label: '杭州' },
+          { value: 'nb', label: '宁波' },
+          { value: 'wz', label: '温州' },
+        ],
+      },
+      {
+        value: 'js',
+        label: '江苏',
+        children: [
+          { value: 'nj', label: '南京' },
+          { value: 'sz', label: '苏州' },
+        ],
+      },
+      { value: 'sh', label: '上海' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-tree-select-events',
+
+      data: { last: '（还没交互）' },
+
+      ready() {
+        this.ele.shadowRoot.querySelector('#events').options = OPTIONS;
+      },
+
+      proto: {
+        onChange(event) {
+          this.last = `change → ${JSON.stringify(event.data.value)}`;
+        },
+        /* clear 没有 data；它在 change 之前发 */
+        onClear() {
+          this.last = 'clear（紧接着还会来一次 change）';
+        },
+        onOpen() {
+          this.last = 'open';
+        },
+        onClose() {
+          this.last = 'close';
+        },
+      },
+    });
+  </script>
+</template>

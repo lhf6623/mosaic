@@ -306,6 +306,15 @@ export const SITE = [
               '评分。一排星，点第几颗就是几分；支持半星、自定义颗数与语义色。原生 range 只管键盘与焦点，指针交互按星星真实几何换算。',
           },
           {
+            order: 58,
+            label: 'Tree Select',
+            zh: '树型选择',
+            path: 'packages/tree-select/page.html',
+            type: 'component',
+            summary:
+              '树型选择。数据驱动的一棵单选树：触发框 + 浮层面板，层级缩进、展开 / 收起、键盘导航与 clearable；禁用的父级可展开但整支不可选。',
+          },
+          {
             order: 60,
             label: 'Select',
             zh: '下拉选择',

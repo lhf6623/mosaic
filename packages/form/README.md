@@ -163,7 +163,7 @@
   `mc-form-item` 放进格子里；容器自己不提供排布维度。
 - 控件那一批（[`../input/`](../input/) / [`../textarea/`](../textarea/) / [`../select/`](../select/) /
   [`../checkbox/`](../checkbox/) / [`../radio/`](../radio/) / [`../switch/`](../switch/) /
-  [`../slider/`](../slider/) / [`../rate/`](../rate/)）：
+  [`../slider/`](../slider/) / [`../rate/`](../rate/) / [`../tree-select/`](../tree-select/)）：
   `mc-form` 只按 `name` + `value` / `checked` 读它们，**不认识**具体是哪个组件 —— 原生的
   `<input>` / `<select>` / `<textarea>` 一样能放进来。
 - `mc-dialog`（[`../dialog/`](../dialog/)）：弹窗里的表单没有额外接线 —— 值都在轻 DOM 上，

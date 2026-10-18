@@ -1028,7 +1028,8 @@
       "packages/space/space.html",
       "packages/spinner/spinner.html",
       "packages/switch/switch.html",
-      "packages/textarea/textarea.html"
+      "packages/textarea/textarea.html",
+      "packages/tree-select/tree-select.html"
     ],
     "packages/alert/test/alert.test.mjs": [
       "app-config.js",
@@ -2197,6 +2198,58 @@
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
       "packages/spinner/spinner.html"
+    ],
+    "packages/tree-select/test/tree-select.test.mjs": [
+      "app-config.js",
+      "docs/adopt-styles.js",
+      "docs/components/block-field.html",
+      "docs/components/demos.html",
+      "docs/components/nav.html",
+      "docs/components/palette.html",
+      "docs/components/playground.html",
+      "docs/components/search.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/favicon.svg",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/layout.html",
+      "docs/lib/code-editor.mjs",
+      "docs/lib/demo-runtime.mjs",
+      "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/component-base.css",
+      "packages/boot/mosaic.css",
+      "packages/boot/scroll-pin.js",
+      "packages/boot/shadow-base.css",
+      "packages/button/button.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
+      "packages/form/form-item.html",
+      "packages/form/form.html",
+      "packages/icon/icon.html",
+      "packages/icon/icons.generated.css",
+      "packages/input/input.html",
+      "packages/loading-bar/loading-bar.js",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/popover/popover.html",
+      "packages/scroll-bar/scroll-bar.html",
+      "packages/space/space.html",
+      "packages/spinner/spinner.html",
+      "packages/tree-select/test/tree-select.test.mjs",
+      "packages/tree-select/tree-select.html"
     ]
   },
   "byFile": {
@@ -2237,7 +2290,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/adopt-styles.js": [
       "packages/alert/test/alert.test.mjs",
@@ -2276,12 +2330,14 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/block-field.html": [
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
-      "packages/popover/test/popover.test.mjs"
+      "packages/popover/test/popover.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/demos.html": [
       "packages/avatar/test/avatar.test.mjs",
@@ -2292,7 +2348,8 @@
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
-      "packages/slider/test/slider.test.mjs"
+      "packages/slider/test/slider.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2331,7 +2388,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/palette.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2370,7 +2428,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/playground.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2409,7 +2468,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/search.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2448,7 +2508,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/spec.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2487,7 +2548,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/toc.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2526,7 +2588,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/content.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2565,7 +2628,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/doc-layout.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2612,7 +2676,8 @@
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
-      "packages/slider/test/slider.test.mjs"
+      "packages/slider/test/slider.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/fonts/archivo-var-latin.woff2": [
       "packages/alert/test/alert.test.mjs",
@@ -2651,7 +2716,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/fonts/fonts.css": [
       "packages/alert/test/alert.test.mjs",
@@ -2690,7 +2756,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/fonts/plex-400-latin.woff2": [
       "packages/alert/test/alert.test.mjs",
@@ -2807,7 +2874,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/lib/code-editor.mjs": [
       "packages/alert/test/alert.test.mjs",
@@ -2846,7 +2914,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/lib/demo-runtime.mjs": [
       "packages/alert/test/alert.test.mjs",
@@ -2885,7 +2954,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/lib/md-spec.mjs": [
       "packages/alert/test/alert.test.mjs",
@@ -2924,7 +2994,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/pages/component-theme.html": [
       "packages/code/test/code.test.mjs"
@@ -2932,7 +3003,8 @@
     "docs/pages/home.html": [
       "packages/code/test/code.test.mjs",
       "packages/message/test/message.test.mjs",
-      "packages/popover/test/popover.test.mjs"
+      "packages/popover/test/popover.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/pages/install.html": [
       "packages/code/test/code.test.mjs"
@@ -2974,7 +3046,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/shell.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3013,7 +3086,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/site-map.js": [
       "packages/alert/test/alert.test.mjs",
@@ -3052,7 +3126,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/snippets/quick-start.html": [
       "packages/code/test/code.test.mjs"
@@ -3094,7 +3169,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/theme-boot.js": [
       "packages/alert/test/alert.test.mjs",
@@ -3133,7 +3209,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "index.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3172,7 +3249,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/alert/alert.html": [
       "packages/alert/test/alert.test.mjs"
@@ -3334,7 +3412,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/color-math.js": [
       "packages/alert/test/alert.test.mjs",
@@ -3373,7 +3452,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/component-base.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3412,7 +3492,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3451,7 +3532,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/scroll-pin.js": [
       "packages/alert/test/alert.test.mjs",
@@ -3490,7 +3572,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/shadow-base.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3529,7 +3612,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/breadcrumb/api.md": [
       "packages/breadcrumb/test/breadcrumb.test.mjs"
@@ -3583,7 +3667,8 @@
       "packages/popover/test/popover.test.mjs",
       "packages/space/test/space.test.mjs",
       "packages/table/test/table.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -3752,7 +3837,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/code/demos/attribute.html": [
       "packages/code/test/code.test.mjs"
@@ -3842,7 +3928,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/collapse/collapse.html": [
       "packages/alert/test/alert.test.mjs",
@@ -3881,7 +3968,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/collapse/demos/accordion.html": [
       "packages/collapse/test/collapse.test.mjs"
@@ -4040,7 +4128,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/dropdown/page.html": [
       "packages/dropdown/test/dropdown.test.mjs"
@@ -4117,14 +4206,16 @@
       "packages/form/test/form.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/slider/test/slider.test.mjs",
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/form/form.html": [
       "packages/checkbox/test/checkbox.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/slider/test/slider.test.mjs",
-      "packages/switch/test/switch.test.mjs"
+      "packages/switch/test/switch.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/form/page.html": [
       "packages/form/test/form.test.mjs"
@@ -4237,7 +4328,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/icon/icons.generated.css": [
       "packages/alert/test/alert.test.mjs",
@@ -4276,7 +4368,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/icon/page.html": [
       "packages/icon/test/icon.test.mjs"
@@ -4357,7 +4450,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/input/page.html": [
       "packages/input/test/input.test.mjs"
@@ -4427,7 +4521,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/loading-bar/page.html": [
       "packages/loading-bar/test/loading-bar.test.mjs"
@@ -4508,7 +4603,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/menu/menu.html": [
       "packages/alert/test/alert.test.mjs",
@@ -4547,7 +4643,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/menu/page.html": [
       "packages/menu/test/menu.test.mjs"
@@ -4693,7 +4790,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/popover/test/popover.test.mjs": [
       "packages/popover/test/popover.test.mjs"
@@ -4867,7 +4965,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/scroll-bar/test/scroll-bar.test.mjs": [
       "packages/scroll-bar/test/scroll-bar.test.mjs"
@@ -5044,7 +5143,8 @@
       "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
-      "packages/tooltip/test/tooltip.test.mjs"
+      "packages/tooltip/test/tooltip.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/space/test/space.test.mjs": [
       "packages/space/test/space.test.mjs"
@@ -5078,7 +5178,8 @@
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
-      "packages/table/test/table.test.mjs"
+      "packages/table/test/table.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/spinner/test/spinner.test.mjs": [
       "packages/spinner/test/spinner.test.mjs"
@@ -5285,6 +5386,13 @@
     ],
     "packages/tooltip/tooltip.html": [
       "packages/tooltip/test/tooltip.test.mjs"
+    ],
+    "packages/tree-select/test/tree-select.test.mjs": [
+      "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "packages/tree-select/tree-select.html": [
+      "packages/form/test/form.test.mjs",
+      "packages/tree-select/test/tree-select.test.mjs"
     ],
     "tests/lib/harness.mjs": [
       "packages/code/test/code.test.mjs"
