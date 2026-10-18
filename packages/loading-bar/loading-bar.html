@@ -10,7 +10,7 @@
       z-index: var(--mc-loading-bar-z, var(--mc-def-z-toast));
       display: block;
       box-sizing: border-box;
-      height: 4px;
+      height: var(--mc-loading-bar-h);
       background-color: var(--mc-loading-bar-track, transparent);
       /* ⚠️ 必须 none：默认那种横跨视口顶部，不写会挡住顶栏 / 弹层 / 按钮的点击 */
       pointer-events: none;
@@ -19,6 +19,7 @@
       opacity: 0;
 
       /* L3 色槽：默认取主题色，要换就覆盖这个令牌 */
+      --mc-loading-bar-h: 4px;
       --mc-loading-bar-fill: var(--mc-color-primary, var(--mc-def-color-primary));
       /* 出错那一下的色：主题的 danger */
       --mc-loading-bar-error: var(--mc-color-danger, var(--mc-def-color-danger));
@@ -45,7 +46,7 @@
 
     /* 4. 维度二 size：它不是控件，不借 --mc-control-h-*（同 mc-progress） */
     :host([size='sm']) {
-      height: 2px;
+      --mc-loading-bar-h: 2px;
     }
 
     /* 5. 维度三 position：static = 就在所在容器里占自己那 2~4px */
@@ -106,6 +107,7 @@
 
       attached() {
         this._live = true;
+        this.applySize();
         this.syncState();
       },
 
@@ -114,9 +116,30 @@
         state() {
           if (this._live) this.syncState();
         },
+        // size 收纯数字：按 px 写 --mc-loading-bar-h，sm / md 仍交给 CSS
+        size() {
+          if (this._live) this.applySize();
+        },
       },
 
       proto: {
+        /**
+         * 数字 size 按 px 写宿主上的 --mc-loading-bar-h（sm / md 仍交给 CSS）。
+         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+         */
+        applySize() {
+          if (!this._live) return;
+          const raw = String(this.ele.getAttribute('size') ?? '').trim();
+          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+          if (px) {
+            this.ele.style.setProperty('--mc-loading-bar-h', px);
+            this._sizePx = true;
+          } else if (this._sizePx) {
+            this.ele.style.removeProperty('--mc-loading-bar-h');
+            this._sizePx = false;
+          }
+        },
+
         /**
          * 样式全由 `[state]` 驱动，脚本只补一件 CSS 做不到的事：进 loading 时把上一轮留下的宽度
          * 瞬间归零再重新爬（不归零会从 100% 往回滑）。

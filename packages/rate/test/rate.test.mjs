@@ -40,11 +40,14 @@ export default async function run({ page, visit, check }) {
     put('rt-key-half', { 'allow-half': '', value: '2' });
     put('rt-max', { value: '4' });
     put('rt-click', { value: '0' });
+    put('rt-clear', { clearable: '', value: '3' });
+    put('rt-no-clear', { value: '3' });
     put('rt-hover', { value: '2' });
     put('rt-disabled', { disabled: '', value: '2' });
     put('rt-sm', { size: 'sm' });
     put('rt-md');
     put('rt-lg', { size: 'lg' });
+    put('rt-num', { size: '40' });
     put('rt-primary', { color: 'primary', value: '2' });
     put('rt-success', { color: 'success', value: '2' });
     put('rt-hex', { color: '#1a7f5a', value: '2' });
@@ -290,6 +293,34 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ clickThird, clickFifth }),
   );
 
+  /* ---------- 快速取消：开了 clearable 再点当前分值所在的星 → 清回 0 ---------- */
+  const clearCenters = await centersOf('rt-clear');
+  await page.evaluate(() => {
+    window.__rtEvents = [];
+  });
+  await page.mouse.click(clearCenters[2].cx, clearCenters[2].cy);
+  await page.waitForTimeout(150);
+  const cleared = await pick('rt-clear');
+
+  const keepCenters = await centersOf('rt-no-clear');
+  await page.evaluate(() => {
+    window.__rtEvents = [];
+  });
+  await page.mouse.click(keepCenters[2].cx, keepCenters[2].cy);
+  await page.waitForTimeout(150);
+  const kept = await pick('rt-no-clear');
+
+  check(
+    '快速取消：clearable 下点当前分值所在的星 → 清回 0（fills 全 empty，恰好一条 input + 一条 change、载荷 0）；没开 clearable 时重复点同一颗星不变、也不发事件',
+    cleared.value === 0 &&
+      cleared.attr === '0' &&
+      cleared.fills.every((fill) => fill === 'empty') &&
+      hasPayload(cleared, 'rt-clear') &&
+      kept.value === 3 &&
+      kept.events.length === 0,
+    JSON.stringify({ cleared, kept }),
+  );
+
   /* ---------- 半星：点第 3 颗的左 / 右半边 ---------- */
   const halfCenters = await centersOf('rt-half');
   await page.evaluate(() => {
@@ -447,6 +478,33 @@ export default async function run({ page, visit, check }) {
         { size: 'lg', host: 44, starW: 24, starH: 24 },
       ]),
     JSON.stringify(sizes),
+  );
+
+  /* ---------- 尺寸：数字按 px 写宿主令牌；切回档位内联令牌交还 CSS ---------- */
+  const numericSize = await page.evaluate(async () => {
+    const el = document.getElementById('rt-num');
+    const read = () => {
+      const item = el.shadowRoot.querySelector('.mc-item');
+      return {
+        host: Math.round(el.getBoundingClientRect().height),
+        star: Math.round(item.getBoundingClientRect().width),
+        token: el.style.getPropertyValue('--mc-rate-star').trim(),
+      };
+    };
+    const num = read();
+    el.setAttribute('size', 'sm');
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    return { num, back: read() };
+  });
+  check(
+    'size 收纯数字：size="40" → 星标直径 40px、宿主高 max(36, 40)=40px，宿主 style 上写 --mc-rate-star=40px；改回 size="sm" → 16 / 28 且内联令牌被移除',
+    numericSize.num.star === 40 &&
+      numericSize.num.host === 40 &&
+      numericSize.num.token === '40px' &&
+      numericSize.back.star === 16 &&
+      numericSize.back.host === 28 &&
+      numericSize.back.token === '',
+    JSON.stringify(numericSize),
   );
 
   /* ---------- color：默认 warning，语义名走 CSS，hex 走共享接线器写 --mc-rate-fill ---------- */

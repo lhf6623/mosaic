@@ -9,8 +9,9 @@
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      /* 图标盒子恒为 1em，于是 font-size 是唯一的尺寸入口 */
-      font-size: 1em;
+      /* 图标盒子恒为 1em，于是 font-size 是唯一的尺寸入口（令牌供数字 size 写 px） */
+      font-size: var(--mc-icon-size);
+      --mc-icon-size: 1em;
       line-height: 0;
       vertical-align: middle;
       /* ⚠️ 必须显式 inherit：shadow-base.css 的 reset 把宿主色钉成 --mc-color-fg，会掐断颜色继承 —— 图标进别的 shadow root 就拿到 fg 而非周围文字色；本 style 未分层、赢过 reset 的 @layer，所以这一行能拿回继承（font-size 同理） */
@@ -19,13 +20,13 @@
 
     /* ---------- 尺寸：只改 font-size ---------- */
     :host([size='sm']) {
-      font-size: 0.875em;
+      --mc-icon-size: 0.875em;
     }
     :host([size='md']) {
-      font-size: 1em;
+      --mc-icon-size: 1em;
     }
     :host([size='lg']) {
-      font-size: 1.25em;
+      --mc-icon-size: 1.25em;
     }
 
     /* ---------- 语义色：只往 currentColor 里填值 ---------- */
@@ -140,6 +141,7 @@
         // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
         this._live = true;
+        this.applySize();
         this._onSlotChange = () => this.paint();
         this._slot?.addEventListener('slotchange', this._onSlotChange);
         this.paint();
@@ -162,9 +164,30 @@
         src() {
           this.paint();
         },
+        // size 收纯数字：按 px 写 --mc-icon-size，sm / md / lg 仍交给 CSS
+        size() {
+          this.applySize();
+        },
       },
 
       proto: {
+        /**
+         * 数字 size 按 px 写宿主上的 --mc-icon-size（三档仍是 em，交给 CSS）。
+         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+         */
+        applySize() {
+          if (!this._live) return;
+          const raw = String(this.ele.getAttribute('size') ?? '').trim();
+          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+          if (px) {
+            this.ele.style.setProperty('--mc-icon-size', px);
+            this._sizePx = true;
+          } else if (this._sizePx) {
+            this.ele.style.removeProperty('--mc-icon-size');
+            this._sizePx = false;
+          }
+        },
+
         setName() {
           return (this.iconSet || '').trim() || DEFAULT_SET;
         },

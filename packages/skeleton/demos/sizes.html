@@ -9,6 +9,13 @@
         <mc-skeleton variant="circle" size="lg"></mc-skeleton>
       </mc-space>
     </div>
+    <!-- 纯数字按 px：数字是占位块高（text 变体不认 size，显式 height 仍优先） -->
+    <div>
+      <p class="text-xs text-muted mb-2">纯数字按 px：size="24"</p>
+      <mc-space align="end">
+        <mc-skeleton size="24" width="4rem"></mc-skeleton>
+      </mc-space>
+    </div>
     <div>
       <p class="text-xs text-muted mb-2">width / height 精确覆盖：width="12rem" height="1rem"</p>
       <mc-skeleton width="12rem" height="1rem"></mc-skeleton>

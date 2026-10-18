@@ -49,6 +49,7 @@ export default async function run({ page, visit, check }) {
     put('sl-sm', { size: 'sm' });
     put('sl-md');
     put('sl-lg', { size: 'lg' });
+    put('sl-num', { size: '48' });
     put('sl-primary', { value: '50' });
     put('sl-success', { color: 'success', value: '50' });
     put('sl-hex', { color: '#1a7f5a', value: '50' });
@@ -406,6 +407,37 @@ export default async function run({ page, visit, check }) {
         { size: 'lg', host: 44, track: 8, thumb: 20 },
       ]),
     JSON.stringify(sizes),
+  );
+
+  /* ---------- 尺寸：数字按 px 写宿主令牌；切回档位内联令牌交还 CSS ---------- */
+  const numericSize = await page.evaluate(async () => {
+    const el = document.getElementById('sl-num');
+    const read = () => {
+      const root = el.shadowRoot;
+      const round = (value) => Math.round(value * 100) / 100;
+      return {
+        host: Math.round(el.getBoundingClientRect().height),
+        track: round(root.querySelector('[part="track"]').getBoundingClientRect().height),
+        thumb: round(root.querySelector('[part="thumb"]').getBoundingClientRect().height),
+        token: el.style.getPropertyValue('--mc-slider-h').trim(),
+      };
+    };
+    const num = read();
+    el.setAttribute('size', 'sm');
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    return { num, back: read() };
+  });
+  check(
+    'size 收纯数字：size="48" → 宿主高 48px、轨道 8px、滑块直径 48×4/9≈21.33px，宿主 style 上写 --mc-slider-h=48px；改回 size="sm" → 28 / 4 / 12 且内联令牌被移除',
+    numericSize.num.host === 48 &&
+      numericSize.num.track === 8 &&
+      Math.abs(numericSize.num.thumb - (48 * 4) / 9) <= 0.1 &&
+      numericSize.num.token === '48px' &&
+      numericSize.back.host === 28 &&
+      numericSize.back.track === 4 &&
+      numericSize.back.thumb === 12 &&
+      numericSize.back.token === '',
+    JSON.stringify(numericSize),
   );
 
   /* ---------- color：语义名走 CSS，hex 走共享接线器写色槽 ---------- */

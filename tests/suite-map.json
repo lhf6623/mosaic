@@ -132,6 +132,7 @@
     "packages/icon/test/icon.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -140,6 +141,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -188,7 +190,8 @@
       "packages/message/message.js",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/card/test/card.test.mjs": [
       "app-config.js",
@@ -1202,6 +1205,7 @@
     "packages/loading-bar/test/loading-bar.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -1210,6 +1214,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -1265,7 +1270,8 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/popover/test/popover.test.mjs": [
       "app-config.js",
@@ -1905,6 +1911,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -2175,6 +2182,7 @@
       "packages/popover/popover.html",
       "packages/rate/api.md",
       "packages/rate/demos/basic.html",
+      "packages/rate/demos/clearable.html",
       "packages/rate/demos/colors.html",
       "packages/rate/demos/disabled.html",
       "packages/rate/demos/events.html",
@@ -2280,6 +2288,8 @@
       "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs"
@@ -2598,7 +2608,10 @@
     ],
     "docs/favicon.svg": [
       "packages/form/test/form.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs"
     ],
     "docs/fonts/archivo-var-latin.woff2": [
@@ -4759,6 +4772,9 @@
     "packages/rate/demos/basic.html": [
       "packages/rate/test/rate.test.mjs"
     ],
+    "packages/rate/demos/clearable.html": [
+      "packages/rate/test/rate.test.mjs"
+    ],
     "packages/rate/demos/colors.html": [
       "packages/rate/test/rate.test.mjs"
     ],
@@ -5056,6 +5072,8 @@
       "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/rate/test/rate.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",

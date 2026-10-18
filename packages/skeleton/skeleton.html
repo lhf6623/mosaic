@@ -10,9 +10,10 @@
       flex: none;
       width: 100%;
       /* 高度跟着 size 走（与 button / input 同一套控件高）；text 单独按文字行高，见下面 */
-      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      height: var(--mc-skeleton-h);
 
       /* L3 组件令牌：形状只改圆角，底色与扫光亮色都可从外面覆盖 */
+      --mc-skeleton-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
       --mc-skeleton-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       --mc-skeleton-shine: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
       --mc-skeleton-radius: var(--mc-radius-md, var(--mc-def-radius-md));
@@ -20,10 +21,10 @@
 
     /* 2. size 三档：与其它组件同一套控件高（sm 28 / md 36 / lg 44），显式 height 会盖过它 */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-skeleton-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-skeleton-h: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
     }
 
     /* 3. 形状三档：矩形（默认）/ 文本行 / 圆形 */
@@ -111,6 +112,10 @@
         height() {
           if (this._mounted) this.applySize();
         },
+        // size 收纯数字：按 px 写 --mc-skeleton-h，sm / md / lg 仍交给 CSS（text 变体不认）
+        size() {
+          if (this._mounted) this.applySize();
+        },
       },
 
       proto: {
@@ -122,8 +127,19 @@
           else if (raw !== '') this.ele.setAttribute('no-animation', '');
         },
 
-        /** width / height → 宿主内联宽高；空值删掉，交回 CSS 默认（100% / 跟 size） */
+        /** width / height → 宿主内联宽高；数字 size → 宿主内联 --mc-skeleton-h。空值删掉，交回 CSS 默认 */
         applySize() {
+          /* 数字 size 按 px 写组件令牌；只删自己写过的那次（同 mc-avatar） */
+          const sizeRaw = String(this.ele.getAttribute('size') ?? '').trim();
+          const sizePx = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(sizeRaw) ? sizeRaw + 'px' : '';
+          if (sizePx) {
+            this.ele.style.setProperty('--mc-skeleton-h', sizePx);
+            this._sizePx = true;
+          } else if (this._sizePx) {
+            this.ele.style.removeProperty('--mc-skeleton-h');
+            this._sizePx = false;
+          }
+
           const set = (prop, value) => {
             const raw = String(value ?? '').trim();
             if (raw) this.ele.style.setProperty(prop, raw);

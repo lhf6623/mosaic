@@ -8,7 +8,7 @@
       position: relative; /* 内部绝对定位元素的包含块（P21） */
       box-sizing: border-box;
       width: 100%;
-      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      height: var(--mc-slider-h);
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-text-sm, var(--mc-def-text-sm));
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
@@ -18,8 +18,10 @@
       -webkit-tap-highlight-color: transparent;
 
       /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
-      --mc-slider-track-h: 0.375rem;
-      --mc-slider-thumb: 1rem;
+      --mc-slider-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      /* 轨道 / 滑块按控件高推出来（md 36 → 6 / 16）；三档各自有显式值，数字 size 用这套比例 */
+      --mc-slider-track-h: calc(var(--mc-slider-h) / 6);
+      --mc-slider-thumb: calc(var(--mc-slider-h) * 4 / 9);
       --mc-slider-track: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       --mc-slider-track-hover: var(--mc-color-border, var(--mc-def-color-border));
       --mc-slider-thumb-bg: var(--mc-color-surface, var(--mc-def-color-surface));
@@ -28,12 +30,12 @@
 
     /* 2. 尺寸：三档 = 控件高 + 轨道高 + 滑块直径（滑块也是原生 input 的 thumb，两套必须一致） */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-slider-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
       --mc-slider-track-h: 0.25rem;
       --mc-slider-thumb: 0.75rem;
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-slider-h: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
       --mc-slider-track-h: 0.5rem;
       --mc-slider-thumb: 1.25rem;
     }
@@ -241,7 +243,9 @@
 
       attached() {
         // 宿主 style 等构造期结束再写（P31）
+        this._live = true;
         color.sync(this.ele, this.color);
+        this.applySize();
         // createElement 之后再写 min / max / default-value 的那种：ready() 那会儿还读不到，补一次
         this.syncRange();
         this.applyInitialValue();
@@ -270,6 +274,10 @@
         disabled() {
           this.applyDisabled();
         },
+        // size 收纯数字：按 px 写 --mc-slider-h，sm / md / lg 仍交给 CSS
+        size() {
+          this.applySize();
+        },
         // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
         color(value) {
           color.change(this.ele, value);
@@ -277,6 +285,23 @@
       },
 
       proto: {
+        /**
+         * 数字 size 按 px 写宿主上的 --mc-slider-h（三档仍交给 CSS）。
+         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+         */
+        applySize() {
+          if (!this._live) return;
+          const raw = String(this.ele.getAttribute('size') ?? '').trim();
+          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+          if (px) {
+            this.ele.style.setProperty('--mc-slider-h', px);
+            this._sizePx = true;
+          } else if (this._sizePx) {
+            this.ele.style.removeProperty('--mc-slider-h');
+            this._sizePx = false;
+          }
+        },
+
         /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
         readNumber(name, fallback) {
           const raw = this.ele.getAttribute(name);

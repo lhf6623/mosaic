@@ -61,14 +61,15 @@
 
 ## 令牌
 
-| 令牌                      | 默认（按 size）                          | 作用                                   |
-| ------------------------- | ---------------------------------------- | -------------------------------------- |
-| `--mc-slider-track-h`     | `0.375rem`（sm `0.25rem` / lg `0.5rem`） | 轨道高                                 |
-| `--mc-slider-thumb`       | `1rem`（sm `0.75rem` / lg `1.25rem`）    | 滑块直径；也决定原生 thumb 与行程      |
-| `--mc-slider-track`       | `--mc-color-surface-sunken`              | 未填充轨道底色                         |
-| `--mc-slider-track-hover` | `--mc-color-border`                      | hover 时未填充轨道底色                 |
-| `--mc-slider-thumb-bg`    | `--mc-color-surface`                     | 滑块底色                               |
-| `--mc-slider-fill`        | 按 `color`（默认 `--mc-color-primary`）  | 填充条与滑块描边；hex 时由接线器改写它 |
+| 令牌                      | 默认（按 size）                                         | 作用                                                      |
+| ------------------------- | ------------------------------------------------------- | --------------------------------------------------------- |
+| `--mc-slider-h`           | `--mc-control-h-md`（sm `-sm` / lg `-lg`）              | 控件高；数字 size 按 px 写它                              |
+| `--mc-slider-track-h`     | `calc(--mc-slider-h / 6)`（md 6px；sm/lg 显式 4 / 8）   | 轨道高；数字 size 下按控件高比例算                        |
+| `--mc-slider-thumb`       | `calc(--mc-slider-h * 4 / 9)`（md 16px；sm/lg 12 / 20） | 滑块直径；也决定原生 thumb 与行程；数字 size 下同比例缩放 |
+| `--mc-slider-track`       | `--mc-color-surface-sunken`                             | 未填充轨道底色                                            |
+| `--mc-slider-track-hover` | `--mc-color-border`                                     | hover 时未填充轨道底色                                    |
+| `--mc-slider-thumb-bg`    | `--mc-color-surface`                                    | 滑块底色                                                  |
+| `--mc-slider-fill`        | 按 `color`（默认 `--mc-color-primary`）                 | 填充条与滑块描边；hex 时由接线器改写它                    |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 

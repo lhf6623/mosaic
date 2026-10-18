@@ -1,0 +1,21 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 开了 clearable：再点一次当前分值所在的星（这里是第 3 颗）会清回 0 -->
+    <mc-rate clearable value="3" on:change="last = $event.data.value"></mc-rate>
+    <!-- 没开：重复点同一颗星不会变化 -->
+    <mc-rate value="3"></mc-rate>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次 change：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-rate-clearable',
+
+      data: { last: '（还没动过；试试再点第 3 颗星）' },
+    });
+  </script>
+</template>

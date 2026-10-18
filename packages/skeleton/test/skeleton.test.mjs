@@ -39,6 +39,8 @@ export default async function run({ page, visit, check }) {
             <mc-skeleton id="sk-circle" variant="circle" width="40px" height="40px"></mc-skeleton>
             <mc-skeleton id="sk-circle-size" variant="circle" size="lg"></mc-skeleton>
             <mc-skeleton id="sk-override" size="lg" height="20px"></mc-skeleton>
+            <mc-skeleton id="sk-num" size="24"></mc-skeleton>
+            <mc-skeleton id="sk-num-height" size="24" height="30px"></mc-skeleton>
             <mc-skeleton id="sk-token" style="--mc-skeleton-bg: 1 2 3"></mc-skeleton>
             <mc-skeleton id="sk-static" no-animation></mc-skeleton>
             <mc-skeleton id="sk-false" no-animation="false"></mc-skeleton>
@@ -77,6 +79,12 @@ export default async function run({ page, visit, check }) {
                 circle: box('sk-circle'),
                 circleSize: box('sk-circle-size'),
                 override: box('sk-override'),
+                num: box('sk-num'),
+                numHeight: box('sk-num-height'),
+              },
+              sizeTokens: {
+                num: el('sk-num').style.getPropertyValue('--mc-skeleton-h').trim(),
+                numHeight: el('sk-num-height').style.getPropertyValue('--mc-skeleton-h').trim(),
               },
               radii: {
                 default: styleOf(bone('sk-default')).borderRadius,
@@ -141,6 +149,15 @@ export default async function run({ page, visit, check }) {
     JSON.stringify({ override: probe.sizes.override, text: probe.sizes.text }),
   );
   check(
+    'size 收纯数字：size="24" → 宿主高 24px，宿主 style 上写 --mc-skeleton-h=24px；显式 height 仍优先（size="24" + height="30px" 时实际高 30px）',
+    probe.sizes.num.h === 24 &&
+      probe.sizes.num.w === 160 &&
+      probe.sizes.numHeight.h === 30 &&
+      probe.sizeTokens.num === '24px' &&
+      probe.sizeTokens.numHeight === '24px',
+    JSON.stringify({ num: probe.sizes.num, numHeight: probe.sizes.numHeight, tokens: probe.sizeTokens }),
+  );
+  check(
     'variant="text" 按一行字高 1em（16px），不认 size',
     probe.sizes.text.h === 16 && probe.sizes.textLg.h === 16,
     JSON.stringify({ text: probe.sizes.text, textLg: probe.sizes.textLg }),
@@ -189,6 +206,30 @@ export default async function run({ page, visit, check }) {
   });
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   check('prefers-reduced-motion: reduce 下扫光动画关闭', reduced === 'none', reduced);
+
+  /* 数字 ↔ 档位：内联令牌只由纯数字写，切回档位交还 CSS */
+  const numericSwitch = await page.evaluate(async () => {
+    const el = document.getElementById('sk-num');
+    const read = () => ({
+      h: Math.round(el.getBoundingClientRect().height),
+      token: el.style.getPropertyValue('--mc-skeleton-h').trim(),
+    });
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 120));
+    el.setAttribute('size', 'lg');
+    await settle();
+    const lg = read();
+    el.setAttribute('size', '24');
+    await settle();
+    return { lg, back: read() };
+  });
+  check(
+    'size 数字 ↔ 档位：切回 size="lg" → 44px 且 --mc-skeleton-h 内联令牌被移除；再写 size="24" → 24px 且令牌写回',
+    numericSwitch.lg.h === 44 &&
+      numericSwitch.lg.token === '' &&
+      numericSwitch.back.h === 24 &&
+      numericSwitch.back.token === '24px',
+    JSON.stringify(numericSwitch),
+  );
 
   await page.evaluate(() => document.getElementById('skeleton-probe')?.remove());
 

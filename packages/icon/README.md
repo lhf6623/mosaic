@@ -51,8 +51,8 @@ WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 W
 改颜色只有两个控制点，都是原生 CSS：
 · 颜色 = currentColor。默认继承周围文字色；color="primary|info|success|warning|danger|neutral"
 给语义色；style="color:…" / 父元素继承 / class="text-primary" 一律有效。
-· 尺寸 = font-size。盒子恒为 1em，size="sm|md|lg" 只是 0.875 / 1 / 1.25em，
-所以 style="font-size:20px" 也直接管用。
+· 尺寸 = font-size。盒子恒为 1em，size="sm|md|lg" 只是 0.875 / 1 / 1.25em；
+数字 size 按 px 写 `--mc-icon-size`（如 size="32" → 32px），style="font-size:20px" 也直接管用。
 这是对 API 规范 1.3（size = 控件高）的**显式例外**：图标不是控件，跟随字号才符合预期。
 
 ⚠️ 文件里不写任何内联 SVG 标记（Live Server 的注入点会抢走模块 script，见 mc-alert 文件头）；
@@ -60,8 +60,12 @@ WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 W
 
 ## 令牌
 
-> **没有 `--mc-icon-*` 令牌**：颜色走 `currentColor`、尺寸走 `font-size`，两个控制点都是原生
-> CSS —— 按实例改样式直接写宿主 `style="…"`，要进内部就用 `::part(glyph)`。
+| 令牌             | 默认（按 size）                     | 作用                                       |
+| ---------------- | ----------------------------------- | ------------------------------------------ |
+| `--mc-icon-size` | `1em`（sm `0.875em` / lg `1.25em`） | 图标盒 / `font-size`；数字 size 按 px 写它 |
+
+> 颜色走 `currentColor`（没有色槽）；尺寸除了三档 em，数字 `size` 会写 `--mc-icon-size`。
+> 按实例改样式也可以直接写宿主 `style="font-size:…"`（inline 仍赢过令牌），要进内部用 `::part(glyph)`。
 
 **「本地」的定义是「你发出去的那份样式表里有什么」**：内置集由构建期 presetIcons 编译成
 data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽挂上类名、问

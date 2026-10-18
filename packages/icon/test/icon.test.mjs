@@ -250,4 +250,69 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(copyResult),
   );
 
+  /* ------------------------------------------------------------------ *
+   * size 收纯数字：写宿主 --mc-icon-size（font-size 的唯一入口），档位仍交给 CSS。
+   * ⚠️ 单独放在这一页量：首个探针里有两颗**故意查不到**的图标，远程 404 若在离开
+   *    那一页前回来，会撞上跑器统一的「页面无 404」检查（本套件原本靠「量完立刻
+   *    导航、让请求被中止」躲过去）。数字 size 的切换要等两拍，放在首个探针里会把
+   *    导航推迟到 404 之后 —— 所以另搭一个小探针，不拖慢上面那次竞态。
+   * ------------------------------------------------------------------ */
+  await page.evaluate(() => {
+    const box = document.createElement('div');
+    box.id = 'icon-size-probe';
+    box.style.cssText =
+      'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px;font-size:16px';
+    box.innerHTML = `
+      <div><mc-icon id="sz-num" name="search" size="32"></mc-icon></div>
+      <div><mc-icon id="sz-sm" name="search" size="sm"></mc-icon></div>
+      <div><mc-icon id="sz-lg" name="search" size="lg"></mc-icon></div>
+    `;
+    document.body.append(box);
+  });
+  await page
+    .waitForFunction(
+      () =>
+        !!document
+          .getElementById('sz-num')
+          ?.shadowRoot?.querySelector('.mc-glyph')
+          ?.classList.contains('mc-icon-search'),
+      { timeout: 8000 },
+    )
+    .catch(() => {});
+  const numericSize = await page.evaluate(async () => {
+    const read = (id) => {
+      const el = document.getElementById(id);
+      return {
+        fontSize: getComputedStyle(el).fontSize,
+        w: Math.round(el.getBoundingClientRect().width),
+        token: el.style.getPropertyValue('--mc-icon-size').trim(),
+      };
+    };
+    const num = read('sz-num');
+    const sm = read('sz-sm');
+    const lg = read('sz-lg');
+    const el = document.getElementById('sz-num');
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 120));
+    el.setAttribute('size', 'md');
+    await settle();
+    const md = read('sz-num');
+    el.setAttribute('size', 'abc');
+    await settle();
+    return { num, sm, lg, md, bad: read('sz-num') };
+  });
+  check(
+    'size 收纯数字：size="32" → 宿主计算 font-size 32px（字形盒 1em = 32px），宿主 style 上写 --mc-icon-size=32px；改回 size="md" → 1em（继承 16px）且内联令牌被移除；非法值 size="abc" 回落 md；sm / lg 仍 0.875em / 1.25em（14 / 20px）',
+    numericSize.num.fontSize === '32px' &&
+      numericSize.num.w === 32 &&
+      numericSize.num.token === '32px' &&
+      numericSize.md.fontSize === '16px' &&
+      numericSize.md.w === 16 &&
+      numericSize.md.token === '' &&
+      numericSize.bad.fontSize === '16px' &&
+      numericSize.bad.w === 16 &&
+      numericSize.sm.fontSize === '14px' &&
+      numericSize.lg.fontSize === '20px',
+    JSON.stringify(numericSize),
+  );
+  await page.evaluate(() => document.getElementById('icon-size-probe')?.remove());
 }

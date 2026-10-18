@@ -50,11 +50,12 @@
 
 ## 令牌
 
-| 令牌                   | 默认                        | 作用                                                           |
-| ---------------------- | --------------------------- | -------------------------------------------------------------- |
-| `--mc-skeleton-bg`     | `--mc-color-surface-sunken` | 占位底色（RGB 三元组）                                         |
-| `--mc-skeleton-shine`  | `--mc-color-surface-raised` | 扫光亮色，按 60% 透明度扫过底色（RGB 三元组）                  |
-| `--mc-skeleton-radius` | `--mc-radius-md`            | 圆角；`text` → `--mc-radius-sm`、`circle` → `--mc-radius-full` |
+| 令牌                   | 默认                        | 作用                                                                |
+| ---------------------- | --------------------------- | ------------------------------------------------------------------- |
+| `--mc-skeleton-h`      | `--mc-control-h-md`         | 盒子形状的高度；数字 size 按 px 写它（text 不认、显式 height 优先） |
+| `--mc-skeleton-bg`     | `--mc-color-surface-sunken` | 占位底色（RGB 三元组）                                              |
+| `--mc-skeleton-shine`  | `--mc-color-surface-raised` | 扫光亮色，按 60% 透明度扫过底色（RGB 三元组）                       |
+| `--mc-skeleton-radius` | `--mc-radius-md`            | 圆角；`text` → `--mc-radius-sm`、`circle` → `--mc-radius-full`      |
 
 > 三个都是**可覆盖的组件令牌**（不是 JS 写的内部变量）：改形状用 `variant`，要别的圆角直接覆盖
 > `--mc-skeleton-radius`。

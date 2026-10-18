@@ -30,7 +30,7 @@ slider 接受拖动与键盘，会发 `input` / `change`。
 | `max`           | `number`                                                    | `100`     | 区间上限                                                                                                                                |
 | `step`          | `number`                                                    | `1`       | 步长：键盘方向键 / PageUp / PageDown 与拖动按它取整                                                                                     |
 | `disabled`      | `boolean`                                                   | —         | 禁用，转发给内部原生 input（键盘可感知）                                                                                                |
-| `size`          | `'sm' \| 'md' \| 'lg'`                                      | `md`      | 控件高 / 轨道高 / 滑块直径三件套一起变                                                                                                  |
+| `size`          | `'sm' \| 'md' \| 'lg' \| number`                            | `md`      | 控件高 / 轨道高 / 滑块直径三件套一起变；纯数字按 px 设**控件高**，轨道 / 滑块按 md 比例跟着缩放（`size="48"` → 行高 48px）              |
 | `color`         | `'primary' \| 'info' \| 'success' \| 'warning' \| 'danger'` | `primary` | 填充与滑块描边的语义色；也收 hex（`#1a7f5a`）                                                                                           |
 
 ## 事件

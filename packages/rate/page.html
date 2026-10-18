@@ -47,6 +47,22 @@
       </section>
 
       <section class="doc-demo">
+        <h3>快速取消</h3>
+        <p class="doc-hint">
+          开了
+          <code>clearable</code>
+          ，再点一次当前分值所在的星就清回 0（未评分）—— 清空同样发
+          <code>input</code>
+          /
+          <code>change</code>
+          ，载荷是 0；键盘
+          <kbd>Home</kbd>
+          本来就回到 0。下面第二条没开，重复点同一颗星不会变化，用来对照。
+        </p>
+        <doc-playground src="./demos/clearable.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
         <h3>尺寸</h3>
         <p class="doc-hint">
           三档 28 / 36 / 44px，星标直径 16 / 20 / 24px 一起变；从上到下是
@@ -55,6 +71,10 @@
           <code>md</code>
           、
           <code>lg</code>
+          。也收纯数字按 px（
+          <code>size="40"</code>
+          ），数字是单颗星直径，行高取
+          <code>max(36px, 星直径)</code>
           。
         </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>

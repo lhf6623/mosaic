@@ -8,7 +8,8 @@
       align-items: center;
       position: relative;
       box-sizing: border-box;
-      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      /* 行高至少一个控件高；数字 size 把星放大时行高跟着长，不会压到相邻内容 */
+      height: max(var(--mc-rate-h), var(--mc-rate-star));
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-text-sm, var(--mc-def-text-sm));
       line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
@@ -20,6 +21,7 @@
 
       /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
       --mc-rate-star: 1.25rem;
+      --mc-rate-h: var(--mc-control-h-md, var(--mc-def-control-h-md));
       --mc-rate-gap: var(--mc-space-1, var(--mc-def-space-1));
       --mc-rate-fill: var(--mc-color-warning, var(--mc-def-color-warning));
       --mc-rate-empty: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
@@ -27,11 +29,11 @@
 
     /* 2. 尺寸：三档 = 控件高 + 星标直径（md 是默认，不写规则） */
     :host([size='sm']) {
-      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-rate-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
       --mc-rate-star: 1rem;
     }
     :host([size='lg']) {
-      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-rate-h: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
       --mc-rate-star: 1.5rem;
     }
 
@@ -164,6 +166,8 @@
         max: 5,
         // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-rate allow-half> 失效
         allowHalf: null,
+        // 快速取消：开了它，再点一次当前分值所在的星就清回 0（同 mc-input 的 clearable 思路）
+        clearable: null,
         disabled: null,
         size: 'md',
         color: 'warning',
@@ -178,6 +182,8 @@
         this._items = [];
         this._hover = null;
         this._dragging = false;
+        this._pressedValue = null;
+        this._pointerMoved = false;
 
         /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
         Object.defineProperty(this.ele, 'value', {
@@ -202,7 +208,9 @@
 
       attached() {
         // 宿主 style 等构造期结束再写（P31）
+        this._live = true;
         color.sync(this.ele, this.color);
+        this.applySize();
         // createElement 之后再写 max / default-value 的那种：ready() 那会儿还读不到，补一次
         this.syncNative();
         this.applyInitialValue();
@@ -233,6 +241,10 @@
         disabled() {
           this.applyDisabled();
         },
+        // size 收纯数字：按 px 写 --mc-rate-star，sm / md / lg 仍交给 CSS
+        size() {
+          this.applySize();
+        },
         // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
         color(value) {
           color.change(this.ele, value);
@@ -240,6 +252,23 @@
       },
 
       proto: {
+        /**
+         * 数字 size 按 px 写宿主上的 --mc-rate-star（三档仍交给 CSS）。
+         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+         */
+        applySize() {
+          if (!this._live) return;
+          const raw = String(this.ele.getAttribute('size') ?? '').trim();
+          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+          if (px) {
+            this.ele.style.setProperty('--mc-rate-star', px);
+            this._sizePx = true;
+          } else if (this._sizePx) {
+            this.ele.style.removeProperty('--mc-rate-star');
+            this._sizePx = false;
+          }
+        },
+
         /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
         readNumber(name, fallback) {
           const raw = this.ele.getAttribute(name);
@@ -398,6 +427,8 @@
           if (event.pointerType === 'mouse' && event.button !== 0) return;
           this._dragging = true;
           this._dragChanged = false;
+          this._pointerMoved = false;
+          this._pressedValue = this.readValue();
           this._hover = null;
           this._native.focus({ preventScroll: true });
           this._pointerId = event.pointerId;
@@ -412,6 +443,7 @@
         onPointerMove(event) {
           if (this.boolAttr('disabled')) return;
           if (this._dragging) {
+            this._pointerMoved = true;
             if (this.applyPointerValue(event)) this._dragChanged = true;
             return;
           }
@@ -421,8 +453,8 @@
           this.paint();
         },
 
-        /** 松开 / 取消：收掉悬停，拖选过就发一次 change */
-        onPointerUp() {
+        /** 松开 / 取消：收掉悬停；拖选过发 change；开了 clearable 的「点同一颗星」清回 0 */
+        onPointerUp(event) {
           if (!this._dragging) return;
           this._dragging = false;
           this._hover = null;
@@ -433,9 +465,23 @@
           }
           this._pointerId = null;
           const changed = this._dragChanged === true;
+          const pressed = this._pressedValue;
+          const click = this._pointerMoved === false && event.type !== 'pointercancel';
           this._dragChanged = false;
+          this._pressedValue = null;
+          this._pointerMoved = false;
           this.paint();
-          if (changed) this.emitValue('change');
+          if (changed) {
+            this.emitValue('change');
+            return;
+          }
+          if (click && this.boolAttr('clearable') && pressed > 0 && this.readValue() === pressed) {
+            this._native.value = '0';
+            this.reflectValue();
+            this.paint();
+            this.emitValue('input');
+            this.emitValue('change');
+          }
         },
 
         onPointerLeave() {

@@ -56,6 +56,7 @@ export default async function run({ page, visit, check }) {
         '<div id="lb-inline-box" style="position:fixed;left:0;top:200px;width:260px;z-index:1">' +
           '<mc-loading-bar id="lb-inline" state="loading" position="static"></mc-loading-bar>' +
           '<mc-loading-bar id="lb-inline-sm" state="loading" position="static" size="sm"></mc-loading-bar>' +
+          '<mc-loading-bar id="lb-inline-num" state="loading" position="static" size="6"></mc-loading-bar>' +
           '</div>',
       );
 
@@ -74,7 +75,7 @@ export default async function run({ page, visit, check }) {
     await page
       .waitForFunction(
         () =>
-          ['lb-idle', 'lb-loading', 'lb-sm', 'lb-tone', 'lb-inline', 'lb-done'].every(
+          ['lb-idle', 'lb-loading', 'lb-sm', 'lb-tone', 'lb-inline', 'lb-inline-num', 'lb-done'].every(
             (id) => !!document.getElementById(id)?.shadowRoot,
           ),
         { timeout: 5000 },
@@ -121,6 +122,8 @@ export default async function run({ page, visit, check }) {
           topOffset: Math.round(rect('lb-inline').top - rect('lb-inline-box').top),
           height: Math.round(rect('lb-inline').height),
           smHeight: Math.round(rect('lb-inline-sm').height),
+          numHeight: Math.round(rect('lb-inline-num').height),
+          numToken: el('lb-inline-num').style.getPropertyValue('--mc-loading-bar-h').trim(),
           role: el('lb-inline').getAttribute('role'),
           label: el('lb-inline').getAttribute('aria-label'),
           visibility: cs('lb-inline').visibility,
@@ -134,6 +137,22 @@ export default async function run({ page, visit, check }) {
           slots: el('lb-loading').shadowRoot.querySelectorAll('slot').length,
         },
       };
+    });
+
+    /* size 收纯数字：写宿主 --mc-loading-bar-h；切回档位把内联令牌交还 CSS */
+    const numericSize = await page.evaluate(async () => {
+      const el = document.getElementById('lb-inline-num');
+      const read = () => ({
+        h: Math.round(el.getBoundingClientRect().height),
+        token: el.style.getPropertyValue('--mc-loading-bar-h').trim(),
+      });
+      const settle = () => new Promise((resolve) => setTimeout(resolve, 120));
+      el.setAttribute('size', 'md');
+      await settle();
+      const afterMd = read();
+      el.setAttribute('size', '6');
+      await settle();
+      return { afterMd, back: read() };
     });
 
     /* 跨 shadow 的命中测试：document.elementFromPoint 只会给到最外层宿主，
@@ -257,6 +276,7 @@ export default async function run({ page, visit, check }) {
       errorEnd,
       handoff,
       restarted,
+      numericSize,
       failed,
     };
   })();
@@ -513,6 +533,17 @@ export default async function run({ page, visit, check }) {
       bar.probe.inline.label === null &&
       bar.probe.inline.visibility === 'visible',
     JSON.stringify(bar.probe.inline),
+  );
+
+  check(
+    'size 收纯数字：size="6" → 宿主高 6px，宿主 style 上写 --mc-loading-bar-h=6px；切回 size="md" → 4px 且内联令牌被移除（static 实例上量；sm 仍 2px）',
+    bar.probe.inline.numHeight === 6 &&
+      bar.probe.inline.numToken === '6px' &&
+      bar.numericSize.afterMd.h === 4 &&
+      bar.numericSize.afterMd.token === '' &&
+      bar.numericSize.back.h === 6 &&
+      bar.numericSize.back.token === '6px',
+    JSON.stringify({ inline: bar.probe.inline, numeric: bar.numericSize }),
   );
 
   check(
