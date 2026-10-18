@@ -1,0 +1,26 @@
+<template component>
+  <mc-rate value="4" on:input="markInput($event)" on:change="markChange($event)"></mc-rate>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-rate-events',
+
+      data: { last: '（还没动过）' },
+
+      proto: {
+        /* 载荷是 { value }，值是 number —— 点星 / 拖动 / 键盘看 input，一次交互结束看 change */
+        markInput(event) {
+          this.last = `input → ${event.data.value}`;
+        },
+        markChange(event) {
+          this.last = `change → ${event.data.value}`;
+        },
+      },
+    });
+  </script>
+</template>

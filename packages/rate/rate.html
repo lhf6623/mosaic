@@ -1,0 +1,483 @@
+<!-- mc-rate — 评分；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主盒模型 + 星标几何 / 色槽令牌。高度与三档控件对齐，宽度由星星数量撑开 */
+    :host {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+
+      /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
+      --mc-rate-star: 1.25rem;
+      --mc-rate-gap: var(--mc-space-1, var(--mc-def-space-1));
+      --mc-rate-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+      --mc-rate-empty: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+    }
+
+    /* 2. 尺寸：三档 = 控件高 + 星标直径（md 是默认，不写规则） */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-rate-star: 1rem;
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-rate-star: 1.5rem;
+    }
+
+    /* 3. color 维度：只往实心星的色槽里填值（warning 是默认，已经在上面） */
+    :host([color='primary']) {
+      --mc-rate-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+    }
+    :host([color='info']) {
+      --mc-rate-fill: var(--mc-color-info, var(--mc-def-color-info));
+    }
+    :host([color='success']) {
+      --mc-rate-fill: var(--mc-color-success, var(--mc-def-color-success));
+    }
+    :host([color='danger']) {
+      --mc-rate-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+    }
+
+    /* 4. 内部结构：原生 range 只承载键盘 / 焦点（不吃指针）；视觉是自绘的一排星
+         每颗星两层：空星描边 + 实心星，后者由 data-fill 决定裁掉多少（半星 = 50%） */
+    .mc-base {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+    }
+    .mc-native {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      background-color: transparent;
+      appearance: none;
+      pointer-events: none;
+    }
+    .mc-items {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-rate-gap);
+    }
+    .mc-item {
+      position: relative;
+      display: block;
+      flex: none;
+      width: var(--mc-rate-star);
+      height: var(--mc-rate-star);
+    }
+    .mc-star {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .mc-star path {
+      fill: none;
+      stroke: rgb(var(--mc-rate-empty));
+      stroke-width: 1.6;
+      stroke-linejoin: round;
+    }
+    /* 实心层：宽度由 data-fill 裁；内层星标保持整颗宽，裁的才是「半个」而不是缩小的星 */
+    .mc-on {
+      position: absolute;
+      inset: 0;
+      width: 0;
+      overflow: hidden;
+    }
+    .mc-on .mc-star {
+      width: var(--mc-rate-star);
+    }
+    .mc-on .mc-star path {
+      fill: rgb(var(--mc-rate-fill));
+      stroke: none;
+    }
+    .mc-item[data-fill='full'] .mc-on {
+      width: 100%;
+    }
+    .mc-item[data-fill='half'] .mc-on {
+      width: 50%;
+    }
+
+    /* 焦点环画在整排星上（原生 range 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
+    .mc-native:focus-visible + .mc-items {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 3px;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+    }
+
+    /* 5. 状态 */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([disabled]) .mc-base {
+      cursor: not-allowed;
+    }
+  </style>
+
+  <div class="mc-base" part="base">
+    <input
+      class="mc-native"
+      type="range"
+      :disabled="disabled !== null"
+      on:input="onNativeInput($event)"
+      on:change="onNativeChange()" />
+    <div class="mc-items"></div>
+  </div>
+
+  <script>
+    /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-rate-fill 色槽 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill'] });
+
+    /* 一颗星的路径（24 × 24）：空星描边、实心层填充，两层共用同一个形状 */
+    const STAR =
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>';
+
+    export default async () => ({
+      tag: 'mc-rate',
+
+      attrs: {
+        /* 绑定通道 / 运行时状态（同 mc-input 的 value）：0 = 未评分 */
+        value: null,
+        // 非受控初值（同 default-value 约定）：只在挂载时读一次
+        defaultValue: null,
+        max: 5,
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-rate allow-half> 失效
+        allowHalf: null,
+        disabled: null,
+        size: 'md',
+        color: 'warning',
+      },
+
+      ready() {
+        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+        const root = this.ele.shadowRoot;
+        this._base = root.querySelector('.mc-base');
+        this._native = root.querySelector('.mc-native');
+        this._itemsEl = root.querySelector('.mc-items');
+        this._items = [];
+        this._hover = null;
+        this._dragging = false;
+
+        /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => (this._native ? this.readValue() : NaN),
+          set: (next) => {
+            if (!this._native) return;
+            const parsed = Number(next);
+            if (!Number.isFinite(parsed)) return;
+            this._native.value = String(parsed);
+            this.reflectValue();
+            this.paint();
+          },
+        });
+
+        this.syncNative();
+        this.applyInitialValue();
+        this.applyBoundValue();
+        this.renderItems();
+        this.paint();
+      },
+
+      attached() {
+        // 宿主 style 等构造期结束再写（P31）
+        color.sync(this.ele, this.color);
+        // createElement 之后再写 max / default-value 的那种：ready() 那会儿还读不到，补一次
+        this.syncNative();
+        this.applyInitialValue();
+        this.applyBoundValue();
+        this.renderItems();
+        this.paint();
+        this.bindEvents();
+      },
+
+      detached() {
+        this.unbindEvents();
+      },
+
+      watch: {
+        /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
+        value() {
+          this.applyBoundValue();
+        },
+        max() {
+          this.syncNative();
+          this.renderItems();
+          this.paint();
+        },
+        allowHalf() {
+          this.syncNative();
+          this.paint();
+        },
+        disabled() {
+          this.applyDisabled();
+        },
+        // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
+        color(value) {
+          color.change(this.ele, value);
+        },
+      },
+
+      proto: {
+        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+        readNumber(name, fallback) {
+          const raw = this.ele.getAttribute(name);
+          const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
+          return Number.isFinite(parsed) ? parsed : fallback;
+        },
+
+        /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+        boolAttr(name) {
+          const raw = this.ele.getAttribute(name);
+          return raw !== null && raw !== 'false';
+        },
+
+        /** 星星颗数：正整数，默认 5 */
+        maxValue() {
+          return Math.max(1, Math.round(this.readNumber('max', 5)));
+        },
+
+        /** 分值：真相在内部原生 range 上（它负责夹紧与按步进取整） */
+        readValue() {
+          if (!this._native) return 0;
+          const parsed = this._native.valueAsNumber;
+          return Number.isFinite(parsed) ? parsed : 0;
+        },
+
+        /** 内部 range 的区间与步进只有这一处：allow-half = 0.5 步进，否则 1 */
+        syncNative() {
+          if (!this._native) return;
+          const max = this.maxValue();
+          const step = this.boolAttr('allow-half') ? 0.5 : 1;
+          this._native.min = '0';
+          this._native.max = String(max);
+          this._native.step = String(step);
+
+          const value = this.readValue();
+          const snapped = Math.min(
+            Math.max(Math.round((Number.isFinite(value) ? value : 0) / step) * step, 0),
+            max,
+          );
+          if (String(snapped) !== this._native.value) this._native.value = String(snapped);
+        },
+
+        /** 初值：default-value 只在挂载时读一次；什么都没写就是 0（未评分） */
+        applyInitialValue() {
+          if (!this._native || this._defaultApplied === true) return;
+          const raw = this.ele.getAttribute('default-value');
+          if (raw === null) {
+            if (this.ele.getAttribute('value') === null) this._native.value = '0';
+            return;
+          }
+          this._defaultApplied = true;
+          const parsed = Number(raw);
+          this._native.value = Number.isFinite(parsed) ? String(parsed) : '0';
+        },
+
+        /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 range */
+        applyBoundValue() {
+          if (!this._native) return;
+          const raw = this.ele.getAttribute('value');
+          if (raw === null || raw.trim() === '') return;
+          const parsed = Number(raw);
+          if (!Number.isFinite(parsed)) return;
+          this._native.value = String(parsed);
+          // 原生 range 会按步进归一：属性跟着实际值走，两条通道不打架
+          this.reflectValue();
+          this.paint();
+        },
+
+        /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
+        reflectValue() {
+          if (!this._native) return;
+          const now = this._native.value;
+          if (this.ele.getAttribute('value') === now) return;
+          this.ele.setAttribute('value', now);
+        },
+
+        applyDisabled() {
+          if (!this._native) return;
+          this._native.disabled = this.boolAttr('disabled');
+        },
+
+        /** 按 max 重建那一排星（颗数没变就不动 DOM） */
+        renderItems() {
+          if (!this._itemsEl || !this._items) return;
+          const max = this.maxValue();
+          if (this._items.length === max) return;
+          const fragment = document.createDocumentFragment();
+          for (let index = 0; index < max; index += 1) {
+            const item = document.createElement('span');
+            item.className = 'mc-item';
+            item.setAttribute('part', 'item');
+            item.setAttribute('data-fill', 'empty');
+            item.innerHTML =
+              '<span class="mc-star">' +
+              STAR +
+              '</span><span class="mc-on"><span class="mc-star">' +
+              STAR +
+              '</span></span>';
+            fragment.append(item);
+          }
+          this._itemsEl.replaceChildren(fragment);
+          this._items = [...this._itemsEl.children];
+        },
+
+        /** 唯一入口：把显示值摊到每颗星上（悬停预览优先于真实值） */
+        paint() {
+          if (!this._native || !this._items || !this._items.length) return;
+          const value = this._hover === null ? this.readValue() : this._hover;
+          for (let index = 0; index < this._items.length; index += 1) {
+            const remainder = value - index;
+            const fill = remainder >= 1 ? 'full' : remainder >= 0.5 ? 'half' : 'empty';
+            if (this._items[index].getAttribute('data-fill') !== fill) {
+              this._items[index].setAttribute('data-fill', fill);
+            }
+          }
+        },
+
+        /** 指针在星条上的横向位置 → 点击 / 悬停会落到的分值（点第几颗就是几分，半星看左右半边） */
+        valueAt(event) {
+          if (!this._itemsEl) return 0;
+          const rect = this._itemsEl.getBoundingClientRect();
+          if (rect.width <= 0) return 0;
+          const max = this.maxValue();
+          const step = this.boolAttr('allow-half') ? 0.5 : 1;
+          const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+          return Math.min(Math.max(Math.ceil((ratio * max) / step) * step, step), max);
+        },
+
+        bindEvents() {
+          if (this._bound || !this._base) return;
+          this._bound = true;
+          this._onPointerDown = (event) => this.onPointerDown(event);
+          this._onPointerMove = (event) => this.onPointerMove(event);
+          this._onPointerUp = (event) => this.onPointerUp(event);
+          this._onPointerLeave = () => this.onPointerLeave();
+          this._base.addEventListener('pointerdown', this._onPointerDown);
+          this._base.addEventListener('pointermove', this._onPointerMove);
+          this._base.addEventListener('pointerup', this._onPointerUp);
+          this._base.addEventListener('pointercancel', this._onPointerUp);
+          this._base.addEventListener('pointerleave', this._onPointerLeave);
+        },
+
+        unbindEvents() {
+          if (!this._bound || !this._base) return;
+          this._base.removeEventListener('pointerdown', this._onPointerDown);
+          this._base.removeEventListener('pointermove', this._onPointerMove);
+          this._base.removeEventListener('pointerup', this._onPointerUp);
+          this._base.removeEventListener('pointercancel', this._onPointerUp);
+          this._base.removeEventListener('pointerleave', this._onPointerLeave);
+          this._bound = false;
+        },
+
+        /** 指针按下：落值 + 抢住指针，后续 move 都算拖选（跟拖动 range 一样连发 input） */
+        onPointerDown(event) {
+          if (this.boolAttr('disabled')) return;
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
+          this._dragging = true;
+          this._dragChanged = false;
+          this._hover = null;
+          this._native.focus({ preventScroll: true });
+          this._pointerId = event.pointerId;
+          try {
+            this._base.setPointerCapture(event.pointerId);
+          } catch (error) {
+            /* 合成事件没有真实指针：拿不到捕获就退化成普通点击 */
+          }
+          if (this.applyPointerValue(event)) this._dragChanged = true;
+        },
+
+        onPointerMove(event) {
+          if (this.boolAttr('disabled')) return;
+          if (this._dragging) {
+            if (this.applyPointerValue(event)) this._dragChanged = true;
+            return;
+          }
+          const value = this.valueAt(event);
+          if (value === this._hover) return;
+          this._hover = value;
+          this.paint();
+        },
+
+        /** 松开 / 取消：收掉悬停，拖选过就发一次 change */
+        onPointerUp() {
+          if (!this._dragging) return;
+          this._dragging = false;
+          this._hover = null;
+          try {
+            this._base.releasePointerCapture(this._pointerId);
+          } catch (error) {
+            /* 没有捕获可放 */
+          }
+          this._pointerId = null;
+          const changed = this._dragChanged === true;
+          this._dragChanged = false;
+          this.paint();
+          if (changed) this.emitValue('change');
+        },
+
+        onPointerLeave() {
+          if (this._dragging || this._hover === null) return;
+          this._hover = null;
+          this.paint();
+        },
+
+        /** 指针位置落成值；真的变了才发 input（返回是否变化） */
+        applyPointerValue(event) {
+          const value = this.valueAt(event);
+          if (value === this.readValue()) return false;
+          this._native.value = String(value);
+          this.reflectValue();
+          this.paint();
+          this.emitValue('input');
+          return true;
+        },
+
+        emitValue(type) {
+          this.emit(type, {
+            data: { value: this.readValue() },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 键盘走原生 range：Arrow / Home / End 由它处理，这里只转发带 data 的事件。
+            原生 input 是 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去（同 mc-input） */
+        onNativeInput(event) {
+          event.stopPropagation();
+          this.reflectValue();
+          this.paint();
+          this.emitValue('input');
+        },
+
+        onNativeChange() {
+          this.reflectValue();
+          this.paint();
+          this.emitValue('change');
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,25 @@
+<template component>
+  <style>
+    /* 两个 part 各改一处；选择器带上 .part-custom —— 否则下面那条默认对照也会被改掉 */
+    .part-custom::part(base) {
+      /* 整行都是命中区，描个边就能看见它 */
+      box-sizing: border-box;
+      border: 1px dashed rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+    }
+    .part-custom::part(item) {
+      /* 空星描边颜色与星标直径都认 item 上的这两个令牌，实心层会跟着裁 */
+      --mc-rate-star: 1.5rem;
+      --mc-rate-empty: var(--mc-color-danger);
+    }
+  </style>
+
+  <mc-space direction="vertical" block>
+    <mc-rate class="part-custom" value="4"></mc-rate>
+    <mc-rate value="4"></mc-rate>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-rate-part' });
+  </script>
+</template>

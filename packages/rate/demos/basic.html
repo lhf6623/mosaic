@@ -1,0 +1,14 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- value：初始 / 受控值 -->
+    <mc-rate value="3"></mc-rate>
+    <!-- default-value：只在挂载时读一次的非受控初值 -->
+    <mc-rate default-value="4"></mc-rate>
+    <!-- 什么都不写就是 0 —— 未评分 -->
+    <mc-rate></mc-rate>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-rate-basic' });
+  </script>
+</template>

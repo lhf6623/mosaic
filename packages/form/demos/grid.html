@@ -20,11 +20,6 @@
         </mc-form-item>
       </mc-grid-item>
       <mc-grid-item>
-        <mc-form-item label="音量" name="volume">
-          <mc-slider default-value="60"></mc-slider>
-        </mc-form-item>
-      </mc-grid-item>
-      <mc-grid-item>
         <mc-form-item label="套餐" name="plan">
           <mc-radio-group default-value="b">
             <mc-radio value="a">月付</mc-radio>
@@ -40,6 +35,16 @@
       <mc-grid-item>
         <mc-form-item label="订阅" name="digest">
           <mc-checkbox checked>每周摘要</mc-checkbox>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="评分" name="rating">
+          <mc-rate default-value="4"></mc-rate>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item span="2">
+        <mc-form-item label="音量" name="volume">
+          <mc-slider default-value="60"></mc-slider>
         </mc-form-item>
       </mc-grid-item>
     </mc-grid>

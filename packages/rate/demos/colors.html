@@ -1,0 +1,15 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-rate value="4" color="primary"></mc-rate>
+    <mc-rate value="4" color="info"></mc-rate>
+    <mc-rate value="4" color="success"></mc-rate>
+    <mc-rate value="4" color="warning"></mc-rate>
+    <mc-rate value="4" color="danger"></mc-rate>
+    <!-- 语义名之外也收 hex -->
+    <mc-rate value="4" color="#1a7f5a"></mc-rate>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-rate-colors' });
+  </script>
+</template>

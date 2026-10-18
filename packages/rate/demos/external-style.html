@@ -1,0 +1,14 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 星标直径与星间距是宿主令牌：宿主高度不变，星变大靠它们撑开 -->
+    <mc-rate value="4" style="--mc-rate-star: 1.75rem; --mc-rate-gap: var(--mc-space-2)"></mc-rate>
+    <!-- 实心星与空星的颜色 -->
+    <mc-rate
+      value="4"
+      style="--mc-rate-fill: var(--mc-color-success); --mc-rate-empty: var(--mc-color-info)"></mc-rate>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-rate-external-style' });
+  </script>
+</template>

@@ -297,6 +297,15 @@ export const SITE = [
               '滑动选择。在一段连续区间里拖一个值：原生 range 承载键盘与拖拽，轨道 / 填充 / 滑块自绘并开放 part；区间、步长与语义色都可配。',
           },
           {
+            order: 57,
+            label: 'Rate',
+            zh: '评分',
+            path: 'packages/rate/page.html',
+            type: 'component',
+            summary:
+              '评分。一排星，点第几颗就是几分；支持半星、自定义颗数与语义色。原生 range 只管键盘与焦点，指针交互按星星真实几何换算。',
+          },
+          {
             order: 60,
             label: 'Select',
             zh: '下拉选择',
