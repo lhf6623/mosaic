@@ -307,6 +307,7 @@
     "packages/badge/test/badge.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -331,11 +332,15 @@
       "index.html",
       "packages/badge/api.md",
       "packages/badge/badge.html",
+      "packages/badge/demos/anchor.html",
       "packages/badge/demos/basic.html",
       "packages/badge/demos/colors.html",
       "packages/badge/demos/dot.html",
       "packages/badge/demos/hex.html",
+      "packages/badge/demos/invisible.html",
       "packages/badge/demos/max.html",
+      "packages/badge/demos/part.html",
+      "packages/badge/demos/placement.html",
       "packages/badge/demos/sizes.html",
       "packages/badge/demos/variants.html",
       "packages/badge/page.html",
@@ -346,6 +351,7 @@
       "packages/boot/mosaic.css",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -358,7 +364,8 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/spinner/test/spinner.test.mjs": [
       "app-config.js",
@@ -2074,6 +2081,7 @@
       "packages/popover/test/popover.test.mjs"
     ],
     "docs/components/demos.html": [
+      "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs"
     ],
@@ -2931,6 +2939,9 @@
     "packages/badge/badge.html": [
       "packages/badge/test/badge.test.mjs"
     ],
+    "packages/badge/demos/anchor.html": [
+      "packages/badge/test/badge.test.mjs"
+    ],
     "packages/badge/demos/basic.html": [
       "packages/badge/test/badge.test.mjs"
     ],
@@ -2943,7 +2954,16 @@
     "packages/badge/demos/hex.html": [
       "packages/badge/test/badge.test.mjs"
     ],
+    "packages/badge/demos/invisible.html": [
+      "packages/badge/test/badge.test.mjs"
+    ],
     "packages/badge/demos/max.html": [
+      "packages/badge/test/badge.test.mjs"
+    ],
+    "packages/badge/demos/part.html": [
+      "packages/badge/test/badge.test.mjs"
+    ],
+    "packages/badge/demos/placement.html": [
       "packages/badge/test/badge.test.mjs"
     ],
     "packages/badge/demos/sizes.html": [
@@ -3210,6 +3230,7 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/button.html": [
+      "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/card/test/card.test.mjs",
@@ -4587,6 +4608,7 @@
       "packages/spinner/test/spinner.test.mjs"
     ],
     "packages/spinner/spinner.html": [
+      "packages/badge/test/badge.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/spinner/test/spinner.test.mjs",

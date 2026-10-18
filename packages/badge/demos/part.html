@@ -1,0 +1,17 @@
+<template component>
+  <style>
+    /* 徽标块是 part="indicator"：令牌够不到的效果（这里给外挂的一半挖一圈边）从这里改 */
+    mc-badge::part(indicator) {
+      box-shadow: 0 0 0 2px rgb(var(--mc-color-surface));
+    }
+  </style>
+
+  <mc-space block wrap-items gap="24">
+    <mc-badge content="5" color="danger"><mc-button>消息</mc-button></mc-badge>
+    <mc-badge content="99" color="danger" variant="solid"><mc-button>消息</mc-button></mc-badge>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-badge-part' });
+  </script>
+</template>

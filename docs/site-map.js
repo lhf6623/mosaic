@@ -168,7 +168,7 @@ export const SITE = [
             zh: '徽标',
             path: 'packages/badge/page.html',
             type: 'component',
-            summary: '徽标。默认浅底，比实心更不抢视线；支持纯圆点与数值上限。',
+            summary: '徽标。挂在容器（按钮、头像…）的角上，也支持独立使用；圆点与数值上限都有。',
           },
           {
             order: 40,

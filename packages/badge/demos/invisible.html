@@ -1,0 +1,20 @@
+<template component>
+  <mc-space block wrap-items gap="24">
+    <mc-badge content="5" attr:invisible="shown ? null : ''"><mc-button>消息</mc-button></mc-badge>
+    <mc-button variant="outline" on:click="toggle()">
+      {{shown ? '隐藏徽标' : '显示徽标'}}
+    </mc-button>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-badge-invisible',
+      data: { shown: true },
+      proto: {
+        toggle() {
+          this.shown = !this.shown;
+        },
+      },
+    });
+  </script>
+</template>

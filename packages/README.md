@@ -407,6 +407,8 @@ item.open = true; // 组件提供了访问器时同样可以
 
 **用 `prefix` / `suffix`，不用 `leading` / `trailing`** —— 和 CSS 逻辑属性（`padding-inline-start`）对齐。
 
+> 默认插槽在「被挂载」类组件里放的是**被挂载的元素**（`mc-tooltip` / `mc-popover` 的触发元素、`mc-badge` 的容器），不是主内容 —— 这类组件的默认插槽没有别的用途。
+
 ### 1.7 `part` 命名
 
 只在**内部有结构性子元素**且使用者确实需要定制时才暴露 `part`。
@@ -525,21 +527,21 @@ item.open = true; // 组件提供了访问器时同样可以
 
 ## 八、实现与草案的出入（对账用）
 
-| 单元                        | 出入与理由                                                                                                                                                                                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mc-progress`               | 不套表单那套 `default-value` / `value` 约定：进度条不接受输入、不参与提交、没有 `change`，它的属性就是**当前**进度（同 `mc-collapse-item` 的 `open`）；`value` / `max` 另给宿主 property 访问器。                                                                 |
-| `mc-input` / `mc-textarea`  | 转发内部原生元素用 `attr:` 而不是 `:prop`（见上）；原生 `input` 转发前先 `stopPropagation()`。                                                                                                                                                                    |
-| `mc-checkbox` / `mc-switch` | `checked` 是**受控 / 运行时状态**（唯一的 observed 布尔），`default-checked` 只作**非受控初值**：挂载时读一次就把 `checked` 落成宿主属性，之后**不再参与**（所以不存在"两个属性漂移"——漂移的前提是两个都持续观察，`mc-collapse-item` 那个先例说的正是持续观察）。 |
-| `mc-radio`                  | 原生「同 name 成组」跨 shadow 不成立，所以唯一真相是子项宿主上的 `checked`、由组维护；`mc-radio` 的 `checked` 是镜像 property，不进 api.md 属性表。                                                                                                               |
-| `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                                                                       |
-| `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。                                                   |
-| `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                                                                          |
-| `mc-tooltip`                | `trigger="hover"` 时 **hover 与 focus 都触发**（键盘可达）；不 emit 事件（气泡是纯展示）。                                                                                                                                                                        |
-| `mc-tabs`                   | 草案没定面板怎么给：实现是「默认插槽放 `mc-tab` 标签 + `slot="panel"` 且带 `value` 的子元素当面板」，非激活面板挂 `hidden` 常驻 DOM。                                                                                                                             |
-| `mc-table`                  | `data` 撞 ofa 元素代理的保留名、**不能进 `attrs`**：只做宿主 property + 组件自己听属性；行模板放具名 `<template>` —— HTML 解析器会把 `tr` 里的自定义元素搬出去。                                                                                                  |
-| `mc-grid`                   | 草案写「无插槽无 part」，但容器必须有真实 `<slot>` 才能投影子项，所以 api.md 有「插槽」一节。                                                                                                                                                                     |
-| `mc-space`                  | 换行属性 `wrap` → **`wrap-items`**、反向属性 `reverse` → **`reverse-order`**：两者都撞 ofa 元素 API 的同名方法（挂载时会把函数写进属性），改名规避；数据键 `wrapItems` / `reverseOrder`。`gap` 除三档外收数字（px，JS 写内部变量 `--mc-space-gap`）。             |
-| `mc-badge` / `mc-spinner`   | 属性名 / 取值 / 默认值与草案逐字一致；只多了实现层的组件令牌（登记在各自 README 的令牌表）。                                                                                                                                                                      |
+| 单元                        | 出入与理由                                                                                                                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mc-progress`               | 不套表单那套 `default-value` / `value` 约定：进度条不接受输入、不参与提交、没有 `change`，它的属性就是**当前**进度（同 `mc-collapse-item` 的 `open`）；`value` / `max` 另给宿主 property 访问器。                                                                        |
+| `mc-input` / `mc-textarea`  | 转发内部原生元素用 `attr:` 而不是 `:prop`（见上）；原生 `input` 转发前先 `stopPropagation()`。                                                                                                                                                                           |
+| `mc-checkbox` / `mc-switch` | `checked` 是**受控 / 运行时状态**（唯一的 observed 布尔），`default-checked` 只作**非受控初值**：挂载时读一次就把 `checked` 落成宿主属性，之后**不再参与**（所以不存在"两个属性漂移"——漂移的前提是两个都持续观察，`mc-collapse-item` 那个先例说的正是持续观察）。        |
+| `mc-radio`                  | 原生「同 name 成组」跨 shadow 不成立，所以唯一真相是子项宿主上的 `checked`、由组维护；`mc-radio` 的 `checked` 是镜像 property，不进 api.md 属性表。                                                                                                                      |
+| `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                                                                              |
+| `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。                                                          |
+| `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                                                                                 |
+| `mc-tooltip`                | `trigger="hover"` 时 **hover 与 focus 都触发**（键盘可达）；不 emit 事件（气泡是纯展示）。                                                                                                                                                                               |
+| `mc-tabs`                   | 草案没定面板怎么给：实现是「默认插槽放 `mc-tab` 标签 + `slot="panel"` 且带 `value` 的子元素当面板」，非激活面板挂 `hidden` 常驻 DOM。                                                                                                                                    |
+| `mc-table`                  | `data` 撞 ofa 元素代理的保留名、**不能进 `attrs`**：只做宿主 property + 组件自己听属性；行模板放具名 `<template>` —— HTML 解析器会把 `tr` 里的自定义元素搬出去。                                                                                                         |
+| `mc-grid`                   | 草案写「无插槽无 part」，但容器必须有真实 `<slot>` 才能投影子项，所以 api.md 有「插槽」一节。                                                                                                                                                                            |
+| `mc-space`                  | 换行属性 `wrap` → **`wrap-items`**、反向属性 `reverse` → **`reverse-order`**：两者都撞 ofa 元素 API 的同名方法（挂载时会把函数写进属性），改名规避；数据键 `wrapItems` / `reverseOrder`。`gap` 除三档外收数字（px，JS 写内部变量 `--mc-space-gap`）。                    |
+| `mc-badge` / `mc-spinner`   | `mc-spinner` 属性名 / 取值 / 默认值与草案逐字一致；只多了实现层的组件令牌（登记在各自 README 的令牌表）。`mc-badge` 2026-10 起改成挂载式：默认插槽放容器、内容走 `content`、`placement` 四角；不传容器的独立形态保留，视觉从 `:host` 搬进 shadow 的 `part="indicator"`。 |
 
 ---
 

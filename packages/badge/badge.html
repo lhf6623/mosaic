@@ -2,14 +2,34 @@
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值；徽标不是控件，高度用自己的 --mc-badge-h */
+    /* 1. 宿主 = 定位包装器：有容器时宿主盒就是容器的盒子；没有容器时盒子里只有徽标块 */
     :host {
+      display: inline-flex;
+      box-sizing: border-box;
+      position: relative; /* 挂载模式下徽标块的包含块（P21） */
+      vertical-align: middle;
+
+      /* 色槽。徽标没有 neutral（草案如此）：默认 primary，中性场景交给 mc-tag */
+      --mc-badge-h: 1.25rem;
+      --mc-badge-pad-x: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-badge-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-badge-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      --mc-badge-dot: 0.5rem;
+      /* 徽标块中心相对角点外挂多少：50% = 中心压角，0 = 完全贴在内侧 */
+      --mc-badge-overlap: 50%;
+
+      --mc-badge-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-badge-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
+      --mc-badge-accent: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-badge-subtle-fill: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle));
+    }
+
+    /* 2. 徽标块：视觉全在这里（原来在 :host 上）；挂载模式下它再被绝对定位到角上 */
+    .mc-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      position: relative; /* 内部绝对定位元素的包含块（P21） */
-      vertical-align: middle;
       white-space: nowrap;
       user-select: none;
       /* 三档外观都保留 1px 透明的线：切 variant / 换 color 时高度不抖 */
@@ -29,24 +49,12 @@
         border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
           var(--mc-ease-standard, var(--mc-def-ease-standard));
 
-      /* 色槽。徽标没有 neutral（草案如此）：默认 primary，中性场景交给 mc-tag */
-      --mc-badge-h: 1.25rem;
-      --mc-badge-pad-x: var(--mc-space-2, var(--mc-def-space-2));
-      --mc-badge-font: var(--mc-text-xs, var(--mc-def-text-xs));
-      --mc-badge-radius: var(--mc-radius-full, var(--mc-def-radius-full));
-      --mc-badge-dot: 0.5rem;
-
-      --mc-badge-fill: var(--mc-color-primary, var(--mc-def-color-primary));
-      --mc-badge-on-fill: var(--mc-color-primary-fg, var(--mc-def-color-primary-fg));
-      --mc-badge-accent: var(--mc-color-primary, var(--mc-def-color-primary));
-      --mc-badge-subtle-fill: var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle));
-
-      /* subtle 是默认外观，直接写在 1 区（写 :host(:not([variant])) 会静默失效，P14） */
+      /* subtle 是默认外观（:host(:not([variant])) 会静默失效，P14） */
       background-color: rgb(var(--mc-badge-subtle-fill));
       color: rgb(var(--mc-badge-accent));
     }
 
-    /* 2. 维度一 color：只往色槽里填值（primary 已在上面） */
+    /* 3. 维度一 color：只往色槽里填值（primary 已在上面） */
     :host([color='info']) {
       --mc-badge-fill: var(--mc-color-info, var(--mc-def-color-info));
       --mc-badge-on-fill: var(--mc-color-info-fg, var(--mc-def-color-info-fg));
@@ -72,18 +80,18 @@
       --mc-badge-subtle-fill: var(--mc-color-danger-subtle, var(--mc-def-color-danger-subtle));
     }
 
-    /* 3. 维度二 variant：只决定色槽贴到哪儿 */
-    :host([variant='solid']) {
+    /* 4. 维度二 variant：只决定色槽贴到哪儿 */
+    :host([variant='solid']) .mc-badge {
       background-color: rgb(var(--mc-badge-fill));
       color: rgb(var(--mc-badge-on-fill));
     }
-    :host([variant='outline']) {
+    :host([variant='outline']) .mc-badge {
       background-color: transparent;
       color: rgb(var(--mc-badge-accent));
       border-color: rgb(var(--mc-badge-accent));
     }
 
-    /* 4. 尺寸与状态 */
+    /* 5. 尺寸：徽标不是控件，高度走自己的 --mc-badge-h */
     :host([size='sm']) {
       --mc-badge-h: 1rem;
       --mc-badge-pad-x: var(--mc-space-1, var(--mc-def-space-1));
@@ -91,17 +99,47 @@
       --mc-badge-dot: 0.375rem;
     }
 
-    /* dot：常驻 DOM + :host([dot]) 显隐（P10）。开着时只留一个圆点，整块变成正圆 */
-    :host([dot]) {
+    /* 6. dot：常驻 DOM + :host([dot]) 显隐（P10）。开着时只留一个圆点，整块变成正圆 */
+    :host([dot]) .mc-badge {
       padding-inline: 0;
       min-width: var(--mc-badge-h);
     }
 
-    /* 5. 内部元素：只放工具类表达不了的 */
-    .mc-content {
-      display: inline-flex;
-      align-items: center;
+    /* 7. 挂载模式：容器留在流里，徽标块绝对贴到四角之一。
+       ⚠️ 默认档也写显式选择器：ofa 会把 placement 默认值写到宿主（P32），别用 :not() */
+    :host([data-anchored]) .mc-badge {
+      position: absolute;
+      z-index: 1;
+      pointer-events: none; /* 盖住的那半个容器照样点得到 */
     }
+    :host([data-anchored][placement='top-end']) .mc-badge {
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      translate: var(--mc-badge-overlap) calc(var(--mc-badge-overlap) * -1);
+    }
+    :host([data-anchored][placement='top-start']) .mc-badge {
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      translate: calc(var(--mc-badge-overlap) * -1) calc(var(--mc-badge-overlap) * -1);
+    }
+    :host([data-anchored][placement='bottom-end']) .mc-badge {
+      inset-block-end: 0;
+      inset-inline-end: 0;
+      translate: var(--mc-badge-overlap) var(--mc-badge-overlap);
+    }
+    :host([data-anchored][placement='bottom-start']) .mc-badge {
+      inset-block-end: 0;
+      inset-inline-start: 0;
+      translate: calc(var(--mc-badge-overlap) * -1) var(--mc-badge-overlap);
+    }
+
+    /* 8. 隐藏：空内容（没开 dot）由脚本镜像 data-empty；invisible 是使用者显式关掉徽标块、容器仍在 */
+    :host([data-empty]) .mc-badge,
+    :host([invisible]) .mc-badge {
+      display: none;
+    }
+
+    /* 9. 内部元素：只放工具类表达不了的 */
     .mc-dot {
       display: none;
       width: var(--mc-badge-dot);
@@ -109,25 +147,24 @@
       border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
       background-color: currentColor;
     }
-    /* max 裁剪出来的 `${max}+` 住在常驻的 span 里（P17），显隐同样靠宿主属性 */
+    /* 文案住在常驻的 span 里（P17）：内容 / max+ 都写它，dot 打开时整块不显示 */
     .mc-text {
-      display: none;
+      display: inline;
     }
     :host([dot]) .mc-dot {
       display: block;
     }
-    :host([dot]) .mc-content,
-    :host([data-overflow]) .mc-content {
+    :host([dot]) .mc-text {
       display: none;
-    }
-    :host([data-overflow]) .mc-text {
-      display: inline;
     }
   </style>
 
-  <span class="mc-dot"></span>
-  <span class="mc-content"><slot></slot></span>
-  <span class="mc-text"></span>
+  <!-- 容器由使用者写进默认插槽；没有容器时这层 slot 不产生盒子，宿主里只有徽标块 -->
+  <slot></slot>
+  <span class="mc-badge" part="indicator">
+    <span class="mc-dot"></span>
+    <span class="mc-text"></span>
+  </span>
 
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；徽标默认浅底外观，所以接 subtle-fill */
@@ -142,16 +179,20 @@
         color: 'primary',
         variant: 'subtle',
         size: 'md',
+        // 徽标文字。原来走默认插槽；现在默认插槽是容器，内容改走这里
+        content: '',
+        // 有容器时徽标块贴哪个角；没有容器时无意义
+        placement: 'top-end',
         // 布尔属性默认值必须是 null（P1）
         dot: null,
-        // 数字型属性：attr 是字符串，applyMax 里自己 parse（P4：属性到 data 是异步的）
+        invisible: null,
+        // 数字型属性：attr 是字符串，applyText 里自己 parse（P4：属性到 data 是异步的）
         max: null,
       },
 
       ready() {
         // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）
         const root = this.ele.shadowRoot;
-        this._content = root.querySelector('.mc-content');
         this._text = root.querySelector('.mc-text');
         this._slot = root.querySelector('slot');
       },
@@ -161,9 +202,12 @@
         // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
         color.sync(this.ele, this.color);
 
-        this._onSlotChange = () => this.applyMax();
+        this._onSlotChange = () => this.applyAnchor();
         this._slot?.addEventListener('slotchange', this._onSlotChange);
-        this.applyMax();
+        // 首次 slotchange 不一定在挂载前发生，这里补一次（同 mc-divider）
+        this.normalizeBoolAttrs();
+        this.applyAnchor();
+        this.applyText();
       },
 
       detached() {
@@ -175,34 +219,57 @@
         color(value) {
           color.change(this.ele, value);
         },
+        content() {
+          this.applyText();
+        },
         max() {
-          this.applyMax();
+          this.applyText();
         },
         dot() {
-          this.applyMax();
+          this.applyText();
+        },
+        invisible() {
+          this.normalizeBoolAttrs();
         },
       },
 
       proto: {
-        slotText() {
-          return [...(this._slot?.assignedNodes() ?? [])]
-            .map((node) => node.textContent ?? '')
-            .join('')
-            .trim();
+        /** 默认插槽里有没有元素 → 有没有容器；结果镜像到宿主 data-anchored（CSS 只认这个属性） */
+        applyAnchor() {
+          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
+          const has = (this._slot?.assignedElements() ?? []).length > 0;
+          this.mirror('data-anchored', has);
         },
 
-        /** 纯数字且超上限 → 显示 `${max}+`；结果写常驻 span（P17），显隐交给 :host([data-overflow])（P10） */
-        applyMax() {
-          if (!this._content || !this._text) return;
+        /** content / max / dot → 徽标文字。dot 打开时内容整块不显示（两状态互斥） */
+        applyText() {
+          if (!this._text) return;
           const el = this.ele;
-          /* dot 打开时内容整块不显示，也就没有「超过上限」这回事（两状态互斥） */
-          const raw = el.hasAttribute('dot') ? '' : this.slotText();
+          const dot = this.boolAttr('dot');
+          const raw = dot ? '' : (el.getAttribute('content') ?? '');
           const maxAttr = el.getAttribute('max');
           const max = maxAttr === null ? NaN : Number(maxAttr);
-          const over = /^\d+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
-          this._text.textContent = over ? `${max}+` : '';
+          const over = /^[0-9]+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
+          this._text.textContent = over ? String(max) + '+' : raw;
           if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
-          this.mirror('data-overflow', over);
+          this.mirror('data-empty', !dot && raw.trim() === '');
+        },
+
+        /** 布尔属性的读法：存在且值不是 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+        boolAttr(name) {
+          const raw = this.ele.getAttribute(name);
+          return raw !== null && raw !== 'false';
+        },
+
+        /** 把绑定写法 dot="false" / invisible="false" 规范化掉，CSS :host([...]) 才判得准（P31） */
+        normalizeBoolAttrs() {
+          if (!this._live) return;
+          for (const name of ['dot', 'invisible']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false' || raw === '0') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
         },
 
         mirror(name, on) {

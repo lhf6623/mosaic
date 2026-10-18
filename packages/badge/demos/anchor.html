@@ -1,0 +1,14 @@
+<template component>
+  <mc-space block wrap-items gap="24">
+    <mc-badge content="5"><mc-button>消息</mc-button></mc-badge>
+    <mc-badge content="120" max="99" color="danger" variant="solid">
+      <mc-button>消息</mc-button>
+    </mc-badge>
+    <mc-badge dot color="success"><mc-button>在线</mc-button></mc-badge>
+    <mc-badge content="9" color="info"><mc-button variant="outline">通知</mc-button></mc-badge>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-badge-anchor' });
+  </script>
+</template>

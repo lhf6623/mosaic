@@ -4,11 +4,15 @@
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./badge.html"></l-m>
+    <!-- 演示里用到 mc-button，本页必须注册（站点外壳不含它） -->
+    <l-m src="../button/button.html"></l-m>
     <h1>
       Badge
       <code>mc-badge</code>
     </h1>
-    <p class="doc-lead">徽标：一块语义色的小色片，可只留一个圆点，也可按上限截断数字。</p>
+    <p class="doc-lead">
+      徽标：挂在容器（按钮、头像…）角上的语义色小片，也可独立使用；支持纯圆点与数值上限。
+    </p>
 
     <h2>例子</h2>
 
@@ -16,7 +20,9 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          徽标只是标记，
+          不传容器时就是一块独立徽标，内容走
+          <code>content</code>
+          属性。徽标只是标记，
           <strong>不交互</strong>
           —— 要能点、能关、能选中，用
           <code>mc-tag</code>
@@ -27,6 +33,28 @@
           。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>挂在容器上</h3>
+        <p class="doc-hint">
+          容器写进默认插槽，徽标块自动贴到它的右上角 —— 不用再自己写
+          <code>position: relative</code>
+          容器和绝对定位。
+        </p>
+        <doc-playground src="./demos/anchor.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>位置</h3>
+        <p class="doc-hint">
+          四个角，徽标块中心压在角上；外挂多少用
+          <code>--mc-badge-overlap</code>
+          调（
+          <code>0</code>
+          就完全贴在内侧）。
+        </p>
+        <doc-playground src="./demos/placement.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
@@ -74,7 +102,7 @@
           <code>dot</code>
           只显示一个圆点，整块变成正圆；圆点跟着当前文字色走，所以三档外观都能用。 打开
           <code>dot</code>
-          时插槽内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
+          时内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
         </p>
         <doc-playground src="./demos/dot.html"></doc-playground>
       </section>
@@ -101,6 +129,29 @@
           ）：浅底按主题派生， 实心上的文字色按对比度自动给。
         </p>
         <doc-playground src="./demos/hex.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>隐藏</h3>
+        <p class="doc-hint">
+          <code>content</code>
+          为空且没开
+          <code>dot</code>
+          时本来就不渲染；
+          <code>invisible</code>
+          用来在内容非空时临时关掉徽标块，容器照常保留。
+        </p>
+        <doc-playground src="./demos/invisible.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          视觉在 shadow 里的
+          <code>part="indicator"</code>
+          上；令牌管不到的效果（比如外挂那半圈的挖边）从这里改。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
       </section>
     </doc-demos>
 
