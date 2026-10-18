@@ -910,7 +910,7 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ------------------------------------------------------------------ *
-   * 15. size：三档 28 / 36 / 44 + 字号 12 / 14 / 16；数字按 px 写宿主令牌
+   * 15. size：只有三档 28 / 36 / 44，字号 12 / 14 / 16（不再收数字）
    * ------------------------------------------------------------------ */
   const sizes = await page.evaluate(async () => {
     const data = [{ value: 'a', label: 'A' }];
@@ -928,7 +928,6 @@ export default async function run({ page, visit, check }) {
     const sm = await measure({ size: 'sm' });
     const md = await measure({});
     const lg = await measure({ size: 'lg' });
-    const num = await measure({ size: '48' });
     const el = document.getElementById('probe-tree');
     el.setAttribute('size', 'sm');
     await wait(120);
@@ -937,20 +936,21 @@ export default async function run({ page, visit, check }) {
       font: getComputedStyle(el).fontSize,
       token: el.style.getPropertyValue('--mc-tree-select-h').trim(),
     };
-    return { sm, md, lg, num, back };
+    return { sm, md, lg, back };
   });
   check(
-    'size：三档宿主高 28 / 36 / 44、字号 12 / 14 / 16；size="48" → 宿主高 48 且 style 上写 --mc-tree-select-h=48px，切回档位（sm）内联令牌被移除',
+    'size：三档宿主高 28 / 36 / 44、字号 12 / 14 / 16；切档跟属性走，且不会往 style 写 --mc-tree-select-h 内联令牌',
     sizes.sm.host === 28 &&
       sizes.sm.font === '12px' &&
       sizes.md.host === 36 &&
       sizes.md.font === '14px' &&
       sizes.lg.host === 44 &&
       sizes.lg.font === '16px' &&
-      sizes.num.host === 48 &&
-      sizes.num.token === '48px' &&
       sizes.back.host === 28 &&
       sizes.back.font === '12px' &&
+      sizes.sm.token === '' &&
+      sizes.md.token === '' &&
+      sizes.lg.token === '' &&
       sizes.back.token === '',
     JSON.stringify(sizes),
   );

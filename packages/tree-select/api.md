@@ -60,18 +60,18 @@
 
 ### mc-tree-select
 
-| 名称            | 值                               | 默认       | 说明                                                                                             |
-| --------------- | -------------------------------- | ---------- | ------------------------------------------------------------------------------------------------ |
-| `options`       | `string`                         | —          | 树数据：property 传对象数组（字段见下「options 字段」）；属性通道只作 JSON 初始值，property 优先 |
-| `value`         | `string`                         | —          | 当前值（节点 `value`）：绑定通道与运行时状态；写属性或 property 都立刻生效                       |
-| `default-value` | `string`                         | `''`       | 非受控初值：只在挂载时读一次，之后改它不再生效                                                   |
-| `placeholder`   | `string`                         | `请选择`   | 没有选中节点时的文案                                                                             |
-| `empty-text`    | `string`                         | `暂无数据` | `options` 为空时面板里的文案                                                                     |
-| `clearable`     | `boolean`                        | —          | 有值时右端出现 ×；点它清空并发 `clear`                                                           |
-| `disabled`      | `boolean`                        | —          | 禁用：不进焦点、不弹面板                                                                         |
-| `readonly`      | `boolean`                        | —          | 只读：可聚焦，但不弹面板                                                                         |
-| `invalid`       | `boolean`                        | —          | 校验失败：边框换成 `--mc-color-danger`                                                           |
-| `size`          | `'sm' \| 'md' \| 'lg' \| number` | `md`       | 控件高 / 字号；纯数字按 px 设控件高                                                              |
+| 名称            | 值                     | 默认       | 说明                                                                                             |
+| --------------- | ---------------------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| `options`       | `string`               | —          | 树数据：property 传对象数组（字段见下「options 字段」）；属性通道只作 JSON 初始值，property 优先 |
+| `value`         | `string`               | —          | 当前值（节点 `value`）：绑定通道与运行时状态；写属性或 property 都立刻生效                       |
+| `default-value` | `string`               | `''`       | 非受控初值：只在挂载时读一次，之后改它不再生效                                                   |
+| `placeholder`   | `string`               | `请选择`   | 没有选中节点时的文案                                                                             |
+| `empty-text`    | `string`               | `暂无数据` | `options` 为空时面板里的文案                                                                     |
+| `clearable`     | `boolean`              | —          | 有值时右端出现 ×；点它清空并发 `clear`                                                           |
+| `disabled`      | `boolean`              | —          | 禁用：不进焦点、不弹面板                                                                         |
+| `readonly`      | `boolean`              | —          | 只读：可聚焦，但不弹面板                                                                         |
+| `invalid`       | `boolean`              | —          | 校验失败：边框换成 `--mc-color-danger`                                                           |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `md`       | 控件高 / 字号；树行跟宿主同高                                                                    |
 
 ### options 字段
 

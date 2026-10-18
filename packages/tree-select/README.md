@@ -66,8 +66,8 @@
 多选（`multiple` + 级联 + `check-strictly`）、`filterable` 搜索、`show-path` 路径显示都不在
 这一版里 —— 它们会各自带来一套状态与键盘分支，混在一起会把第一版拖成第二个 select 的两倍大。
 
-**`size` 也收数字。** 三档 `sm / md / lg` 交给 CSS，纯数字按 px 写 `--mc-tree-select-h`（控件高，
-行也跟它同高）；切换回档位时清掉自己写的内联令牌。
+**`size` 只有三档。** `sm / md / lg` 交给 CSS，只动宿主高度与字号，树行跟宿主同高。树型选择
+没有「按 px 微调高度」的明确场景（触发框和面板行要一起变），所以不像 slider / rate 那样收数字。
 
 **宽度不跟选中项走。** 触发框默认给一个最小宽（`--mc-tree-select-min-w` = `10rem`），容器更宽时
 自动撑满、更窄时被 `max-width: 100%` 收住；短标签（「浙江」/「上海」）之间切换宽度不变，长标签
@@ -85,7 +85,7 @@
 
 | 令牌                                     | 默认                        | 作用                                        |
 | ---------------------------------------- | --------------------------- | ------------------------------------------- |
-| `--mc-tree-select-h`                     | `--mc-control-h-md`         | 控件高（行也用它）；数字 size 写它          |
+| `--mc-tree-select-h`                     | `--mc-control-h-md`         | 控件高（行也用它）                          |
 | `--mc-tree-select-min-w`                 | `10rem`                     | 触发框最小宽（不跟选中项文字变）            |
 | `--mc-tree-select-control-bg`            | `--mc-color-surface`        | 触发框底色                                  |
 | `--mc-tree-select-control-border`        | `--mc-color-border`         | 触发框边框色（`invalid` 时换危险色）        |

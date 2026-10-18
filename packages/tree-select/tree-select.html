@@ -62,7 +62,7 @@
       );
     }
 
-    /* 2. 尺寸：三档只动宿主高度与字号；数字 size 由脚本写 --mc-tree-select-h */
+    /* 2. 尺寸：三档只动宿主高度与字号（树行跟宿主同高） */
     :host([size='sm']) {
       --mc-tree-select-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
       font-size: var(--mc-text-xs, var(--mc-def-text-xs));
@@ -472,7 +472,6 @@
         attached() {
           /* 到这里构造期已结束，才允许往宿主写属性（P31） */
           this._live = true;
-          this.applySize();
 
           /* 行模板先读一遍：后面 applyOptions() 渲染时要按它填每行 */
           this.readTemplates();
@@ -568,10 +567,6 @@
             if (!this._live || this.skipInit('invalid')) return;
             this.syncDisplay();
           },
-          // size 收纯数字：按 px 写 --mc-tree-select-h，sm / md / lg 仍交给 CSS
-          size() {
-            this.applySize();
-          },
         },
 
         proto: {
@@ -580,20 +575,6 @@
             if (this._seen.has(key)) return false;
             this._seen.add(key);
             return true;
-          },
-
-          /** 数字 size 按 px 写宿主上的 --mc-tree-select-h（三档仍交给 CSS）；只删自己写过的那次 */
-          applySize() {
-            if (!this._live) return;
-            const raw = String(this.ele.getAttribute('size') ?? '').trim();
-            const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
-            if (px) {
-              this.ele.style.setProperty('--mc-tree-select-h', px);
-              this._sizePx = true;
-            } else if (this._sizePx) {
-              this.ele.style.removeProperty('--mc-tree-select-h');
-              this._sizePx = false;
-            }
           },
 
           /* ---------- 数据源 ---------- */
