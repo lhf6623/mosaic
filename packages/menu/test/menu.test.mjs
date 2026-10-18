@@ -605,10 +605,29 @@ export default async function run({ page, visit, check }) {
       return out;
     });
 
+    /** 绑定首屏双通道优先级：property 写过值后属性通道不能覆盖 */
+    const priority = await page.evaluate(async () => {
+      const el = document.createElement('mc-menu');
+      document.body.append(el);
+      await new Promise((r) => setTimeout(r, 80));
+      el.options = [{ label: '来自 property' }];
+      el.setAttribute('options', JSON.stringify([{ label: '来自属性' }]));
+      await new Promise((r) => setTimeout(r, 300));
+      const out = {
+        labels: el.options.map((option) => option.label),
+        rows: [...el.querySelectorAll(':scope > mc-menu-item')].map((item) =>
+          item.textContent.trim(),
+        ),
+      };
+      el.remove();
+      return out;
+    });
+
     page.off('response', onResponse);
     page.off('pageerror', onError);
 
     return {
+      priority,
       basic,
       options,
       indent,
@@ -936,6 +955,14 @@ export default async function run({ page, visit, check }) {
       Array.isArray(menu.dynamic.version) &&
       menu.dynamic.version.length === 2,
     JSON.stringify(menu.dynamic),
+  );
+
+  check(
+    '绑定首屏可能同时写属性与 property：property 写过值后，后到的属性通道不覆盖它',
+    menu.priority.labels[0] === '来自 property' &&
+      menu.priority.rows.includes('来自 property') &&
+      !menu.priority.rows.includes('来自属性'),
+    JSON.stringify(menu.priority),
   );
 
   check('页面无 404 / 报错', menu.failed.length === 0, menu.failed.join('\n'));

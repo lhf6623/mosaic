@@ -422,6 +422,34 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(slotsUi),
   );
 
+  /* ---------- 绑定首屏双通道：property 写过值后，后到的属性不能覆盖 ---------- */
+  const priority = await page.evaluate(async () => {
+    const table = document.createElement('mc-table');
+    document.body.append(table);
+    await new Promise((r) => setTimeout(r, 80));
+    table.columns = [{ key: 'a', title: '来自 property' }];
+    table.data = [{ a: '来自 property 的行' }];
+    table.setAttribute('columns', JSON.stringify([{ key: 'b', title: '来自属性' }]));
+    table.setAttribute('data', JSON.stringify([{ b: '来自属性的行' }]));
+    await new Promise((r) => setTimeout(r, 300));
+    const out = {
+      th: [...table.shadowRoot.querySelectorAll('th')].map((n) => n.textContent.trim()),
+      td: [...table.shadowRoot.querySelectorAll('td')].map((n) => n.textContent.trim()),
+      colTitle: table.columns?.[0]?.title ?? null,
+      rowA: table.data?.[0]?.a ?? null,
+    };
+    table.remove();
+    return out;
+  });
+  check(
+    '绑定首屏可能同时写属性与 property：property 写过值后，后到的属性通道不覆盖它',
+    priority.colTitle === '来自 property' &&
+      priority.rowA === '来自 property 的行' &&
+      JSON.stringify(priority.th) === JSON.stringify(['来自 property']) &&
+      JSON.stringify(priority.td) === JSON.stringify(['来自 property 的行']),
+    JSON.stringify(priority),
+  );
+
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => document.getElementById('table-probe')?.remove());
   page.off('response', onResponse);

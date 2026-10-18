@@ -37,7 +37,7 @@
 
       data: { extra: 0 },
 
-      /* options 是宿主 property：属性通道只收 JSON 字符串，运行时传数组（同 mc-table 的 data） */
+      /* options 是宿主 property：绑定落点不稳定（首屏可能直接给数组、SPA 导航是 JSON 文本），运行时传数组（同 mc-table 的 data） */
       ready() {
         this.menu().options = OPTIONS;
       },

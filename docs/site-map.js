@@ -185,7 +185,8 @@ export const SITE = [
             zh: '表格',
             path: 'packages/table/page.html',
             type: 'component',
-            summary: '数据表格。columns / data 通过 property 传入（对象不能走标签属性）。',
+            summary:
+              '数据表格。columns / data 用 property 传（对象数组；绑定通道落点不稳定，不要依赖）。',
           },
           {
             order: 50,

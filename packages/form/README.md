@@ -76,10 +76,11 @@
 一个字段的规则表按 **`required` 属性 → 行内 `rules`（属性 → property）→ `form.rules[字段名]`（属性 → property）**
 的顺序拼，第一条失败胜出。
 
-**函数进不了属性，这是文本格式的硬限制**（不是偷懒）：JSON 装不了 `validator`，
-而模板里的 `:rules="某个对象"` 也一样 —— 实测 ofa 会先 `JSON.stringify` 把它写成这个属性的文本值
-（组件里 `this.rules` 拿到的就是字符串），函数在那一步就没了。所以分工是：
-**声明式（`required` / `message` / `trigger`）写属性，`validator` 挂 property**。
+**函数不能靠绑定传，而且绑定的落点不稳定**：属性是文本，JSON 装不了 `validator`；模板里的
+`:rules="某个对象"` 也不保证落到哪一侧 —— 实测**首屏直出**（地址栏没有 hash）时 ofa 可能直接把对象
+赋给 `rules`（函数还在），**SPA 导航**进来时又会先 `JSON.stringify` 成属性文本（组件里 `this.rules`
+拿到的是字符串，函数丢掉）。同一份代码两种结果，所以分工是：**声明式（`required` / `message` /
+`trigger`）写属性，`validator` 一律挂载后用 property 补**。
 
 **`validator` 返回什么都认**（写"返回不返回一句话"都舒服）：`''` / `undefined` / `null` / `true` = 过；
 **非空字符串 = 失败且它就是文案**（比 `message` 优先，因为函数当场就说了）；`false` = 失败、文案取
@@ -142,7 +143,8 @@
 **刻意不做**：**不内置重置**（受控时代替做法是换一份数据 —— `this.form = structuredClone(this.initial)`，
 绑定自动推回控件；非受控时代替做法是自己把控件改回去。容器一旦为了 `reset()` 存一份"挂载那一刻"的快照，
 它就有了第二份数据，与我们"容器不持有数据"的前提直接冲突）；**不做「把一份对象交给表单」的入口**
-（曾经的 `form.model`：ofa 的模板绑定只能给属性文本，对象引用进不来，声明式这条路走不通）；往规则对象里再塞内置种类（`pattern` / 长度 / 数值区间……现在只有 `required` 一个
+（曾经的 `form.model`：ofa 的 `:model="form"` 落点不稳定 —— 首屏直出可能是对象、SPA 导航时是 JSON 文本，
+不能当契约；数据留在 `data` 里让控件直接绑）；往规则对象里再塞内置种类（`pattern` / 长度 / 数值区间……现在只有 `required` 一个
 声明式快捷键，其余全写 `validator`；将来真需要就再加一个键，调用方式不变）；整表 `disabled`
 （要改使用者轻 DOM 的属性，与 mc-form-item 的「控件是谁写的就归谁」冲突 —— 需要就逐个控件写 `disabled`）；
 失败时把焦点跳到第一个错误字段（跨 shadow 的 `focus()` 不可靠，而伸手进控件 shadow root 是本库的禁区）；

@@ -1269,6 +1269,38 @@ export default async function run({ page, visit, check }) {
     nested.json,
   );
 
+  /* ---------- 规则双通道：首屏绑定同内容时去重，混合写法仍然保留两条 ---------- */
+  const channels = await page.evaluate(async () => {
+    const form = document.createElement('mc-form');
+    form.setAttribute('rules', JSON.stringify({ a: [{ required: true, message: '要填' }] }));
+    form.innerHTML = '<mc-form-item label="A" name="a"><mc-input></mc-input></mc-form-item>';
+    document.body.append(form);
+    await new Promise((r) => setTimeout(r, 400));
+    const api = window.$(form);
+    const usable = typeof api?.fields === 'function' && typeof api?.rulesFor === 'function';
+    const field = usable ? api.fields().find((f) => f.name === 'a') : null;
+    const attrOnly = usable ? api.rulesFor(field).length : -1;
+
+    form.rules = { a: [{ required: true, message: '要填' }] };
+    await new Promise((r) => setTimeout(r, 80));
+    const duplicated = usable ? api.rulesFor(field).length : -1;
+
+    form.rules = { a: [{ validator: () => '' }] };
+    await new Promise((r) => setTimeout(r, 80));
+    const mixed = usable ? api.rulesFor(field).length : -1;
+
+    form.remove();
+    return { usable, attrOnly, duplicated, mixed };
+  });
+  check(
+    '规则双通道：首屏绑定同内容只留一份（property 版，函数还在）；属性 required + property validator 的混合写法仍保留两条',
+    channels.usable === true &&
+      channels.attrOnly === 1 &&
+      channels.duplicated === 1 &&
+      channels.mixed === 2,
+    JSON.stringify(channels),
+  );
+
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => {
     document.getElementById('form-probe')?.remove();

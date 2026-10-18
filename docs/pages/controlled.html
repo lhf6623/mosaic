@@ -189,9 +189,11 @@
         <strong>数据不要跨组件传。</strong>
         ofa 的
         <code>:model="form"</code>
-        到了组件里会变成 JSON 文本，不是那个对象；所以数据留在自己的
+        绑定的落点不稳定：首屏直出时可能拿到对象，经路由导航进来又会被
+        <code>JSON.stringify</code>
+        成文本（函数丢掉）。所以对象数据留在自己的
         <code>data</code>
-        里，让控件直接绑它。
+        里，让控件直接绑它；真要跨组件传，挂载后用 property。
       </li>
       <li>
         <strong>绑定表达式只认组件声明过的属性。</strong>

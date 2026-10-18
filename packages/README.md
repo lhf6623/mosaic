@@ -363,6 +363,18 @@ item.open = true; // 组件提供了访问器时同样可以
 **值的反射**：`value` / `checked` / `open` 等会反射到宿主元素的原生 DOM property，
 所以 `e.target.value` 能读到值（这里的历史坑已由组件内部处理，使用者无感）。
 
+**对象值：属性通道只收 JSON 文本，运行时走 property。** Web Components 的属性只能是字符串；
+模板里的 `:attr="对象"` 是 ofa 的绑定实现，落点**不稳定**（首屏直出可能直接写 property，经路由导航会先
+`JSON.stringify` 成属性文本）—— 不能当契约。组件的统一做法：
+
+1. 属性 / 模板里**只写 JSON 文本**（声明式配置，如 `rules='…'`）；
+2. 对象（尤其带函数）**运行时用 property 传** —— `form.rules` / `table.data` / `menu.options`；
+3. 两条通道都收到时**以 property 为准**：`mc-table` / `mc-menu` 是 property 写过值后属性不再覆盖；
+   `mc-form` 的规则允许混合（属性写声明式键、property 补 `validator`），范围相同的那份去重。
+
+已按这条实现的单元：`mc-form` / `mc-table` / `mc-menu`。使用者视角的解释在
+[`docs/pages/faq.html`](../docs/pages/faq.html) 的「对象数据为什么有时能绑、有时不能」。
+
 ### 1.5 事件
 
 **不加 `mc-` 前缀**，用原生语义名，使用者不需要记两套命名。

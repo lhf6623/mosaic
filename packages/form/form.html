@@ -42,7 +42,9 @@
 
       attrs: {
         /* 校验规则：属性写法是 JSON 文本（同 mc-table 的 columns），运行时对象（带 validator 函数）用 property。
-           ⚠️ 模板里的 `:rules="某对象"` 也会被 ofa 序列化成 JSON 文本写进这个属性 —— 所以绑定的对象里放不了函数。 */
+           ⚠️ 模板里的 `:rules="某对象"` 落点**不稳定**：首屏直出时 ofa 可能把对象直接赋给 property（函数还在），
+           经 SPA 导航进来时又会先 JSON.stringify 成属性文本（函数丢掉）。所以 validator 不要放进绑定对象，
+           一律挂载后 `form.rules = …` 补（见 demos/rules.html ④⑤）。 */
         rules: null,
         /* 只留位置、不显示错误文案（红边框与 invalid 事件照常）。底部的错误位高度**不变** —— 那一格是行间距，
            所以隐藏文案不会让整张表变矮 / 跳动 */
@@ -299,16 +301,35 @@
           if (field.item?.hasAttribute('required')) rules.push({ required: true });
           if (field.item) {
             rules.push(
-              ...this.ruleList(field.item.getAttribute('rules')),
-              ...this.ruleList(field.item.rules),
+              ...this.mergeRuleChannels(
+                this.ruleList(field.item.getAttribute('rules')),
+                this.ruleList(field.item.rules),
+              ),
             );
           }
           if (field.name !== '') {
-            const fromAttr = this.attrRules(field.name);
-            const fromProp = this.ruleList(this.ele.rules?.[field.name]);
-            rules.push(...fromAttr, ...fromProp);
+            rules.push(
+              ...this.mergeRuleChannels(
+                this.attrRules(field.name),
+                this.ruleList(this.ele.rules?.[field.name]),
+              ),
+            );
           }
           return rules;
+        },
+
+        /** 两条通道合并：内容一致（首屏绑定会同时写属性 JSON 与 property 对象）只留 property ——
+            函数只在那边；不一致时按「属性在前、property 在后」拼接，混合写法（属性 required + property validator）仍然成立 */
+        mergeRuleChannels(attrRules, propRules) {
+          if (!propRules.length) return attrRules;
+          if (!attrRules.length) return propRules;
+          let same = false;
+          try {
+            same = JSON.stringify(attrRules) === JSON.stringify(propRules);
+          } catch {
+            same = false;
+          }
+          return same ? propRules : [...attrRules, ...propRules];
         },
 
         /** 容器 rules 属性的那一条（JSON 文本里的 `{ 字段名: 规则 }`；写坏了只 warn，不炸整页） */

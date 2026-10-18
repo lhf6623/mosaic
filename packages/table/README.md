@@ -7,7 +7,7 @@
 
 **状态**：已实现 · 标签 `mc-table` · 目录 `packages/table/`
 
-数据表格。columns / data 通过 property 传入（对象不能走标签属性）。
+数据表格。columns / data 用 property 传（对象数组；绑定通道落点不稳定，不要依赖）。
 
 ## 单元里有什么
 
@@ -53,7 +53,7 @@ data 属性(JSON)     ─┴─→ applyData()    ─→ this.rows ─→ <o-fil
                                                             └→ $host.cellsHtml($data) 逐格
 ```
 
-- `watch.columns` 收到的是 **JSON 字符串**，`toArray()` 负责 `JSON.parse`；
+- 属性通道收到的是 **JSON 字符串**（首屏直出时也可能直接是数组），`toArray()` 负责 `JSON.parse`；
 - 规范化后的值**绝不写回 attrs 声明的键**（写回去会被 ofa 再次序列化）；`rows` / `cols` 这类
   非 attrs 键才是渲染源，所以不存在"对象 → 字符串 → 对象"的来回丢失；
 - 每行补一个 `rowKey`（优先 `rowKey` / `id`，否则下标）当 `fill-key`，增删时行节点才能正确复用。

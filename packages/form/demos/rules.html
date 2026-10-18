@@ -46,7 +46,8 @@
       data: {
         last: '（还没校验过）',
 
-        /* ③ 容器上的 rules 属性（用 :rules 绑上去）：标签属性是文本，所以这里只能放声明式键 */
+        /* ③ 容器上的 rules（:rules 绑上去）：绑定通道不稳定（首屏可能直接给对象、SPA 导航是文本），
+           所以这里只放声明式键；validator 在 ready 里用 property 补 */
         formRules: {
           email: [{ required: true, message: '邮箱要填', trigger: ['input', 'blur'] }],
 

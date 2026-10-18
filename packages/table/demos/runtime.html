@@ -32,7 +32,7 @@
       data: { rows: [], count: 0, batch: 0 },
 
       ready() {
-        /* columns / data 是**宿主 property**：对象数组不能走标签属性（会被 JSON 序列化），
+        /* columns / data 是**宿主 property**：绑定通道落点不稳定（首屏可能给对象、SPA 导航是 JSON 文本），
            `data` 更是 ofa 的保留名、进不了 attrs —— 就在元素上赋值。 */
         const table = this.ele.shadowRoot.querySelector('#t');
         table.columns = COLUMNS;

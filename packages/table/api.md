@@ -3,7 +3,7 @@
 > 共用约定（五个正交维度、值读写、事件、插槽 / part 命名）与组件索引见 [`packages/README.md`](../README.md)。
 > 源码 `./table.html` · **已实现**
 
-数据表格：真 `<table>` + `<th scope="col">`，列定义与行数据都是**对象数组**，运行时一律用 property 传。
+数据表格：真 `<table>` + `<th scope="col">`，列定义与行数据都是**对象数组**，运行时推荐用 property 传（绑定通道落点不稳定）。
 
 ```html
 <mc-table id="t"></mc-table>

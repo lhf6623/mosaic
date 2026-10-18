@@ -156,12 +156,13 @@
           collapsed: null,
           /* 手风琴：同一层只允许一个子菜单展开（同 mc-collapse 的口径） */
           accordion: null,
-          /* 数据驱动的项。属性通道只作 JSON 兼容（P6：走属性会被序列化），运行时用 property 传数组 */
+          /* 数据驱动的项。属性通道只作初始值 / JSON 兼容（绑定落点不稳定：首屏直出可能直接给数组，
+             SPA 导航是 JSON 文本）；运行时推荐用 property。property 一旦写过值，属性通道的变化不再覆盖它 */
           options: null,
         },
 
         data: {
-          /* 渲染源：规范化后的选项数组。⚠️ 结果不写回 attrs 声明的 options 键（会被 ofa 再序列化一次，P6） */
+          /* 渲染源：规范化后的选项数组。⚠️ 结果不写回 attrs 声明的 options 键（会被 ofa 再序列化成属性文本，渲染源与输入就分叉了） */
           items: [],
         },
 
@@ -204,10 +205,8 @@
 
           /* options 的属性通道自己听（同 mc-table 的 data）；我们从不写这个属性，所以不会自激 */
           this._attrMo = new MutationObserver(() => {
-            const raw = this.ele.getAttribute('options');
-            const blank = raw == null || raw.trim() === '';
-            if (blank && this._propOptions) return; // property 写的值不被空属性擦掉
-            this.applyOptions(raw);
+            if (this._propOptions) return; // property 已写过值：属性通道（含绑定后到的 JSON 文本）不覆盖它
+            this.applyOptions(this.ele.getAttribute('options'));
           });
           this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
 
@@ -256,14 +255,13 @@
         },
 
         proto: {
-          /** options 回到空值时别把 property 写过的值擦掉（watch 与属性观察都走这里） */
+          /** property 已写过值就以 property 为准（绑定首屏可能先写对象、后写属性；属性再来不能覆盖它） */
           applyOptionsIfPresent(value) {
-            const blank = value == null || String(value).trim() === '';
-            if (blank && this._propOptions) return;
+            if (this._propOptions) return;
             this.applyOptions(value);
           },
 
-          /** JSON 字符串 / 数组 / null → 数组（P6 的解析就这一处） */
+          /** 属性文本 / 数组 / null → 数组（属性通道的 JSON 兼容；首屏绑定也可能直接给数组） */
           toOptions(value) {
             if (value == null) return [];
             if (typeof value === 'string') {

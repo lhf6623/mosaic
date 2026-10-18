@@ -7,7 +7,7 @@
 
       data: {},
 
-      /* columns / data 是对象数组，只能用 property 传（标签属性会被 JSON 序列化，见 P6）。
+      /* columns / data 是对象数组，推荐用 property 传（绑定通道落点不稳定：首屏可能直接给对象，SPA 导航会序列化成文本）。
          这里在 ready() 里赋给页面上那个 mc-table；写在组件之外的页面里就是
          document.querySelector('#t').data = [...]。 */
       ready() {

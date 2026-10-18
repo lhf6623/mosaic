@@ -64,6 +64,33 @@
       <a olink href="./theme.html">调整主题</a>
       。
     </p>
+
+    <h3>对象数据为什么有时能绑、有时不能</h3>
+    <p>
+      先分清楚两件事：
+      <strong>写在 HTML 标签上的属性，只能是文字</strong>
+      —— 这是 Web Components 的规矩， 跟用不用 SPA 没关系；
+      <strong>JS 里的 property 可以放对象</strong>
+      （
+      <code>el.data = [...]</code>
+      ）。ofa 的
+      <code>:xxx="对象"</code>
+      只是框架帮忙传值：有时候它直接写进组件的 property（对象还在），有时候先变成一段 JSON
+      文字再写进标签属性（函数就丢了）。 所以「有
+      <code>o-app</code>
+      就能直接传对象」也不成立 —— 刷新首屏和点链接进来，结果都可能不一样。
+    </p>
+    <p>
+      想稳定传对象，就别指望绑定：先在 HTML 里把组件放好，再用 JS 给 property 赋值 ——
+      <code>form.rules = …</code>
+      、
+      <code>table.data = …</code>
+      、
+      <code>menu.options = …</code>
+      。标签属性里就写 JSON 文字（
+      <code>rules='…'</code>
+      这种静态配置），别塞函数。
+    </p>
   </div>
   <script>
     export const parent = '../doc-layout.html';

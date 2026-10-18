@@ -83,7 +83,8 @@
         // 必填的声明式简写：等价于规则表最前面一条 { required: true }；布尔默认值必须是 null（P1）
         required: null,
         /* 这一行的规则：属性写法是 **JSON 文本**（`规则 | 规则[]`），运行时对象走 property `item.rules = …`；
-           两个通道都写时属性在前。带 validator 函数的只能走 property（JSON 会把函数丢掉） */
+           两个通道都写时属性在前。⚠️ `:rules="对象"` 的落点不稳定（首屏直出可能直接赋对象、
+           SPA 导航可能序列化成文本），带 validator 函数的只能走 property，别放进绑定对象 */
         rules: null,
       },
 

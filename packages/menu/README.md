@@ -82,10 +82,10 @@ shadow root，见 `tests/lib/harness.mjs` 的 `__inside`）。
 开合原生 popover 时浏览器可能顺手把页面滚一下（火狐实测），显式 `showPopover()` / `hidePopover()`
 那两行包成 `guard.run(() => …)`，重建 / 卸载时 `dispose()`。
 
-**`options`（数据驱动）**：进 `attrs`（默认 null），于是属性通道收 JSON 字符串；运行时用宿主
-property 传数组 —— 和 `mc-table` 的 `columns` 同一条路：property 走 `Object.defineProperty`，
-挂载前赋的值先收进 `_presetOptions`（P31：构造期不往宿主写属性），解析结果落在 `data.items`，
-**不写回 attrs 键**（写回会被 ofa 再序列化一次，P6）。
+**`options`（数据驱动）**：进 `attrs`（默认 null），属性通道收 JSON 字符串（首屏直出时也可能直接给数组 ——
+绑定落点不稳定，不要依赖）；运行时推荐用宿主 property 传数组 —— 和 `mc-table` 的 `columns` 同一条路：
+property 走 `Object.defineProperty`，挂载前赋的值先收进 `_presetOptions`（P31：构造期不往宿主写属性），
+解析结果落在 `data.items`，**不写回 attrs 键**（写回会被 ofa 再序列化成属性文本，渲染源与输入就分叉了）。
 
 字段：`label` / `icon` / `href`（最终地址）/ `current` / `disabled` / `attrs`（附加到行上的属性：
 `target` / `rel` / `title` 由菜单项转给内置 `<a>`，其余（如 `data-status`）留在行上给宿主钩子），

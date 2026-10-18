@@ -1,4 +1,4 @@
-<!-- mc-table — 数据表格（columns / data 走 property，P6）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发。 -->
+<!-- mc-table — 数据表格（columns / data 推荐走 property：绑定通道落点不稳定）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -178,7 +178,8 @@
         tag: 'mc-table',
 
         attrs: {
-          /* 对象数组。属性写法只作 JSON 兼容（P6：走属性通道会被 JSON 序列化），运行时一律用 property */
+          /* 对象数组。属性通道只作初始值 / JSON 兼容（绑定落点不稳定：首屏直出可能直接给对象，SPA 导航是 JSON 文本）；
+             运行时推荐用 property。property 一旦写过值，属性通道的变化不再覆盖它 */
           columns: null,
           /* ⚠️ 行数据**不能**声明进 attrs：`data` 是 ofa 元素代理上的保留名（$.fn.data），声明它会让属性同步往代理写 `data` → TypeError，组件整个渲染不出来（P7 / P31 那一族）。所以 data 只做宿主 property + 自己听的属性观察。 */
           striped: null,
@@ -192,7 +193,8 @@
         },
 
         data: {
-          /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。⚠️ 规范化结果绝不能写回 attrs 声明的键 —— 会被 ofa 再次 JSON 序列化（P6） */
+          /* 渲染源：columns / data 规范化后的「非 attrs 键」字段。⚠️ 规范化结果绝不能写回 attrs 声明的键 ——
+             会被 ofa 再序列化成属性文本，渲染源与输入就分叉了 */
           cols: [],
           rows: [],
         },
@@ -253,10 +255,8 @@
 
           /* data 没进 attrs（保留名），属性通道自己听。我们从不写这个属性，所以不会自激 */
           this._attrMo = new MutationObserver(() => {
-            const raw = this.ele.getAttribute('data');
-            const blank = raw == null || raw.trim() === '';
-            if (blank && this._propData) return; // property 写的值不被空属性覆盖
-            this.applyData(raw);
+            if (this._propData) return; // property 已写过值：属性通道（含绑定后到的 JSON 文本）不覆盖它
+            this.applyData(this.ele.getAttribute('data'));
           });
           this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['data'] });
         },
@@ -276,14 +276,13 @@
         },
 
         proto: {
-          /** columns 回到空值时别把 property 写过的值擦掉（watch 与属性观察都走这里） */
+          /** property 已写过值就以 property 为准（绑定首屏可能先写对象、后写属性；属性再来不能覆盖它） */
           applyColumnsIfPresent(value) {
-            const blank = value == null || String(value).trim() === '';
-            if (blank && this._propColumns) return;
+            if (this._propColumns) return;
             this.applyColumns(value);
           },
 
-          /** JSON 字符串 / 数组 / null → 数组（P6 的解析就这一处） */
+          /** 属性文本 / 数组 / null → 数组（属性通道的 JSON 兼容；首屏绑定也可能直接给数组） */
           toArray(value) {
             if (value == null) return [];
             if (typeof value === 'string') {
