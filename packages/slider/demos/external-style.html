@@ -1,0 +1,16 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 滑块直径与轨道高也是宿主令牌：改一处，原生 thumb 与自绘位置一起跟上 -->
+    <mc-slider
+      value="60"
+      style="--mc-slider-thumb: 1.5rem; --mc-slider-track-h: 0.75rem"></mc-slider>
+    <!-- 填充与未填充轨道换色 -->
+    <mc-slider
+      value="60"
+      style="--mc-slider-fill: var(--mc-color-success); --mc-slider-track: var(--mc-color-border)"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-external-style' });
+  </script>
+</template>

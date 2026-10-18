@@ -1,0 +1,386 @@
+<!-- mc-slider — 滑动选择；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主盒模型 + 几何 / 色槽令牌。控件高与三档控件对齐；轨道与滑块是另外两条 */
+    :host {
+      display: block;
+      position: relative; /* 内部绝对定位元素的包含块（P21） */
+      box-sizing: border-box;
+      width: 100%;
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      vertical-align: middle;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+
+      /* L3 组件令牌：默认引用 L2 语义令牌；按实例覆盖写在宿主 style 上 */
+      --mc-slider-track-h: 0.375rem;
+      --mc-slider-thumb: 1rem;
+      --mc-slider-track: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-slider-track-hover: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-slider-thumb-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-slider-fill: var(--mc-color-primary, var(--mc-def-color-primary));
+    }
+
+    /* 2. 尺寸：三档 = 控件高 + 轨道高 + 滑块直径（滑块也是原生 input 的 thumb，两套必须一致） */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-slider-track-h: 0.25rem;
+      --mc-slider-thumb: 0.75rem;
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      --mc-slider-track-h: 0.5rem;
+      --mc-slider-thumb: 1.25rem;
+    }
+
+    /* 3. color 维度：只往色槽里填值（primary 是默认，已经在上面） */
+    :host([color='info']) {
+      --mc-slider-fill: var(--mc-color-info, var(--mc-def-color-info));
+    }
+    :host([color='success']) {
+      --mc-slider-fill: var(--mc-color-success, var(--mc-def-color-success));
+    }
+    :host([color='warning']) {
+      --mc-slider-fill: var(--mc-color-warning, var(--mc-def-color-warning));
+    }
+    :host([color='danger']) {
+      --mc-slider-fill: var(--mc-color-danger, var(--mc-def-color-danger));
+    }
+
+    /* 4. 内部结构：整行 → 透明原生 input + 自绘轨道。input 铺满整行当命中区 /
+         键盘入口；视觉全在下面两层，所以 part 能开放、几何也能算准 */
+    .mc-base {
+      position: relative;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      height: 100%;
+      direction: ltr; /* 比例按从左到右算；RTL 页面不翻转（见 README「已知边界」） */
+      --mc-slider-ratio: 0; /* @internal */
+    }
+
+    /* 原生 input 只承载键盘 / 焦点 / 拖拽命中；视觉隐藏而非 display:none，后者会连焦点一起拿掉 */
+    .mc-native {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      background-color: transparent;
+      appearance: none;
+      cursor: pointer;
+    }
+    .mc-native:disabled {
+      cursor: not-allowed;
+    }
+    /* 原生 thumb 也按视觉滑块的直径排布：点哪儿 → 值多少，与自绘位置严格一致 */
+    .mc-native::-webkit-slider-thumb {
+      width: var(--mc-slider-thumb);
+      height: var(--mc-slider-thumb);
+      border: 0;
+      border-radius: 50%;
+      background-color: transparent;
+      appearance: none;
+    }
+    .mc-native::-moz-range-thumb {
+      width: var(--mc-slider-thumb);
+      height: var(--mc-slider-thumb);
+      border: 0;
+      border-radius: 50%;
+      background-color: transparent;
+    }
+    .mc-native::-webkit-slider-runnable-track {
+      height: 100%;
+      background-color: transparent;
+    }
+    .mc-native::-moz-range-track {
+      height: 100%;
+      background-color: transparent;
+    }
+
+    .mc-track {
+      position: relative;
+      flex: 1 1 auto;
+      box-sizing: border-box;
+      height: var(--mc-slider-track-h);
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: rgb(var(--mc-slider-track));
+      transition: background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    :host(:hover) .mc-track {
+      background-color: rgb(var(--mc-slider-track-hover));
+    }
+
+    /* 填充条到滑块中心：ratio × (轨道宽 − 滑块宽) + 半个滑块。改任一令牌，两边一起跟上 */
+    .mc-fill {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: calc(
+        (100% - var(--mc-slider-thumb)) * var(--mc-slider-ratio, 0) + var(--mc-slider-thumb) / 2
+      );
+      border-radius: inherit;
+      background-color: rgb(var(--mc-slider-fill));
+    }
+
+    .mc-thumb {
+      position: absolute;
+      top: 50%;
+      left: calc((100% - var(--mc-slider-thumb)) * var(--mc-slider-ratio, 0));
+      box-sizing: border-box;
+      width: var(--mc-slider-thumb);
+      height: var(--mc-slider-thumb);
+      border: 2px solid rgb(var(--mc-slider-fill));
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: rgb(var(--mc-slider-thumb-bg));
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+      transform: translateY(-50%);
+      transition:
+        border-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        box-shadow var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    :host(:hover) .mc-thumb {
+      box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.18),
+        0 0 0 4px rgb(var(--mc-slider-fill) / 0.12);
+    }
+    /* 焦点环画在滑块上（原生 input 是视觉隐藏的）；用 ring 令牌，不用 currentColor（P16） */
+    .mc-native:focus-visible + .mc-track .mc-thumb {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+
+    /* 5. 状态。顺序有意义：禁用那几条排在 hover 之后（同特异性时后者赢） */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([disabled]) .mc-track {
+      background-color: rgb(var(--mc-slider-track));
+    }
+    :host([disabled]) .mc-thumb {
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+    }
+  </style>
+
+  <div class="mc-base" part="base">
+    <input
+      class="mc-native"
+      type="range"
+      :disabled="disabled !== null"
+      on:input="onInput($event)"
+      on:change="onChange()" />
+    <div class="mc-track" part="track">
+      <div class="mc-fill" part="fill"></div>
+      <div class="mc-thumb" part="thumb"></div>
+    </div>
+  </div>
+
+  <script>
+    /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-slider-fill 色槽 */
+    import { colorAttr } from '../boot/color-attr.js';
+
+    const color = colorAttr({ slots: ['fill'] });
+
+    export default async () => ({
+      tag: 'mc-slider',
+
+      attrs: {
+        /* 绑定通道 / 运行时状态（同 mc-input 的 value）：ofa 的 :value / sync:value 落在这个属性上 */
+        value: null,
+        // 非受控初值（同 default-value 约定）：只在挂载时读一次
+        defaultValue: null,
+        min: 0,
+        max: 100,
+        step: 1,
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-slider disabled> 失效
+        disabled: null,
+        size: 'md',
+        color: 'primary',
+      },
+
+      ready() {
+        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+        const root = this.ele.shadowRoot;
+        this._native = root.querySelector('.mc-native');
+        this._base = root.querySelector('.mc-base');
+
+        /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => (this._native ? Number(this._native.value) : NaN),
+          set: (next) => {
+            if (!this._native) return;
+            const parsed = Number(next);
+            if (!Number.isFinite(parsed)) return;
+            this._native.value = String(parsed);
+            this.reflectValue();
+            this.paint();
+          },
+        });
+
+        this.syncRange();
+        this.applyInitialValue();
+        this.applyBoundValue();
+        this.applyDisabled();
+        this.paint();
+      },
+
+      attached() {
+        // 宿主 style 等构造期结束再写（P31）
+        color.sync(this.ele, this.color);
+        // createElement 之后再写 min / max / default-value 的那种：ready() 那会儿还读不到，补一次
+        this.syncRange();
+        this.applyInitialValue();
+        this.applyBoundValue();
+        this.applyDisabled();
+        this.paint();
+      },
+
+      watch: {
+        /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
+        value() {
+          this.applyBoundValue();
+        },
+        min() {
+          this.syncRange();
+          this.paint();
+        },
+        max() {
+          this.syncRange();
+          this.paint();
+        },
+        step() {
+          this.syncRange();
+          this.paint();
+        },
+        disabled() {
+          this.applyDisabled();
+        },
+        // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
+        color(value) {
+          color.change(this.ele, value);
+        },
+      },
+
+      proto: {
+        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+        readNumber(name, fallback) {
+          const raw = this.ele.getAttribute(name);
+          const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
+          return Number.isFinite(parsed) ? parsed : fallback;
+        },
+
+        /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+        boolAttr(name) {
+          const raw = this.ele.getAttribute(name);
+          return raw !== null && raw !== 'false';
+        },
+
+        /** min / max / step 只有这一处落到内部原生 input；改区间时顺手把当前值夹回范围内 */
+        syncRange() {
+          if (!this._native) return;
+          const min = this.readNumber('min', 0);
+          const max = this.readNumber('max', 100);
+          const step = this.readNumber('step', 1);
+          this._native.min = String(min);
+          this._native.max = String(max > min ? max : min);
+          this._native.step = String(step > 0 ? step : 1);
+
+          const value = Number(this._native.value);
+          const clamped = Math.min(
+            Math.max(Number.isFinite(value) ? value : min, min),
+            Number(this._native.max),
+          );
+          if (String(clamped) !== this._native.value) this._native.value = String(clamped);
+        },
+
+        /** 初值：default-value 只在挂载时读一次；什么都没写时落成 min（原生 range 的默认值是区间中点） */
+        applyInitialValue() {
+          if (!this._native || this._defaultApplied === true) return;
+          const raw = this.ele.getAttribute('default-value');
+          if (raw === null) {
+            if (this.ele.getAttribute('value') === null) this._native.value = this._native.min;
+            return;
+          }
+          this._defaultApplied = true;
+          const parsed = Number(raw);
+          this._native.value = Number.isFinite(parsed) ? String(parsed) : this._native.min;
+        },
+
+        /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 input */
+        applyBoundValue() {
+          if (!this._native) return;
+          const raw = this.ele.getAttribute('value');
+          if (raw === null || raw.trim() === '') return;
+          const parsed = Number(raw);
+          if (!Number.isFinite(parsed)) return;
+          this._native.value = String(parsed);
+          // 原生 range 会按 step 归一（37 + step 10 → 40）：属性跟着实际值走，两条通道不打架
+          this.reflectValue();
+          this.paint();
+        },
+
+        /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
+        reflectValue() {
+          if (!this._native) return;
+          const now = this._native.value;
+          if (this.ele.getAttribute('value') === now) return;
+          this.ele.setAttribute('value', now);
+        },
+
+        /** 唯一入口：把当前值换算成 0～1 的比例，写进内部变量（填充条与滑块都读它） */
+        paint() {
+          if (!this._native || !this._base) return;
+          const min = this.readNumber('min', 0);
+          const parsedMax = this.readNumber('max', 100);
+          const max = parsedMax > min ? parsedMax : min;
+          const value = Number(this._native.value);
+          const ratio = max === min ? 0 : Math.min(Math.max((value - min) / (max - min), 0), 1);
+          this._base.style.setProperty('--mc-slider-ratio', String(ratio));
+        },
+
+        applyDisabled() {
+          if (!this._native) return;
+          this._native.disabled = this.boolAttr('disabled');
+        },
+
+        /** 原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+        onInput(event) {
+          event.stopPropagation();
+          this.reflectValue();
+          this.paint();
+          this.emit('input', {
+            data: { value: Number(this._native.value) },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /** 原生 change 穿不出 shadow 边界（P19），必须由组件转发成同名的 composed 事件 */
+        onChange() {
+          this.reflectValue();
+          this.paint();
+          this.emit('change', {
+            data: { value: Number(this._native.value) },
+            bubbles: true,
+            composed: true,
+          });
+        },
+      },
+    });
+  </script>
+</template>

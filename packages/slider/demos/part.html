@@ -1,0 +1,33 @@
+<template component>
+  <style>
+    /* 四个 part 各改一处；选择器带上 .part-custom —— 否则下面那条默认对照也会被改掉 */
+    .part-custom::part(base) {
+      /* 整行都是命中区，描个边就能看见它 */
+      border: 1px dashed rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+    }
+    .part-custom::part(track) {
+      height: 0.75rem;
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-border));
+    }
+    .part-custom::part(fill) {
+      background-color: rgb(var(--mc-color-danger));
+    }
+    .part-custom::part(thumb) {
+      border-color: rgb(var(--mc-color-danger));
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-surface));
+      box-shadow: none;
+    }
+  </style>
+
+  <mc-space direction="vertical" block>
+    <mc-slider class="part-custom" value="60"></mc-slider>
+    <mc-slider value="60"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-part' });
+  </script>
+</template>

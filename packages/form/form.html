@@ -163,9 +163,12 @@
           return el.localName === 'mc-checkbox' || el.localName === 'mc-switch';
         },
 
-        /** property 优先、属性兜底：还没升级完的控件只有属性可读 */
+        /** property 优先、属性兜底：还没升级完的控件只有属性可读。
+            数字型控件（mc-slider）的 value 是 number —— 表单值统一按字符串收（同原生 FormData） */
         readValue(el) {
-          return typeof el.value === 'string' ? el.value : (el.getAttribute('value') ?? '');
+          const value = el.value;
+          if (typeof value === 'string' || typeof value === 'number') return String(value);
+          return el.getAttribute('value') ?? '';
         },
 
         /** 同名多控件的单条贡献：勾上的取自己的 value，没写 value 的按原生口径给 'on' */

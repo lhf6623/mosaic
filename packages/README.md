@@ -474,6 +474,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | ✅ 已实现 |
 | [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | ✅ 已实现 |
 | [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | ✅ 已实现 |
+| [Slider](./slider/api.md)             | `mc-slider`                            | `slider/`      | ✅ 已实现 |
 | [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | ✅ 已实现 |
 | [Form](./form/api.md)                 | `mc-form` / `mc-form-item`             | `form/`        | ✅ 已实现 |
 | [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | ✅ 已实现 |
@@ -533,7 +534,7 @@ item.open = true; // 组件提供了访问器时同样可以
 
 **校验态不用独立的错误色板**，用 `invalid` 布尔 + `--mc-color-danger`。
 
-编排这六个控件的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
+编排这七个控件（含 `mc-slider`）的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
 `mc-form-item` 上都认，失败时容器给控件挂 `invalid`、给行显示文案。
 
 ---
@@ -546,6 +547,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | `mc-input` / `mc-textarea`  | 转发内部原生元素用 `attr:` 而不是 `:prop`（见上）；原生 `input` 转发前先 `stopPropagation()`。                                                                                                                                                                           |
 | `mc-checkbox` / `mc-switch` | `checked` 是**受控 / 运行时状态**（唯一的 observed 布尔），`default-checked` 只作**非受控初值**：挂载时读一次就把 `checked` 落成宿主属性，之后**不再参与**（所以不存在"两个属性漂移"——漂移的前提是两个都持续观察，`mc-collapse-item` 那个先例说的正是持续观察）。        |
 | `mc-radio`                  | 原生「同 name 成组」跨 shadow 不成立，所以唯一真相是子项宿主上的 `checked`、由组维护；`mc-radio` 的 `checked` 是镜像 property，不进 api.md 属性表。                                                                                                                      |
+| `mc-slider`                 | `value` property 是 **number**（其余表单控件给 string）；写值与初值按原生 range 的 step 归一，`mc-form` 收集时转字符串；键盘 / 拖拽来自原生 range，视觉自绘并开放 4 个 part。                                                                                            |
 | `mc-select`                 | `name` 不做原生 formAssociated（没有表单提交语义），只当字段名与内部 aria id 前缀；`multiple` 时 property 是 `string[]`、`default-value` 是逗号分隔字符串。                                                                                                              |
 | `mc-dialog`                 | `title` → **`heading`**（声明 `title` 会弹原生 tooltip）；`open` + `default-open` → **单一 `open`**；`popover="manual"` + 自绘遮罩（`auto` 的 light dismiss 在 pointerdown 就关，模态要自己决定点遮罩关不关）。                                                          |
 | `mc-dropdown`               | `placement` 沿用 `mc-popover` 的取值集合；`open` 同样是单一属性 + 宿主 property 访问器。                                                                                                                                                                                 |

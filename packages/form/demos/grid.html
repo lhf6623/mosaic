@@ -2,18 +2,44 @@
   <mc-form on:submit="save($event)">
     <mc-grid cols="2" gap="md">
       <mc-grid-item>
-        <mc-form-item label="姓" name="last">
-          <mc-input placeholder="张"></mc-input>
+        <mc-form-item label="姓名" name="name">
+          <mc-input placeholder="张三"></mc-input>
         </mc-form-item>
       </mc-grid-item>
       <mc-grid-item>
-        <mc-form-item label="名" name="first">
-          <mc-input placeholder="三"></mc-input>
+        <mc-form-item label="城市" name="city">
+          <mc-select default-value="hz">
+            <mc-option value="hz">杭州</mc-option>
+            <mc-option value="sh">上海</mc-option>
+          </mc-select>
         </mc-form-item>
       </mc-grid-item>
       <mc-grid-item span="2">
-        <mc-form-item label="地址" name="address">
-          <mc-input placeholder="跨两列（span=2）"></mc-input>
+        <mc-form-item label="备注" name="note">
+          <mc-textarea rows="2" placeholder="跨两列（span=2）"></mc-textarea>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="音量" name="volume">
+          <mc-slider default-value="60"></mc-slider>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="套餐" name="plan">
+          <mc-radio-group default-value="b">
+            <mc-radio value="a">月付</mc-radio>
+            <mc-radio value="b">年付</mc-radio>
+          </mc-radio-group>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="通知" name="notify">
+          <mc-switch checked>接收通知</mc-switch>
+        </mc-form-item>
+      </mc-grid-item>
+      <mc-grid-item>
+        <mc-form-item label="订阅" name="digest">
+          <mc-checkbox checked>每周摘要</mc-checkbox>
         </mc-form-item>
       </mc-grid-item>
     </mc-grid>

@@ -9,6 +9,10 @@
         <mc-option value="sh">上海</mc-option>
       </mc-select>
     </mc-form-item>
+    <mc-form-item label="音量" name="volume">
+      <!-- 数字型控件的 value 是 number，表单收集时按字符串收（同原生 FormData） -->
+      <mc-slider default-value="60"></mc-slider>
+    </mc-form-item>
     <mc-form-item label="订阅" name="digest">
       <!-- 单个开关控件不给自定义值 → 布尔 -->
       <mc-checkbox checked>每周摘要</mc-checkbox>

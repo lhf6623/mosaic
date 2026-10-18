@@ -1,0 +1,14 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 自定义区间与步长 -->
+    <mc-slider min="10" max="50" step="5" default-value="25"></mc-slider>
+    <!-- 负值区间也照常工作 -->
+    <mc-slider min="-20" max="20" step="10" default-value="0"></mc-slider>
+    <!-- step 也可以是小数：0～1 之间 0.1 一档 -->
+    <mc-slider min="0" max="1" step="0.1" default-value="0.3"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-range' });
+  </script>
+</template>

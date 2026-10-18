@@ -1,0 +1,15 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-slider value="60" color="primary"></mc-slider>
+    <mc-slider value="60" color="info"></mc-slider>
+    <mc-slider value="60" color="success"></mc-slider>
+    <mc-slider value="60" color="warning"></mc-slider>
+    <mc-slider value="60" color="danger"></mc-slider>
+    <!-- 语义名之外也收 hex -->
+    <mc-slider value="60" color="#1a7f5a"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-colors' });
+  </script>
+</template>

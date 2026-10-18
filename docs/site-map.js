@@ -288,6 +288,15 @@ export const SITE = [
             summary: '开关。',
           },
           {
+            order: 55,
+            label: 'Slider',
+            zh: '滑动选择',
+            path: 'packages/slider/page.html',
+            type: 'component',
+            summary:
+              '滑动选择。在一段连续区间里拖一个值：原生 range 承载键盘与拖拽，轨道 / 填充 / 滑块自绘并开放 part；区间、步长与语义色都可配。',
+          },
+          {
             order: 60,
             label: 'Select',
             zh: '下拉选择',

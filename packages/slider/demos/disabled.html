@@ -1,0 +1,11 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-slider disabled value="40"></mc-slider>
+    <!-- 正常态作对照 -->
+    <mc-slider value="40"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-disabled' });
+  </script>
+</template>

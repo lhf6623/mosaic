@@ -1,0 +1,12 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-slider size="sm" value="20"></mc-slider>
+    <!-- md 是默认档，不写 size -->
+    <mc-slider value="50"></mc-slider>
+    <mc-slider size="lg" value="80"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-sizes' });
+  </script>
+</template>

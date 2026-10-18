@@ -1,0 +1,14 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 不写值：从 min 开始（原生 range 默认停在区间中点，组件把它改成落在 min） -->
+    <mc-slider></mc-slider>
+    <!-- value：初始 / 受控值 -->
+    <mc-slider value="30"></mc-slider>
+    <!-- default-value：只在挂载时读一次的非受控初值 -->
+    <mc-slider default-value="60"></mc-slider>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-slider-basic' });
+  </script>
+</template>
