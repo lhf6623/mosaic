@@ -376,13 +376,23 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
+    import { withEmits } from '../boot/emits.js';
 
     export default async ({ load }) => {
       /* 面板里的滚动条复用 mc-scroll-bar：它是独立组件，先注册再渲染面板 */
       await load('../scroll-bar/scroll-bar.html');
 
-      return {
+      return withEmits({
         tag: 'mc-tree-select',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          change: { data: ['value'] },
+          clear: {},
+          open: {},
+          close: {},
+          'load-error': { data: ['value', 'error'] },
+        },
 
         attrs: {
           /* 数据源：property 主通道（同 mc-menu / mc-table）；属性通道只作 JSON 初始值 */
@@ -1043,11 +1053,7 @@
               this.flattenNodes();
             } catch (error) {
               node.loadError = true;
-              this.emit('load-error', {
-                data: { value: node.value, error },
-                bubbles: true,
-                composed: true,
-              });
+              this.$emit('load-error', { value: node.value, error });
             } finally {
               node.loading = false;
               this.renderRows();
@@ -1121,7 +1127,7 @@
             this.mirror('data-open', open);
             if (!changed) return;
             if (open) {
-              this.emit('open', { bubbles: true, composed: true });
+              this.$emit('open');
               return;
             }
             this.setActive(null);
@@ -1129,7 +1135,7 @@
               this._returnFocus = false;
               this._control?.focus({ preventScroll: true });
             }
-            this.emit('close', { bubbles: true, composed: true });
+            this.$emit('close');
           },
 
           /** 原生 toggle 只当兜底同步：状态与事件不靠它（排队发的 toggle 在「刚关就又开」的连招里会丢） */
@@ -1273,21 +1279,17 @@
             this.reflectBoundValue();
             this.syncRows();
             this.syncDisplay();
-            this.emit('clear', { bubbles: true, composed: true });
+            this.$emit('clear');
             this.emitChange();
             this._control.focus({ preventScroll: true });
           },
 
           emitChange() {
             /* 内部原生 change 穿不出 shadow（P19），所以由组件自己转发成一个 composed 的 change */
-            this.emit('change', {
-              data: { value: this.readValue() },
-              bubbles: true,
-              composed: true,
-            });
+            this.$emit('change', { value: this.readValue() });
           },
         },
-      };
+      });
     };
   </script>
 </template>

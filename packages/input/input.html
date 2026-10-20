@@ -161,222 +161,217 @@
   <script>
     /* 输入框内容被裁掉时，hover 弹完整值（聚焦后让位给编辑；密码 / 文件不回显） */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
+    import { withEmits } from '../boot/emits.js';
 
-    export default async () => ({
-      tag: 'mc-input',
+    export default async () =>
+      withEmits({
+        tag: 'mc-input',
 
-      attrs: {
-        type: 'text',
-        /* 绑定通道：ofa 原生的 `:value="form.name"`（单向）/ `sync:value="form.name"`（双向）落在这个属性上。
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          input: { data: ['value'] },
+          change: { data: ['value'] },
+          clear: {},
+        },
+
+        attrs: {
+          type: 'text',
+          /* 绑定通道：ofa 原生的 `:value="form.name"`（单向）/ `sync:value="form.name"`（双向）落在这个属性上。
            默认 null（同 mc-form 的 rules）：ofa 不会凭空写一个空属性出来，"属性在不在"才可靠（P32）。 */
-        value: null,
-        // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
-        defaultValue: '',
-        placeholder: '',
-        name: '',
-        size: 'md',
-        // null 默认不查默认值；maxlength 只转发，不参与任何状态
-        maxlength: null,
-        // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-input clearable> 失效
-        clearable: null,
-        disabled: null,
-        readonly: null,
-        invalid: null,
-      },
+          value: null,
+          // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
+          defaultValue: '',
+          placeholder: '',
+          name: '',
+          size: 'md',
+          // null 默认不查默认值；maxlength 只转发，不参与任何状态
+          maxlength: null,
+          // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-input clearable> 失效
+          clearable: null,
+          disabled: null,
+          readonly: null,
+          invalid: null,
+        },
 
-      ready() {
-        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-        const root = this.ele.shadowRoot;
-        this._input = root.querySelector('.mc-input');
-        this._slots = [...root.querySelectorAll('slot')];
-        // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
-        this.applyDefaultValue();
+        ready() {
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+          const root = this.ele.shadowRoot;
+          this._input = root.querySelector('.mc-input');
+          this._slots = [...root.querySelectorAll('slot')];
+          // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
+          this.applyDefaultValue();
 
-        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件处理器里 e.target.value 读得到（P18） */
-        Object.defineProperty(this.ele, 'value', {
-          configurable: true,
-          get: () => this._input.value,
-          set: (v) => {
-            this._input.value = String(v ?? '');
-            this.applyState();
-            this.reflectBoundValue();
-          },
-        });
-        // 升级前 ofa 的绑定可能已经写好了 value 属性（P6）：补一次同步
-        this.applyBoundValue();
-      },
-
-      attached() {
-        this._mounted = true;
-        this._overflowTip = attachOverflowTip(this.ele, this._input, {
-          text: () => this._input.value || this._input.placeholder || '',
-          /* 正在编辑时不打扰；密码 / 文件不把完整值弹出来 */
-          enabled: () =>
-            this._input.type !== 'password' &&
-            this._input.type !== 'file' &&
-            !this.ele.matches(':focus-within'),
-          showOnFocus: false,
-        });
-        // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
-        this.applyDefaultValue();
-        this._defaultApplied = true;
-        this._onSlotChange = () => this.applyState();
-        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
-        this.applyState();
-      },
-
-      detached() {
-        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
-        this._overflowTip?.dispose();
-        this._overflowTip = null;
-      },
-
-      watch: {
-        /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 input 立刻跟上 */
-        value() {
+          /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件处理器里 e.target.value 读得到（P18） */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this._input.value,
+            set: (v) => {
+              this._input.value = String(v ?? '');
+              this.applyState();
+              this.reflectBoundValue();
+            },
+          });
+          // 升级前 ofa 的绑定可能已经写好了 value 属性（P6）：补一次同步
           this.applyBoundValue();
         },
-        // 三个都会改变"× 该不该在"，而首次触发落在构造期（P5）—— applyState 自己有守卫
-        clearable() {
-          this.applyState();
-        },
-        disabled() {
-          this.applyState();
-        },
-        readonly() {
-          this.applyState();
-        },
-        /* invalid 只走 CSS（:host([invalid])），也要收一次：绑定的 "false" 不能被当成"有" */
-        invalid() {
-          this.applyState();
-        },
-        /* type 转发到内部原生 input 之后，溢出提示要按新类型重判（密码 / 文件不回显） */
-        type() {
-          this.applyState();
-        },
-      },
 
-      proto: {
-        /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺到内部原生 input —— 单向「数据 → DOM」的这一半 */
-        applyBoundValue() {
-          if (!this._input) return;
-          const bound = this.ele.getAttribute('value');
-          if (bound === null || this._input.value === bound) return;
-          this._input.value = bound;
-          this.applyState();
-        },
-
-        /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」的那一半 */
-        reflectBoundValue() {
-          if (!this._input) return;
-          const now = this._input.value;
-          if (this.ele.getAttribute('value') === now) return;
-          this.ele.setAttribute('value', now);
-        },
-
-        /** 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached() —— 由 _defaultApplied 记账，谁先到谁生效。 */
-        applyDefaultValue() {
-          if (this._defaultApplied === true || !this._input) return;
-          // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
-          const initial = this.ele.getAttribute('default-value');
-          if (initial === null || initial === '') return;
-          this._input.value = initial;
+        attached() {
+          this._mounted = true;
+          this._overflowTip = attachOverflowTip(this.ele, this._input, {
+            text: () => this._input.value || this._input.placeholder || '',
+            /* 正在编辑时不打扰；密码 / 文件不把完整值弹出来 */
+            enabled: () =>
+              this._input.type !== 'password' &&
+              this._input.type !== 'file' &&
+              !this.ele.matches(':focus-within'),
+            showOnFocus: false,
+          });
+          // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
+          this.applyDefaultValue();
           this._defaultApplied = true;
+          this._onSlotChange = () => this.applyState();
+          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          this.applyState();
         },
 
-        /** 布尔状态的读法：ofa 的绑定会把 false 给成数据里的 false 或属性上的 "false" —— 都不算"有" */
-        boolOn(key) {
-          const raw = this[key];
-          return raw !== null && raw !== false && raw !== 'false';
+        detached() {
+          for (const slot of this._slots)
+            slot.removeEventListener('slotchange', this._onSlotChange);
+          this._overflowTip?.dispose();
+          this._overflowTip = null;
         },
 
-        /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
+        watch: {
+          /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 input 立刻跟上 */
+          value() {
+            this.applyBoundValue();
+          },
+          // 三个都会改变"× 该不该在"，而首次触发落在构造期（P5）—— applyState 自己有守卫
+          clearable() {
+            this.applyState();
+          },
+          disabled() {
+            this.applyState();
+          },
+          readonly() {
+            this.applyState();
+          },
+          /* invalid 只走 CSS（:host([invalid])），也要收一次：绑定的 "false" 不能被当成"有" */
+          invalid() {
+            this.applyState();
+          },
+          /* type 转发到内部原生 input 之后，溢出提示要按新类型重判（密码 / 文件不回显） */
+          type() {
+            this.applyState();
+          },
+        },
+
+        proto: {
+          /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺到内部原生 input —— 单向「数据 → DOM」的这一半 */
+          applyBoundValue() {
+            if (!this._input) return;
+            const bound = this.ele.getAttribute('value');
+            if (bound === null || this._input.value === bound) return;
+            this._input.value = bound;
+            this.applyState();
+          },
+
+          /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」的那一半 */
+          reflectBoundValue() {
+            if (!this._input) return;
+            const now = this._input.value;
+            if (this.ele.getAttribute('value') === now) return;
+            this.ele.setAttribute('value', now);
+          },
+
+          /** 初始值：只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）。声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached() —— 由 _defaultApplied 记账，谁先到谁生效。 */
+          applyDefaultValue() {
+            if (this._defaultApplied === true || !this._input) return;
+            // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
+            const initial = this.ele.getAttribute('default-value');
+            if (initial === null || initial === '') return;
+            this._input.value = initial;
+            this._defaultApplied = true;
+          },
+
+          /** 布尔状态的读法：ofa 的绑定会把 false 给成数据里的 false 或属性上的 "false" —— 都不算"有" */
+          boolOn(key) {
+            const raw = this[key];
+            return raw !== null && raw !== false && raw !== 'false';
+          },
+
+          /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
             宿主属性要 attached 之后才能写（P31），所以这一拍在 applyState 里、_mounted 之后做。 */
-        normalizeBoolAttrs() {
-          if (!this._mounted) return;
-          for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
-            const raw = this.ele.getAttribute(name);
-            if (raw === null || raw === '') continue;
-            if (raw === 'false') this.ele.removeAttribute(name);
-            else this.ele.setAttribute(name, '');
-          }
-        },
+          normalizeBoolAttrs() {
+            if (!this._mounted) return;
+            for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
 
-        applyState() {
-          // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
-          if (!this._mounted) return;
-          this.normalizeBoolAttrs();
-          const value = this._input.value;
-          // × 是一个派生事实：可清 + 有内容 + 没被禁用 / 只读
-          this.mirror(
-            'data-has-clear',
-            this.boolOn('clearable') &&
-              !this.boolOn('disabled') &&
-              !this.boolOn('readonly') &&
-              value !== '',
-          );
-          this.mirror('data-has-prefix', this.slotHasContent('prefix'));
-          this.mirror('data-has-suffix', this.slotHasContent('suffix'));
-          this._overflowTip?.check();
-        },
+          applyState() {
+            // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
+            if (!this._mounted) return;
+            this.normalizeBoolAttrs();
+            const value = this._input.value;
+            // × 是一个派生事实：可清 + 有内容 + 没被禁用 / 只读
+            this.mirror(
+              'data-has-clear',
+              this.boolOn('clearable') &&
+                !this.boolOn('disabled') &&
+                !this.boolOn('readonly') &&
+                value !== '',
+            );
+            this.mirror('data-has-prefix', this.slotHasContent('prefix'));
+            this.mirror('data-has-suffix', this.slotHasContent('suffix'));
+            this._overflowTip?.check();
+          },
 
-        /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
-        slotHasContent(name) {
-          const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
-          return (slot?.assignedNodes() ?? []).some(
-            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-          );
-        },
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+          slotHasContent(name) {
+            const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
+            return (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+          },
 
-        /** 只在真的变了时才写宿主 —— 否则每次按键都白触发一轮样式重算 */
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
-        },
+          /** 只在真的变了时才写宿主 —— 否则每次按键都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
 
-        /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
-        onInput(event) {
-          event.stopPropagation();
-          this.applyState();
-          /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
-          this.reflectBoundValue();
-          this.emit('input', {
-            data: { value: this._input.value },
-            bubbles: true,
-            composed: true,
-          });
-        },
+          /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+          onInput(event) {
+            event.stopPropagation();
+            this.applyState();
+            /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
+            this.reflectBoundValue();
+            this.$emit('input', { value: this._input.value });
+          },
 
-        /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
-        onChange() {
-          this.applyState();
-          this.reflectBoundValue();
-          this.emit('change', {
-            data: { value: this._input.value },
-            bubbles: true,
-            composed: true,
-          });
-        },
+          /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
+          onChange() {
+            this.applyState();
+            this.reflectBoundValue();
+            this.$emit('change', { value: this._input.value });
+          },
 
-        /** 清空 + 三个事件：clear 说明"为什么变"，input / change 让绑定值的用法不用改 */
-        onClear() {
-          this._input.value = '';
-          this.applyState();
-          this._input.focus();
-          this.emit('clear', { bubbles: true, composed: true });
-          this.emit('input', {
-            data: { value: '' },
-            bubbles: true,
-            composed: true,
-          });
-          this.emit('change', {
-            data: { value: '' },
-            bubbles: true,
-            composed: true,
-          });
+          /** 清空 + 三个事件：clear 说明"为什么变"，input / change 让绑定值的用法不用改 */
+          onClear() {
+            this._input.value = '';
+            this.applyState();
+            this._input.focus();
+            this.$emit('clear');
+            this.$emit('input', { value: '' });
+            this.$emit('change', { value: '' });
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

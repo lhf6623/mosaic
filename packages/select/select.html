@@ -273,13 +273,22 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
+    import { withEmits } from '../boot/emits.js';
 
     export default async ({ load }) => {
       /* mc-option 是这个单元的另一半：先注册它，attached() 收选项时它们才已升级好（路径相对本文件） */
       await load('./option.html');
 
-      return {
+      return withEmits({
         tag: 'mc-select',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          change: { data: ['value'] },
+          clear: {},
+          open: {},
+          close: {},
+        },
 
         attrs: {
           /* 绑定通道：ofa 原生的 `:value="form.city"`（单向）/ `sync:value="form.city"`（双向）落在这个属性上（同 mc-input）。
@@ -634,7 +643,7 @@
             this.mirror('data-open', open);
             if (!changed) return;
             if (open) {
-              this.emit('open', { bubbles: true, composed: true });
+              this.$emit('open');
               return;
             }
             this.clearActive();
@@ -642,7 +651,7 @@
               this._returnFocus = false;
               this._control?.focus({ preventScroll: true });
             }
-            this.emit('close', { bubbles: true, composed: true });
+            this.$emit('close');
           },
 
           /** 原生 toggle 只当兜底同步：状态与事件不靠它（排队发的 toggle 在「刚关就又开」的连招里会丢），浏览器自己把面板收掉时状态也收敛回来 */
@@ -754,21 +763,17 @@
             this.applySelection(new Set());
             this.syncDisplay();
             this.reflectBoundValue();
-            this.emit('clear', { bubbles: true, composed: true });
+            this.$emit('clear');
             this.emitChange();
             this._control.focus({ preventScroll: true });
           },
 
           emitChange() {
             /* 内部原生 change 穿不出 shadow（P19），所以由组件自己转发成一个 composed 的 change */
-            this.emit('change', {
-              data: { value: this.readValue() },
-              bubbles: true,
-              composed: true,
-            });
+            this.$emit('change', { value: this.readValue() });
           },
         },
-      };
+      });
     };
   </script>
 </template>

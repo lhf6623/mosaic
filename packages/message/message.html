@@ -148,12 +148,19 @@
   </div>
 
   <script>
+    import { withEmits } from '../boot/emits.js';
+
     export default async ({ load }) => {
       /* 图标是独立组件：注册 mc-message 之前先就位（同 mc-alert），代价是多取一次 icon.html */
       await load('../icon/icon.html');
 
-      return {
+      return withEmits({
         tag: 'mc-message',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          close: { detail: true, internal: true },
+        },
 
         data: {
           rows: [],
@@ -217,12 +224,10 @@
             const item = this.rows[index];
             if (!item) return;
             this.removeAt(index);
-            this.ele.dispatchEvent(
-              new CustomEvent('close', { detail: item, bubbles: true, composed: true }),
-            );
+            this.$emit('close', item);
           },
         },
-      };
+      });
     };
   </script>
 </template>

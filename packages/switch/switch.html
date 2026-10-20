@@ -143,131 +143,135 @@
   </label>
 
   <script>
-    export default async () => ({
-      tag: 'mc-switch',
+    import { withEmits } from '../boot/emits.js';
 
-      attrs: {
-        // 自定义值那一对：写了 checked-value 就启用（开着给前者、关着给后者）；不写就是布尔（同 mc-checkbox）
-        checkedValue: '',
-        uncheckedValue: '',
-        /* 非受控初值（同 mc-input 的 default-value）：只在挂载时读一次；受控用法写 checked 就好，别两个都写 */
-        defaultChecked: null,
-        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-switch checked> 失效
-        checked: null,
-        disabled: null,
-        size: 'md',
-      },
+    export default async () =>
+      withEmits({
+        tag: 'mc-switch',
 
-      ready() {
-        // 这里 shadow 已建好（同 mc-collapse-item）；宿主属性一律留到 attached 才写（P31）
-        this._native = this.ele.shadowRoot.querySelector('.mc-native');
-
-        // 运行时状态走 property（规范 1.4）：setter 立刻同步内部原生 input，不等 ofa 那一拍（P4）
-        Object.defineProperty(this.ele, 'checked', {
-          configurable: true,
-          get: () => this._native.checked,
-          set: (value) => {
-            this.ele.toggleAttribute('checked', !!value);
-            this.applyChecked();
-          },
-        });
-
-        /* 跨标签的取值协议：mc-form 收集「单个开关」时调它（同 form-item 的 control / showError 那类宿主方法） */
-        Object.defineProperty(this.ele, 'formValue', {
-          configurable: true,
-          value: () => this.formValue(),
-        });
-
-        this.applyChecked();
-        this.applyDisabled();
-      },
-
-      attached() {
-        this._mounted = true; // 宿主属性只能在这之后写（P31）
-        // 非受控初值在这一拍读：宿主属性要 attached 之后才能写（P31），createElement 之后再写属性也照样读到
-        this.applyDefaultChecked();
-        this.applyChecked();
-        this.applyChecked();
-      },
-
-      watch: {
-        /* 首次触发落在构造期（P5）。这两个 apply 只写 shadow 内部的原生 input（幂等），构造期调用也安全，所以不装首次守卫 */
-        checked() {
-          this.applyChecked();
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          change: { data: ['checked'] },
         },
-        disabled() {
+
+        attrs: {
+          // 自定义值那一对：写了 checked-value 就启用（开着给前者、关着给后者）；不写就是布尔（同 mc-checkbox）
+          checkedValue: '',
+          uncheckedValue: '',
+          /* 非受控初值（同 mc-input 的 default-value）：只在挂载时读一次；受控用法写 checked 就好，别两个都写 */
+          defaultChecked: null,
+          // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-switch checked> 失效
+          checked: null,
+          disabled: null,
+          size: 'md',
+        },
+
+        ready() {
+          // 这里 shadow 已建好（同 mc-collapse-item）；宿主属性一律留到 attached 才写（P31）
+          this._native = this.ele.shadowRoot.querySelector('.mc-native');
+
+          // 运行时状态走 property（规范 1.4）：setter 立刻同步内部原生 input，不等 ofa 那一拍（P4）
+          Object.defineProperty(this.ele, 'checked', {
+            configurable: true,
+            get: () => this._native.checked,
+            set: (value) => {
+              this.ele.toggleAttribute('checked', !!value);
+              this.applyChecked();
+            },
+          });
+
+          /* 跨标签的取值协议：mc-form 收集「单个开关」时调它（同 form-item 的 control / showError 那类宿主方法） */
+          Object.defineProperty(this.ele, 'formValue', {
+            configurable: true,
+            value: () => this.formValue(),
+          });
+
+          this.applyChecked();
           this.applyDisabled();
         },
-      },
 
-      proto: {
-        /** 表单收集这一项时给的值：写了 checked-value 就是「开着给 checked-value、关着给 unchecked-value」，不写就是布尔 */
-        formValue() {
-          const checkedValue = this.readPair('checkedValue', 'checked-value');
-          if (checkedValue === '') return !!this._native.checked;
-          return this._native.checked
-            ? checkedValue
-            : this.readPair('uncheckedValue', 'unchecked-value');
-        },
-
-        /** 自定义值那一对怎么读：property 优先、属性兜底（同 mc-input 那套读法） */
-        readPair(prop, attr) {
-          return typeof this.ele[prop] === 'string'
-            ? this.ele[prop]
-            : (this.ele.getAttribute(attr) ?? '');
-        },
-
-        /** 非受控初值：`default-checked` 只在挂载时读一次（同 mc-input 的 `default-value`）。受控用法写 `checked`，别两个都写 */
-        applyDefaultChecked() {
-          if (this._defaultCheckedApplied === true) return;
-          if (!this.ele.hasAttribute('default-checked')) return;
-          this._defaultCheckedApplied = true;
-          // 只在 attached() 里调：这一拍写宿主属性才不会踩 P31；写进去之后 checked 属性就是唯一真相
-          this.ele.setAttribute('checked', '');
+        attached() {
+          this._mounted = true; // 宿主属性只能在这之后写（P31）
+          // 非受控初值在这一拍读：宿主属性要 attached 之后才能写（P31），createElement 之后再写属性也照样读到
+          this.applyDefaultChecked();
+          this.applyChecked();
           this.applyChecked();
         },
 
-        /** 布尔属性的读法：**存在且值不是字符串 "false"**。ofa 的 `:checked="expr"` / `sync:checked` 会把 false 写成
+        watch: {
+          /* 首次触发落在构造期（P5）。这两个 apply 只写 shadow 内部的原生 input（幂等），构造期调用也安全，所以不装首次守卫 */
+          checked() {
+            this.applyChecked();
+          },
+          disabled() {
+            this.applyDisabled();
+          },
+        },
+
+        proto: {
+          /** 表单收集这一项时给的值：写了 checked-value 就是「开着给 checked-value、关着给 unchecked-value」，不写就是布尔 */
+          formValue() {
+            const checkedValue = this.readPair('checkedValue', 'checked-value');
+            if (checkedValue === '') return !!this._native.checked;
+            return this._native.checked
+              ? checkedValue
+              : this.readPair('uncheckedValue', 'unchecked-value');
+          },
+
+          /** 自定义值那一对怎么读：property 优先、属性兜底（同 mc-input 那套读法） */
+          readPair(prop, attr) {
+            return typeof this.ele[prop] === 'string'
+              ? this.ele[prop]
+              : (this.ele.getAttribute(attr) ?? '');
+          },
+
+          /** 非受控初值：`default-checked` 只在挂载时读一次（同 mc-input 的 `default-value`）。受控用法写 `checked`，别两个都写 */
+          applyDefaultChecked() {
+            if (this._defaultCheckedApplied === true) return;
+            if (!this.ele.hasAttribute('default-checked')) return;
+            this._defaultCheckedApplied = true;
+            // 只在 attached() 里调：这一拍写宿主属性才不会踩 P31；写进去之后 checked 属性就是唯一真相
+            this.ele.setAttribute('checked', '');
+            this.applyChecked();
+          },
+
+          /** 布尔属性的读法：**存在且值不是字符串 "false"**。ofa 的 `:checked="expr"` / `sync:checked` 会把 false 写成
             `checked="false"`（属性还在），按"存在即真"读就会把受控的 false 当成勾上（实测踩过） */
-        boolAttr(name) {
-          const raw = this.ele.getAttribute(name);
-          return raw !== null && raw !== 'false';
-        },
-
-        /** 把绑定写法 `checked="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([checked]) 才判得准。
-            宿主属性要 attached 之后才能写（P31）。 */
-        normalizeBoolAttrs() {
-          if (!this._mounted) return;
-          for (const name of ['checked', 'disabled"', 'disabled']) {
+          boolAttr(name) {
             const raw = this.ele.getAttribute(name);
-            if (raw === null || raw === '') continue;
-            if (raw === 'false') this.ele.removeAttribute(name);
-            else this.ele.setAttribute(name, '');
-          }
-        },
+            return raw !== null && raw !== 'false';
+          },
 
-        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
-        applyChecked() {
-          this.normalizeBoolAttrs();
-          const want = this.boolAttr('checked');
-          if (this._native.checked !== want) this._native.checked = want;
-        },
+          /** 把绑定写法 `checked="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([checked]) 才判得准。
+            宿主属性要 attached 之后才能写（P31）。 */
+          normalizeBoolAttrs() {
+            if (!this._mounted) return;
+            for (const name of ['checked', 'disabled"', 'disabled']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
 
-        applyDisabled() {
-          this._native.disabled = this.boolAttr('disabled');
-        },
+          /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
+          applyChecked() {
+            this.normalizeBoolAttrs();
+            const want = this.boolAttr('checked');
+            if (this._native.checked !== want) this._native.checked = want;
+          },
 
-        /** 原生 change 只到 shadow 边界（P19），由组件自己转成同名的 composed 事件 */
-        onNativeChange() {
-          const checked = this._native.checked;
-          this.ele.toggleAttribute('checked', checked);
-          this.emit('change', {
-            data: { checked },
-            bubbles: true,
-            composed: true,
-          });
+          applyDisabled() {
+            this._native.disabled = this.boolAttr('disabled');
+          },
+
+          /** 原生 change 只到 shadow 边界（P19），由组件自己转成同名的 composed 事件 */
+          onNativeChange() {
+            const checked = this._native.checked;
+            this.ele.toggleAttribute('checked', checked);
+            this.$emit('change', { checked });
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

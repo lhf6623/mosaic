@@ -7,7 +7,8 @@
 import { dirname, posix } from 'node:path';
 import { READY } from '../docs/site-map.js';
 import { componentSuites } from '../tests/lib/suites.mjs';
-import { mdTables } from './doc-drift/lib/parse.mjs';
+import { emitsSpec, mdTables } from './doc-drift/lib/parse.mjs';
+import { auditComponent, auditDocs, auditSelfTest } from './emits-audit.mjs';
 
 /* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
 
@@ -27,7 +28,7 @@ const code = {
   // facet → adapter（adapter 实现在引擎的 lib/parse.mjs；这里只挑用哪几个）
   facets: {
     attrs: ['attrsObject'],
-    events: ['emitCall', 'newEvent'],
+    events: ['emitsObject'],
     slots: ['slotElement'],
     parts: ['partAttribute', 'setAttributePart', 'partProperty'],
     tokens: ['tokenPrefix'],
@@ -681,6 +682,49 @@ const rules = [
       }
     },
   },
+  {
+    type: 'custom',
+    id: 'event-calls',
+    title: '组件代码 · 事件声明与 $emit 调用点（emits ↔ $emit）',
+    run: ({ io, components, problems }) => {
+      problems.push(...auditSelfTest());
+      for (const c of components) {
+        for (const file of c.facts.files) {
+          if (!file.endsWith('.html')) continue;
+          const text = io.read(file);
+          if (!/<template\s+component>/i.test(text)) continue;
+          problems.push(...auditComponent(file, text));
+        }
+      }
+    },
+  },
+  {
+    type: 'custom',
+    id: 'event-doc',
+    title: '组件文档 · 事件通道与载荷跟 emits 声明一致',
+    run: ({ io, components, problems }) => {
+      for (const c of components) {
+        const declared = new Map();
+        for (const file of c.facts.files) {
+          for (const [name, meta] of emitsSpec(io.read(file))) {
+            const prev = declared.get(name);
+            if (
+              prev &&
+              (prev.channel !== meta.channel ||
+                JSON.stringify(prev.payload) !== JSON.stringify(meta.payload))
+            ) {
+              problems.push(`packages/${c.slug}：事件 '${name}' 在多个标签文件里的声明不一致`);
+            } else if (!prev) {
+              declared.set(name, meta);
+            }
+          }
+        }
+        const api = `packages/${c.slug}/api.md`;
+        if (declared.size && io.exists(api))
+          problems.push(...auditDocs(api, io.read(api), declared));
+      }
+    },
+  },
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账。
@@ -689,6 +733,8 @@ const GROUP_COUNT = [apiSpec, unitTokens, pageSkeleton, pageDemos].length + rule
 
 export default {
   code,
+  // 事件面已全量切到 emits 声明：文档里列的每个事件都必须在声明里（原生事件不再免检）
+  exemptions: { nativeEvents: [] },
   // `page-api`（页面手写参考表格 ↔ 代码）已随 S3 删除；接口事实由 `api-spec` 守，防回潮由 rules 里两条 custom 守。
   surfaces: [apiSpec, unitTokens, pageSkeleton, pageDemos],
   rules,

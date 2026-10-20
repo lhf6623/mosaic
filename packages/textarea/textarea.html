@@ -139,222 +139,225 @@
   <span class="mc-counter" part="counter"></span>
 
   <script>
-    export default async () => ({
-      tag: 'mc-textarea',
+    import { withEmits } from '../boot/emits.js';
 
-      attrs: {
-        /* 绑定通道：ofa 原生的 `:value="form.memo"`（单向）/ `sync:value="form.memo"`（双向）落在这个属性上。
+    export default async () =>
+      withEmits({
+        tag: 'mc-textarea',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          input: { data: ['value'] },
+          change: { data: ['value'] },
+        },
+
+        attrs: {
+          /* 绑定通道：ofa 原生的 `:value="form.memo"`（单向）/ `sync:value="form.memo"`（双向）落在这个属性上。
            默认 null（同 mc-input）：ofa 不会凭空写一个空属性出来，"属性在不在"才可靠（P32）。 */
-        value: null,
-        // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
-        defaultValue: '',
-        placeholder: '',
-        name: '',
-        size: 'md',
-        // 行数：跟着原生 rows 走，所以它是真实高度而不是 min-height
-        rows: 3,
-        // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-textarea auto-resize> 失效
-        autoResize: null,
-        maxlength: null,
-        disabled: null,
-        readonly: null,
-        invalid: null,
-      },
+          value: null,
+          // HTML 里的初始值（kebab：default-value）。运行时值走宿主 property value（规范 1.4）
+          defaultValue: '',
+          placeholder: '',
+          name: '',
+          size: 'md',
+          // 行数：跟着原生 rows 走，所以它是真实高度而不是 min-height
+          rows: 3,
+          // 布尔属性默认值必须是 null（P1）：用 false 会让裸属性 <mc-textarea auto-resize> 失效
+          autoResize: null,
+          maxlength: null,
+          disabled: null,
+          readonly: null,
+          invalid: null,
+        },
 
-      ready() {
-        // 构造期不写宿主属性，一律留到 attached（P31）
-        const root = this.ele.shadowRoot;
-        this._input = root.querySelector('.mc-input');
-        this._counter = root.querySelector('.mc-counter');
-        this._slots = [...root.querySelectorAll('slot')];
-        this.applyDefaultValue();
+        ready() {
+          // 构造期不写宿主属性，一律留到 attached（P31）
+          const root = this.ele.shadowRoot;
+          this._input = root.querySelector('.mc-input');
+          this._counter = root.querySelector('.mc-counter');
+          this._slots = [...root.querySelectorAll('slot')];
+          this.applyDefaultValue();
 
-        // 自动增高的监听句柄（P43：别用 resize 这样会盖掉 proto 方法的名字）
-        this._onAutoResize = () => this.resizeToContent();
+          // 自动增高的监听句柄（P43：别用 resize 这样会盖掉 proto 方法的名字）
+          this._onAutoResize = () => this.resizeToContent();
 
-        /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件里 e.target.value 读得到（P18） */
-        Object.defineProperty(this.ele, 'value', {
-          configurable: true,
-          get: () => this._input.value,
-          set: (v) => {
-            this._input.value = String(v ?? '');
-            this.applyState();
-            this.reflectBoundValue();
-          },
-        });
-        // 升级前 ofa 的绑定可能已经写好了 value 属性：补一次同步
-        this.applyBoundValue();
-      },
-
-      attached() {
-        this._mounted = true;
-        this.applyDefaultValue();
-        this._defaultApplied = true;
-        this._onSlotChange = () => this.applyState();
-        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
-        this.bindAutoResize();
-        this.applyState();
-      },
-
-      watch: {
-        /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 textarea 立刻跟上 */
-        value() {
+          /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件里 e.target.value 读得到（P18） */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this._input.value,
+            set: (v) => {
+              this._input.value = String(v ?? '');
+              this.applyState();
+              this.reflectBoundValue();
+            },
+          });
+          // 升级前 ofa 的绑定可能已经写好了 value 属性：补一次同步
           this.applyBoundValue();
         },
-        // 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫
-        autoResize() {
-          this.bindAutoResize();
-        },
-        maxlength() {
-          this.applyState();
-        },
-        /* 这两个只走 CSS（:host([invalid]) / :host([auto-resize])），也要收一次 */
-        invalid() {
-          this.applyState();
-        },
-        autoResize() {
-          this.bindAutoResize();
-          this.applyState();
-        },
-      },
 
-      detached() {
-        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
-        this._input?.removeEventListener('input', this._onAutoResize);
-        this.cancelResizeFrame();
-      },
-
-      proto: {
-        /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺进内部原生 textarea —— 单向「数据 → DOM」这一半 */
-        applyBoundValue() {
-          if (!this._input) return;
-          const bound = this.ele.getAttribute('value');
-          if (bound === null || this._input.value === bound) return;
-          this._input.value = bound;
-          this.applyState();
-        },
-
-        /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」那一半 */
-        reflectBoundValue() {
-          if (!this._input) return;
-          const now = this._input.value;
-          if (this.ele.getAttribute('value') === now) return;
-          this.ele.setAttribute('value', now);
-        },
-
-        /** 初始值只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）：声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached()，由 _defaultApplied 记账 */
-        applyDefaultValue() {
-          if (this._defaultApplied === true || !this._input) return;
-          // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
-          const initial = this.ele.getAttribute('default-value');
-          if (initial === null || initial === '') return;
-          this._input.value = initial;
+        attached() {
+          this._mounted = true;
+          this.applyDefaultValue();
           this._defaultApplied = true;
+          this._onSlotChange = () => this.applyState();
+          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          this.bindAutoResize();
+          this.applyState();
         },
 
-        /** 自动增高只挂一次监听，`auto-resize` 去掉时立刻摘掉并清掉写进去的高度 */
-        bindAutoResize() {
-          if (!this._input) return;
-          this._input.removeEventListener('input', this._onAutoResize);
+        watch: {
+          /* ofa 的绑定写的就是这个属性（`:value` / `sync:value`）：数据一变，内部原生 textarea 立刻跟上 */
+          value() {
+            this.applyBoundValue();
+          },
+          // 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫
+          autoResize() {
+            this.bindAutoResize();
+          },
+          maxlength() {
+            this.applyState();
+          },
+          /* 这两个只走 CSS（:host([invalid]) / :host([auto-resize])），也要收一次 */
+          invalid() {
+            this.applyState();
+          },
+          autoResize() {
+            this.bindAutoResize();
+            this.applyState();
+          },
+        },
+
+        detached() {
+          for (const slot of this._slots)
+            slot.removeEventListener('slotchange', this._onSlotChange);
+          this._input?.removeEventListener('input', this._onAutoResize);
           this.cancelResizeFrame();
-          if (this.autoResize === null) {
-            this._resizeRetry = false;
-            this._input.style.height = '';
-            return;
-          }
-          this._input.addEventListener('input', this._onAutoResize);
-          // 允许一次"下一帧补量"：attached() 可能早于元素拿到布局
-          this._resizeRetry = true;
-          this.resizeToContent();
         },
 
-        /** 取消还没跑的那一帧（P31：只写 shadow 内部元素；帧句柄必须有人收） */
-        cancelResizeFrame() {
-          if (this._resizeFrame) cancelAnimationFrame(this._resizeFrame);
-          this._resizeFrame = null;
-        },
+        proto: {
+          /** 绑定通道（ofa 的 `:value` / `sync:value`）：属性变了就把值铺进内部原生 textarea —— 单向「数据 → DOM」这一半 */
+          applyBoundValue() {
+            if (!this._input) return;
+            const bound = this.ele.getAttribute('value');
+            if (bound === null || this._input.value === bound) return;
+            this._input.value = bound;
+            this.applyState();
+          },
 
-        /** 自动增高：把高度设成内容高度（scrollHeight 本身就是内容高度，与 CSS height 无关，不用先归零）。⚠️ attached() 可能早于布局，scrollHeight 为 0，写 0px 会把内容整块裁掉 —— 量到 0 就下一帧补一次，只补一次 */
-        resizeToContent() {
-          if (this.autoResize === null) return;
-          const el = this._input;
-          const height = el.scrollHeight;
-          if (height === 0) {
-            if (!this._resizeRetry) return;
-            this._resizeRetry = false;
-            this._resizeFrame = requestAnimationFrame(() => {
-              this._resizeFrame = null;
-              this.resizeToContent();
-            });
-            return;
-          }
-          el.style.height = `${height}px`;
-        },
+          /** 反向：把当前值写回属性，让 ofa 的 `sync:value` 观察得到 —— 双向「DOM → 数据」那一半 */
+          reflectBoundValue() {
+            if (!this._input) return;
+            const now = this._input.value;
+            if (this.ele.getAttribute('value') === now) return;
+            this.ele.setAttribute('value', now);
+          },
 
-        /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
+          /** 初始值只认 default-value，而且**只读一次**（之后改属性不覆盖运行时值）：声明式 HTML 在 ready() 时属性已在，createElement 之后再写的要等 attached()，由 _defaultApplied 记账 */
+          applyDefaultValue() {
+            if (this._defaultApplied === true || !this._input) return;
+            // P32：ofa 会把声明过的字符串属性以空值写到宿主上，"属性在不在"不能当条件，要看值
+            const initial = this.ele.getAttribute('default-value');
+            if (initial === null || initial === '') return;
+            this._input.value = initial;
+            this._defaultApplied = true;
+          },
+
+          /** 自动增高只挂一次监听，`auto-resize` 去掉时立刻摘掉并清掉写进去的高度 */
+          bindAutoResize() {
+            if (!this._input) return;
+            this._input.removeEventListener('input', this._onAutoResize);
+            this.cancelResizeFrame();
+            if (this.autoResize === null) {
+              this._resizeRetry = false;
+              this._input.style.height = '';
+              return;
+            }
+            this._input.addEventListener('input', this._onAutoResize);
+            // 允许一次"下一帧补量"：attached() 可能早于元素拿到布局
+            this._resizeRetry = true;
+            this.resizeToContent();
+          },
+
+          /** 取消还没跑的那一帧（P31：只写 shadow 内部元素；帧句柄必须有人收） */
+          cancelResizeFrame() {
+            if (this._resizeFrame) cancelAnimationFrame(this._resizeFrame);
+            this._resizeFrame = null;
+          },
+
+          /** 自动增高：把高度设成内容高度（scrollHeight 本身就是内容高度，与 CSS height 无关，不用先归零）。⚠️ attached() 可能早于布局，scrollHeight 为 0，写 0px 会把内容整块裁掉 —— 量到 0 就下一帧补一次，只补一次 */
+          resizeToContent() {
+            if (this.autoResize === null) return;
+            const el = this._input;
+            const height = el.scrollHeight;
+            if (height === 0) {
+              if (!this._resizeRetry) return;
+              this._resizeRetry = false;
+              this._resizeFrame = requestAnimationFrame(() => {
+                this._resizeFrame = null;
+                this.resizeToContent();
+              });
+              return;
+            }
+            el.style.height = `${height}px`;
+          },
+
+          /** 把绑定写法 `disabled="false"` 规范化掉（有就是空串、没有就没有）：CSS 的 :host([disabled]) 才判得准。
             宿主属性要 attached 之后才能写（P31），所以这一拍在 applyState 里、_mounted 之后做。 */
-        normalizeBoolAttrs() {
-          for (const name of ['disabled', 'readonly', 'invalid', 'auto-resize']) {
-            const raw = this.ele.getAttribute(name);
-            if (raw === null || raw === '') continue;
-            if (raw === 'false') this.ele.removeAttribute(name);
-            else this.ele.setAttribute(name, '');
-          }
-        },
+          normalizeBoolAttrs() {
+            for (const name of ['disabled', 'readonly', 'invalid', 'auto-resize']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
 
-        /** data-has-* 是 CSS 唯一的输入；字数统计也在这里刷新 */
-        applyState() {
-          // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
-          if (!this._mounted) return;
-          this.normalizeBoolAttrs();
-          this.mirror('data-has-value', this._input.value !== '');
-          this.mirror('data-has-prefix', this.slotHasContent('prefix'));
-          this.mirror('data-has-suffix', this.slotHasContent('suffix'));
-          // 只有给了 maxlength 才显示「当前/上限」（maxlength 编码进字符串，空格也算一个）
-          const limit = this.maxlength === null ? null : Number(this.maxlength);
-          this.mirror('data-has-maxlength', limit !== null);
-          if (limit !== null) this._counter.textContent = `${this._input.value.length}/${limit}`;
-        },
+          /** data-has-* 是 CSS 唯一的输入；字数统计也在这里刷新 */
+          applyState() {
+            // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
+            if (!this._mounted) return;
+            this.normalizeBoolAttrs();
+            this.mirror('data-has-value', this._input.value !== '');
+            this.mirror('data-has-prefix', this.slotHasContent('prefix'));
+            this.mirror('data-has-suffix', this.slotHasContent('suffix'));
+            // 只有给了 maxlength 才显示「当前/上限」（maxlength 编码进字符串，空格也算一个）
+            const limit = this.maxlength === null ? null : Number(this.maxlength);
+            this.mirror('data-has-maxlength', limit !== null);
+            if (limit !== null) this._counter.textContent = `${this._input.value.length}/${limit}`;
+          },
 
-        /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
-        slotHasContent(name) {
-          const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
-          return (slot?.assignedNodes() ?? []).some(
-            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-          );
-        },
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+          slotHasContent(name) {
+            const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
+            return (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+          },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次按键都白触发一轮样式重算 */
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
-        },
+          /** 只在真的变了的时候写宿主 —— 否则每次按键都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
 
-        /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
-        onInput(event) {
-          event.stopPropagation();
-          this.applyState();
-          /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
-          this.reflectBoundValue();
-          this.emit('input', {
-            data: { value: this._input.value },
-            bubbles: true,
-            composed: true,
-          });
-        },
+          /** 每次按键：原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+          onInput(event) {
+            event.stopPropagation();
+            this.applyState();
+            /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
+            this.reflectBoundValue();
+            this.$emit('input', { value: this._input.value });
+          },
 
-        /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
-        onChange() {
-          this.applyState();
-          this.reflectBoundValue();
-          this.emit('change', {
-            data: { value: this._input.value },
-            bubbles: true,
-            composed: true,
-          });
+          /** 原生 change 穿不出 shadow 边界（P19），所以必须由组件转发成同名的 composed 事件 */
+          onChange() {
+            this.applyState();
+            this.reflectBoundValue();
+            this.$emit('change', { value: this._input.value });
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

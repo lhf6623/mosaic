@@ -204,6 +204,7 @@
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；提示条是浅底外观，所以接 subtle-fill */
     import { colorAttr } from '../boot/color-attr.js';
+    import { withEmits } from '../boot/emits.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
@@ -221,8 +222,13 @@
       /* 图标是独立组件：注册前先就位（路径相对本文件 URL）；代价是只引 mc-alert 也会取一次 icon.html */
       await load('../icon/icon.html');
 
-      return {
+      return withEmits({
         tag: 'mc-alert',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          close: {},
+        },
 
         attrs: {
           color: 'primary',
@@ -306,10 +312,10 @@
           },
 
           onClose() {
-            this.emit('close', { bubbles: true, composed: true });
+            this.$emit('close');
           },
         },
-      };
+      });
     };
   </script>
 </template>

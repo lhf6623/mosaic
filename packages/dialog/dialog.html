@@ -178,6 +178,7 @@
 
   <script>
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    import { withEmits } from '../boot/emits.js';
 
     /** 面板里可聚焦的原生元素；`:disabled` 认 property，够得到真正可聚焦的那些 */
     const FOCUSABLE =
@@ -212,203 +213,212 @@
       return el;
     };
 
-    export default () => ({
-      tag: 'mc-dialog',
+    export default () =>
+      withEmits({
+        tag: 'mc-dialog',
 
-      attrs: {
-        // 布尔属性默认值必须是 null（P1）：open 既是初始值也是运行时状态
-        open: null,
-        // 标题纯文本，富标题走 header 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（P32）
-        heading: '',
-        closable: null,
-        maskClosable: null,
-        size: 'md',
-      },
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          open: {},
+          close: {},
+        },
 
-      data: {
-        mounted: false,
-      },
+        attrs: {
+          // 布尔属性默认值必须是 null（P1）：open 既是初始值也是运行时状态
+          open: null,
+          // 标题纯文本，富标题走 header 插槽。叫 heading 不叫 title —— title 会弹原生 tooltip（P32）
+          heading: '',
+          closable: null,
+          maskClosable: null,
+          size: 'md',
+        },
 
-      ready() {
-        this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+        data: {
+          mounted: false,
+        },
 
-        // 运行时状态走 property（规范 1.4）：setter 立刻同步原生 popover，不等 ofa 那一拍（P4）
-        Object.defineProperty(this.ele, 'open', {
-          configurable: true,
-          get: () => this.ele.hasAttribute('open'),
-          set: (value) => {
-            if (value) this.ele.setAttribute('open', '');
-            else this.ele.removeAttribute('open');
+        ready() {
+          this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+
+          // 运行时状态走 property（规范 1.4）：setter 立刻同步原生 popover，不等 ofa 那一拍（P4）
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            get: () => this.ele.hasAttribute('open'),
+            set: (value) => {
+              if (value) this.ele.setAttribute('open', '');
+              else this.ele.removeAttribute('open');
+              this.syncOpen();
+            },
+          });
+
+          // Esc / Tab 都在 document 上收：焦点万一跑到面板外也要能拉回来
+          this._onKeydown = (event) => this.onKeydown(event);
+          document.addEventListener('keydown', this._onKeydown, true);
+
+          // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 scroll-pin.js）
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this.root);
+          // 老浏览器没有 popover API 时不炸：面板由 CSS 兜在 display:none，交互一律不动
+          this.popoverOk = typeof this.root?.showPopover === 'function';
+          this.mounted = true;
+          if (this.ele.isConnected) this.syncOpen();
+        },
+
+        attached() {
+          /* data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）；头部还要算上 closable */
+          this._onSlotChange = () => this.applyState();
+          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          this.applyState();
+          // 构造期宿主可能还没连上（那时 showPopover 会抛），这里补一次
+          this.syncOpen();
+        },
+
+        detached() {
+          document.removeEventListener('keydown', this._onKeydown, true);
+          for (const slot of this._slots)
+            slot.removeEventListener('slotchange', this._onSlotChange);
+          this._scrollGuard?.dispose();
+        },
+
+        watch: {
+          // open 变了就同步原生状态；首次触发在构造期（P5），跳过
+          open() {
+            if (this._openWatchInit === undefined) {
+              this._openWatchInit = true;
+              return;
+            }
             this.syncOpen();
           },
-        });
-
-        // Esc / Tab 都在 document 上收：焦点万一跑到面板外也要能拉回来
-        this._onKeydown = (event) => this.onKeydown(event);
-        document.addEventListener('keydown', this._onKeydown, true);
-
-        // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 scroll-pin.js）
-        this._scrollGuard = attachFloatingScrollGuard(this.ele, this.root);
-        // 老浏览器没有 popover API 时不炸：面板由 CSS 兜在 display:none，交互一律不动
-        this.popoverOk = typeof this.root?.showPopover === 'function';
-        this.mounted = true;
-        if (this.ele.isConnected) this.syncOpen();
-      },
-
-      attached() {
-        /* data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）；头部还要算上 closable */
-        this._onSlotChange = () => this.applyState();
-        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
-        this.applyState();
-        // 构造期宿主可能还没连上（那时 showPopover 会抛），这里补一次
-        this.syncOpen();
-      },
-
-      detached() {
-        document.removeEventListener('keydown', this._onKeydown, true);
-        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
-        this._scrollGuard?.dispose();
-      },
-
-      watch: {
-        // open 变了就同步原生状态；首次触发在构造期（P5），跳过
-        open() {
-          if (this._openWatchInit === undefined) {
-            this._openWatchInit = true;
-            return;
-          }
-          this.syncOpen();
-        },
-        // 标题文案决定头部要不要占位，同样跳过首次（P5）
-        heading() {
-          if (this._headingWatchInit === undefined) {
-            this._headingWatchInit = true;
-            return;
-          }
-          this.applyState();
-        },
-        closable() {
-          if (this._closableWatchInit === undefined) {
-            this._closableWatchInit = true;
-            return;
-          }
-          this.applyState();
-        },
-      },
-
-      proto: {
-        get root() {
-          return this.ele.shadowRoot.querySelector('.mc-root');
+          // 标题文案决定头部要不要占位，同样跳过首次（P5）
+          heading() {
+            if (this._headingWatchInit === undefined) {
+              this._headingWatchInit = true;
+              return;
+            }
+            this.applyState();
+          },
+          closable() {
+            if (this._closableWatchInit === undefined) {
+              this._closableWatchInit = true;
+              return;
+            }
+            this.applyState();
+          },
         },
 
-        get panelEl() {
-          return this.ele.shadowRoot.querySelector('.mc-panel');
-        },
+        proto: {
+          get root() {
+            return this.ele.shadowRoot.querySelector('.mc-root');
+          },
 
-        /** 宿主 open 属性 → 原生 popover 状态；两个方向的真相都收在这一处 */
-        syncOpen() {
-          if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
-          const shouldOpen = this.ele.hasAttribute('open');
-          const isOpen = this.root.matches(':popover-open');
-          if (shouldOpen && !isOpen) {
-            // 焦点归还的目标：打开前那一处（可能要钻进别人的 shadow root）
-            this._returnFocus = deepActive();
-            /* 显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
-            this._scrollGuard.run(() => this.root.showPopover());
-            this.focusIntoPanel();
-            this.emit('open', { bubbles: true, composed: true });
-          } else if (!shouldOpen && isOpen) {
-            this._scrollGuard.run(() => this.root.hidePopover());
-            this.restoreFocus();
-            this.emit('close', { bubbles: true, composed: true });
-          }
-        },
+          get panelEl() {
+            return this.ele.shadowRoot.querySelector('.mc-panel');
+          },
 
-        focusIntoPanel() {
-          (this.focusables()[0] ?? this.panelEl).focus({ preventScroll: true });
-        },
+          /** 宿主 open 属性 → 原生 popover 状态；两个方向的真相都收在这一处 */
+          syncOpen() {
+            if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
+            const shouldOpen = this.ele.hasAttribute('open');
+            const isOpen = this.root.matches(':popover-open');
+            if (shouldOpen && !isOpen) {
+              // 焦点归还的目标：打开前那一处（可能要钻进别人的 shadow root）
+              this._returnFocus = deepActive();
+              /* 显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
+              this._scrollGuard.run(() => this.root.showPopover());
+              this.focusIntoPanel();
+              this.$emit('open');
+            } else if (!shouldOpen && isOpen) {
+              this._scrollGuard.run(() => this.root.hidePopover());
+              this.restoreFocus();
+              this.$emit('close');
+            }
+          },
 
-        focusables() {
-          return flatFocusables(this.panelEl);
-        },
+          focusIntoPanel() {
+            (this.focusables()[0] ?? this.panelEl).focus({ preventScroll: true });
+          },
 
-        restoreFocus() {
-          const target = this._returnFocus;
-          this._returnFocus = null;
-          if (target?.isConnected) target.focus({ preventScroll: true });
-        },
+          focusables() {
+            return flatFocusables(this.panelEl);
+          },
 
-        /** Esc 关闭 + Tab / Shift+Tab 在面板内循环；焦点被外面抢走时也拉回来 */
-        onKeydown(event) {
-          if (!this.popoverOk || !this.root.matches(':popover-open')) return;
-          if (event.key === 'Escape') {
+          restoreFocus() {
+            const target = this._returnFocus;
+            this._returnFocus = null;
+            if (target?.isConnected) target.focus({ preventScroll: true });
+          },
+
+          /** Esc 关闭 + Tab / Shift+Tab 在面板内循环；焦点被外面抢走时也拉回来 */
+          onKeydown(event) {
+            if (!this.popoverOk || !this.root.matches(':popover-open')) return;
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              this.closeDialog();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+            const items = this.focusables();
+            const index = items.indexOf(deepActive());
+            if (index < 0) {
+              event.preventDefault();
+              (items[0] ?? this.panelEl).focus({ preventScroll: true });
+              return;
+            }
+            const step = event.shiftKey ? -1 : 1;
             event.preventDefault();
-            this.closeDialog();
-            return;
-          }
-          if (event.key !== 'Tab') return;
-          const items = this.focusables();
-          const index = items.indexOf(deepActive());
-          if (index < 0) {
-            event.preventDefault();
-            (items[0] ?? this.panelEl).focus({ preventScroll: true });
-            return;
-          }
-          const step = event.shiftKey ? -1 : 1;
-          event.preventDefault();
-          items[(index + step + items.length) % items.length].focus({ preventScroll: true });
-        },
+            items[(index + step + items.length) % items.length].focus({ preventScroll: true });
+          },
 
-        /** 点遮罩关闭。⚠️ P20：跨 shadow 判「点在哪」必须走 composedPath —— contains(e.target)
-         * 拿到的是沿途重定向后的宿主，必然误判成外部。 */
-        onRootClick(event) {
-          const path = event.composedPath();
-          if (!path.includes(this.ele)) return;
-          if (path.includes(this.panelEl)) return;
-          if (this.ele.hasAttribute('mask-closable')) this.closeDialog();
-        },
+          /** 点遮罩关闭。⚠️ P20：跨 shadow 判「点在哪」必须走 composedPath —— contains(e.target)
+           * 拿到的是沿途重定向后的宿主，必然误判成外部。 */
+          onRootClick(event) {
+            const path = event.composedPath();
+            if (!path.includes(this.ele)) return;
+            if (path.includes(this.panelEl)) return;
+            if (this.ele.hasAttribute('mask-closable')) this.closeDialog();
+          },
 
-        openDialog() {
-          if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
-          this.syncOpen();
-        },
+          openDialog() {
+            if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
+            this.syncOpen();
+          },
 
-        closeDialog() {
-          if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
-          this.syncOpen();
-        },
+          closeDialog() {
+            if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
+            this.syncOpen();
+          },
 
-        applyState() {
-          this.mirror(
-            'data-has-header',
-            this.slotHasContent('header') ||
-              this.headingText() !== '' ||
-              this.ele.hasAttribute('closable'),
-          );
-          this.mirror('data-has-footer', this.slotHasContent('footer'));
-        },
+          applyState() {
+            this.mirror(
+              'data-has-header',
+              this.slotHasContent('header') ||
+                this.headingText() !== '' ||
+                this.ele.hasAttribute('closable'),
+            );
+            this.mirror('data-has-footer', this.slotHasContent('footer'));
+          },
 
-        /** 标题文案。attach 那一刻宿主上还没有 heading 属性（P32），先落成空串再看 */
-        headingText() {
-          return (this.ele.getAttribute('heading') ?? '').trim();
-        },
+          /** 标题文案。attach 那一刻宿主上还没有 heading 属性（P32），先落成空串再看 */
+          headingText() {
+            return (this.ele.getAttribute('heading') ?? '').trim();
+          },
 
-        /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
-        slotHasContent(name) {
-          const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
-          const slot = this.ele.shadowRoot.querySelector(selector);
-          return (slot?.assignedNodes() ?? []).some(
-            (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-          );
-        },
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+          slotHasContent(name) {
+            const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
+            const slot = this.ele.shadowRoot.querySelector(selector);
+            return (slot?.assignedNodes() ?? []).some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+          },
 
-        /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
+          /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

@@ -390,6 +390,7 @@
       TYPE_DEFAULTS,
       weekdayIndex,
     } from '../boot/date.js';
+    import { withEmits } from '../boot/emits.js';
 
     const DEFAULT_TYPE = 'day';
     const TYPE_PLACEHOLDERS = {
@@ -399,836 +400,842 @@
       year: '请选择年份',
     };
 
-    export default async () => ({
-      tag: 'mc-date-picker',
+    export default async () =>
+      withEmits({
+        tag: 'mc-date-picker',
 
-      attrs: {
-        /* 绑定通道：ofa 原生的 :value（单向）/ sync:value（双向）落在这个属性上（同 mc-input）。
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          change: { data: ['value'] },
+          clear: {},
+          open: {},
+          close: {},
+        },
+
+        attrs: {
+          /* 绑定通道：ofa 原生的 :value（单向）/ sync:value（双向）落在这个属性上（同 mc-input）。
            默认 null：ofa 不会凭空写一个空属性，"属性在不在"才可靠（P32）；不给就是非受控。 */
-        value: null,
-        /* 初始值在 HTML 属性 default-value（非受控）；运行时值走宿主 DOM property value */
-        defaultValue: '',
-        /* 选择粒度与选择模式：type = day / week / month / year；multiple / range 互斥（range 优先） */
-        type: 'day',
-        multiple: null,
-        range: null,
-        /* 格式化三段：进（解析外部字符串）→ 组件中（触发框显示）→ 出（事件 / property / 回写属性） */
-        inputFormat: '',
-        format: '',
-        outputFormat: '',
-        /* 可选范围：按 input-format 解析，两端都含；空 = 不限 */
-        min: '',
-        max: '',
-        /* 空 = 按 type 取默认文案 */
-        placeholder: '',
-        /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-date-picker clearable> 失效 */
-        clearable: null,
-        disabled: null,
-        readonly: null,
-        invalid: null,
-        size: 'md',
-      },
-
-      ready() {
-        const root = this.ele.shadowRoot;
-        this._control = root.querySelector('.mc-control');
-        this._valueEl = root.querySelector('.mc-value');
-        this._panel = root.querySelector('.mc-panel');
-        this._title = root.querySelector('.mc-title');
-        this._grid = root.querySelector('.mc-grid');
-        this._weekdays = root.querySelector('.mc-weekdays');
-        this._prevBtn = root.querySelectorAll('.mc-nav')[0] ?? null;
-        this._nextBtn = root.querySelectorAll('.mc-nav')[1] ?? null;
-
-        this._selected = [];
-        this._pending = null;
-        this._committed = [];
-        this._active = todayDate();
-        this._view = { y: this._active.y, m: this._active.m };
-        this._openState = false;
-        this._live = false;
-        this._defaultApplied = false;
-        this._touched = false;
-        this._pendingReflect = false;
-        this._reflected = null;
-        this._returnFocus = false;
-        this._seen = new Set();
-
-        /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 当前值，写 = 直接改选中态 */
-        Object.defineProperty(this.ele, 'value', {
-          configurable: true,
-          get: () => this.readValue(),
-          set: (next) => this.writeValue(next),
-        });
-
-        /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run() */
-        this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
-        this._popoverOk = typeof this._panel?.showPopover === 'function';
-      },
-
-      attached() {
-        this._live = true;
-        /* 多选 / 范围的拼接会被固定宽度裁掉；提示本身住在 shadow 里的 top layer */
-        this._overflowTip = attachOverflowTip(this.ele, this._valueEl);
-
-        /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
-        this._onDocPointerDown = (event) => {
-          if (!this.isOpen()) return;
-          if (event.composedPath().includes(this.ele)) return;
-          this.closePanel();
-        };
-        document.addEventListener('pointerdown', this._onDocPointerDown, true);
-
-        /* 焦点离开整个宿主（含触发框 / ×）就收起面板；面板里的按钮不进 Tab 序列，所以这是 Tab 退出的唯一出口 */
-        this._onHostFocusOut = (event) => this.onFocusOut(event);
-        this.ele.addEventListener('focusout', this._onHostFocusOut);
-
-        this.applyDefaultValue();
-        this.syncDisplay();
-        if (this._pendingReflect) {
-          this._pendingReflect = false;
-          this.reflectBoundValue();
-        }
-      },
-
-      detached() {
-        document.removeEventListener('pointerdown', this._onDocPointerDown, true);
-        this.ele.removeEventListener('focusout', this._onHostFocusOut);
-        this._overflowTip?.dispose();
-        this._overflowTip = null;
-        this._scrollGuard?.dispose();
-        if (this.isOpen()) this._panel.hidePopover();
-        this._live = false;
-      },
-
-      watch: {
-        /* ⚠️ ofa 初始化会把每条 watch 空跑一遍（P5），那次不碰宿主属性（P31） */
-        value() {
-          if (this.skipInit('value')) return;
-          const raw = this.ele.getAttribute('value');
-          if (raw === null) return;
-          if (this._reflected !== null && raw === this._reflected) {
-            this._reflected = null;
-            return;
-          }
-          this._reflected = null;
-          this._touched = true;
-          this.applyValue(raw);
+          value: null,
+          /* 初始值在 HTML 属性 default-value（非受控）；运行时值走宿主 DOM property value */
+          defaultValue: '',
+          /* 选择粒度与选择模式：type = day / week / month / year；multiple / range 互斥（range 优先） */
+          type: 'day',
+          multiple: null,
+          range: null,
+          /* 格式化三段：进（解析外部字符串）→ 组件中（触发框显示）→ 出（事件 / property / 回写属性） */
+          inputFormat: '',
+          format: '',
+          outputFormat: '',
+          /* 可选范围：按 input-format 解析，两端都含；空 = 不限 */
+          min: '',
+          max: '',
+          /* 空 = 按 type 取默认文案 */
+          placeholder: '',
+          /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-date-picker clearable> 失效 */
+          clearable: null,
+          disabled: null,
+          readonly: null,
+          invalid: null,
+          size: 'md',
         },
-        defaultValue() {
-          if (this.skipInit('defaultValue')) return;
-          if (this._touched) return;
-          this.applyValue(this.ele.getAttribute('default-value') ?? '');
-        },
-        type() {
-          if (this.skipInit('type')) return;
-          this._touched = false;
-          this._defaultApplied = false;
+
+        ready() {
+          const root = this.ele.shadowRoot;
+          this._control = root.querySelector('.mc-control');
+          this._valueEl = root.querySelector('.mc-value');
+          this._panel = root.querySelector('.mc-panel');
+          this._title = root.querySelector('.mc-title');
+          this._grid = root.querySelector('.mc-grid');
+          this._weekdays = root.querySelector('.mc-weekdays');
+          this._prevBtn = root.querySelectorAll('.mc-nav')[0] ?? null;
+          this._nextBtn = root.querySelectorAll('.mc-nav')[1] ?? null;
+
           this._selected = [];
           this._pending = null;
           this._committed = [];
+          this._active = todayDate();
+          this._view = { y: this._active.y, m: this._active.m };
+          this._openState = false;
+          this._live = false;
+          this._defaultApplied = false;
+          this._touched = false;
+          this._pendingReflect = false;
+          this._reflected = null;
+          this._returnFocus = false;
+          this._seen = new Set();
+
+          /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 当前值，写 = 直接改选中态 */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this.readValue(),
+            set: (next) => this.writeValue(next),
+          });
+
+          /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run() */
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+          this._popoverOk = typeof this._panel?.showPopover === 'function';
+        },
+
+        attached() {
+          this._live = true;
+          /* 多选 / 范围的拼接会被固定宽度裁掉；提示本身住在 shadow 里的 top layer */
+          this._overflowTip = attachOverflowTip(this.ele, this._valueEl);
+
+          /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
+          this._onDocPointerDown = (event) => {
+            if (!this.isOpen()) return;
+            if (event.composedPath().includes(this.ele)) return;
+            this.closePanel();
+          };
+          document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+          /* 焦点离开整个宿主（含触发框 / ×）就收起面板；面板里的按钮不进 Tab 序列，所以这是 Tab 退出的唯一出口 */
+          this._onHostFocusOut = (event) => this.onFocusOut(event);
+          this.ele.addEventListener('focusout', this._onHostFocusOut);
+
           this.applyDefaultValue();
           this.syncDisplay();
-          if (this.isOpen()) {
-            this.syncActiveFromSelection();
-            this.renderPanel();
+          if (this._pendingReflect) {
+            this._pendingReflect = false;
+            this.reflectBoundValue();
           }
         },
-        multiple() {
-          if (this.skipInit('multiple')) return;
-          this.applyModeChange();
+
+        detached() {
+          document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+          this.ele.removeEventListener('focusout', this._onHostFocusOut);
+          this._overflowTip?.dispose();
+          this._overflowTip = null;
+          this._scrollGuard?.dispose();
+          if (this.isOpen()) this._panel.hidePopover();
+          this._live = false;
         },
-        range() {
-          if (this.skipInit('range')) return;
-          this.applyModeChange();
-        },
-        inputFormat() {
-          if (this.skipInit('inputFormat')) return;
-          /* 解读方式变了：把当前 value 属性按新格式再读一次（属性本身没变，变的是格式） */
-          const raw = this.ele.getAttribute('value');
-          if (raw !== null && raw !== '') {
+
+        watch: {
+          /* ⚠️ ofa 初始化会把每条 watch 空跑一遍（P5），那次不碰宿主属性（P31） */
+          value() {
+            if (this.skipInit('value')) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null) return;
+            if (this._reflected !== null && raw === this._reflected) {
+              this._reflected = null;
+              return;
+            }
+            this._reflected = null;
             this._touched = true;
             this.applyValue(raw);
-          }
-        },
-        format() {
-          if (this.skipInit('format')) return;
-          this.syncDisplay();
-        },
-        outputFormat() {
-          if (this.skipInit('outputFormat')) return;
-          if (this._selected.length) this.reflectBoundValue();
-        },
-        min() {
-          if (this.skipInit('min')) return;
-          if (this.isOpen()) this.renderPanel();
-        },
-        max() {
-          if (this.skipInit('max')) return;
-          if (this.isOpen()) this.renderPanel();
-        },
-        placeholder() {
-          if (this.skipInit('placeholder')) return;
-          this.syncDisplay();
-        },
-        clearable() {
-          if (this.skipInit('clearable')) return;
-          this.syncDisplay();
-        },
-        disabled() {
-          if (this.skipInit('disabled')) return;
-          this.syncDisplay();
-          if (this.ele.hasAttribute('disabled') && this.isOpen()) this.closePanel();
-        },
-        readonly() {
-          if (this.skipInit('readonly')) return;
-          this.syncDisplay();
-          if (this.ele.hasAttribute('readonly') && this.isOpen()) this.closePanel();
-        },
-        invalid() {
-          if (this.skipInit('invalid')) return;
-          this.syncDisplay();
-        },
-      },
-
-      proto: {
-        /** 每条 watch 的首次（构造期）触发都要跳过，但每条各跳一次（P5） */
-        skipInit(key) {
-          if (this._seen.has(key)) return false;
-          this._seen.add(key);
-          return true;
-        },
-
-        currentType() {
-          const raw = this.ele.getAttribute('type') || DEFAULT_TYPE;
-          return Object.prototype.hasOwnProperty.call(TYPE_DEFAULTS, raw) ? raw : DEFAULT_TYPE;
-        },
-
-        currentMode() {
-          if (this.ele.hasAttribute('range')) return 'range';
-          if (this.ele.hasAttribute('multiple')) return 'multiple';
-          return 'single';
-        },
-
-        patternFor(name) {
-          return this.ele.getAttribute(name) || TYPE_DEFAULTS[this.currentType()];
-        },
-
-        /* ---------- 值读写 ---------- */
-
-        readValue() {
-          const type = this.currentType();
-          const pattern = this.patternFor('output-format');
-          const list = this._selected.map((key) => formatKey(key, pattern, type)).filter(Boolean);
-          return this.currentMode() === 'single' ? (list[0] ?? '') : list;
-        },
-
-        readAttributeValue() {
-          const value = this.readValue();
-          return Array.isArray(value) ? value.join(',') : value;
-        },
-
-        writeValue(next) {
-          this._touched = true;
-          const text = Array.isArray(next)
-            ? next.map((item) => String(item ?? '')).join(',')
-            : String(next ?? '');
-          this.applyValue(text);
-          if (this._live) this.reflectBoundValue();
-          else this._pendingReflect = true;
-        },
-
-        /** 进组件：按 input → output → 该 type 的 canonical 格式依次尝试，先命中的赢 */
-        parseIncoming(raw) {
-          const text = String(raw ?? '').trim();
-          if (text === '') return null;
-          const type = this.currentType();
-          const seen = {};
-          for (const pattern of [
-            this.patternFor('input-format'),
-            this.patternFor('output-format'),
-            TYPE_DEFAULTS[type],
-          ]) {
-            if (seen[pattern]) continue;
-            seen[pattern] = true;
-            const key = parseKey(text, pattern, type);
-            if (key) return key;
-          }
-          return null;
-        },
-
-        parseValueList(raw) {
-          const text = String(raw ?? '').trim();
-          if (text === '') return [];
-          const mode = this.currentMode();
-          const parts = mode === 'single' ? [text] : text.split(',');
-          const keys = parts.map((part) => this.parseIncoming(part)).filter(Boolean);
-          if (mode === 'single') return keys.slice(0, 1);
-          if (mode === 'range') return keys.slice(0, 2);
-          return keys;
-        },
-
-        /** 初值 / 绑定值 / property 写值都走这里：只接受合法 key，非法一律当空 */
-        applyValue(raw) {
-          const keys = this.parseValueList(raw);
-          const mode = this.currentMode();
-          this._selected = keys;
-          if (mode === 'range' && keys.length === 1) {
-            this._pending = keys[0];
+          },
+          defaultValue() {
+            if (this.skipInit('defaultValue')) return;
+            if (this._touched) return;
+            this.applyValue(this.ele.getAttribute('default-value') ?? '');
+          },
+          type() {
+            if (this.skipInit('type')) return;
+            this._touched = false;
+            this._defaultApplied = false;
+            this._selected = [];
+            this._pending = null;
             this._committed = [];
-          } else {
-            this._pending = null;
-            this._committed = keys.slice();
-          }
-          this.syncActiveFromSelection();
-          this.syncDisplay();
-          if (this.isOpen()) this.renderPanel();
-        },
-
-        applyDefaultValue() {
-          if (this._defaultApplied || !this._live) return;
-          this._defaultApplied = true;
-          const bound = this.ele.getAttribute('value');
-          if (bound !== null) {
-            this._touched = true;
-            this.applyValue(bound);
-            return;
-          }
-          if (this._touched) return;
-          const initial = this.ele.getAttribute('default-value');
-          if (initial !== null && initial !== '') this.applyValue(initial);
-        },
-
-        applyModeChange() {
-          const mode = this.currentMode();
-          this._pending = null;
-          if (mode === 'single') this._selected = this._selected.slice(0, 1);
-          else if (mode === 'range') this._selected = this._selected.slice(0, 2);
-          if (mode === 'range' && this._selected.length === 1) {
-            this._pending = this._selected[0];
-            this._committed = [];
-          } else {
-            this._committed = this._selected.slice();
-          }
-          this.syncDisplay();
-          this.reflectBoundValue();
-          if (this.isOpen()) this.renderPanel();
-        },
-
-        /** 当前选择 → 键盘高亮与视图；没有选择就看今天 */
-        syncActiveFromSelection() {
-          const type = this.currentType();
-          const key = this._pending || this._selected[0] || '';
-          const period = key ? periodOfKey(key, type) : null;
-          const base = period ? period.start : todayDate();
-          if (type === 'day' || type === 'week') {
-            this._active = { y: base.y, m: base.m, d: base.d };
-            this._view = { y: base.y, m: base.m };
-          } else if (type === 'month') {
-            this._active = { y: base.y, m: base.m, d: 1 };
-            this._view = { y: base.y, m: 1 };
-          } else {
-            this._active = { y: base.y, m: 1, d: 1 };
-            this._view = { y: base.y, m: 1 };
-          }
-        },
-
-        /** 把当前选择写回 value 属性，让 ofa 的 sync:value 观察得到 */
-        reflectBoundValue() {
-          if (!this._live) return;
-          const text = this.readAttributeValue();
-          if (this.ele.getAttribute('value') === text) return;
-          this._reflected = text;
-          this.ele.setAttribute('value', text);
-        },
-
-        /* ---------- 显示 ---------- */
-
-        placeholderText() {
-          const own = this.ele.getAttribute('placeholder');
-          if (own) return own;
-          return TYPE_PLACEHOLDERS[this.currentType()] || TYPE_PLACEHOLDERS.day;
-        },
-
-        normalizeBoolAttrs() {
-          if (!this._live) return;
-          for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
-            const raw = this.ele.getAttribute(name);
-            if (raw === null || raw === '') continue;
-            if (raw === 'false') this.ele.removeAttribute(name);
-            else this.ele.setAttribute(name, '');
-          }
-        },
-
-        syncDisplay() {
-          if (!this._live) return;
-          this.normalizeBoolAttrs();
-          const filled = this._selected.length > 0;
-          this.mirror('data-filled', filled);
-          this.mirror('data-empty', !filled);
-          if (!this._valueEl) return;
-          const type = this.currentType();
-          const mode = this.currentMode();
-          const pattern = this.patternFor('format');
-          const list = this._selected.map((key) => formatKey(key, pattern, type));
-          let text = '';
-          if (mode === 'range') {
-            if (list.length > 1) text = list[0] + ' ~ ' + list[1];
-            else if (list.length === 1) text = list[0] + ' ~ …';
-          } else {
-            text = list.join(', ');
-          }
-          this._valueEl.textContent = filled ? text : this.placeholderText();
-          this._overflowTip?.check();
-        },
-
-        mirror(name, on) {
-          if (!this._live) return;
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
-        },
-
-        /* ---------- 范围 / 禁用 ---------- */
-
-        rangeKey(name) {
-          const key = this.parseIncoming(this.ele.getAttribute(name));
-          return key || '';
-        },
-
-        isKeyDisabled(key) {
-          const min = this.rangeKey('min');
-          const max = this.rangeKey('max');
-          return (min !== '' && key < min) || (max !== '' && key > max);
-        },
-
-        rangeBounds() {
-          if (this.currentMode() !== 'range') return null;
-          if (this._selected.length === 2) return [this._selected[0], this._selected[1]];
-          if (this._pending) return [this._pending, null];
-          return null;
-        },
-
-        keyOfActive() {
-          const type = this.currentType();
-          if (type === 'week') return keyOfDate(this._active, 'week');
-          if (type === 'month') return this._active.y + '-' + pad2(this._active.m);
-          if (type === 'year') return String(this._active.y);
-          return isoOf(this._active);
-        },
-
-        /* ---------- 面板渲染 ---------- */
-
-        renderPanel() {
-          if (!this._grid) return;
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') this.renderMonthPanel(type);
-          else if (type === 'month') this.renderCoarsePanel('month');
-          else this.renderCoarsePanel('year');
-        },
-
-        cellState(key) {
-          const selected = this._selected.indexOf(key) >= 0;
-          const bounds = this.rangeBounds();
-          const inRange = !!(bounds && bounds[1] && key > bounds[0] && key < bounds[1]);
-          return { selected, inRange, active: key === this.keyOfActive() };
-        },
-
-        renderMonthPanel(type) {
-          const view = this._view;
-          if (this._weekdays) this._weekdays.hidden = false;
-          if (this._title) this._title.textContent = view.y + ' 年 ' + view.m + ' 月';
-          if (this._prevBtn) this._prevBtn.title = '上个月';
-          if (this._nextBtn) this._nextBtn.title = '下个月';
-          const first = { y: view.y, m: view.m, d: 1 };
-          const start = addDays(first, -weekdayIndex(first));
-          const min = this.rangeKey('min');
-          const max = this.rangeKey('max');
-          const today = isoOf(todayDate());
-
-          this._grid.className = 'mc-grid';
-          this._grid.textContent = '';
-          for (let index = 0; index < 42; index += 1) {
-            const date = addDays(start, index);
-            const iso = isoOf(date);
-            const itemKey = type === 'week' ? keyOfDate(date, 'week') : iso;
-            const state = this.cellState(itemKey);
-            const day = document.createElement('button');
-            day.type = 'button';
-            day.className = 'mc-day';
-            day.tabIndex = -1;
-            day.setAttribute('part', 'day');
-            day.dataset.date = iso;
-            day.dataset.key = itemKey;
-            if (type === 'week') day.dataset.week = itemKey;
-            day.textContent = String(date.d);
-            if (date.m !== view.m) day.dataset.outside = '';
-            if (iso === today) day.dataset.today = '';
-            if (state.selected) day.dataset.selected = '';
-            if (state.inRange) day.dataset.inRange = '';
-            if (state.active) day.dataset.active = '';
-            if ((min !== '' && itemKey < min) || (max !== '' && itemKey > max)) {
-              day.dataset.disabled = 'true';
-            }
-            this._grid.append(day);
-          }
-        },
-
-        renderCoarsePanel(level) {
-          const view = this._view;
-          if (this._weekdays) this._weekdays.hidden = true;
-          const min = this.rangeKey('min');
-          const max = this.rangeKey('max');
-          this._grid.className = 'mc-grid mc-grid--coarse';
-          this._grid.textContent = '';
-          const items = [];
-          if (level === 'month') {
-            if (this._title) this._title.textContent = view.y + ' 年';
-            if (this._prevBtn) this._prevBtn.title = '上一年';
-            if (this._nextBtn) this._nextBtn.title = '下一年';
-            for (let month = 1; month <= 12; month += 1) {
-              items.push({ key: view.y + '-' + pad2(month), label: month + ' 月' });
-            }
-          } else {
-            const start = Math.floor(view.y / 10) * 10;
-            if (this._title) this._title.textContent = start + ' – ' + (start + 11) + ' 年';
-            if (this._prevBtn) this._prevBtn.title = '上一页';
-            if (this._nextBtn) this._nextBtn.title = '下一页';
-            for (let year = start; year < start + 12; year += 1) {
-              items.push({ key: String(year), label: String(year) });
-            }
-          }
-          for (const item of items) {
-            const state = this.cellState(item.key);
-            const cell = document.createElement('button');
-            cell.type = 'button';
-            cell.className = 'mc-cell';
-            cell.tabIndex = -1;
-            cell.setAttribute('part', 'cell');
-            cell.dataset.key = item.key;
-            cell.dataset.value = item.key;
-            cell.textContent = item.label;
-            if (state.selected) cell.dataset.selected = '';
-            if (state.inRange) cell.dataset.inRange = '';
-            if (state.active) cell.dataset.active = '';
-            if ((min !== '' && item.key < min) || (max !== '' && item.key > max)) {
-              cell.dataset.disabled = 'true';
-            }
-            this._grid.append(cell);
-          }
-        },
-
-        setActive(date) {
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') {
-            this._active = { y: date.y, m: date.m, d: date.d };
-            this._view = { y: date.y, m: date.m };
-          } else if (type === 'month') {
-            this._active = { y: date.y, m: date.m, d: 1 };
-            this._view = { y: date.y, m: 1 };
-          } else {
-            this._active = { y: date.y, m: 1, d: 1 };
-            this._view = { y: date.y, m: 1 };
-          }
-          this.renderPanel();
-        },
-
-        moveActive(delta) {
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') this.setActive(addDays(this._active, delta));
-          else if (type === 'month') this.setActive(addMonths(this._active, delta));
-          else this.setActive(addYears(this._active, delta));
-        },
-
-        movePage(direction, large) {
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') {
-            this.setActive(addMonths(this._active, direction * (large ? 12 : 1)));
-          } else if (type === 'month') {
-            this.setActive(addMonths(this._active, direction * (large ? 120 : 12)));
-          } else {
-            this.setActive(addYears(this._active, direction * (large ? 120 : 12)));
-          }
-        },
-
-        moveEdge(edge) {
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') {
-            const offset = weekdayIndex(this._active);
-            this.setActive(addDays(this._active, edge === 'start' ? -offset : 6 - offset));
-            return;
-          }
-          if (type === 'month') {
-            this.setActive({ y: this._active.y, m: edge === 'start' ? 1 : 12, d: 1 });
-            return;
-          }
-          const start = Math.floor(this._active.y / 10) * 10;
-          this.setActive({ y: edge === 'start' ? start : start + 11, m: 1, d: 1 });
-        },
-
-        navigate(direction) {
-          const type = this.currentType();
-          if (type === 'day' || type === 'week') this.setActive(addMonths(this._active, direction));
-          else if (type === 'month') this.setActive(addMonths(this._active, direction * 12));
-          else this.setActive(addYears(this._active, direction * 12));
-        },
-
-        /* ---------- 开合 ---------- */
-
-        isOpen() {
-          return this._panel?.matches(':popover-open') ?? false;
-        },
-
-        openPanel() {
-          if (!this._popoverOk || this.isOpen()) return;
-          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
-          this._overflowTip?.hide();
-          this.syncActiveFromSelection();
-          if (this.currentMode() === 'range' && this._selected.length === 1) {
-            this._pending = this._selected[0];
-            this._committed = [];
-          } else {
-            this._pending = null;
-            this._committed = this._selected.slice();
-          }
-          this.renderPanel();
-          /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
-          this._scrollGuard.run(() => this._panel.showPopover());
-          this._control.focus({ preventScroll: true });
-          this.syncOpenUI(true);
-        },
-
-        closePanel() {
-          if (!this.isOpen()) return;
-          this._scrollGuard.run(() => this._panel.hidePopover());
-          if (this._pending !== null) {
-            this._selected = this._committed.slice();
-            this._pending = null;
+            this.applyDefaultValue();
             this.syncDisplay();
-          }
-          this.syncOpenUI(false);
-        },
-
-        syncOpenUI(open) {
-          const changed = this._openState !== open;
-          this._openState = open;
-          this.mirror('data-open', open);
-          if (!changed) return;
-          if (open) {
-            this.emit('open', { bubbles: true, composed: true });
-            return;
-          }
-          if (this._returnFocus) {
-            this._returnFocus = false;
-            this._control?.focus({ preventScroll: true });
-          }
-          this.emit('close', { bubbles: true, composed: true });
-        },
-
-        onNativeToggle(event) {
-          const nowOpen = event.newState === 'open';
-          if (nowOpen && !this._active) {
-            this.syncActiveFromSelection();
-            this.renderPanel();
-          }
-          this.syncOpenUI(nowOpen);
-        },
-
-        /* ---------- 选择 ---------- */
-
-        selectKey(key) {
-          if (!key || this.isKeyDisabled(key)) return;
-          const mode = this.currentMode();
-          this._touched = true;
-
-          if (mode === 'single') {
-            const changed = !(this._selected.length === 1 && this._selected[0] === key);
-            this._selected = [key];
-            this._pending = null;
-            this._committed = [key];
-            this.syncDisplay();
-            this.reflectBoundValue();
-            if (changed) this.emitChange();
-            this._returnFocus = true;
-            this.closePanel();
-            return;
-          }
-
-          if (mode === 'multiple') {
-            const index = this._selected.indexOf(key);
-            if (index >= 0) this._selected.splice(index, 1);
-            else this._selected.push(key);
-            this._committed = this._selected.slice();
-            this.syncDisplay();
-            this.reflectBoundValue();
-            this.renderPanel();
-            this.emitChange();
-            return;
-          }
-
-          if (!this._pending) {
-            this._pending = key;
-            this._selected = [key];
-            this.syncDisplay();
-            this.renderPanel();
-            return;
-          }
-
-          const start = this._pending <= key ? this._pending : key;
-          const end = this._pending <= key ? key : this._pending;
-          this._selected = [start, end];
-          this._pending = null;
-          this._committed = [start, end];
-          this.syncDisplay();
-          this.reflectBoundValue();
-          this.emitChange();
-          this._returnFocus = true;
-          this.closePanel();
-        },
-
-        emitChange() {
-          this.emit('change', {
-            data: { value: this.readValue() },
-            bubbles: true,
-            composed: true,
-          });
-        },
-
-        /* ---------- 交互 ---------- */
-
-        onControlClick() {
-          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
-          if (this.isOpen()) this.closePanel();
-          else this.openPanel();
-        },
-
-        onKeyDown(event) {
-          const key = event.key;
-          if (key === 'Escape') {
             if (this.isOpen()) {
-              event.preventDefault();
+              this.syncActiveFromSelection();
+              this.renderPanel();
+            }
+          },
+          multiple() {
+            if (this.skipInit('multiple')) return;
+            this.applyModeChange();
+          },
+          range() {
+            if (this.skipInit('range')) return;
+            this.applyModeChange();
+          },
+          inputFormat() {
+            if (this.skipInit('inputFormat')) return;
+            /* 解读方式变了：把当前 value 属性按新格式再读一次（属性本身没变，变的是格式） */
+            const raw = this.ele.getAttribute('value');
+            if (raw !== null && raw !== '') {
+              this._touched = true;
+              this.applyValue(raw);
+            }
+          },
+          format() {
+            if (this.skipInit('format')) return;
+            this.syncDisplay();
+          },
+          outputFormat() {
+            if (this.skipInit('outputFormat')) return;
+            if (this._selected.length) this.reflectBoundValue();
+          },
+          min() {
+            if (this.skipInit('min')) return;
+            if (this.isOpen()) this.renderPanel();
+          },
+          max() {
+            if (this.skipInit('max')) return;
+            if (this.isOpen()) this.renderPanel();
+          },
+          placeholder() {
+            if (this.skipInit('placeholder')) return;
+            this.syncDisplay();
+          },
+          clearable() {
+            if (this.skipInit('clearable')) return;
+            this.syncDisplay();
+          },
+          disabled() {
+            if (this.skipInit('disabled')) return;
+            this.syncDisplay();
+            if (this.ele.hasAttribute('disabled') && this.isOpen()) this.closePanel();
+          },
+          readonly() {
+            if (this.skipInit('readonly')) return;
+            this.syncDisplay();
+            if (this.ele.hasAttribute('readonly') && this.isOpen()) this.closePanel();
+          },
+          invalid() {
+            if (this.skipInit('invalid')) return;
+            this.syncDisplay();
+          },
+        },
+
+        proto: {
+          /** 每条 watch 的首次（构造期）触发都要跳过，但每条各跳一次（P5） */
+          skipInit(key) {
+            if (this._seen.has(key)) return false;
+            this._seen.add(key);
+            return true;
+          },
+
+          currentType() {
+            const raw = this.ele.getAttribute('type') || DEFAULT_TYPE;
+            return Object.prototype.hasOwnProperty.call(TYPE_DEFAULTS, raw) ? raw : DEFAULT_TYPE;
+          },
+
+          currentMode() {
+            if (this.ele.hasAttribute('range')) return 'range';
+            if (this.ele.hasAttribute('multiple')) return 'multiple';
+            return 'single';
+          },
+
+          patternFor(name) {
+            return this.ele.getAttribute(name) || TYPE_DEFAULTS[this.currentType()];
+          },
+
+          /* ---------- 值读写 ---------- */
+
+          readValue() {
+            const type = this.currentType();
+            const pattern = this.patternFor('output-format');
+            const list = this._selected.map((key) => formatKey(key, pattern, type)).filter(Boolean);
+            return this.currentMode() === 'single' ? (list[0] ?? '') : list;
+          },
+
+          readAttributeValue() {
+            const value = this.readValue();
+            return Array.isArray(value) ? value.join(',') : value;
+          },
+
+          writeValue(next) {
+            this._touched = true;
+            const text = Array.isArray(next)
+              ? next.map((item) => String(item ?? '')).join(',')
+              : String(next ?? '');
+            this.applyValue(text);
+            if (this._live) this.reflectBoundValue();
+            else this._pendingReflect = true;
+          },
+
+          /** 进组件：按 input → output → 该 type 的 canonical 格式依次尝试，先命中的赢 */
+          parseIncoming(raw) {
+            const text = String(raw ?? '').trim();
+            if (text === '') return null;
+            const type = this.currentType();
+            const seen = {};
+            for (const pattern of [
+              this.patternFor('input-format'),
+              this.patternFor('output-format'),
+              TYPE_DEFAULTS[type],
+            ]) {
+              if (seen[pattern]) continue;
+              seen[pattern] = true;
+              const key = parseKey(text, pattern, type);
+              if (key) return key;
+            }
+            return null;
+          },
+
+          parseValueList(raw) {
+            const text = String(raw ?? '').trim();
+            if (text === '') return [];
+            const mode = this.currentMode();
+            const parts = mode === 'single' ? [text] : text.split(',');
+            const keys = parts.map((part) => this.parseIncoming(part)).filter(Boolean);
+            if (mode === 'single') return keys.slice(0, 1);
+            if (mode === 'range') return keys.slice(0, 2);
+            return keys;
+          },
+
+          /** 初值 / 绑定值 / property 写值都走这里：只接受合法 key，非法一律当空 */
+          applyValue(raw) {
+            const keys = this.parseValueList(raw);
+            const mode = this.currentMode();
+            this._selected = keys;
+            if (mode === 'range' && keys.length === 1) {
+              this._pending = keys[0];
+              this._committed = [];
+            } else {
+              this._pending = null;
+              this._committed = keys.slice();
+            }
+            this.syncActiveFromSelection();
+            this.syncDisplay();
+            if (this.isOpen()) this.renderPanel();
+          },
+
+          applyDefaultValue() {
+            if (this._defaultApplied || !this._live) return;
+            this._defaultApplied = true;
+            const bound = this.ele.getAttribute('value');
+            if (bound !== null) {
+              this._touched = true;
+              this.applyValue(bound);
+              return;
+            }
+            if (this._touched) return;
+            const initial = this.ele.getAttribute('default-value');
+            if (initial !== null && initial !== '') this.applyValue(initial);
+          },
+
+          applyModeChange() {
+            const mode = this.currentMode();
+            this._pending = null;
+            if (mode === 'single') this._selected = this._selected.slice(0, 1);
+            else if (mode === 'range') this._selected = this._selected.slice(0, 2);
+            if (mode === 'range' && this._selected.length === 1) {
+              this._pending = this._selected[0];
+              this._committed = [];
+            } else {
+              this._committed = this._selected.slice();
+            }
+            this.syncDisplay();
+            this.reflectBoundValue();
+            if (this.isOpen()) this.renderPanel();
+          },
+
+          /** 当前选择 → 键盘高亮与视图；没有选择就看今天 */
+          syncActiveFromSelection() {
+            const type = this.currentType();
+            const key = this._pending || this._selected[0] || '';
+            const period = key ? periodOfKey(key, type) : null;
+            const base = period ? period.start : todayDate();
+            if (type === 'day' || type === 'week') {
+              this._active = { y: base.y, m: base.m, d: base.d };
+              this._view = { y: base.y, m: base.m };
+            } else if (type === 'month') {
+              this._active = { y: base.y, m: base.m, d: 1 };
+              this._view = { y: base.y, m: 1 };
+            } else {
+              this._active = { y: base.y, m: 1, d: 1 };
+              this._view = { y: base.y, m: 1 };
+            }
+          },
+
+          /** 把当前选择写回 value 属性，让 ofa 的 sync:value 观察得到 */
+          reflectBoundValue() {
+            if (!this._live) return;
+            const text = this.readAttributeValue();
+            if (this.ele.getAttribute('value') === text) return;
+            this._reflected = text;
+            this.ele.setAttribute('value', text);
+          },
+
+          /* ---------- 显示 ---------- */
+
+          placeholderText() {
+            const own = this.ele.getAttribute('placeholder');
+            if (own) return own;
+            return TYPE_PLACEHOLDERS[this.currentType()] || TYPE_PLACEHOLDERS.day;
+          },
+
+          normalizeBoolAttrs() {
+            if (!this._live) return;
+            for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
+
+          syncDisplay() {
+            if (!this._live) return;
+            this.normalizeBoolAttrs();
+            const filled = this._selected.length > 0;
+            this.mirror('data-filled', filled);
+            this.mirror('data-empty', !filled);
+            if (!this._valueEl) return;
+            const type = this.currentType();
+            const mode = this.currentMode();
+            const pattern = this.patternFor('format');
+            const list = this._selected.map((key) => formatKey(key, pattern, type));
+            let text = '';
+            if (mode === 'range') {
+              if (list.length > 1) text = list[0] + ' ~ ' + list[1];
+              else if (list.length === 1) text = list[0] + ' ~ …';
+            } else {
+              text = list.join(', ');
+            }
+            this._valueEl.textContent = filled ? text : this.placeholderText();
+            this._overflowTip?.check();
+          },
+
+          mirror(name, on) {
+            if (!this._live) return;
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+
+          /* ---------- 范围 / 禁用 ---------- */
+
+          rangeKey(name) {
+            const key = this.parseIncoming(this.ele.getAttribute(name));
+            return key || '';
+          },
+
+          isKeyDisabled(key) {
+            const min = this.rangeKey('min');
+            const max = this.rangeKey('max');
+            return (min !== '' && key < min) || (max !== '' && key > max);
+          },
+
+          rangeBounds() {
+            if (this.currentMode() !== 'range') return null;
+            if (this._selected.length === 2) return [this._selected[0], this._selected[1]];
+            if (this._pending) return [this._pending, null];
+            return null;
+          },
+
+          keyOfActive() {
+            const type = this.currentType();
+            if (type === 'week') return keyOfDate(this._active, 'week');
+            if (type === 'month') return this._active.y + '-' + pad2(this._active.m);
+            if (type === 'year') return String(this._active.y);
+            return isoOf(this._active);
+          },
+
+          /* ---------- 面板渲染 ---------- */
+
+          renderPanel() {
+            if (!this._grid) return;
+            const type = this.currentType();
+            if (type === 'day' || type === 'week') this.renderMonthPanel(type);
+            else if (type === 'month') this.renderCoarsePanel('month');
+            else this.renderCoarsePanel('year');
+          },
+
+          cellState(key) {
+            const selected = this._selected.indexOf(key) >= 0;
+            const bounds = this.rangeBounds();
+            const inRange = !!(bounds && bounds[1] && key > bounds[0] && key < bounds[1]);
+            return { selected, inRange, active: key === this.keyOfActive() };
+          },
+
+          renderMonthPanel(type) {
+            const view = this._view;
+            if (this._weekdays) this._weekdays.hidden = false;
+            if (this._title) this._title.textContent = view.y + ' 年 ' + view.m + ' 月';
+            if (this._prevBtn) this._prevBtn.title = '上个月';
+            if (this._nextBtn) this._nextBtn.title = '下个月';
+            const first = { y: view.y, m: view.m, d: 1 };
+            const start = addDays(first, -weekdayIndex(first));
+            const min = this.rangeKey('min');
+            const max = this.rangeKey('max');
+            const today = isoOf(todayDate());
+
+            this._grid.className = 'mc-grid';
+            this._grid.textContent = '';
+            for (let index = 0; index < 42; index += 1) {
+              const date = addDays(start, index);
+              const iso = isoOf(date);
+              const itemKey = type === 'week' ? keyOfDate(date, 'week') : iso;
+              const state = this.cellState(itemKey);
+              const day = document.createElement('button');
+              day.type = 'button';
+              day.className = 'mc-day';
+              day.tabIndex = -1;
+              day.setAttribute('part', 'day');
+              day.dataset.date = iso;
+              day.dataset.key = itemKey;
+              if (type === 'week') day.dataset.week = itemKey;
+              day.textContent = String(date.d);
+              if (date.m !== view.m) day.dataset.outside = '';
+              if (iso === today) day.dataset.today = '';
+              if (state.selected) day.dataset.selected = '';
+              if (state.inRange) day.dataset.inRange = '';
+              if (state.active) day.dataset.active = '';
+              if ((min !== '' && itemKey < min) || (max !== '' && itemKey > max)) {
+                day.dataset.disabled = 'true';
+              }
+              this._grid.append(day);
+            }
+          },
+
+          renderCoarsePanel(level) {
+            const view = this._view;
+            if (this._weekdays) this._weekdays.hidden = true;
+            const min = this.rangeKey('min');
+            const max = this.rangeKey('max');
+            this._grid.className = 'mc-grid mc-grid--coarse';
+            this._grid.textContent = '';
+            const items = [];
+            if (level === 'month') {
+              if (this._title) this._title.textContent = view.y + ' 年';
+              if (this._prevBtn) this._prevBtn.title = '上一年';
+              if (this._nextBtn) this._nextBtn.title = '下一年';
+              for (let month = 1; month <= 12; month += 1) {
+                items.push({ key: view.y + '-' + pad2(month), label: month + ' 月' });
+              }
+            } else {
+              const start = Math.floor(view.y / 10) * 10;
+              if (this._title) this._title.textContent = start + ' – ' + (start + 11) + ' 年';
+              if (this._prevBtn) this._prevBtn.title = '上一页';
+              if (this._nextBtn) this._nextBtn.title = '下一页';
+              for (let year = start; year < start + 12; year += 1) {
+                items.push({ key: String(year), label: String(year) });
+              }
+            }
+            for (const item of items) {
+              const state = this.cellState(item.key);
+              const cell = document.createElement('button');
+              cell.type = 'button';
+              cell.className = 'mc-cell';
+              cell.tabIndex = -1;
+              cell.setAttribute('part', 'cell');
+              cell.dataset.key = item.key;
+              cell.dataset.value = item.key;
+              cell.textContent = item.label;
+              if (state.selected) cell.dataset.selected = '';
+              if (state.inRange) cell.dataset.inRange = '';
+              if (state.active) cell.dataset.active = '';
+              if ((min !== '' && item.key < min) || (max !== '' && item.key > max)) {
+                cell.dataset.disabled = 'true';
+              }
+              this._grid.append(cell);
+            }
+          },
+
+          setActive(date) {
+            const type = this.currentType();
+            if (type === 'day' || type === 'week') {
+              this._active = { y: date.y, m: date.m, d: date.d };
+              this._view = { y: date.y, m: date.m };
+            } else if (type === 'month') {
+              this._active = { y: date.y, m: date.m, d: 1 };
+              this._view = { y: date.y, m: 1 };
+            } else {
+              this._active = { y: date.y, m: 1, d: 1 };
+              this._view = { y: date.y, m: 1 };
+            }
+            this.renderPanel();
+          },
+
+          moveActive(delta) {
+            const type = this.currentType();
+            if (type === 'day' || type === 'week') this.setActive(addDays(this._active, delta));
+            else if (type === 'month') this.setActive(addMonths(this._active, delta));
+            else this.setActive(addYears(this._active, delta));
+          },
+
+          movePage(direction, large) {
+            const type = this.currentType();
+            if (type === 'day' || type === 'week') {
+              this.setActive(addMonths(this._active, direction * (large ? 12 : 1)));
+            } else if (type === 'month') {
+              this.setActive(addMonths(this._active, direction * (large ? 120 : 12)));
+            } else {
+              this.setActive(addYears(this._active, direction * (large ? 120 : 12)));
+            }
+          },
+
+          moveEdge(edge) {
+            const type = this.currentType();
+            if (type === 'day' || type === 'week') {
+              const offset = weekdayIndex(this._active);
+              this.setActive(addDays(this._active, edge === 'start' ? -offset : 6 - offset));
+              return;
+            }
+            if (type === 'month') {
+              this.setActive({ y: this._active.y, m: edge === 'start' ? 1 : 12, d: 1 });
+              return;
+            }
+            const start = Math.floor(this._active.y / 10) * 10;
+            this.setActive({ y: edge === 'start' ? start : start + 11, m: 1, d: 1 });
+          },
+
+          navigate(direction) {
+            const type = this.currentType();
+            if (type === 'day' || type === 'week')
+              this.setActive(addMonths(this._active, direction));
+            else if (type === 'month') this.setActive(addMonths(this._active, direction * 12));
+            else this.setActive(addYears(this._active, direction * 12));
+          },
+
+          /* ---------- 开合 ---------- */
+
+          isOpen() {
+            return this._panel?.matches(':popover-open') ?? false;
+          },
+
+          openPanel() {
+            if (!this._popoverOk || this.isOpen()) return;
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            this._overflowTip?.hide();
+            this.syncActiveFromSelection();
+            if (this.currentMode() === 'range' && this._selected.length === 1) {
+              this._pending = this._selected[0];
+              this._committed = [];
+            } else {
+              this._pending = null;
+              this._committed = this._selected.slice();
+            }
+            this.renderPanel();
+            /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
+            this._scrollGuard.run(() => this._panel.showPopover());
+            this._control.focus({ preventScroll: true });
+            this.syncOpenUI(true);
+          },
+
+          closePanel() {
+            if (!this.isOpen()) return;
+            this._scrollGuard.run(() => this._panel.hidePopover());
+            if (this._pending !== null) {
+              this._selected = this._committed.slice();
+              this._pending = null;
+              this.syncDisplay();
+            }
+            this.syncOpenUI(false);
+          },
+
+          syncOpenUI(open) {
+            const changed = this._openState !== open;
+            this._openState = open;
+            this.mirror('data-open', open);
+            if (!changed) return;
+            if (open) {
+              this.$emit('open');
+              return;
+            }
+            if (this._returnFocus) {
+              this._returnFocus = false;
+              this._control?.focus({ preventScroll: true });
+            }
+            this.$emit('close');
+          },
+
+          onNativeToggle(event) {
+            const nowOpen = event.newState === 'open';
+            if (nowOpen && !this._active) {
+              this.syncActiveFromSelection();
+              this.renderPanel();
+            }
+            this.syncOpenUI(nowOpen);
+          },
+
+          /* ---------- 选择 ---------- */
+
+          selectKey(key) {
+            if (!key || this.isKeyDisabled(key)) return;
+            const mode = this.currentMode();
+            this._touched = true;
+
+            if (mode === 'single') {
+              const changed = !(this._selected.length === 1 && this._selected[0] === key);
+              this._selected = [key];
+              this._pending = null;
+              this._committed = [key];
+              this.syncDisplay();
+              this.reflectBoundValue();
+              if (changed) this.emitChange();
               this._returnFocus = true;
               this.closePanel();
+              return;
             }
-            return;
-          }
-          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
 
-          if (!this.isOpen()) {
-            if (
-              key === 'ArrowDown' ||
-              key === 'ArrowUp' ||
-              key === 'ArrowLeft' ||
-              key === 'ArrowRight' ||
-              key === 'PageUp' ||
-              key === 'PageDown' ||
-              key === 'Home' ||
-              key === 'End'
-            ) {
-              event.preventDefault();
-              this.openPanel();
-              if (key === 'PageUp') this.movePage(-1, event.shiftKey);
-              else if (key === 'PageDown') this.movePage(1, event.shiftKey);
-              else if (key === 'Home') this.moveEdge('start');
-              else if (key === 'End') this.moveEdge('end');
+            if (mode === 'multiple') {
+              const index = this._selected.indexOf(key);
+              if (index >= 0) this._selected.splice(index, 1);
+              else this._selected.push(key);
+              this._committed = this._selected.slice();
+              this.syncDisplay();
+              this.reflectBoundValue();
+              this.renderPanel();
+              this.emitChange();
+              return;
             }
-            return;
-          }
 
-          const type = this.currentType();
-          const isDay = type === 'day' || type === 'week';
-          switch (key) {
-            case 'ArrowLeft':
-              event.preventDefault();
-              this.moveActive(-1);
-              break;
-            case 'ArrowRight':
-              event.preventDefault();
-              this.moveActive(1);
-              break;
-            case 'ArrowUp':
-              event.preventDefault();
-              this.moveActive(isDay ? -7 : -3);
-              break;
-            case 'ArrowDown':
-              event.preventDefault();
-              this.moveActive(isDay ? 7 : 3);
-              break;
-            case 'PageUp':
-              event.preventDefault();
-              this.movePage(-1, event.shiftKey);
-              break;
-            case 'PageDown':
-              event.preventDefault();
-              this.movePage(1, event.shiftKey);
-              break;
-            case 'Home':
-              event.preventDefault();
-              this.moveEdge('start');
-              break;
-            case 'End':
-              event.preventDefault();
-              this.moveEdge('end');
-              break;
-            case 'Enter':
-            case ' ':
-            case 'Spacebar':
-              event.preventDefault();
-              this.selectKey(this.keyOfActive());
-              break;
-            default:
-              break;
-          }
-        },
+            if (!this._pending) {
+              this._pending = key;
+              this._selected = [key];
+              this.syncDisplay();
+              this.renderPanel();
+              return;
+            }
 
-        onPanelClick(event) {
-          const cell = event.target?.closest?.('.mc-day, .mc-cell');
-          if (!cell || cell.getAttribute('data-disabled') === 'true') return;
-          const key = cell.dataset.key;
-          if (key) this.selectKey(key);
-        },
+            const start = this._pending <= key ? this._pending : key;
+            const end = this._pending <= key ? key : this._pending;
+            this._selected = [start, end];
+            this._pending = null;
+            this._committed = [start, end];
+            this.syncDisplay();
+            this.reflectBoundValue();
+            this.emitChange();
+            this._returnFocus = true;
+            this.closePanel();
+          },
 
-        onPanelMouseDown(event) {
-          event.preventDefault();
-        },
+          emitChange() {
+            this.$emit('change', { value: this.readValue() });
+          },
 
-        onFocusOut(event) {
-          if (!this.isOpen()) return;
-          const next = event.relatedTarget;
-          if (!next || this.ele.contains(next)) return;
-          this.closePanel();
-        },
+          /* ---------- 交互 ---------- */
 
-        onPanelKeyDown(event) {
-          if (event.key !== 'Escape' || !this.isOpen()) return;
-          event.preventDefault();
-          this._returnFocus = true;
-          this.closePanel();
-        },
+          onControlClick() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this.isOpen()) this.closePanel();
+            else this.openPanel();
+          },
 
-        onPrevMonth() {
-          this.navigate(-1);
-        },
+          onKeyDown(event) {
+            const key = event.key;
+            if (key === 'Escape') {
+              if (this.isOpen()) {
+                event.preventDefault();
+                this._returnFocus = true;
+                this.closePanel();
+              }
+              return;
+            }
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
 
-        onNextMonth() {
-          this.navigate(1);
-        },
+            if (!this.isOpen()) {
+              if (
+                key === 'ArrowDown' ||
+                key === 'ArrowUp' ||
+                key === 'ArrowLeft' ||
+                key === 'ArrowRight' ||
+                key === 'PageUp' ||
+                key === 'PageDown' ||
+                key === 'Home' ||
+                key === 'End'
+              ) {
+                event.preventDefault();
+                this.openPanel();
+                if (key === 'PageUp') this.movePage(-1, event.shiftKey);
+                else if (key === 'PageDown') this.movePage(1, event.shiftKey);
+                else if (key === 'Home') this.moveEdge('start');
+                else if (key === 'End') this.moveEdge('end');
+              }
+              return;
+            }
 
-        onClear() {
-          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
-          if (this._selected.length === 0) return;
-          this._touched = true;
-          this._selected = [];
-          this._pending = null;
-          this._committed = [];
-          this.syncDisplay();
-          this.reflectBoundValue();
-          this.emit('clear', { bubbles: true, composed: true });
-          this.emitChange();
-          this._control.focus({ preventScroll: true });
-          if (this.isOpen()) this.renderPanel();
+            const type = this.currentType();
+            const isDay = type === 'day' || type === 'week';
+            switch (key) {
+              case 'ArrowLeft':
+                event.preventDefault();
+                this.moveActive(-1);
+                break;
+              case 'ArrowRight':
+                event.preventDefault();
+                this.moveActive(1);
+                break;
+              case 'ArrowUp':
+                event.preventDefault();
+                this.moveActive(isDay ? -7 : -3);
+                break;
+              case 'ArrowDown':
+                event.preventDefault();
+                this.moveActive(isDay ? 7 : 3);
+                break;
+              case 'PageUp':
+                event.preventDefault();
+                this.movePage(-1, event.shiftKey);
+                break;
+              case 'PageDown':
+                event.preventDefault();
+                this.movePage(1, event.shiftKey);
+                break;
+              case 'Home':
+                event.preventDefault();
+                this.moveEdge('start');
+                break;
+              case 'End':
+                event.preventDefault();
+                this.moveEdge('end');
+                break;
+              case 'Enter':
+              case ' ':
+              case 'Spacebar':
+                event.preventDefault();
+                this.selectKey(this.keyOfActive());
+                break;
+              default:
+                break;
+            }
+          },
+
+          onPanelClick(event) {
+            const cell = event.target?.closest?.('.mc-day, .mc-cell');
+            if (!cell || cell.getAttribute('data-disabled') === 'true') return;
+            const key = cell.dataset.key;
+            if (key) this.selectKey(key);
+          },
+
+          onPanelMouseDown(event) {
+            event.preventDefault();
+          },
+
+          onFocusOut(event) {
+            if (!this.isOpen()) return;
+            const next = event.relatedTarget;
+            if (!next || this.ele.contains(next)) return;
+            this.closePanel();
+          },
+
+          onPanelKeyDown(event) {
+            if (event.key !== 'Escape' || !this.isOpen()) return;
+            event.preventDefault();
+            this._returnFocus = true;
+            this.closePanel();
+          },
+
+          onPrevMonth() {
+            this.navigate(-1);
+          },
+
+          onNextMonth() {
+            this.navigate(1);
+          },
+
+          onClear() {
+            if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            if (this._selected.length === 0) return;
+            this._touched = true;
+            this._selected = [];
+            this._pending = null;
+            this._committed = [];
+            this.syncDisplay();
+            this.reflectBoundValue();
+            this.$emit('clear');
+            this.emitChange();
+            this._control.focus({ preventScroll: true });
+            if (this.isOpen()) this.renderPanel();
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

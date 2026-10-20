@@ -148,6 +148,7 @@
   <script>
     /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-rate-fill 色槽 */
     import { colorAttr } from '../boot/color-attr.js';
+    import { withEmits } from '../boot/emits.js';
 
     const color = colorAttr({ slots: ['fill'] });
 
@@ -155,375 +156,387 @@
     const STAR =
       '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>';
 
-    export default async () => ({
-      tag: 'mc-rate',
+    export default async () =>
+      withEmits({
+        tag: 'mc-rate',
 
-      attrs: {
-        /* 绑定通道 / 运行时状态（同 mc-input 的 value）：0 = 未评分 */
-        value: null,
-        // 非受控初值（同 default-value 约定）：只在挂载时读一次
-        defaultValue: null,
-        max: 5,
-        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-rate allow-half> 失效
-        allowHalf: null,
-        // 快速取消：开了它，再点一次当前分值所在的星就清回 0（同 mc-input 的 clearable 思路）
-        clearable: null,
-        disabled: null,
-        size: 'md',
-        color: 'warning',
-      },
-
-      ready() {
-        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-        const root = this.ele.shadowRoot;
-        this._base = root.querySelector('.mc-base');
-        this._native = root.querySelector('.mc-native');
-        this._itemsEl = root.querySelector('.mc-items');
-        this._items = [];
-        this._hover = null;
-        this._dragging = false;
-        this._pressedValue = null;
-        this._pointerMoved = false;
-
-        /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
-        Object.defineProperty(this.ele, 'value', {
-          configurable: true,
-          get: () => (this._native ? this.readValue() : NaN),
-          set: (next) => {
-            if (!this._native) return;
-            const parsed = Number(next);
-            if (!Number.isFinite(parsed)) return;
-            this._native.value = String(parsed);
-            this.reflectValue();
-            this.paint();
-          },
-        });
-
-        this.syncNative();
-        this.applyInitialValue();
-        this.applyBoundValue();
-        this.renderItems();
-        this.paint();
-      },
-
-      attached() {
-        // 宿主 style 等构造期结束再写（P31）
-        this._live = true;
-        color.sync(this.ele, this.color);
-        this.applySize();
-        // createElement 之后再写 max / default-value 的那种：ready() 那会儿还读不到，补一次
-        this.syncNative();
-        this.applyInitialValue();
-        this.applyBoundValue();
-        this.renderItems();
-        this.paint();
-        this.bindEvents();
-      },
-
-      detached() {
-        this.unbindEvents();
-      },
-
-      watch: {
-        /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
-        value() {
-          this.applyBoundValue();
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          input: { data: ['value'] },
+          change: { data: ['value'] },
         },
-        max() {
+
+        attrs: {
+          /* 绑定通道 / 运行时状态（同 mc-input 的 value）：0 = 未评分 */
+          value: null,
+          // 非受控初值（同 default-value 约定）：只在挂载时读一次
+          defaultValue: null,
+          max: 5,
+          // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-rate allow-half> 失效
+          allowHalf: null,
+          // 快速取消：开了它，再点一次当前分值所在的星就清回 0（同 mc-input 的 clearable 思路）
+          clearable: null,
+          disabled: null,
+          size: 'md',
+          color: 'warning',
+        },
+
+        ready() {
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+          const root = this.ele.shadowRoot;
+          this._base = root.querySelector('.mc-base');
+          this._native = root.querySelector('.mc-native');
+          this._itemsEl = root.querySelector('.mc-items');
+          this._items = [];
+          this._hover = null;
+          this._dragging = false;
+          this._pressedValue = null;
+          this._pointerMoved = false;
+
+          /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => (this._native ? this.readValue() : NaN),
+            set: (next) => {
+              if (!this._native) return;
+              const parsed = Number(next);
+              if (!Number.isFinite(parsed)) return;
+              this._native.value = String(parsed);
+              this.reflectValue();
+              this.paint();
+            },
+          });
+
           this.syncNative();
+          this.applyInitialValue();
+          this.applyBoundValue();
           this.renderItems();
           this.paint();
         },
-        allowHalf() {
-          this.syncNative();
-          this.paint();
-        },
-        disabled() {
-          this.applyDisabled();
-        },
-        // size 收纯数字：按 px 写 --mc-rate-star，sm / md / lg 仍交给 CSS
-        size() {
+
+        attached() {
+          // 宿主 style 等构造期结束再写（P31）
+          this._live = true;
+          color.sync(this.ele, this.color);
           this.applySize();
-        },
-        // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
-        color(value) {
-          color.change(this.ele, value);
-        },
-      },
-
-      proto: {
-        /**
-         * 数字 size 按 px 写宿主上的 --mc-rate-star（三档仍交给 CSS）。
-         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
-         */
-        applySize() {
-          if (!this._live) return;
-          const raw = String(this.ele.getAttribute('size') ?? '').trim();
-          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
-          if (px) {
-            this.ele.style.setProperty('--mc-rate-star', px);
-            this._sizePx = true;
-          } else if (this._sizePx) {
-            this.ele.style.removeProperty('--mc-rate-star');
-            this._sizePx = false;
-          }
-        },
-
-        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
-        readNumber(name, fallback) {
-          const raw = this.ele.getAttribute(name);
-          const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
-          return Number.isFinite(parsed) ? parsed : fallback;
-        },
-
-        /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
-        boolAttr(name) {
-          const raw = this.ele.getAttribute(name);
-          return raw !== null && raw !== 'false';
-        },
-
-        /** 星星颗数：正整数，默认 5 */
-        maxValue() {
-          return Math.max(1, Math.round(this.readNumber('max', 5)));
-        },
-
-        /** 分值：真相在内部原生 range 上（它负责夹紧与按步进取整） */
-        readValue() {
-          if (!this._native) return 0;
-          const parsed = this._native.valueAsNumber;
-          return Number.isFinite(parsed) ? parsed : 0;
-        },
-
-        /** 内部 range 的区间与步进只有这一处：allow-half = 0.5 步进，否则 1 */
-        syncNative() {
-          if (!this._native) return;
-          const max = this.maxValue();
-          const step = this.boolAttr('allow-half') ? 0.5 : 1;
-          this._native.min = '0';
-          this._native.max = String(max);
-          this._native.step = String(step);
-
-          const value = this.readValue();
-          const snapped = Math.min(
-            Math.max(Math.round((Number.isFinite(value) ? value : 0) / step) * step, 0),
-            max,
-          );
-          if (String(snapped) !== this._native.value) this._native.value = String(snapped);
-        },
-
-        /** 初值：default-value 只在挂载时读一次；什么都没写就是 0（未评分） */
-        applyInitialValue() {
-          if (!this._native || this._defaultApplied === true) return;
-          const raw = this.ele.getAttribute('default-value');
-          if (raw === null) {
-            if (this.ele.getAttribute('value') === null) this._native.value = '0';
-            return;
-          }
-          this._defaultApplied = true;
-          const parsed = Number(raw);
-          this._native.value = Number.isFinite(parsed) ? String(parsed) : '0';
-        },
-
-        /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 range */
-        applyBoundValue() {
-          if (!this._native) return;
-          const raw = this.ele.getAttribute('value');
-          if (raw === null || raw.trim() === '') return;
-          const parsed = Number(raw);
-          if (!Number.isFinite(parsed)) return;
-          this._native.value = String(parsed);
-          // 原生 range 会按步进归一：属性跟着实际值走，两条通道不打架
-          this.reflectValue();
+          // createElement 之后再写 max / default-value 的那种：ready() 那会儿还读不到，补一次
+          this.syncNative();
+          this.applyInitialValue();
+          this.applyBoundValue();
+          this.renderItems();
           this.paint();
+          this.bindEvents();
         },
 
-        /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
-        reflectValue() {
-          if (!this._native) return;
-          const now = this._native.value;
-          if (this.ele.getAttribute('value') === now) return;
-          this.ele.setAttribute('value', now);
+        detached() {
+          this.unbindEvents();
         },
 
-        applyDisabled() {
-          if (!this._native) return;
-          this._native.disabled = this.boolAttr('disabled');
+        watch: {
+          /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
+          value() {
+            this.applyBoundValue();
+          },
+          max() {
+            this.syncNative();
+            this.renderItems();
+            this.paint();
+          },
+          allowHalf() {
+            this.syncNative();
+            this.paint();
+          },
+          disabled() {
+            this.applyDisabled();
+          },
+          // size 收纯数字：按 px 写 --mc-rate-star，sm / md / lg 仍交给 CSS
+          size() {
+            this.applySize();
+          },
+          // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
+          color(value) {
+            color.change(this.ele, value);
+          },
         },
 
-        /** 按 max 重建那一排星（颗数没变就不动 DOM） */
-        renderItems() {
-          if (!this._itemsEl || !this._items) return;
-          const max = this.maxValue();
-          if (this._items.length === max) return;
-          const fragment = document.createDocumentFragment();
-          for (let index = 0; index < max; index += 1) {
-            const item = document.createElement('span');
-            item.className = 'mc-item';
-            item.setAttribute('part', 'item');
-            item.setAttribute('data-fill', 'empty');
-            item.innerHTML =
-              '<span class="mc-star">' +
-              STAR +
-              '</span><span class="mc-on"><span class="mc-star">' +
-              STAR +
-              '</span></span>';
-            fragment.append(item);
-          }
-          this._itemsEl.replaceChildren(fragment);
-          this._items = [...this._itemsEl.children];
-        },
-
-        /** 唯一入口：把显示值摊到每颗星上（悬停预览优先于真实值） */
-        paint() {
-          if (!this._native || !this._items || !this._items.length) return;
-          const value = this._hover === null ? this.readValue() : this._hover;
-          for (let index = 0; index < this._items.length; index += 1) {
-            const remainder = value - index;
-            const fill = remainder >= 1 ? 'full' : remainder >= 0.5 ? 'half' : 'empty';
-            if (this._items[index].getAttribute('data-fill') !== fill) {
-              this._items[index].setAttribute('data-fill', fill);
+        proto: {
+          /**
+           * 数字 size 按 px 写宿主上的 --mc-rate-star（三档仍交给 CSS）。
+           * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+           */
+          applySize() {
+            if (!this._live) return;
+            const raw = String(this.ele.getAttribute('size') ?? '').trim();
+            const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+            if (px) {
+              this.ele.style.setProperty('--mc-rate-star', px);
+              this._sizePx = true;
+            } else if (this._sizePx) {
+              this.ele.style.removeProperty('--mc-rate-star');
+              this._sizePx = false;
             }
-          }
-        },
+          },
 
-        /** 指针在星条上的横向位置 → 点击 / 悬停会落到的分值（点第几颗就是几分，半星看左右半边） */
-        valueAt(event) {
-          if (!this._itemsEl) return 0;
-          const rect = this._itemsEl.getBoundingClientRect();
-          if (rect.width <= 0) return 0;
-          const max = this.maxValue();
-          const step = this.boolAttr('allow-half') ? 0.5 : 1;
-          const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
-          return Math.min(Math.max(Math.ceil((ratio * max) / step) * step, step), max);
-        },
+          /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+          readNumber(name, fallback) {
+            const raw = this.ele.getAttribute(name);
+            const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
+            return Number.isFinite(parsed) ? parsed : fallback;
+          },
 
-        bindEvents() {
-          if (this._bound || !this._base) return;
-          this._bound = true;
-          this._onPointerDown = (event) => this.onPointerDown(event);
-          this._onPointerMove = (event) => this.onPointerMove(event);
-          this._onPointerUp = (event) => this.onPointerUp(event);
-          this._onPointerLeave = () => this.onPointerLeave();
-          this._base.addEventListener('pointerdown', this._onPointerDown);
-          this._base.addEventListener('pointermove', this._onPointerMove);
-          this._base.addEventListener('pointerup', this._onPointerUp);
-          this._base.addEventListener('pointercancel', this._onPointerUp);
-          this._base.addEventListener('pointerleave', this._onPointerLeave);
-        },
+          /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+          boolAttr(name) {
+            const raw = this.ele.getAttribute(name);
+            return raw !== null && raw !== 'false';
+          },
 
-        unbindEvents() {
-          if (!this._bound || !this._base) return;
-          this._base.removeEventListener('pointerdown', this._onPointerDown);
-          this._base.removeEventListener('pointermove', this._onPointerMove);
-          this._base.removeEventListener('pointerup', this._onPointerUp);
-          this._base.removeEventListener('pointercancel', this._onPointerUp);
-          this._base.removeEventListener('pointerleave', this._onPointerLeave);
-          this._bound = false;
-        },
+          /** 星星颗数：正整数，默认 5 */
+          maxValue() {
+            return Math.max(1, Math.round(this.readNumber('max', 5)));
+          },
 
-        /** 指针按下：落值 + 抢住指针，后续 move 都算拖选（跟拖动 range 一样连发 input） */
-        onPointerDown(event) {
-          if (this.boolAttr('disabled')) return;
-          if (event.pointerType === 'mouse' && event.button !== 0) return;
-          this._dragging = true;
-          this._dragChanged = false;
-          this._pointerMoved = false;
-          this._pressedValue = this.readValue();
-          this._hover = null;
-          this._native.focus({ preventScroll: true });
-          this._pointerId = event.pointerId;
-          try {
-            this._base.setPointerCapture(event.pointerId);
-          } catch (error) {
-            /* 合成事件没有真实指针：拿不到捕获就退化成普通点击 */
-          }
-          if (this.applyPointerValue(event)) this._dragChanged = true;
-        },
+          /** 分值：真相在内部原生 range 上（它负责夹紧与按步进取整） */
+          readValue() {
+            if (!this._native) return 0;
+            const parsed = this._native.valueAsNumber;
+            return Number.isFinite(parsed) ? parsed : 0;
+          },
 
-        onPointerMove(event) {
-          if (this.boolAttr('disabled')) return;
-          if (this._dragging) {
-            this._pointerMoved = true;
-            if (this.applyPointerValue(event)) this._dragChanged = true;
-            return;
-          }
-          const value = this.valueAt(event);
-          if (value === this._hover) return;
-          this._hover = value;
-          this.paint();
-        },
+          /** 内部 range 的区间与步进只有这一处：allow-half = 0.5 步进，否则 1 */
+          syncNative() {
+            if (!this._native) return;
+            const max = this.maxValue();
+            const step = this.boolAttr('allow-half') ? 0.5 : 1;
+            this._native.min = '0';
+            this._native.max = String(max);
+            this._native.step = String(step);
 
-        /** 松开 / 取消：收掉悬停；拖选过发 change；开了 clearable 的「点同一颗星」清回 0 */
-        onPointerUp(event) {
-          if (!this._dragging) return;
-          this._dragging = false;
-          this._hover = null;
-          try {
-            this._base.releasePointerCapture(this._pointerId);
-          } catch (error) {
-            /* 没有捕获可放 */
-          }
-          this._pointerId = null;
-          const changed = this._dragChanged === true;
-          const pressed = this._pressedValue;
-          const click = this._pointerMoved === false && event.type !== 'pointercancel';
-          this._dragChanged = false;
-          this._pressedValue = null;
-          this._pointerMoved = false;
-          this.paint();
-          if (changed) {
-            this.emitValue('change');
-            return;
-          }
-          if (click && this.boolAttr('clearable') && pressed > 0 && this.readValue() === pressed) {
-            this._native.value = '0';
+            const value = this.readValue();
+            const snapped = Math.min(
+              Math.max(Math.round((Number.isFinite(value) ? value : 0) / step) * step, 0),
+              max,
+            );
+            if (String(snapped) !== this._native.value) this._native.value = String(snapped);
+          },
+
+          /** 初值：default-value 只在挂载时读一次；什么都没写就是 0（未评分） */
+          applyInitialValue() {
+            if (!this._native || this._defaultApplied === true) return;
+            const raw = this.ele.getAttribute('default-value');
+            if (raw === null) {
+              if (this.ele.getAttribute('value') === null) this._native.value = '0';
+              return;
+            }
+            this._defaultApplied = true;
+            const parsed = Number(raw);
+            this._native.value = Number.isFinite(parsed) ? String(parsed) : '0';
+          },
+
+          /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 range */
+          applyBoundValue() {
+            if (!this._native) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null || raw.trim() === '') return;
+            const parsed = Number(raw);
+            if (!Number.isFinite(parsed)) return;
+            this._native.value = String(parsed);
+            // 原生 range 会按步进归一：属性跟着实际值走，两条通道不打架
             this.reflectValue();
             this.paint();
-            this.emitValue('input');
-            this.emitValue('change');
-          }
-        },
+          },
 
-        onPointerLeave() {
-          if (this._dragging || this._hover === null) return;
-          this._hover = null;
-          this.paint();
-        },
+          /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
+          reflectValue() {
+            if (!this._native) return;
+            const now = this._native.value;
+            if (this.ele.getAttribute('value') === now) return;
+            this.ele.setAttribute('value', now);
+          },
 
-        /** 指针位置落成值；真的变了才发 input（返回是否变化） */
-        applyPointerValue(event) {
-          const value = this.valueAt(event);
-          if (value === this.readValue()) return false;
-          this._native.value = String(value);
-          this.reflectValue();
-          this.paint();
-          this.emitValue('input');
-          return true;
-        },
+          applyDisabled() {
+            if (!this._native) return;
+            this._native.disabled = this.boolAttr('disabled');
+          },
 
-        emitValue(type) {
-          this.emit(type, {
-            data: { value: this.readValue() },
-            bubbles: true,
-            composed: true,
-          });
-        },
+          /** 按 max 重建那一排星（颗数没变就不动 DOM） */
+          renderItems() {
+            if (!this._itemsEl || !this._items) return;
+            const max = this.maxValue();
+            if (this._items.length === max) return;
+            const fragment = document.createDocumentFragment();
+            for (let index = 0; index < max; index += 1) {
+              const item = document.createElement('span');
+              item.className = 'mc-item';
+              item.setAttribute('part', 'item');
+              item.setAttribute('data-fill', 'empty');
+              item.innerHTML =
+                '<span class="mc-star">' +
+                STAR +
+                '</span><span class="mc-on"><span class="mc-star">' +
+                STAR +
+                '</span></span>';
+              fragment.append(item);
+            }
+            this._itemsEl.replaceChildren(fragment);
+            this._items = [...this._itemsEl.children];
+          },
 
-        /** 键盘走原生 range：Arrow / Home / End 由它处理，这里只转发带 data 的事件。
+          /** 唯一入口：把显示值摊到每颗星上（悬停预览优先于真实值） */
+          paint() {
+            if (!this._native || !this._items || !this._items.length) return;
+            const value = this._hover === null ? this.readValue() : this._hover;
+            for (let index = 0; index < this._items.length; index += 1) {
+              const remainder = value - index;
+              const fill = remainder >= 1 ? 'full' : remainder >= 0.5 ? 'half' : 'empty';
+              if (this._items[index].getAttribute('data-fill') !== fill) {
+                this._items[index].setAttribute('data-fill', fill);
+              }
+            }
+          },
+
+          /** 指针在星条上的横向位置 → 点击 / 悬停会落到的分值（点第几颗就是几分，半星看左右半边） */
+          valueAt(event) {
+            if (!this._itemsEl) return 0;
+            const rect = this._itemsEl.getBoundingClientRect();
+            if (rect.width <= 0) return 0;
+            const max = this.maxValue();
+            const step = this.boolAttr('allow-half') ? 0.5 : 1;
+            const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+            return Math.min(Math.max(Math.ceil((ratio * max) / step) * step, step), max);
+          },
+
+          bindEvents() {
+            if (this._bound || !this._base) return;
+            this._bound = true;
+            this._onPointerDown = (event) => this.onPointerDown(event);
+            this._onPointerMove = (event) => this.onPointerMove(event);
+            this._onPointerUp = (event) => this.onPointerUp(event);
+            this._onPointerLeave = () => this.onPointerLeave();
+            this._base.addEventListener('pointerdown', this._onPointerDown);
+            this._base.addEventListener('pointermove', this._onPointerMove);
+            this._base.addEventListener('pointerup', this._onPointerUp);
+            this._base.addEventListener('pointercancel', this._onPointerUp);
+            this._base.addEventListener('pointerleave', this._onPointerLeave);
+          },
+
+          unbindEvents() {
+            if (!this._bound || !this._base) return;
+            this._base.removeEventListener('pointerdown', this._onPointerDown);
+            this._base.removeEventListener('pointermove', this._onPointerMove);
+            this._base.removeEventListener('pointerup', this._onPointerUp);
+            this._base.removeEventListener('pointercancel', this._onPointerUp);
+            this._base.removeEventListener('pointerleave', this._onPointerLeave);
+            this._bound = false;
+          },
+
+          /** 指针按下：落值 + 抢住指针，后续 move 都算拖选（跟拖动 range 一样连发 input） */
+          onPointerDown(event) {
+            if (this.boolAttr('disabled')) return;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+            this._dragging = true;
+            this._dragChanged = false;
+            this._pointerMoved = false;
+            this._pressedValue = this.readValue();
+            this._hover = null;
+            this._native.focus({ preventScroll: true });
+            this._pointerId = event.pointerId;
+            try {
+              this._base.setPointerCapture(event.pointerId);
+            } catch (error) {
+              /* 合成事件没有真实指针：拿不到捕获就退化成普通点击 */
+            }
+            if (this.applyPointerValue(event)) this._dragChanged = true;
+          },
+
+          onPointerMove(event) {
+            if (this.boolAttr('disabled')) return;
+            if (this._dragging) {
+              this._pointerMoved = true;
+              if (this.applyPointerValue(event)) this._dragChanged = true;
+              return;
+            }
+            const value = this.valueAt(event);
+            if (value === this._hover) return;
+            this._hover = value;
+            this.paint();
+          },
+
+          /** 松开 / 取消：收掉悬停；拖选过发 change；开了 clearable 的「点同一颗星」清回 0 */
+          onPointerUp(event) {
+            if (!this._dragging) return;
+            this._dragging = false;
+            this._hover = null;
+            try {
+              this._base.releasePointerCapture(this._pointerId);
+            } catch (error) {
+              /* 没有捕获可放 */
+            }
+            this._pointerId = null;
+            const changed = this._dragChanged === true;
+            const pressed = this._pressedValue;
+            const click = this._pointerMoved === false && event.type !== 'pointercancel';
+            this._dragChanged = false;
+            this._pressedValue = null;
+            this._pointerMoved = false;
+            this.paint();
+            if (changed) {
+              this.emitChange();
+              return;
+            }
+            if (
+              click &&
+              this.boolAttr('clearable') &&
+              pressed > 0 &&
+              this.readValue() === pressed
+            ) {
+              this._native.value = '0';
+              this.reflectValue();
+              this.paint();
+              this.emitInput();
+              this.emitChange();
+            }
+          },
+
+          onPointerLeave() {
+            if (this._dragging || this._hover === null) return;
+            this._hover = null;
+            this.paint();
+          },
+
+          /** 指针位置落成值；真的变了才发 input（返回是否变化） */
+          applyPointerValue(event) {
+            const value = this.valueAt(event);
+            if (value === this.readValue()) return false;
+            this._native.value = String(value);
+            this.reflectValue();
+            this.paint();
+            this.emitInput();
+            return true;
+          },
+
+          emitInput() {
+            this.$emit('input', { value: this.readValue() });
+          },
+
+          emitChange() {
+            this.$emit('change', { value: this.readValue() });
+          },
+
+          /** 键盘走原生 range：Arrow / Home / End 由它处理，这里只转发带 data 的事件。
             原生 input 是 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去（同 mc-input） */
-        onNativeInput(event) {
-          event.stopPropagation();
-          this.reflectValue();
-          this.paint();
-          this.emitValue('input');
-        },
+          onNativeInput(event) {
+            event.stopPropagation();
+            this.reflectValue();
+            this.paint();
+            this.emitInput();
+          },
 
-        onNativeChange() {
-          this.reflectValue();
-          this.paint();
-          this.emitValue('change');
+          onNativeChange() {
+            this.reflectValue();
+            this.paint();
+            this.emitChange();
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

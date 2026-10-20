@@ -221,6 +221,10 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 `mc-popover` 的三个事件就是这条路，类型写
 `(event: CustomEvent<{ reason: string }>) => void`，别照抄 `data`。
 
+**代码侧的同一事实写在组件定义顶部的 `emits` 里**（与 `attrs` 对称）：`data` / `detail` / `native` 选通道，数组写载荷键；
+`withEmits(...)` 把它接成唯一派发口 `this.$emit('name', payload)`。`event-doc` 守卫拿这份声明跟这里的「类型」列对账：
+`data` 通道写 `Event & { data: … }`，`detail` 写 `CustomEvent<…>`，无载荷写 `Event`。
+
 **方法也写进这张表**：名称写调用式（`` `show()` `` / `` `loadingBar.start(config?)` ``），
 类型写这个可调用的 TS 签名（`(reason?: 'api' \| 'trigger' \| 'dismiss') => void`）。
 引擎的 `callRows` 认「名称里带调用语法」的行：它们按方法对账（名字要在源码里找得到），
@@ -407,6 +411,31 @@ item.open = true; // 组件提供了访问器时同样可以
 
 所以 `api.md` 的「事件」表**只列组件自己发的那些**（`change` / `input` / `open` / `close`…）；
 原生事件不列 —— 列了就是第二份事实，还得跟浏览器对齐。
+
+**组件作者怎么发**：定义顶部 `emits` 声明（与 `attrs` 对称），组件定义包一层 `withEmits(...)`，调用点只写 `this.$emit('name', payload)`：
+
+```js
+export default async () =>
+  withEmits({
+    tag: 'mc-input',
+
+    emits: {
+      input: { data: ['value'] }, // $event.data.value
+      change: { data: ['value'] },
+      clear: {}, // 无载荷
+    },
+
+    // …
+    onInput() {
+      this.$emit('input', { value: this._input.value }); // 不再手写 data / bubbles / composed
+    },
+  });
+```
+
+通道由声明决定：`data` 走 ofa `emit`，`detail` / `native` 走原生 `CustomEvent`；`cancelable` 只配后两者。
+事件名必须是**字面量**（三元列全也行），未声明的事件名运行时直接抛错；`internal: true` 的内部事件不进 `api.md`。
+守卫：`event-calls`（声明 ↔ `$emit`，禁止裸 `this.emit` / `new CustomEvent` / `dispatchEvent`）与
+`event-doc`（通道 / 载荷键 ↔ 事件表的「类型」列）。
 
 ### 1.6 插槽命名
 

@@ -156,6 +156,7 @@
   <script>
     /* 定住滚动条：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    import { withEmits } from '../boot/emits.js';
 
     /** hover 开合的宽限时间：够把指针从触发元素移到面板上（面板是宿主的后代，不会触发 leave） */
     const HOVER_DELAY = 120;
@@ -164,8 +165,14 @@
       /* 面板里通常放 mc-menu-item（菜单项）：注册 mc-dropdown 时把它一并就位。菜单项是**复用**另一个单元的组件，不在这里改它 */
       await load('../menu/menu-item.html');
 
-      return {
+      return withEmits({
         tag: 'mc-dropdown',
+
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          open: {},
+          close: {},
+        },
 
         attrs: {
           /* 单一属性**既是初始值也是运行时状态**（同 mc-collapse-item 的 open）：`<mc-dropdown open>` 首屏就展开，点触发元素时组件也会增删它；布尔属性默认值必须是 null（P1） */
@@ -270,14 +277,14 @@
             this._openState = open;
             if (!changed) return;
             if (open) {
-              this.emit('open', { bubbles: true, composed: true });
+              this.$emit('open');
               return;
             }
             if (this._returnFocus) {
               this._returnFocus = false;
               this.focusTrigger();
             }
-            this.emit('close', { bubbles: true, composed: true });
+            this.$emit('close');
           },
 
           /** 原生 toggle：状态与事件不靠它（排队发的 toggle 在「刚关就又开」时会丢事件） */
@@ -348,7 +355,7 @@
             this.closePanel();
           },
         },
-      };
+      });
     };
   </script>
 </template>

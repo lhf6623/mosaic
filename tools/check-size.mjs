@@ -36,6 +36,9 @@ const SHARED = [
   { file: 'packages/boot/color-math.js', raw: 3 * 1024, gzip: 1.75 * 1024 },
   // 组件共用：color 收 hex 的接线器，接了它的组件才下
   { file: 'packages/boot/color-attr.js', raw: 7.5 * 1024, gzip: 3.75 * 1024 },
+  // 组件共用：事件声明 → $emit 派发；有事件的组件才下（声明住在组件定义里）
+  // 2026-10 把 $emit 挂到 proto、并保留 proto 上的 getter（descriptor 合并），实测 3.6 / 1.8 KB
+  { file: 'packages/boot/emits.js', raw: 4 * 1024, gzip: 2 * 1024 },
   // 按需引入：整段子树要任意色才下；数学已抽到 color-math.js
   { file: 'packages/boot/tone.js', raw: 10.5 * 1024, gzip: 5.0 * 1024 },
   // 已被 mosaic.css 包含，单列为了盯住令牌的增长

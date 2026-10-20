@@ -313,6 +313,39 @@ function balanced(text, start, openCh = '(', closeCh = ')') {
   return text.slice(start);
 }
 
+/** `emits` 的完整声明：名称 → { channel, payload, cancelable, internal }（事件名对账走 emitsObject，会滤掉 internal） */
+export function emitsSpec(text) {
+  const at = text.search(/\bemits\s*:\s*\{/);
+  if (at < 0) return new Map();
+  const open = text.indexOf('{', at);
+  const end = matchBrace(text, open);
+  if (end < 0) return new Map();
+  const out = new Map();
+  for (const pair of topLevelPairs(stripJsComments(text.slice(open + 1, end)))) {
+    const name = pair.key.replace(/^['"]|['"]$/g, '');
+    if (!/^[\w-]+$/.test(name)) continue;
+    const raw = pair.value;
+    const channel = /\bnative\s*:\s*true\b/.test(raw)
+      ? 'native'
+      : /\bdetail\s*:/.test(raw)
+        ? 'detail'
+        : 'data';
+    const payloadMatch = raw.match(/\b(?:data|detail)\s*:\s*\[([^\]]*)\]/);
+    const payload = payloadMatch
+      ? [...payloadMatch[1].matchAll(/'([\w-]+)'|"([\w-]+)"/g)].map((m) => m[1] ?? m[2])
+      : /\bdetail\s*:\s*true\b/.test(raw)
+        ? true
+        : [];
+    out.set(name, {
+      channel,
+      payload,
+      cancelable: /\bcancelable\s*:\s*true\b/.test(raw),
+      internal: /\binternal\s*:\s*true\b/.test(raw),
+    });
+  }
+  return out;
+}
+
 /**
  * adapter 注册表：每个适配器收 (text, ctx) 返回事实。
  * ctx 里有 `slug` / `kebabAttrs` / 等，方便按组件名过滤（如令牌前缀）。
@@ -334,10 +367,19 @@ export const ADAPTERS = {
     return out;
   },
 
+
+  /** `emits` 的公开事件名：内部事件不进 api.md（对账 / 演示覆盖都只认公开的） */
+  emitsObject(text) {
+    return new Set(
+      [...emitsSpec(text)]
+        .filter(([, meta]) => !meta.internal)
+        .map(([name]) => name),
+    );
+  },
   /** `this.emit('name', …)` 里的字面量（含三元 `isOpen ? 'open' : 'close'`） */
   emitCall(text) {
     const out = new Set();
-    for (const match of text.matchAll(/\bemit\s*\(/g)) {
+    for (const match of text.matchAll(/(?<![\w$])emit\s*\(/g)) {
       const call = balanced(text, match.index + match[0].length);
       for (const quoted of call.matchAll(/'([\w-]+)'/g)) out.add(quoted[1]);
     }

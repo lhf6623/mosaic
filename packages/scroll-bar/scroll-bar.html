@@ -111,194 +111,203 @@
   </div>
 
   <script>
-    export default async () => ({
-      tag: 'mc-scroll-bar',
+    import { withEmits } from '../boot/emits.js';
 
-      attrs: {
-        /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器 */
-        axis: 'y',
-        /* 条子什么时候出现（枚举而不是布尔，形状同 axis）：`hover` = 移入才淡入；`always` = 溢出即常显 */
-        reveal: 'hover',
-      },
+    export default async () =>
+      withEmits({
+        tag: 'mc-scroll-bar',
 
-      attached() {
-        const root = this.ele.shadowRoot;
-        this._viewport = root.querySelector('.mc-viewport');
-        this._bar = root.querySelector('.mc-bar');
-        this._thumb = root.querySelector('.mc-thumb');
-        this._slot = root.querySelector('slot');
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          scroll: { native: true },
+        },
 
-        this._onScroll = () => {
-          this.syncScrollbar();
-          /* 原生 scroll 事件不冒泡、viewport 又在 shadow 里 —— 外面够不着，所以从宿主上再发一次 */
-          this.ele.dispatchEvent(new CustomEvent('scroll', { bubbles: true, composed: true }));
-        };
-        this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
+        attrs: {
+          /* 哪条轴滚动。一次一条 —— 两条轴同时要的场合用普通 overflow 容器 */
+          axis: 'y',
+          /* 条子什么时候出现（枚举而不是布尔，形状同 axis）：`hover` = 移入才淡入；`always` = 溢出即常显 */
+          reveal: 'hover',
+        },
 
-        /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去到不了 viewport —— 就地转过去；只为这一小块挂非 passive 监听 */
-        this._onThumbWheel = (event) => {
-          const vp = this._viewport;
-          const horizontal = this.axis === 'x';
-          const before = horizontal ? vp.scrollLeft : vp.scrollTop;
-          const delta = horizontal ? event.deltaX || event.deltaY : event.deltaY;
-          if (horizontal) vp.scrollLeft += delta;
-          else vp.scrollTop += delta;
-          /* 真的滚动了才拦：滚不动就放行，让浏览器继续往外交接（不然就把它锁在容器里了） */
-          if ((horizontal ? vp.scrollLeft : vp.scrollTop) !== before) event.preventDefault();
-        };
-        this._thumb.addEventListener('wheel', this._onThumbWheel, { passive: false });
+        attached() {
+          const root = this.ele.shadowRoot;
+          this._viewport = root.querySelector('.mc-viewport');
+          this._bar = root.querySelector('.mc-bar');
+          this._thumb = root.querySelector('.mc-thumb');
+          this._slot = root.querySelector('slot');
 
-        this._slot.addEventListener('slotchange', () => this.observeContent());
-        /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
-        this._ro = new ResizeObserver(() => this.syncScrollbar());
-        this._ro.observe(this._viewport);
-
-        this._onThumbDown = (event) => this.startDrag(event);
-        this._thumb.addEventListener('pointerdown', this._onThumbDown);
-
-        this.syncAxis();
-        this.syncReveal();
-        this.observeContent();
-        this.syncScrollbar();
-      },
-
-      detached() {
-        this._viewport?.removeEventListener('scroll', this._onScroll);
-        this._thumb?.removeEventListener('pointerdown', this._onThumbDown);
-        this._thumb?.removeEventListener('wheel', this._onThumbWheel);
-        this._ro?.disconnect();
-        this._contentRO?.disconnect();
-        window.removeEventListener('pointermove', this._onDragMove);
-        window.removeEventListener('pointerup', this._onDragEnd);
-        window.removeEventListener('pointercancel', this._onDragEnd);
-      },
-
-      watch: {
-        axis() {
-          if (this._viewport) {
-            this.syncAxis();
+          this._onScroll = () => {
             this.syncScrollbar();
-          }
-        },
-        /* 出现时机是纯 CSS 的事：换一档不用重算滑块几何，只需要把宿主属性换过去 */
-        reveal() {
-          if (this._viewport) this.syncReveal();
-        },
-      },
+            /* 原生 scroll 事件不冒泡、viewport 又在 shadow 里 —— 外面够不着，所以从宿主上再发一次 */
+            this.$emit('scroll');
+          };
+          this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
 
-      proto: {
-        /** axis → 宿主属性：样式挂在 [data-axis] 上（不写属性时也有默认那条） */
-        syncAxis() {
-          this.ele.setAttribute('data-axis', this.axis === 'x' ? 'x' : 'y');
+          /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去到不了 viewport —— 就地转过去；只为这一小块挂非 passive 监听 */
+          this._onThumbWheel = (event) => {
+            const vp = this._viewport;
+            const horizontal = this.axis === 'x';
+            const before = horizontal ? vp.scrollLeft : vp.scrollTop;
+            const delta = horizontal ? event.deltaX || event.deltaY : event.deltaY;
+            if (horizontal) vp.scrollLeft += delta;
+            else vp.scrollTop += delta;
+            /* 真的滚动了才拦：滚不动就放行，让浏览器继续往外交接（不然就把它锁在容器里了） */
+            if ((horizontal ? vp.scrollLeft : vp.scrollTop) !== before) event.preventDefault();
+          };
+          this._thumb.addEventListener('wheel', this._onThumbWheel, { passive: false });
+
+          this._slot.addEventListener('slotchange', () => this.observeContent());
+          /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
+          this._ro = new ResizeObserver(() => this.syncScrollbar());
+          this._ro.observe(this._viewport);
+
+          this._onThumbDown = (event) => this.startDrag(event);
+          this._thumb.addEventListener('pointerdown', this._onThumbDown);
+
+          this.syncAxis();
+          this.syncReveal();
+          this.observeContent();
+          this.syncScrollbar();
         },
 
-        /** reveal → 宿主属性：样式挂在 [data-reveal] 上（不写属性时也有默认那档 hover） */
-        syncReveal() {
-          this.ele.setAttribute('data-reveal', this.reveal === 'always' ? 'always' : 'hover');
-        },
-
-        /** 盯住插槽里的内容：它长高了 / 变宽了，滑块长度就得跟着重算 */
-        observeContent() {
+        detached() {
+          this._viewport?.removeEventListener('scroll', this._onScroll);
+          this._thumb?.removeEventListener('pointerdown', this._onThumbDown);
+          this._thumb?.removeEventListener('wheel', this._onThumbWheel);
+          this._ro?.disconnect();
           this._contentRO?.disconnect();
-          this._contentRO = new ResizeObserver(() => this.syncScrollbar());
-          for (const node of this._slot?.assignedElements() ?? []) {
-            this._contentRO.observe(node);
-          }
-        },
-
-        /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的键盘可达性。
-         *  ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被静默丢掉
-         *  （同 docs/components/nav.html 的 renderRows）。 */
-        syncScrollbar() {
-          const vp = this._viewport;
-          if (!vp) return;
-
-          const vertical = this.axis !== 'x';
-          const size = vertical ? vp.clientHeight : vp.clientWidth;
-          const total = vertical ? vp.scrollHeight : vp.scrollWidth;
-          const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
-          const over = total > size + 1;
-
-          this.ele.toggleAttribute('data-overflow', over);
-          this.syncKeyboard(over);
-          if (!over) return;
-
-          /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：长列表里 1% 只有半个像素，抓不住 */
-          const minThumb = parseFloat(
-            getComputedStyle(this.ele).getPropertyValue('--mc-scroll-bar-min-thumb'),
-          );
-          const length = Math.max(minThumb || 0, (size / total) * bar);
-          const free = bar - length;
-          const pos =
-            free * (total > size ? (vertical ? vp.scrollTop : vp.scrollLeft) / (total - size) : 0);
-
-          if (vertical) {
-            this._thumb.style.height = `${length}px`;
-            this._thumb.style.top = `${pos}px`;
-          } else {
-            this._thumb.style.width = `${length}px`;
-            this._thumb.style.left = `${pos}px`;
-          }
-        },
-
-        /** 只有真的溢出时才让它 Tab 得到 —— 否则就是个没用的 tab 停靠点 */
-        syncKeyboard(over) {
-          const vp = this._viewport;
-          if (over) vp.setAttribute('tabindex', '0');
-          else vp.removeAttribute('tabindex');
-        },
-
-        /** 拖滑块：按位移比例换算回滚动量。用 pointer capture，指针移出窗口也不会丢事件 */
-        startDrag(event) {
-          if (event.button != null && event.button !== 0) return;
-          event.preventDefault();
-          this.endDrag(); // 上一轮若没干净收尾（取消 / 丢事件），先收掉，别叠监听
-          const vp = this._viewport;
-          const vertical = this.axis !== 'x';
-          const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
-          const length = vertical ? this._thumb.offsetHeight : this._thumb.offsetWidth;
-          const free = bar - length;
-          if (free <= 0) return;
-
-          this._drag = {
-            vertical,
-            start: vertical ? event.clientY : event.clientX,
-            from: vertical ? vp.scrollTop : vp.scrollLeft,
-            ratio:
-              (vertical ? vp.scrollHeight - vp.clientHeight : vp.scrollWidth - vp.clientWidth) /
-              free,
-          };
-          this._thumb.setPointerCapture?.(event.pointerId);
-          /* 拖拽期间条子必须一直可见：指针拖出宿主后 :hover 会掉，滑块就在手底下淡没了 */
-          this.ele.setAttribute('data-dragging', '');
-
-          this._onDragMove = (move) => {
-            /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管…）就别再拖着内容跑 —— 那之后鼠标一动内容就跟着跑，感受是「滚动卡住了」 */
-            if (!move.buttons) {
-              this.endDrag();
-              return;
-            }
-            const now = this._drag.vertical ? move.clientY : move.clientX;
-            const next = this._drag.from + (now - this._drag.start) * this._drag.ratio;
-            if (this._drag.vertical) vp.scrollTop = next;
-            else vp.scrollLeft = next;
-          };
-          this._onDragEnd = () => this.endDrag();
-          window.addEventListener('pointermove', this._onDragMove);
-          window.addEventListener('pointerup', this._onDragEnd);
-          /* pointercancel：手势被系统取消（触控、OS 接管、失焦）时只有它，没有 pointerup */
-          window.addEventListener('pointercancel', this._onDragEnd);
-        },
-
-        /** 收掉这一次拖拽（重复调用无害：结束时三条路都会走到这里） */
-        endDrag() {
           window.removeEventListener('pointermove', this._onDragMove);
           window.removeEventListener('pointerup', this._onDragEnd);
           window.removeEventListener('pointercancel', this._onDragEnd);
-          this.ele.removeAttribute('data-dragging');
-          this._drag = null;
         },
-      },
-    });
+
+        watch: {
+          axis() {
+            if (this._viewport) {
+              this.syncAxis();
+              this.syncScrollbar();
+            }
+          },
+          /* 出现时机是纯 CSS 的事：换一档不用重算滑块几何，只需要把宿主属性换过去 */
+          reveal() {
+            if (this._viewport) this.syncReveal();
+          },
+        },
+
+        proto: {
+          /** axis → 宿主属性：样式挂在 [data-axis] 上（不写属性时也有默认那条） */
+          syncAxis() {
+            this.ele.setAttribute('data-axis', this.axis === 'x' ? 'x' : 'y');
+          },
+
+          /** reveal → 宿主属性：样式挂在 [data-reveal] 上（不写属性时也有默认那档 hover） */
+          syncReveal() {
+            this.ele.setAttribute('data-reveal', this.reveal === 'always' ? 'always' : 'hover');
+          },
+
+          /** 盯住插槽里的内容：它长高了 / 变宽了，滑块长度就得跟着重算 */
+          observeContent() {
+            this._contentRO?.disconnect();
+            this._contentRO = new ResizeObserver(() => this.syncScrollbar());
+            for (const node of this._slot?.assignedElements() ?? []) {
+              this._contentRO.observe(node);
+            }
+          },
+
+          /** 同步三件事：溢出态（宿主的 [data-overflow]）、滑块的长度与位置、viewport 的键盘可达性。
+           *  ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被静默丢掉
+           *  （同 docs/components/nav.html 的 renderRows）。 */
+          syncScrollbar() {
+            const vp = this._viewport;
+            if (!vp) return;
+
+            const vertical = this.axis !== 'x';
+            const size = vertical ? vp.clientHeight : vp.clientWidth;
+            const total = vertical ? vp.scrollHeight : vp.scrollWidth;
+            const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
+            const over = total > size + 1;
+
+            this.ele.toggleAttribute('data-overflow', over);
+            this.syncKeyboard(over);
+            if (!over) return;
+
+            /* 滑块长度按比例，但不小于 --mc-scroll-bar-min-thumb：长列表里 1% 只有半个像素，抓不住 */
+            const minThumb = parseFloat(
+              getComputedStyle(this.ele).getPropertyValue('--mc-scroll-bar-min-thumb'),
+            );
+            const length = Math.max(minThumb || 0, (size / total) * bar);
+            const free = bar - length;
+            const pos =
+              free *
+              (total > size ? (vertical ? vp.scrollTop : vp.scrollLeft) / (total - size) : 0);
+
+            if (vertical) {
+              this._thumb.style.height = `${length}px`;
+              this._thumb.style.top = `${pos}px`;
+            } else {
+              this._thumb.style.width = `${length}px`;
+              this._thumb.style.left = `${pos}px`;
+            }
+          },
+
+          /** 只有真的溢出时才让它 Tab 得到 —— 否则就是个没用的 tab 停靠点 */
+          syncKeyboard(over) {
+            const vp = this._viewport;
+            if (over) vp.setAttribute('tabindex', '0');
+            else vp.removeAttribute('tabindex');
+          },
+
+          /** 拖滑块：按位移比例换算回滚动量。用 pointer capture，指针移出窗口也不会丢事件 */
+          startDrag(event) {
+            if (event.button != null && event.button !== 0) return;
+            event.preventDefault();
+            this.endDrag(); // 上一轮若没干净收尾（取消 / 丢事件），先收掉，别叠监听
+            const vp = this._viewport;
+            const vertical = this.axis !== 'x';
+            const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
+            const length = vertical ? this._thumb.offsetHeight : this._thumb.offsetWidth;
+            const free = bar - length;
+            if (free <= 0) return;
+
+            this._drag = {
+              vertical,
+              start: vertical ? event.clientY : event.clientX,
+              from: vertical ? vp.scrollTop : vp.scrollLeft,
+              ratio:
+                (vertical ? vp.scrollHeight - vp.clientHeight : vp.scrollWidth - vp.clientWidth) /
+                free,
+            };
+            this._thumb.setPointerCapture?.(event.pointerId);
+            /* 拖拽期间条子必须一直可见：指针拖出宿主后 :hover 会掉，滑块就在手底下淡没了 */
+            this.ele.setAttribute('data-dragging', '');
+
+            this._onDragMove = (move) => {
+              /* ⚠️ 按键已经松了（pointerup 丢在窗口外、被系统接管…）就别再拖着内容跑 —— 那之后鼠标一动内容就跟着跑，感受是「滚动卡住了」 */
+              if (!move.buttons) {
+                this.endDrag();
+                return;
+              }
+              const now = this._drag.vertical ? move.clientY : move.clientX;
+              const next = this._drag.from + (now - this._drag.start) * this._drag.ratio;
+              if (this._drag.vertical) vp.scrollTop = next;
+              else vp.scrollLeft = next;
+            };
+            this._onDragEnd = () => this.endDrag();
+            window.addEventListener('pointermove', this._onDragMove);
+            window.addEventListener('pointerup', this._onDragEnd);
+            /* pointercancel：手势被系统取消（触控、OS 接管、失焦）时只有它，没有 pointerup */
+            window.addEventListener('pointercancel', this._onDragEnd);
+          },
+
+          /** 收掉这一次拖拽（重复调用无害：结束时三条路都会走到这里） */
+          endDrag() {
+            window.removeEventListener('pointermove', this._onDragMove);
+            window.removeEventListener('pointerup', this._onDragEnd);
+            window.removeEventListener('pointercancel', this._onDragEnd);
+            this.ele.removeAttribute('data-dragging');
+            this._drag = null;
+          },
+        },
+      });
   </script>
 </template>

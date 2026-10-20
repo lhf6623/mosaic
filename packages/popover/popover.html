@@ -192,6 +192,7 @@
   <script>
     /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（见该文件头的实测） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    import { withEmits } from '../boot/emits.js';
 
     /** 面板贴的是「上下」还是「左右」——决定箭头要横向还是纵向对锚 */
     const AXIS_OF = (placement) =>
@@ -205,218 +206,212 @@
       return box && (box.width || box.height) ? box : null;
     };
 
-    export default () => ({
-      tag: 'mc-popover',
+    export default () =>
+      withEmits({
+        tag: 'mc-popover',
 
-      attrs: {
-        /* 12 个 placement；默认 bottom 由 CSS 的 :not([placement]) 兜 */
-        placement: 'bottom',
-        /* click（默认）/ hover / manual。manual 只认 open 属性与 show()/hide() */
-        trigger: 'click',
-        /* 受控开合：open 出现即开、移除即关。布尔属性默认必须是 null（P1） */
-        open: null,
-        /* 箭头：默认显示，关掉写 `arrow="none"`（属性只表达「非默认」那一档，理由见 P14） */
-        arrow: null,
-      },
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          'before-open': { detail: ['reason'], cancelable: true },
+          open: { detail: ['reason'] },
+          close: { detail: ['reason'] },
+        },
 
-      data: {
-        /* 面板是否已经升级好（ready 之后才敢碰宿主与 popover API） */
-        mounted: false,
-      },
+        attrs: {
+          /* 12 个 placement；默认 bottom 由 CSS 的 :not([placement]) 兜 */
+          placement: 'bottom',
+          /* click（默认）/ hover / manual。manual 只认 open 属性与 show()/hide() */
+          trigger: 'click',
+          /* 受控开合：open 出现即开、移除即关。布尔属性默认必须是 null（P1） */
+          open: null,
+          /* 箭头：默认显示，关掉写 `arrow="none"`（属性只表达「非默认」那一档，理由见 P14） */
+          arrow: null,
+        },
 
-      ready() {
-        const panel = this.ele.shadowRoot.querySelector('.mc-panel');
-        /* 视口变化会重新解析锚点定位，箭头偏移跟着重算 */
-        this._onViewport = () => {
-          if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
-        };
-        window.addEventListener('resize', this._onViewport, { passive: true });
-        /* 滚动守卫：它自己监听面板的 beforetoggle / toggle，模板里不用加绑定（见 boot/scroll-pin.js） */
-        this._scrollGuard = attachFloatingScrollGuard(this.ele, panel);
-        /* 老浏览器没有 popover API 时不炸：只标记不可用，功能降级由 CSS 兜 */
-        this.popoverOk = typeof panel?.showPopover === 'function';
-        this.mounted = true;
-        this._hoverTimer = null;
-        this.syncOpen();
-      },
+        data: {
+          /* 面板是否已经升级好（ready 之后才敢碰宿主与 popover API） */
+          mounted: false,
+        },
 
-      detached() {
-        clearTimeout(this._hoverTimer);
-        window.removeEventListener('resize', this._onViewport);
-        this._scrollGuard?.dispose();
-      },
-
-      watch: {
-        /** 受控开合：属性是唯一真相。⚠️ 首次触发要跳过（P5）：watch 空跑在构造期，写属性会抛 NotSupportedError（P31）。 */
-        open() {
-          if (this._openWatchInit === undefined) {
-            this._openWatchInit = true;
-            return;
-          }
+        ready() {
+          const panel = this.ele.shadowRoot.querySelector('.mc-panel');
+          /* 视口变化会重新解析锚点定位，箭头偏移跟着重算 */
+          this._onViewport = () => {
+            if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
+          };
+          window.addEventListener('resize', this._onViewport, { passive: true });
+          /* 滚动守卫：它自己监听面板的 beforetoggle / toggle，模板里不用加绑定（见 boot/scroll-pin.js） */
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, panel);
+          /* 老浏览器没有 popover API 时不炸：只标记不可用，功能降级由 CSS 兜 */
+          this.popoverOk = typeof panel?.showPopover === 'function';
+          this.mounted = true;
+          this._hoverTimer = null;
           this.syncOpen();
         },
-      },
 
-      proto: {
-        get panel() {
-          return this.ele.shadowRoot.querySelector('.mc-panel');
-        },
-
-        /** 把宿主 open 属性 → 原生 popover 状态。两边的真相都收在这一处。 */
-        syncOpen() {
-          if (!this.mounted || !this.popoverOk) return;
-          const shouldOpen = this.ele.hasAttribute('open');
-          const isOpen = this.panel.matches(':popover-open');
-          /* 显示 / 收起都是原生动作，而浏览器可能顺手把页面滚一下（见 scroll-pin.js） */
-          if (shouldOpen && !isOpen) this._scrollGuard.run(() => this.panel.showPopover());
-          else if (!shouldOpen && isOpen) this._scrollGuard.run(() => this.panel.hidePopover());
-        },
-
-        /** 打开。可被 before-open 拦掉（返回 false / preventDefault）。 */
-        show(reason = 'api') {
-          if (!this.popoverOk) return false;
-          if (this.panel.matches(':popover-open')) return true;
-          const event = new CustomEvent('before-open', {
-            detail: { reason },
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-          });
-          if (!this.ele.dispatchEvent(event)) return false;
-          this.ele.setAttribute('open', '');
-          /* setAttribute 会走 watch → syncOpen；这里再兜一次，避免 watch 未触发时不同步 */
-          this.syncOpen();
-          return true;
-        },
-
-        hide(reason = 'api') {
-          if (!this.popoverOk) return false;
-          if (!this.panel.matches(':popover-open')) return true;
-          /* ⚠️ 事件不在这里发：hidePopover() 会触发原生 toggle，统一由 onNativeToggle 派发，否则一次关闭发两次 close */
-          this._closingReason = reason;
-          this.ele.removeAttribute('open');
-          this.syncOpen();
-          return true;
-        },
-
-        toggle(reason = 'api') {
-          /* ⚠️ 先看 popoverOk：面板不在时 this.panel 是 null，直接读 .matches 会抛 TypeError（on:click 一点就炸） */
-          if (!this.popoverOk) return false;
-          return this.panel.matches(':popover-open') ? this.hide(reason) : this.show(reason);
-        },
-
-        /* ---------- 触发 ---------- */
-
-        /** 记下 pointerdown 时面板是否已经开着。⚠️ 必须在 pointerdown 记：light dismiss 就发生在这一步，等 click 到达时再 toggle() 会把它重新开回来（「点第二次关不掉」） */
-        onAnchorPointerDown() {
-          if (!this.popoverOk) return;
-          this._openAtPointerDown = this.panel.matches(':popover-open');
-          /* 这一下是「关」的意思：先把 close 的 reason 定成 trigger（light dismiss 走 onNativeToggle，取的就是这个值）；按在关着的元素上时清掉 */
-          this._closingReason = this._openAtPointerDown ? 'trigger' : null;
-        },
-
-        onAnchorClick() {
-          /* trigger 没写就是 click（不能读 this.trigger：attrs 的默认值不会写回宿主） */
-          if ((this.ele.getAttribute('trigger') ?? 'click') !== 'click') return;
-          const wasOpen = this._openAtPointerDown === true;
-          this._openAtPointerDown = false;
-          /* 按下去时开着 = 这一下是「关」：不能再 toggle 回开；属性清理与 close 事件都归 onNativeToggle，这里补发会变成两条 close */
-          if (wasOpen) {
-            /* 兜底：万一某版浏览器把 dismiss 推迟到 click 之后，面板这会儿还开着就自己补一次 */
-            if (this.panel.matches(':popover-open')) this.hide('trigger');
-            return;
-          }
-          this.toggle('trigger');
-        },
-
-        onAnchorEnter() {
-          if (this.ele.getAttribute('trigger') !== 'hover') return;
+        detached() {
           clearTimeout(this._hoverTimer);
-          this._hoverTimer = setTimeout(() => this.show('hover'), this.hoverDelay ?? 120);
+          window.removeEventListener('resize', this._onViewport);
+          this._scrollGuard?.dispose();
         },
 
-        onAnchorLeave() {
-          if (this.ele.getAttribute('trigger') !== 'hover') return;
-          clearTimeout(this._hoverTimer);
-          this._hoverTimer = setTimeout(() => this.hide('hover'), this.hoverDelay ?? 120);
+        watch: {
+          /** 受控开合：属性是唯一真相。⚠️ 首次触发要跳过（P5）：watch 空跑在构造期，写属性会抛 NotSupportedError（P31）。 */
+          open() {
+            if (this._openWatchInit === undefined) {
+              this._openWatchInit = true;
+              return;
+            }
+            this.syncOpen();
+          },
         },
 
-        /** 原生 toggle：Esc / 点空白关掉时只有原生状态变了，这里把宿主属性拉回来 */
-        /** 箭头对齐触发元素中心：面板比它宽时，对着面板居中会让箭头飘很远 */
-        syncArrowShift() {
-          /* 箭头默认就显示，只有显式 arrow="none" 才跳过（省掉一次无关的测量） */
-          if (this.ele.getAttribute('arrow') === 'none') return;
-          const panel = this.panel;
-          const anchorEl = rectOf(this.ele.shadowRoot.querySelector('.mc-anchor'));
-          const box = rectOf(panel);
-          if (!anchorEl || !box) return;
-          const placement = this.ele.getAttribute('placement') ?? 'bottom';
-          const axis = AXIS_OF(placement);
+        proto: {
+          get panel() {
+            return this.ele.shadowRoot.querySelector('.mc-panel');
+          },
 
-          /* 1) 实际落在哪一侧：期望值可能被浏览器翻转，按几何反推（交叠判断最稳） */
-          const overlaps =
-            axis === 'y'
-              ? box.bottom > anchorEl.top && box.top < anchorEl.bottom
-              : box.right > anchorEl.left && box.left < anchorEl.right;
-          let side;
-          if (axis === 'y') {
-            side = !overlaps
-              ? box.top >= anchorEl.bottom
-                ? 'bottom'
-                : 'top'
-              : box.top >= anchorEl.y
-                ? 'bottom'
-                : 'top';
-          } else {
-            side = !overlaps
-              ? box.left >= anchorEl.right
-                ? 'right'
-                : 'left'
-              : box.left >= anchorEl.x
-                ? 'right'
-                : 'left';
-          }
-          panel.dataset.side = side;
+          /** 把宿主 open 属性 → 原生 popover 状态。两边的真相都收在这一处。 */
+          syncOpen() {
+            if (!this.mounted || !this.popoverOk) return;
+            const shouldOpen = this.ele.hasAttribute('open');
+            const isOpen = this.panel.matches(':popover-open');
+            /* 显示 / 收起都是原生动作，而浏览器可能顺手把页面滚一下（见 scroll-pin.js） */
+            if (shouldOpen && !isOpen) this._scrollGuard.run(() => this.panel.showPopover());
+            else if (!shouldOpen && isOpen) this._scrollGuard.run(() => this.panel.hidePopover());
+          },
 
-          /* 2) 箭头在交叉轴上对齐触发元素的中心 */
-          if (axis === 'y') {
-            panel.style.setProperty(
-              '--mc-popover-arrow-shift',
-              `${anchorEl.x + anchorEl.width / 2 - (box.x + box.width / 2)}px`,
-            );
-          } else {
-            panel.style.setProperty(
-              '--mc-popover-arrow-shift-y',
-              `${anchorEl.y + anchorEl.height / 2 - (box.y + box.height / 2)}px`,
-            );
-          }
+          /** 打开。可被 before-open 拦掉（返回 false / preventDefault）。 */
+          show(reason = 'api') {
+            if (!this.popoverOk) return false;
+            if (this.panel.matches(':popover-open')) return true;
+            if (!this.$emit('before-open', { reason })) return false;
+            this.ele.setAttribute('open', '');
+            /* setAttribute 会走 watch → syncOpen；这里再兜一次，避免 watch 未触发时不同步 */
+            this.syncOpen();
+            return true;
+          },
+
+          hide(reason = 'api') {
+            if (!this.popoverOk) return false;
+            if (!this.panel.matches(':popover-open')) return true;
+            /* ⚠️ 事件不在这里发：hidePopover() 会触发原生 toggle，统一由 onNativeToggle 派发，否则一次关闭发两次 close */
+            this._closingReason = reason;
+            this.ele.removeAttribute('open');
+            this.syncOpen();
+            return true;
+          },
+
+          toggle(reason = 'api') {
+            /* ⚠️ 先看 popoverOk：面板不在时 this.panel 是 null，直接读 .matches 会抛 TypeError（on:click 一点就炸） */
+            if (!this.popoverOk) return false;
+            return this.panel.matches(':popover-open') ? this.hide(reason) : this.show(reason);
+          },
+
+          /* ---------- 触发 ---------- */
+
+          /** 记下 pointerdown 时面板是否已经开着。⚠️ 必须在 pointerdown 记：light dismiss 就发生在这一步，等 click 到达时再 toggle() 会把它重新开回来（「点第二次关不掉」） */
+          onAnchorPointerDown() {
+            if (!this.popoverOk) return;
+            this._openAtPointerDown = this.panel.matches(':popover-open');
+            /* 这一下是「关」的意思：先把 close 的 reason 定成 trigger（light dismiss 走 onNativeToggle，取的就是这个值）；按在关着的元素上时清掉 */
+            this._closingReason = this._openAtPointerDown ? 'trigger' : null;
+          },
+
+          onAnchorClick() {
+            /* trigger 没写就是 click（不能读 this.trigger：attrs 的默认值不会写回宿主） */
+            if ((this.ele.getAttribute('trigger') ?? 'click') !== 'click') return;
+            const wasOpen = this._openAtPointerDown === true;
+            this._openAtPointerDown = false;
+            /* 按下去时开着 = 这一下是「关」：不能再 toggle 回开；属性清理与 close 事件都归 onNativeToggle，这里补发会变成两条 close */
+            if (wasOpen) {
+              /* 兜底：万一某版浏览器把 dismiss 推迟到 click 之后，面板这会儿还开着就自己补一次 */
+              if (this.panel.matches(':popover-open')) this.hide('trigger');
+              return;
+            }
+            this.toggle('trigger');
+          },
+
+          onAnchorEnter() {
+            if (this.ele.getAttribute('trigger') !== 'hover') return;
+            clearTimeout(this._hoverTimer);
+            this._hoverTimer = setTimeout(() => this.show('hover'), this.hoverDelay ?? 120);
+          },
+
+          onAnchorLeave() {
+            if (this.ele.getAttribute('trigger') !== 'hover') return;
+            clearTimeout(this._hoverTimer);
+            this._hoverTimer = setTimeout(() => this.hide('hover'), this.hoverDelay ?? 120);
+          },
+
+          /** 原生 toggle：Esc / 点空白关掉时只有原生状态变了，这里把宿主属性拉回来 */
+          /** 箭头对齐触发元素中心：面板比它宽时，对着面板居中会让箭头飘很远 */
+          syncArrowShift() {
+            /* 箭头默认就显示，只有显式 arrow="none" 才跳过（省掉一次无关的测量） */
+            if (this.ele.getAttribute('arrow') === 'none') return;
+            const panel = this.panel;
+            const anchorEl = rectOf(this.ele.shadowRoot.querySelector('.mc-anchor'));
+            const box = rectOf(panel);
+            if (!anchorEl || !box) return;
+            const placement = this.ele.getAttribute('placement') ?? 'bottom';
+            const axis = AXIS_OF(placement);
+
+            /* 1) 实际落在哪一侧：期望值可能被浏览器翻转，按几何反推（交叠判断最稳） */
+            const overlaps =
+              axis === 'y'
+                ? box.bottom > anchorEl.top && box.top < anchorEl.bottom
+                : box.right > anchorEl.left && box.left < anchorEl.right;
+            let side;
+            if (axis === 'y') {
+              side = !overlaps
+                ? box.top >= anchorEl.bottom
+                  ? 'bottom'
+                  : 'top'
+                : box.top >= anchorEl.y
+                  ? 'bottom'
+                  : 'top';
+            } else {
+              side = !overlaps
+                ? box.left >= anchorEl.right
+                  ? 'right'
+                  : 'left'
+                : box.left >= anchorEl.x
+                  ? 'right'
+                  : 'left';
+            }
+            panel.dataset.side = side;
+
+            /* 2) 箭头在交叉轴上对齐触发元素的中心 */
+            if (axis === 'y') {
+              panel.style.setProperty(
+                '--mc-popover-arrow-shift',
+                `${anchorEl.x + anchorEl.width / 2 - (box.x + box.width / 2)}px`,
+              );
+            } else {
+              panel.style.setProperty(
+                '--mc-popover-arrow-shift-y',
+                `${anchorEl.y + anchorEl.height / 2 - (box.y + box.height / 2)}px`,
+              );
+            }
+          },
+
+          onNativeToggle(event) {
+            /* 滚动守卫自己监听面板（beforetoggle 记锚点、toggle 钉回位置）；这里只做状态同步与派发 */
+            const nowOpen = event.newState === 'open';
+            if (nowOpen) {
+              /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */
+              requestAnimationFrame(() => this.syncArrowShift());
+              if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
+              this.$emit('open', { reason: 'trigger' });
+              return;
+            }
+            /* 关闭的唯一出口：Esc / 点空白 / show() / hide() 都收在这里，事件也只发一次 */
+            if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
+            const reason = this._closingReason ?? 'dismiss';
+            this._closingReason = null;
+            this.$emit('close', { reason });
+          },
         },
-
-        onNativeToggle(event) {
-          /* 滚动守卫自己监听面板（beforetoggle 记锚点、toggle 钉回位置）；这里只做状态同步与派发 */
-          const nowOpen = event.newState === 'open';
-          if (nowOpen) {
-            /* 箭头对齐触发元素：退一帧，等浏览器把锚点定位解析完再量（这时才是最终坐标） */
-            requestAnimationFrame(() => this.syncArrowShift());
-            if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
-            this.ele.dispatchEvent(
-              new CustomEvent('open', {
-                detail: { reason: 'trigger' },
-                bubbles: true,
-                composed: true,
-              }),
-            );
-            return;
-          }
-          /* 关闭的唯一出口：Esc / 点空白 / show() / hide() 都收在这里，事件也只发一次 */
-          if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
-          const reason = this._closingReason ?? 'dismiss';
-          this._closingReason = null;
-          this.ele.dispatchEvent(
-            new CustomEvent('close', { detail: { reason }, bubbles: true, composed: true }),
-          );
-        },
-      },
-    });
+      });
   </script>
 </template>

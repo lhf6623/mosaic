@@ -225,64 +225,72 @@
 
   <script>
     import { colorAttr } from '../boot/color-attr.js';
+    import { withEmits } from '../boot/emits.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
-    export default async () => ({
-      tag: 'mc-tag',
+    export default async () =>
+      withEmits({
+        tag: 'mc-tag',
 
-      attrs: {
-        color: 'neutral',
-        variant: 'subtle',
-        size: 'md',
-        // 布尔属性默认值必须是 null（P1）
-        closable: null,
-        checkable: null,
-        // 既是初始值也是运行时状态（规范 1.4）：el.selected = true 立刻生效
-        selected: null,
-        disabled: null,
-      },
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          change: { data: ['selected'] },
+          close: {},
+        },
 
-      ready() {
-        // 运行时状态走 property（规范 1.4）：setter 只写宿主属性，CSS 当次就读得到（P4）
-        Object.defineProperty(this.ele, 'selected', {
-          configurable: true,
-          get: () => this.ele.hasAttribute('selected'),
-          set: (value) => {
-            if (value) this.ele.setAttribute('selected', '');
-            else this.ele.removeAttribute('selected');
+        attrs: {
+          color: 'neutral',
+          variant: 'subtle',
+          size: 'md',
+          // 布尔属性默认值必须是 null（P1）
+          closable: null,
+          checkable: null,
+          // 既是初始值也是运行时状态（规范 1.4）：el.selected = true 立刻生效
+          selected: null,
+          disabled: null,
+        },
+
+        ready() {
+          // 运行时状态走 property（规范 1.4）：setter 只写宿主属性，CSS 当次就读得到（P4）
+          Object.defineProperty(this.ele, 'selected', {
+            configurable: true,
+            get: () => this.ele.hasAttribute('selected'),
+            set: (value) => {
+              if (value) this.ele.setAttribute('selected', '');
+              else this.ele.removeAttribute('selected');
+            },
+          });
+        },
+
+        attached() {
+          // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+          color.sync(this.ele, this.color);
+        },
+
+        watch: {
+          // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
+          color(value) {
+            color.change(this.ele, value);
           },
-        });
-      },
-
-      attached() {
-        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
-        color.sync(this.ele, this.color);
-      },
-
-      watch: {
-        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
-        color(value) {
-          color.change(this.ele, value);
-        },
-      },
-
-      proto: {
-        /** 选中态以宿主属性为唯一真相；立刻写属性，事件带 selected（规范 1.4 / 1.5） */
-        onToggle() {
-          if (this.ele.hasAttribute('disabled')) return;
-          const selected = !this.ele.hasAttribute('selected');
-          if (selected) this.ele.setAttribute('selected', '');
-          else this.ele.removeAttribute('selected');
-          this.emit('change', { data: { selected }, bubbles: true, composed: true });
         },
 
-        /** 只发事件，不删 DOM */
-        onClose() {
-          if (this.ele.hasAttribute('disabled')) return;
-          this.emit('close', { bubbles: true, composed: true });
+        proto: {
+          /** 选中态以宿主属性为唯一真相；立刻写属性，事件带 selected（规范 1.4 / 1.5） */
+          onToggle() {
+            if (this.ele.hasAttribute('disabled')) return;
+            const selected = !this.ele.hasAttribute('selected');
+            if (selected) this.ele.setAttribute('selected', '');
+            else this.ele.removeAttribute('selected');
+            this.$emit('change', { selected });
+          },
+
+          /** 只发事件，不删 DOM */
+          onClose() {
+            if (this.ele.hasAttribute('disabled')) return;
+            this.$emit('close');
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

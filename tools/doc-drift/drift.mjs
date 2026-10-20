@@ -30,6 +30,7 @@ import {
   DEFAULT_ADAPTERS,
   codeFacts,
   defaultsKeysOf,
+  emitsSpec,
   kebab,
   listAllEntries,
   listDirs,
@@ -999,6 +1000,23 @@ export function selfTest(problems) {
       ...ADAPTERS.newEvent(`this.ele.dispatchEvent(new CustomEvent('before-open', {}));`),
     ]),
     ['before-open', 'close', 'open'],
+  );
+  same(
+    'emits 声明（含带引号的事件名；internal 不进公开事件面）',
+    sorted([
+      ...ADAPTERS.emitsObject(
+        `emits: { change: { data: ['value'] }, 'before-open': { detail: ['reason'] }, close: { detail: true, internal: true } }`,
+      ),
+    ]),
+    ['before-open', 'change'],
+  );
+  const emitMeta = emitsSpec(`emits: { 'before-open': { detail: ['reason'], cancelable: true } }`).get(
+    'before-open',
+  );
+  same(
+    'emits 元信息（通道 / 载荷 / cancelable）',
+    { channel: emitMeta?.channel, payload: emitMeta?.payload, cancelable: emitMeta?.cancelable },
+    { channel: 'detail', payload: ['reason'], cancelable: true },
   );
   same(
     '插槽名（含无名默认插槽）',

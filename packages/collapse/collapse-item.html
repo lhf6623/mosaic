@@ -81,120 +81,127 @@
   </details>
 
   <script>
-    export default async () => ({
-      tag: 'mc-collapse-item',
+    import { withEmits } from '../boot/emits.js';
 
-      attrs: {
-        // 头部文案，富内容走同名插槽。叫 header 不叫 title —— title 会弹原生 tooltip（P32）
-        header: '',
-        name: '',
-        // 布尔默认值必须是 null（P1）；open 既是初始值也是运行时状态
-        open: null,
-        disabled: null,
-      },
+    export default async () =>
+      withEmits({
+        tag: 'mc-collapse-item',
 
-      ready() {
-        this._details = this.ele.shadowRoot.querySelector('.mc-details');
-        this._header = this.ele.shadowRoot.querySelector('.mc-header');
-
-        // 运行时状态走 property（规范 1.4）；setter 立刻同步 details，不等 ofa 那一拍（P4）
-        Object.defineProperty(this.ele, 'open', {
-          configurable: true,
-          get: () => this.ele.hasAttribute('open'),
-          set: (value) => {
-            if (value) this.ele.setAttribute('open', '');
-            else this.ele.removeAttribute('open');
-            this.applyOpen();
-          },
-        });
-
-        this.applyOpen();
-        this.applyDisabled();
-      },
-
-      attached() {
-        this._onToggle = () => this.onToggle();
-        this._onHeaderClick = (event) => this.onHeaderClick(event);
-        this._details.addEventListener('toggle', this._onToggle);
-        // 捕获阶段：键盘激活（Enter / Space）也是一次可取消 click
-        this._header.addEventListener('click', this._onHeaderClick, true);
-
-        this._lastOpen = this._details.open; // 初始那次 toggle 不算事件（P5）
-      },
-
-      watch: {
-        open() {
-          this.applyOpen();
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          open: { data: ['name'] },
+          close: { data: ['name'] },
         },
-        disabled() {
+
+        attrs: {
+          // 头部文案，富内容走同名插槽。叫 header 不叫 title —— title 会弹原生 tooltip（P32）
+          header: '',
+          name: '',
+          // 布尔默认值必须是 null（P1）；open 既是初始值也是运行时状态
+          open: null,
+          disabled: null,
+        },
+
+        ready() {
+          this._details = this.ele.shadowRoot.querySelector('.mc-details');
+          this._header = this.ele.shadowRoot.querySelector('.mc-header');
+
+          // 运行时状态走 property（规范 1.4）；setter 立刻同步 details，不等 ofa 那一拍（P4）
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            get: () => this.ele.hasAttribute('open'),
+            set: (value) => {
+              if (value) this.ele.setAttribute('open', '');
+              else this.ele.removeAttribute('open');
+              this.applyOpen();
+            },
+          });
+
+          this.applyOpen();
           this.applyDisabled();
         },
-      },
 
-      detached() {
-        this._details?.removeEventListener('toggle', this._onToggle);
-        this._header?.removeEventListener('click', this._onHeaderClick, true);
-      },
+        attached() {
+          this._onToggle = () => this.onToggle();
+          this._onHeaderClick = (event) => this.onHeaderClick(event);
+          this._details.addEventListener('toggle', this._onToggle);
+          // 捕获阶段：键盘激活（Enter / Space）也是一次可取消 click
+          this._header.addEventListener('click', this._onHeaderClick, true);
 
-      proto: {
-        /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
-        applyOpen() {
-          if (!this._details) return;
-          const want = this.ele.hasAttribute('open');
-          if (this._details.open !== want) this._details.open = want;
+          this._lastOpen = this._details.open; // 初始那次 toggle 不算事件（P5）
         },
 
-        applyDisabled() {
-          const off = this.ele.hasAttribute('disabled');
-          if (off) {
-            this._header.tabIndex = -1;
-          } else {
-            this._header.removeAttribute('tabindex');
-          }
+        watch: {
+          open() {
+            this.applyOpen();
+          },
+          disabled() {
+            this.applyDisabled();
+          },
         },
 
-        /** 头部点击：禁用时拦掉；否则 preventDefault 后自切 details.open —— 浏览器 summary
-         * 激活晚一拍，点完立刻读是旧值；原生 toggle 照旧会来，容器互斥不受影响。 */
-        onHeaderClick(event) {
-          if (this.ele.hasAttribute('disabled')) {
+        detached() {
+          this._details?.removeEventListener('toggle', this._onToggle);
+          this._header?.removeEventListener('click', this._onHeaderClick, true);
+        },
+
+        proto: {
+          /** 宿主属性是唯一真相；setAttribute 那条路是异步的（P4），所以读属性本身 */
+          applyOpen() {
+            if (!this._details) return;
+            const want = this.ele.hasAttribute('open');
+            if (this._details.open !== want) this._details.open = want;
+          },
+
+          applyDisabled() {
+            const off = this.ele.hasAttribute('disabled');
+            if (off) {
+              this._header.tabIndex = -1;
+            } else {
+              this._header.removeAttribute('tabindex');
+            }
+          },
+
+          /** 头部点击：禁用时拦掉；否则 preventDefault 后自切 details.open —— 浏览器 summary
+           * 激活晚一拍，点完立刻读是旧值；原生 toggle 照旧会来，容器互斥不受影响。 */
+          onHeaderClick(event) {
+            if (this.ele.hasAttribute('disabled')) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              return;
+            }
+
+            // 头部里的控件（链接 / 按钮）自己处理，不抢
+            const inside = event.target?.closest?.(
+              'a, button, input, select, textarea, [tabindex]',
+            );
+            if (inside && inside !== this._header) return;
+
             event.preventDefault();
-            event.stopImmediatePropagation();
-            return;
-          }
+            this._details.open = !this._details.open;
+            this.reflectOpen();
+          },
 
-          // 头部里的控件（链接 / 按钮）自己处理，不抢
-          const inside = event.target?.closest?.('a, button, input, select, textarea, [tabindex]');
-          if (inside && inside !== this._header) return;
+          onToggle() {
+            this.reflectOpen();
 
-          event.preventDefault();
-          this._details.open = !this._details.open;
-          this.reflectOpen();
-        },
-
-        onToggle() {
-          this.reflectOpen();
-
-          const isOpen = this._details.open;
-          if (this._lastOpen === undefined) {
+            const isOpen = this._details.open;
+            if (this._lastOpen === undefined) {
+              this._lastOpen = isOpen;
+              return;
+            }
+            if (this._lastOpen === isOpen) return;
             this._lastOpen = isOpen;
-            return;
-          }
-          if (this._lastOpen === isOpen) return;
-          this._lastOpen = isOpen;
 
-          // 冒到容器要 composed（P22）；事件名不加 mc- 前缀（规范 1.5）
-          this.emit(isOpen ? 'open' : 'close', {
-            data: { name: this.name },
-            bubbles: true,
-            composed: true,
-          });
-        },
+            // 冒到容器要 composed（P22）；事件名不加 mc- 前缀（规范 1.5）
+            this.$emit(isOpen ? 'open' : 'close', { name: this.name });
+          },
 
-        reflectOpen() {
-          if (this._details.open) this.ele.setAttribute('open', '');
-          else this.ele.removeAttribute('open');
+          reflectOpen() {
+            if (this._details.open) this.ele.setAttribute('open', '');
+            else this.ele.removeAttribute('open');
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

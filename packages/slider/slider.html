@@ -194,218 +194,218 @@
   <script>
     /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-slider-fill 色槽 */
     import { colorAttr } from '../boot/color-attr.js';
+    import { withEmits } from '../boot/emits.js';
 
     const color = colorAttr({ slots: ['fill'] });
 
-    export default async () => ({
-      tag: 'mc-slider',
+    export default async () =>
+      withEmits({
+        tag: 'mc-slider',
 
-      attrs: {
-        /* 绑定通道 / 运行时状态（同 mc-input 的 value）：ofa 的 :value / sync:value 落在这个属性上 */
-        value: null,
-        // 非受控初值（同 default-value 约定）：只在挂载时读一次
-        defaultValue: null,
-        min: 0,
-        max: 100,
-        step: 1,
-        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-slider disabled> 失效
-        disabled: null,
-        size: 'md',
-        color: 'primary',
-      },
+        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        emits: {
+          input: { data: ['value'] },
+          change: { data: ['value'] },
+        },
 
-      ready() {
-        // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-        const root = this.ele.shadowRoot;
-        this._native = root.querySelector('.mc-native');
-        this._base = root.querySelector('.mc-base');
+        attrs: {
+          /* 绑定通道 / 运行时状态（同 mc-input 的 value）：ofa 的 :value / sync:value 落在这个属性上 */
+          value: null,
+          // 非受控初值（同 default-value 约定）：只在挂载时读一次
+          defaultValue: null,
+          min: 0,
+          max: 100,
+          step: 1,
+          // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-slider disabled> 失效
+          disabled: null,
+          size: 'md',
+          color: 'primary',
+        },
 
-        /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
-        Object.defineProperty(this.ele, 'value', {
-          configurable: true,
-          get: () => (this._native ? Number(this._native.value) : NaN),
-          set: (next) => {
+        ready() {
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+          const root = this.ele.shadowRoot;
+          this._native = root.querySelector('.mc-native');
+          this._base = root.querySelector('.mc-base');
+
+          /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => (this._native ? Number(this._native.value) : NaN),
+            set: (next) => {
+              if (!this._native) return;
+              const parsed = Number(next);
+              if (!Number.isFinite(parsed)) return;
+              this._native.value = String(parsed);
+              this.reflectValue();
+              this.paint();
+            },
+          });
+
+          this.syncRange();
+          this.applyInitialValue();
+          this.applyBoundValue();
+          this.applyDisabled();
+          this.paint();
+        },
+
+        attached() {
+          // 宿主 style 等构造期结束再写（P31）
+          this._live = true;
+          color.sync(this.ele, this.color);
+          this.applySize();
+          // createElement 之后再写 min / max / default-value 的那种：ready() 那会儿还读不到，补一次
+          this.syncRange();
+          this.applyInitialValue();
+          this.applyBoundValue();
+          this.applyDisabled();
+          this.paint();
+        },
+
+        watch: {
+          /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
+          value() {
+            this.applyBoundValue();
+          },
+          min() {
+            this.syncRange();
+            this.paint();
+          },
+          max() {
+            this.syncRange();
+            this.paint();
+          },
+          step() {
+            this.syncRange();
+            this.paint();
+          },
+          disabled() {
+            this.applyDisabled();
+          },
+          // size 收纯数字：按 px 写 --mc-slider-h，sm / md / lg 仍交给 CSS
+          size() {
+            this.applySize();
+          },
+          // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
+          color(value) {
+            color.change(this.ele, value);
+          },
+        },
+
+        proto: {
+          /**
+           * 数字 size 按 px 写宿主上的 --mc-slider-h（三档仍交给 CSS）。
+           * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
+           */
+          applySize() {
+            if (!this._live) return;
+            const raw = String(this.ele.getAttribute('size') ?? '').trim();
+            const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
+            if (px) {
+              this.ele.style.setProperty('--mc-slider-h', px);
+              this._sizePx = true;
+            } else if (this._sizePx) {
+              this.ele.style.removeProperty('--mc-slider-h');
+              this._sizePx = false;
+            }
+          },
+
+          /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
+          readNumber(name, fallback) {
+            const raw = this.ele.getAttribute(name);
+            const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
+            return Number.isFinite(parsed) ? parsed : fallback;
+          },
+
+          /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+          boolAttr(name) {
+            const raw = this.ele.getAttribute(name);
+            return raw !== null && raw !== 'false';
+          },
+
+          /** min / max / step 只有这一处落到内部原生 input；改区间时顺手把当前值夹回范围内 */
+          syncRange() {
             if (!this._native) return;
-            const parsed = Number(next);
+            const min = this.readNumber('min', 0);
+            const max = this.readNumber('max', 100);
+            const step = this.readNumber('step', 1);
+            this._native.min = String(min);
+            this._native.max = String(max > min ? max : min);
+            this._native.step = String(step > 0 ? step : 1);
+
+            const value = Number(this._native.value);
+            const clamped = Math.min(
+              Math.max(Number.isFinite(value) ? value : min, min),
+              Number(this._native.max),
+            );
+            if (String(clamped) !== this._native.value) this._native.value = String(clamped);
+          },
+
+          /** 初值：default-value 只在挂载时读一次；什么都没写时落成 min（原生 range 的默认值是区间中点） */
+          applyInitialValue() {
+            if (!this._native || this._defaultApplied === true) return;
+            const raw = this.ele.getAttribute('default-value');
+            if (raw === null) {
+              if (this.ele.getAttribute('value') === null) this._native.value = this._native.min;
+              return;
+            }
+            this._defaultApplied = true;
+            const parsed = Number(raw);
+            this._native.value = Number.isFinite(parsed) ? String(parsed) : this._native.min;
+          },
+
+          /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 input */
+          applyBoundValue() {
+            if (!this._native) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null || raw.trim() === '') return;
+            const parsed = Number(raw);
             if (!Number.isFinite(parsed)) return;
             this._native.value = String(parsed);
+            // 原生 range 会按 step 归一（37 + step 10 → 40）：属性跟着实际值走，两条通道不打架
             this.reflectValue();
             this.paint();
           },
-        });
 
-        this.syncRange();
-        this.applyInitialValue();
-        this.applyBoundValue();
-        this.applyDisabled();
-        this.paint();
-      },
+          /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
+          reflectValue() {
+            if (!this._native) return;
+            const now = this._native.value;
+            if (this.ele.getAttribute('value') === now) return;
+            this.ele.setAttribute('value', now);
+          },
 
-      attached() {
-        // 宿主 style 等构造期结束再写（P31）
-        this._live = true;
-        color.sync(this.ele, this.color);
-        this.applySize();
-        // createElement 之后再写 min / max / default-value 的那种：ready() 那会儿还读不到，补一次
-        this.syncRange();
-        this.applyInitialValue();
-        this.applyBoundValue();
-        this.applyDisabled();
-        this.paint();
-      },
+          /** 唯一入口：把当前值换算成 0～1 的比例，写进内部变量（填充条与滑块都读它） */
+          paint() {
+            if (!this._native || !this._base) return;
+            const min = this.readNumber('min', 0);
+            const parsedMax = this.readNumber('max', 100);
+            const max = parsedMax > min ? parsedMax : min;
+            const value = Number(this._native.value);
+            const ratio = max === min ? 0 : Math.min(Math.max((value - min) / (max - min), 0), 1);
+            this._base.style.setProperty('--mc-slider-ratio', String(ratio));
+          },
 
-      watch: {
-        /* 首次触发落在构造期（P5）；这些 apply 自己带 _native 守卫 */
-        value() {
-          this.applyBoundValue();
-        },
-        min() {
-          this.syncRange();
-          this.paint();
-        },
-        max() {
-          this.syncRange();
-          this.paint();
-        },
-        step() {
-          this.syncRange();
-          this.paint();
-        },
-        disabled() {
-          this.applyDisabled();
-        },
-        // size 收纯数字：按 px 写 --mc-slider-h，sm / md / lg 仍交给 CSS
-        size() {
-          this.applySize();
-        },
-        // color 收 hex：首次触发构造期那一拍由 colorAttr 自己跳过
-        color(value) {
-          color.change(this.ele, value);
-        },
-      },
+          applyDisabled() {
+            if (!this._native) return;
+            this._native.disabled = this.boolAttr('disabled');
+          },
 
-      proto: {
-        /**
-         * 数字 size 按 px 写宿主上的 --mc-slider-h（三档仍交给 CSS）。
-         * 只删自己写过的那一次 —— 使用者手写的同名令牌不能被 size="md" 抹掉（同 mc-avatar）。
-         */
-        applySize() {
-          if (!this._live) return;
-          const raw = String(this.ele.getAttribute('size') ?? '').trim();
-          const px = /^(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)$/.test(raw) ? raw + 'px' : '';
-          if (px) {
-            this.ele.style.setProperty('--mc-slider-h', px);
-            this._sizePx = true;
-          } else if (this._sizePx) {
-            this.ele.style.removeProperty('--mc-slider-h');
-            this._sizePx = false;
-          }
-        },
+          /** 原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
+          onInput(event) {
+            event.stopPropagation();
+            this.reflectValue();
+            this.paint();
+            this.$emit('input', { value: Number(this._native.value) });
+          },
 
-        /** 读一个数字属性：attr 不在 / 不是数字时用 fallback（P32：别拿 hasAttribute 当「使用者写了」） */
-        readNumber(name, fallback) {
-          const raw = this.ele.getAttribute(name);
-          const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
-          return Number.isFinite(parsed) ? parsed : fallback;
+          /** 原生 change 穿不出 shadow 边界（P19），必须由组件转发成同名的 composed 事件 */
+          onChange() {
+            this.reflectValue();
+            this.paint();
+            this.$emit('change', { value: Number(this._native.value) });
+          },
         },
-
-        /** 布尔属性的读法：存在且值不是字符串 "false"（ofa 的绑定会把 false 写成 attr="false"） */
-        boolAttr(name) {
-          const raw = this.ele.getAttribute(name);
-          return raw !== null && raw !== 'false';
-        },
-
-        /** min / max / step 只有这一处落到内部原生 input；改区间时顺手把当前值夹回范围内 */
-        syncRange() {
-          if (!this._native) return;
-          const min = this.readNumber('min', 0);
-          const max = this.readNumber('max', 100);
-          const step = this.readNumber('step', 1);
-          this._native.min = String(min);
-          this._native.max = String(max > min ? max : min);
-          this._native.step = String(step > 0 ? step : 1);
-
-          const value = Number(this._native.value);
-          const clamped = Math.min(
-            Math.max(Number.isFinite(value) ? value : min, min),
-            Number(this._native.max),
-          );
-          if (String(clamped) !== this._native.value) this._native.value = String(clamped);
-        },
-
-        /** 初值：default-value 只在挂载时读一次；什么都没写时落成 min（原生 range 的默认值是区间中点） */
-        applyInitialValue() {
-          if (!this._native || this._defaultApplied === true) return;
-          const raw = this.ele.getAttribute('default-value');
-          if (raw === null) {
-            if (this.ele.getAttribute('value') === null) this._native.value = this._native.min;
-            return;
-          }
-          this._defaultApplied = true;
-          const parsed = Number(raw);
-          this._native.value = Number.isFinite(parsed) ? String(parsed) : this._native.min;
-        },
-
-        /** 绑定通道（ofa 的 :value / sync:value 绑定）：属性变了就把值铺到内部原生 input */
-        applyBoundValue() {
-          if (!this._native) return;
-          const raw = this.ele.getAttribute('value');
-          if (raw === null || raw.trim() === '') return;
-          const parsed = Number(raw);
-          if (!Number.isFinite(parsed)) return;
-          this._native.value = String(parsed);
-          // 原生 range 会按 step 归一（37 + step 10 → 40）：属性跟着实际值走，两条通道不打架
-          this.reflectValue();
-          this.paint();
-        },
-
-        /** 反向：把当前值写回属性，让 ofa 的 sync:value 观察得到 */
-        reflectValue() {
-          if (!this._native) return;
-          const now = this._native.value;
-          if (this.ele.getAttribute('value') === now) return;
-          this.ele.setAttribute('value', now);
-        },
-
-        /** 唯一入口：把当前值换算成 0～1 的比例，写进内部变量（填充条与滑块都读它） */
-        paint() {
-          if (!this._native || !this._base) return;
-          const min = this.readNumber('min', 0);
-          const parsedMax = this.readNumber('max', 100);
-          const max = parsedMax > min ? parsedMax : min;
-          const value = Number(this._native.value);
-          const ratio = max === min ? 0 : Math.min(Math.max((value - min) / (max - min), 0), 1);
-          this._base.style.setProperty('--mc-slider-ratio', String(ratio));
-        },
-
-        applyDisabled() {
-          if (!this._native) return;
-          this._native.disabled = this.boolAttr('disabled');
-        },
-
-        /** 原生 input 自带 composed，会先冒到宿主；拦掉它，只让下面那条带 data 的出去 */
-        onInput(event) {
-          event.stopPropagation();
-          this.reflectValue();
-          this.paint();
-          this.emit('input', {
-            data: { value: Number(this._native.value) },
-            bubbles: true,
-            composed: true,
-          });
-        },
-
-        /** 原生 change 穿不出 shadow 边界（P19），必须由组件转发成同名的 composed 事件 */
-        onChange() {
-          this.reflectValue();
-          this.paint();
-          this.emit('change', {
-            data: { value: Number(this._native.value) },
-            bubbles: true,
-            composed: true,
-          });
-        },
-      },
-    });
+      });
   </script>
 </template>
