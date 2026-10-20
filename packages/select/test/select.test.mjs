@@ -526,6 +526,110 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(sizes),
   );
 
+  /* 宽度固定：占位 / 选中文案 / 清空 / clearable / 多选拼接都不能把宿主撑大缩小 */
+  const widths = await page.evaluate(async () => {
+    const inner = () => window.__sel().control.getBoundingClientRect().width;
+    const options =
+      '<mc-option value="bj">北京</mc-option>' +
+      '<mc-option value="sh">上海（很长的城市名）</mc-option>' +
+      '<mc-option value="gz">广州</mc-option>';
+    const pause = () => new Promise((resolve) => setTimeout(resolve, 80));
+
+    window.__make({ placeholder: '选择城市' }, options);
+    await pause();
+    const placeholder = inner();
+    const host = window.__sel().host;
+    host.value = 'sh';
+    await pause();
+    const withValue = inner();
+    host.value = '';
+    await pause();
+    const cleared = inner();
+
+    window.__make({ clearable: '', 'default-value': 'sh' }, options);
+    await pause();
+    const clearable = inner();
+
+    window.__make({ multiple: '', 'default-value': 'bj,sh,gz' }, options);
+    await pause();
+    const multiple = inner();
+
+    window.__sel().host.style.width = '320px';
+    const override = inner();
+    return { placeholder, withValue, cleared, clearable, multiple, override };
+  });
+  check(
+    '宽度固定：占位 / 选中文案 / 清空 / clearable / 多选拼接都不让宿主变宽或变窄；宿主 style="width:…" 可覆盖',
+    Math.round(widths.placeholder) === Math.round(widths.withValue) &&
+      Math.round(widths.placeholder) === Math.round(widths.cleared) &&
+      Math.round(widths.placeholder) === Math.round(widths.clearable) &&
+      Math.round(widths.placeholder) === Math.round(widths.multiple) &&
+      Math.round(widths.override) === 320,
+    JSON.stringify(widths),
+  );
+
+  /* 溢出提示：长选项被 ellipsis 裁掉时，hover 弹完整文案；面板打开时收起 */
+  const overflowState = await page.evaluate(async () => {
+    const label = '浙江省杭州市西湖区文三路 90 号（很长的选项，用来测裁切提示）';
+    window.__make(
+      {},
+      '<mc-option value="long">' + label + '</mc-option><mc-option value="bj">北京</mc-option>',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    const host = window.__sel().host;
+    const value = host.shadowRoot.querySelector('.mc-value');
+    const empty = {
+      flagged: host.hasAttribute('data-overflow'),
+      clipped: value.scrollWidth > value.clientWidth + 1,
+      text: value.textContent,
+    };
+    host.value = 'long';
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    const filled = {
+      flagged: host.hasAttribute('data-overflow'),
+      clipped: value.scrollWidth > value.clientWidth + 1,
+      text: value.textContent,
+    };
+    const box = host.getBoundingClientRect();
+    return {
+      label,
+      empty,
+      filled,
+      at: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+    };
+  });
+  await page.mouse.move(400, 700);
+  await page.waitForTimeout(80);
+  await page.mouse.move(overflowState.at.x, overflowState.at.y);
+  await page.waitForTimeout(220);
+  const tip = await page.evaluate(() => {
+    const el = window.__sel().host.shadowRoot.querySelector('.mc-overflow-tip');
+    return { exists: !!el, text: el?.textContent ?? null, open: el ? el.matches(':popover-open') : false };
+  });
+  await click('.mc-control');
+  await waitOpen(true);
+  const tipWhileOpen = await page.evaluate(() => {
+    const host = window.__sel().host;
+    const el = host.shadowRoot.querySelector('.mc-overflow-tip');
+    return { open: el ? el.matches(':popover-open') : false, flagged: host.hasAttribute('data-overflow') };
+  });
+  await page.keyboard.press('Escape');
+  await waitOpen(false);
+  await page.mouse.move(400, 700);
+  check(
+    '溢出提示：长选项把 .mc-value 裁掉时 data-overflow 亮起，hover 弹完整文案，面板打开时提示收起',
+    overflowState.empty.flagged === false &&
+      overflowState.empty.clipped === false &&
+      overflowState.filled.flagged === true &&
+      overflowState.filled.clipped === true &&
+      tip.exists === true &&
+      tip.open === true &&
+      tip.text === overflowState.label &&
+      tipWhileOpen.open === false &&
+      tipWhileOpen.flagged === true,
+    JSON.stringify({ overflowState, tip, tipWhileOpen }),
+  );
+
   /* ------------------------------------------------------------------ *
    * 8. ::part(base) / ::part(panel) / ::part(option) 定制生效
    * ------------------------------------------------------------------ */

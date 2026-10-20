@@ -1,0 +1,11 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-date-picker range default-value="2026-10-05,2026-10-18"></mc-date-picker>
+    <mc-date-picker type="month" range default-value="2026-02,2026-05"></mc-date-picker>
+    <mc-date-picker type="year" range default-value="2024,2026"></mc-date-picker>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-date-picker-range-mode' });
+  </script>
+</template>

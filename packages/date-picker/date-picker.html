@@ -1,0 +1,1526 @@
+<!-- mc-date-picker — 日期选择（表单控件 + 月历浮层）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值。高度 / 宽度写在宿主上，style="height:…" / "width:…" 直接压得住 */
+    :host {
+      display: inline-flex;
+      position: relative; /* .mc-clear 的包含块（P21） */
+      box-sizing: border-box;
+      height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      /* 固定宽度：占位文案 / 选中值 / 格式化后的长度都不应该把盒子撑大或缩回去 */
+      width: var(--mc-date-picker-control-width);
+      max-width: 100%;
+      vertical-align: middle;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+
+      /* L3 组件令牌：默认引用 L2 语义令牌，按实例覆盖写在宿主 style 上 */
+      --mc-date-picker-control-bg: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-date-picker-control-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-date-picker-control-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      --mc-date-picker-control-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-date-picker-control-width: 12rem;
+      --mc-date-picker-offset: var(--mc-space-2, var(--mc-def-space-2));
+      --mc-date-picker-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-date-picker-panel-border: var(
+        --mc-color-border-strong,
+        var(--mc-def-color-border-strong)
+      );
+      --mc-date-picker-panel-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+      --mc-date-picker-panel-pad: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-date-picker-panel-width: 18rem;
+      --mc-date-picker-nav-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-date-picker-nav-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+      --mc-date-picker-weekday-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-date-picker-day-color: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-date-picker-day-color-outside: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-date-picker-day-color-selected: var(
+        --mc-color-primary-fg,
+        var(--mc-def-color-primary-fg)
+      );
+      --mc-date-picker-day-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+      --mc-date-picker-day-bg-selected: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-date-picker-today-border: var(--mc-color-primary, var(--mc-def-color-primary));
+      --mc-date-picker-placeholder-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-date-picker-icon-color: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-date-picker-clear-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-date-picker-clear-bg-hover: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+    }
+
+    /* 2. 尺寸：三档只动宿主高度与字号，内部控件靠继承 / 100% 跟上 */
+    :host([size='sm']) {
+      height: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+    }
+    :host([size='lg']) {
+      height: var(--mc-control-h-lg, var(--mc-def-control-h-lg));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+    }
+
+    /* 3. 状态：禁用压暗、只读不改外观、invalid 只换边框色槽 */
+    :host([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    :host([invalid]) {
+      --mc-date-picker-control-border: var(--mc-color-danger, var(--mc-def-color-danger));
+    }
+
+    /* 4. 触发框（part="base"）：视觉全在这里，使用者 style="…" 压得住宿主 */
+    .mc-control {
+      flex: 1 1 auto;
+      min-width: 0;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      padding-inline: var(--mc-date-picker-control-pad-x);
+      border: 1px solid rgb(var(--mc-date-picker-control-border));
+      border-radius: var(--mc-date-picker-control-radius);
+      background-color: rgb(var(--mc-date-picker-control-bg));
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      /* 锚点挂在这里（必须是自己 shadow 里的元素）：面板靠它做 CSS 锚点定位 */
+      anchor-name: --mc-date-picker-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+    }
+    .mc-control:focus-visible {
+      /* 焦点环用 ring 令牌，不用 currentColor（P16） */
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+    :host([disabled]) .mc-control {
+      cursor: not-allowed;
+    }
+    :host([readonly]) .mc-control {
+      cursor: default;
+    }
+
+    .mc-value {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    :host([data-empty]) .mc-value {
+      color: rgb(var(--mc-date-picker-placeholder-color));
+    }
+    .mc-calendar {
+      flex: none;
+      color: rgb(var(--mc-date-picker-icon-color));
+    }
+
+    /* 清除按钮：控制框的兄弟（不能嵌进 <button> 里），绝对定位压在右端 */
+    .mc-clear {
+      display: none;
+      position: absolute;
+      z-index: 1;
+      right: var(--mc-space-2, var(--mc-def-space-2));
+      top: 50%;
+      translate: 0 -50%;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: var(--mc-space-5, var(--mc-def-space-5));
+      height: var(--mc-space-5, var(--mc-def-space-5));
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: transparent;
+      color: rgb(var(--mc-date-picker-clear-color));
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mc-clear:hover {
+      background-color: rgb(var(--mc-date-picker-clear-bg-hover));
+    }
+    .mc-clear:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+    :host([clearable][data-filled]) .mc-clear {
+      display: inline-flex;
+    }
+    :host([clearable][data-filled]) .mc-calendar {
+      display: none;
+    }
+    :host([clearable][data-filled]) .mc-control {
+      padding-inline-end: var(--mc-space-8, var(--mc-def-space-8));
+    }
+
+    /* 5. 月历面板 */
+    .mc-panel {
+      /* ⚠️ UA 给 `[popover]` 的 inset / margin / border / padding / 底色都要显式接管，否则那对 auto 会吃掉锚点定位 */
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      width: var(--mc-date-picker-panel-width);
+      max-width: calc(100vw - var(--mc-space-8, var(--mc-def-space-8)));
+      max-height: calc(100vh - var(--mc-space-8, var(--mc-def-space-8)));
+      padding: var(--mc-date-picker-panel-pad);
+      border: 0;
+      overflow-y: auto;
+      border-radius: var(--mc-date-picker-panel-radius);
+      background-color: rgb(var(--mc-date-picker-panel-bg));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: inherit;
+      line-height: inherit;
+      /* 描边跟「面板 + 内容」的整体轮廓做：1px 模糊当描边，第二层才是投影 */
+      filter: drop-shadow(0 0 1px rgb(var(--mc-date-picker-panel-border)))
+        drop-shadow(var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
+
+      /* 锚点定位：锚是 shadow 内的 .mc-control。默认 bottom-start 写基类 */
+      position-anchor: --mc-date-picker-anchor; /* @internal：锚点标识，给 anchor-name / position-anchor 用 */
+      position-try-fallbacks: flip-block;
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-date-picker-offset);
+    }
+
+    .mc-header {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      margin-bottom: var(--mc-space-1, var(--mc-def-space-1));
+    }
+    .mc-title {
+      flex: 1 1 auto;
+      text-align: center;
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
+    .mc-nav {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: var(--mc-space-8, var(--mc-def-space-8));
+      height: var(--mc-space-8, var(--mc-def-space-8));
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      background-color: transparent;
+      color: rgb(var(--mc-date-picker-nav-color));
+      font-size: 1em;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mc-nav:hover {
+      background-color: rgb(var(--mc-date-picker-nav-bg-hover));
+    }
+    .mc-nav:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 1px;
+    }
+
+    .mc-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      padding: var(--mc-space-1, var(--mc-def-space-1)) 0 var(--mc-space-2, var(--mc-def-space-2));
+      color: rgb(var(--mc-date-picker-weekday-color));
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      text-align: center;
+    }
+
+    .mc-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    /* 月 / 年选择是 3 列 × 4 行 */
+    .mc-grid--coarse {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+    }
+
+    .mc-day,
+    .mc-cell {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: var(--mc-space-8, var(--mc-def-space-8));
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      background-color: transparent;
+      color: rgb(var(--mc-date-picker-day-color));
+      font: inherit;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mc-cell {
+      height: var(--mc-space-10, var(--mc-def-space-10));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+    }
+    .mc-day:hover,
+    .mc-day[data-active],
+    .mc-cell:hover,
+    .mc-cell[data-active] {
+      background-color: rgb(var(--mc-date-picker-day-bg-hover));
+    }
+    .mc-day[data-outside] {
+      color: rgb(var(--mc-date-picker-day-color-outside));
+    }
+    .mc-day[data-today] {
+      box-shadow: inset 0 0 0 1px rgb(var(--mc-date-picker-today-border));
+    }
+    /* 范围中间的格子只铺一层浅底；两端仍是 data-selected 的实心色 */
+    .mc-day[data-in-range],
+    .mc-cell[data-in-range] {
+      background-color: rgb(var(--mc-date-picker-day-bg-selected) / 0.18);
+      color: rgb(var(--mc-date-picker-day-color));
+    }
+    .mc-day[data-selected],
+    .mc-cell[data-selected] {
+      background-color: rgb(var(--mc-date-picker-day-bg-selected));
+      color: rgb(var(--mc-date-picker-day-color-selected));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
+    .mc-day[data-selected]:hover,
+    .mc-day[data-selected][data-active],
+    .mc-cell[data-selected]:hover,
+    .mc-cell[data-selected][data-active] {
+      background-color: rgb(var(--mc-date-picker-day-bg-selected));
+    }
+    .mc-day[data-disabled],
+    .mc-cell[data-disabled] {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .mc-day[data-disabled]:hover,
+    .mc-day[data-disabled][data-active],
+    .mc-cell[data-disabled]:hover,
+    .mc-cell[data-disabled][data-active] {
+      background-color: transparent;
+    }
+    .mc-day[data-selected][data-disabled]:hover,
+    .mc-day[data-selected][data-disabled][data-active],
+    .mc-cell[data-selected][data-disabled]:hover,
+    .mc-cell[data-selected][data-disabled][data-active] {
+      background-color: rgb(var(--mc-date-picker-day-bg-selected));
+    }
+  </style>
+
+  <button
+    class="mc-control"
+    part="base"
+    type="button"
+    :disabled="disabled !== null"
+    on:click="onControlClick"
+    on:keydown="onKeyDown">
+    <span class="mc-value"></span>
+    <span class="mc-calendar mc-icon-calendar"></span>
+  </button>
+
+  <button class="mc-clear" type="button" :disabled="disabled !== null" on:click="onClear">
+    <span class="mc-icon-close"></span>
+  </button>
+
+  <!-- 面板：原生 popover 进 top layer，位置交给 CSS 锚点定位；⚠️ 刻意用 popover="manual"，开合自己管（同 mc-select） -->
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="manual"
+    on:toggle="onNativeToggle"
+    on:mousedown="onPanelMouseDown"
+    on:click="onPanelClick"
+    on:keydown="onPanelKeyDown">
+    <div class="mc-header" part="header">
+      <button class="mc-nav" type="button" tabindex="-1" title="上个月" on:click="onPrevMonth">
+        <span class="mc-icon-chevron-left"></span>
+      </button>
+      <span class="mc-title"></span>
+      <button class="mc-nav" type="button" tabindex="-1" title="下个月" on:click="onNextMonth">
+        <span class="mc-icon-chevron-right"></span>
+      </button>
+    </div>
+    <div class="mc-weekdays">
+      <span>一</span>
+      <span>二</span>
+      <span>三</span>
+      <span>四</span>
+      <span>五</span>
+      <span>六</span>
+      <span>日</span>
+    </div>
+    <div class="mc-grid" part="grid"></div>
+  </div>
+
+  <script>
+    /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
+    import { attachOverflowTip } from '../boot/overflow-tip.js';
+
+    /* 日期一律用「本地日历日」的三个数字算，不走 Date.parse('YYYY-MM-DD')：
+       后者按 UTC 解析，东八区上会整体退一天。 */
+    const pad2 = (value) => String(value).padStart(2, '0');
+    const DEFAULT_TYPE = 'day';
+    const TYPE_DEFAULTS = {
+      day: 'YYYY-MM-DD',
+      week: 'YYYY-[W]WW',
+      month: 'YYYY-MM',
+      year: 'YYYY',
+    };
+    const TYPE_PLACEHOLDERS = {
+      day: '请选择日期',
+      week: '请选择周',
+      month: '请选择月份',
+      year: '请选择年份',
+    };
+    const isoOf = (date) => date.y + '-' + pad2(date.m) + '-' + pad2(date.d);
+
+    const isRealDate = (date) => {
+      if (
+        !date ||
+        !Number.isInteger(date.y) ||
+        !Number.isInteger(date.m) ||
+        !Number.isInteger(date.d)
+      ) {
+        return false;
+      }
+      /* 用 2000 年做底座再 setFullYear：Date 会把 0–99 当 1900–1999 */
+      const probe = new Date(2000, date.m - 1, date.d);
+      probe.setFullYear(date.y);
+      return (
+        probe.getFullYear() === date.y &&
+        probe.getMonth() === date.m - 1 &&
+        probe.getDate() === date.d
+      );
+    };
+
+    const parseIso = (raw) => {
+      const text = String(raw ?? '').trim();
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+      if (!match) return null;
+      const date = { y: Number(match[1]), m: Number(match[2]), d: Number(match[3]) };
+      return isRealDate(date) ? date : null;
+    };
+
+    const todayDate = () => {
+      const now = new Date();
+      return { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+    };
+
+    const addDays = (date, delta) => {
+      const next = new Date(date.y, date.m - 1, date.d + delta);
+      return { y: next.getFullYear(), m: next.getMonth() + 1, d: next.getDate() };
+    };
+
+    const monthLength = (year, month) => new Date(year, month, 0).getDate();
+
+    const addMonths = (date, delta) => {
+      const total = date.y * 12 + (date.m - 1) + delta;
+      const y = Math.floor(total / 12);
+      const m = (total % 12) + 1;
+      return { y, m, d: Math.min(date.d, monthLength(y, m)) };
+    };
+
+    const addYears = (date, delta) => {
+      const y = date.y + delta;
+      return { y, m: date.m, d: Math.min(date.d, monthLength(y, date.m)) };
+    };
+
+    /** 周一 = 0 … 周日 = 6（中国常见的月历排法） */
+    const weekdayIndex = (date) => (new Date(date.y, date.m - 1, date.d).getDay() + 6) % 7;
+
+    const utcDay = (date) => Date.UTC(date.y, date.m - 1, date.d);
+    const dayDiff = (a, b) => Math.round((utcDay(a) - utcDay(b)) / 86400000);
+
+    /** 该日期所属的 ISO 周（周一为一周开始）：{ weekYear, week } */
+    const isoWeekInfo = (date) => {
+      const thursday = addDays(date, 3 - weekdayIndex(date));
+      const weekYear = thursday.y;
+      const jan4 = { y: weekYear, m: 1, d: 4 };
+      const week1 = addDays(jan4, -weekdayIndex(jan4));
+      return { weekYear, week: Math.floor(dayDiff(thursday, week1) / 7) + 1 };
+    };
+
+    const mondayOfWeek = (weekYear, week) => {
+      const jan4 = { y: weekYear, m: 1, d: 4 };
+      return addDays(addDays(jan4, -weekdayIndex(jan4)), (week - 1) * 7);
+    };
+
+    const keyOfDate = (date, type) => {
+      if (type === 'week') {
+        const info = isoWeekInfo(date);
+        return info.weekYear + '-W' + pad2(info.week);
+      }
+      if (type === 'month') return date.y + '-' + pad2(date.m);
+      if (type === 'year') return String(date.y);
+      return isoOf(date);
+    };
+
+    /** canonical key → 它覆盖的日期区间（周 / 月 / 年都有起止） */
+    const periodOfKey = (key, type) => {
+      const text = String(key || '');
+      if (type === 'month') {
+        const match = /^(\d{4})-(\d{2})$/.exec(text);
+        if (!match) return null;
+        const y = Number(match[1]);
+        const m = Number(match[2]);
+        if (m < 1 || m > 12) return null;
+        return { start: { y, m, d: 1 }, end: { y, m, d: monthLength(y, m) } };
+      }
+      if (type === 'year') {
+        const match = /^(\d{4})$/.exec(text);
+        if (!match) return null;
+        const y = Number(match[1]);
+        return { start: { y, m: 1, d: 1 }, end: { y, m: 12, d: 31 } };
+      }
+      if (type === 'week') {
+        const match = /^(\d{4})-W(\d{2})$/.exec(text);
+        if (!match) return null;
+        const weekYear = Number(match[1]);
+        const week = Number(match[2]);
+        if (week < 1 || week > 53) return null;
+        const start = mondayOfWeek(weekYear, week);
+        const info = isoWeekInfo(start);
+        if (info.weekYear !== weekYear || info.week !== week) return null;
+        return { start, end: addDays(start, 6) };
+      }
+      const date = parseIso(text);
+      return date ? { start: date, end: date } : null;
+    };
+
+    const escapeRegExp = (text) => text.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&');
+
+    /**
+     * 格式 → 解析正则 + 输出 token。按 type 校验必需字段：
+     * day 要 年/月/日、week 要 年/周、month 要 年/月、year 只要年。
+     * 方括号里是字面量（如 YYYY-[W]WW 里的 W）。
+     */
+    const compileFormat = (pattern, type) => {
+      const text = String(pattern || '');
+      if (!text) return null;
+      const requiredByType = {
+        day: ['year', 'month', 'day'],
+        week: ['year', 'week'],
+        month: ['year', 'month'],
+        year: ['year'],
+      };
+      const required = requiredByType[type] || requiredByType.day;
+      const allowed = new Set(required);
+      const parts = [];
+      let last = 0;
+      for (const match of text.matchAll(/\[([^\]]*)\]|YYYY|YY|WW|W|MM|M|DD|D/g)) {
+        if (match.index > last)
+          parts.push({ kind: 'literal', text: text.slice(last, match.index) });
+        if (match[1] !== undefined) parts.push({ kind: 'literal', text: match[1] });
+        else parts.push({ kind: 'token', token: match[0] });
+        last = match.index + match[0].length;
+      }
+      if (last < text.length) parts.push({ kind: 'literal', text: text.slice(last) });
+
+      let source = '^';
+      const order = [];
+      const seen = { year: 0, month: 0, day: 0, week: 0 };
+      for (const part of parts) {
+        if (part.kind === 'literal') {
+          source += escapeRegExp(part.text);
+          continue;
+        }
+        switch (part.token) {
+          case 'YYYY':
+            source += '(\\d{4})';
+            order.push({ field: 'year', twoDigit: false });
+            seen.year += 1;
+            break;
+          case 'YY':
+            source += '(\\d{2})';
+            order.push({ field: 'year', twoDigit: true });
+            seen.year += 1;
+            break;
+          case 'MM':
+            source += '(\\d{2})';
+            order.push({ field: 'month' });
+            seen.month += 1;
+            break;
+          case 'M':
+            source += '(\\d{1,2})';
+            order.push({ field: 'month' });
+            seen.month += 1;
+            break;
+          case 'DD':
+            source += '(\\d{2})';
+            order.push({ field: 'day' });
+            seen.day += 1;
+            break;
+          case 'D':
+            source += '(\\d{1,2})';
+            order.push({ field: 'day' });
+            seen.day += 1;
+            break;
+          case 'WW':
+            source += '(\\d{2})';
+            order.push({ field: 'week' });
+            seen.week += 1;
+            break;
+          default:
+            source += '(\\d{1,2})';
+            order.push({ field: 'week' });
+            seen.week += 1;
+            break;
+        }
+      }
+      source += '$';
+      if (!required.every((field) => seen[field] === 1)) return null;
+      for (const field of Object.keys(seen)) {
+        if (!allowed.has(field) && seen[field] > 0) return null;
+      }
+      return { parts, regex: new RegExp(source), order };
+    };
+
+    const FORMAT_CACHE = new Map();
+    const FORMAT_WARNED = new Set();
+    const compiledFormat = (pattern, type) => {
+      const key = type + '|' + String(pattern || '');
+      if (FORMAT_CACHE.has(key)) return FORMAT_CACHE.get(key);
+      const own = compileFormat(pattern, type);
+      const fallback = own || compileFormat(TYPE_DEFAULTS[type] || TYPE_DEFAULTS.day, type);
+      if (!own && pattern && !FORMAT_WARNED.has(key)) {
+        FORMAT_WARNED.add(key);
+        console.warn(
+          '[mosaic] mc-date-picker 的日期格式无效：' +
+            pattern +
+            '（type=' +
+            type +
+            '，已回退默认格式）',
+        );
+      }
+      FORMAT_CACHE.set(key, fallback);
+      return fallback;
+    };
+
+    const formatKey = (key, pattern, type) => {
+      const period = periodOfKey(key, type);
+      if (!period) return '';
+      const date = period.start;
+      const info = type === 'week' ? isoWeekInfo(date) : null;
+      const compiled = compiledFormat(pattern, type);
+      if (!compiled) return '';
+      let out = '';
+      for (const part of compiled.parts) {
+        if (part.kind === 'literal') {
+          out += part.text;
+          continue;
+        }
+        switch (part.token) {
+          case 'YYYY':
+            out += String(info ? info.weekYear : date.y).padStart(4, '0');
+            break;
+          case 'YY':
+            out += pad2((info ? info.weekYear : date.y) % 100);
+            break;
+          case 'MM':
+            out += pad2(date.m);
+            break;
+          case 'M':
+            out += String(date.m);
+            break;
+          case 'DD':
+            out += pad2(date.d);
+            break;
+          case 'D':
+            out += String(date.d);
+            break;
+          case 'WW':
+            out += pad2(info ? info.week : 0);
+            break;
+          default:
+            out += String(info ? info.week : 0);
+            break;
+        }
+      }
+      return out;
+    };
+
+    const parseKey = (raw, pattern, type) => {
+      const text = String(raw ?? '').trim();
+      if (!text) return null;
+      const compiled = compiledFormat(pattern, type);
+      const match = compiled.regex.exec(text);
+      if (!match) return null;
+      const fields = { year: 0, month: 0, day: 0, week: 0 };
+      compiled.order.forEach((item, index) => {
+        const value = Number(match[index + 1]);
+        if (item.field === 'year') {
+          fields.year = item.twoDigit ? (value <= 69 ? 2000 + value : 1900 + value) : value;
+        } else {
+          fields[item.field] = value;
+        }
+      });
+      if (type === 'day') {
+        const date = { y: fields.year, m: fields.month, d: fields.day };
+        return isRealDate(date) ? isoOf(date) : null;
+      }
+      if (type === 'week') {
+        if (fields.week < 1 || fields.week > 53) return null;
+        const monday = mondayOfWeek(fields.year, fields.week);
+        const info = isoWeekInfo(monday);
+        if (info.weekYear !== fields.year || info.week !== fields.week) return null;
+        return fields.year + '-W' + pad2(fields.week);
+      }
+      if (type === 'month') {
+        if (fields.month < 1 || fields.month > 12) return null;
+        return fields.year + '-' + pad2(fields.month);
+      }
+      return String(fields.year);
+    };
+
+    export default async () => ({
+      tag: 'mc-date-picker',
+
+      attrs: {
+        /* 绑定通道：ofa 原生的 :value（单向）/ sync:value（双向）落在这个属性上（同 mc-input）。
+           默认 null：ofa 不会凭空写一个空属性，"属性在不在"才可靠（P32）；不给就是非受控。 */
+        value: null,
+        /* 初始值在 HTML 属性 default-value（非受控）；运行时值走宿主 DOM property value */
+        defaultValue: '',
+        /* 选择粒度与选择模式：type = day / week / month / year；multiple / range 互斥（range 优先） */
+        type: 'day',
+        multiple: null,
+        range: null,
+        /* 格式化三段：进（解析外部字符串）→ 组件中（触发框显示）→ 出（事件 / property / 回写属性） */
+        inputFormat: '',
+        format: '',
+        outputFormat: '',
+        /* 可选范围：按 input-format 解析，两端都含；空 = 不限 */
+        min: '',
+        max: '',
+        /* 空 = 按 type 取默认文案 */
+        placeholder: '',
+        /* 布尔属性默认值必须是 null（P1）：写 false 会让裸属性 <mc-date-picker clearable> 失效 */
+        clearable: null,
+        disabled: null,
+        readonly: null,
+        invalid: null,
+        size: 'md',
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._control = root.querySelector('.mc-control');
+        this._valueEl = root.querySelector('.mc-value');
+        this._panel = root.querySelector('.mc-panel');
+        this._title = root.querySelector('.mc-title');
+        this._grid = root.querySelector('.mc-grid');
+        this._weekdays = root.querySelector('.mc-weekdays');
+        this._prevBtn = root.querySelectorAll('.mc-nav')[0] ?? null;
+        this._nextBtn = root.querySelectorAll('.mc-nav')[1] ?? null;
+
+        this._selected = [];
+        this._pending = null;
+        this._committed = [];
+        this._active = todayDate();
+        this._view = { y: this._active.y, m: this._active.m };
+        this._openState = false;
+        this._live = false;
+        this._defaultApplied = false;
+        this._touched = false;
+        this._pendingReflect = false;
+        this._reflected = null;
+        this._returnFocus = false;
+        this._seen = new Set();
+
+        /* 运行时值走宿主 DOM property（规范 1.4 / P18）：读 = 当前值，写 = 直接改选中态 */
+        Object.defineProperty(this.ele, 'value', {
+          configurable: true,
+          get: () => this.readValue(),
+          set: (next) => this.writeValue(next),
+        });
+
+        /* 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle；显式显示 / 收起那两行再包一层 run() */
+        this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+        this._popoverOk = typeof this._panel?.showPopover === 'function';
+      },
+
+      attached() {
+        this._live = true;
+        /* 多选 / 范围的拼接会被固定宽度裁掉；提示本身住在 shadow 里的 top layer */
+        this._overflowTip = attachOverflowTip(this.ele, this._valueEl);
+
+        /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
+        this._onDocPointerDown = (event) => {
+          if (!this.isOpen()) return;
+          if (event.composedPath().includes(this.ele)) return;
+          this.closePanel();
+        };
+        document.addEventListener('pointerdown', this._onDocPointerDown, true);
+
+        /* 焦点离开整个宿主（含触发框 / ×）就收起面板；面板里的按钮不进 Tab 序列，所以这是 Tab 退出的唯一出口 */
+        this._onHostFocusOut = (event) => this.onFocusOut(event);
+        this.ele.addEventListener('focusout', this._onHostFocusOut);
+
+        this.applyDefaultValue();
+        this.syncDisplay();
+        if (this._pendingReflect) {
+          this._pendingReflect = false;
+          this.reflectBoundValue();
+        }
+      },
+
+      detached() {
+        document.removeEventListener('pointerdown', this._onDocPointerDown, true);
+        this.ele.removeEventListener('focusout', this._onHostFocusOut);
+        this._overflowTip?.dispose();
+        this._overflowTip = null;
+        this._scrollGuard?.dispose();
+        if (this.isOpen()) this._panel.hidePopover();
+        this._live = false;
+      },
+
+      watch: {
+        /* ⚠️ ofa 初始化会把每条 watch 空跑一遍（P5），那次不碰宿主属性（P31） */
+        value() {
+          if (this.skipInit('value')) return;
+          const raw = this.ele.getAttribute('value');
+          if (raw === null) return;
+          if (this._reflected !== null && raw === this._reflected) {
+            this._reflected = null;
+            return;
+          }
+          this._reflected = null;
+          this._touched = true;
+          this.applyValue(raw);
+        },
+        defaultValue() {
+          if (this.skipInit('defaultValue')) return;
+          if (this._touched) return;
+          this.applyValue(this.ele.getAttribute('default-value') ?? '');
+        },
+        type() {
+          if (this.skipInit('type')) return;
+          this._touched = false;
+          this._defaultApplied = false;
+          this._selected = [];
+          this._pending = null;
+          this._committed = [];
+          this.applyDefaultValue();
+          this.syncDisplay();
+          if (this.isOpen()) {
+            this.syncActiveFromSelection();
+            this.renderPanel();
+          }
+        },
+        multiple() {
+          if (this.skipInit('multiple')) return;
+          this.applyModeChange();
+        },
+        range() {
+          if (this.skipInit('range')) return;
+          this.applyModeChange();
+        },
+        inputFormat() {
+          if (this.skipInit('inputFormat')) return;
+          /* 解读方式变了：把当前 value 属性按新格式再读一次（属性本身没变，变的是格式） */
+          const raw = this.ele.getAttribute('value');
+          if (raw !== null && raw !== '') {
+            this._touched = true;
+            this.applyValue(raw);
+          }
+        },
+        format() {
+          if (this.skipInit('format')) return;
+          this.syncDisplay();
+        },
+        outputFormat() {
+          if (this.skipInit('outputFormat')) return;
+          if (this._selected.length) this.reflectBoundValue();
+        },
+        min() {
+          if (this.skipInit('min')) return;
+          if (this.isOpen()) this.renderPanel();
+        },
+        max() {
+          if (this.skipInit('max')) return;
+          if (this.isOpen()) this.renderPanel();
+        },
+        placeholder() {
+          if (this.skipInit('placeholder')) return;
+          this.syncDisplay();
+        },
+        clearable() {
+          if (this.skipInit('clearable')) return;
+          this.syncDisplay();
+        },
+        disabled() {
+          if (this.skipInit('disabled')) return;
+          this.syncDisplay();
+          if (this.ele.hasAttribute('disabled') && this.isOpen()) this.closePanel();
+        },
+        readonly() {
+          if (this.skipInit('readonly')) return;
+          this.syncDisplay();
+          if (this.ele.hasAttribute('readonly') && this.isOpen()) this.closePanel();
+        },
+        invalid() {
+          if (this.skipInit('invalid')) return;
+          this.syncDisplay();
+        },
+      },
+
+      proto: {
+        /** 每条 watch 的首次（构造期）触发都要跳过，但每条各跳一次（P5） */
+        skipInit(key) {
+          if (this._seen.has(key)) return false;
+          this._seen.add(key);
+          return true;
+        },
+
+        currentType() {
+          const raw = this.ele.getAttribute('type') || DEFAULT_TYPE;
+          return Object.prototype.hasOwnProperty.call(TYPE_DEFAULTS, raw) ? raw : DEFAULT_TYPE;
+        },
+
+        currentMode() {
+          if (this.ele.hasAttribute('range')) return 'range';
+          if (this.ele.hasAttribute('multiple')) return 'multiple';
+          return 'single';
+        },
+
+        patternFor(name) {
+          return this.ele.getAttribute(name) || TYPE_DEFAULTS[this.currentType()];
+        },
+
+        /* ---------- 值读写 ---------- */
+
+        readValue() {
+          const type = this.currentType();
+          const pattern = this.patternFor('output-format');
+          const list = this._selected.map((key) => formatKey(key, pattern, type)).filter(Boolean);
+          return this.currentMode() === 'single' ? (list[0] ?? '') : list;
+        },
+
+        readAttributeValue() {
+          const value = this.readValue();
+          return Array.isArray(value) ? value.join(',') : value;
+        },
+
+        writeValue(next) {
+          this._touched = true;
+          const text = Array.isArray(next)
+            ? next.map((item) => String(item ?? '')).join(',')
+            : String(next ?? '');
+          this.applyValue(text);
+          if (this._live) this.reflectBoundValue();
+          else this._pendingReflect = true;
+        },
+
+        /** 进组件：按 input → output → 该 type 的 canonical 格式依次尝试，先命中的赢 */
+        parseIncoming(raw) {
+          const text = String(raw ?? '').trim();
+          if (text === '') return null;
+          const type = this.currentType();
+          const seen = {};
+          for (const pattern of [
+            this.patternFor('input-format'),
+            this.patternFor('output-format'),
+            TYPE_DEFAULTS[type],
+          ]) {
+            if (seen[pattern]) continue;
+            seen[pattern] = true;
+            const key = parseKey(text, pattern, type);
+            if (key) return key;
+          }
+          return null;
+        },
+
+        parseValueList(raw) {
+          const text = String(raw ?? '').trim();
+          if (text === '') return [];
+          const mode = this.currentMode();
+          const parts = mode === 'single' ? [text] : text.split(',');
+          const keys = parts.map((part) => this.parseIncoming(part)).filter(Boolean);
+          if (mode === 'single') return keys.slice(0, 1);
+          if (mode === 'range') return keys.slice(0, 2);
+          return keys;
+        },
+
+        /** 初值 / 绑定值 / property 写值都走这里：只接受合法 key，非法一律当空 */
+        applyValue(raw) {
+          const keys = this.parseValueList(raw);
+          const mode = this.currentMode();
+          this._selected = keys;
+          if (mode === 'range' && keys.length === 1) {
+            this._pending = keys[0];
+            this._committed = [];
+          } else {
+            this._pending = null;
+            this._committed = keys.slice();
+          }
+          this.syncActiveFromSelection();
+          this.syncDisplay();
+          if (this.isOpen()) this.renderPanel();
+        },
+
+        applyDefaultValue() {
+          if (this._defaultApplied || !this._live) return;
+          this._defaultApplied = true;
+          const bound = this.ele.getAttribute('value');
+          if (bound !== null) {
+            this._touched = true;
+            this.applyValue(bound);
+            return;
+          }
+          if (this._touched) return;
+          const initial = this.ele.getAttribute('default-value');
+          if (initial !== null && initial !== '') this.applyValue(initial);
+        },
+
+        applyModeChange() {
+          const mode = this.currentMode();
+          this._pending = null;
+          if (mode === 'single') this._selected = this._selected.slice(0, 1);
+          else if (mode === 'range') this._selected = this._selected.slice(0, 2);
+          if (mode === 'range' && this._selected.length === 1) {
+            this._pending = this._selected[0];
+            this._committed = [];
+          } else {
+            this._committed = this._selected.slice();
+          }
+          this.syncDisplay();
+          this.reflectBoundValue();
+          if (this.isOpen()) this.renderPanel();
+        },
+
+        /** 当前选择 → 键盘高亮与视图；没有选择就看今天 */
+        syncActiveFromSelection() {
+          const type = this.currentType();
+          const key = this._pending || this._selected[0] || '';
+          const period = key ? periodOfKey(key, type) : null;
+          const base = period ? period.start : todayDate();
+          if (type === 'day' || type === 'week') {
+            this._active = { y: base.y, m: base.m, d: base.d };
+            this._view = { y: base.y, m: base.m };
+          } else if (type === 'month') {
+            this._active = { y: base.y, m: base.m, d: 1 };
+            this._view = { y: base.y, m: 1 };
+          } else {
+            this._active = { y: base.y, m: 1, d: 1 };
+            this._view = { y: base.y, m: 1 };
+          }
+        },
+
+        /** 把当前选择写回 value 属性，让 ofa 的 sync:value 观察得到 */
+        reflectBoundValue() {
+          if (!this._live) return;
+          const text = this.readAttributeValue();
+          if (this.ele.getAttribute('value') === text) return;
+          this._reflected = text;
+          this.ele.setAttribute('value', text);
+        },
+
+        /* ---------- 显示 ---------- */
+
+        placeholderText() {
+          const own = this.ele.getAttribute('placeholder');
+          if (own) return own;
+          return TYPE_PLACEHOLDERS[this.currentType()] || TYPE_PLACEHOLDERS.day;
+        },
+
+        normalizeBoolAttrs() {
+          if (!this._live) return;
+          for (const name of ['clearable', 'disabled', 'readonly', 'invalid']) {
+            const raw = this.ele.getAttribute(name);
+            if (raw === null || raw === '') continue;
+            if (raw === 'false') this.ele.removeAttribute(name);
+            else this.ele.setAttribute(name, '');
+          }
+        },
+
+        syncDisplay() {
+          if (!this._live) return;
+          this.normalizeBoolAttrs();
+          const filled = this._selected.length > 0;
+          this.mirror('data-filled', filled);
+          this.mirror('data-empty', !filled);
+          if (!this._valueEl) return;
+          const type = this.currentType();
+          const mode = this.currentMode();
+          const pattern = this.patternFor('format');
+          const list = this._selected.map((key) => formatKey(key, pattern, type));
+          let text = '';
+          if (mode === 'range') {
+            if (list.length > 1) text = list[0] + ' ~ ' + list[1];
+            else if (list.length === 1) text = list[0] + ' ~ …';
+          } else {
+            text = list.join(', ');
+          }
+          this._valueEl.textContent = filled ? text : this.placeholderText();
+          this._overflowTip?.check();
+        },
+
+        mirror(name, on) {
+          if (!this._live) return;
+          if (on === this.ele.hasAttribute(name)) return;
+          if (on) this.ele.setAttribute(name, '');
+          else this.ele.removeAttribute(name);
+        },
+
+        /* ---------- 范围 / 禁用 ---------- */
+
+        rangeKey(name) {
+          const key = this.parseIncoming(this.ele.getAttribute(name));
+          return key || '';
+        },
+
+        isKeyDisabled(key) {
+          const min = this.rangeKey('min');
+          const max = this.rangeKey('max');
+          return (min !== '' && key < min) || (max !== '' && key > max);
+        },
+
+        rangeBounds() {
+          if (this.currentMode() !== 'range') return null;
+          if (this._selected.length === 2) return [this._selected[0], this._selected[1]];
+          if (this._pending) return [this._pending, null];
+          return null;
+        },
+
+        keyOfActive() {
+          const type = this.currentType();
+          if (type === 'week') return keyOfDate(this._active, 'week');
+          if (type === 'month') return this._active.y + '-' + pad2(this._active.m);
+          if (type === 'year') return String(this._active.y);
+          return isoOf(this._active);
+        },
+
+        /* ---------- 面板渲染 ---------- */
+
+        renderPanel() {
+          if (!this._grid) return;
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') this.renderMonthPanel(type);
+          else if (type === 'month') this.renderCoarsePanel('month');
+          else this.renderCoarsePanel('year');
+        },
+
+        cellState(key) {
+          const selected = this._selected.indexOf(key) >= 0;
+          const bounds = this.rangeBounds();
+          const inRange = !!(bounds && bounds[1] && key > bounds[0] && key < bounds[1]);
+          return { selected, inRange, active: key === this.keyOfActive() };
+        },
+
+        renderMonthPanel(type) {
+          const view = this._view;
+          if (this._weekdays) this._weekdays.hidden = false;
+          if (this._title) this._title.textContent = view.y + ' 年 ' + view.m + ' 月';
+          if (this._prevBtn) this._prevBtn.title = '上个月';
+          if (this._nextBtn) this._nextBtn.title = '下个月';
+          const first = { y: view.y, m: view.m, d: 1 };
+          const start = addDays(first, -weekdayIndex(first));
+          const min = this.rangeKey('min');
+          const max = this.rangeKey('max');
+          const today = isoOf(todayDate());
+
+          this._grid.className = 'mc-grid';
+          this._grid.textContent = '';
+          for (let index = 0; index < 42; index += 1) {
+            const date = addDays(start, index);
+            const iso = isoOf(date);
+            const itemKey = type === 'week' ? keyOfDate(date, 'week') : iso;
+            const state = this.cellState(itemKey);
+            const day = document.createElement('button');
+            day.type = 'button';
+            day.className = 'mc-day';
+            day.tabIndex = -1;
+            day.setAttribute('part', 'day');
+            day.dataset.date = iso;
+            day.dataset.key = itemKey;
+            if (type === 'week') day.dataset.week = itemKey;
+            day.textContent = String(date.d);
+            if (date.m !== view.m) day.dataset.outside = '';
+            if (iso === today) day.dataset.today = '';
+            if (state.selected) day.dataset.selected = '';
+            if (state.inRange) day.dataset.inRange = '';
+            if (state.active) day.dataset.active = '';
+            if ((min !== '' && itemKey < min) || (max !== '' && itemKey > max)) {
+              day.dataset.disabled = 'true';
+            }
+            this._grid.append(day);
+          }
+        },
+
+        renderCoarsePanel(level) {
+          const view = this._view;
+          if (this._weekdays) this._weekdays.hidden = true;
+          const min = this.rangeKey('min');
+          const max = this.rangeKey('max');
+          this._grid.className = 'mc-grid mc-grid--coarse';
+          this._grid.textContent = '';
+          const items = [];
+          if (level === 'month') {
+            if (this._title) this._title.textContent = view.y + ' 年';
+            if (this._prevBtn) this._prevBtn.title = '上一年';
+            if (this._nextBtn) this._nextBtn.title = '下一年';
+            for (let month = 1; month <= 12; month += 1) {
+              items.push({ key: view.y + '-' + pad2(month), label: month + ' 月' });
+            }
+          } else {
+            const start = Math.floor(view.y / 10) * 10;
+            if (this._title) this._title.textContent = start + ' – ' + (start + 11) + ' 年';
+            if (this._prevBtn) this._prevBtn.title = '上一页';
+            if (this._nextBtn) this._nextBtn.title = '下一页';
+            for (let year = start; year < start + 12; year += 1) {
+              items.push({ key: String(year), label: String(year) });
+            }
+          }
+          for (const item of items) {
+            const state = this.cellState(item.key);
+            const cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'mc-cell';
+            cell.tabIndex = -1;
+            cell.setAttribute('part', 'cell');
+            cell.dataset.key = item.key;
+            cell.dataset.value = item.key;
+            cell.textContent = item.label;
+            if (state.selected) cell.dataset.selected = '';
+            if (state.inRange) cell.dataset.inRange = '';
+            if (state.active) cell.dataset.active = '';
+            if ((min !== '' && item.key < min) || (max !== '' && item.key > max)) {
+              cell.dataset.disabled = 'true';
+            }
+            this._grid.append(cell);
+          }
+        },
+
+        setActive(date) {
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') {
+            this._active = { y: date.y, m: date.m, d: date.d };
+            this._view = { y: date.y, m: date.m };
+          } else if (type === 'month') {
+            this._active = { y: date.y, m: date.m, d: 1 };
+            this._view = { y: date.y, m: 1 };
+          } else {
+            this._active = { y: date.y, m: 1, d: 1 };
+            this._view = { y: date.y, m: 1 };
+          }
+          this.renderPanel();
+        },
+
+        moveActive(delta) {
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') this.setActive(addDays(this._active, delta));
+          else if (type === 'month') this.setActive(addMonths(this._active, delta));
+          else this.setActive(addYears(this._active, delta));
+        },
+
+        movePage(direction, large) {
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') {
+            this.setActive(addMonths(this._active, direction * (large ? 12 : 1)));
+          } else if (type === 'month') {
+            this.setActive(addMonths(this._active, direction * (large ? 120 : 12)));
+          } else {
+            this.setActive(addYears(this._active, direction * (large ? 120 : 12)));
+          }
+        },
+
+        moveEdge(edge) {
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') {
+            const offset = weekdayIndex(this._active);
+            this.setActive(addDays(this._active, edge === 'start' ? -offset : 6 - offset));
+            return;
+          }
+          if (type === 'month') {
+            this.setActive({ y: this._active.y, m: edge === 'start' ? 1 : 12, d: 1 });
+            return;
+          }
+          const start = Math.floor(this._active.y / 10) * 10;
+          this.setActive({ y: edge === 'start' ? start : start + 11, m: 1, d: 1 });
+        },
+
+        navigate(direction) {
+          const type = this.currentType();
+          if (type === 'day' || type === 'week') this.setActive(addMonths(this._active, direction));
+          else if (type === 'month') this.setActive(addMonths(this._active, direction * 12));
+          else this.setActive(addYears(this._active, direction * 12));
+        },
+
+        /* ---------- 开合 ---------- */
+
+        isOpen() {
+          return this._panel?.matches(':popover-open') ?? false;
+        },
+
+        openPanel() {
+          if (!this._popoverOk || this.isOpen()) return;
+          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+          this._overflowTip?.hide();
+          this.syncActiveFromSelection();
+          if (this.currentMode() === 'range' && this._selected.length === 1) {
+            this._pending = this._selected[0];
+            this._committed = [];
+          } else {
+            this._pending = null;
+            this._committed = this._selected.slice();
+          }
+          this.renderPanel();
+          /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
+          this._scrollGuard.run(() => this._panel.showPopover());
+          this._control.focus({ preventScroll: true });
+          this.syncOpenUI(true);
+        },
+
+        closePanel() {
+          if (!this.isOpen()) return;
+          this._scrollGuard.run(() => this._panel.hidePopover());
+          if (this._pending !== null) {
+            this._selected = this._committed.slice();
+            this._pending = null;
+            this.syncDisplay();
+          }
+          this.syncOpenUI(false);
+        },
+
+        syncOpenUI(open) {
+          const changed = this._openState !== open;
+          this._openState = open;
+          this.mirror('data-open', open);
+          if (!changed) return;
+          if (open) {
+            this.emit('open', { bubbles: true, composed: true });
+            return;
+          }
+          if (this._returnFocus) {
+            this._returnFocus = false;
+            this._control?.focus({ preventScroll: true });
+          }
+          this.emit('close', { bubbles: true, composed: true });
+        },
+
+        onNativeToggle(event) {
+          const nowOpen = event.newState === 'open';
+          if (nowOpen && !this._active) {
+            this.syncActiveFromSelection();
+            this.renderPanel();
+          }
+          this.syncOpenUI(nowOpen);
+        },
+
+        /* ---------- 选择 ---------- */
+
+        selectKey(key) {
+          if (!key || this.isKeyDisabled(key)) return;
+          const mode = this.currentMode();
+          this._touched = true;
+
+          if (mode === 'single') {
+            const changed = !(this._selected.length === 1 && this._selected[0] === key);
+            this._selected = [key];
+            this._pending = null;
+            this._committed = [key];
+            this.syncDisplay();
+            this.reflectBoundValue();
+            if (changed) this.emitChange();
+            this._returnFocus = true;
+            this.closePanel();
+            return;
+          }
+
+          if (mode === 'multiple') {
+            const index = this._selected.indexOf(key);
+            if (index >= 0) this._selected.splice(index, 1);
+            else this._selected.push(key);
+            this._committed = this._selected.slice();
+            this.syncDisplay();
+            this.reflectBoundValue();
+            this.renderPanel();
+            this.emitChange();
+            return;
+          }
+
+          if (!this._pending) {
+            this._pending = key;
+            this._selected = [key];
+            this.syncDisplay();
+            this.renderPanel();
+            return;
+          }
+
+          const start = this._pending <= key ? this._pending : key;
+          const end = this._pending <= key ? key : this._pending;
+          this._selected = [start, end];
+          this._pending = null;
+          this._committed = [start, end];
+          this.syncDisplay();
+          this.reflectBoundValue();
+          this.emitChange();
+          this._returnFocus = true;
+          this.closePanel();
+        },
+
+        emitChange() {
+          this.emit('change', {
+            data: { value: this.readValue() },
+            bubbles: true,
+            composed: true,
+          });
+        },
+
+        /* ---------- 交互 ---------- */
+
+        onControlClick() {
+          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+          if (this.isOpen()) this.closePanel();
+          else this.openPanel();
+        },
+
+        onKeyDown(event) {
+          const key = event.key;
+          if (key === 'Escape') {
+            if (this.isOpen()) {
+              event.preventDefault();
+              this._returnFocus = true;
+              this.closePanel();
+            }
+            return;
+          }
+          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+
+          if (!this.isOpen()) {
+            if (
+              key === 'ArrowDown' ||
+              key === 'ArrowUp' ||
+              key === 'ArrowLeft' ||
+              key === 'ArrowRight' ||
+              key === 'PageUp' ||
+              key === 'PageDown' ||
+              key === 'Home' ||
+              key === 'End'
+            ) {
+              event.preventDefault();
+              this.openPanel();
+              if (key === 'PageUp') this.movePage(-1, event.shiftKey);
+              else if (key === 'PageDown') this.movePage(1, event.shiftKey);
+              else if (key === 'Home') this.moveEdge('start');
+              else if (key === 'End') this.moveEdge('end');
+            }
+            return;
+          }
+
+          const type = this.currentType();
+          const isDay = type === 'day' || type === 'week';
+          switch (key) {
+            case 'ArrowLeft':
+              event.preventDefault();
+              this.moveActive(-1);
+              break;
+            case 'ArrowRight':
+              event.preventDefault();
+              this.moveActive(1);
+              break;
+            case 'ArrowUp':
+              event.preventDefault();
+              this.moveActive(isDay ? -7 : -3);
+              break;
+            case 'ArrowDown':
+              event.preventDefault();
+              this.moveActive(isDay ? 7 : 3);
+              break;
+            case 'PageUp':
+              event.preventDefault();
+              this.movePage(-1, event.shiftKey);
+              break;
+            case 'PageDown':
+              event.preventDefault();
+              this.movePage(1, event.shiftKey);
+              break;
+            case 'Home':
+              event.preventDefault();
+              this.moveEdge('start');
+              break;
+            case 'End':
+              event.preventDefault();
+              this.moveEdge('end');
+              break;
+            case 'Enter':
+            case ' ':
+            case 'Spacebar':
+              event.preventDefault();
+              this.selectKey(this.keyOfActive());
+              break;
+            default:
+              break;
+          }
+        },
+
+        onPanelClick(event) {
+          const cell = event.target?.closest?.('.mc-day, .mc-cell');
+          if (!cell || cell.getAttribute('data-disabled') === 'true') return;
+          const key = cell.dataset.key;
+          if (key) this.selectKey(key);
+        },
+
+        onPanelMouseDown(event) {
+          event.preventDefault();
+        },
+
+        onFocusOut(event) {
+          if (!this.isOpen()) return;
+          const next = event.relatedTarget;
+          if (!next || this.ele.contains(next)) return;
+          this.closePanel();
+        },
+
+        onPanelKeyDown(event) {
+          if (event.key !== 'Escape' || !this.isOpen()) return;
+          event.preventDefault();
+          this._returnFocus = true;
+          this.closePanel();
+        },
+
+        onPrevMonth() {
+          this.navigate(-1);
+        },
+
+        onNextMonth() {
+          this.navigate(1);
+        },
+
+        onClear() {
+          if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+          if (this._selected.length === 0) return;
+          this._touched = true;
+          this._selected = [];
+          this._pending = null;
+          this._committed = [];
+          this.syncDisplay();
+          this.reflectBoundValue();
+          this.emit('clear', { bubbles: true, composed: true });
+          this.emitChange();
+          this._control.focus({ preventScroll: true });
+          if (this.isOpen()) this.renderPanel();
+        },
+      },
+    });
+  </script>
+</template>

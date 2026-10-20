@@ -1,0 +1,42 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-date-picker
+      name="day"
+      clearable
+      default-value="2026-10-19"
+      on:change="onChange($event)"
+      on:clear="onClear()"
+      on:open="onOpen()"
+      on:close="onClose()"></mc-date-picker>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-date-picker-events',
+
+      data: {
+        last: '（还没交互）',
+      },
+
+      proto: {
+        onChange(event) {
+          this.last = `change → ${JSON.stringify(event.data.value)}`;
+        },
+        onClear() {
+          this.last = 'clear';
+        },
+        onOpen() {
+          this.last = 'open';
+        },
+        onClose() {
+          this.last = 'close';
+        },
+      },
+    });
+  </script>
+</template>

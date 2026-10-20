@@ -3,12 +3,15 @@
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
-    /* 1. 宿主盒模型 + 色槽默认值。高度写在宿主上，style="height:…" 直接压得住 */
+    /* 1. 宿主盒模型 + 色槽默认值。高度 / 宽度写在宿主上，style="height:…" / "width:…" 直接压得住 */
     :host {
       display: inline-flex;
       position: relative; /* .mc-clear 的包含块（P21） */
       box-sizing: border-box;
       height: var(--mc-control-h-md, var(--mc-def-control-h-md));
+      /* 固定宽度：占位 / 选中文案 / 多选拼接 / clearable 的 × 都不应该把盒子撑大或缩回去 */
+      width: var(--mc-select-control-width);
+      max-width: 100%;
       vertical-align: middle;
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-text-sm, var(--mc-def-text-sm));
@@ -20,6 +23,7 @@
       --mc-select-control-border: var(--mc-color-border, var(--mc-def-color-border));
       --mc-select-control-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       --mc-select-control-pad-x: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-select-control-width: 12rem;
       --mc-select-offset: var(--mc-space-2, var(--mc-def-space-2));
       --mc-select-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
       --mc-select-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
@@ -267,6 +271,8 @@
   <script>
     /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
+    import { attachOverflowTip } from '../boot/overflow-tip.js';
 
     export default async ({ load }) => {
       /* mc-option 是这个单元的另一半：先注册它，attached() 收选项时它们才已升级好（路径相对本文件） */
@@ -336,12 +342,16 @@
 
           /* 到这里构造期已结束，才允许往宿主写属性（P31） */
           this._live = true;
+          /* 长选项 / 多选拼接会把 .mc-value 裁掉；提示本身住在 shadow 里的 top layer */
+          this._overflowTip = attachOverflowTip(this.ele, this._valueEl);
           this.collectOptions();
         },
 
         detached() {
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
           this._slot?.removeEventListener('slotchange', this._onSlotChange);
+          this._overflowTip?.dispose();
+          this._overflowTip = null;
           this._scrollGuard?.dispose();
         },
 
@@ -534,6 +544,7 @@
                 ? this.placeholderText()
                 : selected.map((item) => item.label).join(', ');
             }
+            this._overflowTip?.check();
           },
 
           /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
@@ -602,6 +613,7 @@
           openPanel() {
             if (!this._popoverOk || this.isOpen()) return;
             if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            this._overflowTip?.hide();
             /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
             this._scrollGuard.run(() => this._panel.showPopover());
             this._control.focus({ preventScroll: true });

@@ -1,0 +1,42 @@
+<template component>
+  <style>
+    /* 内部结构封在 shadow 里，只有标了 part 的节点能从外面改：
+       base（触发框）、panel（面板）、header（顶栏）、grid（网格）、day（日 / 周的一格）、cell（月 / 年的一格）。 */
+    #part-demo mc-date-picker::part(base) {
+      border-radius: 0;
+    }
+    #part-demo mc-date-picker::part(panel) {
+      border-radius: 0;
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+    #part-demo mc-date-picker::part(header) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      border-radius: 0;
+    }
+    #part-demo mc-date-picker::part(grid) {
+      gap: 0;
+    }
+    #part-demo mc-date-picker::part(day) {
+      border-radius: 0;
+      /* 不改 color：选中项的文字色由组件自己保证对比度，外部再覆盖会把「19」压没 */
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    #part-demo mc-date-picker::part(cell) {
+      border-radius: 0;
+      font-style: italic;
+    }
+    #part-demo mc-date-picker[data-open]::part(base) {
+      box-shadow: 0 0 0 3px rgb(var(--mc-color-primary-subtle));
+    }
+  </style>
+
+  <mc-space block wrap-items id="part-demo">
+    <mc-date-picker placeholder="改 ::part(base) / panel / header / grid / day" default-value="2026-10-19"></mc-date-picker>
+    <mc-date-picker type="month" default-value="2026-10"></mc-date-picker>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-date-picker-part' });
+  </script>
+</template>

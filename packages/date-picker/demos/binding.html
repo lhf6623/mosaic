@@ -1,0 +1,32 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-date-picker sync:value="form.day" clearable></mc-date-picker>
+    <mc-date-picker :value="form.day" placeholder="单向绑定（只读跟随）"></mc-date-picker>
+    <mc-space>
+      <mc-button size="sm" on:click="setDay()">设为 2026-10-19</mc-button>
+      <mc-button size="sm" variant="outline" on:click="clearDay()">清空</mc-button>
+    </mc-space>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    data 里的 form.day：
+    <strong>{{form.day || '（空）'}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-date-picker-binding',
+
+      data: { form: { day: '2026-10-02' } },
+
+      proto: {
+        setDay() {
+          this.form.day = '2026-10-19';
+        },
+        clearDay() {
+          this.form.day = '';
+        },
+      },
+    });
+  </script>
+</template>

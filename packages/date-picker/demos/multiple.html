@@ -1,0 +1,17 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-date-picker
+      multiple
+      format="YYYY 年 M 月 D 日"
+      default-value="2026-10-19,2026-10-21,2026-10-25"></mc-date-picker>
+    <mc-date-picker
+      type="month"
+      multiple
+      format="YYYY 年 M 月"
+      default-value="2026-01,2026-03,2026-06"></mc-date-picker>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-date-picker-multiple' });
+  </script>
+</template>

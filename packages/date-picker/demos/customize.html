@@ -1,0 +1,22 @@
+<template component>
+  <style>
+    /* ① 按实例覆盖 L3 令牌：底色 / 边框 / 圆角 */
+    #custom-demo mc-date-picker {
+      --mc-date-picker-control-bg: rgb(var(--mc-color-primary-subtle));
+      --mc-date-picker-control-border: rgb(var(--mc-color-primary));
+      --mc-date-picker-control-radius: var(--mc-radius-full);
+    }
+    /* ② 宿主钩子：面板展开时给触发框一圈高亮 */
+    #custom-demo mc-date-picker[data-open]::part(base) {
+      box-shadow: 0 0 0 3px rgb(var(--mc-color-primary-subtle));
+    }
+  </style>
+
+  <mc-space block wrap-items id="custom-demo">
+    <mc-date-picker placeholder="改宿主 style 上的令牌" default-value="2026-10-19"></mc-date-picker>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-date-picker-customize' });
+  </script>
+</template>

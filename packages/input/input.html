@@ -159,6 +159,9 @@
   </div>
 
   <script>
+    /* 输入框内容被裁掉时，hover 弹完整值（聚焦后让位给编辑；密码 / 文件不回显） */
+    import { attachOverflowTip } from '../boot/overflow-tip.js';
+
     export default async () => ({
       tag: 'mc-input',
 
@@ -205,6 +208,15 @@
 
       attached() {
         this._mounted = true;
+        this._overflowTip = attachOverflowTip(this.ele, this._input, {
+          text: () => this._input.value || this._input.placeholder || '',
+          /* 正在编辑时不打扰；密码 / 文件不把完整值弹出来 */
+          enabled: () =>
+            this._input.type !== 'password' &&
+            this._input.type !== 'file' &&
+            !this.ele.matches(':focus-within'),
+          showOnFocus: false,
+        });
         // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
         this.applyDefaultValue();
         this._defaultApplied = true;
@@ -215,6 +227,8 @@
 
       detached() {
         for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+        this._overflowTip?.dispose();
+        this._overflowTip = null;
       },
 
       watch: {
@@ -234,6 +248,10 @@
         },
         /* invalid 只走 CSS（:host([invalid])），也要收一次：绑定的 "false" 不能被当成"有" */
         invalid() {
+          this.applyState();
+        },
+        /* type 转发到内部原生 input 之后，溢出提示要按新类型重判（密码 / 文件不回显） */
+        type() {
           this.applyState();
         },
       },
@@ -299,6 +317,7 @@
           );
           this.mirror('data-has-prefix', this.slotHasContent('prefix'));
           this.mirror('data-has-suffix', this.slotHasContent('suffix'));
+          this._overflowTip?.check();
         },
 
         /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */

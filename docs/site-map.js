@@ -323,6 +323,15 @@ export const SITE = [
             summary: '下拉选择。最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
           },
           {
+            order: 65,
+            label: 'Date Picker',
+            zh: '日期选择',
+            path: 'packages/date-picker/page.html',
+            type: 'component',
+            summary:
+              '日期选择。日 / 周 / 月 / 年四种粒度 × 单选 / 多选 / 范围三种模式；三段可配格式化，min / max 限制可选范围。',
+          },
+          {
             order: 70,
             label: 'Form',
             zh: '表单',

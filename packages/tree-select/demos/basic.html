@@ -6,6 +6,11 @@
     <mc-tree-select clearable default-value="hz" placeholder="选择城市"></mc-tree-select>
     <!-- value 也能写属性：它是绑定通道，挂载时同样当初始值读 -->
     <mc-tree-select value="sz" placeholder="选择城市"></mc-tree-select>
+    <!-- 固定窄宽度：长标签被省略号裁掉，hover / focus 弹完整文案 -->
+    <mc-tree-select
+      style="width: 12rem"
+      default-value="long"
+      placeholder="长标签（hover 看完整）"></mc-tree-select>
   </mc-space>
 
   <script>
@@ -30,6 +35,7 @@
         ],
       },
       { value: 'sh', label: '上海' },
+      { value: 'long', label: '杭州市西湖区文三路 90 号（一个很长的节点名称，用来测裁切提示）' },
     ];
 
     export default async () => ({

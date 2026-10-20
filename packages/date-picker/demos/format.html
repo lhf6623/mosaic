@@ -1,0 +1,31 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-date-picker
+      input-format="DD/MM/YYYY"
+      format="YYYY 年 M 月 D 日"
+      output-format="YYYYMMDD"
+      default-value="19/10/2026"
+      on:change="onChange($event)"></mc-date-picker>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    change 输出：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-date-picker-format',
+
+      data: {
+        last: '（选一天看看 output-format）',
+      },
+
+      proto: {
+        onChange(event) {
+          this.last = event.data.value;
+        },
+      },
+    });
+  </script>
+</template>

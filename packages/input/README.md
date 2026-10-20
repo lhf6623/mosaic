@@ -74,6 +74,10 @@ expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属�
 `::slotted()` 一个属性都没写 —— 插槽内容只承载语义，颜色从 `part="prefix"` / `part="suffix"`
 那两层的容器继承下去。
 
+**被裁掉的输入值也有完整文案提示。** 原生 `input` 横向滚动，内容超出可是看不全；`scrollWidth > clientWidth`
+且**没有聚焦**时，hover 会在下方弹完整值（聚焦后让位给编辑，避免挡住光标）。密码框 / 文件框不回显，
+宿主上同步 `[data-overflow]`。提示来自共享的 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)。
+
 **没有 `color` / `variant` 维度**：输入框的语气由 `invalid` 一个布尔表达（错误色取
 `--mc-color-danger`），多一个色板只会让「校验失败」和「品牌色」两件事混在一起。
 
@@ -94,6 +98,7 @@ expando —— 真正的 IDL 是 `maxLength` / `readOnly`，所以要写进属�
 ## 相邻单元
 
 - 与 [`mc-textarea`](../textarea/) 同族：同一套值读写与事件约定，差别只在单行 / 多行。
+- 复用 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)：输入内容被裁掉时的完整值提示。
 - 后面 5 个表单组件（checkbox / radio / switch / select / progress）照这一份抄：
   `default-value` 属性 + `value` property + `input` / `change` 的 `data.value` + `data-has-*` 镜像。
 

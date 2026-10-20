@@ -1,0 +1,313 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- ⚠️ 本页用到的组件必须自己注册（外壳只注册 code / icon / collapse / menu / breadcrumb / card），漏了会被 `:not(:defined){display:none}` 连文字一起藏掉（P44）。 -->
+    <l-m src="./date-picker.html"></l-m>
+    <l-m src="../button/button.html"></l-m>
+
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <h1>
+      Date Picker
+      <code>mc-date-picker</code>
+    </h1>
+    <p class="doc-lead">
+      日期选择：日 / 周 / 月 / 年四种粒度，单选 / 多选 / 范围三种模式；值是什么样由
+      <code>type</code>
+      与模式共同决定。
+    </p>
+
+    <h2>例子</h2>
+
+    <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          点触发框或按
+          <kbd>↓</kbd>
+          打开；打开后
+          <kbd>←</kbd>
+          <kbd>→</kbd>
+          <kbd>↑</kbd>
+          <kbd>↓</kbd>
+          逐日 / 逐周移动，
+          <kbd>PageUp</kbd>
+          <kbd>PageDown</kbd>
+          换月（按住
+          <kbd>Shift</kbd>
+          换年），
+          <kbd>Enter</kbd>
+          选中、
+          <kbd>Esc</kbd>
+          关闭。面板需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
+          125+），否则不会弹。 前后补位的相邻月份日期（颜色更浅）也可以点，点了直接选中并收起。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>类型</h3>
+        <p class="doc-hint">
+          <code>type</code>
+          决定一格代表多少时间：
+          <code>day</code>
+          （默认）/
+          <code>week</code>
+          /
+          <code>month</code>
+          /
+          <code>year</code>
+          。默认值随之变成 ISO 周
+          <code>YYYY-Www</code>
+          、
+          <code>YYYY-MM</code>
+          、
+          <code>YYYY</code>
+          ；周视图里点任意一天等于选整周，月 / 年是 3 × 4 的网格。
+        </p>
+        <doc-playground src="./demos/types.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>多选</h3>
+        <p class="doc-hint">
+          加
+          <code>multiple</code>
+          ：点一格切换选中，面板不收起；
+          <code>value</code>
+          是
+          <code>string[]</code>
+          ，初始值写逗号分隔串（
+          <code>default-value="2026-10-19,2026-10-21"</code>
+          ）。面板里的选中项按点击顺序排列。拼接后的文案超过固定宽度时会被省略号裁掉，hover / focus
+          触发框会弹完整文案（宿主同时挂
+          <code>data-overflow</code>
+          ）。
+        </p>
+        <doc-playground src="./demos/multiple.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>范围</h3>
+        <p class="doc-hint">
+          加
+          <code>range</code>
+          ：第一次点击定起点（显示
+          <code>起 ~ …</code>
+          ），第二次点击提交
+          <code>[起, 止]</code>
+          并收起；中间用浅底连起来。中途
+          <kbd>Esc</kbd>
+          / 点外部会取消未完成的起点。与
+          <code>multiple</code>
+          同时写时
+          <code>range</code>
+          生效。
+        </p>
+        <doc-playground src="./demos/range-mode.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>尺寸</h3>
+        <doc-playground src="./demos/sizes.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>可选范围</h3>
+        <p class="doc-hint">
+          <code>min</code>
+          /
+          <code>max</code>
+          是闭区间（两端都含）：范围之外的日子置灰、点不动，键盘选中也会被拦下。翻月不受限制，方便看上下文。
+        </p>
+        <doc-playground src="./demos/range.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>可清除</h3>
+        <p class="doc-hint">
+          <code>clearable</code>
+          在有值时把右端换成 ×：点它清空，并依次发
+          <code>clear</code>
+          与
+          <code>change</code>
+          （载荷是空字符串）。
+        </p>
+        <doc-playground src="./demos/clearable.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>状态</h3>
+        <p class="doc-hint">
+          <code>disabled</code>
+          /
+          <code>readonly</code>
+          都不开面板，
+          <code>invalid</code>
+          只把边框换成危险色。
+        </p>
+        <doc-playground src="./demos/states.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>受控值</h3>
+        <p class="doc-hint">
+          <code>default-value</code>
+          只是初始值（只读一次；多选 / 范围用逗号分隔）；
+          <code>value</code>
+          是绑定通道：
+          <code>sync:value</code>
+          双向、
+          <code>:value</code>
+          单向。单选读出来是 string，
+          <code>multiple</code>
+          /
+          <code>range</code>
+          是
+          <code>string[]</code>
+          ；运行时读写宿主 property
+          <code>value</code>
+          ，同时回写成
+          <code>value</code>
+          属性（多选 / 范围用逗号串）—— ofa 的
+          <code>sync:value</code>
+          观察的就是它。
+        </p>
+        <doc-playground src="./demos/binding.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>格式化</h3>
+        <p class="doc-hint">
+          三段各一个属性：
+          <code>input-format</code>
+          解析进入组件的字符串（
+          <code>default-value</code>
+          /
+          <code>value</code>
+          /
+          <code>min</code>
+          /
+          <code>max</code>
+          ），
+          <code>format</code>
+          决定触发框里显示成什么，
+          <code>output-format</code>
+          决定
+          <code>change</code>
+          载荷、
+          <code>value</code>
+          property 读取与回写属性的格式。默认值随
+          <code>type</code>
+          ：
+          <code>YYYY-MM-DD</code>
+          /
+          <code>YYYY-[W]WW</code>
+          /
+          <code>YYYY-MM</code>
+          /
+          <code>YYYY</code>
+          。占位符：
+          <code>YYYY</code>
+          /
+          <code>YY</code>
+          /
+          <code>MM</code>
+          /
+          <code>M</code>
+          /
+          <code>DD</code>
+          /
+          <code>D</code>
+          ，周另有
+          <code>WW</code>
+          /
+          <code>W</code>
+          ；
+          <code>[...]</code>
+          里是字面量。解析按 input → output → 该 type 的默认格式回退。
+        </p>
+        <doc-playground src="./demos/format.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>事件回调</h3>
+        <p class="doc-hint">
+          四个事件都冒泡 +
+          <code>composed</code>
+          ；
+          <code>change</code>
+          的
+          <code>$event.data.value</code>
+          是
+          <code>output-format</code>
+          格式的 string；加
+          <code>multiple</code>
+          /
+          <code>range</code>
+          时是
+          <code>string[]</code>
+          。原生的
+          <code>focus</code>
+          /
+          <code>blur</code>
+          /
+          <code>keydown</code>
+          本来就会穿到宿主上（不用组件转发），这里演的是组件自己发的那几条。
+        </p>
+        <doc-playground src="./demos/events.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>外部样式</h3>
+        <p class="doc-hint">
+          宿主
+          <code>style</code>
+          / 令牌按实例覆盖；状态会写成宿主上的
+          <code>[data-open]</code>
+          /
+          <code>[data-filled]</code>
+          /
+          <code>[data-empty]</code>
+          /
+          <code>[data-overflow]</code>
+          ，外层 CSS 直接勾它 —— 演示里面板展开时触发框多一圈高亮。
+        </p>
+        <doc-playground src="./demos/customize.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
+        <h3>内部样式</h3>
+        <p class="doc-hint">
+          组件内部封在 shadow 里，只有
+          <code>part</code>
+          能从外面改：
+          <code>base</code>
+          （触发框）、
+          <code>panel</code>
+          （面板）、
+          <code>header</code>
+          （顶栏）、
+          <code>grid</code>
+          （网格）、
+          <code>day</code>
+          （日 / 周的一格）、
+          <code>cell</code>
+          （月 / 年的一格）。宿主钩子也能配
+          <code>::part()</code>
+          ：演示里面板展开时，触发框会多一圈高亮。
+        </p>
+        <doc-playground src="./demos/part.html"></doc-playground>
+      </section>
+    </doc-demos>
+
+    <!-- 参考区（属性 / 事件 / part）由 api.md 渲染，不在这里手抄 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到**分区布局页**：三栏 + 左栏菜单 + 右栏目录都在它那里；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

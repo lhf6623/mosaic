@@ -32,6 +32,14 @@ mc-select — 下拉选择（表单控件 + 浮层）
 dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件** —— 选项、选中态、键盘导航、
 `value` 都由它自己管。三者共用同一套浮层形态与层级。
 
+**宽度固定。** 宿主宽度由 `--mc-select-control-width`（默认 `12rem`）给死：占位文案、选中文案、
+多选拼接、`clearable` 多出来的 × 都不会撑大或缩回盒子（放不下时 `.mc-value` 省略号）。
+需要整行宽度写宿主 `style="width:100%"` —— 那是实例覆盖，不是组件的第二个尺寸维度。
+
+**长内容被裁掉时给完整文案提示。** 触发框的 `.mc-value` 一旦 `scrollWidth > clientWidth`，hover / focus
+会在下方弹一个 top layer 的小浮层显示完整文案（多选拼接同样适用）；面板打开时自动收起。
+提示来自共享的 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)，宿主上同步 `[data-overflow]`。
+
 ⚠️ **浮层形态照 `mc-popover` 的四条结论**（定位与层级全交给浏览器原生能力）：
 
 1. **面板是原生 `popover` 进 top layer**，不挂 `document.body`、不用 `--mc-z-*` 令牌 ——
@@ -65,7 +73,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 代价是同一个字段两种形状 —— 文档页与 `api.md` 开场白都点明了。
 
 **状态写成宿主钩子**：`data-open`（面板正在显示）/ `data-filled`（至少选中一项）/
-`data-empty`（一项没选）挂在宿主上。组件自己的 shadow CSS 靠它们换样式
+`data-empty`（一项没选）/ `data-overflow`（触发框内容被省略号裁掉）挂在宿主上。组件自己的 shadow CSS 靠它们换样式
 （`:host([data-empty]) .mc-value`、`:host([data-open]) .mc-chevron`、
 `:host([clearable][data-filled]) .mc-clear`），**外层也拿它按状态写样式** ——
 `mc-select[data-filled] { … }`，或配 `::part()`：`mc-select[data-open]::part(base) { … }`
@@ -81,6 +89,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 | `--mc-select-control-border`        | `--mc-color-border`         | 触发框边框色（`invalid` 时被换成危险色）       |
 | `--mc-select-control-radius`        | `--mc-radius-md`            | 触发框圆角                                     |
 | `--mc-select-control-pad-x`         | `--mc-space-4`              | 触发框左右内边距                               |
+| `--mc-select-control-width`         | `12rem`                     | 触发框固定宽度（不随占位 / 选中文案跳）        |
 | `--mc-select-offset`                | `--mc-space-2`              | 面板到触发框的距离                             |
 | `--mc-select-panel-bg`              | `--mc-color-surface-raised` | 面板底色                                       |
 | `--mc-select-panel-border`          | `--mc-color-border-strong`  | 面板**轮廓色**（drop-shadow 画的，不是真边框） |
@@ -101,6 +110,7 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
 ## 相邻单元
 
 - 复用 [`../boot/scroll-pin.js`](../boot/scroll-pin.js)：浮层开合的滚动守卫（浮层组件一行接线）。
+- 复用 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)：触发框被 ellipsis 裁掉时的完整文案提示。
 - 与 [`mc-popover`](../popover/) / [`mc-dropdown`](../dropdown/) 共用同一套浮层形态（原生 popover + CSS 锚点定位），分工见上。
 
 <!-- hand:end -->

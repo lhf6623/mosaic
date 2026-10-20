@@ -26,6 +26,8 @@ const SHARED = [
   { file: 'packages/boot/component-base.css', raw: 8192, gzip: 3072 },
   { file: 'packages/boot/shadow-base.css', raw: 3 * 1024, gzip: 1.5 * 1024 },
   { file: 'packages/boot/scroll-pin.js', raw: 13 * 1024, gzip: 6 * 1024 },
+  // 组件共用：触发框被 ellipsis 裁掉时的完整文案提示（select / tree-select / date-picker）
+  { file: 'packages/boot/overflow-tip.js', raw: 7 * 1024, gzip: 3 * 1024 },
   // 组件共用：颜色字面量的数学，color-attr 与 tone 都引它
   // （JSDoc 类型注释也算使用者的字节 —— 这次给 JS 加类型时的涨幅已经显式记在这里）
   { file: 'packages/boot/color-math.js', raw: 3 * 1024, gzip: 1.75 * 1024 },
@@ -47,6 +49,8 @@ const COMPONENT_RAW = 40 * 1024;
 const COMPONENT_RAW_LIMITS = new Map([
   // 树 + 浮层 + 异步加载 + 触发框 / 行模板插槽；2026-10 加完插槽后 50.6 KB（gzip 12.9 KB）
   ['packages/tree-select/tree-select.html', 52 * 1024],
+  // 日 / 周 / 月 / 年 × 单选 / 多选 / 范围 + 三段格式化 + 两套面板（月历 / 年段）；2026-10 约 54 KB
+  ['packages/date-picker/date-picker.html', 58 * 1024],
 ]);
 
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';

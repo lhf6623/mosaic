@@ -955,6 +955,53 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(sizes),
   );
 
+  /* 溢出提示：长标签被固定宽度裁掉时，hover 弹完整文案；面板打开时收起 */
+  const overflowState = await page.evaluate(async () => {
+    const label = '浙江省杭州市西湖区文三路 90 号（很长的节点名称，用来测裁切提示）';
+    window.__make({ style: 'width: 12rem', value: 'long' }, [{ value: 'long', label }]);
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const host = document.getElementById('probe-tree');
+    const value = host.shadowRoot.querySelector('.mc-value');
+    const box = host.getBoundingClientRect();
+    return {
+      label,
+      flagged: host.hasAttribute('data-overflow'),
+      clipped: value.scrollWidth > value.clientWidth + 1,
+      text: value.textContent,
+      at: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+    };
+  });
+  await page.mouse.move(400, 700);
+  await page.waitForTimeout(80);
+  await page.mouse.move(overflowState.at.x, overflowState.at.y);
+  await page.waitForTimeout(220);
+  const tip = await page.evaluate(() => {
+    const host = document.getElementById('probe-tree');
+    const el = host?.shadowRoot?.querySelector('.mc-overflow-tip');
+    return { exists: !!el, text: el?.textContent ?? null, open: el ? el.matches(':popover-open') : false };
+  });
+  const controlAt = await page.evaluate(() => window.__point('control'));
+  await page.mouse.click(controlAt.x, controlAt.y);
+  await page.waitForTimeout(250);
+  const tipWhileOpen = await page.evaluate(() => {
+    const host = document.getElementById('probe-tree');
+    const el = host?.shadowRoot?.querySelector('.mc-overflow-tip');
+    return { open: el ? el.matches(':popover-open') : false, flagged: host.hasAttribute('data-overflow') };
+  });
+  await page.keyboard.press('Escape');
+  await page.mouse.move(400, 700);
+  check(
+    '溢出提示：长标签把 .mc-value 裁掉时 data-overflow 亮起，hover 弹完整文案，面板打开时收起',
+    overflowState.flagged === true &&
+      overflowState.clipped === true &&
+      tip.exists === true &&
+      tip.open === true &&
+      tip.text === overflowState.label &&
+      tipWhileOpen.open === false &&
+      tipWhileOpen.flagged === true,
+    JSON.stringify({ overflowState, tip, tipWhileOpen }),
+  );
+
   /* ------------------------------------------------------------------ *
    * 16. options 属性通道：JSON 文本可作初始值；property 写过之后属性不再覆盖
    * ------------------------------------------------------------------ */

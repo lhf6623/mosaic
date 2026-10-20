@@ -319,6 +319,93 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(affix),
   );
 
+  /* ---------- 溢出提示：长值 hover 弹完整内容；聚焦后让位给编辑；密码不回显 ---------- */
+  const overflow = await page.evaluate(async () => {
+    const wrap = document.createElement('div');
+    wrap.id = 'input-overflow-probe';
+    wrap.style.cssText = 'position:fixed;left:0;top:320px;z-index:99999;background:#fff;padding:8px';
+    const long = '这是一个很长的输入内容，用来测试输入框的横向溢出与完整文案提示';
+    const el = document.createElement('mc-input');
+    el.id = 'i-overflow';
+    el.setAttribute('style', 'width:180px');
+    el.setAttribute('default-value', long);
+    wrap.append(el);
+    const pwd = document.createElement('mc-input');
+    pwd.id = 'i-password';
+    pwd.setAttribute('type', 'password');
+    pwd.setAttribute('style', 'width:180px');
+    pwd.setAttribute(
+      'default-value',
+      'supersecret-password-value-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    );
+    wrap.append(pwd);
+    document.body.append(wrap);
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const inner = el.shadowRoot.querySelector('.mc-input');
+    const pwdInner = pwd.shadowRoot.querySelector('.mc-input');
+    const box = el.getBoundingClientRect();
+    const pwdBox = pwd.getBoundingClientRect();
+    return {
+      long,
+      flagged: el.hasAttribute('data-overflow'),
+      clipped: inner.scrollWidth > inner.clientWidth + 1,
+      at: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+      pwdFlagged: pwd.hasAttribute('data-overflow'),
+      pwdClipped: pwdInner.scrollWidth > pwdInner.clientWidth + 1,
+      pwdAt: { x: pwdBox.x + pwdBox.width / 2, y: pwdBox.y + pwdBox.height / 2 },
+    };
+  });
+  await page.mouse.move(400, 700);
+  await page.waitForTimeout(80);
+  await page.mouse.move(overflow.at.x, overflow.at.y);
+  await page.waitForTimeout(220);
+  const tip = await page.evaluate(() => {
+    const el = document.getElementById('i-overflow');
+    const tip = el.shadowRoot.querySelector('.mc-overflow-tip');
+    return { exists: !!tip, text: tip?.textContent ?? null, open: tip ? tip.matches(':popover-open') : false };
+  });
+  await page.mouse.click(overflow.at.x, overflow.at.y);
+  await page.waitForTimeout(150);
+  const focused = await page.evaluate(() => {
+    const el = document.getElementById('i-overflow');
+    const tip = el.shadowRoot.querySelector('.mc-overflow-tip');
+    return { tipOpen: tip ? tip.matches(':popover-open') : false, flagged: el.hasAttribute('data-overflow') };
+  });
+  await page.evaluate(() => {
+    document.getElementById('i-overflow').shadowRoot.querySelector('.mc-input').blur();
+  });
+  await page.waitForTimeout(120);
+  const blurred = await page.evaluate(() => {
+    const el = document.getElementById('i-overflow');
+    return { flagged: el.hasAttribute('data-overflow') };
+  });
+  await page.mouse.move(400, 700);
+  await page.waitForTimeout(80);
+  await page.mouse.move(overflow.pwdAt.x, overflow.pwdAt.y);
+  await page.waitForTimeout(220);
+  const password = await page.evaluate(() => {
+    const el = document.getElementById('i-password');
+    const tip = el.shadowRoot.querySelector('.mc-overflow-tip');
+    return { flagged: el.hasAttribute('data-overflow'), open: tip ? tip.matches(':popover-open') : false };
+  });
+  await page.evaluate(() => document.getElementById('input-overflow-probe')?.remove());
+  check(
+    '溢出提示：长值被裁掉时 data-overflow 亮起，hover 弹完整值；聚焦后提示收起、失焦恢复；密码框不回显',
+    overflow.flagged === true &&
+      overflow.clipped === true &&
+      tip.exists === true &&
+      tip.open === true &&
+      tip.text === overflow.long &&
+      focused.tipOpen === false &&
+      focused.flagged === false &&
+      blurred.flagged === true &&
+      overflow.pwdClipped === true &&
+      overflow.pwdFlagged === false &&
+      password.open === false &&
+      password.flagged === false,
+    JSON.stringify({ overflow, tip, focused, blurred, password }),
+  );
+
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => document.getElementById('input-probe')?.remove());
 

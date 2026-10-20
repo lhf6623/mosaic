@@ -374,6 +374,8 @@
   <script>
     /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
+    import { attachOverflowTip } from '../boot/overflow-tip.js';
 
     export default async ({ load }) => {
       /* 面板里的滚动条复用 mc-scroll-bar：它是独立组件，先注册再渲染面板 */
@@ -472,6 +474,8 @@
         attached() {
           /* 到这里构造期已结束，才允许往宿主写属性（P31） */
           this._live = true;
+          /* 长路径 / 长标签会把 .mc-value 裁掉；提示本身住在 shadow 里的 top layer */
+          this._overflowTip = attachOverflowTip(this.ele, this._valueEl);
 
           /* 行模板先读一遍：后面 applyOptions() 渲染时要按它填每行 */
           this.readTemplates();
@@ -524,6 +528,8 @@
           this._prefixSlot?.removeEventListener('slotchange', this._onSlotChange);
           this._optionSlot?.removeEventListener('slotchange', this._onTemplateChange);
           this._iconSlot?.removeEventListener('slotchange', this._onTemplateChange);
+          this._overflowTip?.dispose();
+          this._overflowTip = null;
           this._scrollGuard?.dispose();
           if (this.isOpen()) this._panel.hidePopover();
           this._live = false;
@@ -918,6 +924,7 @@
             }
             if (this._emptyWrap) this._emptyWrap.hidden = this._nodes.length > 0;
             if (this._emptyEl) this._emptyEl.textContent = this.emptyTextText();
+            this._overflowTip?.check();
           },
 
           /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算（同 mc-input） */
@@ -1091,6 +1098,7 @@
           openPanel() {
             if (!this._popoverOk || this.isOpen()) return;
             if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
+            this._overflowTip?.hide();
             this.expandAncestors(this.findNode(this._value));
             this.applyExpansion();
             /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */

@@ -33,7 +33,9 @@
           <code>$event.data.value</code>
           ；原生那条不带头载荷的
           <code>input</code>
-          已被组件拦掉，不会收到两次。
+          已被组件拦掉，不会收到两次。值超出框宽且没聚焦时，hover 会弹完整内容（宿主挂
+          <code>data-overflow</code>
+          ）；聚焦后让位给编辑。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>

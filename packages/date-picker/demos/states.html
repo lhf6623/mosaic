@@ -1,0 +1,11 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-date-picker disabled placeholder="禁用" default-value="2026-10-19"></mc-date-picker>
+    <mc-date-picker readonly placeholder="只读" default-value="2026-10-20"></mc-date-picker>
+    <mc-date-picker invalid placeholder="校验失败"></mc-date-picker>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-date-picker-states' });
+  </script>
+</template>

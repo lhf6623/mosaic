@@ -73,6 +73,10 @@
 自动撑满、更窄时被 `max-width: 100%` 收住；短标签（「浙江」/「上海」）之间切换宽度不变，长标签
 由 `text-overflow: ellipsis` 截断。要固定成别的宽度写宿主 `style="width: …"` / 覆盖这个令牌。
 
+**被裁掉的长标签有完整文案提示。** `.mc-value` 出现 `scrollWidth > clientWidth` 时，hover / focus
+会在下方弹一个 top layer 的小浮层显示完整标签；面板打开时自动收起。提示来自共享的
+[`../boot/overflow-tip.js`](../boot/overflow-tip.js)，宿主上同步 `[data-overflow]`。
+
 **滚动条复用 `mc-scroll-bar`，不用原生条。** 原生滚动条在圆角面板里不只又白又厚，它还会
 占住右侧那一条、把面板**右侧的上下圆角切成方角** —— 树一长出面板，右边就变成两个直角。
 现在面板自己 `overflow: visible`，列表装在 `mc-scroll-bar` 里：覆盖式滑块、悬停才淡入、
@@ -120,6 +124,7 @@
 - `mc-menu`（[`../menu/`](../menu/)）：导航用 menu（行是链接 / 按钮、没有值）；从数据里**选一个值**
   用 tree-select。
 - 复用 [`../boot/scroll-pin.js`](../boot/scroll-pin.js)：浮层开合的滚动守卫。
+- 复用 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)：长标签被 ellipsis 裁掉时的完整文案提示。
 - 复用 [`mc-scroll-bar`](../scroll-bar/)：面板里的覆盖式滚动条（不占内容宽、不切圆角）。
 
 <!-- hand:end -->

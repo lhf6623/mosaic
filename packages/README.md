@@ -429,7 +429,8 @@ item.open = true; // 组件提供了访问器时同样可以
 通用词汇：`base` / `panel` / `overlay` / `header` / `body` / `footer` / `label` / `input` / `error`。
 已开出的额外名字必须登记在这里：`list`（`mc-menu` / `mc-breadcrumb` / `mc-pagination`）、
 `item` / `prev` / `next` / `jumper` / `sizer` / `select`（`mc-pagination`）、
-`pre` / `code` / `line`（`mc-code` / `mc-divider`）、`image` / `description`（`mc-empty`）。
+`pre` / `code` / `line`（`mc-code` / `mc-divider`）、`image` / `description`（`mc-empty`）、
+`day` / `cell`（`mc-date-picker`：日 / 周一格与月 / 年一格）。
 
 ### 1.8 键盘基线（每个组件都要满足）
 
@@ -478,6 +479,7 @@ item.open = true; // 组件提供了访问器时同样可以
 | [Rate](./rate/api.md)                 | `mc-rate`                              | `rate/`        | ✅ 已实现 |
 | [Tree Select](./tree-select/api.md)   | `mc-tree-select`                       | `tree-select/` | ✅ 已实现 |
 | [Select](./select/api.md)             | `mc-select` / `mc-option`              | `select/`      | ✅ 已实现 |
+| [Date Picker](./date-picker/api.md)   | `mc-date-picker`                       | `date-picker/` | ✅ 已实现 |
 | [Form](./form/api.md)                 | `mc-form` / `mc-form-item`             | `form/`        | ✅ 已实现 |
 | [Alert](./alert/api.md)               | `mc-alert`                             | `alert/`       | ✅ 已实现 |
 | [Progress](./progress/api.md)         | `mc-progress`                          | `progress/`    | ✅ 已实现 |
@@ -536,7 +538,7 @@ item.open = true; // 组件提供了访问器时同样可以
 
 **校验态不用独立的错误色板**，用 `invalid` 布尔 + `--mc-color-danger`。
 
-编排这九个控件（含 `mc-slider` / `mc-rate` / `mc-tree-select`）的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
+编排这十个控件（含 `mc-slider` / `mc-rate` / `mc-tree-select` / `mc-date-picker`）的容器是 [`mc-form`](./form/api.md)：`required` / `pattern` 写在控件上或
 `mc-form-item` 上都认，失败时容器给控件挂 `invalid`、给行显示文案。
 
 ---
