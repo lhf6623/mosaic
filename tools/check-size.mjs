@@ -28,6 +28,9 @@ const SHARED = [
   { file: 'packages/boot/scroll-pin.js', raw: 13 * 1024, gzip: 6 * 1024 },
   // 组件共用：触发框被 ellipsis 裁掉时的完整文案提示（select / tree-select / date-picker）
   { file: 'packages/boot/overflow-tip.js', raw: 7 * 1024, gzip: 3 * 1024 },
+  // 组件共用：日期算法 / canonical key / 格式串（date-picker 起家；以后的 time-picker / calendar 共用）
+  // （JSDoc 类型注释也算使用者的字节 —— 2026-10 补类型注释后 12.2 → 15.6 KB，涨幅显式记在这里）
+  { file: 'packages/boot/date.js', raw: 17 * 1024, gzip: 5.75 * 1024 },
   // 组件共用：颜色字面量的数学，color-attr 与 tone 都引它
   // （JSDoc 类型注释也算使用者的字节 —— 这次给 JS 加类型时的涨幅已经显式记在这里）
   { file: 'packages/boot/color-math.js', raw: 3 * 1024, gzip: 1.75 * 1024 },
@@ -49,8 +52,9 @@ const COMPONENT_RAW = 40 * 1024;
 const COMPONENT_RAW_LIMITS = new Map([
   // 树 + 浮层 + 异步加载 + 触发框 / 行模板插槽；2026-10 加完插槽后 50.6 KB（gzip 12.9 KB）
   ['packages/tree-select/tree-select.html', 52 * 1024],
-  // 日 / 周 / 月 / 年 × 单选 / 多选 / 范围 + 三段格式化 + 两套面板（月历 / 年段）；2026-10 约 54 KB
-  ['packages/date-picker/date-picker.html', 58 * 1024],
+  // 日 / 周 / 月 / 年 × 单选 / 多选 / 范围 + 三段格式化 + 两套面板（月历 / 年段）
+  // 2026-10 把日期算法抽到 boot/date.js 后 44.8 KB（抽之前 54 KB），额度跟着降到 48
+  ['packages/date-picker/date-picker.html', 48 * 1024],
 ]);
 
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';

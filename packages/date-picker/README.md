@@ -171,6 +171,9 @@ day 要年 / 月 / 日，week 要年 / 周，month 要年 / 月，year 只要年
 
 - 复用 [`../boot/scroll-pin.js`](../boot/scroll-pin.js)：浮层开合的滚动守卫。
 - 复用 [`../boot/overflow-tip.js`](../boot/overflow-tip.js)：多选 / 范围 / 长格式化文本被裁掉时的完整文案提示。
+- 复用 [`../boot/date.js`](../boot/date.js)：**日历日运算 / canonical key / 格式串**全在那里
+  （2026-10 从本组件抽出去的；以后的 time-picker、calendar、表格日期列都该用它，别各写一份）。
+  本组件只剩业务胶水：`type` 的三种默认格式与占位文案。
 - 与 [`mc-popover`](../popover/) / [`mc-select`](../select/) / [`mc-tree-select`](../tree-select/) 共用同一套浮层形态
   （原生 popover + CSS 锚点定位）；select 是「选项列表」，date-picker 是「日历 / 周 / 月 / 年网格」。
 - 表单取值由 [`mc-form`](../form/) 统一收：它按「有 `value` property 的值载体」识别控件；
