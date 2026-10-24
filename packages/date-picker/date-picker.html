@@ -240,11 +240,6 @@
       font-size: var(--mc-text-xs, var(--mc-def-text-xs));
       text-align: center;
     }
-    /* 月 / 年视图不要星期行；author 的 display:grid 会压过 UA 的 [hidden]，所以显式收掉 */
-    .mc-weekdays[hidden] {
-      display: none;
-    }
-
     .mc-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);

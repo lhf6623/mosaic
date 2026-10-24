@@ -53,11 +53,11 @@ const COMPONENT_RAW = 40 * 1024;
  * 数值写在这里，让提上限这个动作也进 diff —— 别把全局上限本身调大。
  */
 const COMPONENT_RAW_LIMITS = new Map([
-  // 树 + 浮层 + 异步加载 + 触发框 / 行模板插槽；2026-10 加完插槽后 50.6 KB（gzip 12.9 KB）
-  ['packages/tree-select/tree-select.html', 52 * 1024],
+  // 树 + 浮层 + 异步加载 + 触发框 / 行模板插槽；2026-10 行改 o-fill 模板渲染后 52.0 KB
+  ['packages/tree-select/tree-select.html', 53 * 1024],
   // 日 / 周 / 月 / 年 × 单选 / 多选 / 范围 + 三段格式化 + 两套面板（月历 / 年段）
-  // 2026-10 把日期算法抽到 boot/date.js 后 44.8 KB（抽之前 54 KB），额度跟着降到 48
-  ['packages/date-picker/date-picker.html', 48 * 1024],
+  // 2026-10 把日期算法抽到 boot/date.js 后 44.8 KB；面板改 o-fill 模板渲染后 47.8 KB
+  ['packages/date-picker/date-picker.html', 49 * 1024],
 ]);
 
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
