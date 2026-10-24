@@ -491,6 +491,13 @@
             for (const [key, el] of byKey) {
               const row = models.get(key);
               if (!row) continue;
+              /* 先同步附加属性（可能带 style），再写缩进通道：syncAttrs 写整段 style 会把它清掉 */
+              let applied = this._rowAttrs.get(key);
+              if (!applied) {
+                applied = new Set();
+                this._rowAttrs.set(key, applied);
+              }
+              this.syncAttrs(el, row.attrs, applied);
               const level = String(row.level);
               if (el.style.getPropertyValue('--mc-item-level') !== level) {
                 el.style.setProperty('--mc-item-level', level);
@@ -503,12 +510,6 @@
               } else if (el.style.getPropertyValue('--mc-item-step')) {
                 el.style.removeProperty('--mc-item-step');
               }
-              let applied = this._rowAttrs.get(key);
-              if (!applied) {
-                applied = new Set();
-                this._rowAttrs.set(key, applied);
-              }
-              this.syncAttrs(el, row.attrs, applied);
             }
             for (const key of [...this._rowAttrs.keys()])
               if (!models.has(key)) this._rowAttrs.delete(key);

@@ -6,11 +6,6 @@
 -->
 <template component>
   <style>
-    /* 未实现组件压暗一档：状态经 options 的 attrs 落到 mc-menu-item 宿主上 */
-    mc-menu-item[data-status='planned'] {
-      opacity: 0.72;
-    }
-
     /* 高度接满宿主（宽屏那栏 fixed + 100%，解得开）；窄屏浮层宿主 auto 高时退回 auto，
        由下面 viewport 的 max-height 封顶。⚠️ max-height 不能挂宿主 —— 否则 viewport 的 100% 解不开，菜单会顶出浮层。 */
     mc-scroll-bar {
@@ -47,6 +42,8 @@
           rel: ready ? null : 'noreferrer',
           title: page.summary ? (ready ? page.summary : `待建 —— ${page.summary}`) : null,
           'data-status': ready ? null : 'planned',
+          /* 行在 mc-menu 的 shadow 里，页面 CSS 够不到；压暗走行上的内联 style（menu 会先写 attrs 再补缩进通道） */
+          style: ready ? null : 'opacity: 0.72',
         },
       };
     };
@@ -83,15 +80,11 @@
       data: { menuOptions: [] },
 
       ready() {
-        this._menu = this.ele.shadowRoot.querySelector('#nav-menu');
-        this._bar = this.ele.shadowRoot.querySelector('mc-scroll-bar');
+        this._menu = this.shadow.$('#nav-menu');
+        this._bar = this.shadow.$('mc-scroll-bar');
         /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
-        if (this._full) this._menu.setAttribute('accordion', '');
-        /* 行由 mc-menu 渲染（可能晚于本组件升级）：监听子节点变化兜底；同分区切页只改 current 时
-           没有 childList 变化，renderRows() 末尾会再显式居中一次 */
-        this._mo = new MutationObserver(() => this.centerCurrent());
-        this._mo.observe(this._menu, { childList: true });
+        if (this._full) this._menu.attr('accordion', '');
         /* 视口「0 高 → 有高度」这一跳补一次居中（浮层关着时换页算出的 scrollTop 被夹成 0） */
         this._shownH = 0;
         this._vpRo = new ResizeObserver(([entry]) => {
@@ -108,7 +101,6 @@
       // 组件随切页建毁，退订必须在 detached 里做，否则旧实例还会改新菜单
       detached() {
         this._unwatch?.();
-        this._mo?.disconnect();
         this._vpRo?.disconnect();
         cancelAnimationFrame(this._centerRaf);
       },
@@ -129,7 +121,7 @@
 
         /** 这一栏真正的滚动视口：滚的是 mc-scroll-bar 里的 viewport，宿主 <doc-nav> 自己不滚 */
         viewport() {
-          return this._bar?.shadowRoot?.querySelector('[part="viewport"]') ?? null;
+          return this._bar?.shadow?.$('[part="viewport"]') ?? null;
         },
 
         /** 唯一写 scrollTop 的地方：把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
@@ -137,12 +129,12 @@
           cancelAnimationFrame(this._centerRaf);
           this._centerRaf = requestAnimationFrame(() => {
             const viewport = this.viewport();
-            const row = this._menu?.shadowRoot?.querySelector('mc-menu-item[current]');
+            const row = this._menu?.shadow?.$('mc-menu-item[current]');
             if (!viewport || !row) return;
-            const box = viewport.getBoundingClientRect();
+            const box = viewport.ele.getBoundingClientRect();
             if (box.height === 0) return; // 视口还量不出高度（窄屏浮层关着）：等 ResizeObserver 那一跳
-            const target = row.getBoundingClientRect();
-            viewport.scrollTop += target.top + target.height / 2 - (box.top + box.height / 2);
+            const target = row.ele.getBoundingClientRect();
+            viewport.ele.scrollTop += target.top + target.height / 2 - (box.top + box.height / 2);
           });
         },
       },
