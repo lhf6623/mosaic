@@ -182,7 +182,7 @@
     <input
       class="mc-native"
       type="range"
-      :disabled="disabled !== null"
+      attr:disabled="disabled !== null"
       on:input="onInput($event)"
       on:change="onChange()" />
     <div class="mc-track" part="track">
@@ -223,10 +223,9 @@
         },
 
         ready() {
-          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-          const root = this.ele.shadowRoot;
-          this._native = root.querySelector('.mc-native');
-          this._base = root.querySelector('.mc-base');
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）。元素引用走 this.shadow.$，原生属性靠 .ele
+          this._native = this.shadow.$('.mc-native')?.ele ?? null;
+          this._base = this.shadow.$('.mc-base')?.ele ?? null;
 
           /* 运行时状态走 property（规范 1.4）：setter 立刻写内部原生 input 并重绘，不等 ofa 那一拍（P4） */
           Object.defineProperty(this.ele, 'value', {
@@ -323,6 +322,12 @@
             return raw !== null && raw !== 'false';
           },
 
+          /**
+           * 行为层例外（原生 range 状态）：min / max / step / value / disabled 只有内部原生 input 认，
+           * 模板不往它身上绑（绑定会与下面的「按 step 归一 / 夹回区间 / 初值只读一次」两套真相打架）；
+           * 这一组方法统一读写 .ele 的原生属性。
+           */
+
           /** min / max / step 只有这一处落到内部原生 input；改区间时顺手把当前值夹回范围内 */
           syncRange() {
             if (!this._native) return;
@@ -375,7 +380,9 @@
             this.ele.setAttribute('value', now);
           },
 
-          /** 唯一入口：把当前值换算成 0～1 的比例，写进内部变量（填充条与滑块都读它） */
+          /** 唯一入口：把当前值换算成 0～1 的比例，写进内部变量（填充条与滑块都读它）。
+            行为层例外（几何）：比例取自原生 range 归一后的 value，且模板没有「写 CSS 自定义属性」的绑定方式，
+            只能算完写到 .mc-base 的 --mc-slider-ratio（填充条与滑块都以它定位）。 */
           paint() {
             if (!this._native || !this._base) return;
             const min = this.readNumber('min', 0);

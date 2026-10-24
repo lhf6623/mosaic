@@ -1,4 +1,4 @@
-<!-- mc-textarea — 多行输入框；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<!-- mc-textarea — 多行输入框（可见结构全在模板；自动增高 / 计数是行为层，见对应方法注释）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -129,14 +129,15 @@
       attr:name="name === '' ? null : name"
       attr:placeholder="placeholder === '' ? null : placeholder"
       attr:rows="rows"
-      :disabled="disabled !== null"
+      attr:disabled="disabled !== null"
       attr:readonly="readonly !== null ? '' : null"
       attr:maxlength="maxlength === null ? null : maxlength"
       on:input="onInput($event)"
       on:change="onChange()"></textarea>
     <span class="mc-suffix" part="suffix"><slot name="suffix"></slot></span>
   </div>
-  <span class="mc-counter" part="counter"></span>
+  <!-- 字数统计的文案也走模板（data.counterText）：可见结构全在模板，脚本只算值 -->
+  <span class="mc-counter" part="counter">{{counterText}}</span>
 
   <script>
     import { withEmits } from '../boot/emits.js';
@@ -170,12 +171,18 @@
           invalid: null,
         },
 
+        /* 可见内容全在模板：字数统计文案是唯一的动态文本（applyState 更新它） */
+        data: {
+          counterText: '',
+        },
+
         ready() {
           // 构造期不写宿主属性，一律留到 attached（P31）
-          const root = this.ele.shadowRoot;
-          this._input = root.querySelector('.mc-input');
-          this._counter = root.querySelector('.mc-counter');
-          this._slots = [...root.querySelectorAll('slot')];
+          /* 行为层只拿元素引用（模板已渲染），不造节点：原生元素走 .ele，插槽事件走 ofa 的 on / off */
+          this._input = this.shadow.$('.mc-input')?.ele ?? null;
+          this._slots = ['prefix', 'suffix']
+            .map((name) => this.shadow.$(`slot[name="${name}"]`))
+            .filter(Boolean);
           this.applyDefaultValue();
 
           // 自动增高的监听句柄（P43：别用 resize 这样会盖掉 proto 方法的名字）
@@ -200,7 +207,7 @@
           this.applyDefaultValue();
           this._defaultApplied = true;
           this._onSlotChange = () => this.applyState();
-          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.on('slotchange', this._onSlotChange);
           this.bindAutoResize();
           this.applyState();
         },
@@ -228,8 +235,7 @@
         },
 
         detached() {
-          for (const slot of this._slots)
-            slot.removeEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
           this._input?.removeEventListener('input', this._onAutoResize);
           this.cancelResizeFrame();
         },
@@ -284,7 +290,9 @@
             this._resizeFrame = null;
           },
 
-          /** 自动增高：把高度设成内容高度（scrollHeight 本身就是内容高度，与 CSS height 无关，不用先归零）。⚠️ attached() 可能早于布局，scrollHeight 为 0，写 0px 会把内容整块裁掉 —— 量到 0 就下一帧补一次，只补一次 */
+          /** 自动增高：把高度设成内容高度（scrollHeight 本身就是内容高度，与 CSS height 无关，不用先归零）。
+            ⚠️ 行为层例外（测量）：高度取决于内容布局，只能运行时量 scrollHeight 再写 style.height，模板表达不了。
+            ⚠️ attached() 可能早于布局，scrollHeight 为 0，写 0px 会把内容整块裁掉 —— 量到 0 就下一帧补一次，只补一次 */
           resizeToContent() {
             if (this.autoResize === null) return;
             const el = this._input;
@@ -317,19 +325,20 @@
             // 宿主属性只能在 attached 之后写，构造期写会抛 NotSupportedError（P31）
             if (!this._mounted) return;
             this.normalizeBoolAttrs();
-            this.mirror('data-has-value', this._input.value !== '');
             this.mirror('data-has-prefix', this.slotHasContent('prefix'));
             this.mirror('data-has-suffix', this.slotHasContent('suffix'));
             // 只有给了 maxlength 才显示「当前/上限」（maxlength 编码进字符串，空格也算一个）
             const limit = this.maxlength === null ? null : Number(this.maxlength);
             this.mirror('data-has-maxlength', limit !== null);
-            if (limit !== null) this._counter.textContent = `${this._input.value.length}/${limit}`;
+            /* 文案交给模板（{{counterText}}）：脚本只算值，不写 DOM 文本 */
+            this.counterText = limit === null ? '' : `${this._input.value.length}/${limit}`;
           },
 
-          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算。
+            插槽分没分到内容是运行时的 DOM 事实（模板看不见），只能读 slot.assignedNodes()。 */
           slotHasContent(name) {
-            const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
-            return (slot?.assignedNodes() ?? []).some(
+            const slot = this.shadow.$(`slot[name="${name}"]`);
+            return (slot?.ele?.assignedNodes() ?? []).some(
               (node) =>
                 node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
             );

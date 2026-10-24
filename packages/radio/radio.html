@@ -130,9 +130,12 @@
 
       ready() {
         // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-        this._native = this.ele.shadowRoot.querySelector('.mc-native');
+        /* 行为层只拿元素引用（模板已渲染），不造节点：可见结构全在模板，原生元素走 .ele */
+        this._native = this.shadow.$('.mc-native')?.ele ?? null;
 
-        /* 选中状态是**组**的状态（组维护唯一真相）；这个 property 只是同一状态的快捷读写，setter 立刻同步原生 input（P4） */
+        /* 行为层例外（原生 IDL 状态）：模板只负责可见结构（圆圈 / 中心点 / 文案），选中与禁用是
+           **原生 input 的运行时状态**，只能在 setter / 同步方法里立刻写原生 property（P4）—— 模板绑不到。
+           选中状态是**组**的状态（组维护唯一真相）；这个 property 只是同一状态的快捷读写。 */
         Object.defineProperty(this.ele, 'checked', {
           configurable: true,
           get: () => this._native.checked,
@@ -151,6 +154,7 @@
             this.mirrorGroupDisabled();
           },
         });
+        /* 焦点移交是行为层（模板表达不了）：方向键换选中后把焦点交给下一格的原生 radio */
         Object.defineProperty(this.ele, 'focusNative', {
           configurable: true,
           value: () => this._native.focus(),

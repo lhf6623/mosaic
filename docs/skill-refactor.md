@@ -38,14 +38,14 @@
 - [x] **pagination** · 源码 `packages/pagination/pagination.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 布尔绑定改 `attr:`；行为层改 `this.shadow.$()` / `.on()`；原生 select 选项是唯一 DOM 例外
 - [x] **table** · 源码 `packages/table/table.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 表头 o-fill 补 fill-key；foster-parent 集中注释；`:html` 单元格例外收进 `cellsHtml()`
 - [x] **form** · 源码 `packages/form/form.html` + `form-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 基本合规，仅统一 slot 监听写法；form-item 未改
-- [ ] **input** · 源码 `packages/input/input.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **textarea** · 源码 `packages/textarea/textarea.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **checkbox** · 源码 `packages/checkbox/checkbox.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **radio** · 源码 `packages/radio/radio.html` + `radio-group.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **switch** · 源码 `packages/switch/switch.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **slider** · 源码 `packages/slider/slider.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **tabs** · 源码 `packages/tabs/tabs.html` + `tab.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
-- [ ] **alert** · 源码 `packages/alert/alert.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
+- [x] **input** · 源码 `packages/input/input.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 行为层改 `shadow.$` / `on` / `off`；原生控件的 `disabled` / `readonly` 等走 `attr:`；溢出提示与焦点集中注释
+- [x] **textarea** · 源码 `packages/textarea/textarea.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 字数文案改模板 `{{counterText}}`；`attr:disabled`；自动增高 / 测量留行为层
+- [x] **checkbox** · 源码 `packages/checkbox/checkbox.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 原生 input 的 checked / indeterminate 留行为层；`normalizeBoolAttrs` 修掉 `invalid"` 笔误、去掉重复 `applyChecked`
+- [x] **radio** · 源码 `packages/radio/radio.html` + `radio-group.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 元素引用改 `shadow.$` / 插槽监听 `on` / `off`；选中与组内键盘 / 焦点集中注释
+- [x] **switch** · 源码 `packages/switch/switch.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ `attr:disabled`；`normalizeBoolAttrs` 去掉 `disabled"` 重复项、去掉重复 `applyChecked`
+- [x] **slider** · 源码 `packages/slider/slider.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ `attr:disabled`；原生 range 状态与比例几何集中注释
+- [x] **tabs** · 源码 `packages/tabs/tabs.html` + `tab.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ tab 的 `disabled` 改 `attr:`；跨 shadow 取 tab 内部 button 集中到 `baseOf()`，指示条测量注释
+- [x] **alert** · 源码 `packages/alert/alert.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 插槽引用改预存 `shadow.$`，空内容折叠与内置图形让位集中注释
 - [ ] **tag** · 源码 `packages/tag/tag.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
 - [ ] **avatar** · 源码 `packages/avatar/avatar.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
 - [ ] **message** · 源码 `packages/message/message.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
@@ -63,16 +63,16 @@
 
 ## P4 · 基本合规，核对即可
 
-- [ ] **breadcrumb** · 源码 `packages/breadcrumb/breadcrumb.html` + `breadcrumb-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **card** · 源码 `packages/card/card.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
+- [x] **breadcrumb** · 源码 `packages/breadcrumb/breadcrumb.html` + `breadcrumb-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动；其套件 15/16，失败项在干净 HEAD 上同样失败（既有问题，与本轮改动无关）
+- [x] **card** · 源码 `packages/card/card.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（头尾显示靠 slot 状态镜像，属行为层）
 - [x] **badge** · 源码 `packages/badge/badge.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 徽标文字改模板 `{{textValue}}`（`text` 撞 ofa 方法名已避开）；其余为 slot 状态镜像
-- [ ] **empty** · 源码 `packages/empty/empty.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **divider** · 源码 `packages/divider/divider.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **progress** · 源码 `packages/progress/progress.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **skeleton** · 源码 `packages/skeleton/skeleton.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **space** · 源码 `packages/space/space.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **grid** · 源码 `packages/grid/grid.html` + `grid-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
-- [ ] **spinner** · 源码 `packages/spinner/spinner.html` · 文档 `README.md` / `api.md` / `page.html` · ✅
+- [x] **empty** · 源码 `packages/empty/empty.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动
+- [x] **divider** · 源码 `packages/divider/divider.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（数字 spacing 写宿主变量属行为层）
+- [x] **progress** · 源码 `packages/progress/progress.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（填充宽度由运行时值算，属行为层）
+- [x] **skeleton** · 源码 `packages/skeleton/skeleton.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（宽高 / 数字 size 写宿主 style，模板表达不了）
+- [x] **space** · 源码 `packages/space/space.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（数字 gap 写宿主变量属行为层）
+- [x] **grid** · 源码 `packages/grid/grid.html` + `grid-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动（cols / span 写宿主变量属行为层）
+- [x] **spinner** · 源码 `packages/spinner/spinner.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过、未改动
 - [ ] **color** · 无组件源码 · 文档 `packages/color/README.md` / `page.html` · ✅
 
 ## 共享文档
@@ -115,20 +115,22 @@
 
 ## 进度记录
 
-| 日期       | 单元                          | commit    | 验收                                                                |
-| ---------- | ----------------------------- | --------- | ------------------------------------------------------------------- |
-| 2026-10-24 | button                        | `7c4dc3d` | button 19/19、form 46/46                                            |
-| 2026-10-24 | menu                          | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                              |
-| 2026-10-24 | menu（模板化）                | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用       |
-| 2026-10-25 | menu（options 通道）          | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                       |
-| 2026-10-25 | nav（:options + shadow）      | 本提交    | 文档站 47 行复用、current / 居中正常                                |
-| 2026-10-25 | nav（居中策略）               | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop               |
-| 2026-10-25 | nav（刷新居中）               | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常      |
-| 2026-10-25 | date-picker（模板化）         | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建      |
-| 2026-10-25 | select（模板化）              | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层      |
-| 2026-10-25 | tree-select（模板化）         | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外        |
-| 2026-10-25 | rate（模板化）                | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层    |
-| 2026-10-25 | icon（模板化）                | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层  |
-| 2026-10-25 | P3 行为层核对                 | 本提交    | dialog/popover/dropdown/tooltip/scroll-bar/loading-bar/code 128/128 |
-| 2026-10-25 | P2-A（pagination/table/form） | 本提交    | 91/91；attr:、shadow.$ / on / off、foster-parent 与 :html 例外集中  |
-| 2026-10-25 | badge（模板化）               | 本提交    | badge 13/13、徽标文字改 {{textValue}}；slot 状态镜像留行为层        |
+| 日期       | 单元                          | commit    | 验收                                                                                            |
+| ---------- | ----------------------------- | --------- | ----------------------------------------------------------------------------------------------- |
+| 2026-10-24 | button                        | `7c4dc3d` | button 19/19、form 46/46                                                                        |
+| 2026-10-24 | menu                          | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                                                          |
+| 2026-10-24 | menu（模板化）                | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用                                   |
+| 2026-10-25 | menu（options 通道）          | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                                                   |
+| 2026-10-25 | nav（:options + shadow）      | 本提交    | 文档站 47 行复用、current / 居中正常                                                            |
+| 2026-10-25 | nav（居中策略）               | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop                                           |
+| 2026-10-25 | nav（刷新居中）               | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常                                  |
+| 2026-10-25 | date-picker（模板化）         | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建                                  |
+| 2026-10-25 | select（模板化）              | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层                                  |
+| 2026-10-25 | tree-select（模板化）         | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外                                    |
+| 2026-10-25 | rate（模板化）                | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层                                |
+| 2026-10-25 | icon（模板化）                | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层                              |
+| 2026-10-25 | P3 行为层核对                 | 本提交    | dialog/popover/dropdown/tooltip/scroll-bar/loading-bar/code 128/128                             |
+| 2026-10-25 | P2-A（pagination/table/form） | 本提交    | 91/91；attr:、shadow.$ / on / off、foster-parent 与 :html 例外集中                              |
+| 2026-10-25 | badge（模板化）               | 本提交    | badge 13/13、徽标文字改 {{textValue}}；slot 状态镜像留行为层                                    |
+| 2026-10-25 | P2-B/C（input…alert）         | 本提交    | 8 套件全绿；`attr:` 布尔绑定、`shadow.$` / `on` / `off`、行为层集中注释；checkbox/switch 修笔误 |
+| 2026-10-25 | P4 核对（9 单元）             | 本提交    | 全部合规未改；breadcrumb 套件 1 条既有失败（干净 HEAD 复现，与本轮无关）                        |

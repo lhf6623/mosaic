@@ -82,12 +82,14 @@
         attached() {
           this._mounted = true; // 宿主属性只能在这之后写（P31）
 
-          this._slot = this.ele.shadowRoot.querySelector('slot');
+          /* 行为层只拿元素引用（模板已渲染），不造节点：插槽事件走 ofa 的 on / off */
+          this._slot = this.shadow.$('slot');
           this._onSlotChange = () => this.onSlotChange();
           this._onClick = (event) => this.onClick(event);
           this._onKeydown = (event) => this.onKeydown(event);
-          this._slot.addEventListener('slotchange', this._onSlotChange);
-          // click / keydown 都是 composed：从子项 shadow 里的原生 radio 冒得上来
+          this._slot?.on('slotchange', this._onSlotChange);
+          /* 行为层（组内交互）：子项住 light DOM，模板看不到它们的事件；click / keydown 都是 composed，
+             从子项 shadow 里的原生 radio 冒到组宿主上，所以监听挂在宿主。 */
           this.ele.addEventListener('click', this._onClick);
           this.ele.addEventListener('keydown', this._onKeydown);
 
@@ -107,7 +109,7 @@
         },
 
         detached() {
-          this._slot?.removeEventListener('slotchange', this._onSlotChange);
+          this._slot?.off('slotchange', this._onSlotChange);
           this.ele.removeEventListener('click', this._onClick);
           this.ele.removeEventListener('keydown', this._onKeydown);
         },
@@ -216,7 +218,8 @@
             this.applySelection((item) => item === radio, true);
           },
 
-          /** 方向键在组内换选中并把焦点带过去（原生跨 shadow root 不成组，浏览器不会自己走） */
+          /** 方向键在组内换选中并把焦点带过去（原生跨 shadow root 不成组，浏览器不会自己走）。
+            行为层例外（键盘 / 焦点）：模板表达不了，集中在这里做。 */
           onKeydown(event) {
             const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
             if (!step || this.ele.hasAttribute('disabled')) return;

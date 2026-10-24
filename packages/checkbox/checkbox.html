@@ -144,7 +144,7 @@
     <input
       class="mc-native"
       type="checkbox"
-      :disabled="disabled !== null"
+      attr:disabled="disabled !== null"
       on:change="onNativeChange()" />
     <span class="mc-box" part="box">
       <span class="mc-mark mc-mark-check mc-icon-check"></span>
@@ -183,9 +183,12 @@
 
         ready() {
           // 这里 shadow 已建好（同 mc-collapse-item）；宿主属性一律留到 attached 才写（P31）
-          this._native = this.ele.shadowRoot.querySelector('.mc-native');
+          /* 行为层只拿元素引用（模板已渲染），不造节点：可见结构全在模板，原生元素走 .ele */
+          this._native = this.shadow.$('.mc-native')?.ele ?? null;
 
-          // 运行时状态走 property（规范 1.4）：setter 立刻同步内部原生 input，不等 ofa 那一拍（P4）
+          /* 行为层例外（原生 IDL 状态）：模板只负责可见结构（方框 / 勾 / 横杠），
+             checked / indeterminate 是**原生 input 的运行时状态**（indeterminate 连 HTML 属性都没有），
+             只能在 setter 里立刻写原生 property（P4）—— 这一层模板表达不了。 */
           Object.defineProperty(this.ele, 'checked', {
             configurable: true,
             get: () => this._native.checked,
@@ -219,7 +222,6 @@
           this._mounted = true; // 宿主属性只能在这之后写（P31）
           // 非受控初值在这一拍读：宿主属性要 attached 之后才能写（P31），createElement 之后再写属性也照样读到
           this.applyDefaultChecked();
-          this.applyChecked();
           this.applyChecked();
         },
 
@@ -274,7 +276,7 @@
             宿主属性要 attached 之后才能写（P31）。 */
           normalizeBoolAttrs() {
             if (!this._mounted) return;
-            for (const name of ['checked', 'indeterminate', 'invalid"', 'disabled']) {
+            for (const name of ['checked', 'indeterminate', 'invalid', 'disabled']) {
               const raw = this.ele.getAttribute(name);
               if (raw === null || raw === '') continue;
               if (raw === 'false') this.ele.removeAttribute(name);

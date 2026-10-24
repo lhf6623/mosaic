@@ -1,4 +1,4 @@
-<!-- mc-input — 单行输入框；设计取舍见 README.md「设计取舍」。 -->
+<!-- mc-input — 单行输入框（可见结构全在模板；溢出提示 / 焦点是行为层例外，见对应方法注释）；设计取舍见 README.md「设计取舍」。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -143,7 +143,7 @@
       attr:type="type"
       attr:name="name === '' ? null : name"
       attr:placeholder="placeholder === '' ? null : placeholder"
-      :disabled="disabled !== null"
+      attr:disabled="disabled !== null"
       attr:readonly="readonly !== null ? '' : null"
       attr:maxlength="maxlength === null ? null : maxlength"
       on:input="onInput($event)"
@@ -151,7 +151,7 @@
     <button
       class="mc-clear"
       type="button"
-      :disabled="disabled !== null || readonly !== null"
+      attr:disabled="disabled !== null || readonly !== null"
       on:click="onClear()">
       ×
     </button>
@@ -195,9 +195,11 @@
 
         ready() {
           // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-          const root = this.ele.shadowRoot;
-          this._input = root.querySelector('.mc-input');
-          this._slots = [...root.querySelectorAll('slot')];
+          /* 行为层只拿元素引用（模板已渲染），不造节点：原生元素走 .ele，插槽事件走 ofa 的 on / off */
+          this._input = this.shadow.$('.mc-input')?.ele ?? null;
+          this._slots = ['prefix', 'suffix']
+            .map((name) => this.shadow.$(`slot[name="${name}"]`))
+            .filter(Boolean);
           // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
           this.applyDefaultValue();
 
@@ -217,6 +219,8 @@
 
         attached() {
           this._mounted = true;
+          /* 行为层例外（popover + 测量）：被裁掉的完整值要在 top layer 弹浮层，是否溢出 / 浮层怎么定位
+             都只有运行时量得出来（模板表达不了）；浮层由 boot/overflow-tip.js 自己挂进 shadow。 */
           this._overflowTip = attachOverflowTip(this.ele, this._input, {
             text: () => this._input.value || this._input.placeholder || '',
             /* 正在编辑时不打扰；密码 / 文件不把完整值弹出来 */
@@ -230,13 +234,12 @@
           this.applyDefaultValue();
           this._defaultApplied = true;
           this._onSlotChange = () => this.applyState();
-          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.on('slotchange', this._onSlotChange);
           this.applyState();
         },
 
         detached() {
-          for (const slot of this._slots)
-            slot.removeEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
         },
@@ -330,10 +333,11 @@
             this._overflowTip?.check();
           },
 
-          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
+          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算。
+            插槽分没分到内容是运行时的 DOM 事实（模板看不见），只能读 slot.assignedNodes()。 */
           slotHasContent(name) {
-            const slot = this.ele.shadowRoot.querySelector(`slot[name="${name}"]`);
-            return (slot?.assignedNodes() ?? []).some(
+            const slot = this.shadow.$(`slot[name="${name}"]`);
+            return (slot?.ele?.assignedNodes() ?? []).some(
               (node) =>
                 node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
             );
@@ -362,7 +366,8 @@
             this.$emit('change', { value: this._input.value });
           },
 
-          /** 清空 + 三个事件：clear 说明"为什么变"，input / change 让绑定值的用法不用改 */
+          /** 清空 + 三个事件：clear 说明"为什么变"，input / change 让绑定值的用法不用改。
+            焦点是行为层（模板表达不了）：清空后交还给输入框，键盘用户才能接着输入。 */
           onClear() {
             this._input.value = '';
             this.applyState();

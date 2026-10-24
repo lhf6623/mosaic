@@ -78,9 +78,9 @@
         },
 
         ready() {
-          const root = this.ele.shadowRoot;
-          this._list = root.querySelector('.mc-list');
-          this._indicator = root.querySelector('.mc-indicator');
+          // 元素引用走 this.shadow.$，原生属性靠 .ele
+          this._list = this.shadow.$('.mc-list')?.ele ?? null;
+          this._indicator = this.shadow.$('.mc-indicator')?.ele ?? null;
 
           /* 运行时值：宿主 DOM property（P18）。这里只挂访问器，不写宿主属性（构造期写宿主会抛，P31） */
           Object.defineProperty(this.ele, 'value', {
@@ -140,6 +140,15 @@
             return [...this.ele.querySelectorAll(':scope > [slot="panel"]')];
           },
 
+          /**
+           * mc-tab 内部那颗原生按钮（part="base"）。
+           * 行为层例外（跨 shadow root）：roving tabindex / 焦点 / 指示条量宽都落在这颗按钮上，
+           * 而它住在子组件自己的 shadow 里 —— 容器模板与 this.shadow.$ 都够不着，只能读宿主的原生 shadowRoot。
+           */
+          baseOf(tab) {
+            return tab?.shadowRoot?.querySelector('.mc-base') ?? null;
+          },
+
           /** 当前激活值：property > default-value 属性 > 第一个可用项；指向禁用项时同样退到第一个可用项 */
           activeValue() {
             const tabs = this.tabList();
@@ -156,13 +165,17 @@
             return first ? (first.getAttribute('value') ?? '') : '';
           },
 
-          /** 把「谁是激活项」落到三处：标签的 selected、button 的 roving tabindex、面板的 hidden；面板用 hidden 常驻 DOM，切回来内容还在 */
+          /**
+           * 把「谁是激活项」落到三处：标签的 selected、button 的 roving tabindex、面板的 hidden；面板用 hidden 常驻 DOM，切回来内容还在。
+           * 行为层：标签与面板都是使用者的 light DOM（见 README「设计取舍」），可见结构不在本组件的模板里 ——
+           * 这里只同步状态属性，不创建、不搬动任何节点。
+           */
           applyState() {
             const active = this.activeValue();
             const tabs = this.tabList().map((tab) => ({
               tab,
               value: tab.getAttribute('value') ?? '',
-              base: tab.shadowRoot?.querySelector('.mc-base') ?? null,
+              base: this.baseOf(tab),
             }));
             const panels = this.panelList().map((panel) => ({
               panel,
@@ -194,7 +207,9 @@
             for (const tab of this.tabList()) this._ro.observe(tab);
           },
 
-          /** 指示条 = 激活标签内部那个 button 的宽度与左偏移（相对标签条）。没有标签时缩到 0 */
+          /** 指示条 = 激活标签内部那个 button 的宽度与左偏移（相对标签条）。没有标签时缩到 0。
+            行为层例外（测量）：宽度 / 位移是量出来的像素值，模板的 class / style 绑定表达不了；
+            ResizeObserver 在字体、文案、容器尺寸变化时重算，结果写进内联 style。 */
           placeIndicator() {
             const indicator = this._indicator;
             if (!indicator) return;
@@ -203,7 +218,7 @@
             const tab = this.tabList().find(
               (item) => (item.getAttribute('value') ?? '') === active,
             );
-            const base = tab?.shadowRoot?.querySelector('.mc-base') ?? tab;
+            const base = this.baseOf(tab) ?? tab;
             const rect = base?.getBoundingClientRect();
             if (!list || !rect || !rect.width) {
               indicator.style.width = '0';
@@ -263,7 +278,7 @@
             const changed = this.activeValue() !== value;
             this._value = value;
             this.applyState();
-            tab.shadowRoot?.querySelector('.mc-base')?.focus();
+            this.baseOf(tab)?.focus();
             if (changed) this.$emit('change', { value });
           },
         },
