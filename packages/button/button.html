@@ -229,7 +229,11 @@
   </style>
 
   <!-- 交互层：透明原生 button 盖满宿主 -->
-  <button class="mc-native" :type="type" :disabled="disabled !== null || loading !== null"></button>
+  <!-- 内部原生 button 只承载语义：type / disabled 是 HTML 属性，按 ofa 规范走 attr:（false 时移除属性，不会留下 disabled="false"） -->
+  <button
+    class="mc-native"
+    attr:type="type"
+    attr:disabled="disabled !== null || loading !== null"></button>
 
   <span class="mc-layer"></span>
   <span class="mc-loader mc-icon-spinner"></span>
@@ -238,7 +242,8 @@
   <slot name="suffix"></slot>
 
   <script>
-    /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头 */
+    /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头。
+       hex 是行为层的例外：值不是语义名，CSS 属性选择器表达不了；只写宿主 CSS 变量（原生属性走 .ele），不碰渲染结构。 */
     import { colorAttr } from '../boot/color-attr.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
