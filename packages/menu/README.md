@@ -84,10 +84,10 @@ light DOM，两条路共用同一个行组件。`doc-nav` 因此改从 `mc-menu`
 开合原生 popover 时浏览器可能顺手把页面滚一下（火狐实测），显式 `showPopover()` / `hidePopover()`
 那两行包成 `guard.run(() => …)`，重建 / 卸载时 `dispose()`。
 
-**`options`（数据驱动）**：进 `attrs`（默认 null），属性通道收 JSON 字符串（首屏直出时也可能直接给数组 ——
-绑定落点不稳定，不要依赖）；运行时推荐用宿主 property 传数组 —— 和 `mc-table` 的 `columns` 同一条路：
-property 走 `Object.defineProperty`，挂载前赋的值先收进 `_presetOptions`（P31：构造期不往宿主写属性），
-解析结果落在 `data.items`，**不写回 attrs 键**（写回会被 ofa 再序列化成属性文本，渲染源与输入就分叉了）。
+**`options`（数据驱动）**：对象数组放 `data.options`（技能口径：复杂数据不进 `attrs`）。
+ofa 模板里用 `:options` 传；普通 HTML 用宿主 property（`menu.options = [...]`）或
+`<mc-menu options='[...]'>` 的 JSON 初始值——后者由 `attached` 手动监听，只作首屏兼容，不写回 attrs。
+property 通过 `Object.defineProperty` 暴露，挂载前赋的值先收进 `_presetOptions`（P31：构造期不往宿主写属性）。
 
 字段：`label` / `icon` / `href`（最终地址）/ `current` / `disabled` / `attrs`（附加到行上的属性：
 `target` / `rel` / `title` 由菜单项转给内置 `<a>`，其余（如 `data-status`）留在行上给宿主钩子），
@@ -95,8 +95,8 @@ property 走 `Object.defineProperty`，挂载前赋的值先收进 `_presetOptio
 
 `children` 有两种落法：**普通行**带 `children` → 父级是开合开关、子菜单折叠；**分组行**
 （`type: 'group'`）带 `children` → 标题不可交互、组内条目**常显**并缩进一档（`doc-nav` 的左栏
-就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。模板里的嵌套 `mc-menu` 用内部 `data.items` 接 `children`：
-`options` 留在 `attrs` 只是属性 / JSON 兼容通道，对象数组走 data 绑定，不会被 ofa 序列化成属性文本。
+就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。模板里的嵌套 `mc-menu` 直接用 `:options="$data.children"`：
+对象数组走 data 绑定，不会被 ofa 序列化成属性文本。
 
 `expanded: true`：父级行开场就展开。`accordion` 下同层只留一个，多个 `expanded` 时**后面的赢**
 （与手动点开的规则一致）—— 窄屏「全部菜单」用它把当前分区默认摊开。只在普通（内联）模式有意义：

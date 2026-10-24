@@ -293,6 +293,8 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 - **普通 HTML** 没有模板编译：`{{}}` / `:prop` / `sync:` / `attr:` / `on:` / `o-fill` / `o-if` 都只是普通属性字符串，不会被 ofa 处理。对象 / 数组只能走 JS property（`$()`）或组件显式支持的 JSON 属性初始值；JSON 属性**只作初值**，运行时改值仍走 property。
 - **ofa 模板**：标量进 `attrs` / 用 `:prop`；布尔用 `attr:`；对象 / 数组放 `data`、用 `:prop` 传。**对象不需要 `sync:`**（引用共享）。
 - **组件作者**：标量进 `attrs`，对象 / 数组进 `data`；为普通 HTML 暴露同名 property（对象字段在 `data` 里时 `$('#id').options` 即可生效；要支持原生 `el.options` 再补 accessor）；JSON 属性兼容必须单独监听，且只作初值。
+- **对象属性的文档位置**：不进「属性」表（那张表对账 `attrs`），在 `api.md` 的属性节用
+  `| 对象属性 | 值 | 说明 |` 单独列表；页面照常渲染，但不参与 attrs 对账。
 
 ### 1.2 属性：五个正交维度
 

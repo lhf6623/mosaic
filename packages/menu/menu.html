@@ -143,14 +143,14 @@
               <mc-menu
                 attr:data-level="$data.childLevel"
                 data-flyout
-                :items="$data.children"></mc-menu>
+                :options="$data.children"></mc-menu>
             </div>
           </o-if>
           <o-if :value="!$data.flyout">
             <mc-menu
               attr:data-level="$data.childLevel"
               attr:hidden="$data.expanded ? null : ''"
-              :items="$data.children"></mc-menu>
+              :options="$data.children"></mc-menu>
           </o-if>
         </o-if>
       </div>
@@ -208,14 +208,12 @@
           collapsed: null,
           /* 手风琴：同一层只允许一个子菜单展开（同 mc-collapse 的口径） */
           accordion: null,
-          /* 对象数组。属性通道只作初始值 / JSON 兼容；运行时推荐 property。
-             内部嵌套实例用 data 里的 items 传（见模板），避免 :options 被序列化成属性文本 */
-          options: null,
         },
 
         data: {
-          /* 使用者传进来的原始 options；rows 是模板用的规范化行模型 */
-          items: [],
+          /* 对象数组放 data（技能口径），外部用 :options / property 传。
+             options 属性仍作为普通 HTML 的 JSON 初始值兼容通道，由 attached 手动监听，不写回 attrs */
+          options: [],
           rows: [],
         },
 
@@ -236,10 +234,10 @@
           /* 公开的 property 通道：getter 读数据，setter 写数据；属性通道由 attached 里的 MutationObserver 补 */
           Object.defineProperty(this.ele, 'options', {
             configurable: true,
-            get: () => this.items,
+            get: () => this.options,
             set: (value) => {
               this._propOptions = true;
-              this.items = this.toOptions(value);
+              this.options = this.toOptions(value);
             },
           });
         },
@@ -250,11 +248,11 @@
           if (!this._applied) {
             this._applied = true;
             if (this.ele.hasAttribute('options')) {
-              this.items = this.toOptions(this.ele.getAttribute('options'));
+              this.options = this.toOptions(this.ele.getAttribute('options'));
             }
             if (this._presetOptions !== undefined) {
               this._propOptions = true;
-              this.items = this.toOptions(this._presetOptions);
+              this.options = this.toOptions(this._presetOptions);
               this._presetOptions = undefined;
             }
           }
@@ -275,19 +273,19 @@
             if (key === this._modeKey) return;
             this._modeKey = key;
             this.closeFlyouts();
-            this.rows = this.buildRows(this.items);
+            this.rows = this.buildRows(this.options);
             this.scheduleMeta();
           });
           this._modeMo.observe(this.ele, {
             attributes: true,
             attributeFilter: ['data-flyout', 'data-level', 'accordion'],
           });
-          this.rows = this.buildRows(this.items);
+          this.rows = this.buildRows(this.options);
 
           /* options 的属性通道自己听（同 mc-table 的 data）；我们从不写这个属性，所以不会自激 */
           this._attrMo = new MutationObserver(() => {
             if (this._propOptions) return; // property 已写过值：属性通道（含绑定后到的 JSON 文本）不覆盖它
-            this.items = this.toOptions(this.ele.getAttribute('options'));
+            this.options = this.toOptions(this.ele.getAttribute('options'));
           });
           this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
 
@@ -324,8 +322,7 @@
         },
 
         watch: {
-          /* 嵌套实例的 children 走 data.items；顶层 options property 也落回这里 */
-          items(value) {
+          options(value) {
             if (!this._mounted) return; // 首次触发落在构造期（P5）；attached 里会自己建一次
             this.rows = this.buildRows(this.toOptions(value));
             this.scheduleMeta();
@@ -334,7 +331,7 @@
           collapsed() {
             if (!this._mounted) return;
             this.closeFlyouts();
-            this.rows = this.buildRows(this.items);
+            this.rows = this.buildRows(this.options);
             this.scheduleMeta();
           },
           /* 尺寸变了要重新下发通道：嵌套实例拿的是建立那一刻的内联副本 */

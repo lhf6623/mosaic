@@ -27,7 +27,7 @@
 
   <!-- 条子走组件默认的 hover：菜单是拿来读的，常驻一条会压在条目背景上 -->
   <mc-scroll-bar label="站点菜单">
-    <mc-menu id="nav-menu"></mc-menu>
+    <mc-menu id="nav-menu" :options="menuOptions"></mc-menu>
   </mc-scroll-bar>
 
   <script>
@@ -79,6 +79,9 @@
       /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断标签名，文件一改名 / 挪目录就注册失败（P40） */
       tag: 'doc-nav',
 
+      /* 对象 / 数组传播走 data + :options（普通 HTML 才用 property；这里是 ofa 模板） */
+      data: { menuOptions: [] },
+
       ready() {
         this._menu = this.ele.shadowRoot.querySelector('#nav-menu');
         this._bar = this.ele.shadowRoot.querySelector('mc-scroll-bar');
@@ -115,7 +118,7 @@
         renderRows() {
           /* ⚠️ 别再调一次 locate()：routeState() 里已经是算好的 entry / node */
           const { path: current, entry } = routeState();
-          this._menu.options = this._full
+          this.menuOptions = this._full
             ? fullOptionsOf(current, entry)
             : entry
               ? optionsOf(entry, current)

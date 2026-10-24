@@ -26,7 +26,7 @@
 
 ## P1 · 渲染结构在 JS，优先重写
 
-- [x] **menu** · 源码 `packages/menu/menu.html` + `menu-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 行 / 内置控件模板渲染；浮层与开合为行为层
+- [x] **menu** · 源码 `packages/menu/menu.html` + `menu-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 行 / 内置控件模板渲染；options 走 data + `:options`；浮层与开合为行为层
 - [ ] **date-picker** · 源码 `packages/date-picker/date-picker.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
 - [ ] **select** · 源码 `packages/select/select.html` + `option.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
 - [ ] **tree-select** · 源码 `packages/tree-select/tree-select.html` · 文档 `README.md` / `api.md` / `page.html` · 🔴
