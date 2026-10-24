@@ -99,6 +99,11 @@
   </div>
 
   <script>
+    /* 行为层例外（模板只落 pre / code 外壳，高亮产物与行号结构只能运行时生成）：
+       · 语法高亮来自第三方 highlight.js，产出一段 HTML 字符串；
+       · 行号模式要按行切分高亮 HTML（配平跨行标签），逐行生成 mc-line / mc-ln / mc-lc；
+       · 主题表 adopt 与滚轮边界转交也在这里（见 applyTheme / handleWheel）。 */
+
     /** highlight.js 来源（结尾 build/）。锁精确版本：jsDelivr 版本别名有 7 天缓存（见 PLAN D1）；换镜像 / 自托管改 `hljs-base` */
     const HLJS_BASE = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/';
 
@@ -459,6 +464,8 @@
           }
         },
 
+        /** 模板只有 pre / code 外壳：高亮产物是第三方 HTML 字符串，行号模式要按行重新包结构，
+            两者都只能在这里落 DOM（行为层例外，见文件头）。 */
         renderCode() {
           const code = this._codeEl;
           const html = this._hlHtml;

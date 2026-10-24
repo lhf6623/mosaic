@@ -53,13 +53,13 @@
 
 ## P3 · 行为层例外，只核对并补注释
 
-- [ ] **dialog** · 源码 `packages/dialog/dialog.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **popover** · 源码 `packages/popover/popover.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **dropdown** · 源码 `packages/dropdown/dropdown.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **tooltip** · 源码 `packages/tooltip/tooltip.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **scroll-bar** · 源码 `packages/scroll-bar/scroll-bar.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **loading-bar** · 源码 `packages/loading-bar/loading-bar.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
-- [ ] **code** · 源码 `packages/code/code.html` · 文档 `README.md` / `api.md` / `page.html` · 🔵
+- [x] **dialog** · 源码 `packages/dialog/dialog.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；popover / 焦点陷阱 / 插槽遍历已在脚本头集中注释
+- [x] **popover** · 源码 `packages/popover/popover.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；原生 popover / 锚点测量 / toggle 同步已集中注释
+- [x] **dropdown** · 源码 `packages/dropdown/dropdown.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；原生 popover / 点外部 / 焦点归还已集中注释
+- [x] **tooltip** · 源码 `packages/tooltip/tooltip.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；原生 popover / 延迟计时 / 点外部已集中注释
+- [x] **scroll-bar** · 源码 `packages/scroll-bar/scroll-bar.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；滚动几何 / 拖拽 / 滚轮已集中注释
+- [x] **loading-bar** · 源码 `packages/loading-bar/loading-bar.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；宽度归零重启已集中注释
+- [x] **code** · 源码 `packages/code/code.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 核对通过；第三方高亮 / 行号结构已集中注释
 
 ## P4 · 基本合规，核对即可
 
@@ -115,17 +115,18 @@
 
 ## 进度记录
 
-| 日期       | 单元                     | commit    | 验收                                                               |
-| ---------- | ------------------------ | --------- | ------------------------------------------------------------------ |
-| 2026-10-24 | button                   | `7c4dc3d` | button 19/19、form 46/46                                           |
-| 2026-10-24 | menu                     | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                             |
-| 2026-10-24 | menu（模板化）           | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用      |
-| 2026-10-25 | menu（options 通道）     | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                      |
-| 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                               |
-| 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop              |
-| 2026-10-25 | nav（刷新居中）          | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常     |
-| 2026-10-25 | date-picker（模板化）    | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建     |
-| 2026-10-25 | select（模板化）         | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层     |
-| 2026-10-25 | tree-select（模板化）    | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外       |
-| 2026-10-25 | rate（模板化）           | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层   |
-| 2026-10-25 | icon（模板化）           | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层 |
+| 日期       | 单元                     | commit    | 验收                                                                |
+| ---------- | ------------------------ | --------- | ------------------------------------------------------------------- |
+| 2026-10-24 | button                   | `7c4dc3d` | button 19/19、form 46/46                                            |
+| 2026-10-24 | menu                     | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                              |
+| 2026-10-24 | menu（模板化）           | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用       |
+| 2026-10-25 | menu（options 通道）     | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                       |
+| 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                                |
+| 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop               |
+| 2026-10-25 | nav（刷新居中）          | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常      |
+| 2026-10-25 | date-picker（模板化）    | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建      |
+| 2026-10-25 | select（模板化）         | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层      |
+| 2026-10-25 | tree-select（模板化）    | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外        |
+| 2026-10-25 | rate（模板化）           | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层    |
+| 2026-10-25 | icon（模板化）           | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层  |
+| 2026-10-25 | P3 行为层核对            | 本提交    | dialog/popover/dropdown/tooltip/scroll-bar/loading-bar/code 128/128 |

@@ -113,6 +113,10 @@
   <script>
     import { withEmits } from '../boot/emits.js';
 
+    /* 行为层例外（模板只落 viewport / bar / thumb 三块结构，下面这些模板表达不了）：
+       · 滚动几何测量：溢出判定、滑块长度与位置（clientHeight / scrollHeight / 量矩形）；
+       · 拖拽滑块、滚轮转发、scroll 事件重发与 ResizeObserver。 */
+
     export default async () =>
       withEmits({
         tag: 'mc-scroll-bar',

@@ -180,6 +180,11 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     import { withEmits } from '../boot/emits.js';
 
+    /* 行为层例外（模板只负责遮罩 / 面板 / 头身脚结构，下面这些模板表达不了，集中在本文件）：
+       · 原生 popover 的 showPopover / hidePopover 与 top layer；
+       · 焦点陷阱：打开时焦点进面板、Esc / Tab 循环、关闭归还触发点；
+       · 插槽内容判定与可聚焦元素遍历 —— 内容在使用者的 light DOM / 嵌套 shadow root 里，模板查询够不到。 */
+
     /** 面板里可聚焦的原生元素；`:disabled` 认 property，够得到真正可聚焦的那些 */
     const FOCUSABLE =
       'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])';

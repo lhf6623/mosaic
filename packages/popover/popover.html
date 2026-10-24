@@ -194,6 +194,11 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     import { withEmits } from '../boot/emits.js';
 
+    /* 行为层例外（模板只落锚点 / 面板 / 箭头结构，下面这些模板表达不了）：
+       · 原生 popover 开合与 light dismiss（showPopover / hidePopover / 原生 toggle）；
+       · 锚点几何测量：面板落在哪一侧、箭头对齐触发元素中心（量矩形后写 CSS 变量）；
+       · 受控 open 属性与原生 toggle 的双向同步。 */
+
     /** 面板贴的是「上下」还是「左右」——决定箭头要横向还是纵向对锚 */
     const AXIS_OF = (placement) =>
       (placement ?? 'bottom').startsWith('top') || (placement ?? 'bottom').startsWith('bottom')

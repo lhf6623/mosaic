@@ -134,6 +134,10 @@
   <script>
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
 
+    /* 行为层例外（模板只落锚点 / 面板结构，下面这些模板表达不了）：
+       · 原生 popover 显隐 + 延迟计时器（showPopover / hidePopover）；
+       · click 触发的点外部收起（composedPath 跨 shadow 判定）。 */
+
     export default () => ({
       tag: 'mc-tooltip',
 

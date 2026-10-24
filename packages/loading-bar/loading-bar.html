@@ -92,6 +92,8 @@
   <div class="mc-bar" part="bar"></div>
 
   <script>
+    /* 行为层例外（模板只落那条填充，样式全由 [state] 驱动）：
+       进 loading 时把上一轮留下的宽度瞬间归零再交回 CSS，否则会从 100% 往回滑。 */
     const RUNNING = 'loading';
 
     export default async () => ({

@@ -158,6 +158,10 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     import { withEmits } from '../boot/emits.js';
 
+    /* 行为层例外（模板只落锚点 / 面板结构，下面这些模板表达不了）：
+       · 原生 popover 开合、点外部关闭（composedPath 跨 shadow 判定）；
+       · hover / click 触发与焦点归还（触发元素在使用者 light DOM，可能要钻进别的 shadow root）。 */
+
     /** hover 开合的宽限时间：够把指针从触发元素移到面板上（面板是宿主的后代，不会触发 leave） */
     const HOVER_DELAY = 120;
 
