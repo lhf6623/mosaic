@@ -90,7 +90,7 @@
           &lt;/mc-form-item&gt;
 
           &lt;mc-form-item label="同意条款" name="agree" rules='[{"required":true,"message":"要同意才能提交"}]'&gt;
-            &lt;mc-checkbox :checked="form.agree" on:change="form.agree = $event.data.checked"&gt;
+            &lt;mc-checkbox attr:checked="form.agree" on:change="form.agree = $event.data.checked"&gt;
               同意条款
             &lt;/mc-checkbox&gt;
           &lt;/mc-form-item&gt;
@@ -129,11 +129,19 @@
       <code>mc-checkbox</code>
       /
       <code>mc-switch</code>
-      ）多写一句
-      <code>on:change="form.agree = $event.data.checked"</code>
-      ：布尔值走属性往返会被 ofa 绕成字符串 （
+      ）用
+      <code>attr:checked</code>
+      把值传下去（别用
+      <code>:checked</code>
+      /
+      <code>sync:checked</code>
+      ：ofa 会把
+      <code>false</code>
+      写成属性字符串
       <code>checked="false"</code>
-      ），而
+      ），再补一句
+      <code>on:change="form.agree = $event.data.checked"</code>
+      写回 ——
       <code>$event.data.checked</code>
       是真布尔，最稳。 文本类没有这个损耗，直接
       <code>sync:value</code>
@@ -197,13 +205,16 @@
       </li>
       <li>
         <strong>绑定表达式只认组件声明过的属性。</strong>
-        写
-        <code>:value</code>
+        <code>value</code>
         /
-        <code>:checked</code>
+        <code>checked</code>
         /
-        <code>:disabled</code>
-        这些名字才生效，拼错或自己发明一个名字会被静默丢掉。
+        <code>disabled</code>
+        这些名字要在组件声明里存在才生效（布尔用
+        <code>attr:</code>
+        ，其余动态值用
+        <code>:</code>
+        ），拼错或自己发明一个名字会被静默丢掉。
       </li>
       <li>
         <strong>受控字段的类型要稳定。</strong>
@@ -212,13 +223,13 @@
         和具体值之间跳。
       </li>
       <li>
-        <strong>布尔绑成 false 会写成「假值属性」。</strong>
+        <strong>布尔属性用 attr: 绑。</strong>
         <code>:disabled="false"</code>
         在 DOM 上是
         <code>disabled="false"</code>
-        —— 组件已经把这种写法规范化掉了， 你按
-        <code>el.disabled</code>
-        或者「属性在不在」判断都准。
+        —— 属性还在，按「存在即真」就是禁用；
+        <code>attr:disabled="false"</code>
+        会直接把属性摘掉，写和读都不用猜。
       </li>
       <li>
         <strong>容器不内置重置。</strong>

@@ -79,8 +79,9 @@
       data: { rows: [] },
 
       ready() {
+        /* 行是 o-fill 渲染的：点击委托到自己的 shadow 根，一个监听管住所有条目，重建条目不用重绑 */
         this._onClick = (event) => this.onItemClick(event);
-        this.ele.shadowRoot.addEventListener('click', this._onClick);
+        this.shadow.on('click', this._onClick);
 
         this._observer = new MutationObserver((records) => this.onMutate(records));
 
@@ -88,7 +89,8 @@
         this._onScroll = () => this.syncActive();
         this._onResize = () => this.syncActive();
 
-        /* 点目录后先锁定当前项、暂不交还 scroll-spy（判定带 240px，点短节时下一节会抢）；用户一滚就交还 */
+        /* 点目录后先锁定当前项、暂不交还 scroll-spy（判定带 240px，点短节时下一节会抢）；用户一滚就交还。
+           滚动发生在外壳的 .doc-main 上，事件到不了本组件的 shadow，只能挂 window（全局监听保留原生） */
         this._onUserScroll = () => {
           if (!this._pinned) return;
           this._pinned = null;
@@ -121,7 +123,7 @@
         for (const type of ['wheel', 'touchstart', 'keydown']) {
           window.removeEventListener(type, this._onUserScroll);
         }
-        this.ele.shadowRoot.removeEventListener('click', this._onClick);
+        this.shadow.off('click', this._onClick);
       },
 
       proto: {
@@ -142,7 +144,7 @@
           return slot?.assignedElements().find((el) => el.tagName === 'O-PAGE')?.shadowRoot ?? null;
         },
 
-        /** 盯住当前页：换页靠 slotchange，页内渲染靠 observer */
+        /** 盯住当前页：换页靠 slotchange，页内渲染靠 observer（slot 在外壳的 shadow 里，宿主层监听保留原生） */
         bindContent(root) {
           const slot = this.ele.getRootNode()?.querySelector('slot');
           if (slot && slot !== this._slot) {
@@ -186,7 +188,7 @@
             current: null,
           }));
 
-          // 一次性动作：盯住当前页、找到滚动容器并挂上 scroll-spy
+          // 一次性动作：盯住当前页、找到滚动容器并挂上 scroll-spy（容器是外壳的 .doc-main，宿主层保留原生监听）
           this.bindContent(root);
           this._scroller ??= this.scroller();
           this._scroller?.addEventListener('scroll', this._onScroll, { passive: true });

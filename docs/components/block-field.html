@@ -127,8 +127,8 @@
 
       ready() {
         const ele = this.ele;
-        const root = ele.shadowRoot ?? ele;
-        const layers = [...root.querySelectorAll('.layer')];
+        /* 四层 .layer 是模板里写死的静态结构：引用走 this.shadow.all，造方块才是本组件的行为层例外（见文件头） */
+        const layers = this.shadow.all('.layer').map((layer) => layer.ele);
         if (!layers.length) return;
 
         /* ⚠️ 读属性走 getAttribute：ready() 这一刻 ofa 还没把 attrs 铺进 this */

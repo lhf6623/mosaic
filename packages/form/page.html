@@ -182,10 +182,12 @@
           <code>data</code>
           里，控件用 ofa 原生的
           <code>sync:value="form.user.name"</code>
-          /
-          <code>sync:checked="form.agree"</code>
-          绑它 ——
-          打字就地写回数据，换一份数据就自动推回控件（这就是"重置"的正解）。只跟随、不回写就写
+          绑它（开关类的布尔值用
+          <code>attr:checked="form.agree"</code>
+          加
+          <code>on:change</code>
+          回写）——
+          打字就地写回数据，换一份数据就自动推回控件（这就是"重置"的正解）。文本类只跟随、不回写就写
           <code>:value="form.user.name"</code>
           。 容器**不持有数据**：它只从控件读值去校验，提交时你直接用
           <code>this.form</code>

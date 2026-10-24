@@ -159,12 +159,7 @@
 
     <doc-toc></doc-toc>
 
-    <button
-      type="button"
-      class="doc-nav-handle"
-      aria-expanded="true"
-      aria-label="隐藏左侧菜单"
-      title="隐藏左侧菜单">
+    <button type="button" class="doc-nav-handle" title="隐藏左侧菜单">
       <mc-icon name="chevron-left"></mc-icon>
     </button>
   </div>
@@ -180,15 +175,17 @@
       data: {},
 
       ready() {
-        this._nav = this.ele.shadowRoot.querySelector('doc-nav');
-        this._handle = this.ele.shadowRoot.querySelector('.doc-nav-handle');
+        this._nav = this.shadow.$('doc-nav')?.ele ?? null;
+        this._handle$ = this.shadow.$('.doc-nav-handle');
+        this._handle = this._handle$?.ele ?? null;
+        this._icon = this.shadow.$('mc-icon')?.ele ?? null;
         this._onToggle = () => this.toggleNav();
-        this._handle?.addEventListener('click', this._onToggle);
+        this._handle$?.on('click', this._onToggle);
         this.applyNavState();
       },
 
       detached() {
-        this._handle?.removeEventListener('click', this._onToggle);
+        this._handle$?.off('click', this._onToggle);
       },
 
       proto: {
@@ -202,13 +199,8 @@
           this.ele.toggleAttribute('data-nav-hidden', navHidden);
           this._nav?.toggleAttribute('inert', navHidden);
           if (!this._handle) return;
-          const label = navHidden ? '显示左侧菜单' : '隐藏左侧菜单';
-          this._handle.title = label;
-          this._handle.setAttribute('aria-label', label);
-          this._handle.setAttribute('aria-expanded', String(!navHidden));
-          this._handle
-            .querySelector('mc-icon')
-            ?.setAttribute('name', navHidden ? 'chevron-right' : 'chevron-left');
+          this._handle.title = navHidden ? '显示左侧菜单' : '隐藏左侧菜单';
+          this._icon?.setAttribute('name', navHidden ? 'chevron-right' : 'chevron-left');
         },
       },
     });

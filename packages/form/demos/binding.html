@@ -8,8 +8,8 @@
       label="同意条款"
       name="agree"
       rules='[{"required":true,"message":"要同意才能提交"}]'>
-      <!-- 布尔类用「单向 + change 回写」：载荷里的 checked 是真布尔（sync:checked 会绕成属性字符串，容易丢信息） -->
-      <mc-checkbox :checked="form.agree" on:change="form.agree = $event.data.checked">
+      <!-- 布尔类用「attr: 单向 + change 回写」：false 直接摘属性，载荷里的 checked 是真布尔（sync:checked 会绕成属性字符串） -->
+      <mc-checkbox attr:checked="form.agree" on:change="form.agree = $event.data.checked">
         同意条款
       </mc-checkbox>
     </mc-form-item>

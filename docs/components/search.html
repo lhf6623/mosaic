@@ -163,27 +163,28 @@
       },
 
       ready() {
-        const root = this.ele.shadowRoot;
-        this._field = root.querySelector('#field');
-        this._panel = root.querySelector('#panel');
-        this._list = root.querySelector('#list');
+        this._field = this.shadow.$('#field');
+        this._panel = this.shadow.$('#panel');
+        this._list = this.shadow.$('#list');
 
         /* 行是 o-fill 现造的，点击走事件委托：行上只放 data-path（行那层的 on: 拿不到 $data） */
         this._onListClick = (event) => {
           const path = event.target?.closest?.('[data-path]')?.dataset?.path;
           if (path) this.pick(path);
         };
-        this._list.addEventListener('click', this._onListClick);
+        this._list.on('click', this._onListClick);
 
         /* 没有 popover API 时不炸：面板挂不出来，输入框照常能用（同 mc-popover 的降级口径） */
-        this._popoverOk = typeof this._panel?.showPopover === 'function';
-        if (this._popoverOk) this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel);
+        this._popoverOk = typeof this._panel?.ele?.showPopover === 'function';
+        if (this._popoverOk)
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel.ele);
 
-        /* manual 的代价：点空白 / Esc 自己收口；按在输入框或面板里的不算外部点击 */
+        /* manual 的代价：点空白 / Esc 自己收口；按在输入框或面板里的不算外部点击。
+           面板在 top layer 里，外部点击只能挂 document（捕获阶段，不依赖冒泡链） */
         this._onDocPointerDown = (event) => {
           if (!this.isOpen()) return;
           const path = event.composedPath();
-          if (path.includes(this._field) || path.includes(this._panel)) return;
+          if (path.includes(this._field.ele) || path.includes(this._panel.ele)) return;
           this.hide();
         };
         document.addEventListener('pointerdown', this._onDocPointerDown, true);
@@ -201,23 +202,23 @@
         document.removeEventListener('pointerdown', this._onDocPointerDown, true);
         document.removeEventListener('keydown', this._onDocKeydown);
         this._scrollGuard?.dispose();
-        this._list?.removeEventListener('click', this._onListClick);
+        this._list?.off('click', this._onListClick);
       },
 
       proto: {
         isOpen() {
-          return this._popoverOk && this._panel.matches(':popover-open');
+          return this._popoverOk && this._panel.ele.matches(':popover-open');
         },
 
         /* 包在滚动守卫里，免得浏览器顺手把页面滚一下 */
         show() {
           if (this._popoverOk && !this.isOpen())
-            this._scrollGuard.run(() => this._panel.showPopover());
+            this._scrollGuard.run(() => this._panel.ele.showPopover());
         },
 
         hide() {
           if (this._popoverOk && this.isOpen())
-            this._scrollGuard.run(() => this._panel.hidePopover());
+            this._scrollGuard.run(() => this._panel.ele.hidePopover());
         },
 
         onInput(event) {
@@ -297,7 +298,7 @@
             const active = index === this._active;
             if (row.active !== active) row.active = active;
           });
-          this._list?.querySelector('[data-active]')?.scrollIntoView({ block: 'nearest' });
+          this._list?.$('[data-active]')?.ele.scrollIntoView({ block: 'nearest' });
         },
 
         /** 选中：收起 + 清空输入，再跳页（目标就是当前页时不发导航，见文件头） */
@@ -310,7 +311,7 @@
         /** 回到干净状态。清输入走 mc-input 的宿主 property —— 直接改内部 input 的话，× 的显隐会留在那儿 */
         clear() {
           this._query = '';
-          this._field.value = '';
+          this._field.ele.value = '';
           this.results = [];
           this.hide();
         },

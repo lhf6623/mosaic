@@ -82,7 +82,7 @@
       gap: var(--mc-space-2);
     }
 
-    /* 图标按钮：方形、只放一个图标，提示信息走 title / aria-label */
+    /* 图标按钮：方形、只放一个图标，提示信息走 title */
     .btn mc-icon {
       font-size: 15px;
     }
@@ -216,43 +216,27 @@
     }
   </style>
 
-  <!-- 预览：初始渲染与编辑后的结果都落在这里，每次 replaceChildren 换掉 -->
+  <!-- 预览：初始渲染与编辑后的结果都落在这里，每次 replaceChildren 换掉。
+       demo 编译出来的标签名运行期才知道，模板写不出来 —— 这是本组件唯一按编译结果造结构的例外 -->
   <div class="live" part="preview"></div>
 
   <div class="drawer" part="drawer">
     <div class="bar" part="bar">
       <span class="bar-label">编辑示例</span>
       <span class="dirty" part="dirty">已修改</span>
-      <span class="status" part="status" aria-live="polite"></span>
+      <span class="status" part="status"></span>
       <div class="actions" id="actions">
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-act="run"
-          title="运行示例"
-          aria-label="运行示例">
-          <mc-icon name="play" aria-hidden="true"></mc-icon>
+        <button type="button" class="btn btn-primary" data-act="run" title="运行示例">
+          <mc-icon name="play"></mc-icon>
         </button>
-        <button
-          type="button"
-          class="btn"
-          data-act="reset"
-          title="重置为文件原文"
-          aria-label="重置为文件原文">
-          <mc-icon name="refresh" aria-hidden="true"></mc-icon>
+        <button type="button" class="btn" data-act="reset" title="重置为文件原文">
+          <mc-icon name="refresh"></mc-icon>
         </button>
-        <button type="button" class="btn" data-act="copy" title="复制源码" aria-label="复制源码">
-          <mc-icon name="copy" aria-hidden="true"></mc-icon>
+        <button type="button" class="btn" data-act="copy" title="复制源码">
+          <mc-icon name="copy"></mc-icon>
         </button>
-        <button
-          type="button"
-          class="btn"
-          data-act="toggle"
-          aria-expanded="false"
-          aria-controls="panel"
-          title="展开编辑"
-          aria-label="展开编辑">
-          <mc-icon name="edit" aria-hidden="true"></mc-icon>
+        <button type="button" class="btn" data-act="toggle" title="展开编辑">
+          <mc-icon name="edit"></mc-icon>
         </button>
       </div>
     </div>
@@ -260,7 +244,7 @@
     <div class="panel" id="panel" hidden>
       <div class="editor-host" id="editor-host" part="editor">
         <!-- 首次打开要下载 CodeMirror：状态栏那行小字太弱，盖一层明显的加载态 -->
-        <div class="editor-loading" id="editor-loading" role="status" hidden>
+        <div class="editor-loading" id="editor-loading" hidden>
           <mc-spinner color="primary"></mc-spinner>
           <span>正在加载编辑器…</span>
           <span class="editor-loading-hint">首次打开会慢一点</span>
@@ -336,14 +320,13 @@
       },
 
       ready() {
-        const root = this.ele.shadowRoot;
-        this._live = root.querySelector('.live');
-        this._panel = root.querySelector('#panel');
-        this._statusEl = root.querySelector('.status');
-        this._errorEl = root.querySelector('.error');
-        this._editorHost = root.querySelector('#editor-host');
-        this._loadingEl = root.querySelector('#editor-loading');
-        this._actions = root.querySelector('#actions');
+        this._live = this.shadow.$('.live');
+        this._panel = this.shadow.$('#panel');
+        this._statusEl = this.shadow.$('.status');
+        this._errorEl = this.shadow.$('.error');
+        this._editorHost = this.shadow.$('#editor-host');
+        this._loadingEl = this.shadow.$('#editor-loading');
+        this._actions = this.shadow.$('#actions');
 
         this._mounted = true;
         this._open = false;
@@ -355,11 +338,11 @@
         this._baseTag = undefined;
 
         this._onAction = (event) => this.onAction(event);
-        this._actions.addEventListener('click', this._onAction);
+        this._actions.on('click', this._onAction);
 
-        const runBtn = this._actions.querySelector('[data-act="run"]');
+        const runBtn = this._actions.ele.querySelector('[data-act="run"]');
         if (runBtn) runBtn.title = `运行示例（${MOD_KEY} + Enter）`;
-        this._copyBtn = this._actions.querySelector('[data-act="copy"]');
+        this._copyBtn = this._actions.ele.querySelector('[data-act="copy"]');
 
         /* 语法配色走 :host([data-dark])：shadow 里看不到 <html data-theme>，只能自己落到宿主上（令牌本身会自动跟主题） */
         watchTheme(this);
@@ -382,7 +365,7 @@
         cancelAnimationFrame(this._fitRaf);
         window.removeEventListener('resize', this._onResize);
         unwatchTheme(this);
-        this._actions?.removeEventListener('click', this._onAction);
+        this._actions?.off('click', this._onAction);
         this._editor?.destroy();
         this._editor = undefined;
       },
@@ -451,16 +434,16 @@
 
         renderBaseElement() {
           if (!this._baseTag) return;
-          this._live.replaceChildren(document.createElement(this._baseTag));
+          this._live.ele.replaceChildren(document.createElement(this._baseTag));
         },
 
-        /** 首屏 / 重置失败时的预览区兜底：文字直接给在示例位置，不能白屏 */
+        /** 首屏 / 重置失败时的预览区兜底：文字直接给在示例位置，不能白屏（文案运行期才知道，节点只能现造） */
         showPreviewError(error) {
           const message = error instanceof Error ? error.message : String(error);
           const note = document.createElement('p');
           note.className = 'load-error';
           note.textContent = `示例加载失败：${message}`;
-          this._live.replaceChildren(note);
+          this._live.ele.replaceChildren(note);
         },
 
         /** 第一次展开抽屉才建编辑器（CM 懒加载）；重复展开复用同一个实例 */
@@ -481,7 +464,7 @@
           this.showEditorLoading();
           let editor;
           try {
-            editor = await mountCodeEditor(this._editorHost, {
+            editor = await mountCodeEditor(this._editorHost.ele, {
               value: this._source.parsed.inner,
               onChange: () => this.onEdit(),
               onRun: () => this.run(),
@@ -538,7 +521,7 @@
 
           try {
             const next = document.createElement(tag);
-            this._live.replaceChildren(next);
+            this._live.ele.replaceChildren(next);
           } catch (error) {
             if (seq !== this._runSeq) return;
             this.showError(error);
@@ -578,6 +561,7 @@
             await navigator.clipboard.writeText(text);
             this.flashCopy(true);
           } catch {
+            /* 剪贴板 API 不可用时的降级：一次性 textarea，不进页面结构、用完即删 */
             const area = document.createElement('textarea');
             area.value = text;
             area.style.position = 'fixed';
@@ -601,9 +585,7 @@
           clearTimeout(this._copyTimer);
           btn.dataset.feedback = ok ? 'copied' : 'failed';
           btn.querySelector('mc-icon')?.setAttribute('name', ok ? 'check' : 'x');
-          const label = ok ? '已复制' : '复制失败';
-          btn.title = label;
-          btn.setAttribute('aria-label', label);
+          btn.title = ok ? '已复制' : '复制失败';
           this._copyTimer = setTimeout(() => this.resetCopy(), COPY_FEEDBACK_MS);
         },
 
@@ -615,21 +597,18 @@
           delete btn.dataset.feedback;
           btn.querySelector('mc-icon')?.setAttribute('name', 'copy');
           btn.title = '复制源码';
-          btn.setAttribute('aria-label', '复制源码');
         },
 
         /** 展开 / 收起：同一行里换出「运行 / 重置 / 复制」与状态，编辑器在下面展开 */
         setOpen(open) {
           this._open = open;
           this.ele.toggleAttribute('data-open', open);
-          this._panel.hidden = !open;
-          const toggle = this._actions.querySelector('[data-act="toggle"]');
+          this._panel.ele.hidden = !open;
+          const toggle = this._actions.ele.querySelector('[data-act="toggle"]');
           if (toggle) {
             const label = open ? '收起编辑' : '展开编辑';
-            toggle.querySelector('mc-icon')?.setAttribute('name', open ? 'close' : 'edit');
+            toggle.querySelector('mc-icon')?.setAttribute('name', open ? 'x' : 'edit'); // 图标名用 x：iconify 没有 lucide/close，远程兜底会 404、图标空白
             toggle.title = label;
-            toggle.setAttribute('aria-label', label);
-            toggle.setAttribute('aria-expanded', String(open));
           }
           if (open) {
             this.openEditor();
@@ -642,13 +621,13 @@
           if (!this._loadingEl || this._editor) return;
           clearTimeout(this._loadingTimer);
           this._loadingTimer = setTimeout(() => {
-            this._loadingEl.hidden = false;
+            this._loadingEl.ele.hidden = false;
           }, 150);
         },
 
         hideEditorLoading() {
           clearTimeout(this._loadingTimer);
-          if (this._loadingEl) this._loadingEl.hidden = true;
+          if (this._loadingEl) this._loadingEl.ele.hidden = true;
         },
 
         /** rAF 合并：连续敲字 / 拖窗口时不用每次都量 */
@@ -662,7 +641,7 @@
 
         /** 高度 = 内容高度：不设上下限，量到多高就写多高（+2 是盒子的上下边框） */
         fitEditorHeight() {
-          const host = this._editorHost;
+          const host = this._editorHost?.ele;
           const editor = this._editor;
           if (!host || !editor) return;
           const content = Math.ceil(editor.getContentHeight());
@@ -686,20 +665,20 @@
         },
 
         setStatus(text, tone) {
-          this._statusEl.textContent = text;
+          this._statusEl.ele.textContent = text;
           if (tone) this.ele.dataset.state = tone;
           else this.ele.removeAttribute('data-state');
         },
 
         showError(error) {
-          this._errorEl.textContent = error instanceof Error ? error.message : String(error);
-          this._errorEl.hidden = false;
+          this._errorEl.ele.textContent = error instanceof Error ? error.message : String(error);
+          this._errorEl.ele.hidden = false;
           console.warn('[mosaic] doc-playground 示例编译失败：', error);
         },
 
         hideError() {
-          this._errorEl.hidden = true;
-          this._errorEl.textContent = '';
+          this._errorEl.ele.hidden = true;
+          this._errorEl.ele.textContent = '';
         },
 
         /** 亮暗：读 color-scheme（令牌层切主题就是切它，且继承、穿得进 shadow root），退到系统偏好 */

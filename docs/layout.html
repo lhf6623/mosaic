@@ -97,12 +97,12 @@
 
         /* 顶栏入口的点击走**事件委托**：这些行是 o-fill 渲染出来的，而 ofa 的 `on:` 绑定在 o-fill 模板里拿不到 `$data`。
            监听挂在外层 <nav> 上 —— 事件跨 shadow 冒泡到这里时 target 已被重定向成 <mc-button> 宿主，从它的 data-path 取路由。 */
-        this._topNav = this.ele.shadowRoot?.querySelector('.doc-top-nav');
+        this._topNav = this.shadow.$('.doc-top-nav');
         this._onTopNavClick = (event) => {
           const path = event.target?.closest?.('mc-button')?.dataset?.path;
           if (path) this.openEntry(path);
         };
-        this._topNav?.addEventListener('click', this._onTopNavClick);
+        this._topNav?.on('click', this._onTopNavClick);
 
         /* 原地跳（目标就是当前这一页）的 olink 链接：捕获阶段掐掉这次导航。
            ⚠️ ofa 对「同一页」不发 router-change（它的 _navigate 拿不到新页面就直接 return），
@@ -143,7 +143,7 @@
         window.removeEventListener('hashchange', this._onTitleChange);
         document.removeEventListener('router-change', this._onTitleChange);
         document.removeEventListener('wheel', this._onWheel);
-        this._topNav?.removeEventListener('click', this._onTopNavClick);
+        this._topNav?.off('click', this._onTopNavClick);
         document.removeEventListener('click', this._onDocClick, true);
         this._mq?.removeEventListener('change', this._onMQ);
         this._sysMQ?.removeEventListener('change', this._onSysMQ);
@@ -158,9 +158,9 @@
           location.hash = hashOf(path);
         },
 
-        /** 正文带：页面上唯一的滚动容器，住在外壳自己的 shadow root 里（不用穿透查） */
+        /** 正文带：页面上唯一的滚动容器，住在外壳自己的 shadow root 里；滚动是原生属性（scrollTo / scrollTop），走 .ele */
         mainScroller() {
-          return this.ele.shadowRoot.querySelector('.doc-main');
+          return this.shadow.$('.doc-main')?.ele ?? null;
         },
 
         resetScroll() {
@@ -169,13 +169,10 @@
 
         /* 侧栏 / 目录里**真正在滚**的那个元素。滚动归 mc-scroll-bar（住在 <doc-nav>/<doc-toc> 的 shadow 里），
            宿主自己不再滚 —— 读宿主的 scrollTop/scrollHeight 只会得到「没滚动、可滚 0」的假象，
-           于是每一次滚轮都被判成「已经在底部」而转发给正文带：**面板纹丝不动、页面在滚**。认准 part="viewport"。 */
+           于是每一次滚轮都被判成「已经在底部」而转发给正文带：**面板纹丝不动、页面在滚**。认准 part="viewport"。
+           host 来自 composedPath()（原生元素），先用 $() 包上，再连着穿两层 shadow 找条子。 */
         scrollViewportOf(host) {
-          return (
-            host.shadowRoot
-              ?.querySelector('mc-scroll-bar')
-              ?.shadowRoot?.querySelector('[part="viewport"]') ?? null
-          );
+          return $(host)?.shadow?.$('mc-scroll-bar')?.shadow?.$('[part="viewport"]')?.ele ?? null;
         },
 
         /** 只有「栏内还能滚」时才不插手；到了边界就把这一次滚轮转给正文带 */
@@ -232,9 +229,9 @@
         /* 路由一变就把窄屏菜单收起来 —— 点条目本质就是导航，收在这里比在点击上判路径稳：
            面板内容是**插槽里的 light DOM**（在浮层 shadow 之外），在浮层上挂委托、或让 ofa 的 `on:` 去接，都够不着里面那个 <a>。 */
         hideNarrowMenu() {
-          /* ⚠️ 组件方法在 ofa 的包装上，**裸元素上没有**：`$('.doc-menu')` 才有 hide()。直接 `el.hide()` 抛 TypeError，而且在路由回调里抛会把后面的 resetScroll() 一起带崩。 */
-          const menu = this.ele.shadowRoot?.querySelector('.doc-menu');
-          if (menu) $(menu)?.hide();
+          /* ⚠️ hide() 在组件实例上（this.shadow.$() 的包装），裸元素上没有；实例还没就绪时包装上也还没有，
+             用 ?. 兜住那一拍 —— 这里抛 TypeError 会把后面的 resetScroll() 一起带崩。 */
+          this.shadow.$('.doc-menu')?.hide?.();
         },
 
         /** 点菜单项：落主题 → 存起来 → 收起菜单（菜单不像 select 会自己收，得手动关） */
@@ -245,7 +242,7 @@
           } catch {
             /* 写不了就算了 */
           }
-          const menu = this.ele.shadowRoot?.querySelector('mc-dropdown');
+          const menu = this.shadow.$('mc-dropdown')?.ele;
           if (menu) menu.open = false;
         },
 

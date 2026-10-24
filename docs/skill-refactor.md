@@ -85,25 +85,25 @@
 ## 文档站（用法核对）
 
 - [x] `docs/components/nav.html`：左栏二级菜单（跟 menu 同批）
-- [ ] `docs/components/toc.html`：右栏目录（o-fill 参考写法）
-- [ ] `docs/components/search.html`
-- [ ] `docs/components/playground.html`
-- [ ] `docs/components/demos.html`
-- [ ] `docs/components/spec.html`
-- [ ] `docs/components/palette.html`
-- [ ] `docs/components/block-field.html`
-- [ ] `docs/layout.html`
-- [ ] `docs/doc-layout.html`
-- [ ] `docs/snippets/quick-start.html`
-- [ ] `docs/pages/home.html`
-- [ ] `docs/pages/intro.html`
-- [ ] `docs/pages/install.html`
-- [ ] `docs/pages/controlled.html`
-- [ ] `docs/pages/platforms.html`
-- [ ] `docs/pages/faq.html`
-- [ ] `docs/pages/theme.html`
-- [ ] `docs/pages/component-theme.html`
-- [ ] `docs/pages/style-conflicts.html`
+- [x] `docs/components/toc.html`：右栏目录（o-fill 参考写法）· ✅ `this.shadow.on/off('click')`；全局监听补注释，o-fill 写法核对通过
+- [x] `docs/components/search.html` · ✅ `this.shadow.$` / `.on` / `.off`；popover 原生方法走 `.ele`，document 捕获监听补注释
+- [x] `docs/components/playground.html` · ✅ 删 `role` / `aria-*`；shadow 引用改 `this.shadow.$`；预览 / 错误兜底 / 剪贴板例外集中注释；toggle 图标名改 `x`（iconify 无 `close`）
+- [x] `docs/components/demos.html` · ✅ 纯布局测量（只算位置不搬 DOM），核对通过、未改
+- [x] `docs/components/spec.html` · ✅ 运行时渲染 `api.md` 进 light DOM 属行为层例外，文件头已注释
+- [x] `docs/components/palette.html` · ✅ 双层 `o-fill`（`family` / `step`）+ `$data` + `:style.` 运行时色值，核对通过、未改
+- [x] `docs/components/block-field.html` · ✅ 随机装饰方块例外已有注释；`.layer` 引用改 `this.shadow.all`
+- [x] `docs/layout.html` · ✅ 顶栏委托 / 滚动容器 / 菜单 / 下拉改 `this.shadow.$` + `.on`；跨两层 shadow 的 `$(host).shadow.$` 链补注释
+- [x] `docs/doc-layout.html` · ✅ 删 `aria-*`；`this.shadow.$` / `.on` / `.off`；把手标题与图标运行时更新
+- [x] `docs/snippets/quick-start.html` · ✅ 核对通过、未改
+- [x] `docs/pages/home.html` · ✅ 核对通过、未改（单屏 hero 只有 h1）
+- [x] `docs/pages/intro.html` · ✅ 核对通过、未改（组件数 / 分类数来自 `site-map.js`）
+- [x] `docs/pages/install.html` · ✅ 核对通过、未改
+- [x] `docs/pages/controlled.html` · ✅ 示例 `:checked` → `attr:checked`，导语与坑改成现行布尔口径
+- [x] `docs/pages/platforms.html` · ✅ 核对通过、未改
+- [x] `docs/pages/faq.html` · ✅ 7 处 h3 改 h2（原 h2=0，右栏条目全缩进成子项）
+- [x] `docs/pages/theme.html` · ✅ 核对通过、未改
+- [x] `docs/pages/component-theme.html` · ✅ 核对通过、未改
+- [x] `docs/pages/style-conflicts.html` · ✅ 核对通过、未改
 
 ## 每单元验收
 
@@ -115,25 +115,27 @@
 
 ## 进度记录
 
-| 日期       | 单元                                            | commit    | 验收                                                                                              |
-| ---------- | ----------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
-| 2026-10-24 | button                                          | `7c4dc3d` | button 19/19、form 46/46                                                                          |
-| 2026-10-24 | menu                                            | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                                                            |
-| 2026-10-24 | menu（模板化）                                  | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用                                     |
-| 2026-10-25 | menu（options 通道）                            | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                                                     |
-| 2026-10-25 | nav（:options + shadow）                        | 本提交    | 文档站 47 行复用、current / 居中正常                                                              |
-| 2026-10-25 | nav（居中策略）                                 | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop                                             |
-| 2026-10-25 | nav（刷新居中）                                 | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常                                    |
-| 2026-10-25 | date-picker（模板化）                           | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建                                    |
-| 2026-10-25 | select（模板化）                                | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层                                    |
-| 2026-10-25 | tree-select（模板化）                           | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外                                      |
-| 2026-10-25 | rate（模板化）                                  | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层                                  |
-| 2026-10-25 | icon（模板化）                                  | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层                                |
-| 2026-10-25 | P3 行为层核对                                   | 本提交    | dialog/popover/dropdown/tooltip/scroll-bar/loading-bar/code 128/128                               |
-| 2026-10-25 | P2-A（pagination/table/form）                   | 本提交    | 91/91；attr:、shadow.$ / on / off、foster-parent 与 :html 例外集中                                |
-| 2026-10-25 | badge（模板化）                                 | 本提交    | badge 13/13、徽标文字改 {{textValue}}；slot 状态镜像留行为层                                      |
-| 2026-10-25 | P2-B/C（input…alert）                           | 本提交    | 8 套件全绿；`attr:` 布尔绑定、`shadow.$` / `on` / `off`、行为层集中注释；checkbox/switch 修笔误   |
-| 2026-10-25 | P4 核对（9 单元）                               | 本提交    | 全部合规未改；breadcrumb 套件 1 条既有失败（干净 HEAD 复现，与本轮无关）                          |
-| 2026-10-25 | P2-C（tag/avatar/message/collapse）             | 本提交    | 66/66；`attr:` 布尔、`shadow.$` / `.on` / `.off`、去掉 cloneNode 摘监听                           |
-| 2026-10-25 | P1 遗留布尔绑定                                 | 本提交    | date-picker 27 / select 20 / tree-select 27 / rate 18 = 92/92；`:disabled` → `attr:disabled` 6 处 |
-| 2026-10-25 | 共享文档（docs/README §十 / AGENTS / color 页） | 本提交    | check:docs 22/22、lint:md 0、prettier 通过、color 页 Playwright 抽检无报错                        |
+| 日期       | 单元                                            | commit    | 验收                                                                                                                                  |
+| ---------- | ----------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-24 | button                                          | `7c4dc3d` | button 19/19、form 46/46                                                                                                              |
+| 2026-10-24 | menu                                            | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                                                                                                |
+| 2026-10-24 | menu（模板化）                                  | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用                                                                         |
+| 2026-10-25 | menu（options 通道）                            | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                                                                                         |
+| 2026-10-25 | nav（:options + shadow）                        | 本提交    | 文档站 47 行复用、current / 居中正常                                                                                                  |
+| 2026-10-25 | nav（居中策略）                                 | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop                                                                                 |
+| 2026-10-25 | nav（刷新居中）                                 | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常                                                                        |
+| 2026-10-25 | date-picker（模板化）                           | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建                                                                        |
+| 2026-10-25 | select（模板化）                                | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层                                                                        |
+| 2026-10-25 | tree-select（模板化）                           | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外                                                                          |
+| 2026-10-25 | rate（模板化）                                  | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层                                                                      |
+| 2026-10-25 | icon（模板化）                                  | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层                                                                    |
+| 2026-10-25 | P3 行为层核对                                   | 本提交    | dialog/popover/dropdown/tooltip/scroll-bar/loading-bar/code 128/128                                                                   |
+| 2026-10-25 | P2-A（pagination/table/form）                   | 本提交    | 91/91；attr:、shadow.$ / on / off、foster-parent 与 :html 例外集中                                                                    |
+| 2026-10-25 | badge（模板化）                                 | 本提交    | badge 13/13、徽标文字改 {{textValue}}；slot 状态镜像留行为层                                                                          |
+| 2026-10-25 | P2-B/C（input…alert）                           | 本提交    | 8 套件全绿；`attr:` 布尔绑定、`shadow.$` / `on` / `off`、行为层集中注释；checkbox/switch 修笔误                                       |
+| 2026-10-25 | P4 核对（9 单元）                               | 本提交    | 全部合规未改；breadcrumb 套件 1 条既有失败（干净 HEAD 复现，与本轮无关）                                                              |
+| 2026-10-25 | P2-C（tag/avatar/message/collapse）             | 本提交    | 66/66；`attr:` 布尔、`shadow.$` / `.on` / `.off`、去掉 cloneNode 摘监听                                                               |
+| 2026-10-25 | P1 遗留布尔绑定                                 | 本提交    | date-picker 27 / select 20 / tree-select 27 / rate 18 = 92/92；`:disabled` → `attr:disabled` 7 处（tree-select 两处在文档站批次补上） |
+| 2026-10-25 | 共享文档（docs/README §十 / AGENTS / color 页） | 本提交    | check:docs 22/22、lint:md 0、prettier 通过、color 页 Playwright 抽检无报错                                                            |
+| 2026-10-25 | 文档站用法核对（19 文件）                       | 本提交    | 9 页 hash 抽检 console / 404 全空；改 layout / doc-layout / toc / search / playground / block-field / faq / controlled                |
+| 2026-10-25 | 布尔口径收尾（form 文档 / tree-select）         | 本提交    | form 46/46、tree-select 27/27；文档示例 `:checked` → `attr:checked`，tree-select 两处 `attr:disabled`                                 |
