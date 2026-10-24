@@ -1,4 +1,4 @@
-<!-- mc-rate — 评分；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<!-- mc-rate — 评分；星条由 o-fill 模板渲染，设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -79,6 +79,10 @@
       align-items: center;
       gap: var(--mc-rate-gap);
     }
+    /* 模板渲染：o-fill 不生成盒子，星星直接参与 .mc-items 的 flex 布局（同 mc-menu / mc-date-picker） */
+    o-fill {
+      display: contents;
+    }
     .mc-item {
       position: relative;
       display: block;
@@ -142,7 +146,27 @@
       :disabled="disabled !== null"
       on:input="onNativeInput($event)"
       on:change="onNativeChange()" />
-    <div class="mc-items"></div>
+    <!-- 星条是模板渲染的唯一源：一颗星一行，两层星形写死在模板里；空 / 半 / 满只走 data-fill -->
+    <div class="mc-items">
+      <o-fill :value="rows" fill-key="id">
+        <span class="mc-item" part="item" attr:data-fill="$data.fill">
+          <span class="mc-star">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+            </svg>
+          </span>
+          <span class="mc-on">
+            <span class="mc-star">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+              </svg>
+            </span>
+          </span>
+        </span>
+      </o-fill>
+    </div>
   </div>
 
   <script>
@@ -151,10 +175,6 @@
     import { withEmits } from '../boot/emits.js';
 
     const color = colorAttr({ slots: ['fill'] });
-
-    /* 一颗星的路径（24 × 24）：空星描边、实心层填充，两层共用同一个形状 */
-    const STAR =
-      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>';
 
     export default async () =>
       withEmits({
@@ -181,13 +201,18 @@
           color: 'warning',
         },
 
+        /* 星条行模型：一颗星一行（模板唯一渲染源），fill = empty / half / full，由 attr:data-fill 落到 DOM */
+        data: {
+          rows: [],
+        },
+
         ready() {
           // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
           const root = this.ele.shadowRoot;
           this._base = root.querySelector('.mc-base');
           this._native = root.querySelector('.mc-native');
+          /* 星条几何只在行为层量（指针位置 → 分值）；星本身由模板渲染 */
           this._itemsEl = root.querySelector('.mc-items');
-          this._items = [];
           this._hover = null;
           this._dragging = false;
           this._pressedValue = null;
@@ -210,7 +235,6 @@
           this.syncNative();
           this.applyInitialValue();
           this.applyBoundValue();
-          this.renderItems();
           this.paint();
         },
 
@@ -223,7 +247,6 @@
           this.syncNative();
           this.applyInitialValue();
           this.applyBoundValue();
-          this.renderItems();
           this.paint();
           this.bindEvents();
         },
@@ -239,7 +262,6 @@
           },
           max() {
             this.syncNative();
-            this.renderItems();
             this.paint();
           },
           allowHalf() {
@@ -358,40 +380,24 @@
             this._native.disabled = this.boolAttr('disabled');
           },
 
-          /** 按 max 重建那一排星（颗数没变就不动 DOM） */
-          renderItems() {
-            if (!this._itemsEl || !this._items) return;
-            const max = this.maxValue();
-            if (this._items.length === max) return;
-            const fragment = document.createDocumentFragment();
-            for (let index = 0; index < max; index += 1) {
-              const item = document.createElement('span');
-              item.className = 'mc-item';
-              item.setAttribute('part', 'item');
-              item.setAttribute('data-fill', 'empty');
-              item.innerHTML =
-                '<span class="mc-star">' +
-                STAR +
-                '</span><span class="mc-on"><span class="mc-star">' +
-                STAR +
-                '</span></span>';
-              fragment.append(item);
+          /** 星条行模型：一颗星一行（模板唯一渲染源）；fill 三态仍只写 data-fill，CSS 选择器不变 */
+          buildRows(value) {
+            const rows = [];
+            for (let index = 0; index < this.maxValue(); index += 1) {
+              const remainder = value - index;
+              rows.push({
+                id: index,
+                fill: remainder >= 1 ? 'full' : remainder >= 0.5 ? 'half' : 'empty',
+              });
             }
-            this._itemsEl.replaceChildren(fragment);
-            this._items = [...this._itemsEl.children];
+            return rows;
           },
 
-          /** 唯一入口：把显示值摊到每颗星上（悬停预览优先于真实值） */
+          /** 唯一入口：把显示值摊到行模型上（悬停预览优先于真实值）；DOM 由 o-fill 那一拍落，行为层不等它 */
           paint() {
-            if (!this._native || !this._items || !this._items.length) return;
+            if (!this._native) return;
             const value = this._hover === null ? this.readValue() : this._hover;
-            for (let index = 0; index < this._items.length; index += 1) {
-              const remainder = value - index;
-              const fill = remainder >= 1 ? 'full' : remainder >= 0.5 ? 'half' : 'empty';
-              if (this._items[index].getAttribute('data-fill') !== fill) {
-                this._items[index].setAttribute('data-fill', fill);
-              }
-            }
+            this.rows = this.buildRows(value);
           },
 
           /** 指针在星条上的横向位置 → 点击 / 悬停会落到的分值（点第几颗就是几分，半星看左右半边） */

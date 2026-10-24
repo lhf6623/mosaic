@@ -44,6 +44,12 @@
 缩小，所以半星和整星一样大、描边也对得上。`data-fill` 只有 `empty` / `half` / `full` 三态，
 CSS 只认它。
 
+**渲染是模板的事。** 星条由 `<o-fill :value="rows" fill-key="id">` 渲染：一颗星一行，行模型只有
+`id` 与 `fill` 两个字段，空 / 半 / 满三态仍落 `data-fill`，CSS 选择器一个没改。脚本不再
+`createElement` / `innerHTML` 造可见结构，`paint()` 只更新行模型；留在行为层的只有模板表达
+不了的那几件 —— 指针坐标 → 分值的换算（量 `part="item"` 那排的真实几何）、原生 range 的焦点 /
+键盘、指针捕获与拖动、悬停预览状态。
+
 **`value` 是 number，走表单控件那套。** `value` 是 observed attribute + 宿主 property
 （绑定通道 `:value` / `sync:value` 落在它上面，写完立刻生效），`default-value` 只作非受控初值、
 挂载读一次；0 就是未评分。和 slider 一样，写值会按 step 归一（allow-half 时 0.5，否则 1）、
