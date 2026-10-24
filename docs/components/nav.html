@@ -145,17 +145,28 @@
         centerInitial() {
           if (this._centered) return;
           cancelAnimationFrame(this._centerRaf);
-          this._centerRaf = requestAnimationFrame(() => {
+          /* 刷新 / 冷启动时 rows 可能晚于本组件一两帧：首屏有高度但还没行，按帧重试到成功；
+             浮层关着（高度 0）不重试，等 ResizeObserver 第一次展开 */
+          let tries = 0;
+          const tick = () => {
             if (this._centered) return;
             const viewport = this.viewport();
-            const row = this.currentRow();
-            if (!viewport || !row) return;
+            if (!viewport) {
+              if (tries++ < 120) this._centerRaf = requestAnimationFrame(tick);
+              return;
+            }
             const box = viewport.ele.getBoundingClientRect();
-            if (box.height === 0) return; // 全量浮层还关着：等 ResizeObserver 首次展开
+            if (box.height === 0) return;
+            const row = this.currentRow();
+            if (!row || row.getBoundingClientRect().height === 0) {
+              if (tries++ < 120) this._centerRaf = requestAnimationFrame(tick);
+              return;
+            }
             const target = row.getBoundingClientRect();
             viewport.ele.scrollTop += target.top + target.height / 2 - (box.top + box.height / 2);
             this._centered = true;
-          });
+          };
+          this._centerRaf = requestAnimationFrame(tick);
         },
       },
     });
