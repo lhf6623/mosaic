@@ -1,4 +1,4 @@
-<!-- mc-select — 下拉选择（表单控件 + 浮层）；设计取舍与坑见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<!-- mc-select — 下拉选择（表单控件 + 浮层；选项行由 o-fill 模板渲染）；设计取舍与坑见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
@@ -194,8 +194,15 @@
       gap: var(--mc-space-1, var(--mc-def-space-1));
     }
 
+    /* 行是原生 <button>（键盘基线：可交互元素用原生元素），UA 的边框 / 底色 / 字体要显式接管 */
     .mc-option {
       box-sizing: border-box;
+      display: block;
+      width: 100%;
+      border: 0;
+      background-color: transparent;
+      font: inherit;
+      text-align: start;
       min-height: var(--mc-control-h-md, var(--mc-def-control-h-md));
       padding-inline: var(--mc-space-3, var(--mc-def-space-3));
       border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
@@ -247,7 +254,7 @@
     :disabled="disabled !== null"
     on:click="onControlClick"
     on:keydown="onKeyDown">
-    <span class="mc-value"></span>
+    <span class="mc-value">{{displayText}}</span>
     <span class="mc-chevron mc-icon-chevron-down"></span>
   </button>
 
@@ -261,9 +268,23 @@
     part="panel"
     popover="manual"
     on:toggle="onNativeToggle"
-    on:click="onPanelClick"
     on:mousedown="onPanelMouseDown">
-    <div class="mc-list"></div>
+    <!-- 选项行由模板渲染（唯一渲染源）：一行一个原生 <button>，状态全走 attr: 绑定 -->
+    <div class="mc-list">
+      <o-fill :value="rows" fill-key="id">
+        <button
+          class="mc-option"
+          part="option"
+          type="button"
+          tabindex="-1"
+          attr:data-selected="$data.selected ? 'true' : 'false'"
+          attr:data-disabled="$data.disabled ? 'true' : null"
+          attr:data-active="$data.active ? '' : null"
+          on:click="$host.selectIndex($data.id)">
+          {{$data.label}}
+        </button>
+      </o-fill>
+    </div>
   </div>
 
   <slot class="mc-options"></slot>
@@ -306,13 +327,19 @@
           size: 'md',
         },
 
+        /* 可见内容全走模板，这些字段就是渲染数据：displayText = 触发框文案；
+           rows = 选项行模型（id 就是它在 _items 里的下标，o-fill 按它复用行） */
+        data: {
+          displayText: '',
+          rows: [],
+        },
+
         ready() {
           const root = this.ele.shadowRoot;
           this._control = root.querySelector('.mc-control');
           this._valueEl = root.querySelector('.mc-value');
           this._clearEl = root.querySelector('.mc-clear');
           this._panel = root.querySelector('.mc-panel');
-          this._list = root.querySelector('.mc-list');
           this._slot = root.querySelector('slot.mc-options');
 
           this._items = [];
@@ -432,7 +459,9 @@
             return this.placeholder || '请选择';
           },
 
-          /* ---------- 选项收集与渲染 ---------- */
+          /* ---------- 选项收集与渲染 ----------
+             行由模板渲染（o-fill）：这里只把 mc-option 收成行模型，状态写进 data.rows，
+             模板据此落 part="option" / data-selected / data-disabled / data-active。 */
 
           /** 用 querySelectorAll 而不是 slot.assignedElements：`o-fill` 渲染的条目住它自己 light DOM 里，后者只给到容器（P12） */
           collectOptions() {
@@ -447,31 +476,30 @@
             this._initialized = true;
 
             this._items = [...this.ele.querySelectorAll('mc-option')].map((el) => ({
-              el,
               value: (el.getAttribute('value') ?? '').trim(),
               label: (el.textContent ?? '').replace(/\s+/g, ' ').trim(),
               disabled: el.hasAttribute('disabled'),
-              row: null,
             }));
+            if (this._active >= this._items.length) this._active = -1;
 
-            this.renderRows();
-            this.applySelection(previous);
+            this.rows = this.buildRows(previous);
             this.syncDisplay();
-            if (this._active >= this._items.length) this.setActive(-1);
           },
 
-          /** 行由组件渲染进面板（P17：动态节点落在 shadow root 内部），每行一个 part="option" */
-          renderRows() {
-            this._list.textContent = '';
-            this._items.forEach((item, index) => {
-              const row = document.createElement('div');
-              row.className = 'mc-option';
-              row.setAttribute('part', 'option');
-              row.setAttribute('data-selected', 'false');
-              if (item.disabled) row.setAttribute('data-disabled', 'true');
-              row.textContent = item.label;
-              item.row = row;
-              this._list.append(row);
+          /** 行模型：选中 / 键盘高亮都是模型里的布尔字段（行由模板渲染，不再持有 DOM 引用） */
+          buildRows(values) {
+            let taken = false;
+            return this._items.map((item, index) => {
+              const on = values.has(item.value) && (this.isMultiple() || !taken);
+              if (on) taken = true;
+              return {
+                id: index,
+                label: item.label,
+                value: item.value,
+                disabled: item.disabled,
+                selected: on,
+                active: index === this._active,
+              };
             });
           },
 
@@ -491,18 +519,11 @@
           },
 
           applySelection(values) {
-            let taken = false;
-            for (const item of this._items) {
-              const on = values.has(item.value) && (this.isMultiple() || !taken);
-              if (on) taken = true;
-              item.row.setAttribute('data-selected', on ? 'true' : 'false');
-            }
+            this.rows = this.buildRows(values);
           },
 
           readValueArray() {
-            return this._items
-              .filter((item) => item.row.getAttribute('data-selected') === 'true')
-              .map((item) => item.value);
+            return this.rows.filter((row) => row.selected).map((row) => row.value);
           },
 
           /** 运行时值的唯一出口：multiple 给数组、单选给字符串 */
@@ -542,18 +563,15 @@
 
           syncDisplay() {
             this.normalizeBoolAttrs();
-            const selected = this._items.filter(
-              (item) => item.row.getAttribute('data-selected') === 'true',
-            );
+            const selected = this.rows.filter((row) => row.selected);
             const empty = selected.length === 0;
             this.mirror('data-empty', empty);
             this.mirror('data-filled', !empty);
-            if (this._valueEl) {
-              this._valueEl.textContent = empty
-                ? this.placeholderText()
-                : selected.map((item) => item.label).join(', ');
-            }
-            this._overflowTip?.check();
+            /* 文案进模板后要等微任务那一拍才落到 DOM，所以溢出提示晚一拍再量 */
+            this.displayText = empty
+              ? this.placeholderText()
+              : selected.map((row) => row.label).join(', ');
+            queueMicrotask(() => this._overflowTip?.check());
           },
 
           /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */
@@ -583,23 +601,21 @@
           },
 
           initialActiveIndex() {
-            const selected = this._items.findIndex(
-              (item) => item.row.getAttribute('data-selected') === 'true' && !item.disabled,
-            );
+            const selected = this.rows.findIndex((row) => row.selected && !row.disabled);
             return selected >= 0 ? selected : this.firstEnabledIndex();
           },
 
           setActive(index) {
             this._active = index;
-            this._items.forEach((item, i) => {
-              if (i === index) {
-                item.row.setAttribute('data-active', '');
-                item.row.scrollIntoView({ block: 'nearest' });
-              } else {
-                item.row.removeAttribute('data-active');
-              }
+            this.rows = this.rows.map((row, i) =>
+              row.active === (i === index) ? row : { ...row, active: i === index },
+            );
+            if (index < 0) return;
+            /* 滚动是行为层（模板表达不了）：等模板把行更新完再滚 */
+            queueMicrotask(() => {
+              const row = this.ele.shadowRoot?.querySelectorAll('.mc-option')[index];
+              row?.scrollIntoView({ block: 'nearest' });
             });
-            const item = this._items[index];
           },
 
           clearActive() {
@@ -723,32 +739,26 @@
 
           /** 选中：单选选完就收面板；多选只切这一项，面板留着继续选 */
           selectIndex(index) {
-            const item = this._items[index];
+            const item = this.rows[index];
             if (!item || item.disabled) return;
             if (this.ele.hasAttribute('disabled') || this.ele.hasAttribute('readonly')) return;
 
-            if (this.isMultiple()) {
-              const on = item.row.getAttribute('data-selected') === 'true';
-              item.row.setAttribute('data-selected', on ? 'false' : 'true');
-            } else {
-              for (const other of this._items) {
-                other.row.setAttribute('data-selected', other === item ? 'true' : 'false');
-              }
-            }
+            const multiple = this.isMultiple();
+            this.rows = this.rows.map((row, i) =>
+              multiple
+                ? i === index
+                  ? { ...row, selected: !row.selected }
+                  : row
+                : { ...row, selected: i === index },
+            );
             this.syncDisplay();
             this.reflectBoundValue();
             this.emitChange();
             /* 单选：值先落定、change 先发，再收面板（事件顺序 change → close） */
-            if (!this.isMultiple()) {
+            if (!multiple) {
               this._returnFocus = true;
               this.closePanel();
             }
-          },
-
-          onPanelClick(event) {
-            const row = event.target?.closest?.('.mc-option');
-            if (!row) return;
-            this.selectIndex(this._items.findIndex((item) => item.row === row));
           },
 
           /** 面板里没有可聚焦元素：压掉 mousedown 的默认聚焦，焦点留在触发框上，键盘才继续管用 */

@@ -67,6 +67,13 @@ dropdown 是**菜单**（触发元素 + 菜单项），select 是**表单控件*
   （条目住在 `o-fill` 自己的 light DOM 里，
   所以按宿主 `querySelectorAll('mc-option')` 收集，而不是只看 `slot.assignedElements()`）。
 
+**渲染是模板的事，脚本只算数据。** 触发框文案（`displayText`）与面板里的行（`rows` 模型）都在
+模板里绑定：一行一个原生 `<button class="mc-option" part="option">`，`data-selected` / `data-disabled` /
+`data-active` 全是行模型上的布尔字段，由 `attr:` 落到属性上，样式仍走属性选择器。`rows` 的 `id`
+就是选项下标（`o-fill` 的 `fill-key`），行不再被脚本持有 DOM 引用；收集选项只更新 `_items` 与 `rows`，
+与面板是否打开无关。脚本保留的行为层只有：原生 `popover` 开合、焦点、滚动守卫、溢出提示，以及
+`scrollIntoView()`（键盘导航把高亮行滚进视口——模板表达不了，等一拍让行更新完再做）。
+
 **多选的不对称是有意的**：`default-value` 属性是逗号分隔字符串、`value` property 是
 `string[]`。属性是 HTML 里的**初始值**（HTML 没有数组），property 是 JS 的**运行时值**
 （数组才装得下多个值、也不怕值里带逗号）；两者各自贴合自己那一侧的用法，
