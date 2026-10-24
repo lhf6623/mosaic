@@ -102,6 +102,7 @@
         this._unwatch?.();
         this._vpRo?.disconnect();
         cancelAnimationFrame(this._centerRaf);
+        if (this._onLoad) window.removeEventListener('load', this._onLoad);
       },
 
       proto: {
@@ -141,11 +142,31 @@
           return walk(this._menu?.ele?.shadowRoot ?? null);
         },
 
-        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
+        /** 首次显示前先等 load：刷新时浏览器会恢复上一个 scrollTop，落得比 ready 晚；
+            在 load 前居中会被它盖掉，于是每次刷新停在不同的位置 */
         centerInitial() {
+          if (this._centered || this._centerQueued) return;
+          this._centerQueued = true;
+          const start = () => {
+            this._centerQueued = false;
+            this.runCenterRetry();
+          };
+          if (document.readyState === 'complete') {
+            this._centerRaf = requestAnimationFrame(() => requestAnimationFrame(start));
+          } else {
+            this._onLoad = () => {
+              this._onLoad = null;
+              this._centerRaf = requestAnimationFrame(() => requestAnimationFrame(start));
+            };
+            window.addEventListener('load', this._onLoad, { once: true });
+          }
+        },
+
+        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
+        runCenterRetry() {
           if (this._centered) return;
           cancelAnimationFrame(this._centerRaf);
-          /* 刷新 / 冷启动时 rows 可能晚于本组件一两帧：首屏有高度但还没行，按帧重试到成功；
+          /* rows 可能晚于本组件一两帧：首屏有高度但还没行，按帧重试到成功；
              浮层关着（高度 0）不重试，等 ResizeObserver 第一次展开 */
           let tries = 0;
           const tick = () => {
