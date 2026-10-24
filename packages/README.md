@@ -377,6 +377,12 @@ dialog.open = true; // ✅
 > 方法函数写进属性（`mc-space` 因此把它们命名为 `wrap-items` / `reverse-order`）。新增属性前
 > 先确认 ofa 的代理上没有同名方法。
 
+> ⚠️ **`proto` / `data` 的键更严格**：撞上 `$.fn` 会报「注册参数有误，'proto' 上的 'x' 已被占用」
+> —— `proto` 在 4.7.x 是 `console.warn`（表现为注册失败 / 行为不可靠），`data` 直接 throw。
+> `root` / `text` / `data` / `style` / `next` / `parent` / `watch` 这些业务名都在表里
+> （`mc-dialog` 的 `root`、`mc-table` 演示的 `next` 都踩过）。完整 54 个保留名清单见
+> `ofajs-docs` 技能的「proto / data 禁止与内置保留名冲突」节。
+
 ```js
 btn.setAttribute('disabled', '');
 btn.removeAttribute('disabled');

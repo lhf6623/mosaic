@@ -1,6 +1,6 @@
 <template component>
   <mc-space block wrap-items>
-    <mc-button size="sm" on:click="next()">换一批</mc-button>
+    <mc-button size="sm" on:click="nextBatch()">换一批</mc-button>
     <mc-button size="sm" variant="outline" on:click="addRow()">加一行</mc-button>
     <mc-button size="sm" variant="outline" on:click="clear()">清空</mc-button>
     <span class="text-sm text-muted">现在 {{count}} 行</span>
@@ -46,7 +46,7 @@
           this.rows = rows;
           this.count = rows.length;
         },
-        next() {
+        nextBatch() {
           this.batch = (this.batch + 1) % BATCHES.length;
           this.render(BATCHES[this.batch]);
         },

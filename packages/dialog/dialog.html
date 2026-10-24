@@ -261,9 +261,9 @@
           document.addEventListener('keydown', this._onKeydown, true);
 
           // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 scroll-pin.js）
-          this._scrollGuard = attachFloatingScrollGuard(this.ele, this.root);
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this.panelRoot);
           // 老浏览器没有 popover API 时不炸：面板由 CSS 兜在 display:none，交互一律不动
-          this.popoverOk = typeof this.root?.showPopover === 'function';
+          this.popoverOk = typeof this.panelRoot?.showPopover === 'function';
           this.mounted = true;
           if (this.ele.isConnected) this.syncOpen();
         },
@@ -311,7 +311,7 @@
         },
 
         proto: {
-          get root() {
+          get panelRoot() {
             return this.ele.shadowRoot.querySelector('.mc-root');
           },
 
@@ -323,16 +323,16 @@
           syncOpen() {
             if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
             const shouldOpen = this.ele.hasAttribute('open');
-            const isOpen = this.root.matches(':popover-open');
+            const isOpen = this.panelRoot.matches(':popover-open');
             if (shouldOpen && !isOpen) {
               // 焦点归还的目标：打开前那一处（可能要钻进别人的 shadow root）
               this._returnFocus = deepActive();
               /* 显示那一行要包一层：toggle 事件晚一拍，挡不住同步动作里的滚动（见 scroll-pin.js） */
-              this._scrollGuard.run(() => this.root.showPopover());
+              this._scrollGuard.run(() => this.panelRoot.showPopover());
               this.focusIntoPanel();
               this.$emit('open');
             } else if (!shouldOpen && isOpen) {
-              this._scrollGuard.run(() => this.root.hidePopover());
+              this._scrollGuard.run(() => this.panelRoot.hidePopover());
               this.restoreFocus();
               this.$emit('close');
             }
@@ -354,7 +354,7 @@
 
           /** Esc 关闭 + Tab / Shift+Tab 在面板内循环；焦点被外面抢走时也拉回来 */
           onKeydown(event) {
-            if (!this.popoverOk || !this.root.matches(':popover-open')) return;
+            if (!this.popoverOk || !this.panelRoot.matches(':popover-open')) return;
             if (event.key === 'Escape') {
               event.preventDefault();
               this.closeDialog();
