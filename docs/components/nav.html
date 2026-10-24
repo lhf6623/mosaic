@@ -1,7 +1,8 @@
 <!--
   <doc-nav> —— 文档站左栏二级菜单（`full` 模式给窄屏浮层的「全部菜单」）。
   整包数据交给 mc-menu 的 options（行由组件渲染）；条目样式只能写在本组件的 <style> 里。
-  ⚠️ 路由变化整包换 options，菜单会重建 —— 改这里请手验；换页后把当前条滚到栏内竖直中间。
+  ⚠️ 路由变化整包换 options，但 mc-menu 按 key 复用行：同分区切页只更新 current，不重建
+  —— 改这里请手验；换页后把当前条滚到栏内竖直中间。
 -->
 <template component>
   <style>
@@ -84,7 +85,8 @@
         /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
         if (this._full) this._menu.setAttribute('accordion', '');
-        /* 行由 mc-menu 渲染（可能晚于本组件升级）：监听子节点变化再居中，不赌 options 写下去那一拍 */
+        /* 行由 mc-menu 渲染（可能晚于本组件升级）：监听子节点变化兜底；同分区切页只改 current 时
+           没有 childList 变化，renderRows() 末尾会再显式居中一次 */
         this._mo = new MutationObserver(() => this.centerCurrent());
         this._mo.observe(this._menu, { childList: true });
         /* 视口「0 高 → 有高度」这一跳补一次居中（浮层关着时换页算出的 scrollTop 被夹成 0） */
@@ -118,6 +120,8 @@
             : entry
               ? optionsOf(entry, current)
               : [];
+          /* 同一分区切页时行会按 key 复用、不再触发 childList —— 居中不能只靠 MutationObserver */
+          this.centerCurrent();
         },
 
         /** 这一栏真正的滚动视口：滚的是 mc-scroll-bar 里的 viewport，宿主 <doc-nav> 自己不滚 */

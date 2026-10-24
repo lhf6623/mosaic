@@ -123,6 +123,62 @@ export default async function run({ page, visit, check }) {
       return { before, subHiddenBefore, opened, closed, afterAdd, attrItems, afterClear };
     });
 
+    /** key 复用：同一份菜单换 current，行 / 子菜单节点不重建、也不移动 */
+    const reuse = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const box = window.__deepAll('demo-menu-options')[0].shadowRoot;
+      const menu = box.querySelector('#options-menu');
+      const beforeRows = [...menu.querySelectorAll(':scope > mc-menu-item')];
+      const beforeSubs = [...menu.querySelectorAll(':scope > mc-menu')];
+      const beforeLabels = beforeRows.map((row) => row.getAttribute('label') ?? row.textContent.trim());
+      const beforeCurrent = beforeRows.map((row) => row.hasAttribute('current'));
+      let added = 0;
+      let removed = 0;
+      const mo = new MutationObserver((records) => {
+        for (const record of records) {
+          added += record.addedNodes.length;
+          removed += record.removedNodes.length;
+        }
+      });
+      mo.observe(menu, { childList: true });
+      const clone = (nodes, target) =>
+        nodes.map((node) => {
+          const copy = { ...node };
+          if (Array.isArray(node.children)) copy.children = clone(node.children, target);
+          else copy.current = node.label === target;
+          return copy;
+        });
+      menu.options = clone(menu.options, '设置');
+      await wait(200);
+      mo.disconnect();
+      const afterRows = [...menu.querySelectorAll(':scope > mc-menu-item')];
+      const afterSubs = [...menu.querySelectorAll(':scope > mc-menu')];
+      return {
+        sameRows:
+          beforeRows.length === afterRows.length &&
+          afterRows.every((row, index) => row === beforeRows[index]),
+        sameSubs:
+          beforeSubs.length === afterSubs.length && afterSubs.every((sub, index) => sub === beforeSubs[index]),
+        beforeLabels,
+        afterLabels: afterRows.map((row) => row.getAttribute('label') ?? row.textContent.trim()),
+        beforeCurrent,
+        afterCurrent: afterRows.map((row) => row.hasAttribute('current')),
+        added,
+        removed,
+      };
+    });
+    check(
+      '换 options 但 key 不变：行 / 子菜单节点复用、不移位，只更新 current',
+      reuse.sameRows &&
+        reuse.sameSubs &&
+        reuse.added === 0 &&
+        reuse.removed === 0 &&
+        reuse.afterCurrent.filter(Boolean).length === 1 &&
+        reuse.beforeCurrent[0] === true &&
+        reuse.afterCurrent[0] === false,
+      JSON.stringify(reuse),
+    );
+
     /** 缩进：children 每深一级多一档（基础内边距 16 + 层级 × 16） */
     const indent = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

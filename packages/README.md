@@ -376,6 +376,10 @@ item.open = true; // 组件提供了访问器时同样可以
 3. 两条通道都收到时**以 property 为准**：`mc-table` / `mc-menu` 是 property 写过值后属性不再覆盖；
    `mc-form` 的规则允许混合（属性写声明式键、property 补 `validator`），范围相同的那份去重。
 
+**对象数组换值按 key 复用**：`menu.options` 重新赋值时，mc-menu 按行 key 复用已有节点、只更新属性
+（同 key 只换 `current` 时不会清空重建）。给对象数组换值时要保证 key 稳定：优先写 `key`，
+否则同层 href / label 必须唯一；key 变了就会被当作新行拆除重建。
+
 已按这条实现的单元：`mc-form` / `mc-table` / `mc-menu`。使用者视角的解释在
 [`docs/pages/faq.html`](../docs/pages/faq.html) 的「对象数据为什么有时能绑、有时不能」。
 

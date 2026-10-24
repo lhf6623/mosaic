@@ -30,17 +30,22 @@
 
 mc-menu — 数据驱动的垂直菜单容器
 
-**一棵树、一个渲染器**：`options` 是唯一渲染源，`createNodes()` 递归把一条数据变成
-「行（`mc-menu-item`）+ 子菜单（嵌套 `mc-menu`）」。行仍然落在容器的 **light DOM** 里，不造进自己的
-shadow root：自备控件（使用者的 `<mc-menu-item>`）与数据驱动共用同一种节点，文档站的
-左栏 / 右栏也直接在 `doc-nav` 的 shadow 树里查 / 委托这些 `<a>`（查 shadow root 穿不进另一个
-shadow root，见 `tests/lib/harness.mjs` 的 `__inside`）。
+**一棵树、一个渲染器**：`options` 是唯一渲染源，`flattenOptions()` 递归把一条数据摊成
+`{ key, kind, level, step }` 条目，`renderItems()` 按 key 复用行（`mc-menu-item`）与子菜单（嵌套 `mc-menu`）。
+行仍然落在容器的 **light DOM** 里，不造进自己的 shadow root：自备控件（使用者的 `<mc-menu-item>`）与
+数据驱动共用同一种节点，文档站的左栏 / 右栏也直接在 `doc-nav` 的 shadow 树里查 / 委托这些 `<a>`
+（查 shadow root 穿不进另一个 shadow root，见 `tests/lib/harness.mjs` 的 `__inside`）。
+
+**更新按 key 复用，不整棵重建**：同一个 key 的行只更新属性（只换 `current` 时就只动这一个属性），
+新 key 才建节点、旧 key 才拆；顺序没变时连 `append` 都不做 —— 搬已有节点等于先删后插，会打断焦点 / hover。
+key 优先用 `options` 里的 `key`，否则分组用 label、父级用 label、叶子用 href（没有 href 再用 label），
+同层重名自动加序号。doc-nav 同一分区切页时 47 行原地复用，不再每次重建。
 
 容器交给菜单项的只有**属性**：`label` / `icon` / `href` / `current` / `disabled`，父级行再加一个内部的
 `data-expandable`；控件（`<a>` / `<button>`）、箭头、状态镜像都在 `mc-menu-item` 里（见下一节）。
 容器因此不再拼 `<a>`、不写内联样式、也不碰箭头。
 
-**层级缩进是算出来的，不进数据**：`createNodes(option, level)` 往下递归时 `level + 1`，把
+**层级缩进是算出来的，不进数据**：`flattenOptions()` 往下递归时 `level + 1`，由 `paintModel()` 把
 `--mc-item-level` 内联写在每一行上；菜单项按
 `calc(pad-x + level × indent-step)` 消费。使用者只写 `children`，不写 `level`。
 缩进量与基础内边距都走容器通道（`--mc-menu-indent-step` / `--mc-menu-pad-x`），所以整棵树一起改。
