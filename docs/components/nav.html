@@ -1,8 +1,9 @@
 <!--
   <doc-nav> —— 文档站左栏二级菜单（`full` 模式给窄屏浮层的「全部菜单」）。
-  整包数据交给 mc-menu 的 options（行由组件渲染）；条目样式只能写在本组件的 <style> 里。
+  整包数据交给 mc-menu 的 options（行由组件渲染，住在 mc-menu 的 shadow 里）；
+  条目样式不要指望本组件的 <style>，状态走 options.attrs 的 data-* / style。
   ⚠️ 路由变化整包换 options，但 mc-menu 按 key 复用行：同分区切页只更新 current，不重建
-  —— 改这里请手验；换页后把当前条滚到栏内竖直中间。
+  —— 改这里请手验。滚动只在**首次显示**时居中一次；之后换页 / 重新展开都不再改 scrollTop。
 -->
 <template component>
   <style>
@@ -85,12 +86,10 @@
         /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
         if (this._full) this._menu.attr('accordion', '');
-        /* 视口「0 高 → 有高度」这一跳补一次居中（浮层关着时换页算出的 scrollTop 被夹成 0） */
-        this._shownH = 0;
+        /* 只居中一次：左栏挂载即有高度；全量浮层要等第一次展开（0 → 有高度）再补 */
+        this._centered = false;
         this._vpRo = new ResizeObserver(([entry]) => {
-          const height = entry.contentRect.height;
-          if (height > 0 && this._shownH === 0) this.centerCurrent();
-          this._shownH = height;
+          if (entry.contentRect.height > 0) this.centerInitial();
         });
         this._vpRo.observe(this.ele);
         /* 路由信号统一来自 state/route.js，这里只订阅 */
@@ -115,8 +114,8 @@
             : entry
               ? optionsOf(entry, current)
               : [];
-          /* 同一分区切页时行会按 key 复用、不再触发 childList —— 居中不能只靠 MutationObserver */
-          this.centerCurrent();
+          /* 首次显示（或首帧行还没渲染出来）才居中；之后的换页只更新 current */
+          this.centerInitial();
         },
 
         /** 这一栏真正的滚动视口：滚的是 mc-scroll-bar 里的 viewport，宿主 <doc-nav> 自己不滚 */
@@ -124,17 +123,38 @@
           return this._bar?.shadow?.$('[part="viewport"]') ?? null;
         },
 
-        /** 唯一写 scrollTop 的地方：把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
-        centerCurrent() {
+        /** 当前条可能在嵌套 mc-menu 的 shadow 里（full 模式的整棵树），逐层找 */
+        currentRow() {
+          const seen = new Set();
+          const walk = (root) => {
+            if (!root || seen.has(root)) return null;
+            seen.add(root);
+            const row = root.querySelector('mc-menu-item[current]');
+            if (row) return row;
+            for (const el of root.querySelectorAll('*')) {
+              if (!el.shadowRoot) continue;
+              const found = walk(el.shadowRoot);
+              if (found) return found;
+            }
+            return null;
+          };
+          return walk(this._menu?.ele?.shadowRoot ?? null);
+        },
+
+        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
+        centerInitial() {
+          if (this._centered) return;
           cancelAnimationFrame(this._centerRaf);
           this._centerRaf = requestAnimationFrame(() => {
+            if (this._centered) return;
             const viewport = this.viewport();
-            const row = this._menu?.shadow?.$('mc-menu-item[current]');
+            const row = this.currentRow();
             if (!viewport || !row) return;
             const box = viewport.ele.getBoundingClientRect();
-            if (box.height === 0) return; // 视口还量不出高度（窄屏浮层关着）：等 ResizeObserver 那一跳
-            const target = row.ele.getBoundingClientRect();
+            if (box.height === 0) return; // 全量浮层还关着：等 ResizeObserver 首次展开
+            const target = row.getBoundingClientRect();
             viewport.ele.scrollTop += target.top + target.height / 2 - (box.top + box.height / 2);
+            this._centered = true;
           });
         },
       },

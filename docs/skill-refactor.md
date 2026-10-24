@@ -122,3 +122,4 @@
 | 2026-10-24 | menu（模板化）           | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用 |
 | 2026-10-25 | menu（options 通道）     | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                 |
 | 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                          |
+| 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop         |
