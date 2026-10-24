@@ -131,7 +131,7 @@
       <thead>
         <tr>
           <!-- 写在 <table> 里的自定义元素会被 foster parenting 搬到表格外，所以 attached() 里把这两个 o-fill 挪回来 -->
-          <o-fill id="mc-table-head" name="mc-table-head" :value="cols"></o-fill>
+          <o-fill id="mc-table-head" name="mc-table-head" :value="cols" fill-key="key"></o-fill>
         </tr>
       </thead>
       <tbody>
@@ -160,14 +160,6 @@
   </template>
 
   <script>
-    /** 单元格走 :html 通道，文本要自己转义（含 < 的值不能破结构） */
-    const escapeHtml = (value) =>
-      String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-
     /* 兜底空态 / 加载态用的是项目组件（mc-empty / mc-spinner）：先注册好（路径相对本文件 URL）。
        代价是引 mc-table 也会各取一次这两份 —— 只在「没有数据」/「加载中」那两条路上用得到。 */
     export default async ({ load }) => {
@@ -200,10 +192,10 @@
         },
 
         ready() {
-          const root = this.ele.shadowRoot;
-          this._headFill = root.querySelector('#mc-table-head');
-          this._rowFill = root.querySelector('#mc-table-rows');
-          this._wrap = root.querySelector('.mc-wrap');
+          /* 行为层只拿元素引用（ofa 包装对象；原生属性 / 方法走 .ele）：表头 / 行 / 空态内容全由模板渲染 */
+          this._headFill = this.shadow.$('#mc-table-head');
+          this._rowFill = this.shadow.$('#mc-table-rows');
+          this._wrap = this.shadow.$('.mc-wrap');
 
           /* 挂载前就赋的 property（createElement 之后马上 el.data = …）落在宿主上只是普通属性，这里先收下来；构造期不能往宿主写属性（P31） */
           const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
@@ -231,9 +223,12 @@
         },
 
         attached() {
-          /* 把被解析器搬出表格的 o-fill 挪回去。移动 DOM 节点不重新解析，所以行就是真 <tr>；append 同一节点幂等 */
-          this._headFill && this.ele.shadowRoot.querySelector('thead tr')?.append(this._headFill);
-          this._rowFill && this.ele.shadowRoot.querySelector('tbody')?.append(this._rowFill);
+          /* 行为层例外（为什么不能模板化）：foster parenting 把写在 <table> 里的自定义元素搬到表格外，
+             只能在挂载后把 o-fill 挪回去。移动 DOM 节点不重新解析，所以生成的是真 <tr>；append 同一节点幂等 */
+          const theadRow = this.shadow.$('thead tr')?.ele;
+          const tbody = this.shadow.$('tbody')?.ele;
+          if (this._headFill && theadRow) theadRow.append(this._headFill.ele);
+          if (this._rowFill && tbody) tbody.append(this._rowFill.ele);
 
           /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的值会被它盖掉；顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
           if (!this._applied) {
@@ -318,8 +313,20 @@
             this.applyEmpty();
           },
 
-          /** 一行 → 一串 `<td part="cell">`（单元格数量由 columns 决定） */
+          /**
+           * 一行 → 一串 `<td part="cell">`（单元格数量由 columns 决定）。
+           * ⚠️ 这是本单元**唯一**在脚本里产出可见结构的例外：逐格写模板做不到 —— 单元格数量是运行时
+           * 由 columns 决定的，而 `<o-fill>`（或任何自定义元素）写进 `<tr>` 都会被 HTML 解析器
+           * foster-parent 搬出表格（具名 `<template>` 里的 `<tr>` 也一样，实测嵌套 o-fill 同样被搬走）。
+           * 所以行模板只能用 `:html` 填这一串 <td>，例外收敛在这一个方法里。单元格文本在这里转义
+           * （`:html` 是 HTML 通道，不能直接拼原文；测试守着「值里的 < 不破结构」）。 */
           cellsHtml(row) {
+            const escapeHtml = (value) =>
+              String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
             let html = '';
             for (const col of this.cols) {
               html += `<td part="cell">${escapeHtml(row?.[col.key])}</td>`;
@@ -331,8 +338,8 @@
           applyEmpty() {
             if (!this._wrap) return;
             const empty = this.rows.length === 0 && this.loading === null;
-            if (empty) this._wrap.setAttribute('data-empty', '');
-            else this._wrap.removeAttribute('data-empty');
+            if (empty) this._wrap.ele.setAttribute('data-empty', '');
+            else this._wrap.ele.removeAttribute('data-empty');
           },
         },
       };

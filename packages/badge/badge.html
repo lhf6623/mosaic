@@ -163,7 +163,7 @@
   <slot></slot>
   <span class="mc-badge" part="indicator">
     <span class="mc-dot"></span>
-    <span class="mc-text"></span>
+    <span class="mc-text">{{textValue}}</span>
   </span>
 
   <script>
@@ -190,10 +190,15 @@
         max: null,
       },
 
+      /* 徽标文字由模板渲染（content / max / dot 三者的结果落在这里），脚本只算值 */
+      data: {
+        // 不叫 text：`text` 是 ofa $.fn 上的方法名，data 同名字段注册会直接抛错
+        textValue: '',
+      },
+
       ready() {
         // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）
         const root = this.ele.shadowRoot;
-        this._text = root.querySelector('.mc-text');
         this._slot = root.querySelector('slot');
       },
 
@@ -243,14 +248,14 @@
 
         /** content / max / dot → 徽标文字。dot 打开时内容整块不显示（两状态互斥） */
         applyText() {
-          if (!this._text) return;
           const el = this.ele;
           const dot = this.boolAttr('dot');
           const raw = dot ? '' : (el.getAttribute('content') ?? '');
           const maxAttr = el.getAttribute('max');
           const max = maxAttr === null ? NaN : Number(maxAttr);
           const over = /^[0-9]+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
-          this._text.textContent = over ? String(max) + '+' : raw;
+          /* 文字写 data、由模板 {{textValue}} 渲染（模板是唯一渲染源） */
+          this.textValue = over ? String(max) + '+' : raw;
           if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
           this.mirror('data-empty', !dot && raw.trim() === '');
         },

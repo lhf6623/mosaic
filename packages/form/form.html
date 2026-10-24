@@ -93,6 +93,7 @@
           this._onKeydown = (event) => this.onKeydown(event);
           /* 清校验状态是个**指令**：谁往容器（或容器里的元素）派发 clear-validate 就生效 —— 事件冒泡到宿主这一层 */
           this._onClearValidate = (event) => this.clearValidate(event.detail?.fields);
+          /* 宿主不在 shadow 内，这几条监听留在宿主元素上（原生 addEventListener）；只有 shadow 里的 slot 走 this.shadow.$ */
           this.ele.addEventListener('input', this._onInput);
           this.ele.addEventListener('change', this._onChange);
           this.ele.addEventListener('focusout', this._onFocusout);
@@ -100,11 +101,11 @@
           this.ele.addEventListener('keydown', this._onKeydown);
           this.ele.addEventListener('clear-validate', this._onClearValidate);
 
-          /* 行后来才插进来 / 子项晚升级：都要重算一次必填星号 */
+          /* 行后来才插进来 / 子项晚升级：都要重算一次必填星号。
+             shadow 里的 slot 用 ofa 包装对象（this.shadow.$）挂监听，原生属性仍走 .ele */
           this._onSlotChange = () => this.syncRequired();
-          this.ele.shadowRoot
-            .querySelector('slot')
-            ?.addEventListener('slotchange', this._onSlotChange);
+          this._slot = this.shadow.$('slot');
+          this._slot?.on('slotchange', this._onSlotChange);
           this.syncRequired();
         },
 
@@ -120,9 +121,7 @@
         },
 
         detached() {
-          this.ele.shadowRoot
-            .querySelector('slot')
-            ?.removeEventListener('slotchange', this._onSlotChange);
+          this._slot?.off('slotchange', this._onSlotChange);
           this.ele.removeEventListener('input', this._onInput);
           this.ele.removeEventListener('change', this._onChange);
           this.ele.removeEventListener('focusout', this._onFocusout);

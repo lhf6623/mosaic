@@ -217,7 +217,7 @@
         part="prev"
         type="button"
         data-step="prev"
-        :disabled="disabled !== null || atFirst">
+        attr:disabled="disabled !== null || atFirst">
         <i class="mc-icon mc-icon-chevron-left"></i>
       </button>
     </li>
@@ -236,7 +236,7 @@
               type="button"
               attr:data-page="$data.page"
               attr:data-current="$data.current ? '' : null"
-              :disabled="$data.disabled">
+              attr:disabled="$data.disabled">
               {{$data.label}}
             </button>
           </li>
@@ -250,7 +250,7 @@
         part="next"
         type="button"
         data-step="next"
-        :disabled="disabled !== null || atLast">
+        attr:disabled="disabled !== null || atLast">
         <i class="mc-icon mc-icon-chevron-right"></i>
       </button>
     </li>
@@ -260,7 +260,7 @@
     每页
     <!-- 选项在 syncSizer() 里用真 <option> 建：HTML 解析器会把 <select> 里的非 option 标签整个丢掉，o-fill 放不进来 -->
     <span class="mc-size-field">
-      <select class="mc-size-select" part="select" :disabled="disabled !== null"></select>
+      <select class="mc-size-select" part="select" attr:disabled="disabled !== null"></select>
       <i class="mc-icon mc-icon-chevron-down"></i>
     </span>
     条
@@ -274,7 +274,7 @@
       type="number"
       min="1"
       inputmode="numeric"
-      :disabled="disabled !== null" />
+      attr:disabled="disabled !== null" />
     页
   </label>
 
@@ -316,9 +316,10 @@
         },
 
         ready() {
-          this._list = this.ele.shadowRoot.querySelector('.mc-list');
-          this._jump = this.ele.shadowRoot.querySelector('.mc-jump');
-          this._sizer = this.ele.shadowRoot.querySelector('.mc-size-select');
+          /* 行为层只拿元素引用（ofa 包装对象；原生属性 / 方法走 .ele）：页码条与两个小控件的结构全在模板里 */
+          this._list = this.shadow.$('.mc-list');
+          this._jump = this.shadow.$('.mc-jump');
+          this._sizer = this.shadow.$('.mc-size-select');
 
           /* 运行时值走宿主 property（P18）：setter 不写属性、也不发 change（change 只由使用者操作触发） */
           Object.defineProperty(this.ele, 'current', {
@@ -336,8 +337,8 @@
 
         attached() {
           this._onActivate = (event) => this.handleActivate(event);
-          this._list.addEventListener('click', this._onActivate);
-          this._list.addEventListener('keydown', this._onActivate);
+          this._list.on('click', this._onActivate);
+          this._list.on('keydown', this._onActivate);
 
           /* 跳页输入框是静态节点，直接绑；原生 input 是 composed，拦掉别让它以「没有 data」的形态漏到宿主（规范 1.5） */
           this._onJumpInput = (event) => event.stopPropagation();
@@ -345,27 +346,27 @@
             if (event.key === 'Enter') this.commitJump(); // 有些浏览器 Enter 不补发 change，自己收一次
           };
           this._onJumpCommit = () => this.commitJump();
-          this._jump.addEventListener('input', this._onJumpInput);
-          this._jump.addEventListener('keydown', this._onJumpKeydown);
-          this._jump.addEventListener('change', this._onJumpCommit);
+          this._jump.on('input', this._onJumpInput);
+          this._jump.on('keydown', this._onJumpKeydown);
+          this._jump.on('change', this._onJumpCommit);
 
           /* 每页条数：原生 select 的 change 穿不出 shadow，直接绑；input 是 composed，同样拦掉别漏到宿主 */
           this._onSizerInput = (event) => event.stopPropagation();
           this._onSizerChange = (event) => this.setPageSize(Number(event.target.value));
-          this._sizer.addEventListener('input', this._onSizerInput);
-          this._sizer.addEventListener('change', this._onSizerChange);
+          this._sizer.on('input', this._onSizerInput);
+          this._sizer.on('change', this._onSizerChange);
 
           this.applyState();
         },
 
         detached() {
-          this._list?.removeEventListener('click', this._onActivate);
-          this._list?.removeEventListener('keydown', this._onActivate);
-          this._jump?.removeEventListener('input', this._onJumpInput);
-          this._jump?.removeEventListener('keydown', this._onJumpKeydown);
-          this._jump?.removeEventListener('change', this._onJumpCommit);
-          this._sizer?.removeEventListener('input', this._onSizerInput);
-          this._sizer?.removeEventListener('change', this._onSizerChange);
+          this._list?.off('click', this._onActivate);
+          this._list?.off('keydown', this._onActivate);
+          this._jump?.off('input', this._onJumpInput);
+          this._jump?.off('keydown', this._onJumpKeydown);
+          this._jump?.off('change', this._onJumpCommit);
+          this._sizer?.off('input', this._onSizerInput);
+          this._sizer?.off('change', this._onSizerChange);
         },
 
         watch: {
@@ -475,7 +476,7 @@
 
           /** 跳页输入框只读：placeholder 常驻当前页、max 跟着总页数；正在输入时不覆盖别人的内容 */
           syncJump(force) {
-            const input = this._jump;
+            const input = this._jump?.ele;
             if (!input) return;
             input.max = String(this.pageCount());
             if (!force && this.ele.shadowRoot.activeElement === input) return;
@@ -485,7 +486,7 @@
 
           /** 提交「跳至 __ 页」：越界交给 go 夹回；提交后清空输入框（placeholder 顶回当前页） */
           commitJump() {
-            const raw = this._jump?.value.trim() ?? '';
+            const raw = this._jump?.ele.value.trim() ?? '';
             const page = Number(raw);
             if (raw !== '' && Number.isFinite(page)) this.go(page);
             this.syncJump(true);
@@ -504,9 +505,13 @@
             return [...new Set(list)].sort((a, b) => a - b);
           },
 
-          /** 每页条数选择器只读：选项按候选项重建（签名没变就不碰 DOM），value 永远跟着 page-size */
+          /**
+           * 每页条数选择器只读：选项按候选项重建（签名没变就不碰 DOM），value 永远跟着 page-size。
+           * ⚠️ 这是本单元**唯一**在脚本里造可见结构的例外：HTML 解析器会把 <select> 里的非 <option> 标签
+           * 整个丢掉，o-fill（自定义元素）进不了 select，选项只能在行为层按候选项建；所以把它集中在这一个方法里。
+           */
           syncSizer() {
-            const select = this._sizer;
+            const select = this._sizer?.ele;
             if (!select) return;
             const options = this.sizeOptions();
             const signature = `${options.join('/')}:${this.pageSizeValue()}`;
@@ -557,7 +562,7 @@
 
           /** 方向键 / Home / End 在可用按钮之间移动焦点；到边就停，不绕回 */
           moveFocus(button, key) {
-            const buttons = [...this._list.querySelectorAll('button:not(:disabled)')];
+            const buttons = [...(this._list?.ele.querySelectorAll('button:not(:disabled)') ?? [])];
             const at = buttons.indexOf(button);
             if (at < 0) return;
             const target =
