@@ -18,6 +18,33 @@
 需要原生 `popover` 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+）。
 没有这些能力的浏览器面板不会弹出 —— 组件不报错，但也没有替代路径。
 
+## 使用环境
+
+同一标签在两种环境里使用；完整约束见 [packages/README.md](../README.md) 的「1.1.1 使用环境」。
+
+**普通 HTML**：没有模板编译；用普通属性 / JS property，对象 / 数组在 JS 里赋。
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js/dist/ofa.min.mjs" type="module"></script>
+<l-m src="./packages/popover/popover.html"></l-m>
+
+<mc-popover id="demo"></mc-popover>
+
+<script type="module">
+  await customElements.whenDefined('mc-popover');
+  // 对象 / 数组属性：$("#demo").xxx = ...
+</script>
+```
+
+**ofa 模板**：在 template page / template component 里可以写绑定。
+
+```html
+<l-m src="./packages/popover/popover.html"></l-m>
+
+<mc-popover></mc-popover>
+<!-- 动态标量：:xxx="value"；布尔：attr:xxx="bool"；对象 / 数组：data + :xxx="objectValue" -->
+```
+
 ---
 
 ## 属性

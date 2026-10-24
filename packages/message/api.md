@@ -18,6 +18,12 @@ const m = message({ text: '保存中…', key: 'save', duration: 0 });
 m.close();
 ```
 
+## 使用环境
+
+message() 是命令式入口，不是自定义标签：没有「标签用法」。
+普通 HTML 和 ofa 模板里都是先加载 message.html，再直接调用 message(...)；
+不要在模板里写 <message>。
+
 ---
 
 ## 属性

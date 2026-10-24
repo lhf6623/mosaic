@@ -23,6 +23,33 @@ DOM property（`el.checked = true` / `el.indeterminate = true` 写完立刻生�
 > `disabled` / `invalid` 是状态布尔，改它们走 `setAttribute` / `removeAttribute`
 > （[`packages/README.md`](../README.md) §1.4）。
 
+## 使用环境
+
+同一标签在两种环境里使用；完整约束见 [packages/README.md](../README.md) 的「1.1.1 使用环境」。
+
+**普通 HTML**：没有模板编译；用普通属性 / JS property，对象 / 数组在 JS 里赋。
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js/dist/ofa.min.mjs" type="module"></script>
+<l-m src="./packages/checkbox/checkbox.html"></l-m>
+
+<mc-checkbox id="demo"></mc-checkbox>
+
+<script type="module">
+  await customElements.whenDefined('mc-checkbox');
+  // 对象 / 数组属性：$("#demo").xxx = ...
+</script>
+```
+
+**ofa 模板**：在 template page / template component 里可以写绑定。
+
+```html
+<l-m src="./packages/checkbox/checkbox.html"></l-m>
+
+<mc-checkbox></mc-checkbox>
+<!-- 动态标量：:xxx="value"；布尔：attr:xxx="bool"；对象 / 数组：data + :xxx="objectValue" -->
+```
+
 ---
 
 ## 属性

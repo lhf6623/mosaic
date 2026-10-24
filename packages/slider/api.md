@@ -18,6 +18,33 @@ slider 接受拖动与键盘，会发 `input` / `change`。
 `value` 既是绑定通道、也是运行时状态：HTML 里写是初始 / 受控值，JS 里读写宿主 property
 （`el.value = 50`，当次就读得到）。只想给**非受控初值**就写 `default-value`（挂载读一次）。
 
+## 使用环境
+
+同一标签在两种环境里使用；完整约束见 [packages/README.md](../README.md) 的「1.1.1 使用环境」。
+
+**普通 HTML**：没有模板编译；用普通属性 / JS property，对象 / 数组在 JS 里赋。
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js/dist/ofa.min.mjs" type="module"></script>
+<l-m src="./packages/slider/slider.html"></l-m>
+
+<mc-slider id="demo"></mc-slider>
+
+<script type="module">
+  await customElements.whenDefined('mc-slider');
+  // 对象 / 数组属性：$("#demo").xxx = ...
+</script>
+```
+
+**ofa 模板**：在 template page / template component 里可以写绑定。
+
+```html
+<l-m src="./packages/slider/slider.html"></l-m>
+
+<mc-slider></mc-slider>
+<!-- 动态标量：:xxx="value"；布尔：attr:xxx="bool"；对象 / 数组：data + :xxx="objectValue" -->
+```
+
 ---
 
 ## 属性
