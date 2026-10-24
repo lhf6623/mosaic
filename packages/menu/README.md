@@ -30,16 +30,14 @@
 
 mc-menu — 数据驱动的垂直菜单容器
 
-**一棵树、一个渲染器**：`options` 是唯一渲染源，`flattenOptions()` 递归把一条数据摊成
-`{ key, kind, level, step }` 条目，`renderItems()` 按 key 复用行（`mc-menu-item`）与子菜单（嵌套 `mc-menu`）。
-行仍然落在容器的 **light DOM** 里，不造进自己的 shadow root：自备控件（使用者的 `<mc-menu-item>`）与
-数据驱动共用同一种节点，文档站的左栏 / 右栏也直接在 `doc-nav` 的 shadow 树里查 / 委托这些 `<a>`
-（查 shadow root 穿不进另一个 shadow root，见 `tests/lib/harness.mjs` 的 `__inside`）。
+**一棵树、一个渲染器**：`options` 是唯一渲染源，`buildRows()` 递归把一条数据摊成行模型，
+模板里的 `<o-fill fill-key="key">` 渲染出 `mc-menu-item`（行）与嵌套 `mc-menu`（父级子菜单）。
+生成的行住在 `mc-menu` 自己的 **shadow root** 里；使用者手写的 `<mc-menu-item>` 仍走 `<slot>` 留在
+light DOM，两条路共用同一个行组件。`doc-nav` 因此改从 `mc-menu` 的 shadowRoot 查当前行。
 
-**更新按 key 复用，不整棵重建**：同一个 key 的行只更新属性（只换 `current` 时就只动这一个属性），
-新 key 才建节点、旧 key 才拆；顺序没变时连 `append` 都不做 —— 搬已有节点等于先删后插，会打断焦点 / hover。
-key 优先用 `options` 里的 `key`，否则分组用 label、父级用 label、叶子用 href（没有 href 再用 label），
-同层重名自动加序号。doc-nav 同一分区切页时 47 行原地复用，不再每次重建。
+**更新按 key 复用，不整棵重建**：`o-fill` 按 `fill-key` 复用节点；只换 `current` 时只更新属性，
+新 key 才建节点、旧 key 才拆。key 优先用 `options` 里的 `key`，否则分组用 label、父级用 label、
+叶子用 href（没有 href 再用 label），同层重名自动加序号。doc-nav 同一分区切页时 47 行原地复用。
 
 容器交给菜单项的只有**属性**：`label` / `icon` / `href` / `current` / `disabled`，父级行再加一个内部的
 `data-expandable`；控件（`<a>` / `<button>`）、箭头、状态镜像都在 `mc-menu-item` 里（见下一节）。
@@ -76,10 +74,9 @@ key 优先用 `options` 里的 `key`，否则分组用 label、父级用 label�
 **浮层的定位交给 CSS 锚点**：行上内联唯一 `anchor-name`（`--mc-item-anchor-<实例>-<序号>`，
 同名锚会互相顶掉，所以不能共用），浮层内联 `position-anchor` 指回它；`top: anchor(top)` +
 `position-try-fallbacks` 自动翻转 —— 不写一行定位 JS，滚动 / 翻转都由浏览器管。
-⚠️ 面板外观（定位 + 底色 + 边框 + 圆角 + 投影）**整体内联写在元素上**（脚本里的 `FLYOUT_STYLE`），
-不走 `::slotted(.mc-flyout)`：浮层在祖先 shadow 树里，UA 的 `[popover]` 默认样式
-（`background: Canvas` / `inset: 0; margin: auto`）与祖先 shadow 的 reset 都可能压过本 shadow 的
-`::slotted()`，实测会导致「第二、三级浮层像换了暗色主题」——值仍然是 `--mc-menu-flyout-*` 令牌。
+⚠️ 面板外观（定位 + 底色 + 边框 + 圆角 + 投影）写在 `mc-menu` 的 `.mc-flyout` 类规则里：
+面板现在由模板生成在 `mc-menu` 自己的 shadow root 内，普通类规则直接压过 UA 的 `[popover]`
+默认样式（旧实现把它放在 light DOM，才需要内联写）。值仍然是 `--mc-menu-flyout-*` 令牌。
 锚与浮层都在同一个 light tree 里，跨 shadow 的锚是不成立的
 （见 [`../dropdown/README.md`](../dropdown/README.md) 第 2 条），这也是没有把浮层做成
 `mc-menu` 宿主 popover 的原因：`:host{display:block}` 会压过 UA 的 `[popover]` 隐藏规则。
@@ -98,7 +95,8 @@ property 走 `Object.defineProperty`，挂载前赋的值先收进 `_presetOptio
 
 `children` 有两种落法：**普通行**带 `children` → 父级是开合开关、子菜单折叠；**分组行**
 （`type: 'group'`）带 `children` → 标题不可交互、组内条目**常显**并缩进一档（`doc-nav` 的左栏
-就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。
+就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。模板里的嵌套 `mc-menu` 用内部 `data.items` 接 `children`：
+`options` 留在 `attrs` 只是属性 / JSON 兼容通道，对象数组走 data 绑定，不会被 ofa 序列化成属性文本。
 
 `expanded: true`：父级行开场就展开。`accordion` 下同层只留一个，多个 `expanded` 时**后面的赢**
 （与手动点开的规则一致）—— 窄屏「全部菜单」用它把当前分区默认摊开。只在普通（内联）模式有意义：
@@ -119,16 +117,13 @@ mc-menu-item — 菜单项（配合 mc-menu 使用）
   它、不改它。`olink` 只能走这条路（编译期指令，只作用于模板里的元素，
   见 [`docs/routes.js`](../../docs/routes.js)）。
 
-两条路共用同一套行盒子：内置控件也**追加在宿主自己的 light DOM 里**，于是它和自备控件一样被
-`<slot>` 投进来、吃同一份 `::slotted()` 样式，不存在第二套外观。
+两条路共用同一套行盒子：内置控件由模板渲染在 `mc-menu-item` 自己的 shadow 里，直接吃 `.mc-control`
+类规则；自备控件在插槽里，吃 `::slotted()` 规则。两份样式保持等价，外观只有一套。
 
 ⚠️ 行的视觉全在**宿主**上，控件只当铺满整行的交互层（正常流 + `width/height: 100%`）。
-原因是一条实测出来的层叠规则：控件同时是**祖先 shadow 树**里的普通元素，而每一层
-shadow root 里都有一份 shadow-base.css（组件的由自己的 `<link>` 带进来、文档站的由
-[`docs/adopt-styles.js`](../../docs/adopt-styles.js) 注入）—— 那里面对 button 的
-`padding: 0 / background: none / cursor: pointer` 是「直接命中」，优先级压过本组件 shadow root 里的
-`::slotted(button)`（封装上下文排在层叠顺序前面）。所以底色 / 颜色一律写在宿主上、缩进走宿主继承的
-`text-indent`，控件只负责铺满整行：
+内置控件在同一个 shadow root 里，类规则能直接压住 UA 的 button 默认样式；自备控件在插槽里，
+祖先 shadow 的 button reset 会「直接命中」，所以 `::slotted()` 那份要把 padding / text-indent 再写一遍。
+底色 / 颜色一律写在宿主上，控件只负责铺满整行：
 
 · 左侧缩进 → 宿主 `text-indent`（继承属性，能穿 shadow 边界；控件上显式写一遍压住 UA）
 · 层级缩进 → 上面的值里再加 `level × --mc-menu-indent-step`（`--mc-item-level` 是容器按行内联写的实例数据）
@@ -161,12 +156,11 @@ shadow root 里都有一份 shadow-base.css（组件的由自己的 `<link>` 带
 
 `collapsed` 住在容器上，但**样式必须落在菜单项自己的 shadow 里** —— 容器的选择器够不到另一个
 shadow root 的子项（和尺寸通道同一条边界）。做法是沿用 `data-current` 那条路：菜单项
-`closest('mc-menu')` 拿到最近的容器、MutationObserver 盯 `collapsed`，镜像成宿主上的
-`data-collapsed`，CSS 选它。压缩态下：
+`closest('mc-menu')`（数据驱动的行在容器 shadow 里时回退到根宿主）拿到最近的容器、
+MutationObserver 盯 `collapsed`，镜像成宿主上的 `data-collapsed`，CSS 选它。压缩态下：
 · 叶子行：控件文字用 `color: transparent` 隐去而不是 `display: none` —— 交互层还得铺满整行、还得能点；
-· 父级行（`<button>`）：它的缩进与「文字 + 箭头」是**内联**写的，CSS 的 `::slotted` 压不过内联，
-所以只能由脚本在压缩态把内联缩进归零、把文字与箭头 `display: none`（否则 36px 的方块会被内联
-padding 顶成 57px、箭头还会露在右边）；
+· 父级行（`<button>`）：文字 / 箭头都在模板里，压缩态由 `:host([data-collapsed])` 的 CSS 收掉，
+不再写内联样式；缩进也由同一套 CSS 归零；
 · 分组标题整行 `display: none`（它没有图标，留着就是一条空行）。
 **压缩态的切换会整棵重建**（`watch.collapsed`）：子菜单的宿主从「行后面的嵌套菜单」变成
 「popover 浮层里的嵌套菜单」，结构本身不同，不是切个 class 能覆盖的。

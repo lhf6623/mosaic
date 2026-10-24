@@ -26,7 +26,7 @@
 
 ## P1 · 渲染结构在 JS，优先重写
 
-- [x] **menu** · 源码 `packages/menu/menu.html`（+ 核对 `menu-item.html`）· 文档 `README.md` / `api.md` / `page.html` · 🟡 keyed 复用，行仍留 light DOM
+- [x] **menu** · 源码 `packages/menu/menu.html` + `menu-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 行 / 内置控件模板渲染；浮层与开合为行为层
 - [ ] **date-picker** · 源码 `packages/date-picker/date-picker.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
 - [ ] **select** · 源码 `packages/select/select.html` + `option.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
 - [ ] **tree-select** · 源码 `packages/tree-select/tree-select.html` · 文档 `README.md` / `api.md` / `page.html` · 🔴
@@ -115,7 +115,8 @@
 
 ## 进度记录
 
-| 日期       | 单元   | commit    | 验收                                                       |
-| ---------- | ------ | --------- | ---------------------------------------------------------- |
-| 2026-10-24 | button | `7c4dc3d` | button 19/19、form 46/46                                   |
-| 2026-10-24 | menu   | 本提交    | menu 24/24、文档站同分区切页 47 行复用/0 次 childList 变动 |
+| 日期       | 单元           | commit    | 验收                                                          |
+| ---------- | -------------- | --------- | ------------------------------------------------------------- |
+| 2026-10-24 | button         | `7c4dc3d` | button 19/19、form 46/46                                      |
+| 2026-10-24 | menu           | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                        |
+| 2026-10-24 | menu（模板化） | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用 |

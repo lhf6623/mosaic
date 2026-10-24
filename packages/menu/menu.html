@@ -1,4 +1,4 @@
-<!-- mc-menu — 数据驱动的垂直菜单容器。设计取舍见同目录 README.md「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
+<!-- mc-menu — 数据驱动的垂直菜单容器（模板渲染：行由 o-fill 生成）。设计取舍见同目录 README.md「设计取舍」；本文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
@@ -76,12 +76,86 @@
       display: none;
     }
 
-    /* 5. 子菜单浮层（.mc-flyout）的外观**内联写在元素上**（见脚本里的 FLYOUT_STYLE）：插槽元素在
-       祖先 shadow 树里，UA 的 [popover] 默认样式与祖先 shadow 的 reset 都可能压过本 shadow 的
-       ::slotted()（实测：祖先 reset 是直接命中）—— 内联才稳。令牌照旧是 var(--mc-menu-flyout-*)。 */
+    /* 模板渲染：o-fill / o-if / .mc-node 都不生成盒子，行仍直接参与 .mc-list 的 flex 布局 */
+    o-fill,
+    o-if,
+    .mc-node {
+      display: contents;
+    }
+
+    /* 浮层面板：在 mc-menu 自己的 shadow 里，普通类规则就能压过 UA 的 [popover] 默认样式 */
+    .mc-flyout {
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      top: anchor(top);
+      left: anchor(right);
+      margin-inline-start: var(--mc-menu-flyout-gap, var(--mc-space-2, var(--mc-def-space-2)));
+      width: max-content;
+      min-width: var(--mc-menu-flyout-min-w, 8rem);
+      max-height: min(24rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))));
+      overflow: auto;
+      padding: var(--mc-menu-flyout-pad, var(--mc-space-2, var(--mc-def-space-2)));
+      border: 1px solid rgb(var(--mc-menu-flyout-border, var(--mc-def-color-border-strong)));
+      border-radius: var(--mc-menu-flyout-radius, var(--mc-def-radius-lg));
+      background-color: rgb(var(--mc-menu-flyout-bg, var(--mc-def-color-surface-raised)));
+      box-shadow: var(--mc-menu-flyout-shadow, var(--mc-shadow-panel, var(--mc-def-shadow-panel)));
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+    }
   </style>
 
-  <div class="mc-list" part="list"><slot></slot></div>
+  <div class="mc-list" part="list">
+    <slot></slot>
+    <o-fill :value="rows" fill-key="key">
+      <div class="mc-node">
+        <o-if :value="$data.kind === 'group'">
+          <mc-menu-item group attr:data-row-key="$data.key">{{$data.label}}</mc-menu-item>
+        </o-if>
+        <o-if :value="$data.kind !== 'group'">
+          <mc-menu-item
+            attr:data-row-key="$data.key"
+            attr:icon="$data.icon"
+            attr:label="$data.label"
+            attr:href="$data.href"
+            attr:current="$data.current ? '' : null"
+            attr:disabled="$data.disabled ? '' : null"
+            attr:data-expandable="$data.expandable ? '' : null"
+            attr:data-expanded="$data.expanded ? '' : null"
+            on:click="$host.onRowClick($data)"
+            on:pointerenter="$host.openFlyout($data.key)"
+            on:pointerleave="$host.scheduleClose($data.key)"
+            on:focusin="$host.openFlyout($data.key)"
+            on:focusout="$host.scheduleClose($data.key)"></mc-menu-item>
+        </o-if>
+        <o-if :value="$data.hasChildren">
+          <o-if :value="$data.flyout">
+            <div
+              class="mc-flyout"
+              popover="manual"
+              attr:data-panel-key="$data.key"
+              on:pointerenter="$host.cancelClose()"
+              on:focusin="$host.cancelClose()"
+              on:pointerleave="$host.scheduleClose($data.key)"
+              on:focusout="$host.scheduleClose($data.key)">
+              <mc-menu
+                attr:data-level="$data.childLevel"
+                data-flyout
+                :items="$data.children"></mc-menu>
+            </div>
+          </o-if>
+          <o-if :value="!$data.flyout">
+            <mc-menu
+              attr:data-level="$data.childLevel"
+              attr:hidden="$data.expanded ? null : ''"
+              :items="$data.children"></mc-menu>
+          </o-if>
+        </o-if>
+      </div>
+    </o-fill>
+  </div>
 
   <script>
     /* 定住滚动条：开合原生浮层时浏览器可能顺手滚一下页面（火狐实测，见 ../boot/scroll-pin.js 的文件头） */
@@ -93,29 +167,7 @@
 
       /* 指针从行移到浮层上要跨一条缝：给一段宽限时间，别让浮层在缝上闪掉 */
       const HOVER_CLOSE_DELAY = 120;
-      /* 浮层面板的外观。内联写而不是 ::slotted()：.mc-flyout 在祖先 shadow 树里，
-         UA 的 [popover] 默认样式（background: Canvas / inset: 0 / margin: auto）与祖先 shadow 的
-         reset 都可能压过本 shadow 的 ::slotted()，结果就是「第三级浮层像换了暗色主题」这类怪相。
-         值仍然是令牌，按实例覆盖照常生效。 */
-      const FLYOUT_STYLE = [
-        'position: fixed',
-        'inset: auto',
-        'margin: 0',
-        'top: anchor(top)',
-        'left: anchor(right)',
-        'margin-inline-start: var(--mc-menu-flyout-gap, var(--mc-space-2, var(--mc-def-space-2)))',
-        'width: max-content',
-        'min-width: var(--mc-menu-flyout-min-w, 8rem)',
-        'max-height: min(24rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))))',
-        'overflow: auto',
-        'padding: var(--mc-menu-flyout-pad, var(--mc-space-2, var(--mc-def-space-2)))',
-        'border: 1px solid rgb(var(--mc-menu-flyout-border, var(--mc-def-color-border-strong)))',
-        'border-radius: var(--mc-menu-flyout-radius, var(--mc-def-radius-lg))',
-        'background-color: rgb(var(--mc-menu-flyout-bg, var(--mc-def-color-surface-raised)))',
-        'box-shadow: var(--mc-menu-flyout-shadow, var(--mc-shadow-panel, var(--mc-def-shadow-panel)))',
-        'position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline',
-      ].join('; ');
-      /* 分组子项那一档缩进：行上写 --mc-item-step 覆盖默认的逐级步长（见 flattenOptions 的 step 形参） */
+      /* 分组子项那一档缩进：行上写 --mc-item-step 覆盖默认的逐级步长（见 buildRows 的 step 形参） */
       const GROUP_STEP = 'var(--mc-menu-group-indent, var(--mc-space-3, var(--mc-def-space-3)))';
       /* 容器通道。嵌套实例自己的 :host 默认值会盖掉继承来的使用者覆盖（在根上写 style 的那份），
          所以建实例时把解析后的值复制成内联，整棵树共用同一套通道。 */
@@ -156,65 +208,92 @@
           collapsed: null,
           /* 手风琴：同一层只允许一个子菜单展开（同 mc-collapse 的口径） */
           accordion: null,
-          /* 数据驱动的项。属性通道只作初始值 / JSON 兼容（绑定落点不稳定：首屏直出可能直接给数组，
-             SPA 导航是 JSON 文本）；运行时推荐用 property。property 一旦写过值，属性通道的变化不再覆盖它 */
+          /* 对象数组。属性通道只作初始值 / JSON 兼容；运行时推荐 property。
+             内部嵌套实例用 data 里的 items 传（见模板），避免 :options 被序列化成属性文本 */
           options: null,
         },
 
         data: {
-          /* 渲染源：规范化后的选项数组。⚠️ 结果不写回 attrs 声明的 options 键（会被 ofa 再序列化成属性文本，渲染源与输入就分叉了） */
+          /* 使用者传进来的原始 options；rows 是模板用的规范化行模型 */
           items: [],
+          rows: [],
         },
 
         ready() {
-          this._rendered = [];
-          this._submenus = [];
-          this._flyoutPairs = [];
-          this._openFlyout = null;
-          this._entries = new Map();
+          this._mounted = false;
           this._uid = ++instances;
-          this._anchors = 0;
+          this._rowAttrs = new Map();
+          this._flyoutRows = new Map();
+          this._flyoutPanels = new Map();
+          this._guards = new Map();
+          this._openKeys = new Set();
+          this._metaQueued = false;
           /* 挂载前赋的 property（createElement 之后马上 el.options = …）落在宿主上只是普通属性，先收下来；构造期不往宿主写属性（P31） */
           this._presetOptions = Object.prototype.hasOwnProperty.call(this.ele, 'options')
             ? this.ele.options
             : undefined;
 
+          /* 公开的 property 通道：getter 读数据，setter 写数据；属性通道由 attached 里的 MutationObserver 补 */
           Object.defineProperty(this.ele, 'options', {
             configurable: true,
             get: () => this.items,
             set: (value) => {
               this._propOptions = true;
-              this.applyOptions(value);
+              this.items = this.toOptions(value);
             },
           });
-
-          this._mounted = true; // 之后的 watch 才算真变化（P5）
         },
 
         attached() {
-          /* 初始值放在这里而不是 ready()：ofa 会把 options 的初值铺在实例上，构造期写进去的会被它盖掉。
-             顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢），同 mc-table */
+          /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的会被它盖掉。
+             顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
           if (!this._applied) {
             this._applied = true;
-            if (this.ele.hasAttribute('options'))
-              this.applyOptions(this.ele.getAttribute('options'));
+            if (this.ele.hasAttribute('options')) {
+              this.items = this.toOptions(this.ele.getAttribute('options'));
+            }
             if (this._presetOptions !== undefined) {
               this._propOptions = true;
-              this.applyOptions(this._presetOptions);
+              this.items = this.toOptions(this._presetOptions);
               this._presetOptions = undefined;
             }
           }
+          this._mounted = true;
+          this._modeKey =
+            String(this.flyoutChildren()) +
+            ':' +
+            this.baseLevel() +
+            ':' +
+            this.ele.hasAttribute('accordion');
+          this._modeMo = new MutationObserver(() => {
+            const key =
+              String(this.flyoutChildren()) +
+              ':' +
+              this.baseLevel() +
+              ':' +
+              this.ele.hasAttribute('accordion');
+            if (key === this._modeKey) return;
+            this._modeKey = key;
+            this.closeFlyouts();
+            this.rows = this.buildRows(this.items);
+            this.scheduleMeta();
+          });
+          this._modeMo.observe(this.ele, {
+            attributes: true,
+            attributeFilter: ['data-flyout', 'data-level', 'accordion'],
+          });
+          this.rows = this.buildRows(this.items);
 
           /* options 的属性通道自己听（同 mc-table 的 data）；我们从不写这个属性，所以不会自激 */
           this._attrMo = new MutationObserver(() => {
             if (this._propOptions) return; // property 已写过值：属性通道（含绑定后到的 JSON 文本）不覆盖它
-            this.applyOptions(this.ele.getAttribute('options'));
+            this.items = this.toOptions(this.ele.getAttribute('options'));
           });
           this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
 
           /* 点外部关浮层：必须用 composedPath（P20）—— contains(e.target) 在 shadow 边界上拿到的是被重定向后的宿主 */
           this._onDocPointerDown = (event) => {
-            if (!this._openFlyout) return;
+            if (!this.hasOpenFlyout()) return;
             if (event.composedPath().includes(this.ele)) return;
             this.closeFlyouts();
           };
@@ -222,45 +301,50 @@
 
           /* Esc 关浮层（不 preventDefault：没开浮层时一个键都不吞） */
           this._onKeyDown = (event) => {
-            if (event.key !== 'Escape' || !this._openFlyout) return;
+            if (event.key !== 'Escape' || !this.hasOpenFlyout()) return;
             this.closeFlyouts();
           };
           this.ele.addEventListener('keydown', this._onKeyDown);
+
+          /* 模板渲染是异步的：行落进 shadow 之后再接线（缩进 / 附加属性 / 浮层锚点 / 通道） */
+          this._domMo = new MutationObserver(() => this.scheduleMeta());
+          this._domMo.observe(this.ele.shadowRoot, { childList: true, subtree: true });
+          this.scheduleMeta();
         },
 
         detached() {
           this._attrMo?.disconnect();
+          this._modeMo?.disconnect();
+          this._domMo?.disconnect();
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
           this.ele.removeEventListener('keydown', this._onKeyDown);
           this.cancelClose();
-          for (const entry of this._entries.values()) this.disposeEntry(entry);
-          this._entries.clear();
+          for (const guard of this._guards.values()) guard.dispose();
+          this._guards.clear();
         },
 
         watch: {
-          options(value) {
-            if (!this._mounted) return; // 首次触发落在构造期（P5）
-            this.applyOptionsIfPresent(value);
+          /* 嵌套实例的 children 走 data.items；顶层 options property 也落回这里 */
+          items(value) {
+            if (!this._mounted) return; // 首次触发落在构造期（P5）；attached 里会自己建一次
+            this.rows = this.buildRows(this.toOptions(value));
+            this.scheduleMeta();
           },
           /* 压缩态换的是整个渲染结构（子菜单从内联折叠换成浮层），所以整棵重建 */
           collapsed() {
             if (!this._mounted) return;
-            this.rebuildItems();
+            this.closeFlyouts();
+            this.rows = this.buildRows(this.items);
+            this.scheduleMeta();
           },
           /* 尺寸变了要重新下发通道：嵌套实例拿的是建立那一刻的内联副本 */
           size() {
             if (!this._mounted) return;
-            for (const pair of this._submenus) this.copyChannel(pair.sub);
+            queueMicrotask(() => this.syncChannels());
           },
         },
 
         proto: {
-          /** property 已写过值就以 property 为准（绑定首屏可能先写对象、后写属性；属性再来不能覆盖它） */
-          applyOptionsIfPresent(value) {
-            if (this._propOptions) return;
-            this.applyOptions(value);
-          },
-
           /** 属性文本 / 数组 / null → 数组（属性通道的 JSON 兼容；首屏绑定也可能直接给数组） */
           toOptions(value) {
             if (value == null) return [];
@@ -277,11 +361,11 @@
             return Array.isArray(value) ? value : [];
           },
 
-          /** 唯一入口：规范化 → 重建自己生成的那些项（使用者手写的子元素不动） */
-          applyOptions(value) {
-            const items = this.toOptions(value);
-            this.items = items;
-            this.renderItems(items);
+          /** 一条数据是什么：分组 / 有子菜单的父级 / 叶子 */
+          kindOf(option) {
+            const data = typeof option === 'string' ? { label: option } : (option ?? {});
+            if (data.group || data.type === 'group') return 'group';
+            return Array.isArray(data.children) && data.children.length ? 'parent' : 'leaf';
           },
 
           /** 本实例的层级：根 = 0，父级渲染嵌套实例时写进 data-level（内部接线，不是给使用者的属性） */
@@ -295,6 +379,95 @@
             return this.ele.hasAttribute('collapsed') || this.ele.hasAttribute('data-flyout');
           },
 
+          /** options → 模板用的扁平行模型。分组子项摊到同一层；父级的 children 留给嵌套 mc-menu。 */
+          buildRows(items) {
+            const level = this.baseLevel();
+            const flyout = this.flyoutChildren();
+            const out = [];
+            const seen = new Map();
+            let index = 0;
+            const push = (data, level, step, prefix, kind) => {
+              const label = String(data.label ?? '');
+              const base =
+                data.key != null
+                  ? String(data.key)
+                  : kind === 'group'
+                    ? 'g:' + label
+                    : kind === 'parent'
+                      ? 'p:' + label
+                      : data.href
+                        ? 'h:' + data.href
+                        : 'l:' + label;
+              let key = prefix + base;
+              const n = seen.get(key) ?? 0;
+              seen.set(key, n + 1);
+              if (n) key += '#' + (n + 1);
+              out.push({
+                key,
+                kind,
+                label,
+                level,
+                step,
+                icon: kind === 'group' ? null : (data.icon ?? null),
+                href: kind === 'leaf' && !data.disabled ? (data.href ?? null) : null,
+                current: kind === 'leaf' && !!data.current,
+                disabled: !!data.disabled,
+                expandable: kind === 'parent',
+                hasChildren: kind === 'parent',
+                children: kind === 'parent' ? data.children : null,
+                childLevel: flyout ? 0 : level + 1,
+                flyout,
+                expanded: kind === 'parent' && data.expanded === true,
+                attrs: data.attrs ?? null,
+                anchor: '--mc-item-anchor-' + this._uid + '-' + index++,
+              });
+              return key;
+            };
+            const walk = (nodes, level, step, prefix) => {
+              for (const option of nodes) {
+                const data = typeof option === 'string' ? { label: option } : (option ?? {});
+                const kind = this.kindOf(data);
+                const key = push(data, level, step, prefix, kind);
+                if (kind === 'group')
+                  walk(data.children ?? [], level + 1, step ?? GROUP_STEP, key + '/');
+              }
+            };
+            walk(items, level, undefined, '');
+            /* options 里多个 expanded 时手风琴只留最后一个（与手动点开同一套规则） */
+            if (this.ele.hasAttribute('accordion')) {
+              let last = -1;
+              for (let i = 0; i < out.length; i += 1) {
+                if (out[i].kind === 'parent' && out[i].expanded) last = i;
+              }
+              for (let i = 0; i < out.length; i += 1) {
+                if (out[i].kind === 'parent' && i !== last && out[i].expanded) {
+                  out[i] = { ...out[i], expanded: false };
+                }
+              }
+            }
+            return out;
+          },
+
+          /** 行上的附加属性：这次没有的旧键要删掉，否则复用行会带着上一份 options 的 target / data-* */
+          syncAttrs(el, attrs, applied) {
+            const next = attrs && typeof attrs === 'object' ? attrs : {};
+            for (const name of applied) {
+              if (!(name in next) && el.hasAttribute(name)) el.removeAttribute(name);
+            }
+            applied.clear();
+            for (const [name, value] of Object.entries(next)) {
+              if (value == null || value === false) {
+                if (el.hasAttribute(name)) el.removeAttribute(name);
+                continue;
+              }
+              const text = value === true ? '' : String(value);
+              /* 只在真的变了才写：syncMeta 可能被 shadow DOM 的 MutationObserver 再叫一次，
+                 同值 setAttribute 会让 menu-item 的模型观察者再跑一轮 */
+              if (el.getAttribute(name) !== text) el.setAttribute(name, text);
+              applied.add(name);
+            }
+          },
+
           /** 把本实例解析后的通道复制成嵌套实例的内联样式（见 CHANNEL 处的注释） */
           copyChannel(sub) {
             const own = this.ele.style;
@@ -306,329 +479,136 @@
             }
           },
 
-          /** 同一层里造稳定 key：显式 key > 分组 label > 父级 label > href > label；重名加序号。 */
-          flattenOptions(items, level, step, prefix = '') {
-            const out = [];
-            const seen = new Map();
-            const walk = (nodes, level, step, prefix) => {
-              for (const option of nodes) {
-                const data = typeof option === 'string' ? { label: option } : (option ?? {});
-                const kind = this.kindOf(data);
-                const label = String(data.label ?? '');
-                const base =
-                  data.key != null
-                    ? String(data.key)
-                    : kind === 'group'
-                      ? `g:${label}`
-                      : kind === 'parent'
-                        ? `p:${label}`
-                        : data.href
-                          ? `h:${data.href}`
-                          : `l:${label}`;
-                let key = prefix + base;
-                const n = seen.get(key) ?? 0;
-                seen.set(key, n + 1);
-                if (n) key += `#${n + 1}`;
-                out.push({ key, kind, option: data, level, step });
-                if (kind === 'group')
-                  walk(data.children ?? [], level + 1, step ?? GROUP_STEP, key + '/');
+          syncChannels() {
+            for (const sub of this.ele.shadowRoot?.querySelectorAll('mc-menu') ?? [])
+              this.copyChannel(sub);
+          },
+
+          /** rows 落 DOM 之后的接线：缩进、附加属性、浮层锚点、嵌套菜单的通道。 */
+          syncMeta() {
+            const root = this.ele.shadowRoot;
+            if (!root) return;
+            const rows = [...root.querySelectorAll('mc-menu-item[data-row-key]')];
+            const byKey = new Map(rows.map((el) => [el.getAttribute('data-row-key'), el]));
+            const models = new Map(this.rows.map((row) => [row.key, row]));
+            for (const [key, el] of byKey) {
+              const row = models.get(key);
+              if (!row) continue;
+              const level = String(row.level);
+              if (el.style.getPropertyValue('--mc-item-level') !== level) {
+                el.style.setProperty('--mc-item-level', level);
               }
-            };
-            walk(items, level, step, prefix);
-            return out;
-          },
-
-          /** 一条数据是什么：分组 / 有子菜单的父级 / 叶子 */
-          kindOf(option) {
-            const data = typeof option === 'string' ? { label: option } : (option ?? {});
-            if (data.group || data.type === 'group') return 'group';
-            return Array.isArray(data.children) && data.children.length ? 'parent' : 'leaf';
-          },
-
-          /** 行上的附加属性：这次没有的旧键要删掉，否则复用行会带着上一份 options 的 target / data-* */
-          syncAttrs(el, attrs, applied) {
-            const next = attrs && typeof attrs === 'object' ? attrs : {};
-            for (const name of applied) if (!(name in next)) el.removeAttribute(name);
-            applied.clear();
-            for (const [name, value] of Object.entries(next)) {
-              if (value == null || value === false) {
-                el.removeAttribute(name);
-                continue;
+              const step = row.step ?? '';
+              if (row.step) {
+                if (el.style.getPropertyValue('--mc-item-step') !== step) {
+                  el.style.setProperty('--mc-item-step', step);
+                }
+              } else if (el.style.getPropertyValue('--mc-item-step')) {
+                el.style.removeProperty('--mc-item-step');
               }
-              el.setAttribute(name, value === true ? '' : String(value));
-              applied.add(name);
-            }
-          },
-
-          /** 缩进通道：层级每级都写；step 只在分组子项那档覆盖 */
-          paintRow(row, level, step) {
-            row.style.setProperty('--mc-item-level', String(level));
-            if (step) row.style.setProperty('--mc-item-step', step);
-            else row.style.removeProperty('--mc-item-step');
-          },
-
-          /** 行模型 → 行属性（分组走纯文字；叶子 / 父级走 mc-menu-item 的内置行通道） */
-          paintModel(entry, item) {
-            const { option, level, step, kind } = item;
-            const row = entry.row;
-            const data = option;
-            this.paintRow(row, level, step);
-            if (kind === 'group') {
-              row.setAttribute('group', '');
-              row.textContent = String(data.label ?? '');
-              for (const name of [
-                'label',
-                'href',
-                'icon',
-                'current',
-                'disabled',
-                'data-expandable',
-              ]) {
-                row.removeAttribute(name);
+              let applied = this._rowAttrs.get(key);
+              if (!applied) {
+                applied = new Set();
+                this._rowAttrs.set(key, applied);
               }
-            } else {
-              row.removeAttribute('group');
-              /* 不碰 textContent：内置控件归 mc-menu-item 管，清空会把复用的 <a>/<button> 一起删掉 */
-              row.setAttribute('label', String(data.label ?? ''));
-              if (data.icon) row.setAttribute('icon', String(data.icon));
-              else row.removeAttribute('icon');
-              if (kind === 'parent') row.setAttribute('data-expandable', '');
-              else row.removeAttribute('data-expandable');
-              if (kind === 'leaf' && data.href && !data.disabled)
-                row.setAttribute('href', String(data.href));
-              else row.removeAttribute('href');
-              if (kind === 'leaf' && data.current) row.setAttribute('current', '');
-              else row.removeAttribute('current');
-              if (data.disabled) row.setAttribute('disabled', '');
-              else row.removeAttribute('disabled');
+              this.syncAttrs(el, row.attrs, applied);
             }
-            this.syncAttrs(row, data.attrs, entry.appliedAttrs);
-          },
+            for (const key of [...this._rowAttrs.keys()])
+              if (!models.has(key)) this._rowAttrs.delete(key);
 
-          /** 新建一个条目（行 + 可选子菜单 / 浮层）。已有 key 的条目走 updateEntry，不重建。 */
-          createEntry(item) {
-            const doc = this.ele.ownerDocument;
-            const { key, kind, option, level } = item;
-            const entry = {
-              key,
-              kind,
-              appliedAttrs: new Set(),
-              row: doc.createElement('mc-menu-item'),
-              sub: null,
-              flyout: null,
-              pair: null,
-              guard: null,
-            };
-            this.paintModel(entry, item);
-
-            if (kind !== 'parent') return entry;
-
-            /* 子菜单 = 嵌套的 mc-menu：复用同一套渲染（递归）。通道复制过去、手风琴跟着继承。
-               层级：内联展开时 +1（逐级缩进）；**浮层里不缩进** —— 每一列就是一级，缩进由浮层本身表达。 */
-            const sub = doc.createElement('mc-menu');
-            sub.setAttribute('data-level', String(this.flyoutChildren() ? 0 : level + 1));
-            if (this.flyoutChildren()) sub.setAttribute('data-flyout', '');
-            if (this.ele.hasAttribute('accordion')) sub.setAttribute('accordion', '');
-            this.copyChannel(sub);
-            sub.options = option.children;
-
-            const pair = { row: entry.row, sub, flyout: null, key };
-            entry.row.addEventListener('click', () => this.toggleSub(pair));
-            entry.sub = sub;
-            entry.pair = pair;
-
-            if (!this.flyoutChildren()) {
-              sub.setAttribute('hidden', '');
-              return entry;
+            this._flyoutRows.clear();
+            this._flyoutPanels.clear();
+            const panels = [...root.querySelectorAll('.mc-flyout[data-panel-key]')];
+            const panelByKey = new Map(panels.map((el) => [el.getAttribute('data-panel-key'), el]));
+            for (const row of this.rows) {
+              if (!row.flyout || !row.hasChildren) continue;
+              const el = byKey.get(row.key);
+              const panel = panelByKey.get(row.key);
+              if (!el || !panel) continue;
+              el.style.setProperty('anchor-name', row.anchor);
+              panel.style.setProperty('position-anchor', row.anchor);
+              this._flyoutRows.set(row.key, el);
+              this._flyoutPanels.set(row.key, panel);
             }
-
-            /* 浮层模式：子菜单进原生 popover，鼠标移入 / 键盘聚焦父级行时弹出 */
-            const flyout = doc.createElement('div');
-            flyout.className = 'mc-flyout';
-            flyout.setAttribute('popover', 'manual');
-            flyout.style.cssText = FLYOUT_STYLE;
-            const anchor = `--mc-item-anchor-${this._uid}-${++this._anchors}`;
-            entry.row.style.setProperty('anchor-name', anchor);
-            flyout.style.setProperty('position-anchor', anchor);
-            flyout.append(sub);
-            pair.flyout = flyout;
-            pair.guard = attachFloatingScrollGuard(this.ele, flyout);
-            entry.flyout = flyout;
-            entry.guard = pair.guard;
-            this.bindFlyout(pair);
-            return entry;
+            this.syncChannels();
           },
 
-          /** 复用条目：只更新行 / 子菜单属性，节点与事件绑定都不动 */
-          updateEntry(entry, item) {
-            this.paintModel(entry, item);
-            if (entry.kind !== 'parent') return;
-            const sub = entry.sub;
-            sub.setAttribute('data-level', String(this.flyoutChildren() ? 0 : item.level + 1));
-            if (this.ele.hasAttribute('accordion')) sub.setAttribute('accordion', '');
-            else sub.removeAttribute('accordion');
-            this.copyChannel(sub);
-            sub.options = item.option.children;
+          scheduleMeta() {
+            if (this._metaQueued) return;
+            this._metaQueued = true;
+            queueMicrotask(() => {
+              this._metaQueued = false;
+              this.syncMeta();
+            });
           },
 
-          disposeEntry(entry) {
-            if (entry.flyout?.matches?.(':popover-open')) entry.flyout.hidePopover();
-            entry.guard?.dispose();
-            entry.row?.remove();
-            entry.sub?.remove();
-            entry.flyout?.remove();
+          /** 父级行点击：内联模式只翻自身（手风琴下先收同层其它分支）；浮层模式交给 hover / focus */
+          onRowClick(row) {
+            if (!row || row.kind !== 'parent' || row.flyout || row.disabled) return;
+            const accordion = this.ele.hasAttribute('accordion');
+            const targetKey = row.key;
+            const next = this.rows.map((item) => {
+              if (item.kind !== 'parent') return item;
+              if (item.key === targetKey) return { ...item, expanded: !item.expanded };
+              if (accordion && item.expanded) return { ...item, expanded: false };
+              return item;
+            });
+            this.rows = next;
+            this.scheduleMeta();
           },
 
-          /** 压缩态换的是整棵结构（内联 ↔ 浮层），键复用不了，先散再重来 */
-          rebuildItems() {
-            this.closeFlyouts();
-            for (const entry of this._entries.values()) this.disposeEntry(entry);
-            this._entries.clear();
-            this._rendered = [];
-            this._submenus = [];
-            this._flyoutPairs = [];
-            this.renderItems(this.items);
+          hasOpenFlyout() {
+            return this._openKeys.size > 0;
           },
 
-          /* ---------- 内联开合（普通模式） ---------- */
-
-          /** 点一行开合子菜单：hidden 与行上的 data-expanded 一起切（箭头方向归 mc-menu-item 自己看 data-expanded） */
-          toggleSub(pair) {
-            if (this.flyoutChildren()) return; // 浮层模式：开合归 hover / focus，点击不参与
-            if (pair.row.hasAttribute('data-disabled')) return;
-            if (pair.sub.hasAttribute('hidden')) this.openSub(pair);
-            else this.closeSub(pair);
-          },
-
-          openSub(pair) {
-            /* 手风琴：同一层只留一个展开的分支（口径同 mc-collapse，嵌套层各管各的） */
-            if (this.ele.hasAttribute('accordion')) {
-              for (const other of this._submenus) if (other !== pair) this.closeSub(other);
-            }
-            pair.sub.removeAttribute('hidden');
-            pair.row.setAttribute('data-expanded', '');
-          },
-
-          closeSub(pair) {
-            pair.sub.setAttribute('hidden', '');
-            pair.row.removeAttribute('data-expanded');
-          },
-
-          /* ---------- 浮层开合（压缩态 / 浮层里的每一级） ---------- */
-
-          /** 行 → 浮层的进出线：行上移入 / 聚焦打开，浮层里移入取消关闭，两边离开都排队关闭。
-              relatedTarget 还指着行或浮层（含浮层里的嵌套浮层）时不算离开 —— 否则指针在缝上闪一下就收 */
-          bindFlyout(pair) {
-            const schedule = () => this.scheduleClose(pair);
-            const leave = (event) => {
-              if (!pair.flyout.contains(event.relatedTarget)) schedule();
-            };
-            /* 禁用的父级行不给弹层（点不动、也不该有下一级） */
-            const open = () => {
-              if (!pair.row.hasAttribute('data-disabled')) this.openFlyout(pair);
-            };
-            pair.row.addEventListener('pointerenter', open);
-            pair.row.addEventListener('focusin', open);
-            pair.row.addEventListener('pointerleave', leave);
-            pair.row.addEventListener('focusout', leave);
-            pair.flyout.addEventListener('pointerenter', () => this.cancelClose());
-            pair.flyout.addEventListener('pointerleave', leave);
-            pair.flyout.addEventListener('focusout', leave);
-          },
-
-          openFlyout(pair) {
+          openFlyout(key) {
+            if (!this.flyoutChildren()) return;
+            const row = this._flyoutRows.get(key);
+            const panel = this._flyoutPanels.get(key);
+            if (!row || !panel || row.hasAttribute('disabled')) return;
             this.cancelClose();
-            /* 同一层同时只弹一个：换行时先收起同层的其它浮层（祖先浮层不动） */
-            for (const other of this._flyoutPairs) if (other !== pair) this.closeFlyout(other);
-            this._openFlyout = pair;
-            /* 指针已经移进浮层，行不再 :hover —— 用 data-open 把「这条分支开着」留在锚点行上 */
-            pair.row.setAttribute('data-open', '');
-            if (!pair.flyout.matches(':popover-open')) {
+            for (const other of [...this._openKeys]) if (other !== key) this.closeFlyout(other);
+            this._openKeys.add(key);
+            row.setAttribute('data-open', '');
+            if (!panel.matches(':popover-open')) {
               /* 显式开合那一瞬也要包 run()：toggle 事件是排队发的，挡不住同步动作那一下的位移 */
-              if (pair.guard) pair.guard.run(() => pair.flyout.showPopover());
-              else pair.flyout.showPopover();
+              let guard = this._guards.get(key);
+              if (!guard) {
+                guard = attachFloatingScrollGuard(this.ele, panel);
+                this._guards.set(key, guard);
+              }
+              guard.run(() => panel.showPopover());
             }
           },
 
-          closeFlyout(pair) {
-            if (pair.flyout?.matches(':popover-open')) {
-              if (pair.guard) pair.guard.run(() => pair.flyout.hidePopover());
-              else pair.flyout.hidePopover();
+          closeFlyout(key) {
+            const panel = this._flyoutPanels.get(key);
+            const row = this._flyoutRows.get(key);
+            if (panel?.matches(':popover-open')) {
+              const guard = this._guards.get(key);
+              if (guard) guard.run(() => panel.hidePopover());
+              else panel.hidePopover();
             }
             /* 一起收起浮层里的每一级：外层关了、内层还挂在 top layer 就会变成一块孤儿面板 */
-            for (const inner of pair.flyout?.querySelectorAll('.mc-flyout') ?? []) {
-              if (inner.matches(':popover-open')) inner.hidePopover();
-            }
-            for (const row of pair.flyout?.querySelectorAll('mc-menu-item[data-open]') ?? []) {
-              row.removeAttribute('data-open');
-            }
-            pair.row?.removeAttribute('data-open');
-            if (this._openFlyout === pair) this._openFlyout = null;
+            for (const sub of panel?.querySelectorAll('mc-menu') ?? [])
+              sub.__xhear__?.closeFlyouts?.();
+            this._openKeys.delete(key);
+            row?.removeAttribute('data-open');
           },
 
           closeFlyouts() {
             this.cancelClose();
-            for (const pair of this._flyoutPairs) this.closeFlyout(pair);
+            for (const key of [...this._flyoutPanels.keys()]) this.closeFlyout(key);
           },
 
-          scheduleClose(pair) {
+          scheduleClose(key) {
             this.cancelClose();
-            this._closeTimer = setTimeout(() => this.closeFlyout(pair), HOVER_CLOSE_DELAY);
+            this._closeTimer = setTimeout(() => this.closeFlyout(key), HOVER_CLOSE_DELAY);
           },
 
           cancelClose() {
             clearTimeout(this._closeTimer);
             this._closeTimer = null;
-          },
-
-          /** 唯一落 DOM 的入口：按 key 复用已有行，只改属性；新 key 才建节点。
-              doc-nav 每次换页都会重写 options，但同一分区里 key 不变 —— 47 行不会整棵重建。 */
-          renderItems(items) {
-            if (!this._entries) return; // 构造期前的 watch 不落 DOM
-            this.closeFlyouts();
-            const nodes = this.flattenOptions(items, this.baseLevel());
-            const next = new Map();
-            const order = [];
-            for (const item of nodes) {
-              let entry = this._entries.get(item.key);
-              if (entry && entry.kind !== item.kind) {
-                this.disposeEntry(entry);
-                entry = null;
-              }
-              if (!entry) entry = this.createEntry(item);
-              else this.updateEntry(entry, item);
-              next.set(item.key, entry);
-              order.push(entry);
-            }
-            /* 先建新的再拆旧的：同一 key 的行不会闪一下空白 */
-            for (const [key, entry] of this._entries) if (!next.has(key)) this.disposeEntry(entry);
-            const prev = this._rendered;
-            this._entries = next;
-            this._submenus = [];
-            this._flyoutPairs = [];
-            const desired = [];
-            for (const entry of order) {
-              desired.push(entry.row);
-              if (entry.flyout) desired.push(entry.flyout);
-              else if (entry.sub) desired.push(entry.sub);
-              if (entry.pair) {
-                this._submenus.push(entry.pair);
-                if (entry.flyout) this._flyoutPairs.push(entry.pair);
-              }
-            }
-            /* 顺序没变就不搬节点：append 已有节点 = 先删后插，会打断焦点 / hover，也会让 doc-nav 误以为整棵换过 */
-            const sameOrder =
-              prev.length === desired.length &&
-              prev.every((el, i) => el === desired[i] && el.isConnected);
-            if (!sameOrder) for (const el of desired) this.ele.append(el);
-            this._rendered = desired;
-            /* options.expanded：同一层手风琴下后面的赢；复用条目也按本次数据重算 */
-            for (const item of nodes) {
-              const entry = next.get(item.key);
-              if (!entry?.pair || entry.flyout) continue;
-              if (item.option.expanded === true) this.openSub(entry.pair);
-              else this.closeSub(entry.pair);
-            }
           },
         },
       };

@@ -97,7 +97,8 @@
        （如 mc-dropdown 的面板）就永远量不到标签有多宽。这里只写祖先 shadow 树没声明过的属性；
        shadow-base 的 button reset 声明过的（padding / background / cursor）写在它上面一律不生效 */
     ::slotted(a),
-    ::slotted(button) {
+    ::slotted(button),
+    .mc-control {
       display: block;
       box-sizing: border-box;
       /* 100% + pad-x：宿主右边那一层 padding 要一起铺到，整行才是可点区（100% 只到内容盒右沿） */
@@ -121,7 +122,8 @@
 
     /* 焦点环用 ring 令牌，不用 currentColor（P16）；画在铺满整行的交互层上 */
     ::slotted(a:focus-visible),
-    ::slotted(button:focus-visible) {
+    ::slotted(button:focus-visible),
+    .mc-control:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: -2px;
     }
@@ -147,7 +149,8 @@
     }
     /* 有图标时文字让开：缩进 = 左内边距 + 图标 + 间距（插槽元素自己那份 text-indent 要盖掉） */
     :host([icon]) ::slotted(a),
-    :host([icon]) ::slotted(button) {
+    :host([icon]) ::slotted(button),
+    :host([icon]) .mc-control {
       text-indent: calc(
         var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
           var(
@@ -171,7 +174,8 @@
       justify-content: center;
     }
     :host([data-collapsed]) ::slotted(a),
-    :host([data-collapsed]) ::slotted(button) {
+    :host([data-collapsed]) ::slotted(button),
+    :host([data-collapsed]) .mc-control {
       width: 100%;
       color: transparent;
       text-indent: 0;
@@ -179,9 +183,80 @@
     :host([group][data-collapsed]) {
       display: none;
     }
+
+    /* 8. 内置行（模板渲染）：控件在 shadow 里，普通类规则就够；和 ::slotted 共用上面那套行盒子 */
+    o-if {
+      display: contents;
+    }
+    .mc-control {
+      appearance: none;
+      background: none;
+      border: 0;
+      font: inherit;
+      cursor: inherit;
+    }
+    /* 父级行是 flex 两端对齐（文字左、箭头右），缩进走 padding（flex 里 text-indent 不生效） */
+    .mc-control--parent {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      padding-inline-start: calc(
+        var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
+          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4))))
+      );
+      padding-inline-end: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      text-indent: 0;
+    }
+    :host([icon]) .mc-control--parent {
+      padding-inline-start: calc(
+        var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
+          var(
+            --mc-item-step,
+            var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))
+          ) +
+          var(--mc-menu-icon-size, 1.25em) +
+          var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
+      );
+    }
+    .mc-control-label {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .mc-caret {
+      flex: none;
+    }
+    :host([data-collapsed]) .mc-control--parent {
+      padding-inline: 0;
+      justify-content: center;
+    }
+    :host([data-collapsed]) .mc-control-label,
+    :host([data-collapsed]) .mc-caret {
+      display: none;
+    }
   </style>
 
   <span class="mc-item-icon"><mc-icon :name="icon"></mc-icon></span>
+  <o-if :value="built">
+    <o-if :value="expandable">
+      <button class="mc-control mc-control--parent" type="button" attr:disabled="disabled">
+        <span class="mc-control-label">{{labelText}}</span>
+        <mc-icon class="mc-caret" :name="caret"></mc-icon>
+      </button>
+    </o-if>
+    <o-if :value="!expandable">
+      <a
+        class="mc-control"
+        attr:href="linkHref"
+        attr:target="linkTarget"
+        attr:rel="linkRel"
+        attr:title="linkTitle">
+        {{labelText}}
+      </a>
+    </o-if>
+  </o-if>
   <slot></slot>
 
   <script>
@@ -202,7 +277,7 @@
           // 图标名，语法同 mc-icon 的 name。⚠️ 默认也必须是 null：ofa 会把 '' 反射成宿主属性，
           // 于是 :host([icon]) 对每一行都成立、所有行都白留一份图标缩进（实测踩过）
           icon: null,
-          /* 内置行：插槽里不写控件时，组件按这几个属性自己造 <a>（父级行则造 <button>）。
+          /* 内置行：插槽里不写控件时，组件按这几个属性自己造 <a> / <button>。
              ⚠️ 内置 <a> 是运行时造的，拿不到 olink 的部署前缀 —— href 要给最终地址；
              要 olink 或自备控件，就照旧往插槽里写 <a> / <button>（那条路优先级更高）。 */
           label: null,
@@ -211,11 +286,20 @@
           disabled: null,
         },
 
+        data: {
+          /* 内置行模型：模板只认这几个字段，脚本只负责从宿主属性推导 */
+          built: false,
+          expandable: false,
+          labelText: '',
+          caret: CARET_CLOSED,
+          linkHref: null,
+          linkTarget: null,
+          linkRel: null,
+          linkTitle: null,
+        },
+
         ready() {
-          // 这时 shadow 已建好（同 mc-collapse-item）；宿主属性留到 attached 才写（P31）
           this._slot = this.ele.shadowRoot.querySelector('slot');
-          this._built = null;
-          this._caret = null;
         },
 
         attached() {
@@ -227,7 +311,7 @@
           this._slot.addEventListener('slotchange', this._onSlotChange);
           // data-current 是运行时切来切去的，属性一变就得重新镜像
           this._observer = new MutationObserver(this._onChildChange);
-          /* 内置行的模型属性变了要重建 / 更新控件（声明式；数据驱动的项在挂载前就把这些属性写好了） */
+          /* 内置行的模型属性变了要重算模板；数据驱动的项在挂载前就把这些属性写好了 */
           this._modelObserver = new MutationObserver(() => this.syncModel());
           this._modelObserver.observe(this.ele, {
             attributes: true,
@@ -238,9 +322,7 @@
               'disabled',
               'data-expandable',
               'data-expanded',
-              // 压缩态由容器镜像到宿主（syncMenu），内置控件要跟着收掉文字与箭头
-              'data-collapsed',
-              // 链接属性：行上一变就转给内置 <a>
+              // 链接属性：行上一变就转给内置控件
               'target',
               'rel',
               'title',
@@ -250,7 +332,7 @@
           });
 
           this.bindChild();
-          // 压缩态来自祖先容器（它可能比本项晚写属性），所以也要盯着
+          // 压缩态来自最近的 mc-menu（数据驱动的行现在生成在它的 shadow 里）
           this.bindMenu();
           this.syncModel();
         },
@@ -263,16 +345,14 @@
         },
 
         proto: {
-          /* ---------- 内置行：label / href 由组件自己造控件 ---------- */
+          /* ---------- 内置行：宿主属性 → 模板模型 ---------- */
 
-          /** 插槽里有没有使用者写的东西（自己造的控件不算）—— 有就让使用者的元素赢 */
+          /** 插槽里有没有使用者写的东西（内置控件在 shadow 里，不算插槽内容） */
           hasContent() {
             const nodes = this._slot?.assignedNodes({ flatten: true }) ?? [];
             return nodes.some(
               (node) =>
-                node !== this._built &&
-                // 1 = Element、3 = Text；模板换行留下的空白文本节点不算内容
-                (node.nodeType === 1 || (node.nodeType === 3 && node.textContent.trim() !== '')),
+                node.nodeType === 1 || (node.nodeType === 3 && node.textContent.trim() !== ''),
             );
           },
 
@@ -285,115 +365,22 @@
             );
           },
 
-          /** 宿主属性 → 内置控件（没有就造、标签不对就换、已有就更新），顺带同步状态 */
+          /** 宿主属性 → 模板模型（标签 / 箭头 / 链接控件都由模板渲染，脚本不造节点） */
           syncModel() {
-            const wanted = this.wantsBuilt();
-            const tag = this.ele.hasAttribute('data-expandable') ? 'button' : 'a';
-            if (!wanted) {
-              this.dropBuilt();
-              this.applyState();
-              return;
-            }
-            if (this._built && this._built.localName !== tag) this.dropBuilt();
-            if (!this._built) this.buildControl(tag);
-            this.updateControl();
-            this.applyState();
-          },
-
-          dropBuilt() {
-            if (!this._built) return;
-            this._built.remove();
-            this._built = null;
-            this._caret = null;
-          },
-
-          /** 父级行 = flex 两端对齐（文字左、箭头右）；叶子行就是铺满整行的 <a>，缩进交给 ::slotted 的 text-indent */
-          buildControl(tag) {
-            const doc = this.ele.ownerDocument;
-            const control = doc.createElement(tag);
-            if (tag === 'button') {
-              control.setAttribute('type', 'button');
-              /* ⚠️ 这几条只能内联：插槽元素落在外层 shadow 的 button reset 之下，::slotted() 的
-                 padding / text-indent 在这里不够用（详见 README 的「行盒子」）。 */
-              control.style.display = 'flex';
-              control.style.alignItems = 'center';
-              control.style.justifyContent = 'space-between';
-              control.style.gap = 'var(--mc-space-2, var(--mc-def-space-2))';
-              control.style.textIndent = '0';
-              const text = doc.createElement('span');
-              text.style.overflow = 'hidden';
-              text.style.textOverflow = 'ellipsis';
-              text.style.whiteSpace = 'nowrap';
-              text.style.minWidth = '0';
-              const caret = doc.createElement('mc-icon');
-              caret.style.flex = 'none';
-              control.append(text, caret);
-              this._caret = caret;
-            }
-            this.ele.append(control);
-            this._built = control;
-          },
-
-          updateControl() {
-            const control = this._built;
-            if (!control) return;
+            const built = this.wantsBuilt();
+            const expandable = this.ele.hasAttribute('data-expandable');
             const label = this.ele.getAttribute('label') ?? '';
             const disabled = this.ele.hasAttribute('disabled');
-            /* 压缩态只剩图标：文字与箭头都要收掉。⚠️ 这里的隐藏只能内联 —— 祖先 shadow 的
-               button reset（color: inherit）是直接命中，压过本 shadow 的 ::slotted(button)。 */
-            const collapsed = this.ele.hasAttribute('data-collapsed');
-
-            if (control.localName === 'button') {
-              const text = control.querySelector('span');
-              text.textContent = label;
-              control.disabled = disabled;
-              this._caret?.setAttribute(
-                'name',
-                this.ele.hasAttribute('data-expanded') ? CARET_OPEN : CARET_CLOSED,
-              );
-              text.style.display = collapsed ? 'none' : '';
-              if (this._caret) this._caret.style.display = collapsed ? 'none' : '';
-              if (collapsed) {
-                /* 压缩态：父级行的内联缩进让位（否则 border-box 的最小宽度会被 padding 撑破方形） */
-                control.style.paddingInlineStart = '0';
-                control.style.paddingInlineEnd = '0';
-              } else {
-                this.applyControlIndent(control);
-              }
-              control.style.color = collapsed ? 'transparent' : '';
-              this.syncLinkAttrs(control);
-              return;
-            }
-
-            /* 叶子行：禁用的行不给 href（点不动、也进不了焦点顺序） */
-            control.textContent = label;
-            const href = this.ele.getAttribute('href');
-            if (href && !disabled) control.setAttribute('href', href);
-            else control.removeAttribute('href');
-            control.style.color = collapsed ? 'transparent' : '';
-            this.syncLinkAttrs(control);
-          },
-
-          /** 行上的链接属性转给内置控件（options 的 attrs / 声明式直接写都能用） */
-          syncLinkAttrs(control) {
-            for (const name of ['target', 'rel', 'title']) {
-              const value = this.ele.getAttribute(name);
-              if (value == null) control.removeAttribute(name);
-              else control.setAttribute(name, value);
-            }
-          },
-
-          /** 父级行的缩进走 padding-inline-start（flex 里 text-indent 不生效）；与 ::slotted 那条是同一份计算 */
-          applyControlIndent(control) {
-            const level = Number(this.ele.style.getPropertyValue('--mc-item-level')) || 0;
-            const padX = 'var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)))';
-            const step =
-              'var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4))))';
-            const start = this.ele.hasAttribute('icon')
-              ? `${padX} + ${level} * ${step} + var(--mc-menu-icon-size, 1.25em) + var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))`
-              : `${padX} + ${level} * ${step}`;
-            control.style.paddingInlineStart = `calc(${start})`;
-            control.style.paddingInlineEnd = padX;
+            this.built = built;
+            this.expandable = expandable;
+            this.labelText = label;
+            this.caret = this.ele.hasAttribute('data-expanded') ? CARET_OPEN : CARET_CLOSED;
+            this.linkHref =
+              built && !expandable && !disabled ? this.ele.getAttribute('href') || null : null;
+            this.linkTarget = this.ele.getAttribute('target');
+            this.linkRel = this.ele.getAttribute('rel');
+            this.linkTitle = this.ele.getAttribute('title');
+            this.applyState();
           },
 
           /* ---------- 插槽那条路：使用者自备 <a> / <button> ---------- */
@@ -420,7 +407,7 @@
           /** 状态 → 宿主上的 data-* 钩子（CSS 只能从宿主上选它）：内置行读宿主自己的 current / disabled，
               插槽那条路读使用者元素上的 data-current / disabled（两处只有这一个出口） */
           applyState() {
-            if (this._built) {
+            if (this.built) {
               this.mirror('data-current', this.ele.hasAttribute('current'));
               this.mirror('data-disabled', this.ele.hasAttribute('disabled'));
               return;
@@ -441,9 +428,13 @@
             else this.ele.removeAttribute(name);
           },
 
-          /** 盯住最近的祖先 mc-menu：容器上的 collapsed 一变就重新镜像（不在菜单里的项没有这一态） */
+          /** 盯住最近的祖先 mc-menu：容器上的 collapsed 一变就重新镜像（不在菜单里的项没有这一态）。
+              数据驱动的行在 mc-menu 的 shadow 里，closest() 不跨 shadow 边界，回退到根宿主。 */
           bindMenu() {
-            const menu = this.ele.closest('mc-menu');
+            const root = this.ele.getRootNode();
+            const menu =
+              this.ele.closest('mc-menu') ??
+              (root instanceof ShadowRoot && root.host?.localName === 'mc-menu' ? root.host : null);
             if (menu !== this._menu) {
               this._menuObserver?.disconnect();
               this._menu = menu;

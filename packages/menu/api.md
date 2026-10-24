@@ -52,6 +52,8 @@
 用它默认摊开当前分区；压缩态的浮层子菜单不看这个字段，归 hover / focus 管。
 `key` 是可选稳定标识：重新赋 `options` 时同一 key 的行会被复用、只更新属性；不给时按
 分组 / 父级 label、叶子 href（没有 href 用 label）推导，同层重名自动加序号。
+数据驱动生成的行与行内控件在 `mc-menu` / `mc-menu-item` 的 shadow root 里（使用者手写的
+`<mc-menu-item>` 仍在容器的 light DOM）；从外部查它们要穿 shadowRoot。
 
 ---
 

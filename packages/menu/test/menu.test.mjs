@@ -24,6 +24,32 @@ export default async function run({ page, visit, check }) {
         { timeout: 8000 },
       )
       .catch(() => {});
+    /* 菜单页的演示组件是运行时注册的：先等 demo 宿主有 shadow，
+       否则下面的 evaluate 可能在它们升级前就跑（改模板渲染后菜单变慢，暴露了这个竞态） */
+    await page
+      .waitForFunction(
+        () => {
+          const hosts = window.__deepAll(
+            'demo-menu-options, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-states, demo-menu-slot',
+          );
+          return hosts.length > 0 && hosts.every((el) => !!el.shadowRoot);
+        },
+        { timeout: 8000 },
+      )
+      .catch(() => {});
+
+    /* 模板渲染后生成的行在 mc-menu 自己的 shadow 里；测试统一走这些 helper 查 */
+    await page.evaluate(() => {
+      window.__menuRows = (menu) =>
+        [...(menu.shadowRoot?.querySelectorAll('.mc-node mc-menu-item') ?? [])];
+      window.__menuSubs = (menu) =>
+        [...(menu.shadowRoot?.querySelectorAll('.mc-node mc-menu') ?? [])];
+      window.__menuFlyouts = (menu) =>
+        [...(menu.shadowRoot?.querySelectorAll('.mc-node .mc-flyout') ?? [])];
+      window.__menuControl = (row) =>
+        row.shadowRoot?.querySelector('a, button') ?? row.querySelector('a, button');
+      window.__menuText = (row) => row.getAttribute('label') ?? row.textContent.trim();
+    });
 
     /** 基础：注册、part、菜单项都升级了 */
     const basic = await page.evaluate(() => {
@@ -43,12 +69,12 @@ export default async function run({ page, visit, check }) {
       const box = window.__deepAll('demo-menu-options')[0].shadowRoot;
       const menu = box.querySelector('#options-menu');
       const rows = (m) =>
-        [...m.querySelectorAll(':scope > mc-menu-item')].map((i) => {
-          const control = i.querySelector('a, button');
+        [...window.__menuRows(m)].map((i) => {
+          const control = window.__menuControl(i);
           return {
             group: i.hasAttribute('group'),
             icon: i.getAttribute('icon'),
-            label: i.textContent.trim(),
+            label: window.__menuText(i),
             current: i.hasAttribute('data-current'),
             disabled: i.hasAttribute('data-disabled'),
             href: control?.getAttribute('href') ?? null,
@@ -61,12 +87,12 @@ export default async function run({ page, visit, check }) {
           };
         });
       const parent = () =>
-        [...menu.querySelectorAll(':scope > mc-menu-item')].find(
-          (i) => i.textContent.trim() === '组件',
+        [...window.__menuRows(menu)].find(
+          (i) => window.__menuText(i) === '组件',
         );
-      const sub = () => menu.querySelector(':scope > mc-menu');
+      const sub = () => window.__menuSubs(menu)[0];
       const caret = () => {
-        const button = parent()?.querySelector('button');
+        const button = parent() ? window.__menuControl(parent()) : null;
         const icon = button?.querySelector('mc-icon');
         return {
           name: icon?.getAttribute('name') ?? null,
@@ -75,16 +101,16 @@ export default async function run({ page, visit, check }) {
         };
       };
       const textIndent = (m) => {
-        const row = m.querySelector(':scope > mc-menu-item');
+        const row = window.__menuRows(m)[0];
         const r = document.createRange();
-        r.selectNodeContents(row.querySelector('a, button'));
+        r.selectNodeContents(window.__menuControl(row));
         return Math.round(r.getBoundingClientRect().left - row.getBoundingClientRect().left);
       };
 
       const before = rows(menu);
       const subHiddenBefore = sub()?.hasAttribute('hidden') ?? null;
 
-      parent().querySelector('button').click();
+      window.__menuControl(parent()).closest('button').click();
       await wait(250);
       const opened = {
         hidden: sub()?.hasAttribute('hidden') ?? null,
@@ -94,7 +120,7 @@ export default async function run({ page, visit, check }) {
         indent: textIndent(sub()),
       };
 
-      parent().querySelector('button').click();
+      window.__menuControl(parent()).closest('button').click();
       await wait(250);
       const closed = { hidden: sub()?.hasAttribute('hidden') ?? null, caret: caret() };
 
@@ -117,7 +143,7 @@ export default async function run({ page, visit, check }) {
       const attrItems = rows(attrMenu);
       attrMenu.options = [];
       await wait(250);
-      const afterClear = attrMenu.querySelectorAll('mc-menu-item').length;
+      const afterClear = window.__deepAll('mc-menu-item', attrMenu).length;
       attrMenu.remove();
 
       return { before, subHiddenBefore, opened, closed, afterAdd, attrItems, afterClear };
@@ -128,9 +154,9 @@ export default async function run({ page, visit, check }) {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-options')[0].shadowRoot;
       const menu = box.querySelector('#options-menu');
-      const beforeRows = [...menu.querySelectorAll(':scope > mc-menu-item')];
-      const beforeSubs = [...menu.querySelectorAll(':scope > mc-menu')];
-      const beforeLabels = beforeRows.map((row) => row.getAttribute('label') ?? row.textContent.trim());
+      const beforeRows = [...window.__menuRows(menu)];
+      const beforeSubs = [...window.__menuSubs(menu)];
+      const beforeLabels = beforeRows.map((row) => row.getAttribute('label') ?? window.__menuText(row));
       const beforeCurrent = beforeRows.map((row) => row.hasAttribute('current'));
       let added = 0;
       let removed = 0;
@@ -151,8 +177,8 @@ export default async function run({ page, visit, check }) {
       menu.options = clone(menu.options, '设置');
       await wait(200);
       mo.disconnect();
-      const afterRows = [...menu.querySelectorAll(':scope > mc-menu-item')];
-      const afterSubs = [...menu.querySelectorAll(':scope > mc-menu')];
+      const afterRows = [...window.__menuRows(menu)];
+      const afterSubs = [...window.__menuSubs(menu)];
       return {
         sameRows:
           beforeRows.length === afterRows.length &&
@@ -160,7 +186,7 @@ export default async function run({ page, visit, check }) {
         sameSubs:
           beforeSubs.length === afterSubs.length && afterSubs.every((sub, index) => sub === beforeSubs[index]),
         beforeLabels,
-        afterLabels: afterRows.map((row) => row.getAttribute('label') ?? row.textContent.trim()),
+        afterLabels: afterRows.map((row) => row.getAttribute('label') ?? window.__menuText(row)),
         beforeCurrent,
         afterCurrent: afterRows.map((row) => row.hasAttribute('current')),
         added,
@@ -186,18 +212,18 @@ export default async function run({ page, visit, check }) {
       const menu = box.querySelector('#nested-menu');
       const textIndent = (row) => {
         const r = document.createRange();
-        r.selectNodeContents(row.querySelector('a, button'));
+        r.selectNodeContents(window.__menuControl(row));
         return Math.round(r.getBoundingClientRect().left - row.getBoundingClientRect().left);
       };
       const rowByLabel = (m, label) =>
-        [...m.querySelectorAll(':scope > mc-menu-item')].find((i) => i.textContent.trim() === label);
+        [...window.__menuRows(m)].find((i) => window.__menuText(i) === label);
 
-      rowByLabel(menu, '组件').querySelector('button').click();
+      window.__menuControl(rowByLabel(menu, '组件')).closest('button').click();
       await wait(200);
-      const sub = menu.querySelector(':scope > mc-menu');
-      rowByLabel(sub, '表单').querySelector('button').click();
+      const sub = window.__menuSubs(menu)[0];
+      window.__menuControl(rowByLabel(sub, '表单')).closest('button').click();
       await wait(250);
-      const sub2 = sub.querySelector(':scope > mc-menu');
+      const sub2 = window.__menuSubs(sub)[0];
 
       return {
         levels: [
@@ -236,7 +262,7 @@ export default async function run({ page, visit, check }) {
         },
       ];
       await wait(400);
-      const items = [...menu.querySelectorAll(':scope > mc-menu-item')];
+      const items = [...window.__menuRows(menu)];
       const rect = (el) => el.getBoundingClientRect();
       const textRect = (el) => {
         const r = document.createRange();
@@ -244,9 +270,9 @@ export default async function run({ page, visit, check }) {
         return r.getBoundingClientRect();
       };
       const out = items.map((row) => {
-        const control = row.querySelector('a, button');
+        const control = window.__menuControl(row);
         return {
-          label: row.textContent.trim(),
+          label: window.__menuText(row),
           tag: control?.tagName ?? null,
           href: control?.getAttribute('href') ?? null,
           current: row.hasAttribute('data-current'),
@@ -269,8 +295,11 @@ export default async function run({ page, visit, check }) {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-accordion')[0].shadowRoot;
       const menu = box.querySelector('#accordion-menu');
-      const subs = () => [...menu.querySelectorAll(':scope > mc-menu')].map((s) => s.hasAttribute('hidden'));
-      const buttons = () => [...menu.querySelectorAll(':scope > mc-menu-item button')];
+      const subs = () => [...window.__menuSubs(menu)].map((s) => s.hasAttribute('hidden'));
+      const buttons = () =>
+        window.__menuRows(menu)
+          .map((row) => window.__menuControl(row).closest('button'))
+          .filter(Boolean);
       buttons()[0].click();
       await wait(250);
       const afterFirst = subs();
@@ -285,7 +314,7 @@ export default async function run({ page, visit, check }) {
         () => {
           const box = window.__deepAll('demo-menu-icon')[0]?.shadowRoot;
           if (!box) return false;
-          return [...box.querySelectorAll('mc-menu-item')].every((i) => {
+          return [...window.__deepAll('mc-menu-item', box)].every((i) => {
             const glyph = i.shadowRoot
               ?.querySelector('.mc-item-icon mc-icon')
               ?.shadowRoot?.querySelector('.mc-glyph');
@@ -298,7 +327,7 @@ export default async function run({ page, visit, check }) {
 
     const icons = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-icon')[0].shadowRoot;
-      const items = [...box.querySelectorAll('mc-menu-item')];
+      const items = [...window.__deepAll('mc-menu-item', box)];
       const rect = (el) => el.getBoundingClientRect();
       const textRect = (el) => {
         const r = document.createRange();
@@ -308,7 +337,7 @@ export default async function run({ page, visit, check }) {
       return items.map((item) => {
         const wrap = item.shadowRoot.querySelector('.mc-item-icon');
         const glyph = wrap?.querySelector('mc-icon')?.shadowRoot?.querySelector('.mc-glyph');
-        const row = item.querySelector('a, button');
+        const row = window.__menuControl(item);
         return {
           display: wrap ? getComputedStyle(wrap).display : null,
           pointer: wrap ? getComputedStyle(wrap).pointerEvents : null,
@@ -316,7 +345,7 @@ export default async function run({ page, visit, check }) {
           indent: Math.round(textRect(row).left - rect(item).left),
           rowW: Math.round(rect(item).width),
           overlayW: Math.round(rect(row).width),
-          menuW: Math.round(rect(item.parentElement).width),
+          menuW: Math.round(rect(item.getRootNode().querySelector('.mc-list')).width),
         };
       });
     });
@@ -324,8 +353,8 @@ export default async function run({ page, visit, check }) {
     /** 尺寸：三档写在容器上，靠通道继承进子项 */
     const sizes = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-size')[0].shadowRoot;
-      return [...box.querySelectorAll('mc-menu')].map((m) =>
-        Math.round(m.querySelector('mc-menu-item a').getBoundingClientRect().height),
+      return [...window.__deepAll('mc-menu', box)].map((m) =>
+        Math.round(window.__menuControl(window.__menuRows(m)[0]).getBoundingClientRect().height),
       );
     });
 
@@ -339,11 +368,11 @@ export default async function run({ page, visit, check }) {
       await wait(300);
       host.options = [{ label: '父级', children: [{ label: '子项' }] }];
       await wait(400);
-      const parentRow = host.querySelector(':scope > mc-menu-item');
-      const sub = host.querySelector(':scope > mc-menu');
-      parentRow.querySelector('button').click();
+      const parentRow = window.__menuRows(host)[0];
+      const sub = window.__menuSubs(host)[0];
+      window.__menuControl(parentRow).closest('button').click();
       await wait(250);
-      const childRow = sub.querySelector(':scope > mc-menu-item');
+      const childRow = window.__menuRows(sub)[0];
       const textRect = (el) => {
         const r = document.createRange();
         r.selectNodeContents(el);
@@ -352,10 +381,10 @@ export default async function run({ page, visit, check }) {
       const out = {
         childH: Math.round(childRow.getBoundingClientRect().height),
         parentIndent: Math.round(
-          textRect(parentRow.querySelector('button')).left - parentRow.getBoundingClientRect().left,
+          textRect(window.__menuControl(parentRow).closest('button')).left - parentRow.getBoundingClientRect().left,
         ),
         childIndent: Math.round(
-          textRect(childRow.querySelector('a')).left - childRow.getBoundingClientRect().left,
+          textRect(window.__menuControl(childRow).closest('a')).left - childRow.getBoundingClientRect().left,
         ),
       };
       host.remove();
@@ -367,12 +396,12 @@ export default async function run({ page, visit, check }) {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
       const menu = () => box.querySelector('#collapsed-menu');
-      const groupRow = () => menu().querySelector(':scope > mc-menu-item[group]');
-      const firstRow = () => menu().querySelector(':scope > mc-menu-item:not([group])');
+      const groupRow = () => window.__menuRows(menu()).find((row) => row.hasAttribute('group'));
+      const firstRow = () => window.__menuRows(menu()).find((row) => !row.hasAttribute('group'));
       /* 父级行（有子菜单）：压缩后文字与箭头都要收掉，整行仍是 36 的方块 */
       const parentSample = () => {
-        const row = menu().querySelector(':scope > mc-menu-item[data-expandable]');
-        const control = row?.querySelector('button');
+        const row = window.__menuRows(menu()).find((item) => item.hasAttribute('data-expandable'));
+        const control = row ? window.__menuControl(row) : null;
         if (!control) return null;
         const caret = control.querySelector('mc-icon');
         const span = control.querySelector('span');
@@ -390,11 +419,11 @@ export default async function run({ page, visit, check }) {
           flag: menu().hasAttribute('collapsed'),
           width: Math.round(menu().getBoundingClientRect().width),
           rowW: Math.round(row.getBoundingClientRect().width),
-          overlayW: Math.round(row.querySelector('a').getBoundingClientRect().width),
-          labelColor: getComputedStyle(row.querySelector('a')).color,
+          overlayW: Math.round(window.__menuControl(row).closest('a').getBoundingClientRect().width),
+          labelColor: getComputedStyle(window.__menuControl(row).closest('a')).color,
           iconDisplay: getComputedStyle(row.shadowRoot.querySelector('.mc-item-icon')).display,
           groupDisplay: groupRow() ? getComputedStyle(groupRow()).display : null,
-          flyouts: menu().querySelectorAll(':scope > .mc-flyout').length,
+          flyouts: window.__menuFlyouts(menu()).length,
           parent: parentSample(),
         };
       };
@@ -411,30 +440,30 @@ export default async function run({ page, visit, check }) {
     const flyout = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
-      return { parentLabel: box.querySelector('#collapsed-menu').querySelectorAll(':scope > mc-menu-item')[2].textContent.trim() };
+      return { parentLabel: window.__menuText(window.__menuRows(box.querySelector('#collapsed-menu'))[2]) };
     });
     // 压缩
     await page.locator('demo-menu-collapsed mc-button').first().click();
     await page.waitForTimeout(350);
-    const parentRowLocator = page.locator('demo-menu-collapsed mc-menu > mc-menu-item').nth(2);
+    const parentRowLocator = page.locator('demo-menu-collapsed mc-menu .mc-node mc-menu-item').nth(2);
     await parentRowLocator.hover();
     await page.waitForTimeout(600);
     const flyoutOpen = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
       const menu = box.querySelector('#collapsed-menu');
-      const f = menu.querySelector(':scope > .mc-flyout');
-      const row = menu.querySelectorAll(':scope > mc-menu-item')[2];
+      const f = window.__menuFlyouts(menu)[0];
+      const row = window.__menuRows(menu)[2];
       if (!f) return null;
       const fr = f.getBoundingClientRect();
       const rr = row.getBoundingClientRect();
-      const sub = f.querySelector(':scope > mc-menu');
+      const sub = f.querySelector('mc-menu');
       return {
         open: f.matches(':popover-open'),
         gap: Math.round(fr.left - rr.right),
         top: Math.round(fr.top - rr.top),
         width: Math.round(fr.width),
-        labels: [...sub.querySelectorAll(':scope > mc-menu-item')].map((i) => i.textContent.trim()),
-        labelVisible: getComputedStyle(sub.querySelector(':scope > mc-menu-item a')).color,
+        labels: [...window.__menuRows(sub)].map((i) => window.__menuText(i)),
+        labelVisible: getComputedStyle(window.__menuControl(window.__menuRows(sub)[0])).color,
         /* 指针进浮层后行不再 :hover，靠 data-open 把「这条分支开着」留在行上 */
         dataOpen: row.hasAttribute('data-open'),
         rowBg: getComputedStyle(row).backgroundColor,
@@ -442,15 +471,15 @@ export default async function run({ page, visit, check }) {
     });
 
     // 再往下钻一级：第三列浮层要用同一套面板外观（不能被 UA 的 [popover] 默认样式顶掉）
-    await page.locator('demo-menu-collapsed .mc-flyout mc-menu > mc-menu-item button').nth(0).hover();
+    await page.locator('demo-menu-collapsed .mc-flyout mc-menu .mc-node mc-menu-item button').nth(0).hover();
     await page.waitForTimeout(700);
     const flyoutDeep = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
       const menu = box.querySelector('#collapsed-menu');
-      const f1 = menu.querySelector(':scope > .mc-flyout');
-      const sub = f1.querySelector(':scope > mc-menu');
-      const f2 = sub.querySelector(':scope > .mc-flyout');
-      const row = sub.querySelectorAll(':scope > mc-menu-item')[2];
+      const f1 = window.__menuFlyouts(menu)[0];
+      const sub = f1.querySelector('mc-menu');
+      const f2 = window.__menuFlyouts(sub)[0];
+      const row = window.__menuRows(sub)[2];
       const cs2 = getComputedStyle(f2);
       const textRect = (el) => {
         const r = document.createRange();
@@ -458,11 +487,11 @@ export default async function run({ page, visit, check }) {
         return r.getBoundingClientRect();
       };
       /* 浮层里每一列就是一级：不能再叠 level 缩进（否则没 icon 的行左边白留一块） */
-      const rows = [...f2.querySelectorAll(':scope > mc-menu > mc-menu-item')].map((item) => ({
-        label: item.textContent.trim(),
+      const rows = [...window.__menuRows(f2.querySelector('mc-menu'))].map((item) => ({
+        label: window.__menuText(item),
         level: item.style.getPropertyValue('--mc-item-level'),
         indent: Math.round(
-          textRect(item.querySelector('a, button')).left - item.getBoundingClientRect().left,
+          textRect(window.__menuControl(item)).left - item.getBoundingClientRect().left,
         ),
       }));
       return {
@@ -483,12 +512,12 @@ export default async function run({ page, visit, check }) {
     const flyoutClosed = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
       const menu = box.querySelector('#collapsed-menu');
-      const f1 = menu.querySelector(':scope > .mc-flyout');
-      const f2 = f1.querySelector(':scope > mc-menu > .mc-flyout');
+      const f1 = window.__menuFlyouts(menu)[0];
+      const f2 = window.__menuFlyouts(f1.querySelector('mc-menu'))[0];
       return {
         f1: f1.matches(':popover-open'),
         f2: f2.matches(':popover-open'),
-        openRows: menu.querySelectorAll('mc-menu-item[data-open]').length,
+        openRows: window.__deepAll('mc-menu-item[data-open]', menu).length,
       };
     });
     await page.locator('demo-menu-collapsed mc-button').first().click(); // 先切回展开态，后面的键盘用例从干净状态起
@@ -497,22 +526,22 @@ export default async function run({ page, visit, check }) {
     /** 键盘 / 失焦：压缩态下聚焦父级行也弹层，Esc 关；点外部关 */
     await page.locator('demo-menu-collapsed mc-button').first().click();
     await page.waitForTimeout(350);
-    await page.locator('demo-menu-collapsed mc-menu > mc-menu-item button').nth(0).focus();
+    await page.locator('demo-menu-collapsed mc-menu .mc-node mc-menu-item button').nth(0).focus();
     await page.waitForTimeout(500);
     const byFocus = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
-      const f = box.querySelector('#collapsed-menu > .mc-flyout');
+      const f = window.__menuFlyouts(box.querySelector("#collapsed-menu"))[0];
       return f ? f.matches(':popover-open') : null;
     });
     await page.keyboard.press('Escape');
     await page.waitForTimeout(250);
     const afterEsc = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
-      const f = box.querySelector('#collapsed-menu > .mc-flyout');
+      const f = window.__menuFlyouts(box.querySelector("#collapsed-menu"))[0];
       return f ? f.matches(':popover-open') : null;
     });
     // 重新弹出 → 点外部关闭
-    await page.locator('demo-menu-collapsed mc-menu > mc-menu-item').nth(2).hover();
+    await page.locator('demo-menu-collapsed mc-menu .mc-node mc-menu-item').nth(2).hover();
     await page.waitForTimeout(500);
     await page.evaluate(() => {
       document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
@@ -520,7 +549,7 @@ export default async function run({ page, visit, check }) {
     await page.waitForTimeout(250);
     const afterOutside = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
-      const f = box.querySelector('#collapsed-menu > .mc-flyout');
+      const f = window.__menuFlyouts(box.querySelector("#collapsed-menu"))[0];
       return f ? f.matches(':popover-open') : null;
     });
     // 回到展开态，别把状态留给后面的断言
@@ -530,8 +559,8 @@ export default async function run({ page, visit, check }) {
     /** options 的状态：current / disabled 镜像到宿主；禁用的行不给 href */
     const states = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
-      const items = [...box.querySelectorAll('mc-menu-item')];
-      const rows = items.map((i) => i.querySelector('a, button'));
+      const items = [...window.__deepAll('mc-menu-item', box)];
+      const rows = items.map((i) => window.__menuControl(i));
       const cs = (el) => getComputedStyle(el);
       return {
         currentFlags: items.map((i) => i.hasAttribute('data-current')),
@@ -546,8 +575,8 @@ export default async function run({ page, visit, check }) {
     /** 自备控件（兼容通道）：状态从插槽元素读 → 镜像到宿主，两种原生元素都一致 */
     const slot = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-slot')[0].shadowRoot;
-      const items = [...box.querySelectorAll('mc-menu-item')];
-      const rows = items.map((i) => i.querySelector('a, button'));
+      const items = [...window.__deepAll('mc-menu-item', box)];
+      const rows = items.map((i) => window.__menuControl(i));
       const cs = (el) => getComputedStyle(el);
       return {
         tags: rows.map((r) => r.tagName),
@@ -565,7 +594,7 @@ export default async function run({ page, visit, check }) {
     await page.waitForTimeout(300);
     const hoverDisabled = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
-      const item = box.querySelectorAll('mc-menu-item')[2];
+      const item = window.__deepAll('mc-menu-item', box)[2];
       return { hovered: item.matches(':hover'), bg: getComputedStyle(item).backgroundColor };
     });
 
@@ -579,10 +608,10 @@ export default async function run({ page, visit, check }) {
         r.selectNodeContents(el);
         return r.getBoundingClientRect();
       };
-      const rows = [...menu.querySelectorAll(':scope > mc-menu-item')];
+      const rows = [...window.__menuRows(menu)];
       const group = rows.find((r) => r.hasAttribute('group'));
       const child = rows.find((r) => !r.hasAttribute('group'));
-      const indent = () => Math.round(textRect(child.querySelector('a')).left - rect(child).left);
+      const indent = () => Math.round(textRect(window.__menuControl(child).closest('a')).left - rect(child).left);
       /* 分组子项的缩进走自己那一档：改 collapsible 的逐级步长不该动它 */
       const ownIndent = indent();
       menu.style.setProperty('--mc-menu-indent-step', '60px');
@@ -590,14 +619,14 @@ export default async function run({ page, visit, check }) {
       menu.style.removeProperty('--mc-menu-indent-step');
       return {
         pointer: getComputedStyle(group).pointerEvents,
-        groupTag: group.querySelector('a, button')?.tagName ?? null,
+        groupTag: window.__menuControl(group)?.tagName ?? null,
         childLevel: child.style.getPropertyValue('--mc-item-level'),
         childStep: child.style.getPropertyValue('--mc-item-step'),
         childIndent: ownIndent,
         afterStepOverride,
         childExpandable: child.hasAttribute('data-expandable'),
         /* 组内条目是平铺的行：菜单里没有隐藏起来的子菜单 */
-        nestedMenus: menu.querySelectorAll(':scope > mc-menu').length,
+        nestedMenus: window.__menuSubs(menu).length,
       };
     });
 
@@ -609,7 +638,8 @@ export default async function run({ page, visit, check }) {
       await page.waitForTimeout(150);
       const byKeyboard = await page.evaluate(() => {
         const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
-        const active = box.activeElement;
+        let active = box.activeElement;
+        while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
         return {
           focusVisible: !!active?.matches?.(':focus-visible'),
           outlineWidth: active ? getComputedStyle(active).outlineWidth : null,
@@ -622,8 +652,8 @@ export default async function run({ page, visit, check }) {
     const mirror = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-slot')[0].shadowRoot;
-      const item = [...box.querySelectorAll('mc-menu-item')][1];
-      const a = item.querySelector('a');
+      const item = [...window.__deepAll('mc-menu-item', box)][1];
+      const a = window.__menuControl(item).closest('a');
       a.setAttribute('data-current', '');
       await wait(200);
       const afterSet = item.hasAttribute('data-current');
@@ -653,8 +683,8 @@ export default async function run({ page, visit, check }) {
       const out = {
         atCreate,
         shadow: !!host.shadowRoot,
-        rows: [...host.querySelectorAll(':scope > mc-menu-item')].map((i) => i.textContent.trim()),
-        groupPointer: getComputedStyle(host.querySelector('mc-menu-item[group]')).pointerEvents,
+        rows: [...window.__menuRows(host)].map((i) => window.__menuText(i)),
+        groupPointer: getComputedStyle(window.__menuRows(host).find((row) => row.hasAttribute('group'))).pointerEvents,
         version: host.options,
       };
       host.remove();
@@ -671,8 +701,8 @@ export default async function run({ page, visit, check }) {
       await new Promise((r) => setTimeout(r, 300));
       const out = {
         labels: el.options.map((option) => option.label),
-        rows: [...el.querySelectorAll(':scope > mc-menu-item')].map((item) =>
-          item.textContent.trim(),
+        rows: [...window.__menuRows(el)].map((item) =>
+          window.__menuText(item),
         ),
       };
       el.remove();
@@ -728,10 +758,10 @@ export default async function run({ page, visit, check }) {
       return menu;
     };
     const read = (menu) => ({
-      expandedRows: [...menu.querySelectorAll(':scope > mc-menu-item')].map((row) =>
+      expandedRows: [...window.__menuRows(menu)].map((row) =>
         row.hasAttribute('data-expanded'),
       ),
-      hiddenSubs: [...menu.querySelectorAll(':scope > mc-menu')].map((sub) =>
+      hiddenSubs: [...window.__menuSubs(menu)].map((sub) =>
         sub.hasAttribute('hidden'),
       ),
     });

@@ -134,7 +134,7 @@
           cancelAnimationFrame(this._centerRaf);
           this._centerRaf = requestAnimationFrame(() => {
             const viewport = this.viewport();
-            const row = this._menu?.querySelector('mc-menu-item[current]');
+            const row = this._menu?.shadowRoot?.querySelector('mc-menu-item[current]');
             if (!viewport || !row) return;
             const box = viewport.getBoundingClientRect();
             if (box.height === 0) return; // 视口还量不出高度（窄屏浮层关着）：等 ResizeObserver 那一跳
