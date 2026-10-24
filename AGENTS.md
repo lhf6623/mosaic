@@ -20,3 +20,6 @@
 
 - 先读对应单元的 `README.md`「设计取舍」与 `packages/README.md` 的共用约定，再改代码。
 - 接口事实的唯一手写源是各单元的 `api.md`；`pnpm check:docs` 会对账，别在组件页手抄接口表。
+- 写 ofa 模板（页面 / 组件 / 站点文件）前先读 `ofajs-docs` 技能与 `docs/skill-refactor.md` 的
+  「判定标准」：模板是唯一渲染源、布尔 / HTML 属性用 `attr:`、shadow 内 DOM 走
+  `this.shadow.$()` + `.on()`。

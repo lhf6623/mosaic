@@ -143,7 +143,7 @@
     <input
       class="mc-native"
       type="range"
-      :disabled="disabled !== null"
+      attr:disabled="disabled !== null"
       on:input="onNativeInput($event)"
       on:change="onNativeChange()" />
     <!-- 星条是模板渲染的唯一源：一颗星一行，两层星形写死在模板里；空 / 半 / 满只走 data-fill -->

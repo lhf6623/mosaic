@@ -1,5 +1,15 @@
 <template page>
   <link rel="stylesheet" href="../../docs/content.css" />
+  <style>
+    /* 提示条里的代码块 / 说明段贴紧上面的文案：只用这一页，按 docs/README.md §二 写在本页 */
+    .doc-note > mc-code {
+      margin-block: var(--mc-space-3) 0;
+    }
+    .doc-note > p {
+      margin-block: var(--mc-space-3) 0;
+    }
+  </style>
+
   <div class="doc-body">
     <h1>色彩</h1>
     <p class="doc-lead">
@@ -25,7 +35,7 @@
         。
       </strong>
       <!-- prettier-ignore -->
-      <mc-code language="css" style="margin: 0.75rem 0 0">
+      <mc-code language="css">
         /* 存 */
         :root     { --mc-color-primary: var(--mc-primary-600); }   /* 0 128 138 */
         mc-button { --mc-button-fill: var(--mc-color-primary); }
@@ -34,7 +44,7 @@
         .mc-btn   { background-color: rgb(var(--mc-button-fill)); }
         .dim      { background-color: rgb(var(--mc-button-fill) / 0.5); }
       </mc-code>
-      <p style="margin: 0.75rem 0 0">
+      <p>
         混着来的话会拼出
         <code>rgb(rgb(0 128 138) / 1)</code>
         这种

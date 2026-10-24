@@ -72,7 +72,7 @@
     }
   </style>
 
-  <details class="mc-details" :open="open !== null">
+  <details class="mc-details" attr:open="open !== null">
     <summary class="mc-header" part="header">
       <span class="mc-header-text"><slot name="header">{{header}}</slot></span>
       <span class="mc-chevron mc-icon-chevron-right"></span>
@@ -103,8 +103,9 @@
         },
 
         ready() {
-          this._details = this.ele.shadowRoot.querySelector('.mc-details');
-          this._header = this.ele.shadowRoot.querySelector('.mc-header');
+          // 元素引用走 this.shadow.$（ofa 包装对象）；原生属性 / 方法靠 .ele
+          this._details = this.shadow.$('.mc-details');
+          this._header = this.shadow.$('.mc-header');
 
           // 运行时状态走 property（规范 1.4）；setter 立刻同步 details，不等 ofa 那一拍（P4）
           Object.defineProperty(this.ele, 'open', {
@@ -124,11 +125,11 @@
         attached() {
           this._onToggle = () => this.onToggle();
           this._onHeaderClick = (event) => this.onHeaderClick(event);
-          this._details.addEventListener('toggle', this._onToggle);
-          // 捕获阶段：键盘激活（Enter / Space）也是一次可取消 click
-          this._header.addEventListener('click', this._onHeaderClick, true);
+          this._details.on('toggle', this._onToggle);
+          // 捕获阶段才能拦到键盘激活（Enter / Space）的合成 click；包装对象的 .on 没有 capture 选项，这条留原生
+          this._header.ele.addEventListener('click', this._onHeaderClick, true);
 
-          this._lastOpen = this._details.open; // 初始那次 toggle 不算事件（P5）
+          this._lastOpen = this._details.ele.open; // 初始那次 toggle 不算事件（P5）
         },
 
         watch: {
@@ -141,8 +142,8 @@
         },
 
         detached() {
-          this._details?.removeEventListener('toggle', this._onToggle);
-          this._header?.removeEventListener('click', this._onHeaderClick, true);
+          this._details?.off('toggle', this._onToggle);
+          this._header?.ele.removeEventListener('click', this._onHeaderClick, true);
         },
 
         proto: {
@@ -150,15 +151,15 @@
           applyOpen() {
             if (!this._details) return;
             const want = this.ele.hasAttribute('open');
-            if (this._details.open !== want) this._details.open = want;
+            if (this._details.ele.open !== want) this._details.ele.open = want;
           },
 
           applyDisabled() {
             const off = this.ele.hasAttribute('disabled');
             if (off) {
-              this._header.tabIndex = -1;
+              this._header.ele.tabIndex = -1;
             } else {
-              this._header.removeAttribute('tabindex');
+              this._header.ele.removeAttribute('tabindex');
             }
           },
 
@@ -175,17 +176,17 @@
             const inside = event.target?.closest?.(
               'a, button, input, select, textarea, [tabindex]',
             );
-            if (inside && inside !== this._header) return;
+            if (inside && inside !== this._header.ele) return;
 
             event.preventDefault();
-            this._details.open = !this._details.open;
+            this._details.ele.open = !this._details.ele.open;
             this.reflectOpen();
           },
 
           onToggle() {
             this.reflectOpen();
 
-            const isOpen = this._details.open;
+            const isOpen = this._details.ele.open;
             if (this._lastOpen === undefined) {
               this._lastOpen = isOpen;
               return;
@@ -198,7 +199,7 @@
           },
 
           reflectOpen() {
-            if (this._details.open) this.ele.setAttribute('open', '');
+            if (this._details.ele.open) this.ele.setAttribute('open', '');
             else this.ele.removeAttribute('open');
           },
         },

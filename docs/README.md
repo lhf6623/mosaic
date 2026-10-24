@@ -135,3 +135,27 @@ docs/
   `packages/boot/mosaic.css` 顶部先钉死 `@layer` 层序，工具类才不会反过来盖住组件样式。
 - **构建缺输入必须大声失败** —— 拼少一份输入会产出「没有令牌的坏 CSS」、退出码却还是 0；
   `tools/build-css.mjs` 因此先查输入存在、装配后再验图标齐全。
+
+## 十、ofa 写法（站点页与站点组件）
+
+判定标准与组件同源（`docs/skill-refactor.md` 的「判定标准」、`ofajs-docs` 技能），
+组件接口口径见 [`packages/README.md`](../packages/README.md) §五；站点文件另外守这几条：
+
+- **模板是唯一渲染源**：可见结构写模板，脚本只做模板表达不了的行为（测量 / 滚动 / 焦点 /
+  popover / 拖拽 / 编辑器 / 解析 Markdown / 随机装饰）。例外集中在一个方法里，注释「为什么不能
+  模板化」——现有三处：`docs/components/playground.html`（编译用户代码）、
+  `docs/components/spec.html`（运行时渲染 `api.md`）、`docs/components/block-field.html`（随机装饰方块）。
+- **指令只属于 ofa 模板**：`{{}}` 只放文本节点；HTML 属性 / 布尔属性用 `attr:`（不用 `:disabled` /
+  `:checked`）；组件属性用 `:` / `sync:`；类用 `class:`；样式用 `:style.`。
+- **列表与条件**：`o-fill`（有唯一键带 `fill-key`）+ `o-if`；`o-fill` 内用 `$data` / `$index` /
+  `$host`，文本插值里不写 `&&`。
+- **模板引用的键先声明**在 `data` / `attrs`（给安全默认值）；`attrs` 与 `data` 不同名；`proto`
+  方法不加 `$` 前缀、避开 ofa 保留名（`back` / `goto` / `replace` / `src` 等）。
+- **DOM 访问**：shadow 内用 `this.shadow.$(…)` 配 `.on()` / `.off()`，原生属性 / 方法走
+  `.ele`；宿主、全局、捕获阶段的监听可保留原生 `addEventListener`，注释原因。
+- **页面模块**：`<template page>` + `export const parent = …`；`<o-page>` 的 `src` 初始化后不可变
+  （要换用 `o-if` 重建，或改调子页面方法）。
+- **示例即代码**：页面里的 `mc-code` 片段要能直接抄 —— 只用组件当前支持的写法，别演示已被约定
+  否定的写法。
+- 改完跑 `pnpm check:docs`（数字 / 页面骨架 / 演示覆盖）与 `npx prettier --check`；站点没有测试
+  套件，可见结构改动要手动或 Playwright 抽检对应 hash 页面。

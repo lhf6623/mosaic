@@ -168,16 +168,18 @@
 
         ready() {
           /* ⚠️ o-fill 模板里绑不到 proto 方法（条目作用域只有 $data / $index / $host），监听只能挂**容器**做委托 —— 这正是 P12 推荐的形态。
-             ⚠️ proto / 生命周期里的 `this` 是 ofa 实例，元素 API 要走 `this.ele`（P5 一族）。 */
-          const list = this.ele.shadowRoot.querySelector('.mc-list');
-          list.addEventListener('click', (event) => this._onActivate(event));
-          list.addEventListener('keydown', (event) => this._onActivate(event));
+             ⚠️ proto / 生命周期里的 `this` 是 ofa 实例：shadow 里的元素走 `this.shadow.$`，原生属性 / 方法才走 `.ele`（P5 一族）。
+             委托 handler 存成实例字段，detached 才能逐个 .off 摘干净（不克隆 DOM）。 */
+          this._list = this.shadow.$('.mc-list');
+          this._onClick = (event) => this._onActivate(event);
+          this._onKeydown = (event) => this._onActivate(event);
+          this._list.on('click', this._onClick);
+          this._list.on('keydown', this._onKeydown);
         },
 
         detached() {
-          const list = this.ele.shadowRoot?.querySelector('.mc-list');
-          if (!list) return;
-          list.replaceWith(list.cloneNode(true)); // 一次性摘掉委托监听（箭头函数没法逐个 remove）
+          this._list?.off('click', this._onClick);
+          this._list?.off('keydown', this._onKeydown);
         },
 
         proto: {

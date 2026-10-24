@@ -56,6 +56,7 @@
 
       attached() {
         this._onOpen = (event) => this.onItemOpen(event);
+        // 宿主不在 shadow 内，这条监听留在宿主元素上（原生 addEventListener），同 form.html
         this.ele.addEventListener('open', this._onOpen);
       },
 
@@ -69,6 +70,7 @@
           if (this.accordion === null) return;
           const opened = event.target;
           if (opened.parentElement !== this.ele) return;
+          // 直接子项是宿主的 light DOM（不在 shadow 内），只能从 this.ele 遍历（同 tabs.html）；:scope > 排除嵌套
           for (const item of this.ele.querySelectorAll(':scope > mc-collapse-item')) {
             if (item !== opened && item.open) item.open = false;
           }

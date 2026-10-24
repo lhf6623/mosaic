@@ -331,7 +331,7 @@
     class="mc-control"
     part="base"
     type="button"
-    :disabled="disabled !== null"
+    attr:disabled="disabled !== null"
     on:click="onControlClick"
     on:keydown="onKeyDown">
     <!-- 触发框文案：模板渲染（占位 / 值 / 多选拼接 / 范围文案都由 data.displayText 给） -->
@@ -339,7 +339,7 @@
     <span class="mc-calendar mc-icon-calendar"></span>
   </button>
 
-  <button class="mc-clear" type="button" :disabled="disabled !== null" on:click="onClear">
+  <button class="mc-clear" type="button" attr:disabled="disabled !== null" on:click="onClear">
     <span class="mc-icon-close"></span>
   </button>
 

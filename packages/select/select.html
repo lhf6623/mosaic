@@ -251,14 +251,14 @@
     class="mc-control"
     part="base"
     type="button"
-    :disabled="disabled !== null"
+    attr:disabled="disabled !== null"
     on:click="onControlClick"
     on:keydown="onKeyDown">
     <span class="mc-value">{{displayText}}</span>
     <span class="mc-chevron mc-icon-chevron-down"></span>
   </button>
 
-  <button class="mc-clear" type="button" :disabled="disabled !== null" on:click="onClear">
+  <button class="mc-clear" type="button" attr:disabled="disabled !== null" on:click="onClear">
     <span class="mc-icon-close"></span>
   </button>
 

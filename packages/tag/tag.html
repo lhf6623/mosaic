@@ -208,7 +208,7 @@
   <button
     class="mc-toggle"
     type="button"
-    :disabled="disabled !== null"
+    attr:disabled="disabled !== null"
     on:click="onToggle($event)"></button>
 
   <slot></slot>
@@ -218,7 +218,7 @@
     class="mc-close"
     part="close"
     type="button"
-    :disabled="disabled !== null"
+    attr:disabled="disabled !== null"
     on:click="onClose($event)">
     <span class="mc-icon-close"></span>
   </button>
