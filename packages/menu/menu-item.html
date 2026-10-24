@@ -192,7 +192,11 @@
       appearance: none;
       background: none;
       border: 0;
-      font: inherit;
+      /* o-if 自带的 :host 字体是 16/24，会把内置控件从菜单行的 14/36 上掰走；
+         这里显式按行高 / 菜单字号落回来，叶子 <a> 的单行文字才垂直居中 */
+      font-family: inherit;
+      font-size: var(--mc-menu-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      line-height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
       cursor: inherit;
     }
     /* 父级行是 flex 两端对齐（文字左、箭头右），缩进走 padding（flex 里 text-indent 不生效） */
