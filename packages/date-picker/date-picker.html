@@ -1,4 +1,4 @@
-<!-- mc-date-picker — 日期选择（表单控件 + 月历浮层）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<!-- mc-date-picker — 日期选择（表单控件 + 月历浮层；面板网格由 o-fill 模板渲染）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
@@ -240,6 +240,10 @@
       font-size: var(--mc-text-xs, var(--mc-def-text-xs));
       text-align: center;
     }
+    /* 月 / 年视图不要星期行；author 的 display:grid 会压过 UA 的 [hidden]，所以显式收掉 */
+    .mc-weekdays[hidden] {
+      display: none;
+    }
 
     .mc-grid {
       display: grid;
@@ -250,6 +254,10 @@
     .mc-grid--coarse {
       grid-template-columns: repeat(3, 1fr);
       gap: var(--mc-space-1, var(--mc-def-space-1));
+    }
+    /* 模板渲染：o-fill 不生成盒子，格子直接参与 .mc-grid 的 grid 布局（同 mc-menu 的 o-fill / o-if） */
+    o-fill {
+      display: contents;
     }
 
     .mc-day,
@@ -331,7 +339,8 @@
     :disabled="disabled !== null"
     on:click="onControlClick"
     on:keydown="onKeyDown">
-    <span class="mc-value"></span>
+    <!-- 触发框文案：模板渲染（占位 / 值 / 多选拼接 / 范围文案都由 data.displayText 给） -->
+    <span class="mc-value">{{displayText}}</span>
     <span class="mc-calendar mc-icon-calendar"></span>
   </button>
 
@@ -346,18 +355,27 @@
     popover="manual"
     on:toggle="onNativeToggle"
     on:mousedown="onPanelMouseDown"
-    on:click="onPanelClick"
     on:keydown="onPanelKeyDown">
     <div class="mc-header" part="header">
-      <button class="mc-nav" type="button" tabindex="-1" title="上个月" on:click="onPrevMonth">
+      <button
+        class="mc-nav"
+        type="button"
+        tabindex="-1"
+        attr:title="prevTitle"
+        on:click="onPrevMonth">
         <span class="mc-icon-chevron-left"></span>
       </button>
-      <span class="mc-title"></span>
-      <button class="mc-nav" type="button" tabindex="-1" title="下个月" on:click="onNextMonth">
+      <span class="mc-title">{{panelTitle}}</span>
+      <button
+        class="mc-nav"
+        type="button"
+        tabindex="-1"
+        attr:title="nextTitle"
+        on:click="onNextMonth">
         <span class="mc-icon-chevron-right"></span>
       </button>
     </div>
-    <div class="mc-weekdays">
+    <div class="mc-weekdays" attr:hidden="coarse ? '' : null">
       <span>一</span>
       <span>二</span>
       <span>三</span>
@@ -366,7 +384,44 @@
       <span>六</span>
       <span>日</span>
     </div>
-    <div class="mc-grid" part="grid"></div>
+    <!-- 网格是模板渲染的唯一源：日 / 周与月 / 年各一条 o-fill（空数组 = 0 格），状态全走 attr: 绑定 -->
+    <div class="mc-grid" part="grid" class:mc-grid--coarse="coarse">
+      <o-fill :value="days" fill-key="id">
+        <button
+          class="mc-day"
+          part="day"
+          type="button"
+          tabindex="-1"
+          attr:data-date="$data.date"
+          attr:data-key="$data.key"
+          attr:data-week="$data.week"
+          attr:data-outside="$data.outside ? '' : null"
+          attr:data-today="$data.today ? '' : null"
+          attr:data-selected="$data.selected ? '' : null"
+          attr:data-in-range="$data.inRange ? '' : null"
+          attr:data-active="$data.active ? '' : null"
+          attr:data-disabled="$data.disabled ? 'true' : null"
+          on:click="$host.selectKey($data.key)">
+          {{$data.label}}
+        </button>
+      </o-fill>
+      <o-fill :value="cells" fill-key="id">
+        <button
+          class="mc-cell"
+          part="cell"
+          type="button"
+          tabindex="-1"
+          attr:data-key="$data.key"
+          attr:data-value="$data.key"
+          attr:data-selected="$data.selected ? '' : null"
+          attr:data-in-range="$data.inRange ? '' : null"
+          attr:data-active="$data.active ? '' : null"
+          attr:data-disabled="$data.disabled ? 'true' : null"
+          on:click="$host.selectKey($data.key)">
+          {{$data.label}}
+        </button>
+      </o-fill>
+    </div>
   </div>
 
   <script>
@@ -439,16 +494,24 @@
           size: 'md',
         },
 
+        /* 可见内容全走模板，这些字段就是渲染数据：displayText = 触发框文案；
+           panelTitle / prevTitle / nextTitle = 标题与翻页按钮；coarse = 月 / 年视图；
+           days / cells = 两种网格的格模型（o-fill 按 id 复用节点） */
+        data: {
+          displayText: '',
+          panelTitle: '',
+          prevTitle: '上个月',
+          nextTitle: '下个月',
+          coarse: false,
+          days: [],
+          cells: [],
+        },
+
         ready() {
           const root = this.ele.shadowRoot;
           this._control = root.querySelector('.mc-control');
           this._valueEl = root.querySelector('.mc-value');
           this._panel = root.querySelector('.mc-panel');
-          this._title = root.querySelector('.mc-title');
-          this._grid = root.querySelector('.mc-grid');
-          this._weekdays = root.querySelector('.mc-weekdays');
-          this._prevBtn = root.querySelectorAll('.mc-nav')[0] ?? null;
-          this._nextBtn = root.querySelectorAll('.mc-nav')[1] ?? null;
 
           this._selected = [];
           this._pending = null;
@@ -541,7 +604,7 @@
             this.syncDisplay();
             if (this.isOpen()) {
               this.syncActiveFromSelection();
-              this.renderPanel();
+              this.refreshPanel();
             }
           },
           multiple() {
@@ -571,11 +634,11 @@
           },
           min() {
             if (this.skipInit('min')) return;
-            if (this.isOpen()) this.renderPanel();
+            if (this.isOpen()) this.refreshPanel();
           },
           max() {
             if (this.skipInit('max')) return;
-            if (this.isOpen()) this.renderPanel();
+            if (this.isOpen()) this.refreshPanel();
           },
           placeholder() {
             if (this.skipInit('placeholder')) return;
@@ -692,7 +755,7 @@
             }
             this.syncActiveFromSelection();
             this.syncDisplay();
-            if (this.isOpen()) this.renderPanel();
+            if (this.isOpen()) this.refreshPanel();
           },
 
           applyDefaultValue() {
@@ -722,7 +785,7 @@
             }
             this.syncDisplay();
             this.reflectBoundValue();
-            if (this.isOpen()) this.renderPanel();
+            if (this.isOpen()) this.refreshPanel();
           },
 
           /** 当前选择 → 键盘高亮与视图；没有选择就看今天 */
@@ -776,7 +839,6 @@
             const filled = this._selected.length > 0;
             this.mirror('data-filled', filled);
             this.mirror('data-empty', !filled);
-            if (!this._valueEl) return;
             const type = this.currentType();
             const mode = this.currentMode();
             const pattern = this.patternFor('format');
@@ -788,8 +850,9 @@
             } else {
               text = list.join(', ');
             }
-            this._valueEl.textContent = filled ? text : this.placeholderText();
-            this._overflowTip?.check();
+            /* 文案进模板后要等微任务那一拍才落到 DOM，所以溢出提示晚一拍再量 */
+            this.displayText = filled ? text : this.placeholderText();
+            queueMicrotask(() => this._overflowTip?.check());
           },
 
           mirror(name, on) {
@@ -827,14 +890,13 @@
             return isoOf(this._active);
           },
 
-          /* ---------- 面板渲染 ---------- */
+          /* ---------- 面板渲染 ----------
+             可见结构在模板里：这里只算「这一帧有哪些格、每格什么状态」，写进 data.days / cells。 */
 
-          renderPanel() {
-            if (!this._grid) return;
+          refreshPanel() {
             const type = this.currentType();
-            if (type === 'day' || type === 'week') this.renderMonthPanel(type);
-            else if (type === 'month') this.renderCoarsePanel('month');
-            else this.renderCoarsePanel('year');
+            if (type === 'day' || type === 'week') this.buildMonthGrid(type);
+            else this.buildCoarseGrid(type === 'month' ? 'month' : 'year');
           },
 
           cellState(key) {
@@ -844,88 +906,79 @@
             return { selected, inRange, active: key === this.keyOfActive() };
           },
 
-          renderMonthPanel(type) {
+          /** 日 / 周视图：固定 42 格（前后补相邻月份）；周视图里 7 天共用同一个选择 key */
+          buildMonthGrid(type) {
             const view = this._view;
-            if (this._weekdays) this._weekdays.hidden = false;
-            if (this._title) this._title.textContent = view.y + ' 年 ' + view.m + ' 月';
-            if (this._prevBtn) this._prevBtn.title = '上个月';
-            if (this._nextBtn) this._nextBtn.title = '下个月';
-            const first = { y: view.y, m: view.m, d: 1 };
-            const start = addDays(first, -weekdayIndex(first));
             const min = this.rangeKey('min');
             const max = this.rangeKey('max');
             const today = isoOf(todayDate());
-
-            this._grid.className = 'mc-grid';
-            this._grid.textContent = '';
+            const first = { y: view.y, m: view.m, d: 1 };
+            const start = addDays(first, -weekdayIndex(first));
+            const days = [];
+            this.coarse = false;
+            this.panelTitle = view.y + ' 年 ' + view.m + ' 月';
+            this.prevTitle = '上个月';
+            this.nextTitle = '下个月';
             for (let index = 0; index < 42; index += 1) {
               const date = addDays(start, index);
               const iso = isoOf(date);
-              const itemKey = type === 'week' ? keyOfDate(date, 'week') : iso;
-              const state = this.cellState(itemKey);
-              const day = document.createElement('button');
-              day.type = 'button';
-              day.className = 'mc-day';
-              day.tabIndex = -1;
-              day.setAttribute('part', 'day');
-              day.dataset.date = iso;
-              day.dataset.key = itemKey;
-              if (type === 'week') day.dataset.week = itemKey;
-              day.textContent = String(date.d);
-              if (date.m !== view.m) day.dataset.outside = '';
-              if (iso === today) day.dataset.today = '';
-              if (state.selected) day.dataset.selected = '';
-              if (state.inRange) day.dataset.inRange = '';
-              if (state.active) day.dataset.active = '';
-              if ((min !== '' && itemKey < min) || (max !== '' && itemKey > max)) {
-                day.dataset.disabled = 'true';
-              }
-              this._grid.append(day);
+              const key = type === 'week' ? keyOfDate(date, 'week') : iso;
+              const state = this.cellState(key);
+              days.push({
+                /* o-fill 的 fill-key 必须逐格唯一（周视图里 7 天的 key 相同），所以用日期当 id */
+                id: iso,
+                key,
+                date: iso,
+                week: type === 'week' ? key : null,
+                label: String(date.d),
+                outside: date.m !== view.m,
+                today: iso === today,
+                selected: state.selected,
+                inRange: state.inRange,
+                active: state.active,
+                disabled: (min !== '' && key < min) || (max !== '' && key > max),
+              });
             }
+            this.days = days;
+            this.cells = [];
           },
 
-          renderCoarsePanel(level) {
+          /** 月 / 年视图：一页 12 格（月 1–12 / 年按十年分段） */
+          buildCoarseGrid(level) {
             const view = this._view;
-            if (this._weekdays) this._weekdays.hidden = true;
             const min = this.rangeKey('min');
             const max = this.rangeKey('max');
-            this._grid.className = 'mc-grid mc-grid--coarse';
-            this._grid.textContent = '';
             const items = [];
+            this.coarse = true;
             if (level === 'month') {
-              if (this._title) this._title.textContent = view.y + ' 年';
-              if (this._prevBtn) this._prevBtn.title = '上一年';
-              if (this._nextBtn) this._nextBtn.title = '下一年';
+              this.panelTitle = view.y + ' 年';
+              this.prevTitle = '上一年';
+              this.nextTitle = '下一年';
               for (let month = 1; month <= 12; month += 1) {
                 items.push({ key: view.y + '-' + pad2(month), label: month + ' 月' });
               }
             } else {
               const start = Math.floor(view.y / 10) * 10;
-              if (this._title) this._title.textContent = start + ' – ' + (start + 11) + ' 年';
-              if (this._prevBtn) this._prevBtn.title = '上一页';
-              if (this._nextBtn) this._nextBtn.title = '下一页';
+              this.panelTitle = start + ' – ' + (start + 11) + ' 年';
+              this.prevTitle = '上一页';
+              this.nextTitle = '下一页';
               for (let year = start; year < start + 12; year += 1) {
                 items.push({ key: String(year), label: String(year) });
               }
             }
-            for (const item of items) {
+            this.cells = items.map((item) => {
               const state = this.cellState(item.key);
-              const cell = document.createElement('button');
-              cell.type = 'button';
-              cell.className = 'mc-cell';
-              cell.tabIndex = -1;
-              cell.setAttribute('part', 'cell');
-              cell.dataset.key = item.key;
-              cell.dataset.value = item.key;
-              cell.textContent = item.label;
-              if (state.selected) cell.dataset.selected = '';
-              if (state.inRange) cell.dataset.inRange = '';
-              if (state.active) cell.dataset.active = '';
-              if ((min !== '' && item.key < min) || (max !== '' && item.key > max)) {
-                cell.dataset.disabled = 'true';
-              }
-              this._grid.append(cell);
-            }
+              return {
+                id: item.key,
+                key: item.key,
+                label: item.label,
+                selected: state.selected,
+                inRange: state.inRange,
+                active: state.active,
+                disabled: (min !== '' && item.key < min) || (max !== '' && item.key > max),
+              };
+            });
+            this.days = [];
           },
 
           setActive(date) {
@@ -940,7 +993,7 @@
               this._active = { y: date.y, m: 1, d: 1 };
               this._view = { y: date.y, m: 1 };
             }
-            this.renderPanel();
+            this.refreshPanel();
           },
 
           moveActive(delta) {
@@ -1002,7 +1055,7 @@
               this._pending = null;
               this._committed = this._selected.slice();
             }
-            this.renderPanel();
+            this.refreshPanel();
             /* 显示 / 收起是原生动作，浏览器可能顺手把页面滚一下 */
             this._scrollGuard.run(() => this._panel.showPopover());
             this._control.focus({ preventScroll: true });
@@ -1040,7 +1093,7 @@
             const nowOpen = event.newState === 'open';
             if (nowOpen && !this._active) {
               this.syncActiveFromSelection();
-              this.renderPanel();
+              this.refreshPanel();
             }
             this.syncOpenUI(nowOpen);
           },
@@ -1072,7 +1125,7 @@
               this._committed = this._selected.slice();
               this.syncDisplay();
               this.reflectBoundValue();
-              this.renderPanel();
+              this.refreshPanel();
               this.emitChange();
               return;
             }
@@ -1081,7 +1134,7 @@
               this._pending = key;
               this._selected = [key];
               this.syncDisplay();
-              this.renderPanel();
+              this.refreshPanel();
               return;
             }
 
@@ -1188,13 +1241,7 @@
             }
           },
 
-          onPanelClick(event) {
-            const cell = event.target?.closest?.('.mc-day, .mc-cell');
-            if (!cell || cell.getAttribute('data-disabled') === 'true') return;
-            const key = cell.dataset.key;
-            if (key) this.selectKey(key);
-          },
-
+          /* 指针在面板里不抢焦点：焦点始终留在触发框上（网格由触发框的方向键驱动，面板不进 Tab 序列） */
           onPanelMouseDown(event) {
             event.preventDefault();
           },
@@ -1233,7 +1280,7 @@
             this.$emit('clear');
             this.emitChange();
             this._control.focus({ preventScroll: true });
-            if (this.isOpen()) this.renderPanel();
+            if (this.isOpen()) this.refreshPanel();
           },
         },
       });

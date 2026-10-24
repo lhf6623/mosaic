@@ -27,7 +27,7 @@
 ## P1 · 渲染结构在 JS，优先重写
 
 - [x] **menu** · 源码 `packages/menu/menu.html` + `menu-item.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 行 / 内置控件模板渲染；options 走 data + `:options`；浮层与开合为行为层
-- [ ] **date-picker** · 源码 `packages/date-picker/date-picker.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
+- [x] **date-picker** · 源码 `packages/date-picker/date-picker.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 触发框文案 / 标题 / 42 格与 12 格改模板（o-fill 两份格模型）；开合 / 焦点 / 键盘为行为层
 - [ ] **select** · 源码 `packages/select/select.html` + `option.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
 - [ ] **tree-select** · 源码 `packages/tree-select/tree-select.html` · 文档 `README.md` / `api.md` / `page.html` · 🔴
 - [ ] **rate** · 源码 `packages/rate/rate.html` · 文档 `README.md` / `api.md` / `page.html` · 🟠
@@ -124,3 +124,4 @@
 | 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                           |
 | 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop          |
 | 2026-10-25 | nav（刷新居中）          | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常 |
+| 2026-10-25 | date-picker（模板化）    | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建 |

@@ -30,6 +30,15 @@
 选择、格式化与取消逻辑，不需要为「月份范围」再写一个组件。`range` 与 `multiple` 同时写时 `range` 生效
 （两个都开没有明确定义，与其猜，不如给一个确定的优先级并写进 api）。
 
+**渲染是模板的事，脚本只算数据。** 触发框文案（`displayText`）、面板标题与两个翻页按钮的 title
+（`panelTitle` / `prevTitle` / `nextTitle`）、星期行的显隐（`coarse`）都在模板里绑定；
+日 / 周 42 格与月 / 年 12 格各由一条 `<o-fill>` 渲染（`days` / `cells` 两份格模型，`fill-key` 用逐格唯一的
+id —— 周视图里 7 天的选择 key 相同，不能拿它当 fill-key）。选中 / 范围中 / 键盘高亮 / 置灰 / 补位 /
+今天都是格模型上的布尔字段，模板用 `attr:` 落到 `data-*`，样式仍由 CSS 按属性选择器切换。
+脚本里没有 `createElement` / `append`：它只做模板表达不了的行为 —— 原生 `popover` 开合、焦点、
+滚动守卫、溢出提示、键盘状态机，以及把值解析成格模型。⚠️ 面板开合是同步的，格模型要等微任务才落到
+DOM（`o-fill` 的更新是批量的），所以溢出提示等一拍再量（`queueMicrotask`）。
+
 **内部存 canonical key，不存 `Date`。** 每种 type 一个稳定字符串键，比较、排序、范围判断都按字符串做：
 
 | `type`  | canonical key | 说明                         |
