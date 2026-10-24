@@ -1,4 +1,4 @@
-<!-- mc-icon — 图标；设计取舍见 README.md「设计取舍」。 -->
+<!-- mc-icon — 图标；图形槽由模板渲染，远程 SVG 是行为层例外（见 paint / load 注释）；设计取舍见 README.md「设计取舍」。 -->
 
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
@@ -62,7 +62,9 @@
     }
   </style>
 
-  <span class="mc-glyph" part="glyph"></span>
+  <!-- 图形槽：内置图标的类名（.mc-icon-* mask 规则）与取回的远程 SVG 都走模板绑定；
+       脚本只负责取内容 / 探测本地命中，不创建节点（远程 SVG 的例外见 load）。 -->
+  <span attr:class="glyphClass" :html="glyphHtml" part="glyph"></span>
   <slot></slot>
 
   <script>
@@ -130,10 +132,18 @@
         iconSet: '',
       },
 
+      /* 图形槽的渲染输入（模板 <span attr:class="glyphClass" :html="glyphHtml">）：
+         内置图标 = 一条 .mc-icon-* mask 规则的类名；远程 / src = 取回并正规化后的 SVG 文本。
+         脚本不造节点，只改这两个字段（例外：probe 量 CSS 时临时挂类名，见那里） */
+      data: {
+        glyphClass: 'mc-glyph',
+        glyphHtml: '',
+      },
+
       ready() {
-        const root = this.ele.shadowRoot;
-        this._glyph = root.querySelector('.mc-glyph');
-        this._slot = root.querySelector('slot:not([name])');
+        /* 行为层只拿元素引用（ofa 包装对象用 .ele 取原生）；图形槽内容由上面的模板字段渲染 */
+        this._glyph = this.shadow.$('.mc-glyph')?.ele ?? null;
+        this._slot = this.shadow.$('slot:not([name])') ?? null;
         this._sequence = 0;
       },
 
@@ -143,13 +153,13 @@
         this._live = true;
         this.applySize();
         this._onSlotChange = () => this.paint();
-        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this._slot?.on('slotchange', this._onSlotChange);
         this.paint();
       },
 
       detached() {
         this._live = false;
-        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this._slot?.off('slotchange', this._onSlotChange);
       },
 
       watch: {
@@ -197,25 +207,25 @@
         },
 
         slotHasContent() {
-          return (this._slot?.assignedNodes() ?? []).some(
+          return (this._slot?.ele?.assignedNodes() ?? []).some(
             (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
           );
         },
 
         /** 唯一入口：插槽 > src > name（先本地、再远程）；属性一变就走这里，用序号作废过期的那一轮 */
         async paint() {
-          const glyph = this._glyph;
-          if (!glyph || !this._live) return;
+          if (!this._glyph || !this._live) return;
           const sequence = ++this._sequence;
 
-          glyph.className = 'mc-glyph';
-          glyph.replaceChildren();
+          /* 每次重画先把图形槽清回空位：模板 :html 落空串、类名回 .mc-glyph */
+          this.glyphClass = 'mc-glyph';
+          this.glyphHtml = '';
 
           if (this.slotHasContent()) return;
 
           const src = (this.src || '').trim();
           if (src) {
-            await this.load(glyph, src, sequence);
+            await this.load(src, sequence);
             return;
           }
 
@@ -225,12 +235,12 @@
           const local = await this.localClass(name);
           if (sequence !== this._sequence) return;
           if (local) {
-            glyph.className = `mc-glyph ${local}`;
+            this.glyphClass = `mc-glyph ${local}`;
             return;
           }
 
           const [set, icon] = splitName(name);
-          await this.load(glyph, `${this.base()}${set || this.setName()}/${icon}.svg`, sequence);
+          await this.load(`${this.base()}${set || this.setName()}/${icon}.svg`, sequence);
         },
 
         async localClass(name) {
@@ -251,6 +261,8 @@
           if (prefix && prefix === this.setName()) candidates.push(`mc-icon-${icon}`);
 
           for (const cls of candidates) {
+            /* 行为层例外（量 CSS）：本地命中只能「挂上类名再问 getComputedStyle」；
+               模板绑定那一拍是异步的，所以这里直接写原生 class，量完立即还原 */
             glyph.className = `mc-glyph ${cls}`;
             if (!(await this.sheetsReady(root))) return UNKNOWN;
             const style = getComputedStyle(glyph);
@@ -289,7 +301,7 @@
         },
 
         /** 取回来内联成 <svg>。失败只留空位 + 一条警告，不影响排版（与 mc-code 的高亮降级同级） */
-        async load(glyph, url, sequence) {
+        async load(url, sequence) {
           let href;
           try {
             href = new URL(url, document.baseURI).href;
@@ -315,13 +327,15 @@
           const text = await SOURCES.get(href);
           if (sequence !== this._sequence || !text) return;
 
+          /* 行为层例外（第三方内容）：远程 / src 图标是运行时取回的 SVG，源码里不写内联 SVG 标记
+             （README「设计取舍」）；正规化后只把字符串交给模板的 :html 落 DOM，脚本不 append 节点。 */
           const parsed = new DOMParser().parseFromString(text, 'image/svg+xml');
           const svg = parsed?.documentElement;
           if (!svg || svg.nodeName !== 'svg') {
             warn(`图标不是合法的 SVG：${href}`);
             return;
           }
-          glyph.replaceChildren(document.importNode(normalize(svg), true));
+          this.glyphHtml = normalize(svg).outerHTML;
         },
       },
     });

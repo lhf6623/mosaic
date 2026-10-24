@@ -56,7 +56,9 @@ WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 W
 这是对 API 规范 1.3（size = 控件高）的**显式例外**：图标不是控件，跟随字号才符合预期。
 
 ⚠️ 文件里不写任何内联 SVG 标记（Live Server 的注入点会抢走模块 script，见 mc-alert 文件头）；
-远程图标是运行时用 DOMParser 解析后灌进 shadow root 的，源码里没有它们的形状。
+远程图标是运行时用 DOMParser 解析后经模板 `:html` 落进图形槽的，源码里没有它们的形状。
+本地命中 / 远程 SVG 的两个动作 —— 挂类名问 CSS、取回 SVG 文本 —— 是行为层例外，集中写在
+`probe()` / `load()` 里；图形槽本身（类名 + 内联内容）由模板的 `attr:class` / `:html` 渲染。
 
 ## 令牌
 

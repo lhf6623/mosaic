@@ -31,7 +31,7 @@
 - [x] **select** · 源码 `packages/select/select.html` + `option.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 触发框文案 / 选项行改 o-fill 模板渲染（行模型）；开合 / 焦点 / 滚动为行为层
 - [x] **tree-select** · 源码 `packages/tree-select/tree-select.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 节点树摊成行模型改 o-fill 模板渲染；行模板插槽克隆是唯一例外；开合 / 懒加载 / 键盘为行为层
 - [x] **rate** · 源码 `packages/rate/rate.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 星星列表改 o-fill 模板渲染（三态 data-fill）；指针 / 键盘 / 拖拽为行为层
-- [ ] **icon** · 源码 `packages/icon/icon.html` · 文档 `README.md` / `api.md` / `page.html` · 🟡
+- [x] **icon** · 源码 `packages/icon/icon.html` · 文档 `README.md` / `api.md` / `page.html` · ✅ 图形槽改模板渲染（`attr:class` / `:html`）；probe 量 CSS 与远程 SVG 取回留行为层
 
 ## P2 · 模板 + 行为，统一写法
 
@@ -115,16 +115,17 @@
 
 ## 进度记录
 
-| 日期       | 单元                     | commit    | 验收                                                             |
-| ---------- | ------------------------ | --------- | ---------------------------------------------------------------- |
-| 2026-10-24 | button                   | `7c4dc3d` | button 19/19、form 46/46                                         |
-| 2026-10-24 | menu                     | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                           |
-| 2026-10-24 | menu（模板化）           | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用    |
-| 2026-10-25 | menu（options 通道）     | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                    |
-| 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                             |
-| 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop            |
-| 2026-10-25 | nav（刷新居中）          | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常   |
-| 2026-10-25 | date-picker（模板化）    | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建   |
-| 2026-10-25 | select（模板化）         | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层   |
-| 2026-10-25 | tree-select（模板化）    | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外     |
-| 2026-10-25 | rate（模板化）           | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层 |
+| 日期       | 单元                     | commit    | 验收                                                               |
+| ---------- | ------------------------ | --------- | ------------------------------------------------------------------ |
+| 2026-10-24 | button                   | `7c4dc3d` | button 19/19、form 46/46                                           |
+| 2026-10-24 | menu                     | 本提交    | menu 24/24、keyed 复用 + 行/控件模板化                             |
+| 2026-10-24 | menu（模板化）           | 本提交    | menu 24/24、dropdown 14/14、doc-drift 22/22、文档站 47 行复用      |
+| 2026-10-25 | menu（options 通道）     | `30a4427` | menu 24/24、doc-drift 22/22、文档站 47 行复用                      |
+| 2026-10-25 | nav（:options + shadow） | 本提交    | 文档站 47 行复用、current / 居中正常                               |
+| 2026-10-25 | nav（居中策略）          | 本提交    | 左栏 / full 首次显示居中；换页 / 重开不再改 scrollTop              |
+| 2026-10-25 | nav（刷新居中）          | 本提交    | 60 次刷新 0 错位（修复前 3/60）；边界行 / 窄屏 full 浮层均正常     |
+| 2026-10-25 | date-picker（模板化）    | 本提交    | date-picker 27/27、面板网格改 o-fill 模板渲染、脚本零 DOM 创建     |
+| 2026-10-25 | select（模板化）         | 本提交    | select 20/20、选项行改 o-fill 模型 + 原生 button；滚动留行为层     |
+| 2026-10-25 | tree-select（模板化）    | 本提交    | tree-select 27/27、节点摊行模型 + o-fill；插槽克隆留一处例外       |
+| 2026-10-25 | rate（模板化）           | 本提交    | rate 18/18、星星改 o-fill（data-fill 三态）；指针 / 拖拽留行为层   |
+| 2026-10-25 | icon（模板化）           | 本提交    | icon 15/15、图形槽改 attr:class / :html；probe 与远程 SVG 留行为层 |
