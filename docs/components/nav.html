@@ -3,7 +3,7 @@
   整包数据交给 mc-menu 的 options（行由组件渲染，住在 mc-menu 的 shadow 里）；
   条目样式不要指望本组件的 <style>，状态走 options.attrs 的 data-* / style。
   ⚠️ 路由变化整包换 options，但 mc-menu 按 key 复用行：同分区切页只更新 current，不重建
-  —— 改这里请手验。滚动只在**首次显示**时居中一次；之后换页 / 重新展开都不再改 scrollTop。
+  —— 改这里请手验。滚动只在**首次显示**时居中一次（等到行渲染完、位置落定为止）；之后换页 / 重新展开都不再改 scrollTop。
 -->
 <template component>
   <style>
@@ -145,7 +145,7 @@
         /** 首次显示前先等 load：刷新时浏览器会恢复上一个 scrollTop，落得比 ready 晚；
             在 load 前居中会被它盖掉，于是每次刷新停在不同的位置 */
         centerInitial() {
-          if (this._centered || this._centerQueued) return;
+          if (this._centered || this._centerQueued || this._centering) return;
           this._centerQueued = true;
           const start = () => {
             this._centerQueued = false;
@@ -162,30 +162,71 @@
           }
         },
 
-        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」） */
+        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」）。
+            ⚠️ 行由 mc-menu 的 o-fill **分批**渲染：当前条已经存在，不代表它后面的行都已经落进来。
+            这时 scrollHeight 还短，居中目标会被浏览器夹到「当前底部」，写进去的位置就偏高 ——
+            刷新时缓存是热的、渲染跑得快，最容易撞上（首访反而常常已经渲染完）。
+            所以目标超出当前可滚范围时先只等高度稳定，稳定后仍超范围才认定真的是边界行；
+            写进去之后还要连续两帧复核，防上方内容（字体 / 分组行）晚到把当前条顶偏。 */
         runCenterRetry() {
           if (this._centered) return;
           cancelAnimationFrame(this._centerRaf);
-          /* rows 可能晚于本组件一两帧：首屏有高度但还没行，按帧重试到成功；
-             浮层关着（高度 0）不重试，等 ResizeObserver 第一次展开 */
+          this._centering = true;
           let tries = 0;
+          /* 内容高度连续几帧没变 = o-fill 这一批已经渲染完（或本来就没有更多行） */
+          let lastMax = -1;
+          let stable = 0;
+          /* 位置连续几帧都还对得上 = 居中真的落定，不是被夹住的临时值 */
+          let settled = 0;
+          const finish = () => {
+            this._centered = true;
+            this._centering = false;
+          };
+          const retry = () => {
+            if (tries++ < 120) this._centerRaf = requestAnimationFrame(tick);
+            else this._centering = false;
+          };
           const tick = () => {
             if (this._centered) return;
             const viewport = this.viewport();
             if (!viewport) {
-              if (tries++ < 120) this._centerRaf = requestAnimationFrame(tick);
+              retry();
               return;
             }
-            const box = viewport.ele.getBoundingClientRect();
-            if (box.height === 0) return;
+            const view = viewport.ele;
+            const box = view.getBoundingClientRect();
+            /* 浮层关着（高度 0）不重试：等 ResizeObserver 第一次展开 */
+            if (box.height === 0) {
+              this._centering = false;
+              return;
+            }
             const row = this.currentRow();
-            if (!row || row.getBoundingClientRect().height === 0) {
-              if (tries++ < 120) this._centerRaf = requestAnimationFrame(tick);
+            const target = row?.getBoundingClientRect();
+            if (!target || target.height === 0) {
+              retry();
               return;
             }
-            const target = row.getBoundingClientRect();
-            viewport.ele.scrollTop += target.top + target.height / 2 - (box.top + box.height / 2);
-            this._centered = true;
+            /* 当前条中心在内容坐标系里的位置（与 scrollTop 无关），相对视口中心的偏移就是要滚的量 */
+            const max = view.scrollHeight - view.clientHeight;
+            const want = target.top - box.top + view.scrollTop + target.height / 2 - box.height / 2;
+            if (want > max + 0.5) {
+              /* 目标超出当前可滚范围：后面的行还在长，或当前条本来就在末尾。 */
+              stable = max === lastMax ? stable + 1 : 0;
+              lastMax = max;
+              settled = 0;
+              if (stable < 3) {
+                retry();
+                return;
+              }
+              view.scrollTop = max; // 边界行：退化成「保证可见」
+              finish();
+              return;
+            }
+            const to = Math.max(want, 0); // want < 0：当前条在上边界附近，居中不了，退化成贴顶
+            view.scrollTop = to;
+            settled = Math.abs(view.scrollTop - to) <= 1 ? settled + 1 : 0;
+            if (settled < 2) retry();
+            else finish();
           };
           this._centerRaf = requestAnimationFrame(tick);
         },
