@@ -527,13 +527,18 @@ export default async function run({ page, visit, check }) {
    * 3. value property：写完当次生效、同步 value 属性；未知值按未选显示但 property 保留
    * ------------------------------------------------------------------ */
   await make();
-  const valueWrite = await page.evaluate(() => {
+  const valueWrite = await page.evaluate(async () => {
+    /* 模板渲染是异步的：property 写完后等一拍再快照（o-fill 在微任务里更新、o-if 在宏任务里） */
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 40));
     const host = document.getElementById('probe-tree');
     host.value = 'nj';
+    await tick();
     const child = window.__state();
     host.value = 'nope';
+    await tick();
     const unknown = window.__state();
     host.value = 'sh';
+    await tick();
     const root = window.__state();
     return { child, unknown, root };
   });
@@ -1021,6 +1026,7 @@ export default async function run({ page, visit, check }) {
       [...host.shadowRoot.querySelectorAll('.mc-label')].map((node) => node.textContent);
     const fromAttr = labels();
     host.options = [{ value: 'x', label: 'X' }];
+    await wait(80); /* o-fill 在微任务里更新，读 DOM 前等一拍 */
     const fromProp = labels();
     const propRead = host.options.map((node) => node.label);
     host.setAttribute('options', JSON.stringify([{ value: 'y', label: 'Y' }]));
@@ -1087,6 +1093,7 @@ export default async function run({ page, visit, check }) {
   await waitOpen(true);
   await click('expand', '懒加载');
   await waitRowState('懒加载', { loading: true });
+  await page.waitForTimeout(60); /* spinner 在 o-if 里渲染（宏任务），等它进 DOM 再快照 */
   const loadingState = await state();
   const lazyLoadingRow = await page.evaluate(() => window.__rowContent());
   const loadingLoads = await page.evaluate(() => window.__loadState());
@@ -1155,6 +1162,7 @@ export default async function run({ page, visit, check }) {
   await waitOpen(true);
   await click('expand', '懒加载');
   await waitRowState('懒加载', { loading: true });
+  await page.waitForTimeout(60); /* spinner 在 o-if 里渲染（宏任务），等它进 DOM 再快照 */
   await page.evaluate(() => window.__loadReject('网络挂了'));
   await waitRowState('懒加载', { loading: false, loadError: true });
   const failedState = await state();
@@ -1442,6 +1450,7 @@ export default async function run({ page, visit, check }) {
   await waitOpen(true);
   await click('expand', '懒加载');
   await waitRowState('懒加载', { loading: true });
+  await page.waitForTimeout(60); /* spinner 在 o-if 里渲染（宏任务），等它进 DOM 再快照 */
   const iconLoading = await page.evaluate(() => window.__rowContent());
   await page.evaluate((children) => window.__loadResolve(children), [
     { value: 'x', label: '子 X' },

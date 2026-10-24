@@ -1,4 +1,4 @@
-<!-- mc-tree-select — 树型选择；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<!-- mc-tree-select — 树型选择（行由 o-fill 模板渲染）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <link rel="stylesheet" href="../icon/icons.generated.css" />
@@ -328,6 +328,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* 行模板插槽的落点：不生成盒子，克隆进去的元素直接参与 expand / label 的 flex 布局 */
+    .mc-expand-host,
+    .mc-content-host {
+      display: contents;
+    }
   </style>
 
   <button
@@ -338,7 +343,7 @@
     on:click="onControlClick"
     on:keydown="onKeyDown">
     <span class="mc-prefix" part="prefix"><slot name="prefix"></slot></span>
-    <span class="mc-value"></span>
+    <span class="mc-value">{{displayText}}</span>
     <!-- 自定义箭头：不给就落回内置下箭头；展开时整个容器转 180° -->
     <span class="mc-chevron" part="chevron">
       <slot name="chevron"><span class="mc-default-chevron mc-icon-chevron-down"></span></slot>
@@ -355,12 +360,35 @@
     part="panel"
     popover="manual"
     on:toggle="onNativeToggle"
-    on:click="onPanelClick"
     on:mousedown="onPanelMouseDown">
     <mc-scroll-bar class="mc-scroll" axis="y">
-      <div class="mc-list"></div>
-      <div class="mc-empty-wrap">
-        <slot name="empty"><span class="mc-empty"></span></slot>
+      <!-- 行由模板渲染（唯一渲染源）：一行一个原生 .mc-row，状态全走 attr: 绑定。
+           ⚠️ 下面这棵子树别折行：行内空白会进 .mc-expand / .mc-label 的 textContent。 -->
+      <!-- prettier-ignore -->
+      <div class="mc-list">
+        <o-fill :value="rows" fill-key="key">
+          <div
+            class="mc-row"
+            part="option"
+            attr:data-key="$data.key"
+            attr:data-level="$data.level"
+            attr:data-selected="$data.selected ? 'true' : 'false'"
+            attr:data-disabled="$data.disabled ? 'true' : null"
+            attr:data-expandable="$data.expandable ? '' : null"
+            attr:data-expanded="$data.expanded ? '' : null"
+            attr:data-active="$data.active ? '' : null"
+            attr:data-loading="$data.loading ? '' : null"
+            attr:data-load-error="$data.loadError ? '' : null"
+            attr:hidden="$data.visible ? null : ''"
+            attr:style="'--mc-tree-row-level: ' + $data.level"
+            on:click="$host.onRowClick($data.key, $event)">
+            <span class="mc-expand" part="expand" class:mc-icon-chevron-right="$data.chevron"><o-if :value="$data.loading"><span class="mc-tree-spinner"></span></o-if><span class="mc-expand-host"></span></span>
+            <span class="mc-label"><span class="mc-content-host"></span>{{$data.label}}</span>
+          </div>
+        </o-fill>
+      </div>
+      <div class="mc-empty-wrap" attr:hidden="emptyHidden ? '' : null">
+        <slot name="empty"><span class="mc-empty">{{emptyLabel}}</span></slot>
       </div>
     </mc-scroll-bar>
   </div>
@@ -411,15 +439,21 @@
           size: 'md',
         },
 
+        /* 可见内容全走模板，这些字段就是渲染数据：displayText / emptyLabel / emptyHidden 是触发框文案与空态；
+           rows = 平铺后的行模型（key 就是数据路径，o-fill 按它复用行） */
+        data: {
+          displayText: '',
+          emptyLabel: '',
+          emptyHidden: false,
+          rows: [],
+        },
+
         ready() {
           const root = this.ele.shadowRoot;
           this._control = root.querySelector('.mc-control');
           this._valueEl = root.querySelector('.mc-value');
           this._clearEl = root.querySelector('.mc-clear');
           this._panel = root.querySelector('.mc-panel');
-          this._list = root.querySelector('.mc-list');
-          this._emptyWrap = root.querySelector('.mc-empty-wrap');
-          this._emptyEl = root.querySelector('.mc-empty');
           this._prefixSlot = root.querySelector('slot[name="prefix"]');
           this._optionSlot = root.querySelector('slot[name="option"]');
           this._iconSlot = root.querySelector('slot[name="icon"]');
@@ -439,6 +473,7 @@
           this._applied = false;
           this._returnFocus = false;
           this._seen = new Set();
+          this._contentQueued = false;
 
           /* 挂载前赋的 property（createElement 之后马上 el.options = …）先收下来；构造期不往宿主写属性（P31） */
           this._presetOptions = Object.prototype.hasOwnProperty.call(this.ele, 'options')
@@ -620,18 +655,16 @@
             this._source = value;
             this._roots = this.buildTree(list, null, 0, false, '');
             this.flattenNodes();
-            this.renderRows();
+            /* 节点对象整棵换新：旧的高亮节点不在新表里就清掉 */
+            if (this._active && !this._nodes.includes(this._active)) this._active = null;
 
             if (this._initialized) {
               this.expandAncestors(this.findNode(this._value));
               this.applyExpansion();
-              this.syncRows();
               this.syncDisplay();
               if (this.isOpen()) this.setActive(this.initialActiveNode());
-              else if (this._active && !this._active.visible) this.setActive(null);
             } else {
               this.applyExpansion();
-              this.syncRows();
               this.syncDisplay();
             }
           },
@@ -662,8 +695,6 @@
                 loadError: false,
                 expanded: false,
                 visible: false,
-                row: null,
-                expandEl: null,
               };
               if (raw.expanded === true) this._expandedKeys.add(key);
               node.expanded = this._expandedKeys.has(key);
@@ -701,42 +732,83 @@
             return this._nodes.find((node) => node.value === value) ?? null;
           },
 
-          /* ---------- 渲染 ---------- */
+          /* ---------- 渲染 ----------
+             可见结构在模板里（模板是唯一渲染源）：这里只把节点树摊成行模型 data.rows，
+             模板用 o-fill 渲染 —— 不 createElement / append 造行。
+             唯一例外是行模板插槽（option / icon）：内容是使用者给的 DOM <template>，只能逐行克隆，
+             集中在 syncRowContent() 一处（见那里的注释）。 */
 
-          /** 行渲染在自己的 shadow 里（part="option"）：层级缩进走每行的 --mc-tree-row-level */
-          renderRows() {
-            this._list.textContent = '';
-            const fragment = document.createDocumentFragment();
-            const render = (nodes) => {
-              for (const node of nodes) {
-                const row = document.createElement('div');
-                row.className = 'mc-row';
-                row.setAttribute('part', 'option');
-                row.setAttribute('data-level', String(node.level));
-                row.setAttribute('data-selected', 'false');
-                row.dataset.key = node.key;
-                row.style.setProperty('--mc-tree-row-level', String(node.level));
-                const expandable = node.children.length > 0 || node.lazy;
-                if (expandable) row.setAttribute('data-expandable', '');
+          /** 把当前节点状态摊成行模型（选中 / 展开 / 高亮 / 可见 / 加载都在这份数据里） */
+          paintRows() {
+            const selected = this.findNode(this._value);
+            const optionTemplated = !!this._optionTemplate;
+            const iconTemplated = !!this._iconTemplate;
+            this.rows = this._nodes.map((node) => {
+              const expandable = node.children.length > 0 || node.lazy;
+              return {
+                key: node.key,
+                /* 给了 option 模板时正文由克隆内容承担，默认 label 文本留空（否则两段文本会叠在一起） */
+                label: optionTemplated ? '' : node.label,
+                level: node.level,
+                visible: node.visible,
+                selected: node === selected,
+                disabled: node.disabled,
+                expanded: !!node.expanded && node.children.length > 0,
+                expandable,
+                loading: node.loading,
+                loadError: node.loadError,
+                active: node === this._active,
+                /* 内置右箭头只在「可展开、没换自定义图标、也不在加载中」时出现 */
+                chevron: expandable && !iconTemplated && !node.loading,
+              };
+            });
+            this.scheduleContentSync();
+          },
 
-                const expand = document.createElement('span');
-                expand.setAttribute('part', 'expand');
-                row.append(expand);
-                const label = document.createElement('span');
-                label.className = 'mc-label';
-                row.append(label);
+          /** 行模板克隆要等 o-fill 把行铺完再补：用宏任务（o-fill 的更新在微任务里） */
+          scheduleContentSync() {
+            if (this._contentQueued) return;
+            this._contentQueued = true;
+            setTimeout(() => {
+              this._contentQueued = false;
+              this.syncRowContent();
+            }, 0);
+          },
 
-                node.row = row;
-                node.expandEl = expand;
-                node.labelEl = label;
-                this.syncNodeState(node);
-                this.renderNodeContent(node);
-                fragment.append(row);
-                render(node.children);
+          /**
+           * ⚠️ 本组件唯一一处脚本造可见内容：行模板插槽（option / icon）是使用者给的 <template>，
+           *   每行要一份独立实例，DOM 模板除了 cloneNode 没有别的复制方式（ofa 模板表达不了）。
+           *   字段填充仍走 nodeField()，行外壳 / 状态 / 布局全在模板里。
+           */
+          syncRowContent() {
+            if (!this._optionTemplate && !this._iconTemplate) return;
+            const root = this.ele.shadowRoot;
+            if (!root) return;
+            const rowOf = new Map(
+              [...root.querySelectorAll('.mc-row')].map((row) => [row.dataset.key, row]),
+            );
+            for (const node of this._nodes) {
+              const row = rowOf.get(node.key);
+              if (!row) continue;
+              const iconHost = row.querySelector('.mc-expand-host');
+              if (iconHost) {
+                iconHost.textContent = '';
+                if (
+                  this._iconTemplate &&
+                  (node.children.length > 0 || node.lazy) &&
+                  !node.loading
+                ) {
+                  iconHost.append(this.cloneTemplate(this._iconTemplate, node));
+                }
               }
-            };
-            render(this._roots);
-            this._list.append(fragment);
+              const contentHost = row.querySelector('.mc-content-host');
+              if (contentHost) {
+                contentHost.textContent = '';
+                if (this._optionTemplate) {
+                  contentHost.append(this.cloneTemplate(this._optionTemplate, node));
+                }
+              }
+            }
           },
 
           /**
@@ -759,13 +831,11 @@
             );
           },
 
-          /** 行模板增删后重建行（slotchange 触发） */
+          /** 行模板增删后重画行（slotchange 触发） */
           refreshTemplates() {
             this.readTemplates();
             if (!this._live || !this._nodes.length) return;
-            this.renderRows();
-            this.applyExpansion();
-            this.syncRows();
+            this.paintRows();
             this.syncDisplay();
             if (this.isOpen() && this._active) this.setActive(this._active);
           },
@@ -799,52 +869,12 @@
             return fragment;
           },
 
-          /** 行正文：option 模板进 label 容器；没有模板就落回默认 label */
-          renderNodeContent(node) {
-            if (!node.labelEl) return;
-            node.labelEl.textContent = '';
-            if (this._optionTemplate) {
-              node.labelEl.append(this.cloneTemplate(this._optionTemplate, node));
-            } else {
-              node.labelEl.textContent = node.label;
-            }
-          },
-
-          /**
-           * 行首展开 / 收起图标：icon 模板优先（逐行克隆），否则内置右箭头；
-           * 加载中一律换成小转圈 —— 它比自定义图标更能说明正在发生什么。
-           */
-          renderExpandIcon(node) {
-            const expand = node.expandEl;
-            if (!expand) return;
-            expand.textContent = '';
-            expand.className = 'mc-expand';
-            if (node.loading) {
-              const spinner = document.createElement('span');
-              spinner.className = 'mc-tree-spinner';
-              expand.append(spinner);
-              return;
-            }
-            const expandable = node.children.length > 0 || node.lazy;
-            if (!expandable) return;
-            if (this._iconTemplate) {
-              expand.append(this.cloneTemplate(this._iconTemplate, node));
-            } else {
-              expand.classList.add('mc-icon-chevron-right');
-            }
-          },
-
-          /** 可见性：父级收起时整支 hidden（DOM 常驻，靠 hidden 显隐） */
+          /** 可见性：父级收起时整支 hidden（DOM 常驻，靠 hidden 显隐）；算完就重画行模型 */
           applyExpansion() {
             for (const node of this._nodes) {
-              const visible = node.parent ? node.parent.visible && node.parent.expanded : true;
-              node.visible = visible;
-              if (!node.row) continue;
-              node.row.hidden = !visible;
-              if (!node.children.length) continue;
-              if (node.expanded) node.row.setAttribute('data-expanded', '');
-              else node.row.removeAttribute('data-expanded');
+              node.visible = node.parent ? node.parent.visible && node.parent.expanded : true;
             }
+            this.paintRows();
           },
 
           /** 选中节点的祖先全部展开（打开面板 / 值变化时用） */
@@ -873,7 +903,6 @@
             this._value = String(raw ?? '').trim();
             this.expandAncestors(this.findNode(this._value));
             this.applyExpansion();
-            this.syncRows();
             this.syncDisplay();
           },
 
@@ -890,7 +919,6 @@
             this._initialized = true;
             this.expandAncestors(this.findNode(this._value));
             this.applyExpansion();
-            this.syncRows();
             this.syncDisplay();
           },
 
@@ -914,27 +942,16 @@
             }
           },
 
-          syncRows() {
-            const selected = this.findNode(this._value);
-            for (const node of this._nodes) {
-              if (!node.row) continue;
-              node.row.setAttribute('data-selected', node === selected ? 'true' : 'false');
-              if (node.disabled) node.row.setAttribute('data-disabled', 'true');
-              else node.row.removeAttribute('data-disabled');
-            }
-          },
-
           syncDisplay() {
             this.normalizeBoolAttrs();
             const selected = this.findNode(this._value);
             this.mirror('data-empty', !selected);
             this.mirror('data-filled', !!selected);
-            if (this._valueEl) {
-              this._valueEl.textContent = selected ? selected.label : this.placeholderText();
-            }
-            if (this._emptyWrap) this._emptyWrap.hidden = this._nodes.length > 0;
-            if (this._emptyEl) this._emptyEl.textContent = this.emptyTextText();
-            this._overflowTip?.check();
+            /* 文案进模板后要等微任务那一拍才落到 DOM，所以溢出提示晚一拍再量 */
+            this.displayText = selected ? selected.label : this.placeholderText();
+            this.emptyLabel = this.emptyTextText();
+            this.emptyHidden = this._nodes.length > 0;
+            queueMicrotask(() => this._overflowTip?.check());
           },
 
           /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算（同 mc-input） */
@@ -974,11 +991,11 @@
           /* ---------- 高亮与键盘 ---------- */
 
           visibleNodes() {
-            return this._nodes.filter((node) => node.visible && node.row);
+            return this._nodes.filter((node) => node.visible);
           },
 
           visibleEnabledNodes() {
-            return this._nodes.filter((node) => node.visible && node.row && !node.disabled);
+            return this._nodes.filter((node) => node.visible && !node.disabled);
           },
 
           firstEnabledNode() {
@@ -998,12 +1015,15 @@
 
           setActive(node) {
             this._active = node ?? null;
-            for (const item of this._nodes) {
-              if (!item.row) continue;
-              if (item === node) item.row.setAttribute('data-active', '');
-              else item.row.removeAttribute('data-active');
-            }
-            if (node?.row && this.isOpen()) node.row.scrollIntoView({ block: 'nearest' });
+            this.paintRows();
+            if (!node || !this.isOpen()) return;
+            /* 滚动是行为层（模板表达不了）：等模板把行更新完再滚（宏任务排在 o-fill 的微任务之后） */
+            setTimeout(() => {
+              const row = this.ele.shadowRoot?.querySelector(
+                '.mc-row[data-key="' + node.key + '"]',
+              );
+              row?.scrollIntoView({ block: 'nearest' });
+            }, 0);
           },
 
           moveActive(delta) {
@@ -1017,12 +1037,9 @@
             this.setActive(next);
           },
 
-          /** 单行的加载 / 错误状态只改这一行，不重建整棵树 */
-          syncNodeState(node) {
-            if (!node.row || !node.expandEl) return;
-            node.row.toggleAttribute('data-loading', node.loading);
-            node.row.toggleAttribute('data-load-error', node.loadError);
-            this.renderExpandIcon(node);
+          /** 加载 / 错误状态是行模型上的字段：重画一次行即可（模板自己换 spinner / 箭头） */
+          syncNodeState() {
+            this.paintRows();
           },
 
           /**
@@ -1056,9 +1073,7 @@
               this.$emit('load-error', { value: node.value, error });
             } finally {
               node.loading = false;
-              this.renderRows();
               this.applyExpansion();
-              this.syncRows();
               this.syncDisplay();
               if (this.isOpen()) this.setActive(node.loaded ? node : this.initialActiveNode());
             }
@@ -1235,7 +1250,7 @@
             this._touched = true;
             this._value = node.value;
             this.reflectBoundValue();
-            this.syncRows();
+            this.paintRows();
             this.syncDisplay();
             this.emitChange();
             this._returnFocus = true;
@@ -1252,13 +1267,12 @@
             else this.expandNode(node);
           },
 
-          onPanelClick(event) {
-            const row = event.target?.closest?.('.mc-row');
-            if (!row) return;
-            const node = this._nodeByKey.get(row.dataset.key);
+          /** 行点击（模板里 on:click）：箭头归「开合 / 加载」，正文归选中 */
+          onRowClick(key, event) {
+            const node = this._nodeByKey.get(key);
             if (!node) return;
             /* 懒节点还没有 children，但箭头同样归「开合 / 加载」，不是选中 */
-            if (event.target.closest?.('.mc-expand') && (node.children.length || node.lazy)) {
+            if (event.target?.closest?.('.mc-expand') && (node.children.length || node.lazy)) {
               this.toggleNode(node);
               return;
             }
@@ -1277,7 +1291,7 @@
             this._touched = true;
             this._value = '';
             this.reflectBoundValue();
-            this.syncRows();
+            this.paintRows();
             this.syncDisplay();
             this.$emit('clear');
             this.emitChange();

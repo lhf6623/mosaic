@@ -36,6 +36,15 @@
 打开时滚到当前项。menu 本体不能直接嵌 —— 它的行是链接 / 按钮、没有 `value`、没有 `change`，
 也不是表单控件。
 
+**渲染是模板的事，脚本只算数据。** `options` → 节点树 → 平铺成行模型 `data.rows`，模板用
+`<o-fill fill-key="key">` 渲染每一行：`part="option"`、层级缩进（`--mc-tree-row-level`）、
+`data-selected` / `data-disabled` / `data-expanded` / `data-active` / `data-loading` /
+`data-load-error` / `hidden` 全是 `attr:` 绑定；触发框文案与空态（`displayText` / `emptyLabel` /
+`emptyHidden`）同样在模板里。脚本里没有 `createElement` 造行。
+⚠️ **行模板插槽是唯一例外**：`<template slot="option|icon">` 是使用者给的 DOM 模板，每行要一份
+独立实例，只能 `cloneNode`（`syncRowContent()`；行外壳、状态与布局仍由模板渲染），且要等 o-fill
+把行铺完（宏任务）才能补进去。加载中的小转圈走 `o-if`，它也是宏任务渲染 —— 两者都比模板绑定晚一拍。
+
 **禁用是「整支不可选、但仍可展开」。** 节点 `disabled` 后本身不可选，**子孙继承禁用**（不可选）；
 但展开箭头仍然可用，方便看结构。否则禁用一个父级就等于把整棵子树藏起来，排查数据时很别扭。
 
