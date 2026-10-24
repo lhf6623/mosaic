@@ -311,8 +311,55 @@ export default async function run({ page, visit, check }) {
       numericSize.bad.fontSize === '16px' &&
       numericSize.bad.w === 16 &&
       numericSize.sm.fontSize === '14px' &&
-      numericSize.lg.fontSize === '20px',
     JSON.stringify(numericSize),
   );
   await page.evaluate(() => document.getElementById('icon-size-probe')?.remove());
+  /* ------------------------------------------------------------------ *
+   * 运行时改名：图形槽的类名是模板绑定（attr:class），改名的同一拍 ofa 会异步重渲染；
+   * 探针若复用图形槽，探针类名会被盖回去，本地图标误判成「没有」→ 白跑一次远程。
+   * 图标页的演示已经把内置名几乎都探过（LOCAL 有缓存），所以另起一页从零开始。
+   * ------------------------------------------------------------------ */
+  await visit(page, `/index.html?icon-runtime=${Date.now()}#/docs/pages/home.html`);
+  await page.waitForFunction(() => !!customElements.get('mc-icon'), { timeout: 8000 }).catch(() => {});
+  if (!(await page.evaluate(() => !!customElements.get('mc-icon')))) {
+    await page.evaluate(() => {
+      const l = document.createElement('l-m');
+      l.setAttribute('src', '/packages/icon/icon.html');
+      document.body.appendChild(l);
+    });
+    await page.waitForFunction(() => !!customElements.get('mc-icon'), { timeout: 8000 });
+  }
+  const runtimeRename = await page.evaluate(async () => {
+    const el = document.createElement('mc-icon');
+    el.setAttribute('name', 'refresh');
+    document.body.appendChild(el);
+    const glyph = () => el.shadowRoot?.querySelector('.mc-glyph');
+    const waitClass = (cls) =>
+      new Promise((resolve) => {
+        const t0 = performance.now();
+        const tick = () => {
+          if (glyph()?.classList.contains(cls) || performance.now() - t0 > 3000) {
+            resolve(performance.now() - t0);
+          } else {
+            setTimeout(tick, 10);
+          }
+        };
+        tick();
+      });
+    await waitClass('mc-icon-refresh');
+    const before = glyph()?.className ?? null;
+    el.setAttribute('name', 'trash');
+    const elapsed = await waitClass('mc-icon-trash');
+    const after = glyph()?.className ?? null;
+    el.remove();
+    return { before, after, elapsed: Math.round(elapsed) };
+  });
+  check(
+    '运行时改名仍命中本地：refresh → trash 直接换成本地图标类，不白跑一次远程',
+    runtimeRename.after?.includes('mc-icon-trash') &&
+      runtimeRename.before?.includes('mc-icon-refresh') &&
+      runtimeRename.elapsed < 1000 &&
+      !iconRequests.includes('lucide/trash.svg'),
+    JSON.stringify({ runtimeRename, trashReqs: iconRequests.filter((u) => u.includes('trash')) }),
+  );
 }

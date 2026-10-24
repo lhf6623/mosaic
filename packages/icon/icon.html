@@ -1,4 +1,4 @@
-<!-- mc-icon — 图标；图形槽由模板渲染，远程 SVG 是行为层例外（见 paint / load 注释）；设计取舍见 README.md「设计取舍」。 -->
+<!-- mc-icon — 图标；图形槽由模板渲染；本地命中用一次性探针节点量 CSS、远程 SVG 是行为层例外（见 probe / load 注释）；设计取舍见 README.md「设计取舍」。 -->
 
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
@@ -63,7 +63,7 @@
   </style>
 
   <!-- 图形槽：内置图标的类名（.mc-icon-* mask 规则）与取回的远程 SVG 都走模板绑定；
-       脚本只负责取内容 / 探测本地命中，不创建节点（远程 SVG 的例外见 load）。 -->
+       脚本只负责取内容 / 探测本地命中（探针是隐藏的一次性节点，见 probe；远程 SVG 的例外见 load）。 -->
   <span attr:class="glyphClass" :html="glyphHtml" part="glyph"></span>
   <slot></slot>
 
@@ -134,7 +134,7 @@
 
       /* 图形槽的渲染输入（模板 <span attr:class="glyphClass" :html="glyphHtml">）：
          内置图标 = 一条 .mc-icon-* mask 规则的类名；远程 / src = 取回并正规化后的 SVG 文本。
-         脚本不造节点，只改这两个字段（例外：probe 量 CSS 时临时挂类名，见那里） */
+         脚本不造节点，只改这两个字段（例外：probe 用一次性探针节点量 CSS，见那里） */
       data: {
         glyphClass: 'mc-glyph',
         glyphHtml: '',
@@ -254,23 +254,32 @@
 
         /** 挂上类名 → 问 CSS。⚠️ 图标样式表是组件自己 <link> 进 shadow root 的、**异步**到达，没到位时 maskImage 同样是 none，必须等可读才能下结论；集名等于内置来源集时退化成裸名再探一次。 */
         async probe(name) {
-          const glyph = this._glyph;
           const root = this.ele.shadowRoot;
           const [prefix, icon] = splitName(name);
           const candidates = [`mc-icon-${prefix ? `${prefix}-${icon}` : icon}`];
           if (prefix && prefix === this.setName()) candidates.push(`mc-icon-${icon}`);
 
-          for (const cls of candidates) {
-            /* 行为层例外（量 CSS）：本地命中只能「挂上类名再问 getComputedStyle」；
-               模板绑定那一拍是异步的，所以这里直接写原生 class，量完立即还原 */
-            glyph.className = `mc-glyph ${cls}`;
+          /* 行为层例外（量 CSS）：用**一次性探针节点**问 getComputedStyle，而不是给模板里的图形槽挂类名——
+             图形槽的类名是模板绑定（attr:class），运行时改名的同一拍 ofa 会异步重渲染，探针类名会被
+             `glyphClass` 盖回去，本地图标偶发误判成「没有」、白跑一次远程（静态首屏正常，运行时改名必现）。
+             探针只量 mask、立即移除，不进可见结构。 */
+          const probeEl = document.createElement('span');
+          probeEl.className = 'mc-glyph';
+          probeEl.style.cssText =
+            'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none';
+          root.appendChild(probeEl);
+          try {
             if (!(await this.sheetsReady(root))) return UNKNOWN;
-            const style = getComputedStyle(glyph);
-            const mask = style.maskImage || style.webkitMaskImage || 'none';
-            if (mask !== 'none') return cls;
+            for (const cls of candidates) {
+              probeEl.className = `mc-glyph ${cls}`;
+              const style = getComputedStyle(probeEl);
+              const mask = style.maskImage || style.webkitMaskImage || 'none';
+              if (mask !== 'none') return cls;
+            }
+            return null;
+          } finally {
+            probeEl.remove();
           }
-          glyph.className = 'mc-glyph';
-          return null;
         },
 
         /** 就绪门：等那几张样式表真的可读再探，**走 link 的 load / error 事件**，不用 rAF 轮询 —— 后台页面里 rAF 会被节流甚至不触发，实测在录制模式下因此误判过一次。 */

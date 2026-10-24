@@ -607,7 +607,7 @@
           const toggle = this._actions.ele.querySelector('[data-act="toggle"]');
           if (toggle) {
             const label = open ? '收起编辑' : '展开编辑';
-            toggle.querySelector('mc-icon')?.setAttribute('name', open ? 'x' : 'edit'); // 图标名用 x：iconify 没有 lucide/close，远程兜底会 404、图标空白
+            toggle.querySelector('mc-icon')?.setAttribute('name', open ? 'close' : 'edit');
             toggle.title = label;
           }
           if (open) {
