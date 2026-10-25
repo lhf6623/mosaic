@@ -9,9 +9,9 @@
       <code>mc-rate</code>
     </h1>
     <p class="doc-lead">
-      评分：一排星，点第几颗就是几分，
+      评分：一排星，点第几颗就是几分；
       <code>allow-half</code>
-      下可以点半颗。键盘与焦点来自内部原生 range，星条自绘；颗数、尺寸、颜色可配。
+      下可以点半颗。
     </p>
 
     <h2>例子</h2>
@@ -65,17 +65,9 @@
       <section class="doc-demo">
         <h3>尺寸</h3>
         <p class="doc-hint">
-          三档 28 / 36 / 44px，星标直径 16 / 20 / 24px 一起变；从上到下是
-          <code>sm</code>
-          、默认
-          <code>md</code>
-          、
-          <code>lg</code>
-          。也收纯数字按 px（
+          也收纯数字按 px（
           <code>size="40"</code>
-          ），数字是单颗星直径，行高取
-          <code>max(36px, 星直径)</code>
-          。
+          ）：数字是单颗星直径，行高取 max(36px, 星直径)。
         </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>

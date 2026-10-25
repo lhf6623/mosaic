@@ -18,14 +18,12 @@
 
     <doc-demos>
       <section class="doc-demo">
+        <h3>基本用法</h3>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
         <h3>语义色</h3>
-        <p class="doc-hint">
-          六个色值都有；不写
-          <code>color</code>
-          就是
-          <code>primary</code>
-          。
-        </p>
         <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
@@ -45,14 +43,6 @@
 
       <section class="doc-demo">
         <h3>外观</h3>
-        <p class="doc-hint">
-          <code>subtle</code>
-          （默认）浅底深字，最不抢视线；
-          <code>solid</code>
-          底色满铺；
-          <code>outline</code>
-          只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
-        </p>
         <doc-playground src="./demos/variants.html"></doc-playground>
       </section>
 
@@ -70,16 +60,6 @@
 
       <section class="doc-demo">
         <h3>图标</h3>
-        <p class="doc-hint">
-          <code>icon</code>
-          打开左侧图标：四个语义图形，
-          <code>primary</code>
-          /
-          <code>info</code>
-          /
-          <code>neutral</code>
-          共用信息圆。
-        </p>
         <doc-playground src="./demos/icon.html"></doc-playground>
       </section>
 
@@ -100,11 +80,7 @@
           <code>&lt;button&gt;</code>
           ；点击只发
           <code>close</code>
-          ，组件
-          <strong>不自己删 DOM</strong>
-          ，例子里的
-          <code>remove()</code>
-          就是使用者那一半。
+          ，组件不自己删 DOM。
         </p>
         <doc-playground src="./demos/closable.html"></doc-playground>
       </section>
@@ -114,12 +90,8 @@
         <p class="doc-hint">
           只有
           <code>close</code>
-          一个事件（点 × 时发），不带载荷 —— 想知道是哪一条就读
+          一个事件，不带载荷 —— 想知道是哪一条读
           <code>event.target</code>
-          。组件
-          <strong>不删 DOM</strong>
-          ：要它消失，在事件里自己
-          <code>remove()</code>
           。
         </p>
         <doc-playground src="./demos/events.html"></doc-playground>

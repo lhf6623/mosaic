@@ -1,0 +1,12 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-popover>
+      <mc-button variant="outline">查看详情</mc-button>
+      <div slot="panel">面板内容由使用者给：说明文字、表单项、菜单都可以。</div>
+    </mc-popover>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-popover-basic' });
+  </script>
+</template>

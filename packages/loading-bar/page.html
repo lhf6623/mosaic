@@ -9,24 +9,25 @@
       Loading Bar
       <code>mc-loading-bar</code>
     </h1>
-    <p class="doc-lead">
-      加载条：默认钉在视口顶部（整页在忙），也可以放进容器里（那一块在忙）。在跑就缓慢爬升
-      （永远到不了 100%），收尾先滑到 100% 再淡出 —— 成功与出错走同一条路，只差一个填充色。
-      整页那一种还可以由函数驱动：
-      <code>loadingBar.start()</code>
-      /
-      <code>done()</code>
-      。
-    </p>
+    <p class="doc-lead">加载条：默认钉在视口顶部（整页在忙），也可以放进容器里（那一块在忙）。</p>
 
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
-        <h3>开始与完成</h3>
+        <h3>基本用法</h3>
         <p class="doc-hint">
-          条子在
+          <code>state</code>
+          是这个组件的唯一入口（
+          <code>idle</code>
+          /
+          <code>loading</code>
+          /
+          <code>done</code>
+          /
+          <code>error</code>
+          ）。条子在
           <strong>视口顶部</strong>
           （不在演示区里）：点「开始加载」看它爬升， 点「完成」看它滑满淡出。
         </p>
@@ -67,21 +68,14 @@
       <section class="doc-demo">
         <h3>出错</h3>
         <p class="doc-hint">
-          出错与成功是**同一条收尾**（先滑到 100%，再淡出消失），只差填充色：在跑用主题主色、
-          出错用主题的 danger。这一下很快，所以下面两条把淡出拉长到 60s 才看得住颜色。
-          三条都在这个演示区里 —— 钉在视口顶部那一种只在本页第一个演示里，一页只该有一条。
+          出错与成功同一条收尾（滑满再淡出），只差填充色：在跑用主色、出错用
+          danger。三条都在演示区里；钉顶那条只在本页第一个演示。
         </p>
         <doc-playground src="./demos/error.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>两档高度</h3>
-        <p class="doc-hint">
-          <code>size="sm"</code>
-          是 2px，默认 4px；也收纯数字按 px（
-          <code>size="6"</code>
-          ），数字就是条高。长度永远铺满（它跟着容器走，与控件那套高度无关）。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 

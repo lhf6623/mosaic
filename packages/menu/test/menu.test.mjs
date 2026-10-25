@@ -30,7 +30,7 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(
         () => {
           const hosts = window.__deepAll(
-            'demo-menu-options, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-states, demo-menu-slot',
+            'demo-menu-basic, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-states, demo-menu-slot',
           );
           return hosts.length > 0 && hosts.every((el) => !!el.shadowRoot);
         },
@@ -66,7 +66,7 @@ export default async function run({ page, visit, check }) {
     /** 数据驱动：字段、分组、children 内联开合、运行时换数据、属性通道 */
     const options = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-      const box = window.__deepAll('demo-menu-options')[0].shadowRoot;
+      const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
       const menu = box.querySelector('#options-menu');
       const rows = (m) =>
         [...window.__menuRows(m)].map((i) => {
@@ -152,7 +152,7 @@ export default async function run({ page, visit, check }) {
     /** key 复用：同一份菜单换 current，行 / 子菜单节点不重建、也不移动 */
     const reuse = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-      const box = window.__deepAll('demo-menu-options')[0].shadowRoot;
+      const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
       const menu = box.querySelector('#options-menu');
       const beforeRows = [...window.__menuRows(menu)];
       const beforeSubs = [...window.__menuSubs(menu)];

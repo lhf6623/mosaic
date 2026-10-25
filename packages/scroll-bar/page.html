@@ -8,19 +8,20 @@
       Scroll Bar
       <code>mc-scroll-bar</code>
     </h1>
-    <p class="doc-lead">
-      滚动条：内容自己给高度，条子由组件画（覆盖式、跟着主题走），滚动本身仍是原生的 ——
-      键盘、触屏惯性、锚点、页内查找全都照旧。
-    </p>
+    <p class="doc-lead">滚动条：内容自己给高度，条子由组件画（覆盖式），滚动本身仍是原生的。</p>
 
     <h2>例子</h2>
 
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
-        <h3>竖向滚动</h3>
+        <h3>基本用法</h3>
         <p class="doc-hint">
-          鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。条子平时藏着，鼠标移入才淡入。
+          默认竖向（
+          <code>axis</code>
+          不写就是
+          <code>y</code>
+          ）：鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。条子平时藏着，鼠标移入才淡入。
           多高（或多宽）得你自己给：宿主跟着内容长，不给高度它就永远不滚，看着像坏了。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>

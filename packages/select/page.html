@@ -11,9 +11,7 @@
       Select
       <code>mc-select</code>
     </h1>
-    <p class="doc-lead">
-      下拉选择：选项写在默认插槽里，面板是原生浮层（进 top layer），键盘、Esc、点外部关闭都齐。
-    </p>
+    <p class="doc-lead">下拉选择：选项写在默认插槽里，面板是原生浮层（进 top layer）。</p>
 
     <h2>例子</h2>
 
@@ -95,23 +93,11 @@
       <section class="doc-demo">
         <h3>事件回调</h3>
         <p class="doc-hint">
-          四个事件都冒泡 +
-          <code>composed</code>
-          ；
+          四个事件都冒泡 + composed；
           <code>change</code>
-          的
+          是
           <code>$event.data.value</code>
-          单选是字符串、多选是数组。 原生的
-          <code>focus</code>
-          /
-          <code>blur</code>
-          /
-          <code>keydown</code>
-          这些
-          <code>composed</code>
-          事件本来就会穿到宿主上（不用组件转发），
-          <code>on:focus</code>
-          直接写就行 —— 这里演的是组件自己发的那几条。
+          ，单选字符串、多选数组。
         </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>

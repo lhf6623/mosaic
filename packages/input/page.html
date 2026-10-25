@@ -25,17 +25,15 @@
         <p class="doc-hint">
           第二条的
           <code>default-value</code>
-          是初始值，只读一次；之后改属性不会回头覆盖当前值。
+          只读一次；
           <code>input</code>
           /
           <code>change</code>
-          的载荷都在
+          载荷在
           <code>$event.data.value</code>
-          ；原生那条不带头载荷的
-          <code>input</code>
-          已被组件拦掉，不会收到两次。值超出框宽且没聚焦时，hover 会弹完整内容（宿主挂
+          。值超出框宽且没聚焦时 hover 弹完整内容（宿主挂
           <code>data-overflow</code>
-          ）；聚焦后让位给编辑。
+          ）。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -92,36 +90,16 @@
 
       <section class="doc-demo">
         <h3>可清除</h3>
-        <p class="doc-hint">
-          <code>clearable</code>
-          只在有内容时给 ×；点它会发
-          <code>clear</code>
-          ，并补发
-          <code>input</code>
-          与
-          <code>change</code>
-          。
-        </p>
         <doc-playground src="./demos/clearable.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>输入类型</h3>
-        <p class="doc-hint">
-          <code>type</code>
-          逐字转发给内部原生
-          <code>&lt;input&gt;</code>
-          ，键盘与输入法跟着它走。
-        </p>
         <doc-playground src="./demos/type.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>长度限制</h3>
-        <p class="doc-hint">
-          <code>maxlength</code>
-          转发给内部原生控件，超出的字符根本输不进去。
-        </p>
         <doc-playground src="./demos/maxlength.html"></doc-playground>
       </section>
 
@@ -151,27 +129,11 @@
           <code>$event.data.value</code>
           ）；点可清除的 × 先发
           <code>clear</code>
-          ，紧接着补发
+          ，再补发
           <code>input</code>
           与
           <code>change</code>
-          。 原生的
-          <code>focus</code>
-          /
-          <code>blur</code>
-          /
-          <code>keydown</code>
-          这些
-          <code>composed</code>
-          事件本来就会穿到宿主上，直接
-          <code>on:focus</code>
-          写就行（演示里挂了这三个）；组件自己发的只有
-          <code>input</code>
-          /
-          <code>change</code>
-          /
-          <code>clear</code>
-          三条。
+          。
         </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>

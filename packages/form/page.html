@@ -26,16 +26,7 @@
       <code>mc-form-item</code>
     </h1>
     <p class="doc-lead">
-      表单，容器 + 一行两个标签：容器管提交 / 重置 / 取值 / 校验，行管标签与错误文案 ——
-      控件还是那几个表单单元，容器只按
-      <code>name</code>
-      和
-      <code>value</code>
-      /
-      <code>checked</code>
-      读它们。多列表单套
-      <code>mc-grid</code>
-      ，容器自己不提供排布维度。
+      表单：容器管提交 / 取值 / 校验，行管标签与错误文案，控件仍是那几个表单单元。
     </p>
 
     <h2>例子</h2>
@@ -77,35 +68,24 @@
       <section class="doc-demo">
         <h3>校验规则</h3>
         <p class="doc-hint">
-          一份表单里把三种写法都摆出来：① 行上的
+          三种写法：行上的
           <code>required</code>
-          属性（最省事，顺带画出标签的星号）；② 行上的
+          （顺带画星号）、行上的
           <code>rules</code>
-          属性（JSON 文本，绑在这一行，连 name 都不用写）；③ 容器上的
+          （JSON 文本）、容器上的
           <code>rules</code>
-          （
-          <code>:rules</code>
-          绑的就是它的属性通道；带
+          （带
           <code>validator</code>
-          函数的那部分只能挂 property —— 标签属性是文本，JSON 装不下函数）。 ⑤
-          同一个字段**两种都写**时两条都跑、
-          属性在前：属性先拦（空值直接短路，函数不会被调用），过了才轮到 property 的函数。
-          提交时**所有**规则都跑，写
+          的只能挂
+          property）。同字段两种都写时两条都跑、属性在前（空值短路）；提交时所有规则都跑，写
           <code>trigger</code>
-          才在平时提前报；校验是异步的，所以
+          才平时提前报。校验是异步的，
           <code>validate()</code>
           /
           <code>submit()</code>
-          都返回 Promise。
-          **每一行都预留一行错误位**（它同时是行间距），所以报错、收起都不会让整表跳；想只留位置、不显示文案就写
-          <code>hide-error</code>
-          。 报红之后想收起：
+          都返回 Promise。每行预留一行错误位（兼行间距），报错不跳版；收起用
           <code>form.clearValidate()</code>
-          清全部（或往容器派发一个冒泡的
-          <code>clear-validate</code>
-          ），给字段名就只清那一个 ——
-          <code>form.clearValidate('username')</code>
-          ；在飞的异步校验会一并作废，不会清完又被晚回的结果标红。
+          ，在飞的异步校验一并作废。
         </p>
         <doc-playground src="./demos/rules.html"></doc-playground>
       </section>

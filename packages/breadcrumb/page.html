@@ -9,11 +9,7 @@
       Breadcrumb
       <code>mc-breadcrumb</code>
     </h1>
-    <p class="doc-lead">
-      面包屑。容器 + 每一级两个标签；一级里的交互元素（原生
-      <code>&lt;a&gt;</code>
-      ）由使用者写在插槽里， 组件不造链接、也不改使用者的 DOM。
-    </p>
+    <p class="doc-lead">面包屑：容器 + 每一级两个标签，交互元素由使用者写在插槽里。</p>
 
     <h2>例子</h2>
 
@@ -25,11 +21,7 @@
           <code>&lt;a&gt;</code>
           ，当前页写纯文本 +
           <code>current</code>
-          。 顺序就是层级顺序，最后一级必须是当前页。 组件不造链接（站内链接自己写 ofa 的
-          <code>olink</code>
-          ）；每一级必须是
-          <code>mc-breadcrumb</code>
-          的直接子元素 —— 用
+          。每一级必须是容器的直接子元素 —— 用
           <code>o-fill</code>
           /
           <code>o-if</code>
@@ -64,11 +56,6 @@
 
       <section class="doc-demo">
         <h3>自动换行</h3>
-        <p class="doc-hint">
-          层级多或容器窄时整行换行（列表是
-          <code>flex-wrap</code>
-          ），不会撑破容器。
-        </p>
         <doc-playground src="./demos/long.html"></doc-playground>
       </section>
 

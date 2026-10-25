@@ -12,17 +12,9 @@
       <code>mc-menu</code>
     </h1>
     <p class="doc-lead">
-      <b>推荐用法只有一种</b>
-      ：给
+      垂直菜单：给
       <code>options</code>
-      传对象数组，容器自己渲染出整棵树 ——
-      分组、图标、层级缩进、二级菜单都在数据里，不用写任何菜单项标签。菜单项（
-      <code>mc-menu-item</code>
-      ）的属性和插槽是内部 / 兼容通道，
-      <b>不推荐</b>
-      手写；只有要
-      <code>olink</code>
-      或插槽里放别的东西时才走最后那条「自备控件」。
+      一个对象数组，容器渲染整棵树 —— 分组、图标、层级缩进、二级菜单都在数据里，不用写菜单项标签。
     </p>
 
     <h2>例子</h2>
@@ -32,191 +24,81 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          一条
-          <code>options</code>
-          撑起整个菜单：
-          <code>label</code>
-          /
-          <code>icon</code>
-          /
           <code>href</code>
-          /
-          <code>current</code>
-          /
-          <code>disabled</code>
-          /
-          <code>expanded</code>
-          ， 分组用
-          <code>type: 'group'</code>
-          ，二级菜单用
-          <code>children</code>
-          （同形状的数组，递归）。
-          <code>href</code>
-          是最终地址 —— 部署前缀由站点自己补（这里用
-          <code>hashOf()</code>
-          ）， 组件不碰路由；外链之类要写在链接上的属性放
-          <code>attrs</code>
-          （
-          <code>target</code>
-          /
-          <code>rel</code>
-          /
-          <code>title</code>
-          会转给内置
+          要写最终地址 —— 运行时造的
           <code>&lt;a&gt;</code>
-          ，其余落在行上）。 重新赋
-          <code>options</code>
-          时按
-          <code>key</code>
-          复用行（不给就按分组 / 父级 label、叶子 href 推导），同 key 只更新属性、不重建。
+          拿不到
+          <code>olink</code>
+          的部署前缀。
         </p>
-        <doc-playground src="./demos/options.html"></doc-playground>
+        <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>缩进</h3>
         <p class="doc-hint">
           <code>children</code>
-          每深一级自动缩进一档（
-          <code>--mc-menu-indent-step</code>
-          ），层级由容器从数据里算出来 —— 数据里没有
+          每深一级自动缩进一档，层级由容器算 —— 数据里没有
           <code>level</code>
-          ，行内边距也不用自己叠。父级行是开合开关，不导航。
+          ，父级行是开合开关、不导航。
         </p>
         <doc-playground src="./demos/nested.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>图标</h3>
-        <p class="doc-hint">
-          <code>icon</code>
-          是
-          <code>options</code>
-          里的一个字段，取
-          <code>mc-icon</code>
-          的
-          <code>name</code>
-          语法（内置图标零请求、查不到才远程取一次）。图标落在行的左端、不占点击区 —— 整行照旧可点。
-        </p>
         <doc-playground src="./demos/icon.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>分组标题</h3>
-        <p class="doc-hint">
-          分组是
-          <code>options</code>
-          里
-          <code>{ type: 'group', label }</code>
-          的一条数据：标题不可交互、鼠标穿透、也不缩进。带
-          <code>children</code>
-          时标题下面是一列
-          <b>常显</b>
-          的条目（缩进一档，走
-          <code>--mc-menu-group-indent</code>
-          ，默认 12px —— 与 collapsible 的逐级缩进分开；侧栏那种「分组名 + 子项」，doc-nav
-          就是这个用法）； 不带
-          <code>children</code>
-          就是一条纯标题。
-        </p>
         <doc-playground src="./demos/groups.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          尺寸写在容器上（
-          <code>sm</code>
-          /
-          <code>md</code>
-          /
-          <code>lg</code>
-          =
-          <code>28</code>
-          /
-          <code>36</code>
-          /
-          <code>44px</code>
-          ），
-          <code>options</code>
-          渲染出来的整棵树跟着变 —— 嵌套的子菜单也拿同一套通道。
-        </p>
         <doc-playground src="./demos/size.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>压缩</h3>
         <p class="doc-hint">
-          容器上写
-          <code>collapsed</code>
-          后收窄成方形（宽度走
-          <code>--mc-menu-collapsed-w</code>
-          ），项上只留
+          只剩
           <code>icon</code>
-          、文字与分组标题隐去。有子菜单的行把鼠标移进去（键盘
+          ；有子菜单的行移入（或
           <kbd>Tab</kbd>
-          聚焦也一样）会弹出浮层子菜单，可以一层层往下；
+          聚焦）弹浮层，
           <kbd>Esc</kbd>
-          或点外面关掉。
+          或点外面关。
         </p>
         <doc-playground src="./demos/collapsed.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>手风琴</h3>
-        <p class="doc-hint">
-          容器上写
-          <code>accordion</code>
-          后，同一层只留一个展开的分支（同
-          <code>mc-collapse</code>
-          的口径，嵌套层各管各的）：点「表单」，「组件」自己收起来。
-        </p>
         <doc-playground src="./demos/accordion.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>默认展开</h3>
-        <p class="doc-hint">
-          父级行的
-          <code>expanded: true</code>
-          让它开场就展开（窄屏「全部菜单」用它摊开当前分区）； 嵌套的父级也可以各自写
-          <code>true</code>
-          ，整条分支一次摊开。
-        </p>
         <doc-playground src="./demos/expanded.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>当前项与禁用</h3>
-        <p class="doc-hint">
-          <code>current</code>
-          /
-          <code>disabled</code>
-          也是
-          <code>options</code>
-          里的字段：当前项换底色字色，禁用的行压暗、不给
-          <code>href</code>
-          —— 点不动，也进不了焦点顺序。
-        </p>
         <doc-playground src="./demos/states.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
         <p class="doc-hint">
-          两条路：① 颜色与内边距写在自己的
+          ① 令牌写在宿主
           <code>style="…"</code>
-          上（L3 令牌按实例覆盖，令牌能穿 shadow 边界）—— 改缩进用
-          <code>--mc-menu-pad-x</code>
-          /
-          <code>--mc-menu-indent-step</code>
-          ； ② 给某一行补装饰用
+          上（能穿 shadow）；② 行级装饰走
           <code>options.attrs.style</code>
-          ：行生成在
+          —— 行在
           <code>mc-menu</code>
-          的 shadow 里，页面 CSS 选不中它，内联 style 才是能按行落样式的那条通道（行上的
-          <code>data-*</code>
-          留给 JS 查状态）。
+          的 shadow 里，页面 CSS 选不中它。
         </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
@@ -224,33 +106,19 @@
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          组件内部默认改不动：只有标了
+          只有标了
           <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式（mc-menu 开了
+          的内部节点能从外面改（
+          <code>mc-menu</code>
+          开了
           <code>list</code>
-          一个）。
+          ）。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>自备控件</h3>
-        <p class="doc-hint">
-          <b>不推荐</b>
-          当常规用法：只有要
-          <code>olink</code>
-          （编译期指令，运行时造出来的
-          <code>&lt;a&gt;</code>
-          拿不到部署前缀）或插槽里放别的东西时，才把原生
-          <code>&lt;a&gt;</code>
-          /
-          <code>&lt;button&gt;</code>
-          写进
-          <code>&lt;mc-menu-item&gt;</code>
-          —— 这条路能表达全部状态，但菜单项、层级、开合都要自己管。
-        </p>
         <doc-playground src="./demos/slot.html"></doc-playground>
       </section>
     </doc-demos>

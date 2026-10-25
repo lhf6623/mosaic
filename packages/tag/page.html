@@ -15,12 +15,12 @@
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
+        <h3>基本用法</h3>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
         <h3>语义色</h3>
-        <p class="doc-hint">
-          默认是
-          <strong>中性</strong>
-          —— 标签是分类标记，语义色应当在需要强调时才用；六个色值都有。
-        </p>
         <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
@@ -40,29 +40,12 @@
 
       <section class="doc-demo">
         <h3>外观</h3>
-        <p class="doc-hint">
-          <code>subtle</code>
-          （默认）浅底深字，最不抢视线；
-          <code>solid</code>
-          实心底；
-          <code>outline</code>
-          只有一圈描边。三档都保留 1px 边框，切换时高度不抖。
-        </p>
         <doc-playground src="./demos/variants.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
         <p class="doc-hint">
-          尺寸只改字号与左右内边距，
-          <strong>高度由字号撑</strong>
-          ：
-          <code>sm</code>
-          /
-          <code>md</code>
-          /
-          <code>lg</code>
-          = 26 / 30 / 34px（行高 + 上下内边距 + 上下 1px 边框）。
           标签不折行：长文本要么短，要么自己在宿主上截断（
           <code>max-width</code>
           +
@@ -108,20 +91,6 @@
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          <code>checkable</code>
-          的标签切换时发
-          <code>change</code>
-          （载荷
-          <code>$event.data.selected</code>
-          ）；点 × 发
-          <code>close</code>
-          ，
-          <strong>不删 DOM</strong>
-          —— 要消失自己在事件里
-          <code>remove()</code>
-          。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 

@@ -12,13 +12,23 @@
       Popover
       <code>mc-popover</code>
     </h1>
-    <p class="doc-lead">
-      通用浮层：面板锚在触发元素上，点空白或按 Esc 关掉。内容由使用者给 —— 菜单、表单、说明都行。
-    </p>
+    <p class="doc-lead">通用浮层：面板锚在触发元素上，内容由使用者给（菜单、表单、说明都行）。</p>
 
     <h2>例子</h2>
 
     <doc-demos>
+      <section class="doc-demo">
+        <h3>基本用法</h3>
+        <p class="doc-hint">
+          默认插槽放触发元素，
+          <code>slot="panel"</code>
+          放面板内容；点触发元素开，点空白或
+          <kbd>Esc</kbd>
+          关。
+        </p>
+        <doc-playground src="./demos/basic.html"></doc-playground>
+      </section>
+
       <section class="doc-demo">
         <h3>方位</h3>
         <p class="doc-hint">
@@ -111,33 +121,16 @@
 
       <section class="doc-demo">
         <h3>箭头</h3>
-        <p class="doc-hint">
-          小三角
-          <strong>默认就有</strong>
-          ，跟着
-          <code>placement</code>
-          换边；
-          <code>arrow="none"</code>
-          关掉。
-        </p>
         <doc-playground src="./demos/arrow.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>贴边翻转</h3>
-        <p class="doc-hint">
-          下面三个触发元素分别贴着视口的底边、右边、右下角 —— 面板会自己翻到放得下的那一侧。
-        </p>
         <doc-playground src="./demos/flip.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>面板里放菜单</h3>
-        <p class="doc-hint">
-          面板内容由使用者给 —— 放项目自己的
-          <code>mc-menu</code>
-          就是一个下拉菜单。
-        </p>
         <doc-playground src="./demos/menu.html"></doc-playground>
       </section>
 

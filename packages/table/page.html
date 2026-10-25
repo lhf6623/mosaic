@@ -14,8 +14,7 @@
     <p class="doc-lead">
       数据表格。真
       <code>&lt;table&gt;</code>
-      结构；列定义与行数据是对象数组，运行时推荐用 property
-      传（绑定通道落点不稳定），改完立刻重渲染。
+      结构；列定义与行数据是对象数组。
     </p>
 
     <h2>例子</h2>
@@ -42,38 +41,22 @@
 
       <section class="doc-demo">
         <h3>运行时换数据</h3>
-        <p class="doc-hint">
-          赋值就是入口：整体换一个数组也行（组件会重新规范化），空数组就是空态 ——
-          三个按钮改的都是同一个
-          <code>data</code>
-          property。
-        </p>
         <doc-playground src="./demos/runtime.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>条纹</h3>
-        <p class="doc-hint">偶数行换底色，长表格里更好找行。</p>
         <doc-playground src="./demos/striped.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>悬停</h3>
-        <p class="doc-hint">鼠标停在哪一行，哪一行亮起来。</p>
         <doc-playground src="./demos/hoverable.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>密度</h3>
-        <p class="doc-hint">
-          三档只动字号与单元格内边距，行高不动；要更极端的尺寸就按
-          <code>--mc-table-font</code>
-          /
-          <code>--mc-table-cell-pad-x</code>
-          /
-          <code>--mc-table-cell-pad-y</code>
-          自己写。
-        </p>
+        <p class="doc-hint">三档只动字号与单元格内边距，行高不动。</p>
         <doc-playground src="./demos/size.html"></doc-playground>
       </section>
 
@@ -119,15 +102,6 @@
 
       <section class="doc-demo">
         <h3>空态与加载插槽</h3>
-        <p class="doc-hint">
-          两个槽都有兜底内容（内置的
-          <code>mc-empty</code>
-          与一行「加载中…」），给了
-          <code>slot="empty"</code>
-          /
-          <code>slot="loading"</code>
-          就整块换成你的。
-        </p>
         <doc-playground src="./demos/slots.html"></doc-playground>
       </section>
 

@@ -9,25 +9,7 @@
       Tree Select
       <code>mc-tree-select</code>
     </h1>
-    <p class="doc-lead">
-      树型选择：触发框 + 面板里的一棵树，从层级数据里选一个节点。数据驱动：
-      <code>options</code>
-      传对象数组、组件自己递归渲染，支持展开收起、键盘导航、
-      <code>clearable</code>
-      与
-      <code>load</code>
-      懒加载；触发框与空态收
-      <code>prefix</code>
-      /
-      <code>chevron</code>
-      /
-      <code>empty</code>
-      插槽，行正文与行首展开图标可以换成
-      <code>option</code>
-      /
-      <code>icon</code>
-      模板。
-    </p>
+    <p class="doc-lead">树型选择：触发框 + 面板里的一棵树，从层级数据里选一个节点。</p>
 
     <h2>例子</h2>
 
@@ -53,18 +35,6 @@
 
       <section class="doc-demo">
         <h3>可清除</h3>
-        <p class="doc-hint">
-          <code>clearable</code>
-          有值时才在右端出现 ×（没值不出现、也不占位）；点它清空当前值、回到
-          <code>placeholder</code>
-          ，事件顺序是
-          <code>clear</code>
-          →
-          <code>change</code>
-          。不给
-          <code>clearable</code>
-          就有值也没有 ×，第三条是对照。
-        </p>
         <doc-playground src="./demos/clearable.html"></doc-playground>
       </section>
 
@@ -135,15 +105,6 @@
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          三档
-          <code>sm</code>
-          /
-          <code>md</code>
-          /
-          <code>lg</code>
-          同时改控件高与字号，树行跟宿主同高。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 

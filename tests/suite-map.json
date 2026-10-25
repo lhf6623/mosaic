@@ -4,6 +4,7 @@
     "packages/button/test/button.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -12,6 +13,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -29,11 +31,14 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/button/api.md",
       "packages/button/button.html",
+      "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
       "packages/button/demos/hex.html",
@@ -58,7 +63,8 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/code/test/code.test.mjs": [
       "app-config.js",
@@ -252,6 +258,7 @@
     "packages/tag/test/tag.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -260,6 +267,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -277,7 +285,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/code/code.html",
@@ -293,7 +303,9 @@
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
+      "packages/spinner/spinner.html",
       "packages/tag/api.md",
+      "packages/tag/demos/basic.html",
       "packages/tag/demos/checkable.html",
       "packages/tag/demos/closable.html",
       "packages/tag/demos/colors.html",
@@ -482,6 +494,7 @@
     "packages/menu/test/menu.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -490,6 +503,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -507,7 +521,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/button/button.html",
@@ -521,12 +537,13 @@
       "packages/loading-bar/loading-bar.js",
       "packages/menu/api.md",
       "packages/menu/demos/accordion.html",
+      "packages/menu/demos/basic.html",
       "packages/menu/demos/collapsed.html",
       "packages/menu/demos/customize.html",
+      "packages/menu/demos/expanded.html",
       "packages/menu/demos/groups.html",
       "packages/menu/demos/icon.html",
       "packages/menu/demos/nested.html",
-      "packages/menu/demos/options.html",
       "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
       "packages/menu/demos/slot.html",
@@ -537,7 +554,8 @@
       "packages/menu/test/menu.test.mjs",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/breadcrumb/test/breadcrumb.test.mjs": [
       "app-config.js",
@@ -1045,6 +1063,7 @@
     "packages/alert/test/alert.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -1053,6 +1072,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -1069,6 +1089,7 @@
       "index.html",
       "packages/alert/alert.html",
       "packages/alert/api.md",
+      "packages/alert/demos/basic.html",
       "packages/alert/demos/closable.html",
       "packages/alert/demos/colors.html",
       "packages/alert/demos/customize.html",
@@ -1084,7 +1105,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/code/code.html",
@@ -1099,7 +1122,8 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/progress/test/progress.test.mjs": [
       "app-config.js",
@@ -1244,11 +1268,14 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/button/api.md",
       "packages/button/button.html",
+      "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
       "packages/button/demos/colors.html",
       "packages/button/demos/hex.html",
@@ -1289,6 +1316,7 @@
       "app-config.js",
       "docs/adopt-styles.js",
       "docs/components/block-field.html",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -1297,6 +1325,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -1315,7 +1344,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/button/button.html",
@@ -1331,6 +1362,7 @@
       "packages/menu/menu.html",
       "packages/popover/api.md",
       "packages/popover/demos/arrow.html",
+      "packages/popover/demos/basic.html",
       "packages/popover/demos/controlled.html",
       "packages/popover/demos/customize.html",
       "packages/popover/demos/events.html",
@@ -1343,7 +1375,8 @@
       "packages/popover/popover.html",
       "packages/popover/test/popover.test.mjs",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/dialog/test/dialog.test.mjs": [
       "app-config.js",
@@ -1861,6 +1894,7 @@
     "packages/scroll-bar/test/scroll-bar.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -1869,6 +1903,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -1886,7 +1921,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/code/code.html",
@@ -1909,7 +1946,8 @@
       "packages/scroll-bar/page.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/skeleton/test/skeleton.test.mjs": [
       "app-config.js",
@@ -2422,18 +2460,24 @@
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/demos.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/components/nav.html": [
@@ -2764,15 +2808,21 @@
       "packages/tooltip/test/tooltip.test.mjs"
     ],
     "docs/favicon.svg": [
+      "packages/alert/test/alert.test.mjs",
+      "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "docs/fonts/archivo-var-latin.woff2": [
@@ -3369,6 +3419,9 @@
     "packages/alert/api.md": [
       "packages/alert/test/alert.test.mjs"
     ],
+    "packages/alert/demos/basic.html": [
+      "packages/alert/test/alert.test.mjs"
+    ],
     "packages/alert/demos/closable.html": [
       "packages/alert/test/alert.test.mjs"
     ],
@@ -3609,6 +3662,15 @@
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
+    "packages/boot/emits.js": [
+      "packages/alert/test/alert.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
+      "packages/tag/test/tag.test.mjs"
+    ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
       "packages/avatar/test/avatar.test.mjs",
@@ -3651,9 +3713,16 @@
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/overflow-tip.js": [
+      "packages/alert/test/alert.test.mjs",
+      "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/input/test/input.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/boot/scroll-pin.js": [
@@ -3794,6 +3863,10 @@
       "packages/table/test/table.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "packages/button/demos/basic.html": [
+      "packages/button/test/button.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -4720,10 +4793,16 @@
     "packages/menu/demos/accordion.html": [
       "packages/menu/test/menu.test.mjs"
     ],
+    "packages/menu/demos/basic.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
     "packages/menu/demos/collapsed.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/customize.html": [
+      "packages/menu/test/menu.test.mjs"
+    ],
+    "packages/menu/demos/expanded.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/groups.html": [
@@ -4733,9 +4812,6 @@
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/nested.html": [
-      "packages/menu/test/menu.test.mjs"
-    ],
-    "packages/menu/demos/options.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/part.html": [
@@ -4910,6 +4986,9 @@
       "packages/popover/test/popover.test.mjs"
     ],
     "packages/popover/demos/arrow.html": [
+      "packages/popover/test/popover.test.mjs"
+    ],
+    "packages/popover/demos/basic.html": [
       "packages/popover/test/popover.test.mjs"
     ],
     "packages/popover/demos/controlled.html": [
@@ -5357,20 +5436,26 @@
       "packages/spinner/test/spinner.test.mjs"
     ],
     "packages/spinner/spinner.html": [
+      "packages/alert/test/alert.test.mjs",
       "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/table/test/table.test.mjs",
+      "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/spinner/test/spinner.test.mjs": [
@@ -5477,6 +5562,9 @@
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tag/api.md": [
+      "packages/tag/test/tag.test.mjs"
+    ],
+    "packages/tag/demos/basic.html": [
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/tag/demos/checkable.html": [
