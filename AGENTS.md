@@ -16,10 +16,14 @@
   它只该出现在使用者明确要求的场合，不是每次改完的自检动作。
 - 静态守卫 `pnpm check` 不属于全量测试，按需跑。
 
+## 提交与推送：必须由使用者明确发起
+
+- 没有明确说「提交」「推送」，就不要 `git commit` / `git push`：改完停在工作区，报告改了哪些
+  文件，等指令；建临时分支、改 remote 之类的绕行同样不做。
+
 ## 动手之前
 
 - 先读对应单元的 `README.md`「设计取舍」与 `packages/README.md` 的共用约定，再改代码。
 - 接口事实的唯一手写源是各单元的 `api.md`；`pnpm check:docs` 会对账，别在组件页手抄接口表。
-- 写 ofa 模板（页面 / 组件 / 站点文件）前先读 `ofajs-docs` 技能与 `docs/skill-refactor.md` 的
-  「判定标准」：模板是唯一渲染源、布尔 / HTML 属性用 `attr:`、shadow 内 DOM 走
-  `this.shadow.$()` + `.on()`。
+- 写 ofa 模板（页面 / 组件 / 站点文件）前先读 `ofajs-docs` 技能与 `docs/README.md` §十「ofa 写法」：
+  模板是唯一渲染源、布尔 / HTML 属性用 `attr:`、shadow 内 DOM 走 `this.shadow.$()` + `.on()`。

@@ -138,7 +138,7 @@ docs/
 
 ## 十、ofa 写法（站点页与站点组件）
 
-判定标准与组件同源（`docs/skill-refactor.md` 的「判定标准」、`ofajs-docs` 技能），
+判定标准与组件同源（`ofajs-docs` 技能），
 组件接口口径见 [`packages/README.md`](../packages/README.md) §五；站点文件另外守这几条：
 
 - **模板是唯一渲染源**：可见结构写模板，脚本只做模板表达不了的行为（测量 / 滚动 / 焦点 /
