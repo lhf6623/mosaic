@@ -130,6 +130,14 @@
       color: rgb(var(--mc-color-primary));
     }
 
+    /* 编辑器没就绪：运行 / 重置置灰且不响应 hover（复制不依赖编辑器，始终可用） */
+    .btn:disabled,
+    .btn:disabled:hover {
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-subtle));
+      cursor: not-allowed;
+    }
+
     .btn[data-feedback='copied'] {
       color: rgb(var(--mc-color-success));
     }
@@ -226,10 +234,10 @@
       <span class="dirty" part="dirty">已修改</span>
       <span class="status" part="status"></span>
       <div class="actions" id="actions">
-        <button type="button" class="btn btn-primary" data-act="run" title="运行示例">
+        <button type="button" class="btn btn-primary" data-act="run" title="运行示例" disabled>
           <mc-icon name="play"></mc-icon>
         </button>
-        <button type="button" class="btn" data-act="reset" title="重置为文件原文">
+        <button type="button" class="btn" data-act="reset" title="重置为文件原文" disabled>
           <mc-icon name="refresh"></mc-icon>
         </button>
         <button type="button" class="btn" data-act="copy" title="复制源码">
@@ -340,8 +348,9 @@
         this._onAction = (event) => this.onAction(event);
         this._actions.on('click', this._onAction);
 
-        const runBtn = this._actions.ele.querySelector('[data-act="run"]');
-        if (runBtn) runBtn.title = `运行示例（${MOD_KEY} + Enter）`;
+        this._runBtn = this._actions.ele.querySelector('[data-act="run"]');
+        this._resetBtn = this._actions.ele.querySelector('[data-act="reset"]');
+        if (this._runBtn) this._runBtn.title = `运行示例（${MOD_KEY} + Enter）`;
         this._copyBtn = this._actions.ele.querySelector('[data-act="copy"]');
 
         /* 语法配色走 :host([data-dark])：shadow 里看不到 <html data-theme>，只能自己落到宿主上（令牌本身会自动跟主题） */
@@ -451,6 +460,7 @@
           if (this._editorPromise) return this._editorPromise;
           this._editorPromise = this.createEditor().catch((error) => {
             this._editorPromise = undefined;
+            this.setActionsEnabled(false);
             this.showError(error);
             this.setStatus('编辑器加载失败', 'error');
           });
@@ -479,6 +489,7 @@
             return;
           }
           this._editor = editor;
+          this.setActionsEnabled(true);
           this.setStatus(HINT);
           this.scheduleFit();
         },
@@ -597,6 +608,12 @@
           delete btn.dataset.feedback;
           btn.querySelector('mc-icon')?.setAttribute('name', 'copy');
           btn.title = '复制源码';
+        },
+
+        /** 运行 / 重置依赖编辑器，没就绪就置灰；复制随时可用 */
+        setActionsEnabled(enabled) {
+          if (this._runBtn) this._runBtn.disabled = !enabled;
+          if (this._resetBtn) this._resetBtn.disabled = !enabled;
         },
 
         /** 展开 / 收起：同一行里换出「运行 / 重置 / 复制」与状态，编辑器在下面展开 */
