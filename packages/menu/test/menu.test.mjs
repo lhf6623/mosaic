@@ -350,6 +350,36 @@ export default async function run({ page, visit, check }) {
       });
     });
 
+    /** 图标 + 文字 + 展开箭头三者齐：父级行文字只让开一次图标（text-indent 别从按钮继承到行内文字） */
+    const parentIcon = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const host = document.createElement('mc-menu');
+      host.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:14rem';
+      host.options = [
+        { label: '带图标父级', icon: 'file', children: [{ label: '子项', href: '#sub' }] },
+        { label: '带图标叶子', icon: 'file', href: '#leaf' },
+      ];
+      document.body.append(host);
+      await wait(400);
+      const textRect = (el) => {
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        return r.getBoundingClientRect();
+      };
+      const rows = [...window.__menuRows(host)].map((row) => {
+        const control = window.__menuControl(row);
+        return {
+          label: window.__menuText(row),
+          expandable: row.hasAttribute('data-expandable'),
+          padStart: getComputedStyle(control).paddingInlineStart,
+          textIndent: getComputedStyle(control).textIndent,
+          textLeft: Math.round(textRect(control).left - row.getBoundingClientRect().left),
+        };
+      });
+      host.remove();
+      return rows;
+    });
+
     /** 尺寸：三档写在容器上，靠通道继承进子项 */
     const sizes = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-size')[0].shadowRoot;
@@ -720,6 +750,7 @@ export default async function run({ page, visit, check }) {
       built,
       accordion,
       icons,
+      parentIcon,
       sizes,
       channel,
       collapsedState,
@@ -891,6 +922,16 @@ export default async function run({ page, visit, check }) {
         i.indent <= 46,
     ),
     JSON.stringify(menu.icons),
+  );
+
+  check(
+    '图标 + 文字 + 展开箭头三者齐：父级行文字只让开一次图标（text-indent 不从按钮继承到行内文字）',
+    menu.parentIcon.length === 2 &&
+      menu.parentIcon[0].expandable === true &&
+      menu.parentIcon[0].textIndent === '0px' &&
+      menu.parentIcon[0].padStart !== '0px' &&
+      menu.parentIcon[0].textLeft === menu.parentIcon[1].textLeft,
+    JSON.stringify(menu.parentIcon),
   );
 
   check(

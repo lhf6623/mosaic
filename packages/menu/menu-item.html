@@ -222,6 +222,11 @@
           var(--mc-menu-icon-size, 1.25em) +
           var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
       );
+      /* ⚠️ 父级行的 text-indent 必须在这里**再归零一次**：上面「有图标时文字让开」那条
+         （:host([icon]) .mc-control）优先级更高，会把图标让位那份 text-indent 写到按钮上。
+         flex 里 text-indent 不参与布局，但它是继承属性 —— 行里的 .mc-control-label 会再吃一份，
+         文字就被推两次（图标 + 文字 + 箭头三者齐全时才看得出来）。这里的缩进只由 padding 承担。 */
+      text-indent: 0;
     }
     .mc-control-label {
       min-width: 0;

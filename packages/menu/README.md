@@ -137,8 +137,11 @@ mc-menu-item — 菜单项（配合 mc-menu 使用）
 内容走。改成正常流之后，宿主**左侧**不能有内边距（会和 `text-indent` 叠成双份缩进），
 **右侧**那层则要保留、并让控件的宽度补上它（见上）。
 
-⚠️ 父级行（`<button>`）是唯一的例外：它在 flex 里放「文字 + 箭头」，`text-indent` 不生效，
-缩进与图标让位改走内联的 `padding-inline-start`（`menu-item.html` 的 `applyControlIndent()`）。
+⚠️ 父级行（`<button>`）是唯一的例外：它在 flex 里放「文字 + 箭头」，`text-indent` 对布局不生效，
+缩进与图标让位改走两条 CSS（`menu-item.html` 的 `.mc-control--parent`）：`padding-inline-start`
+（含图标宽 + 间距）负责让位，`text-indent` 则必须**显式归零**。后者不是保险 —— `text-indent` 是继承属性，
+「有图标时文字让开」那条（`:host([icon]) .mc-control`）优先级更高，会把让位量写到按钮上再被行里的
+`.mc-control-label` 继承一份，于是「图标 + 文字 + 箭头」三者齐全时文字被推两次（曾踩过）。
 
 状态 → 宿主上的 `data-current` / `data-disabled` 只有一个出口（`applyState()`）：内置行读宿主自己的
 `current` / `disabled`，自备控件读使用者元素上的 `data-current` / `disabled`。镜像到宿主是因为
