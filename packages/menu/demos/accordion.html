@@ -1,5 +1,5 @@
 <template component>
-  <mc-menu accordion id="accordion-menu" style="width: 13rem"></mc-menu>
+  <mc-menu accordion id="accordion-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';
@@ -34,10 +34,7 @@
 
     export default async () => ({
       tag: 'demo-menu-accordion',
-
-      ready() {
-        this.ele.shadowRoot.querySelector('#accordion-menu').options = OPTIONS;
-      },
+      data: { menuOptions: OPTIONS },
     });
   </script>
 </template>

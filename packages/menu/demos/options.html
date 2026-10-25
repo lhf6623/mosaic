@@ -1,14 +1,14 @@
 <template component>
   <mc-space block wrap-items align="start">
     <mc-button size="sm" variant="outline" on:click="add()">加一项</mc-button>
-    <mc-menu id="options-menu" style="width: 13rem"></mc-menu>
+    <mc-menu id="options-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
   </mc-space>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';
 
     /* href 是**最终地址**：站内链接的部署前缀由站点自己补（这里用 docs/routes.js 的 hashOf）。
-       attrs = 行上的额外属性（target / rel / title 会转给内置 <a>，data-* 留在行上给宿主钩子用） */
+       attrs = 行上的额外属性（target / rel / title 会转给内置 <a>，其余落在行上给 JS 钩子 / 行内样式） */
     const OPTIONS = [
       { label: '首页', icon: 'menu', href: hashOf('packages/menu/page.html'), current: true },
       { type: 'group', label: '导航' },
@@ -35,21 +35,14 @@
     export default async () => ({
       tag: 'demo-menu-options',
 
-      data: { extra: 0 },
-
-      /* options 是宿主 property：绑定落点不稳定（首屏可能直接给数组、SPA 导航是 JSON 文本），运行时传数组（同 mc-table 的 data） */
-      ready() {
-        this.menu().options = OPTIONS;
-      },
+      /* 对象数组走 data + :options（ofa 模板口径）。重新赋值时按 key 复用行：同 key 只更新属性 */
+      data: { menuOptions: OPTIONS, extra: 0 },
 
       proto: {
-        menu() {
-          return this.ele.shadowRoot.querySelector('#options-menu');
-        },
-        /* 赋 property 就是重渲染入口：换一个数组，组件自己生成的那些项会被整体换掉 */
+        /* 换一份 options：原样的行原地复用，只有多出来的那条才建新节点 */
         add() {
           this.extra += 1;
-          this.menu().options = [
+          this.menuOptions = [
             ...OPTIONS,
             { label: `动态项 ${this.extra}`, icon: 'star', href: hashOf('packages/tag/page.html') },
           ];

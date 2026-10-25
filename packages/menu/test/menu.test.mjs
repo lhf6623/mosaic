@@ -30,7 +30,7 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(
         () => {
           const hosts = window.__deepAll(
-            'demo-menu-options, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-states, demo-menu-slot',
+            'demo-menu-options, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-states, demo-menu-slot',
           );
           return hosts.length > 0 && hosts.every((el) => !!el.shadowRoot);
         },
@@ -805,6 +805,37 @@ export default async function run({ page, visit, check }) {
     return out;
   });
 
+  /* 文档页「默认展开」演示：expanded: true 的行开场展开，嵌套父级各自摊开 */
+  const expandedDemo = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const find = () => {
+      const box = window.__deepAll('demo-menu-expanded')[0]?.shadowRoot;
+      return box?.querySelector('mc-menu') ?? null;
+    };
+    let menu = find();
+    for (let i = 0; i < 40 && !menu?.shadowRoot?.querySelector('mc-menu-item'); i += 1) {
+      await wait(100);
+      menu = find();
+    }
+    if (!menu) return null;
+    const rows = [...window.__menuRows(menu)];
+    /* 组件 的子菜单（第一层展开）：行是 按钮 / 表单，表单也是 expanded */
+    const sub = window.__menuSubs(menu)[0] ?? null;
+    const subRows = sub ? [...window.__menuRows(sub)] : null;
+    /* 表单 的子菜单（第二层展开）：它自己不该再是 hidden */
+    const nested = sub ? [...sub.shadowRoot.querySelectorAll('mc-menu')][0] : null;
+    return {
+      labels: rows.map((row) => window.__menuText(row)),
+      expanded: rows.map((row) => row.hasAttribute('data-expanded')),
+      hidden: [...window.__menuSubs(menu)].map((item) => item.hasAttribute('hidden')),
+      subLabels: subRows ? subRows.map((row) => window.__menuText(row)) : null,
+      subExpanded: subRows ? subRows.map((row) => row.hasAttribute('data-expanded')) : null,
+      nestedHidden: nested
+        ? [...window.__menuSubs(sub)].map((item) => item.hasAttribute('hidden'))
+        : null,
+    };
+  });
+
   check(
     'options 的 expanded：父级行开场就展开；手风琴下同层只留一个（后面的赢）',
     JSON.stringify(expandedOption.plain.expandedRows) === JSON.stringify([true, true]) &&
@@ -812,6 +843,18 @@ export default async function run({ page, visit, check }) {
       JSON.stringify(expandedOption.accordion.expandedRows) === JSON.stringify([false, true]) &&
       JSON.stringify(expandedOption.accordion.hiddenSubs) === JSON.stringify([true, false]),
     JSON.stringify(expandedOption),
+  );
+
+  check(
+    '默认展开的演示：expanded 的父级行开场展开，嵌套父级各自摊开（整条分支可见）',
+    expandedDemo !== null &&
+      JSON.stringify(expandedDemo.labels) === JSON.stringify(['基础', '组件', '设置']) &&
+      JSON.stringify(expandedDemo.expanded) === JSON.stringify([false, true, false]) &&
+      JSON.stringify(expandedDemo.hidden) === JSON.stringify([false]) &&
+      JSON.stringify(expandedDemo.subLabels) === JSON.stringify(['按钮', '表单']) &&
+      JSON.stringify(expandedDemo.subExpanded) === JSON.stringify([false, true]) &&
+      JSON.stringify(expandedDemo.nestedHidden) === JSON.stringify([false]),
+    JSON.stringify(expandedDemo),
   );
 
   check(

@@ -1,0 +1,34 @@
+<template component>
+  <mc-menu id="expanded-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
+
+  <script>
+    import { hashOf } from '../../../docs/routes.js';
+
+    /* expanded: true 让父级行开场就展开（窄屏「全部菜单」用它摊开当前分区）。
+       嵌套的父级也可以各自写 true，整条分支一次摊开 —— 层级缩进当场可见。 */
+    const OPTIONS = [
+      { label: '基础', href: hashOf('packages/button/page.html') },
+      {
+        label: '组件',
+        expanded: true,
+        children: [
+          { label: '按钮', href: hashOf('packages/button/page.html') },
+          {
+            label: '表单',
+            expanded: true,
+            children: [
+              { label: '输入框', href: hashOf('packages/input/page.html') },
+              { label: '下拉选择', href: hashOf('packages/select/page.html') },
+            ],
+          },
+        ],
+      },
+      { label: '设置', href: hashOf('packages/color/page.html') },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-expanded',
+      data: { menuOptions: OPTIONS },
+    });
+  </script>
+</template>

@@ -1,5 +1,5 @@
 <template component>
-  <mc-menu id="groups-menu" style="width: 12rem"></mc-menu>
+  <mc-menu id="groups-menu" :options="menuOptions" style="width: 12rem"></mc-menu>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';
@@ -7,6 +7,8 @@
     /* 分组 = type: 'group'：标题不可交互。带 children 时标题下面一列条目**常显**、缩进一档
        （侧栏用法，doc-nav 就是这么渲染的）；不带 children 就是一条纯标题。 */
     const OPTIONS = [
+      /* 不带 children：只有一条标题 */
+      { type: 'group', label: '概览' },
       {
         type: 'group',
         label: '基础',
@@ -27,10 +29,7 @@
 
     export default async () => ({
       tag: 'demo-menu-groups',
-
-      ready() {
-        this.ele.shadowRoot.querySelector('#groups-menu').options = OPTIONS;
-      },
+      data: { menuOptions: OPTIONS },
     });
   </script>
 </template>

@@ -1,5 +1,5 @@
 <template component>
-  <mc-menu id="nested-menu" style="width: 14rem"></mc-menu>
+  <mc-menu id="nested-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';
@@ -26,10 +26,7 @@
 
     export default async () => ({
       tag: 'demo-menu-nested',
-
-      ready() {
-        this.ele.shadowRoot.querySelector('#nested-menu').options = OPTIONS;
-      },
+      data: { menuOptions: OPTIONS },
     });
   </script>
 </template>

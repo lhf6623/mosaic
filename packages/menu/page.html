@@ -30,7 +30,7 @@
     <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
-        <h3>数据驱动</h3>
+        <h3>基本用法</h3>
         <p class="doc-hint">
           一条
           <code>options</code>
@@ -44,7 +44,9 @@
           <code>current</code>
           /
           <code>disabled</code>
-          ，分组用
+          /
+          <code>expanded</code>
+          ， 分组用
           <code>type: 'group'</code>
           ，二级菜单用
           <code>children</code>
@@ -52,7 +54,7 @@
           <code>href</code>
           是最终地址 —— 部署前缀由站点自己补（这里用
           <code>hashOf()</code>
-          ），组件不碰路由；外链之类要写在链接上的属性放
+          ）， 组件不碰路由；外链之类要写在链接上的属性放
           <code>attrs</code>
           （
           <code>target</code>
@@ -62,9 +64,11 @@
           <code>title</code>
           会转给内置
           <code>&lt;a&gt;</code>
-          ，
-          <code>data-*</code>
-          留在行上给宿主钩子用）。
+          ，其余落在行上）。 重新赋
+          <code>options</code>
+          时按
+          <code>key</code>
+          复用行（不给就按分组 / 父级 label、叶子 href 推导），同 key 只更新属性、不重建。
         </p>
         <doc-playground src="./demos/options.html"></doc-playground>
       </section>
@@ -171,6 +175,18 @@
       </section>
 
       <section class="doc-demo">
+        <h3>默认展开</h3>
+        <p class="doc-hint">
+          父级行的
+          <code>expanded: true</code>
+          让它开场就展开（窄屏「全部菜单」用它摊开当前分区）； 嵌套的父级也可以各自写
+          <code>true</code>
+          ，整条分支一次摊开。
+        </p>
+        <doc-playground src="./demos/expanded.html"></doc-playground>
+      </section>
+
+      <section class="doc-demo">
         <h3>当前项与禁用</h3>
         <p class="doc-hint">
           <code>current</code>
@@ -190,19 +206,17 @@
         <p class="doc-hint">
           两条路：① 颜色与内边距写在自己的
           <code>style="…"</code>
-          上（L3 令牌按实例覆盖）， 不用跨 shadow 边界 —— 改缩进用
+          上（L3 令牌按实例覆盖，令牌能穿 shadow 边界）—— 改缩进用
           <code>--mc-menu-pad-x</code>
           /
           <code>--mc-menu-indent-step</code>
-          ； ②
-          <b>宿主钩子</b>
-          —— 当前项 / 禁用项会镜像成
-          <code>mc-menu-item</code>
-          宿主上的
-          <code>[data-current]</code>
-          /
-          <code>[data-disabled]</code>
-          ，外层从这儿补东西。
+          ； ② 给某一行补装饰用
+          <code>options.attrs.style</code>
+          ：行生成在
+          <code>mc-menu</code>
+          的 shadow 里，页面 CSS 选不中它，内联 style 才是能按行落样式的那条通道（行上的
+          <code>data-*</code>
+          留给 JS 查状态）。
         </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>

@@ -1,5 +1,5 @@
 <template component>
-  <mc-menu id="icon-menu" style="width: 13rem"></mc-menu>
+  <mc-menu id="icon-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
     import { hashOf } from '../../../docs/routes.js';
@@ -14,10 +14,7 @@
 
     export default async () => ({
       tag: 'demo-menu-icon',
-
-      ready() {
-        this.ele.shadowRoot.querySelector('#icon-menu').options = OPTIONS;
-      },
+      data: { menuOptions: OPTIONS },
     });
   </script>
 </template>
