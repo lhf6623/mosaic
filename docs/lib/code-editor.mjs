@@ -137,14 +137,13 @@ function loadScript(src) {
   });
 }
 
-/** CM 的样式文本（基础样式 + 官方折叠样式 + 主题），只取一次 */
+/** CM 的样式文本（基础样式 + 折叠 / 补全样式 + 主题），只取一次 */
 function loadCssText() {
   if (!cssPromise) {
     cssPromise = (async () => {
       const files = [
         'lib/codemirror.min.css',
         'addon/fold/foldgutter.min.css',
-        'addon/dialog/dialog.min.css',
         'addon/hint/show-hint.min.css',
       ];
       const parts = [];
@@ -162,7 +161,7 @@ function loadCssText() {
   return cssPromise;
 }
 
-/** 懒加载 CodeMirror：core → 语言模式 → 两个编辑插件，只加载一次 */
+/** 懒加载 CodeMirror：core → 语言模式 → 折叠 / 编辑辅助 / 补全插件，只加载一次 */
 async function loadCodeMirror() {
   if (!cmPromise) {
     cmPromise = (async () => {
@@ -181,13 +180,9 @@ async function loadCodeMirror() {
         'addon/fold/brace-fold.min.js',
         'addon/fold/xml-fold.min.js',
         'addon/fold/comment-fold.min.js',
-        /* 写作辅助：配对高亮、注释切换、搜索替换、补全 */
+        /* 写作辅助：括号配对高亮、注释切换、补全 */
         'addon/edit/matchbrackets.min.js',
-        'addon/edit/matchtags.min.js',
         'addon/comment/comment.min.js',
-        'addon/dialog/dialog.min.js',
-        'addon/search/searchcursor.min.js',
-        'addon/search/search.min.js',
         'addon/hint/show-hint.min.js',
         'addon/hint/xml-hint.min.js',
         'addon/hint/html-hint.min.js',
@@ -277,10 +272,9 @@ export async function mountCodeEditor(container, options = {}) {
       /* 行号右侧的折叠槽：三角点一下折 / 展开；Ctrl / Cmd 无关，用 Ctrl-Shift-[ / ] 也可以 */
       foldGutter: true,
       gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-      /* 光标处括号 / 标签高亮；标签在开始与结束两边都亮 */
+      /* 光标处括号配对高亮 */
       matchBrackets: true,
-      matchTags: { bothTags: true },
-      lineWrapping: true,
+      lineWrapping: false,
       indentUnit: 2,
       tabSize: 2,
       indentWithTabs: false,
@@ -300,11 +294,6 @@ export async function mountCodeEditor(container, options = {}) {
         /* 注释切换：HTML 走 <!-- -->，内联 JS / CSS 走各自注释 */
         'Ctrl-/': 'toggleComment',
         'Cmd-/': 'toggleComment',
-        /* 搜索替换：面板由 dialog / search 插件给 */
-        'Ctrl-F': 'find',
-        'Cmd-F': 'find',
-        'Shift-Ctrl-F': 'replace',
-        'Shift-Cmd-F': 'replace',
         /* 补全：Mac 的 Ctrl-Space 常被输入法占用，另给一个 Alt-/ */
         'Ctrl-Space': autocomplete,
         'Alt-/': autocomplete,
@@ -324,8 +313,8 @@ export async function mountCodeEditor(container, options = {}) {
     /* 抽屉刚展开时量到的宽度可能还是 0：下一帧再量一次，行号 / 行宽才对 */
     requestAnimationFrame(() => cm.refresh());
 
-    /* 屏蔽浏览器「保存网页」：编辑区里（含搜索面板的输入框）Ctrl / Cmd + S 都不弹保存框。
-       挂在容器上而不是 extraKeys 上，是因为焦点可能在搜索框、不一定在 CodeMirror 的输入区。 */
+    /* 屏蔽浏览器「保存网页」：编辑区里 Ctrl / Cmd + S 都不弹保存框。
+       挂在容器上而不是 extraKeys 上，是因为焦点可能落在编辑器内的辅助控件上、不一定是 CodeMirror 的输入区。 */
     const onSaveKey = (/** @type {KeyboardEvent} */ event) => {
       if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 's') {
         event.preventDefault();
