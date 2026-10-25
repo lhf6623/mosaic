@@ -27,3 +27,5 @@
 - 接口事实的唯一手写源是各单元的 `api.md`；`pnpm check:docs` 会对账，别在组件页手抄接口表。
 - 写 ofa 模板（页面 / 组件 / 站点文件）前先读 `ofajs-docs` 技能与 `docs/README.md` §十「ofa 写法」：
   模板是唯一渲染源、布尔 / HTML 属性用 `attr:`、shadow 内 DOM 走 `this.shadow.$()` + `.on()`。
+- `ofajs-docs` 技能源在 [skills/ofajs-docs](https://github.com/ofajs/ofa.js/tree/main/skills/ofajs-docs)；
+  本地没有这个技能时，从该地址下载。
