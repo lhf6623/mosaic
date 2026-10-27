@@ -1,25 +1,11 @@
 <template component>
   <mc-space direction="vertical" block>
     <p>
-      正文里可以直接放一个
-      <mc-button inline size="lg" color="primary">行内按钮</mc-button>
-      ，它跟着这一行的基线走；再来一个
-      <mc-button inline size="lg" color="danger">危险操作</mc-button>
-      也一样。
-    </p>
-
-    <p>
-      图标也走插槽（字号、颜色都归按钮管）：
-      <mc-button inline size="lg" color="primary">
-        <mc-icon slot="prefix" name="edit"></mc-icon>
-        编辑
-      </mc-button>
-      ；
-      <mc-button inline size="lg" color="info">
-        查看文档
-        <mc-icon slot="suffix" name="arrow-right"></mc-icon>
-      </mc-button>
-      。图标跟文字一样跟着这一行的基线走。
+      正文里的操作直接写成按钮：点
+      <mc-button inline>保存</mc-button>
+      就提交；点
+      <mc-button inline color="danger">删除</mc-button>
+      就删除。
     </p>
 
     <mc-space block wrap-items>
@@ -29,7 +15,12 @@
     </mc-space>
 
     <mc-space block wrap-items>
-      <mc-button variant="ghost">ghost（有盒子）</mc-button>
+      <mc-button inline icon="edit">编辑</mc-button>
+      <mc-button inline color="info" icon-right="arrow-right">查看文档</mc-button>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-button variant="outline">outline（有盒子）</mc-button>
       <mc-button inline>inline（盒子交给文字）</mc-button>
     </mc-space>
   </mc-space>

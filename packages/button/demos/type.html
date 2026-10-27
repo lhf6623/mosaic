@@ -1,11 +1,43 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-button>默认（不写 type）</mc-button>
-    <mc-button type="submit">提交</mc-button>
-    <mc-button type="reset">重置</mc-button>
-  </mc-space>
+  <form on:submit="onSubmit($event)" on:reset="onReset($event)">
+    <mc-space direction="vertical" block>
+      <input
+        class="border border-border rounded-md px-2 py-1 text-sm"
+        name="nickname"
+        placeholder="昵称"
+        value="Mosaic" />
+      <mc-space block wrap-items>
+        <mc-button on:click="onPlainClick">默认（不写 type）</mc-button>
+        <mc-button type="submit">提交</mc-button>
+        <mc-button type="reset">重置</mc-button>
+      </mc-space>
+    </mc-space>
+  </form>
+
+  <p class="mt-3 text-sm text-muted">{{lastAction}}</p>
 
   <script>
-    export default async () => ({ tag: 'demo-button-type' });
+    export default async () => ({
+      tag: 'demo-button-type',
+
+      data: {
+        lastAction: '（还没点过）',
+      },
+
+      proto: {
+        onSubmit(event) {
+          // 演示页不真的提交：拦下原生提交，把取到的值写进下面那行反馈
+          event.preventDefault();
+          const data = new FormData(event.target);
+          this.lastAction = `submit：提交了「${data.get('nickname') || '（空）'}」`;
+        },
+        onReset() {
+          this.lastAction = 'reset：原生表单控件还原成初始值';
+        },
+        onPlainClick() {
+          this.lastAction = 'type=button（默认）：只发 click，不提交表单';
+        },
+      },
+    });
   </script>
 </template>

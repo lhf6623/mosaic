@@ -25,6 +25,7 @@ export default async function run({ page, visit, check }) {
       'row-inline',
       'row-states',
       'row-slots',
+      'row-icon',
     ]
       .map((id) => `<div id="${id}" style="display:flex;gap:6px;align-items:center"></div>`)
       .join('') + '<div id="row-block" style="display:block;width:300px"></div>';
@@ -76,6 +77,35 @@ export default async function run({ page, visit, check }) {
     document.getElementById('sl-slots').innerHTML =
       '<mc-icon slot="prefix" id="sl-prefix" name="search"></mc-icon>搜索' +
       '<mc-icon slot="suffix" id="sl-suffix" name="arrow-right"></mc-icon>';
+
+    /* 内置图标：icon / icon-right 走 mc-icon 的 name 语法；槽里有内容时让位 */
+    put('row-icon', 'ic-leading', { icon: 'star' }, '收藏');
+    put('row-icon', 'ic-trailing', { 'icon-right': 'arrow-right' }, '下一步');
+    put('row-icon', 'ic-both', { icon: 'star', 'icon-right': 'arrow-right' }, '两边');
+    put('row-icon', 'ic-slot-wins', { icon: 'star' }, '插槽优先');
+    document
+      .getElementById('ic-slot-wins')
+      .insertAdjacentHTML('afterbegin', '<mc-icon slot="prefix" name="edit"></mc-icon>');
+    put('row-icon', 'ic-loading', { icon: 'star', loading: true }, '加载中');
+    put('row-icon', 'ic-only', { icon: 'star' }, '');
+
+    /* 原生表单：内部原生 button 的 form owner 跨不过 shadow 边界，submit / reset 由组件转发 */
+    const form = document.createElement('form');
+    form.id = 'type-form';
+    form.innerHTML =
+      '<input id="type-input" name="nickname" value="初始值" />' +
+      '<mc-button id="type-submit" type="submit">提交</mc-button>' +
+      '<mc-button id="type-reset" type="reset">重置</mc-button>' +
+      '<mc-button id="type-plain">默认</mc-button>' +
+      '<mc-button id="type-cancel" type="submit">被 preventDefault</mc-button>';
+    window.__formEvents = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault(); // 测试页不真跳转
+      window.__formEvents.push('submit:' + new FormData(form).get('nickname'));
+    });
+    form.addEventListener('reset', () => window.__formEvents.push('reset'));
+    form.querySelector('#type-cancel').addEventListener('click', (event) => event.preventDefault());
+    host.append(form);
 
     put('row-block', 'bk-block', { block: true }, '撑满');
 
@@ -390,6 +420,41 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(states),
   );
 
+  /* ---------- type 对原生 <form> 生效：submit / reset 由组件转发（内部原生 button 够不到 form） ---------- */
+  const formTypes = await page.evaluate(async () => {
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 60));
+    const click = (id) => document.getElementById(id).shadowRoot.querySelector('.mc-native').click();
+    const input = document.getElementById('type-input');
+    const snapshot = () => ({ events: [...window.__formEvents], value: input.value });
+
+    click('type-plain');
+    await tick();
+    const afterPlain = snapshot();
+
+    input.value = '改过了';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    click('type-submit');
+    await tick();
+    const afterSubmit = snapshot();
+
+    click('type-cancel');
+    await tick();
+    const afterCancel = snapshot();
+
+    click('type-reset');
+    await tick();
+    return { afterPlain, afterSubmit, afterCancel, afterReset: snapshot() };
+  });
+  check(
+    'type 对原生 <form> 生效：submit 提交、reset 还原，默认 button 不提交，on:click 里 preventDefault 能拦下提交',
+    formTypes.afterPlain.events.length === 0 &&
+      formTypes.afterSubmit.events.includes('submit:改过了') &&
+      formTypes.afterCancel.events.length === formTypes.afterSubmit.events.length &&
+      formTypes.afterReset.events.includes('reset') &&
+      formTypes.afterReset.value === '初始值',
+    JSON.stringify(formTypes),
+  );
+
   /* ---------- 插槽 ---------- */
   const slots = await page.evaluate(() => {
     const host = document.getElementById('sl-slots').getBoundingClientRect();
@@ -425,6 +490,115 @@ export default async function run({ page, visit, check }) {
     parseFloat(slots.iconFontSize) > parseFloat(slots.labelFontSize) &&
       slots.iconColor === slots.labelColor,
     `文字 ${slots.labelFontSize}/${slots.labelColor} · 图标 ${slots.iconFontSize}/${slots.iconColor}`,
+  );
+
+  /* ---------- 内置图标：icon / icon-right（语法同 mc-icon 的 name） ---------- */
+  const builtinIcons = await page.evaluate(() => {
+    const vis = (el) => !!el && el.getClientRects().length > 0;
+    const read = (id) => {
+      const host = document.getElementById(id);
+      const root = host.shadowRoot;
+      const leading = root.querySelector('.mc-leading');
+      const trailing = root.querySelector('.mc-trailing');
+      const label = root.querySelector('.mc-label').getBoundingClientRect();
+      const leadIcon = leading?.querySelector('mc-icon') ?? null;
+      const trailIcon = trailing?.querySelector('mc-icon') ?? null;
+      const glyph = (el) => el?.shadowRoot?.querySelector('.mc-glyph') ?? null;
+      const leadGlyph = glyph(leadIcon);
+      return {
+        leadingVisible: vis(leading),
+        trailingVisible: vis(trailing),
+        leadingRight: vis(leading) ? leading.getBoundingClientRect().right : null,
+        trailingLeft: vis(trailing) ? trailing.getBoundingClientRect().left : null,
+        labelLeft: label.left,
+        labelRight: label.right,
+        leadName: leadIcon?.getAttribute('name') ?? null,
+        trailName: trailIcon?.getAttribute('name') ?? null,
+        leadGlyph: leadGlyph?.className ?? null,
+        trailGlyph: glyph(trailIcon)?.className ?? null,
+        leadGlyphMasked: leadGlyph ? getComputedStyle(leadGlyph).maskImage !== 'none' : false,
+        leadFont: leadIcon && vis(leading) ? getComputedStyle(leadIcon).fontSize : null,
+        leadColor: leadIcon && vis(leading) ? getComputedStyle(leadIcon).color : null,
+        textColor: getComputedStyle(host).color,
+        assignedPrefix: root.querySelector('slot[name="prefix"]').assignedNodes().length,
+        slotIconVisible: vis(host.querySelector('mc-icon[slot="prefix"]')),
+        loaderDisplay: getComputedStyle(root.querySelector('.mc-loader')).display,
+        noLabel: host.hasAttribute('data-no-label'),
+        labelDisplay: getComputedStyle(root.querySelector('.mc-label')).display,
+        hostWidth: host.getBoundingClientRect().width,
+        iconWidth: vis(leading) ? leading.getBoundingClientRect().width : 0,
+        padLeft: parseFloat(getComputedStyle(host).paddingLeft),
+        padRight: parseFloat(getComputedStyle(host).paddingRight),
+      };
+    };
+    return {
+      plainIconAttr: document.getElementById('c-primary').getAttribute('icon'),
+      leading: read('ic-leading'),
+      trailing: read('ic-trailing'),
+      both: read('ic-both'),
+      slotWins: read('ic-slot-wins'),
+      loading: read('ic-loading'),
+      iconOnly: read('ic-only'),
+    };
+  });
+
+  check(
+    'icon 只在给了图标名时出现：不写就不占位（宿主上也没有空属性）',
+    builtinIcons.plainIconAttr === null && builtinIcons.leading.leadingVisible && !builtinIcons.leading.trailingVisible,
+    `plain icon=${builtinIcons.plainIconAttr}`,
+  );
+  check(
+    'icon：图标排在文字左边，图形走内置图标集（类名同 mc-icon 的 name）',
+    builtinIcons.leading.leadName === 'star' &&
+      /(^|\s)mc-icon-star(\s|$)/.test(builtinIcons.leading.leadGlyph ?? '') &&
+      builtinIcons.leading.leadGlyphMasked &&
+      builtinIcons.leading.leadingRight <= builtinIcons.leading.labelLeft,
+    JSON.stringify(builtinIcons.leading),
+  );
+  check(
+    'icon-right：图标排在文字右边；两个都给时一左一右',
+    builtinIcons.trailing.trailName === 'arrow-right' &&
+      /mc-icon-arrow-right/.test(builtinIcons.trailing.trailGlyph ?? '') &&
+      builtinIcons.trailing.trailingLeft >= builtinIcons.trailing.labelRight &&
+      !builtinIcons.trailing.leadingVisible &&
+      builtinIcons.both.leadingVisible &&
+      builtinIcons.both.trailingVisible,
+    JSON.stringify({ trailing: builtinIcons.trailing, both: builtinIcons.both }),
+  );
+  check(
+    '内置图标的字号与插槽图标同一档（--mc-button-icon-size = 1.25em），颜色跟按钮文字色',
+    builtinIcons.leading.leadFont === '17.5px' &&
+      builtinIcons.leading.leadColor === builtinIcons.leading.textColor,
+    JSON.stringify({
+      size: builtinIcons.leading.leadFont,
+      icon: builtinIcons.leading.leadColor,
+      text: builtinIcons.leading.textColor,
+    }),
+  );
+  check(
+    'prefix / suffix 插槽有内容时内置图标让位（插槽优先）',
+    !builtinIcons.slotWins.leadingVisible &&
+      builtinIcons.slotWins.assignedPrefix === 1 &&
+      builtinIcons.slotWins.slotIconVisible,
+    JSON.stringify(builtinIcons.slotWins),
+  );
+  check(
+    'loading 时内置图标让开、spinner 占住 prefix 的位置',
+    !builtinIcons.loading.leadingVisible && builtinIcons.loading.loaderDisplay !== 'none',
+    JSON.stringify(builtinIcons.loading),
+  );
+  check(
+    '只写 icon、没有文字时是图标按钮：文字盒折叠，不白留一份 gap',
+    builtinIcons.iconOnly.leadingVisible &&
+      builtinIcons.iconOnly.noLabel &&
+      builtinIcons.iconOnly.labelDisplay === 'none' &&
+      !builtinIcons.leading.noLabel &&
+      builtinIcons.iconOnly.hostWidth -
+        (builtinIcons.iconOnly.iconWidth +
+          builtinIcons.iconOnly.padLeft +
+          builtinIcons.iconOnly.padRight) <=
+        3,
+    JSON.stringify(builtinIcons.iconOnly),
   );
 
   /* ---------- 原生 click 穿透 shadow（composed） ---------- */

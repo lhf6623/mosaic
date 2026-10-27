@@ -1,10 +1,18 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-button color="#fff000">hex 颜色</mc-button>
-    <mc-button color="#ff6b35">hex 颜色</mc-button>
-    <mc-button color="#1a7f5a">hex 颜色</mc-button>
-    <mc-button variant="outline" color="#1a7f5a">hex 描边</mc-button>
-    <mc-button variant="ghost" color="#ff6b35">hex 幽灵</mc-button>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-button color="#fff000">hex 颜色</mc-button>
+      <mc-button color="#ff6b35">hex 颜色</mc-button>
+      <mc-button color="#1a7f5a">hex 颜色</mc-button>
+      <mc-button variant="outline" color="#1a7f5a">hex 描边</mc-button>
+      <mc-button variant="ghost" color="#ff6b35">hex 幽灵</mc-button>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-button color="#fff000" icon="star">收藏</mc-button>
+      <mc-button variant="outline" color="#7c3aed" icon="download">下载</mc-button>
+      <mc-button variant="ghost" color="#1a7f5a" icon-right="arrow-right">查看详情</mc-button>
+    </mc-space>
   </mc-space>
 
   <script>

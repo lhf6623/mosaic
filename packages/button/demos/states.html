@@ -1,12 +1,25 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-button>默认</mc-button>
-    <mc-button loading>正在保存…</mc-button>
-    <mc-button disabled>已禁用</mc-button>
-    <mc-button variant="outline" disabled>已禁用</mc-button>
+  <mc-space direction="vertical" block>
+    <mc-switch attr:checked="statesOn" on:change="statesOn = $event.data.checked">
+      开启 loading / disabled
+    </mc-switch>
+
+    <mc-space block wrap-items>
+      <mc-button>默认</mc-button>
+      <mc-button icon="upload" attr:loading="statesOn"></mc-button>
+      <mc-button attr:loading="statesOn">{{statesOn ? '正在保存…' : '保存'}}</mc-button>
+      <mc-button attr:disabled="statesOn">{{statesOn ? '已禁用' : '可点击'}}</mc-button>
+      <mc-button variant="outline" attr:disabled="statesOn">{{statesOn ? '已禁用' : '可点击'}}</mc-button>
+    </mc-space>
   </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-button-states' });
+    export default async () => ({
+      tag: 'demo-button-states',
+
+      data: {
+        statesOn: true,
+      },
+    });
   </script>
 </template>

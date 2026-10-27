@@ -16,7 +16,7 @@
 | `button.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`   | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`      | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`      | 11 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                   |
+| `demos/`      | 10 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                   |
 | `test/`       | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -37,6 +37,13 @@ mc-button — Mosaic 参考组件实现
    hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
    ⚠️ 那个原生 button 是**空的**（可见文字是插槽内容，与它是兄弟）—— 焦点、键盘激活、
    disabled、loading 都走它，别把这一层换掉。
+4. 内置图标 `icon` / `icon-right` 是插槽的便捷入口：作为 `prefix` / `suffix` 槽的**回退内容**
+   渲染（外面包一层 `o-if` —— 没有图标名时连 `mc-icon` 都不创建），槽里有内容时自动让位；
+   只在真用到图标时才 `load('../icon/icon.html')`，不用图标的按钮不为它多付一次请求。
+   没有文字时默认插槽会折叠（slotchange → `data-no-label`），所以只写 `icon` 就是图标按钮、不白留 gap。
+5. `type` 的 `submit` / `reset` **由组件转发**给宿主最近的 `<form>`：内部原生 `<button>` 住在 shadow tree 里，
+   浏览器的 form owner 跨不过 shadow 边界，不转发这两个值对原生表单就是摆设。转发放在 click 冒泡之后的
+   微任务里，所以使用者在 `on:click` 里 `preventDefault()` 仍能拦下提交。
 
 ## 令牌
 
@@ -93,7 +100,7 @@ hex 走 [`../boot/color-attr.js`](../boot/color-attr.js) —— 同样只填 `--
 
 ## 相邻单元
 
-- 消费 [`mc-icon`](../icon/)：槽里的图标字号走 `--mc-button-icon-size`（比按钮文字大一档）、颜色强制跟随按钮文字色 —— 按钮内部的 `mc-icon` **自己的 `color` 属性会被压掉**。
+- 消费 [`mc-icon`](../icon/)：槽里的图标与内置的 `icon` / `icon-right` 都走它的 `name` 语法；字号走 `--mc-button-icon-size`（比按钮文字大一档）、颜色强制跟随按钮文字色 —— 按钮内部的 `mc-icon` **自己的 `color` 属性会被压掉**。图标路径是惰性的：只有真用到才 `load('../icon/icon.html')`。
 
 <!-- hand:end -->
 

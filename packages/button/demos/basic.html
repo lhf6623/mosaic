@@ -1,5 +1,18 @@
 <template component>
-  <mc-button>保存</mc-button>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-button>默认颜色</mc-button>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-button color="primary">主要</mc-button>
+      <mc-button color="info">信息</mc-button>
+      <mc-button color="success">成功</mc-button>
+      <mc-button color="warning">警告</mc-button>
+      <mc-button color="danger">危险</mc-button>
+      <mc-button color="neutral">中性</mc-button>
+    </mc-space>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-button-basic' });

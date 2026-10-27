@@ -1,0 +1,28 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-button icon="star">收藏</mc-button>
+      <mc-button icon-right="arrow-right">下一步</mc-button>
+      <mc-button icon="download" icon-right="arrow-right">导出</mc-button>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-button>
+        <mc-icon slot="prefix" name="search"></mc-icon>
+        搜索
+      </mc-button>
+      <mc-button color="danger" variant="outline">
+        <mc-icon slot="prefix" name="trash"></mc-icon>
+        删除
+      </mc-button>
+      <mc-button>
+        下一步
+        <mc-icon slot="suffix" name="arrow-right"></mc-icon>
+      </mc-button>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-button-icons' });
+  </script>
+</template>

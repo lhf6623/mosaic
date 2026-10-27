@@ -40,12 +40,11 @@
       "packages/button/button.html",
       "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
       "packages/button/demos/hex.html",
+      "packages/button/demos/icons.html",
       "packages/button/demos/inline.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
       "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
@@ -64,7 +63,8 @@
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
-      "packages/spinner/spinner.html"
+      "packages/spinner/spinner.html",
+      "packages/switch/switch.html"
     ],
     "packages/code/test/code.test.mjs": [
       "app-config.js",
@@ -560,6 +560,7 @@
     "packages/breadcrumb/test/breadcrumb.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -568,6 +569,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -585,7 +587,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/breadcrumb/api.md",
@@ -600,13 +604,13 @@
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/api.md",
       "packages/button/button.html",
+      "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
       "packages/button/demos/hex.html",
+      "packages/button/demos/icons.html",
       "packages/button/demos/inline.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
       "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
@@ -618,13 +622,14 @@
       "packages/icon/icon.html",
       "packages/icon/icons.generated.css",
       "packages/input/input.html",
-      "packages/loading-bar/loading-bar.html",
       "packages/loading-bar/loading-bar.js",
       "packages/menu/menu-item.html",
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html",
+      "packages/switch/switch.html"
     ],
     "packages/input/test/input.test.mjs": [
       "app-config.js",
@@ -1277,12 +1282,11 @@
       "packages/button/button.html",
       "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
-      "packages/button/demos/colors.html",
       "packages/button/demos/hex.html",
+      "packages/button/demos/icons.html",
       "packages/button/demos/inline.html",
       "packages/button/demos/override.html",
       "packages/button/demos/sizes.html",
-      "packages/button/demos/slots.html",
       "packages/button/demos/states.html",
       "packages/button/demos/type.html",
       "packages/button/demos/variants.html",
@@ -1310,7 +1314,8 @@
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
-      "packages/spinner/spinner.html"
+      "packages/spinner/spinner.html",
+      "packages/switch/switch.html"
     ],
     "packages/popover/test/popover.test.mjs": [
       "app-config.js",
@@ -2463,6 +2468,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
@@ -2809,6 +2815,7 @@
     ],
     "docs/favicon.svg": [
       "packages/alert/test/alert.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/form/test/form.test.mjs",
@@ -3664,6 +3671,7 @@
     ],
     "packages/boot/emits.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
@@ -3714,6 +3722,7 @@
     ],
     "packages/boot/overflow-tip.js": [
       "packages/alert/test/alert.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3865,6 +3874,7 @@
       "packages/tree-select/test/tree-select.test.mjs"
     ],
     "packages/button/demos/basic.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
@@ -3873,12 +3883,12 @@
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
-    "packages/button/demos/colors.html": [
+    "packages/button/demos/hex.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
-    "packages/button/demos/hex.html": [
+    "packages/button/demos/icons.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
@@ -3894,11 +3904,6 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/button/demos/sizes.html": [
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
-      "packages/button/test/button.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
-    ],
-    "packages/button/demos/slots.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
@@ -4737,7 +4742,6 @@
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.html": [
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs"
     ],
     "packages/loading-bar/loading-bar.js": [
@@ -5439,6 +5443,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/avatar/test/avatar.test.mjs",
       "packages/badge/test/badge.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
@@ -5486,7 +5491,10 @@
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/switch.html": [
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
       "packages/form/test/form.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [

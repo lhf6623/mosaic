@@ -216,6 +216,12 @@
       align-self: baseline;
     }
 
+    /* 没有文字时（图标按钮）把文字盒折叠掉：icon 单独用、或只在插槽里放图标时，
+       空的 .mc-label 会白留一份 gap。判定由 slotchange 驱动（行为层例外，同 mc-alert）。 */
+    :host([data-no-label]) .mc-label {
+      display: none;
+    }
+
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']) {
       display: inline-flex;
@@ -224,6 +230,33 @@
     /* 槽里的图标：颜色必须跟按钮文字色（filled = on-fill、outline/ghost = accent），显式 color:inherit */
     ::slotted(mc-icon) {
       font-size: var(--mc-button-icon-size);
+      color: inherit;
+    }
+
+    /* ---------- 内置图标（icon / icon-right） ----------
+       渲染成 prefix / suffix 插槽的**回退内容**：走 mc-icon 的 name 语法，使用者往同名槽里写了东西就自动让位。
+       没有对应属性时 display:none —— 别让它作为空 flex 项白占一份 gap。
+       字号与插槽图标同一档；颜色靠 mc-icon 的 color:inherit 跟按钮文字色。 */
+    .mc-leading,
+    .mc-trailing {
+      display: none;
+      flex-shrink: 0;
+      font-size: var(--mc-button-icon-size);
+    }
+    :host([icon]) .mc-leading,
+    :host([icon-right]) .mc-trailing {
+      display: inline-flex;
+      align-items: center;
+    }
+    /* loading 时 spinner 占 prefix 的位置：内置图标和插槽图标一起让开 */
+    :host([loading]) .mc-leading {
+      display: none;
+    }
+    /* o-if 自带 ofa 的宿主 reset（16px / 前景色），会把图标链从按钮的继承里摘出去 ——
+       拉回继承，图标字号 / 颜色才和插槽图标同一档（实测不写这条：字号 20px、颜色变成 fg）。 */
+    .mc-leading o-if,
+    .mc-trailing o-if {
+      font-size: inherit;
       color: inherit;
     }
   </style>
@@ -237,9 +270,19 @@
 
   <span class="mc-layer"></span>
   <span class="mc-loader mc-icon-spinner"></span>
-  <slot name="prefix"></slot>
+  <!-- 内置图标的回退内容：插槽里没写东西才出现（icon / icon-right，见上面 CSS）。
+       再包一层 o-if：没有图标名时连 mc-icon 都不创建，不给普通按钮多挂两个空组件。 -->
+  <slot name="prefix">
+    <span class="mc-leading">
+      <o-if :value="icon"><mc-icon :name="icon"></mc-icon></o-if>
+    </span>
+  </slot>
   <span class="mc-label"><slot></slot></span>
-  <slot name="suffix"></slot>
+  <slot name="suffix">
+    <span class="mc-trailing">
+      <o-if :value="iconRight"><mc-icon :name="iconRight"></mc-icon></o-if>
+    </span>
+  </slot>
 
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头。
@@ -248,33 +291,113 @@
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
 
-    export default async () => ({
-      tag: 'mc-button',
+    export default async ({ load }) => {
+      /* 内置图标由 mc-icon 渲染（name 语法与它一致：内置零请求、查不到才远程取）。
+         只在真用了 icon / icon-right 时才登记 icon.html —— 不用图标的按钮不为它多付一次请求。 */
+      let iconsLoaded;
+      const ensureIcons = () => (iconsLoaded ??= load('../icon/icon.html'));
 
-      attrs: {
-        color: 'primary',
-        variant: 'filled',
-        size: 'md',
-        inline: null,
-        type: 'button',
-        // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-button disabled> 失效
-        disabled: null,
-        loading: null,
-        // 撑满父容器。声明进 attrs 才能让 :block 绑定与 el.block 生效（样式见 :host([block])）
-        block: null,
-      },
+      return {
+        tag: 'mc-button',
 
-      attached() {
-        // 宿主 style 等构造期结束再写（P31），首次同步在这里
-        color.sync(this.ele, this.color);
-      },
-
-      watch: {
-        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
-        color(value) {
-          color.change(this.ele, value);
+        attrs: {
+          color: 'primary',
+          variant: 'filled',
+          size: 'md',
+          inline: null,
+          type: 'button',
+          // 布尔属性默认值必须是 null（P1）：用 false 会让 <mc-button disabled> 失效
+          disabled: null,
+          loading: null,
+          // 撑满父容器。声明进 attrs 才能让 :block 绑定与 el.block 生效（样式见 :host([block])）
+          block: null,
+          // 内置图标名（语法同 mc-icon 的 name）。默认必须 null：ofa 会把 '' 反射成宿主属性，
+          // 于是 :host([icon]) 恒成立、每颗按钮都白留一份图标位（同 mc-menu-item 踩过的坑）
+          icon: null,
+          iconRight: null,
         },
-      },
-    });
+
+        ready() {
+          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
+          this._labelSlot = this.shadow.$('slot:not([name])');
+        },
+
+        attached() {
+          // 宿主 style 等构造期结束再写（P31），首次同步在这里
+          color.sync(this.ele, this.color);
+          if (this.icon || this.iconRight) ensureIcons();
+          /* 默认插槽空不空只能看实际分到的节点（模板 o-if 看不到 slot 分配）：
+             文字一没就把 .mc-label 折叠掉，icon 单独用时不留一份空 gap（行为层例外，同 mc-alert）。 */
+          this._onSlotChange = () => this.syncLabel();
+          this._labelSlot?.on('slotchange', this._onSlotChange);
+          this.syncLabel();
+          /* 内部原生 button 在 shadow tree 里：浏览器的 form owner 跨不过 shadow 边界，
+             type="submit" / "reset" 不会自己接到外层 <form> —— 这里替它转发（见 forwardFormAction）。 */
+          this._native = this.shadow.$('.mc-native');
+          this._onNativeClick = (event) => this.forwardFormAction(event);
+          this._native?.on('click', this._onNativeClick);
+        },
+
+        detached() {
+          this._labelSlot?.off('slotchange', this._onSlotChange);
+          this._native?.off('click', this._onNativeClick);
+        },
+
+        watch: {
+          // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心"值变了"
+          color(value) {
+            color.change(this.ele, value);
+          },
+          // 运行时才给图标名（不是首屏 HTML 里写好的）：这时再把 icon.html 登记进来
+          icon(value) {
+            if (value) ensureIcons();
+          },
+          iconRight(value) {
+            if (value) ensureIcons();
+          },
+        },
+
+        proto: {
+          /**
+           * 把 type="submit" / "reset" 交给宿主所在的最近一个原生 <form>。
+           * 为什么不能靠浏览器：内部那个原生 button 住在 shadow tree 里，form owner 只能在同一棵树里找，
+           * 跨不过 shadow 边界（于是它的激活行为永远是"什么都不做"）。
+           * 等 click 冒泡完再动手：使用者可能在 on:click 里 preventDefault 表示"别提交"。
+           */
+          forwardFormAction(event) {
+            const type = this.ele.getAttribute('type') ?? 'button';
+            if (type !== 'submit' && type !== 'reset') return;
+            const form = this.ele.closest('form');
+            if (!form) return;
+            queueMicrotask(() => {
+              if (event.defaultPrevented) return;
+              if (type === 'submit') {
+                if (form.requestSubmit) form.requestSubmit();
+                else form.submit();
+              } else {
+                form.reset();
+              }
+            });
+          },
+
+          /** 默认插槽有没有内容：文字 / 图标都算（空内容折叠的唯一输入，见 attached） */
+          syncLabel() {
+            const nodes = this._labelSlot?.ele?.assignedNodes() ?? [];
+            const has = nodes.some(
+              (node) =>
+                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+            );
+            this.mirror('data-no-label', !has);
+          },
+
+          /** 只改宿主上的布尔属性：CSS 的 :host([…]) 只认属性在不在（P1） */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+        },
+      };
+    };
   </script>
 </template>

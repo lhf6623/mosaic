@@ -4,6 +4,7 @@
   <div class="doc-body">
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./button.html"></l-m>
+    <l-m src="../switch/switch.html"></l-m>
     <h1>
       Button
       <code>mc-button</code>
@@ -22,30 +23,17 @@
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <doc-playground src="./demos/colors.html"></doc-playground>
-      </section>
-
-      <section class="doc-demo">
         <h3>外观 × 颜色</h3>
         <doc-playground src="./demos/variants.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>行内文字按钮</h3>
-        <p class="doc-hint">
-          <code>inline</code>
-          是形态（不是
-          <code>variant</code>
-          ）：盒子交给文字，
-          <code>size</code>
-          只选字号 → 跟着正文基线走、三档高度一样。别和实心按钮并排 —— 它没有控制高度，会矮一截。
-        </p>
         <doc-playground src="./demos/inline.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
-        <h3>hex 颜色</h3>
+        <h3>自定义颜色</h3>
         <p class="doc-hint">
           <code>color</code>
           也直接收 hex（
@@ -68,7 +56,7 @@
           <code>type</code>
           转发给内部原生
           <code>&lt;button&gt;</code>
-          ；放进
+          ；放进原生
           <code>&lt;form&gt;</code>
           才生效 ——
           <code>submit</code>
@@ -92,15 +80,23 @@
       </section>
 
       <section class="doc-demo">
-        <h3>图标插槽</h3>
+        <h3>图标</h3>
         <p class="doc-hint">
-          图标写在
+          第一行
+          <code>icon</code>
+          在左、
+          <code>icon-right</code>
+          在右，值同
+          <code>mc-icon</code>
+          的
+          <code>name</code>
+          ；自定义图形（远程 SVG、多色品牌图）写进
           <code>slot="prefix"</code>
           /
           <code>slot="suffix"</code>
-          ，文字照旧放默认插槽。
+          ，槽里有内容时内置图标让位。
         </p>
-        <doc-playground src="./demos/slots.html"></doc-playground>
+        <doc-playground src="./demos/icons.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
