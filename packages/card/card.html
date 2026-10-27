@@ -18,6 +18,8 @@
       --mc-card-bg: var(--mc-color-surface, var(--mc-def-color-surface));
       --mc-card-border: var(--mc-color-border, var(--mc-def-color-border));
       --mc-card-pad: var(--mc-space-4, var(--mc-def-space-4));
+      /* 浮起那层阴影：默认借 L2 的 panel 一档（暗色由令牌换值），要更轻 / 更重就在宿主上覆盖它 */
+      --mc-card-shadow: var(--mc-shadow-panel, var(--mc-def-shadow-panel));
       /* 边框宽度单独成变量：使用者的「铺满」伪元素要按它算进去（绝对定位的包含块是内边距盒，inset:0 漏边框） */
       --mc-card-border-w: 1px;
     }
@@ -27,7 +29,12 @@
       background-color: transparent;
     }
 
-    /* 3. 维度 padding：内边距只有一条通道（none / sm / md / lg → 0 / 12 / 16 / 24） */
+    /* 3. 维度 border：外框与头尾分隔线一起开关。none 只把颜色改透明、保留 1px 宽度（关线时卡片尺寸不抖） */
+    :host([border='none']) {
+      border-color: transparent;
+    }
+
+    /* 4. 维度 padding：内边距只有一条通道（none / sm / md / lg → 0 / 12 / 16 / 24） */
     :host([padding='none']) {
       --mc-card-pad: 0px;
     }
@@ -38,9 +45,20 @@
       --mc-card-pad: var(--mc-space-6, var(--mc-def-space-6));
     }
 
-    /* 4. 状态：一个都没有 —— 可点 / 悬停 / 光标都由使用者写在页面 CSS 里，组件接管就成了行为不是面 */
+    /* 5. 维度 float：鼠标移入浮起 —— 加一层阴影，移出复原。只动 box-shadow：不改盒模型、不改光标，
+       也不让卡片变成可点击元素（组件仍不造操作性交互）。过渡走令牌，减弱动效下会被压到 1ms。
+       值是字符串 "false" 时按「没写」算：ofa 的布尔绑定会把 false 写成 float="false"（同各状态组件的 boolAttr，P1） */
+    :host([float]:not([float='false'])) {
+      transition: box-shadow var(--mc-duration-base, var(--mc-def-duration-base))
+        var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    :host([float]:not([float='false']):hover) {
+      box-shadow: var(--mc-card-shadow);
+    }
 
-    /* 5. 内部结构。内边距只在 .mc-base 上声明一次：头尾用负外边距贴到边缘、各自带内边距，分隔线因此通长 */
+    /* 6. 状态：一个都没有 —— 可点 / 光标由使用者写在页面 CSS 里；hover 只有 float 那层阴影（见第 5 区） */
+
+    /* 7. 内部结构。内边距只在 .mc-base 上声明一次：头尾用负外边距贴到边缘、各自带内边距，分隔线因此通长 */
     .mc-base {
       display: block;
       padding: var(--mc-card-pad);
@@ -71,10 +89,11 @@
       border-start-start-radius: 0;
       border-start-end-radius: 0;
     }
-    :host([divider='none']) .mc-header {
+    /* 头尾的分割线跟外框同一个开关（border="none"）：放在结构规则之后，才压得住上面的 border-bottom / border-top */
+    :host([border='none']) .mc-header {
       border-bottom-color: transparent;
     }
-    :host([divider='none']) .mc-footer {
+    :host([border='none']) .mc-footer {
       border-top-color: transparent;
     }
     .mc-header-main {
@@ -104,8 +123,10 @@
       attrs: {
         variant: 'surface',
         padding: 'md',
-        // 头尾分隔线：枚举而不是布尔 —— 默认是「有线」，而 :host(:not([divider])) 会静默失效（P14）
-        divider: 'line',
+        // 边线开关（外框 + 头尾分隔线）：枚举而不是布尔 —— 默认是「有线」，而 :host(:not([border])) 会静默失效（P14）
+        border: 'line',
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-card float> 失效
+        float: null,
       },
 
       ready() {

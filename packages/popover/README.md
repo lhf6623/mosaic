@@ -109,7 +109,7 @@ dropdown / tooltip 将来只是在它上面固定住内容形态的预设；三�
 合成 `click` 不触发 light dismiss，套件里专门有一条走 `page.mouse` 的断言守着；
 **「默认就显示」的开关（`arrow`）要把默认态留在基类规则里**，属性只表达非默认那一档
 （`arrow="none"` 关掉）—— ofa 里 `:host()` 嵌 `:not()` 静默失效，默认态一旦挂到属性
-选择器上就会整体失效（同 `mc-card` 的 `divider="none"`）。
+选择器上就会整体失效（同 `mc-card` 的 `border="none"`）。
 
 ## 刻意不做的
 

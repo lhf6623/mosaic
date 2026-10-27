@@ -75,8 +75,8 @@ CSS 看不见「插槽空不空」（`slot` 元素本身没有子节点），所
 
 - 与 [`mc-space`](../space/) 的分工：space 只排「子项之间的距离」、不画线（它的 README 里
   那条「刻意不做 `split`」说的就是这里）；要在两块内容之间画一条线，用 divider。
-- 与 [`mc-card`](../card/) 的分工：card 的头尾分隔线是卡片结构的一部分（`divider` 属性只管
-  那条线透不透明），不引 `mc-divider`；divider 是页面内容里的独立一条线。
+- 与 [`mc-card`](../card/) 的分工：card 的边线是卡片结构的一部分（`border` 属性把
+  外框与头尾分隔线一起开关），不引 `mc-divider`；divider 是页面内容里的独立一条线。
 - 与 [`mc-breadcrumb`](../breadcrumb/) 的分工：面包屑的分隔符是品牌化排版的一部分（可换
   separator），跟内容分区用的分割线不是一件事。
 

@@ -6,7 +6,7 @@
 一块带底/描边的容器面，头尾可选。
 
 ```html
-<mc-card variant="outline" divider="none">
+<mc-card variant="outline" border="none">
   <span slot="header">项目设置</span>
   <span slot="suffix">草稿</span>
   主体内容
@@ -45,11 +45,12 @@
 
 ## 属性
 
-| 名称      | 值                               | 默认      | 说明                                          |
-| --------- | -------------------------------- | --------- | --------------------------------------------- |
-| `variant` | `'surface' \| 'outline'`         | `surface` | 有底色 / 只有描边（两者都有 1px 描边）        |
-| `padding` | `'none' \| 'sm' \| 'md' \| 'lg'` | `md`      | 内边距，映射 `--mc-space-3/4/6`               |
-| `divider` | `'line' \| 'none'`               | `line`    | 头尾分隔线；`none` 只改颜色不改宽度，高度不抖 |
+| 名称      | 值                               | 默认      | 说明                                                        |
+| --------- | -------------------------------- | --------- | ----------------------------------------------------------- |
+| `variant` | `'surface' \| 'outline'`         | `surface` | 有底色 / 只有描边（外框默认 1px）                           |
+| `border`  | `'line' \| 'none'`               | `line`    | 外框与头尾分隔线一起开关；`none` 只改颜色不改宽度，尺寸不抖 |
+| `padding` | `'none' \| 'sm' \| 'md' \| 'lg'` | `md`      | 内边距，映射 `--mc-space-3/4/6`                             |
+| `float`   | `boolean`                        | —         | 浮起：鼠标移入加一层阴影、移出复原，不占布局                |
 
 ## 插槽
 

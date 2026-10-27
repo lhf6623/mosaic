@@ -7,7 +7,7 @@
 
 **状态**：已实现 · 标签 `mc-card` · 目录 `packages/card/`
 
-卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。
+卡片容器。有底色 / 只有描边两种，可再悬停浮起；头尾结构 + 内边距档位；不做点击交互，可点的是你写在卡内那个元素。
 
 ## 单元里有什么
 
@@ -16,7 +16,7 @@
 | `card.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`    | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`    | 6 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
+| `demos/`    | 7 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
 | `test/`     | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -27,10 +27,16 @@
 
 mc-card — 内容承载面
 
-只做三件事：一块面（variant）、内边距通道（padding）、头尾结构（header / footer /
-suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义（没有 color 维度）。
+只做五件事：一块面（variant）、边线（border）、浮起（float）、内边距通道（padding）、
+头尾结构（header / footer / suffix）。卡片不管内容，也不管颜色语义（没有 color 维度）。
 
-**不做交互。** 组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则：
+**float 是悬停浮起。** 默认靠底色明度差建立层级；要再明确一档「浮在页面上」，开 `float`：
+鼠标移入时加一层阴影，移出复原。阴影走 L3 `--mc-card-shadow`（默认借 L2 的 `--mc-shadow-panel`，
+暗色由令牌换值，要更轻 / 更重就在宿主上覆盖），过渡走 `--mc-duration-base`（减弱动效下自动压到 1ms）。
+它**不转 translate、不改盒模型、不改 cursor**：阴影不占布局，所以浮起前后卡外尺寸与相邻元素位置都不动，
+也不把卡片变成可点击 / 可聚焦元素。布尔边界按「`float="false"` = 没写」读（与各状态组件的 `boolAttr` 同一口径，P1）。
+
+**不做操作性交互。** 组件里没有盖层、没有「铺满整卡」、没有 cursor / 点击 / 焦点语义；唯一的 hover 反馈是 `float` 那层阴影：
 
 - 卡内要放什么操作元素（原生 <a> / <button>）由使用者写，链接照旧走 olink；
 - 「整卡可点」如果真需要，是使用者自己在页面 CSS 里铺一条 ::after —— 宿主保持
@@ -40,8 +46,8 @@ suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义
   这些都是**行为**不是面；而且「卡内几个动作元素、哪个算整卡动作」只有使用者知道，
   组件替它挑必然出错。职责边界见 packages/README.md 的组件索引与该单元的 `api.md`。
 
-头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线，
-`divider="none"` 关掉（保留 1px 透明边框，避免关线时整张卡高度抖一下）。
+头尾：part=header 是一行（正文插槽 + 尾部附加位 slot="suffix"），头尾各有分隔线；
+`border="none"` 把外框与这两条分隔线一起关掉（只改颜色、保留 1px 宽度，避免关线时整张卡尺寸抖一下）。
 显隐只从宿主上选：data-has-header / data-has-footer —— 不用 o-if 跟随属性。
 
 ## 令牌
@@ -51,6 +57,7 @@ suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义
 | `--mc-card-bg`       | `--mc-color-surface` | 卡片底色（`outline` 下不生效，那是透明）       |
 | `--mc-card-border`   | `--mc-color-border`  | 外框与头尾分隔线的颜色                         |
 | `--mc-card-pad`      | `--mc-space-4`       | 内边距（`padding` 属性改的就是它）             |
+| `--mc-card-shadow`   | `--mc-shadow-panel`  | `float` 悬停时的阴影（暗色由 L2 令牌换值）     |
 | `--mc-card-border-w` | `1px`                | 边框宽度（自己铺「整卡可点」时按它算 `inset`） |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
@@ -60,7 +67,7 @@ suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义
 
 **明确不加的维度与能力**：`color`（容器不是强调元素，要强调用 L3 令牌）、`size`（高度由内容撑，
 密疏用 `padding`）、`media` / `cover` 插槽（图像排版变体太多，插槽自己搭更自由）、
-阴影 / elevation（令牌层没有阴影标度，层级靠底色明度差）、`href` 与 `interactive`
+常驻阴影 / 静态 elevation（`float` 只在 hover 时给；要常驻就自己写宿主 `box-shadow`）、`href` 与 `interactive`
 （组件造链接与 `olink` 冲突；整卡可点交给使用者，组件只保证包含块）。
 
 ## 为什么不发事件
@@ -71,7 +78,7 @@ suffix + divider 分隔线开关）。卡片不管内容，也不管颜色语义
 
 ## 相邻单元
 
-- **不做交互**：组件里没有盖层、没有「铺满整卡」、没有 hover / cursor 规则 —— 操作元素由使用者写在插槽里，宿主固定 `position: relative` 给「整卡可点」那条 `::after` 当包含块。理由见上面「设计取舍」。
+- **不做操作性交互**：组件里没有盖层、没有「铺满整卡」、没有 cursor / 点击语义；hover 只有 `float` 的阴影反馈 —— 操作元素由使用者写在插槽里，宿主固定 `position: relative` 给「整卡可点」那条 `::after` 当包含块。理由见上面「设计取舍」。
 
 <!-- hand:end -->
 

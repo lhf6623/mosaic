@@ -206,6 +206,7 @@
     "packages/card/test/card.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -214,6 +215,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -231,7 +233,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/button/button.html",
@@ -239,6 +243,7 @@
       "packages/card/card.html",
       "packages/card/demos/basic.html",
       "packages/card/demos/customize.html",
+      "packages/card/demos/float.html",
       "packages/card/demos/padding.html",
       "packages/card/demos/part.html",
       "packages/card/demos/sections.html",
@@ -257,7 +262,8 @@
       "packages/menu/menu.html",
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
-      "packages/space/space.html"
+      "packages/space/space.html",
+      "packages/spinner/spinner.html"
     ],
     "packages/tag/test/tag.test.mjs": [
       "app-config.js",
@@ -2475,6 +2481,7 @@
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",
@@ -2822,6 +2829,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/icon/test/icon.test.mjs",
@@ -3679,6 +3687,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
@@ -3731,6 +3740,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
@@ -3952,6 +3962,9 @@
       "packages/card/test/card.test.mjs"
     ],
     "packages/card/demos/customize.html": [
+      "packages/card/test/card.test.mjs"
+    ],
+    "packages/card/demos/float.html": [
       "packages/card/test/card.test.mjs"
     ],
     "packages/card/demos/padding.html": [
@@ -5451,6 +5464,7 @@
       "packages/badge/test/badge.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
       "packages/divider/test/divider.test.mjs",
       "packages/form/test/form.test.mjs",

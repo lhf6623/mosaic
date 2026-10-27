@@ -1,6 +1,6 @@
 /**
- * mc-card · 内容承载面：两种外观、内边距四档映射、头尾常驻与分隔线（suffix / divider）、
- * **组件自己不造交互**（没有盖层 / 铺满 / hover / 光标规则，卡内元素也不被挡）、
+ * mc-card · 内容承载面：两种外观、内边距四档映射、头尾常驻与边线（suffix / border）、
+ * hover 浮起（float）与阴影令牌、**组件自己不造操作性交互**（没有盖层 / 铺满 / 光标规则，卡内元素也不被挡）、
  * 定制（令牌 + ::part）、P31 动态创建
  */
 
@@ -78,6 +78,7 @@ export default async function run({ page, visit, check }) {
       const body = root.querySelector('.mc-body');
       const footer = root.querySelector('.mc-footer');
       const base = root.querySelector('.mc-base');
+      const suffix = header.querySelector('slot[name="suffix"]').assignedElements()[0] ?? null;
       const cs = (n) => getComputedStyle(n);
       const rect = (n) => n.getBoundingClientRect();
       /** 槽里的内容在 light DOM，slot.textContent 是空的 —— 要从 assignedNodes 读 */
@@ -93,6 +94,11 @@ export default async function run({ page, visit, check }) {
         headerText: slotText(header.querySelector('slot')),
         bodyText: slotText(body.querySelector('slot')).slice(0, 6),
         footerTag: footer.querySelector('slot').assignedElements()[0]?.tagName ?? null,
+        suffixTag: suffix?.tagName ?? null,
+        suffixVariant: suffix?.getAttribute('variant') ?? null,
+        suffixColor: suffix?.getAttribute('color') ?? null,
+        suffixIcon: suffix?.getAttribute('icon') ?? null,
+        suffixButton: !!suffix?.shadowRoot?.querySelector('button'),
         headerDisplay: cs(header).display,
         footerDisplay: cs(footer).display,
         headerBorder: cs(header).borderBottomWidth,
@@ -140,7 +146,75 @@ export default async function run({ page, visit, check }) {
       return { surface: read(surface), outline: read(outline) };
     });
 
-    /** 头部：suffix 贴右、divider 开关（改颜色不改宽度） */
+    /** 浮动：常驻没有阴影；鼠标移入才浮起（阴影走 L3 令牌），移出复原；不改盒模型 / 光标 */
+    const floatDemo = await (async () => {
+      const readCard = () =>
+        page.evaluate(() => {
+          const box = window.__deepAll('demo-card-float')[0].shadowRoot;
+          const el = window.__deepAll('mc-card', box)[1];
+          const cs = getComputedStyle(el);
+          const r = el.getBoundingClientRect();
+          return {
+            attr: el.getAttribute('float'),
+            shadow: cs.boxShadow,
+            transition: cs.transitionProperty,
+            border: cs.borderTopWidth,
+            radius: cs.borderTopLeftRadius,
+            cursor: cs.cursor,
+            width: Math.round(r.width),
+            height: Math.round(r.height),
+            top: Math.round(r.top * 10) / 10,
+          };
+        });
+
+      const target = page.locator('demo-card-float mc-card').nth(1);
+      await target.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      await page.waitForTimeout(300);
+      const idle = await readCard();
+
+      await target.hover();
+      await page.waitForTimeout(300);
+      const hovered = await readCard();
+
+      await page.mouse.move(0, 0);
+      await page.waitForTimeout(300);
+      const left = await readCard();
+
+      /** 令牌通道：覆盖 --mc-card-shadow 后移入，阴影换成覆盖值（暗色也走同一个口） */
+      await page.evaluate(() => {
+        const box = window.__deepAll('demo-card-float')[0].shadowRoot;
+        window.__deepAll('mc-card', box)[1].style.setProperty(
+          '--mc-card-shadow',
+          '0 0 0 2px rgb(255, 0, 0)',
+        );
+      });
+      await target.hover();
+      await page.waitForTimeout(300);
+      const override = await readCard();
+      await page.evaluate(() => {
+        const box = window.__deepAll('demo-card-float')[0].shadowRoot;
+        window.__deepAll('mc-card', box)[1].style.removeProperty('--mc-card-shadow');
+      });
+
+      /** 布尔边界：ofa 的布尔绑定会把 false 写成 float="false" —— 移入也不浮 */
+      await page.evaluate(() => {
+        const box = window.__deepAll('demo-card-float')[0].shadowRoot;
+        window.__deepAll('mc-card', box)[1].setAttribute('float', 'false');
+      });
+      await target.hover();
+      await page.waitForTimeout(300);
+      const falseHovered = await readCard();
+      await page.evaluate(() => {
+        const box = window.__deepAll('demo-card-float')[0].shadowRoot;
+        window.__deepAll('mc-card', box)[1].setAttribute('float', '');
+      });
+      await page.mouse.move(0, 0);
+
+      return { idle, hovered, left, override, falseHovered };
+    })();
+
+    /** 头部：suffix 贴右、border 开关（外框 + 分隔线一起，改颜色不改宽度） */
     const sections = await page.evaluate(() => {
       const box = window.__deepAll('demo-card-sections')[0].shadowRoot;
       const read = (el) => {
@@ -151,10 +225,12 @@ export default async function run({ page, visit, check }) {
         const h = header.getBoundingClientRect();
         const s = suffix.getBoundingClientRect();
         return {
-          divider: el.getAttribute('divider'),
+          border: el.getAttribute('border'),
           hasHeader: el.hasAttribute('data-has-header'),
           hasFooter: el.hasAttribute('data-has-footer'),
           headerDisplay: cs.display,
+          hostBorderWidth: getComputedStyle(el).borderTopWidth,
+          hostBorderColor: getComputedStyle(el).borderTopColor,
           borderWidth: cs.borderBottomWidth,
           borderColor: cs.borderBottomColor,
           footerBorder: getComputedStyle(el.shadowRoot.querySelector('.mc-footer')).borderTopColor,
@@ -164,7 +240,13 @@ export default async function run({ page, visit, check }) {
           headerHeight: Math.round(h.height),
         };
       };
-      return window.__deepAll('mc-card', box).map(read);
+      const cards = window.__deepAll('mc-card', box);
+      const rows = cards.map(read);
+      /** 同一张卡开关 border：只换颜色，头尾高度不能变 */
+      cards[1].removeAttribute('border');
+      rows[1].withLine = read(cards[1]);
+      cards[1].setAttribute('border', 'none');
+      return rows;
     });
 
     /** 外部样式：宿主 style 上的 L3 令牌（圆角、边框色；四个角的圆角也跟着走） */
@@ -203,7 +285,7 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 卡片不参与交互：悬停既不动盒子也不变色，卡边没有透明交互层，卡内元素也没被挡住 */
+    /** 未开 float 的卡片不参与交互：悬停既不动盒子也不变色，卡边没有透明交互层，卡内元素也没被挡住 */
     const inert = await (async () => {
       const readCard = (pick) =>
         page.evaluate((src) => {
@@ -312,7 +394,20 @@ export default async function run({ page, visit, check }) {
 
     page.off('response', onResponse);
     page.off('pageerror', onError);
-    return { overview, basic, padding, variants, sections, customize, part, inert, dynamic, tokens, failed };
+    return {
+      overview,
+      basic,
+      padding,
+      variants,
+      floatDemo,
+      sections,
+      customize,
+      part,
+      inert,
+      dynamic,
+      tokens,
+      failed,
+    };
   })();
 
   check(
@@ -322,7 +417,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '卡片自己不造交互元素：内部没有控件 / 焦点目标，宿主不带交互属性、不可聚焦、没有 role',
+    '卡片自身（shadow 内）不造交互元素：控件 / 焦点目标只能来自使用者塞进插槽的内容',
     card.overview.innerInteractive === 0 &&
       card.overview.mirrorAttrs.length === 0 &&
       card.overview.roles.length === 0 &&
@@ -340,6 +435,11 @@ export default async function run({ page, visit, check }) {
     card.basic.hasHeader &&
       card.basic.hasFooter &&
       card.basic.headerText === '项目设置' &&
+      card.basic.suffixTag === 'MC-BUTTON' &&
+      card.basic.suffixVariant === 'ghost' &&
+      card.basic.suffixColor === 'neutral' &&
+      card.basic.suffixIcon === 'close' &&
+      card.basic.suffixButton &&
       card.basic.headerDisplay === 'flex' &&
       card.basic.footerDisplay === 'block' &&
       card.basic.headerBorder === '1px' &&
@@ -376,20 +476,50 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '头部一行：suffix 贴右边，divider="none" 只把线改成透明、宽度不变',
+    'float：常驻无阴影，鼠标移入才浮起、移出复原；不改盒模型 / 光标',
+    card.floatDemo.idle.attr === '' &&
+      card.floatDemo.idle.shadow === 'none' &&
+      card.floatDemo.idle.transition.includes('box-shadow') &&
+      card.floatDemo.hovered.shadow !== 'none' &&
+      card.floatDemo.left.shadow === 'none' &&
+      card.floatDemo.hovered.top === card.floatDemo.idle.top &&
+      card.floatDemo.hovered.width === card.floatDemo.idle.width &&
+      card.floatDemo.hovered.height === card.floatDemo.idle.height &&
+      card.floatDemo.hovered.border === card.floatDemo.idle.border &&
+      card.floatDemo.hovered.radius === card.floatDemo.idle.radius &&
+      card.floatDemo.hovered.cursor === 'auto' &&
+      card.floatDemo.override.shadow.includes('rgb(255, 0, 0)'),
+    JSON.stringify(card.floatDemo),
+  );
+
+  check(
+    'float="false" 按没写算：鼠标移入也不浮起（P1）',
+    card.floatDemo.falseHovered.shadow === 'none',
+    JSON.stringify(card.floatDemo.falseHovered),
+  );
+
+  check(
+    '头部一行：suffix 贴右边；border="none" 时外框与头尾分隔线一起透明、宽度不变',
     card.sections[0].hasHeader &&
       card.sections[0].hasFooter &&
       card.sections[0].headerDisplay === 'flex' &&
+      card.sections[0].border === 'line' &&
+      card.sections[0].hostBorderWidth === '1px' &&
+      card.sections[0].hostBorderColor !== 'rgba(0, 0, 0, 0)' &&
       card.sections[0].borderWidth === '1px' &&
       card.sections[0].borderColor !== 'rgba(0, 0, 0, 0)' &&
       card.sections[0].suffixText === '已实现' &&
       card.sections[0].suffixRightGap === 0 &&
-      card.sections[1].divider === 'none' &&
+      card.sections[1].border === 'none' &&
       card.sections[1].hasHeader &&
+      card.sections[1].hostBorderWidth === '1px' &&
+      card.sections[1].hostBorderColor === 'rgba(0, 0, 0, 0)' &&
       card.sections[1].borderWidth === '1px' &&
       card.sections[1].borderColor === 'rgba(0, 0, 0, 0)' &&
       card.sections[1].footerBorder === 'rgba(0, 0, 0, 0)' &&
-      card.sections[1].headerHeight === card.sections[0].headerHeight,
+      card.sections[1].withLine.hostBorderColor !== 'rgba(0, 0, 0, 0)' &&
+      card.sections[1].withLine.borderColor !== 'rgba(0, 0, 0, 0)' &&
+      card.sections[1].withLine.headerHeight === card.sections[1].headerHeight,
     JSON.stringify(card.sections),
   );
 
@@ -422,7 +552,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '卡片不参与交互：悬停不动盒子、不变色、光标不变，卡边也没有藏一层透明交互层',
+    '未开 float 的卡片不参与交互：悬停不动盒子、不变色、光标不变，卡边也没有藏一层透明交互层',
     card.inert.idle.hover === false &&
       card.inert.hovered.hover === true &&
       card.inert.hovered.transform === 'none' &&
