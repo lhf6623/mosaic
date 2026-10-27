@@ -37,7 +37,7 @@ mc-button — Mosaic 参考组件实现
    hover / active 用 state layer（currentColor + 半透明），不引 hover 色令牌。
    ⚠️ 那个原生 button 是**空的**（可见文字是插槽内容，与它是兄弟）—— 焦点、键盘激活、
    disabled、loading 都走它，别把这一层换掉。
-4. 内置图标 `icon` / `icon-right` 是插槽的便捷入口：作为 `prefix` / `suffix` 槽的**回退内容**
+4. 内置图标 `icon` / `icon-right` 是插槽的便捷入口：作为 `icon` / `icon-right` 槽的**回退内容**
    渲染（外面包一层 `o-if` —— 没有图标名时连 `mc-icon` 都不创建），槽里有内容时自动让位；
    只在真用到图标时才 `load('../icon/icon.html')`，不用图标的按钮不为它多付一次请求。
    没有文字时默认插槽会折叠（slotchange → `data-no-label`），所以只写 `icon` 就是图标按钮、不白留 gap。
@@ -64,14 +64,14 @@ mc-button — Mosaic 参考组件实现
 - **颜色必须跟按钮文字色**：`filled` 取 `--mc-button-on-fill`、`outline` / `ghost` 取 `--mc-button-accent`，
   由 `color: inherit` 绑定。在按钮里 **`mc-icon` 自己的 `color` 属性会被压掉** —— 按钮的标签是整体，
   里面不该出现第二种颜色。按钮外的图标不受影响。
-- **loading 时 spinner 占 `prefix` 的位置**：加载中 `prefix` 槽隐藏（否则 spinner 会和 prefix 图标
-  并排出现两个）；loader 在 DOM 里就排在 prefix 槽前面，prefix 一让开它正好落回那一格。
-  `suffix` 与文字不受影响。
+- **loading 时 spinner 占 `icon` 槽的位置**：加载中 `icon` 槽隐藏（否则 spinner 会和 icon 图标
+  并排出现两个）；loader 在 DOM 里就排在 icon 槽前面，icon 一让开它正好落回那一格。
+  `icon-right` 与文字不受影响。
 
-**行内形态的文字基线取默认插槽里的文字**：flex 容器的基线默认取「第一个 flex 项」，prefix 图标排在
-文字前面时文字会被顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）。默认插槽包一层
+**行内形态的文字基线取默认插槽里的文字**：flex 容器的基线默认取「第一个 flex 项」，icon 槽的图标
+排在文字前面时文字会被顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）。默认插槽包一层
 `.mc-label`，只在 `:host([inline])` 下给它 `align-self: baseline` 让它单独参与基线 —— 图标放前 /
-放后 / 没有图标，文字都落在同一条正文基线上；prefix / suffix 图标仍按 `align-items: center` 居中、
+放后 / 没有图标，文字都落在同一条正文基线上；icon / icon-right 图标仍按 `align-items: center` 居中、
 不参与基线。
 ⚠️ `align-self: baseline` **不能写在基础选择器上**：固定高度的基本按钮里只有一个 baseline 项、
 没有基线组可对齐，会回退到 start，文字直接被顶到按钮上沿（2026-10 踩过）。

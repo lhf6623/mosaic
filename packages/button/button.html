@@ -191,9 +191,9 @@
     :host([loading]) .mc-loader {
       display: inline-flex;
     }
-    /* loading 时 spinner 占 prefix 的位置：prefix 槽先让开，否则两个图标一起出现。
-       loader 在 DOM 里就排在 prefix 槽前面，prefix 一藏，它自然落在原来那一格。 */
-    :host([loading]) ::slotted([slot='prefix']) {
+    /* loading 时 spinner 占 icon 槽的位置：icon 槽先让开，否则两个图标一起出现。
+       loader 在 DOM 里就排在图标槽前面，图标一藏，它自然落在原来那一格。 */
+    :host([loading]) ::slotted([slot='icon']) {
       display: none;
     }
     @keyframes mc-btn-spin {
@@ -210,8 +210,8 @@
     }
 
     /* 行内形态：flex 容器的基线改取**文字**基线。不这么做时容器基线取「第一个 flex 项」，
-       prefix 图标排在前面就把文字顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）；
-       prefix / suffix 图标仍按 align-items: center 居中、不参与基线。 */
+       icon 槽的图标排在前面就把文字顶高（实测同一行里前缀图标那颗比后缀图标那颗高 4px）；
+       icon / icon-right 图标仍按 align-items: center 居中、不参与基线。 */
     :host([inline]) .mc-label {
       align-self: baseline;
     }
@@ -222,8 +222,8 @@
       display: none;
     }
 
-    ::slotted([slot='prefix']),
-    ::slotted([slot='suffix']) {
+    ::slotted([slot='icon']),
+    ::slotted([slot='icon-right']) {
       display: inline-flex;
       flex-shrink: 0;
     }
@@ -234,7 +234,7 @@
     }
 
     /* ---------- 内置图标（icon / icon-right） ----------
-       渲染成 prefix / suffix 插槽的**回退内容**：走 mc-icon 的 name 语法，使用者往同名槽里写了东西就自动让位。
+       渲染成 icon / icon-right 插槽的**回退内容**：走 mc-icon 的 name 语法，使用者往同名槽里写了东西就自动让位。
        没有对应属性时 display:none —— 别让它作为空 flex 项白占一份 gap。
        字号与插槽图标同一档；颜色靠 mc-icon 的 color:inherit 跟按钮文字色。 */
     .mc-leading,
@@ -248,7 +248,7 @@
       display: inline-flex;
       align-items: center;
     }
-    /* loading 时 spinner 占 prefix 的位置：内置图标和插槽图标一起让开 */
+    /* loading 时 spinner 占 icon 槽的位置：内置图标和插槽图标一起让开 */
     :host([loading]) .mc-leading {
       display: none;
     }
@@ -272,13 +272,13 @@
   <span class="mc-loader mc-icon-spinner"></span>
   <!-- 内置图标的回退内容：插槽里没写东西才出现（icon / icon-right，见上面 CSS）。
        再包一层 o-if：没有图标名时连 mc-icon 都不创建，不给普通按钮多挂两个空组件。 -->
-  <slot name="prefix">
+  <slot name="icon">
     <span class="mc-leading">
       <o-if :value="icon"><mc-icon :name="icon"></mc-icon></o-if>
     </span>
   </slot>
   <span class="mc-label"><slot></slot></span>
-  <slot name="suffix">
+  <slot name="icon-right">
     <span class="mc-trailing">
       <o-if :value="iconRight"><mc-icon :name="iconRight"></mc-icon></o-if>
     </span>

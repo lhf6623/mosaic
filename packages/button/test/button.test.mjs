@@ -70,13 +70,13 @@ export default async function run({ page, visit, check }) {
     put('row-states', 'st-loading-prefix', { loading: true }, '正在保存…');
     document
       .getElementById('st-loading-prefix')
-      .insertAdjacentHTML('afterbegin', '<mc-icon slot="prefix" name="download"></mc-icon>');
+      .insertAdjacentHTML('afterbegin', '<mc-icon slot="icon" name="download"></mc-icon>');
     put('row-states', 'st-submit', { type: 'submit' });
 
     put('row-slots', 'sl-slots', {}, '');
     document.getElementById('sl-slots').innerHTML =
-      '<mc-icon slot="prefix" id="sl-prefix" name="search"></mc-icon>搜索' +
-      '<mc-icon slot="suffix" id="sl-suffix" name="arrow-right"></mc-icon>';
+      '<mc-icon slot="icon" id="sl-prefix" name="search"></mc-icon>搜索' +
+      '<mc-icon slot="icon-right" id="sl-suffix" name="arrow-right"></mc-icon>';
 
     /* 内置图标：icon / icon-right 走 mc-icon 的 name 语法；槽里有内容时让位 */
     put('row-icon', 'ic-leading', { icon: 'star' }, '收藏');
@@ -85,7 +85,7 @@ export default async function run({ page, visit, check }) {
     put('row-icon', 'ic-slot-wins', { icon: 'star' }, '插槽优先');
     document
       .getElementById('ic-slot-wins')
-      .insertAdjacentHTML('afterbegin', '<mc-icon slot="prefix" name="edit"></mc-icon>');
+      .insertAdjacentHTML('afterbegin', '<mc-icon slot="icon" name="edit"></mc-icon>');
     put('row-icon', 'ic-loading', { icon: 'star', loading: true }, '加载中');
     put('row-icon', 'ic-only', { icon: 'star' }, '');
 
@@ -120,8 +120,8 @@ export default async function run({ page, visit, check }) {
     document.addEventListener('click', (e) => window.__btnClicks.push(e.target.id || e.target.tagName));
     put('row-block', 'cl-click', {}, '点我');
 
-    /* inline 基线：prefix / suffix 图标不应该改变文字在正文行里的位置。
-       曾经 flex 容器基线取「第一个 flex 项」—— prefix 图标排在前面会把文字顶高 4px。 */
+    /* inline 基线：icon / icon-right 图标不应该改变文字在正文行里的位置。
+       曾经 flex 容器基线取「第一个 flex 项」—— icon 槽的图标排在前面会把文字顶高 4px。 */
     const baselineRow = document.createElement('p');
     baselineRow.id = 'inline-baseline';
     baselineRow.style.cssText = 'margin:0;font-size:16px;line-height:24px;white-space:nowrap';
@@ -138,9 +138,9 @@ export default async function run({ page, visit, check }) {
       baselineRow.append(el);
       return el;
     };
-    putIconInline('bi-prefix', 'prefix');
+    putIconInline('bi-prefix', 'icon');
     baselineRow.append(document.createTextNode('；'));
-    putIconInline('bi-suffix', 'suffix');
+    putIconInline('bi-suffix', 'icon-right');
     host.append(baselineRow);
   });
 
@@ -345,7 +345,7 @@ export default async function run({ page, visit, check }) {
     `${restColor} → ${JSON.stringify(inlineHover)}`,
   );
 
-  /* 行内基线：prefix 图标排在前面时，文字应该和 suffix 那颗落在同一条基线上 */
+  /* 行内基线：icon 槽的图标排在前面时，文字应该和 icon-right 那颗落在同一条基线上 */
   const inlineBaseline = await page.evaluate(() => {
     const textTop = (id) => {
       const el = document.getElementById(id);
@@ -357,7 +357,7 @@ export default async function run({ page, visit, check }) {
     return { prefix: textTop('bi-prefix'), suffix: textTop('bi-suffix') };
   });
   check(
-    'inline 的基线取文字：prefix / suffix 图标不改变文字在行里的位置',
+    'inline 的基线取文字：icon / icon-right 图标不改变文字在行里的位置',
     Math.abs(inlineBaseline.prefix - inlineBaseline.suffix) <= 1,
     `prefix ${inlineBaseline.prefix.toFixed(2)} · suffix ${inlineBaseline.suffix.toFixed(2)}`,
   );
@@ -410,9 +410,9 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(states),
   );
   check(
-    'loading 的 spinner 占 prefix 的位置（prefix 槽隐藏，不会并排出现两个图标）',
+    'loading 的 spinner 占 icon 槽的位置（icon 槽隐藏，不会并排出现两个图标）',
     states.loaderPrefixDisplay !== 'none' && states.prefixHidden === 'none',
-    `loader ${states.loaderPrefixDisplay} · prefix ${states.prefixHidden}`,
+    `loader ${states.loaderPrefixDisplay} · icon ${states.prefixHidden}`,
   );
   check(
     'type 逐字转发（submit / reset / button），默认 button',
@@ -477,7 +477,7 @@ export default async function run({ page, visit, check }) {
     };
   });
   check(
-    'prefix / suffix 插槽渲染成行内 flex（::slotted 生效），且排在文字两侧',
+    'icon / icon-right 插槽渲染成行内 flex（::slotted 生效），且排在文字两侧',
     ['flex', 'inline-flex'].includes(slots.prefixDisplay) &&
       ['flex', 'inline-flex'].includes(slots.suffixDisplay) &&
       slots.prefixInside &&
@@ -520,8 +520,8 @@ export default async function run({ page, visit, check }) {
         leadFont: leadIcon && vis(leading) ? getComputedStyle(leadIcon).fontSize : null,
         leadColor: leadIcon && vis(leading) ? getComputedStyle(leadIcon).color : null,
         textColor: getComputedStyle(host).color,
-        assignedPrefix: root.querySelector('slot[name="prefix"]').assignedNodes().length,
-        slotIconVisible: vis(host.querySelector('mc-icon[slot="prefix"]')),
+        assignedPrefix: root.querySelector('slot[name="icon"]').assignedNodes().length,
+        slotIconVisible: vis(host.querySelector('mc-icon[slot="icon"]')),
         loaderDisplay: getComputedStyle(root.querySelector('.mc-loader')).display,
         noLabel: host.hasAttribute('data-no-label'),
         labelDisplay: getComputedStyle(root.querySelector('.mc-label')).display,
@@ -576,14 +576,14 @@ export default async function run({ page, visit, check }) {
     }),
   );
   check(
-    'prefix / suffix 插槽有内容时内置图标让位（插槽优先）',
+    'icon / icon-right 插槽有内容时内置图标让位（插槽优先）',
     !builtinIcons.slotWins.leadingVisible &&
       builtinIcons.slotWins.assignedPrefix === 1 &&
       builtinIcons.slotWins.slotIconVisible,
     JSON.stringify(builtinIcons.slotWins),
   );
   check(
-    'loading 时内置图标让开、spinner 占住 prefix 的位置',
+    'loading 时内置图标让开、spinner 占住 icon 槽的位置',
     !builtinIcons.loading.leadingVisible && builtinIcons.loading.loaderDisplay !== 'none',
     JSON.stringify(builtinIcons.loading),
   );
