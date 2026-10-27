@@ -138,6 +138,7 @@
     "packages/icon/test/icon.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/block-field.html",
       "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
@@ -156,6 +157,7 @@
       "docs/lib/code-editor.mjs",
       "docs/lib/demo-runtime.mjs",
       "docs/lib/md-spec.mjs",
+      "docs/pages/home.html",
       "docs/routes.js",
       "docs/shell.css",
       "docs/site-map.js",
@@ -165,9 +167,12 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -175,7 +180,6 @@
       "packages/icon/api.md",
       "packages/icon/demos/basic.html",
       "packages/icon/demos/builtins.html",
-      "packages/icon/demos/colors.html",
       "packages/icon/demos/hex.html",
       "packages/icon/demos/part.html",
       "packages/icon/demos/remote.html",
@@ -2459,6 +2463,7 @@
     ],
     "docs/components/block-field.html": [
       "packages/code/test/code.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -3163,6 +3168,7 @@
     ],
     "docs/pages/home.html": [
       "packages/code/test/code.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
       "packages/select/test/select.test.mjs",
@@ -3673,6 +3679,7 @@
       "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
       "packages/popover/test/popover.test.mjs",
@@ -3725,6 +3732,7 @@
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/date-picker/test/date-picker.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
@@ -3862,6 +3870,7 @@
       "packages/dropdown/test/dropdown.test.mjs",
       "packages/empty/test/empty.test.mjs",
       "packages/form/test/form.test.mjs",
+      "packages/icon/test/icon.test.mjs",
       "packages/input/test/input.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
       "packages/menu/test/menu.test.mjs",
@@ -4520,9 +4529,6 @@
       "packages/icon/test/icon.test.mjs"
     ],
     "packages/icon/demos/builtins.html": [
-      "packages/icon/test/icon.test.mjs"
-    ],
-    "packages/icon/demos/colors.html": [
       "packages/icon/test/icon.test.mjs"
     ],
     "packages/icon/demos/hex.html": [

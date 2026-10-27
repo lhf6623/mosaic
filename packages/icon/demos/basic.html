@@ -1,11 +1,40 @@
 <template component>
-  <p class="text-base">
-    搜不到就换个词
-    <mc-icon name="search" color="neutral"></mc-icon>
-    ，或者
-    <mc-icon name="filter" color="neutral"></mc-icon>
-    缩小范围。
-  </p>
+  <mc-space direction="vertical" block>
+    <p class="text-base">
+      搜不到就换个词
+      <mc-icon name="search" color="neutral"></mc-icon>
+      ，或者
+      <mc-icon name="filter" color="neutral"></mc-icon>
+      缩小范围。
+    </p>
+
+    <mc-space block wrap-items>
+      <mc-space>
+        <mc-icon name="star" color="primary"></mc-icon>
+        <span class="text-xs">主要</span>
+      </mc-space>
+      <mc-space>
+        <mc-icon name="star" color="info"></mc-icon>
+        <span class="text-xs">信息</span>
+      </mc-space>
+      <mc-space>
+        <mc-icon name="star" color="success"></mc-icon>
+        <span class="text-xs">成功</span>
+      </mc-space>
+      <mc-space>
+        <mc-icon name="star" color="warning"></mc-icon>
+        <span class="text-xs">警告</span>
+      </mc-space>
+      <mc-space>
+        <mc-icon name="star" color="danger"></mc-icon>
+        <span class="text-xs">危险</span>
+      </mc-space>
+      <mc-space>
+        <mc-icon name="star" color="neutral"></mc-icon>
+        <span class="text-xs">中性</span>
+      </mc-space>
+    </mc-space>
+  </mc-space>
 
   <script>
     export default async () => ({ tag: 'demo-icon-basic' });
