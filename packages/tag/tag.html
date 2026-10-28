@@ -174,6 +174,10 @@
       height: var(--mc-space-6, var(--mc-def-space-6));
       /* 24px 的命中区不能反过来把标签撑高：负外边距抵消落在上下内边距里的那 8px，高度仍由字号决定 */
       margin-block: calc(var(--mc-tag-pad-y) * -1);
+      /* 右侧同理：命中区比图标（1em）大出的一圈留白 + × 图形自带的 5/24 描边留白，一起用负外边距吃掉 ——
+         可见的 × 到右边缘的距离 = 文字到左边缘的距离；不然「右内边距 + 命中区留白 + 图形留白」会叠成
+         一段明显偏大的空白（sm 最明显）。命中区仍是 24×24，只是伸进右内边距里 */
+      margin-inline-end: calc((1em - var(--mc-space-6, var(--mc-def-space-6))) / 2 - 5em / 24);
       padding: 0;
       border: 0;
       border-radius: var(--mc-radius-full, var(--mc-def-radius-full));

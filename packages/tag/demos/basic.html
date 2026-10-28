@@ -1,8 +1,19 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-tag>前端</mc-tag>
-    <mc-tag>后端</mc-tag>
-    <mc-tag>设计</mc-tag>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-tag>前端</mc-tag>
+      <mc-tag>后端</mc-tag>
+      <mc-tag>设计</mc-tag>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-tag color="primary">主要</mc-tag>
+      <mc-tag color="info">信息</mc-tag>
+      <mc-tag color="success">成功</mc-tag>
+      <mc-tag color="warning">警告</mc-tag>
+      <mc-tag color="danger">危险</mc-tag>
+      <mc-tag>中性（默认）</mc-tag>
+    </mc-space>
   </mc-space>
 
   <script>

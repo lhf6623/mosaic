@@ -318,7 +318,6 @@
       "packages/tag/demos/basic.html",
       "packages/tag/demos/checkable.html",
       "packages/tag/demos/closable.html",
-      "packages/tag/demos/colors.html",
       "packages/tag/demos/customize.html",
       "packages/tag/demos/events.html",
       "packages/tag/demos/hex.html",
@@ -5599,9 +5598,6 @@
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/tag/demos/closable.html": [
-      "packages/tag/test/tag.test.mjs"
-    ],
-    "packages/tag/demos/colors.html": [
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/tag/demos/customize.html": [

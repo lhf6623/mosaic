@@ -1,11 +1,31 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-tag color="primary">subtle（默认）</mc-tag>
-    <mc-tag color="primary" variant="solid">solid</mc-tag>
-    <mc-tag color="primary" variant="outline">outline</mc-tag>
-    <mc-tag color="danger">subtle</mc-tag>
-    <mc-tag color="danger" variant="solid">solid</mc-tag>
-    <mc-tag color="danger" variant="outline">outline</mc-tag>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-tag color="primary">主要</mc-tag>
+      <mc-tag color="info">信息</mc-tag>
+      <mc-tag color="success">成功</mc-tag>
+      <mc-tag color="warning">警告</mc-tag>
+      <mc-tag color="danger">危险</mc-tag>
+      <mc-tag>中性</mc-tag>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-tag variant="solid" color="primary">主要</mc-tag>
+      <mc-tag variant="solid" color="info">信息</mc-tag>
+      <mc-tag variant="solid" color="success">成功</mc-tag>
+      <mc-tag variant="solid" color="warning">警告</mc-tag>
+      <mc-tag variant="solid" color="danger">危险</mc-tag>
+      <mc-tag variant="solid">中性</mc-tag>
+    </mc-space>
+
+    <mc-space block wrap-items>
+      <mc-tag variant="outline" color="primary">主要</mc-tag>
+      <mc-tag variant="outline" color="info">信息</mc-tag>
+      <mc-tag variant="outline" color="success">成功</mc-tag>
+      <mc-tag variant="outline" color="warning">警告</mc-tag>
+      <mc-tag variant="outline" color="danger">危险</mc-tag>
+      <mc-tag variant="outline">中性</mc-tag>
+    </mc-space>
   </mc-space>
 
   <script>

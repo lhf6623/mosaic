@@ -20,72 +20,27 @@
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <doc-playground src="./demos/colors.html"></doc-playground>
-      </section>
-
-      <section class="doc-demo">
-        <h3>hex 颜色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          也直接收 hex（
-          <code>#fff000</code>
-          /
-          <code>#fc0</code>
-          ）：浅底按主题派生，
-          文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
-        </p>
+        <h3>自定义颜色</h3>
         <doc-playground src="./demos/hex.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
-        <h3>外观</h3>
+        <h3>外观 × 颜色</h3>
         <doc-playground src="./demos/variants.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          标签不折行：长文本要么短，要么自己在宿主上截断（
-          <code>max-width</code>
-          +
-          <code>overflow: hidden</code>
-          ）。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>可关闭</h3>
-        <p class="doc-hint">
-          <code>closable</code>
-          在右侧加一个原生
-          <code>&lt;button&gt;</code>
-          ；点击只发
-          <code>close</code>
-          ，组件
-          <strong>不自己删 DOM</strong>
-          ，例子里的
-          <code>on:close</code>
-          里那句
-          <code>remove()</code>
-          就是使用者那一半。
-        </p>
         <doc-playground src="./demos/closable.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>可选中</h3>
-        <p class="doc-hint">
-          <code>checkable</code>
-          让整块可点（shadow 里一个铺满宿主的原生按钮）， 切换时发
-          <code>change</code>
-          ，
-          <code>$event.data.selected</code>
-          是切换后的状态；选中态换成该色的实心。 选中态统一实心，所以可切换的标签用默认
-          <code>subtle</code>
-          才看得出变化。
-        </p>
         <doc-playground src="./demos/checkable.html"></doc-playground>
       </section>
 
@@ -96,24 +51,19 @@
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          圆角、内边距、色槽都写在宿主上（L3 令牌或一句
-          <code>style="…"</code>
-          ），不用跨 shadow 边界。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          组件内部默认改不动：只有标了
+          只有标了
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（mc-tag 只开了 × 那个
+          改样式；mc-tag 只开了 × 那个
           <code>close</code>
-          ）。
+          。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

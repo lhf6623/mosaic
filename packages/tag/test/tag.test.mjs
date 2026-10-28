@@ -33,9 +33,17 @@ export default async function run({ page, visit, check }) {
         primary: rgb('--mc-color-primary'),
         primarySubtle: rgb('--mc-color-primary-subtle'),
         primaryFg: rgb('--mc-color-primary-fg'),
+        info: rgb('--mc-color-info'),
+        infoSubtle: rgb('--mc-color-info-subtle'),
+        infoFg: rgb('--mc-color-info-fg'),
         success: rgb('--mc-color-success'),
         successSubtle: rgb('--mc-color-success-subtle'),
+        successFg: rgb('--mc-color-success-fg'),
+        warning: rgb('--mc-color-warning'),
+        warningSubtle: rgb('--mc-color-warning-subtle'),
+        warningFg: rgb('--mc-color-warning-fg'),
         danger: rgb('--mc-color-danger'),
+        dangerSubtle: rgb('--mc-color-danger-subtle'),
         dangerFg: rgb('--mc-color-danger-fg'),
         neutral: rgb('--mc-color-neutral'),
         neutralFg: rgb('--mc-color-neutral-fg'),
@@ -66,10 +74,11 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 颜色：subtle（默认外观）的底色/文字与色槽令牌一致；neutral 用下沉面色 */
+    /** 颜色：subtle（默认外观）的底色/文字与色槽令牌一致；neutral 用下沉面色。语义色住在「基本用法」第二行 */
     const colors = await page.evaluate(() => {
-      const box = window.__deepAll('demo-tag-colors')[0].shadowRoot;
-      return window.__deepAll('mc-tag', box).map((el) => {
+      const box = window.__deepAll('demo-tag-basic')[0].shadowRoot;
+      const row = box.querySelector('mc-space').children[1];
+      return window.__deepAll('mc-tag', row).map((el) => {
         const cs = getComputedStyle(el);
         return {
           color: el.getAttribute('color') ?? 'neutral',
@@ -163,7 +172,7 @@ export default async function run({ page, visit, check }) {
       return out;
     })();
 
-    /** 外观：subtle / solid / outline 只换色槽贴到哪儿，1px 边框恒定 */
+    /** 外观 × 颜色：三行 = subtle / solid / outline（第一行是默认），每行六个语义色 */
     const variants = await page.evaluate(() => {
       const box = window.__deepAll('demo-tag-variants')[0].shadowRoot;
       const read = (el) => {
@@ -177,13 +186,8 @@ export default async function run({ page, visit, check }) {
           borderColor: cs.borderTopColor,
         };
       };
-      const tags = window.__deepAll('mc-tag', box);
-      return {
-        subtle: read(tags[0]),
-        solid: read(tags[1]),
-        outline: read(tags[2]),
-        dangerSolid: read(tags[4]),
-      };
+      const rows = [...box.querySelector('mc-space').children];
+      return rows.map((row) => window.__deepAll('mc-tag', row).map(read));
     });
 
     /** 尺寸：只改字号与左右内边距，高度 = 行高 + 上下内边距 + 上下 1px 边框 */
@@ -202,9 +206,9 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** closable：关闭按钮的显隐、命中区、宿主压暗；不可关的实例里它是隐藏的 */
+    /** closable：关闭按钮的显隐、命中区、宿主压暗、右侧留白；不可关的实例里它是隐藏的 */
     const closable = await page.evaluate(() => {
-      const colorBox = window.__deepAll('demo-tag-colors')[0].shadowRoot;
+      const colorBox = window.__deepAll('demo-tag-basic')[0].shadowRoot;
       const closeBox = window.__deepAll('demo-tag-closable')[0].shadowRoot;
       const read = (el) => {
         const btn = el.shadowRoot.querySelector('.mc-close');
@@ -212,15 +216,34 @@ export default async function run({ page, visit, check }) {
         const r = btn.getBoundingClientRect();
         /* 关闭图形是内置图标（静态图标直接用类，不引 icon.html） */
         const glyph = el.shadowRoot.querySelector('.mc-close .mc-icon-close');
+        const host = el.getBoundingClientRect();
+        const glyphRect = glyph ? glyph.getBoundingClientRect() : null;
+        /* × 的描边在 24 viewBox 里从 5 到 19（含圆头）：图形两侧各留 5/24，可见墨迹比图形盒再收一点 */
+        const inkInset = glyphRect ? glyphRect.width * (5 / 24) : 0;
+        const slot = el.shadowRoot.querySelector('slot');
+        const text = slot
+          ? [...slot.assignedNodes({ flatten: true })].find(
+              (n) => n.nodeType === 3 && n.textContent.trim(),
+            )
+          : null;
+        let textLeft = null;
+        if (text) {
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          textLeft = range.getBoundingClientRect().left - host.left;
+        }
         return {
           display: cs.display,
           glyphMask: glyph ? getComputedStyle(glyph).maskImage !== 'none' : false,
-          glyphSize: glyph ? Math.round(glyph.getBoundingClientRect().width) : 0,
+          glyphSize: glyph ? Math.round(glyphRect.width) : 0,
           part: btn.getAttribute('part'),
           disabledProp: btn.disabled,
           width: Math.round(r.width),
           height: Math.round(r.height),
-          tagHeight: Math.round(el.getBoundingClientRect().height),
+          tagHeight: Math.round(host.height),
+          /* 右边缘对账：可见的 × 到宿主右边缘 vs 文字到宿主左边缘（同一把尺子量） */
+          rightAir: glyphRect && glyphRect.width ? +(host.right - glyphRect.right + inkInset).toFixed(1) : null,
+          leftAir: textLeft === null ? null : +textLeft.toFixed(1),
         };
       };
       const tags = window.__deepAll('mc-tag', closeBox);
@@ -535,19 +558,68 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'variant：subtle 浅底 / solid 实心 / outline 透明 + 描边，三档都是 1px 边框',
-    tag.variants.subtle.bg === tag.tokens.primarySubtle &&
-      tag.variants.subtle.fg === tag.tokens.primary &&
-      tag.variants.solid.bg === tag.tokens.primary &&
-      tag.variants.solid.fg === tag.tokens.primaryFg &&
-      tag.variants.outline.bg === 'rgba(0, 0, 0, 0)' &&
-      tag.variants.outline.fg === tag.tokens.primary &&
-      tag.variants.outline.borderColor === tag.tokens.primary &&
-      tag.variants.dangerSolid.bg === tag.tokens.danger &&
-      tag.variants.dangerSolid.fg === tag.tokens.dangerFg &&
-      [tag.variants.subtle, tag.variants.solid, tag.variants.outline].every(
-        (v) => v.borderWidth === '1px',
-      ),
+    '外观 × 颜色：三行 subtle / solid / outline（第一行是默认），每行六个语义色、1px 边框恒定',
+    (() => {
+      const COLORS = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
+      const VARIANTS = ['subtle', 'solid', 'outline'];
+      const ACCENT = {
+        primary: tag.tokens.primary,
+        info: tag.tokens.info,
+        success: tag.tokens.success,
+        warning: tag.tokens.warning,
+        danger: tag.tokens.danger,
+        neutral: tag.tokens.fgMuted,
+      };
+      const FILL = {
+        primary: tag.tokens.primary,
+        info: tag.tokens.info,
+        success: tag.tokens.success,
+        warning: tag.tokens.warning,
+        danger: tag.tokens.danger,
+        neutral: tag.tokens.neutral,
+      };
+      const SUBTLE_FILL = {
+        primary: tag.tokens.primarySubtle,
+        info: tag.tokens.infoSubtle,
+        success: tag.tokens.successSubtle,
+        warning: tag.tokens.warningSubtle,
+        danger: tag.tokens.dangerSubtle,
+        neutral: tag.tokens.surfaceSunken,
+      };
+      const ON_FILL = {
+        primary: tag.tokens.primaryFg,
+        info: tag.tokens.infoFg,
+        success: tag.tokens.successFg,
+        warning: tag.tokens.warningFg,
+        danger: tag.tokens.dangerFg,
+        neutral: tag.tokens.neutralFg,
+      };
+      /** 一档外观该长什么样：subtle 浅底 / solid 实心 / outline 透明 + 描边 */
+      const want = (variant, color) =>
+        variant === 'subtle'
+          ? { bg: SUBTLE_FILL[color], fg: ACCENT[color], border: null }
+          : variant === 'solid'
+            ? { bg: FILL[color], fg: ON_FILL[color], border: null }
+            : { bg: 'rgba(0, 0, 0, 0)', fg: ACCENT[color], border: ACCENT[color] };
+      return (
+        tag.variants.length === 3 &&
+        tag.variants.every(
+          (row, r) =>
+            row.length === 6 &&
+            row.every((cell, c) => {
+              const expected = want(VARIANTS[r], COLORS[c]);
+              return (
+                cell.variant === VARIANTS[r] &&
+                cell.color === COLORS[c] &&
+                cell.bg === expected.bg &&
+                cell.fg === expected.fg &&
+                cell.borderWidth === '1px' &&
+                (expected.border === null || cell.borderColor === expected.border)
+              );
+            }),
+        )
+      );
+    })(),
     JSON.stringify(tag.variants),
   );
 
@@ -579,6 +651,14 @@ export default async function run({ page, visit, check }) {
       tag.closable.closable.tagHeight === 30 &&
       tag.closable.disabled.tagHeight === 30,
     JSON.stringify(tag.closable),
+  );
+
+  check(
+    'closable 的 × 右侧不叠三段空白：命中区留白 + 图形 5/24 描边留白被负外边距吃掉，可见 × 与左侧文字到边等距（±1px）',
+    tag.closable.closable.rightAir !== null &&
+      tag.closable.closable.leftAir !== null &&
+      Math.abs(tag.closable.closable.rightAir - tag.closable.closable.leftAir) <= 1,
+    JSON.stringify({ 右: tag.closable.closable.rightAir, 左: tag.closable.closable.leftAir }),
   );
 
   check(
