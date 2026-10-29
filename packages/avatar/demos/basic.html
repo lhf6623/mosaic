@@ -1,12 +1,26 @@
 <template component>
-  <mc-space block wrap-items>
-    <!-- 有图显示图；图片加载中 / 失败都先显示兜底 -->
-    <mc-avatar src="./avatar.svg" name="张三" size="lg"></mc-avatar>
-    <!-- alt 不写时用 name -->
-    <mc-avatar src="./avatar.svg" alt="同事的照片" name="张三"></mc-avatar>
-    <!-- 没有图：兜底显示首字母 -->
-    <mc-avatar name="张三"></mc-avatar>
-    <mc-avatar></mc-avatar>
+  <mc-space direction="vertical" gap="16">
+    <!-- 第一行：图片优先，没有图落兜底 -->
+    <mc-space block wrap-items>
+      <!-- 有图显示图；图片加载中 / 失败都先显示兜底 -->
+      <mc-avatar src="./avatar.svg" name="张三" size="lg"></mc-avatar>
+      <!-- alt 不写时用 name -->
+      <mc-avatar src="./avatar.svg" alt="同事的照片" name="张三"></mc-avatar>
+      <!-- 没有图：兜底显示首字母 -->
+      <mc-avatar name="张三"></mc-avatar>
+      <mc-avatar></mc-avatar>
+    </mc-space>
+
+    <!-- 第二行：语义色，末位一个 hex 自定义 -->
+    <mc-space block wrap-items>
+      <mc-avatar name="主" color="primary"></mc-avatar>
+      <mc-avatar name="信" color="info"></mc-avatar>
+      <mc-avatar name="成" color="success"></mc-avatar>
+      <mc-avatar name="警" color="warning"></mc-avatar>
+      <mc-avatar name="危" color="danger"></mc-avatar>
+      <mc-avatar name="中" color="neutral"></mc-avatar>
+      <mc-avatar name="品" color="#1a7f5a"></mc-avatar>
+    </mc-space>
   </mc-space>
 
   <script>

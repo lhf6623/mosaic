@@ -2105,7 +2105,6 @@
       "packages/avatar/avatar.html",
       "packages/avatar/demos/avatar.svg",
       "packages/avatar/demos/basic.html",
-      "packages/avatar/demos/colors.html",
       "packages/avatar/demos/external-style.html",
       "packages/avatar/demos/fallback.html",
       "packages/avatar/demos/image-error.html",
@@ -3486,9 +3485,6 @@
       "packages/avatar/test/avatar.test.mjs"
     ],
     "packages/avatar/demos/basic.html": [
-      "packages/avatar/test/avatar.test.mjs"
-    ],
-    "packages/avatar/demos/colors.html": [
       "packages/avatar/test/avatar.test.mjs"
     ],
     "packages/avatar/demos/external-style.html": [

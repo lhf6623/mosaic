@@ -1,7 +1,24 @@
 <template component>
-  <mc-space block wrap-items align="center">
-    <mc-avatar name="张三" size="lg"></mc-avatar>
-    <mc-avatar name="张三" size="lg" shape="square"></mc-avatar>
+  <mc-space direction="vertical" block gap="16">
+    <!-- 第一行 circle（默认） -->
+    <mc-space block wrap-items align="center">
+      <mc-avatar name="主" size="lg" color="primary"></mc-avatar>
+      <mc-avatar name="信" size="lg" color="info"></mc-avatar>
+      <mc-avatar name="成" size="lg" color="success"></mc-avatar>
+      <mc-avatar name="警" size="lg" color="warning"></mc-avatar>
+      <mc-avatar name="危" size="lg" color="danger"></mc-avatar>
+      <mc-avatar name="中" size="lg" color="neutral"></mc-avatar>
+    </mc-space>
+
+    <!-- 第二行 square -->
+    <mc-space block wrap-items align="center">
+      <mc-avatar shape="square" name="主" size="lg" color="primary"></mc-avatar>
+      <mc-avatar shape="square" name="信" size="lg" color="info"></mc-avatar>
+      <mc-avatar shape="square" name="成" size="lg" color="success"></mc-avatar>
+      <mc-avatar shape="square" name="警" size="lg" color="warning"></mc-avatar>
+      <mc-avatar shape="square" name="危" size="lg" color="danger"></mc-avatar>
+      <mc-avatar shape="square" name="中" size="lg" color="neutral"></mc-avatar>
+    </mc-space>
   </mc-space>
 
   <script>

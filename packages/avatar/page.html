@@ -18,15 +18,8 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          有
-          <code>src</code>
-          显示图片，
-          <code>alt</code>
-          不写就用
-          <code>name</code>
-          ；没有图时落到兜底 ——
-          <code>name</code>
-          的首字母 / 首字，或默认插槽。
+          <code>color</code>
+          只染兜底，图片就绪后被整块盖住。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -42,22 +35,9 @@
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          只染兜底，图片就绪后被整块盖住；也收 hex（
-          <code>#1a7f5a</code>
-          ）。
-        </p>
-        <doc-playground src="./demos/colors.html"></doc-playground>
-      </section>
-
-      <section class="doc-demo">
         <h3>兜底内容</h3>
         <p class="doc-hint">
-          默认插槽优先于
-          <code>name</code>
-          ；它在图片加载中 / 失败时显示，图片就绪后整块让位。
+          默认插槽在图片加载中 / 失败时显示，图片就绪后整块让位。
         </p>
         <doc-playground src="./demos/fallback.html"></doc-playground>
       </section>
@@ -69,11 +49,6 @@
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          尺寸 / 圆角 / 兜底色都是 L3 令牌，在宿主
-          <code>style</code>
-          上覆盖即可。
-        </p>
         <doc-playground src="./demos/external-style.html"></doc-playground>
       </section>
     </doc-demos>
