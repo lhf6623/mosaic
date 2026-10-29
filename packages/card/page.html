@@ -21,13 +21,13 @@
           <code>slot="header"</code>
           /
           <code>slot="footer"</code>
-          ，其余进默认插槽； 头尾各带一条通长分隔线。 整卡可点自己写：给卡内那个元素铺一条伪元素，
+          ，其余进默认插槽。 整卡可点自己写：给卡内那个元素铺一条伪元素，
           <code>inset</code>
           按
           <code>--mc-card-border-w</code>
           取负值盖住边框那圈，
           <code>cursor</code>
-          要显式写。
+          要显式写，悬停别给卡片加位移。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -49,8 +49,6 @@
       <section class="doc-demo">
         <h3>浮动</h3>
         <p class="doc-hint">
-          <code>float</code>
-          是鼠标移入时的浮起反馈：加一层阴影、移出复原。只改阴影，不改尺寸、不改光标，也不让卡片变成可点击元素。
           阴影走
           <code>--mc-card-shadow</code>
           令牌、暗色下自动换一档；要更轻 / 更重就覆盖它。
@@ -61,8 +59,7 @@
       <section class="doc-demo">
         <h3>内边距</h3>
         <p class="doc-hint">
-          <code>none</code>
-          是给「内容自己贴边」的场景（表格、图片、整块列表），此时头尾分隔线照旧通长。 要让图片或
+          要让图片或
           <code>padding="none"</code>
           的整块内容跟着圆角裁，在宿主
           <code>style</code>
@@ -76,9 +73,7 @@
       <section class="doc-demo">
         <h3>外部样式</h3>
         <p class="doc-hint">
-          颜色、圆角、内边距都在宿主上改（L3 令牌或一句
-          <code>style="…"</code>
-          ），不用跨 shadow 边界。 卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
+          卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
         </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
@@ -91,10 +86,14 @@
           的节点，才能从外面用
           <code>::part(名字)</code>
           改样式（这里开了
+          <code>base</code>
+          /
+          <code>body</code>
+          /
           <code>header</code>
           /
           <code>footer</code>
-          两个）。
+          四个）。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
