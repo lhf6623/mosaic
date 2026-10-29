@@ -36,9 +36,18 @@ const THEME_CSS = `
   font-size: var(--mc-text-sm);
   line-height: 1.7;
 }
+/* 行号列必须是不透明实底（和 .editor-host 同色）：CM 的 gutters 是叠在滚动内容之上的绝对定位层，
+   横向滚动时行会被带到它下面；底色透明的话代码就从行号底下透出来，数字压在文字上。
+   mc-code 的 .mc-ln 也是同一个道理（那边用 sticky + 实底）。 */
 .cm-s-default .CodeMirror-gutters {
   border-right: 1px solid rgb(var(--mc-color-border));
-  background: transparent;
+  background-color: rgb(var(--mc-color-surface-sunken));
+}
+/* 横竖滚动条交汇的两个角：CM 内置是白底（.CodeMirror-gutter-filler / -scrollbar-filler），
+   跟浅色 sunken 只差一点点、深色主题下直接是一块白斑，统一成编辑器底色 */
+.cm-s-default .CodeMirror-gutter-filler,
+.cm-s-default .CodeMirror-scrollbar-filler {
+  background-color: rgb(var(--mc-color-surface-sunken));
 }
 .cm-s-default .CodeMirror-linenumber {
   color: rgb(var(--mc-color-fg-subtle));
