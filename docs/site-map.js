@@ -151,7 +151,7 @@ export const SITE = [
             path: 'packages/card/page.html',
             type: 'component',
             summary:
-              '卡片容器。有底色 / 只有描边两种，头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
+              '卡片容器。有底色 / 只有描边两种，可再悬停浮起；头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
           },
           {
             order: 20,

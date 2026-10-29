@@ -7,7 +7,7 @@
 
 **状态**：已实现 · 标签 `mc-radio` · 目录 `packages/radio/`
 
-单选按钮组。
+单选按钮组。容器 mc-radio-group 管互斥 / 方向 / 尺寸与 change 事件，子项 mc-radio 是一格。
 
 ## 单元里有什么
 

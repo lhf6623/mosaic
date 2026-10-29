@@ -131,7 +131,10 @@ for (const slug of SLUGS) {
   }
 
   /* 入口名（标签 / 命令式函数名）的唯一手写源是 api.md 的第一行 heading，不在这里再抄一份 */
-  const apiHead = fs.readFileSync(`${dir}/api.md`, 'utf8').split('\n')[0] ?? '';
+  /* ⚠️ 必须剥掉 `\r`：Windows 工作区（core.autocrlf=true）里 api.md 是 CRLF，`split('\n')` 会把 `\r`
+     留在行尾 → tag 变 `mc-alert\r` → prettier 把 `\r` 当换行，标题被拆成「# mc-alert」+ 空行 +
+     「（提示条）」、`**状态**` 那行的反引号也被切断。Mac 工作区是 LF，所以这个坑只在 Windows 上现形。 */
+  const apiHead = (fs.readFileSync(`${dir}/api.md`, 'utf8').split('\n')[0] ?? '').replace(/\r$/, '');
   const tag = apiHead.replace(/^#\s*/, '').split(' / ')[0].replace(/\(\)$/, '') || `mc-${slug}`;
   const zh = node.zh ? `（${node.zh}）` : '';
 
