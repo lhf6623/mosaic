@@ -197,6 +197,15 @@ export const SITE = [
             summary:
               '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
           },
+          {
+            order: 55,
+            label: 'QR Code',
+            zh: '二维码',
+            path: 'packages/qrcode/page.html',
+            type: 'component',
+            summary:
+              '二维码。文本按 UTF-8 编码、版本自动选；四档纠错、自定义配色与静区、中间图案，canvas / svg 两种渲染。',
+          },
         ],
       },
       {

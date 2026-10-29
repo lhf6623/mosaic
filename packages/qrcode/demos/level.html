@@ -1,0 +1,24 @@
+<template component>
+  <mc-space wrap-items>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode level="L" value="https://mofas.dev/mosaic/qrcode?level=L"></mc-qrcode>
+      <span class="text-sm">L · 7%</span>
+    </mc-space>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode level="M" value="https://mofas.dev/mosaic/qrcode?level=M"></mc-qrcode>
+      <span class="text-sm">M · 15%</span>
+    </mc-space>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode level="Q" value="https://mofas.dev/mosaic/qrcode?level=Q"></mc-qrcode>
+      <span class="text-sm">Q · 25%</span>
+    </mc-space>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode level="H" value="https://mofas.dev/mosaic/qrcode?level=H"></mc-qrcode>
+      <span class="text-sm">H · 30%</span>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-qrcode-level' });
+  </script>
+</template>

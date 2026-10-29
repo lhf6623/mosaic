@@ -1,0 +1,12 @@
+<template component>
+  <mc-space align="center" wrap-items>
+    <mc-qrcode
+      value="https://mofas.dev/mosaic/qrcode"
+      style="--mc-qrcode-size: 208px; border-radius: 16px; overflow: hidden; box-shadow: 0 6px 20px rgb(0 0 0 / 18%)"></mc-qrcode>
+    <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-qrcode-external-style' });
+  </script>
+</template>

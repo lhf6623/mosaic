@@ -1,0 +1,17 @@
+<template component>
+  <style>
+    .rounded::part(image) {
+      border-radius: 10px;
+      box-shadow: 0 0 0 6px #ccfbf1;
+    }
+  </style>
+
+  <mc-space align="center" wrap-items>
+    <mc-qrcode class="rounded" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+    <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-qrcode-part' });
+  </script>
+</template>

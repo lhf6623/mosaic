@@ -1,0 +1,791 @@
+<!-- mc-qrcode — 二维码；编码核心内联（零依赖），渲染两种。设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主：边长由 --mc-qrcode-size 给（size 属性按 px 写它），内容撑满、正方形 */
+    :host {
+      display: inline-block;
+      /* 使用者写 --mc-qrcode-size 优先；size 属性写的是 --mc-qrcode-px */
+      width: var(--mc-qrcode-size, var(--mc-qrcode-px, 160px));
+      height: var(--mc-qrcode-size, var(--mc-qrcode-px, 160px));
+      --mc-qrcode-px: 160px; /* @internal：size 属性按 px 写它 —— 必须是 px，rem 会跟根字号走、和绘制分辨率对不上就出缝 */
+      line-height: 0;
+      vertical-align: middle;
+    }
+    :host([hidden]) {
+      display: none;
+    }
+
+    /* 2. 两个渲染器都在模板里，只显示当前那一个（渲染方式切换不重建节点） */
+    .mc-base,
+    .mc-canvas,
+    .mc-svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .mc-canvas {
+      /* 盒子被放大到超过绘制分辨率时，最近邻采样不会在格子间长出灰边（1:1 时这条不生效） */
+      image-rendering: pixelated;
+    }
+    :host([renderer='svg']) .mc-canvas {
+      display: none;
+    }
+    :host(:not([renderer='svg'])) .mc-svg {
+      display: none;
+    }
+  </style>
+
+  <div class="mc-base">
+    <canvas class="mc-canvas" part="image"></canvas>
+    <svg
+      class="mc-svg"
+      part="image"
+      xmlns="http://www.w3.org/2000/svg"
+      shape-rendering="crispEdges"></svg>
+  </div>
+
+  <script>
+    /* ============================ 编码核心 ============================
+       按 ISO/IEC 18004 实现：byte 模式（UTF-8）、版本 1–40 自动选、四档纠错、8 种掩码按罚分择优。
+       ⚠️ 改这里之前先跑 test/qrcode.test.mjs —— 矩阵错一位就整张扫不出来，而且看不出来。 */
+
+    /* 每块纠错码字数 [等级][版本]，索引 0 是占位 */
+    const ECC_PER_BLOCK = {
+      L: [
+        -1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28,
+        30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+      ],
+      M: [
+        -1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28,
+        28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+      ],
+      Q: [
+        -1, 13, 22, 18, 26, 18, 24, 18, 22, 20, 24, 28, 26, 24, 20, 30, 24, 28, 28, 26, 30, 28, 30,
+        30, 30, 30, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+      ],
+      H: [
+        -1, 17, 28, 22, 16, 22, 28, 26, 26, 24, 28, 24, 28, 22, 24, 24, 30, 28, 28, 26, 28, 30, 24,
+        30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+      ],
+    };
+
+    /* 纠错块数 [等级][版本] */
+    const BLOCKS = {
+      L: [
+        -1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12, 12, 12,
+        13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24,
+      ],
+      M: [
+        -1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21,
+        23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49,
+      ],
+      Q: [
+        -1, 1, 1, 2, 2, 4, 4, 6, 6, 8, 8, 8, 10, 12, 16, 12, 17, 16, 18, 21, 20, 23, 23, 25, 27, 29,
+        34, 34, 35, 38, 40, 43, 45, 48, 51, 53, 56, 59, 62, 65, 68,
+      ],
+      H: [
+        -1, 1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32,
+        35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81,
+      ],
+    };
+
+    /* 格式信息里的等级编码（L=01 / M=00 / Q=11 / H=10） */
+    const FORMAT_BITS = { L: 1, M: 0, Q: 3, H: 2 };
+    const LEVELS = ['L', 'M', 'Q', 'H'];
+
+    /** 版本 ver 的模块总数（去掉功能图案后剩下的比特数） */
+    function rawDataModules(ver) {
+      let result = (16 * ver + 128) * ver + 64;
+      if (ver >= 2) {
+        const align = Math.floor(ver / 7) + 2;
+        result -= (25 * align - 10) * align - 55;
+        if (ver >= 7) result -= 36;
+      }
+      return result;
+    }
+
+    /** 版本 ver + 等级 ecl 的数据码字数（字节） */
+    function dataCodewords(ver, ecl) {
+      return Math.floor(rawDataModules(ver) / 8) - ECC_PER_BLOCK[ecl][ver] * BLOCKS[ecl][ver];
+    }
+
+    /** 对齐图案的坐标（版本 1 没有；v32 的步长是特例） */
+    function alignmentPositions(ver) {
+      if (ver === 1) return [];
+      const count = Math.floor(ver / 7) + 2;
+      const step = ver === 32 ? 26 : Math.ceil((ver * 4 + 4) / (count * 2 - 2)) * 2;
+      const result = [6];
+      for (let pos = ver * 4 + 10; result.length < count; pos -= step) result.splice(1, 0, pos);
+      return result;
+    }
+
+    /* GF(256) 乘法：0x11D 是 QR 用的本原多项式 */
+    function gfMul(x, y) {
+      let z = 0;
+      for (let i = 7; i >= 0; i--) {
+        z = (z << 1) ^ ((z >>> 7) * 0x11d);
+        z ^= ((y >>> i) & 1) * x;
+      }
+      return z & 0xff;
+    }
+
+    /** Reed-Solomon 生成多项式 (x - a^0)…(x - a^{degree-1})，按升序系数 */
+    function rsDivisor(degree) {
+      const result = new Uint8Array(degree);
+      result[degree - 1] = 1;
+      let root = 1;
+      for (let i = 0; i < degree; i++) {
+        for (let j = 0; j < result.length; j++) {
+          result[j] = gfMul(result[j], root);
+          if (j + 1 < result.length) result[j] ^= result[j + 1];
+        }
+        root = gfMul(root, 0x02);
+      }
+      return result;
+    }
+
+    /** 余式就是这一块的纠错码字 */
+    function rsRemainder(data, divisor) {
+      const result = new Uint8Array(divisor.length);
+      for (const b of data) {
+        const factor = b ^ result[0];
+        result.copyWithin(0, 1);
+        result[result.length - 1] = 0;
+        for (let i = 0; i < result.length; i++) result[i] ^= gfMul(divisor[i], factor);
+      }
+      return result;
+    }
+
+    /**
+     * 把文本编成二维码矩阵。
+     * @returns {{ version: number, size: number, mask: number, isDark: (x: number, y: number) => boolean }}
+     */
+    function encodeQr(text, ecl) {
+      const bytes = new TextEncoder().encode(String(text));
+
+      /* ① 选最小版本：模式 4 位 + 字符计数 + 每字节 8 位 */
+      let version = 0;
+      for (let v = 1; v <= 40; v++) {
+        if (4 + (v <= 9 ? 8 : 16) + bytes.length * 8 <= dataCodewords(v, ecl) * 8) {
+          version = v;
+          break;
+        }
+      }
+      if (!version) throw new RangeError('内容超出二维码容量');
+
+      /* ② 位流：0100 | 计数 | 字节 | 终止符 | 补齐 | 填充字节 0xEC / 0x11 交替 */
+      const capacity = dataCodewords(version, ecl);
+      const capacityBits = capacity * 8;
+      const bits = [];
+      const push = (val, len) => {
+        for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1);
+      };
+      push(0b0100, 4);
+      push(bytes.length, version <= 9 ? 8 : 16);
+      for (const b of bytes) push(b, 8);
+      push(0, Math.min(4, capacityBits - bits.length));
+      push(0, (8 - (bits.length % 8)) % 8);
+      for (let pad = 0xec; bits.length < capacityBits; pad ^= 0xec ^ 0x11) push(pad, 8);
+
+      const data = new Uint8Array(capacity);
+      for (let i = 0; i < bits.length; i++) data[i >>> 3] |= bits[i] << (7 - (i & 7));
+
+      /* ③ 分块算纠错，再按块交错（短块缺的那一字节跳过） */
+      const numBlocks = BLOCKS[ecl][version];
+      const blockEccLen = ECC_PER_BLOCK[ecl][version];
+      const rawCodewords = Math.floor(rawDataModules(version) / 8);
+      const numShortBlocks = numBlocks - (rawCodewords % numBlocks);
+      const shortBlockLen = Math.floor(rawCodewords / numBlocks);
+      const divisor = rsDivisor(blockEccLen);
+      const blocks = [];
+      for (let i = 0, k = 0; i < numBlocks; i++) {
+        const dat = data.subarray(
+          k,
+          k + shortBlockLen - blockEccLen + (i < numShortBlocks ? 0 : 1),
+        );
+        k += dat.length;
+        const block = new Uint8Array(shortBlockLen + 1);
+        block.set(dat, 0);
+        block.set(rsRemainder(dat, divisor), block.length - blockEccLen);
+        blocks.push(block);
+      }
+      const allCodewords = new Uint8Array(rawCodewords);
+      for (let i = 0, k = 0; i < blocks[0].length; i++) {
+        for (let j = 0; j < blocks.length; j++) {
+          if (i !== shortBlockLen - blockEccLen || j >= numShortBlocks)
+            allCodewords[k++] = blocks[j][i];
+        }
+      }
+
+      /* ④ 功能图案：定时 / 定位 / 对齐 / 格式 / 版本 */
+      const size = version * 4 + 17;
+      const modules = new Uint8Array(size * size);
+      const isFunction = new Uint8Array(size * size);
+      const setFunc = (x, y, dark) => {
+        if (x < 0 || y < 0 || x >= size || y >= size) return;
+        modules[y * size + x] = dark ? 1 : 0;
+        isFunction[y * size + x] = 1;
+      };
+
+      for (let i = 0; i < size; i++) {
+        setFunc(6, i, i % 2 === 0);
+        setFunc(i, 6, i % 2 === 0);
+      }
+      const drawFinder = (cx, cy) => {
+        for (let dy = -4; dy <= 4; dy++) {
+          for (let dx = -4; dx <= 4; dx++) {
+            const dist = Math.max(Math.abs(dx), Math.abs(dy));
+            setFunc(cx + dx, cy + dy, dist !== 2 && dist !== 4);
+          }
+        }
+      };
+      drawFinder(3, 3);
+      drawFinder(size - 4, 3);
+      drawFinder(3, size - 4);
+
+      const aligns = alignmentPositions(version);
+      const last = aligns.length - 1;
+      for (let i = 0; i <= last; i++) {
+        for (let j = 0; j <= last; j++) {
+          if ((i === 0 && j === 0) || (i === 0 && j === last) || (i === last && j === 0)) continue;
+          for (let dy = -2; dy <= 2; dy++) {
+            for (let dx = -2; dx <= 2; dx++) {
+              setFunc(aligns[i] + dx, aligns[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+            }
+          }
+        }
+      }
+
+      const drawFormatBits = (mask) => {
+        const dataBits = (FORMAT_BITS[ecl] << 3) | mask;
+        let rem = dataBits;
+        for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+        const value = ((dataBits << 10) | rem) ^ 0x5412;
+        const bit = (i) => ((value >>> i) & 1) !== 0;
+        for (let i = 0; i <= 5; i++) setFunc(8, i, bit(i));
+        setFunc(8, 7, bit(6));
+        setFunc(8, 8, bit(7));
+        setFunc(7, 8, bit(8));
+        for (let i = 9; i < 15; i++) setFunc(14 - i, 8, bit(i));
+        for (let i = 0; i < 8; i++) setFunc(size - 1 - i, 8, bit(i));
+        for (let i = 8; i < 15; i++) setFunc(8, size - 15 + i, bit(i));
+        setFunc(8, size - 8, true);
+      };
+      drawFormatBits(0);
+
+      if (version >= 7) {
+        let rem = version;
+        for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1f25);
+        const value = (version << 12) | rem;
+        for (let i = 0; i < 18; i++) {
+          const dark = ((value >>> i) & 1) !== 0;
+          setFunc(size - 11 + (i % 3), Math.floor(i / 3), dark);
+          setFunc(Math.floor(i / 3), size - 11 + (i % 3), dark);
+        }
+      }
+
+      /* ⑤ 铺数据：右下列起、两列一组 zigzag，跳过第 6 列（定时图案） */
+      let bitIndex = 0;
+      for (let right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (let vert = 0; vert < size; vert++) {
+          for (let j = 0; j < 2; j++) {
+            const x = right - j;
+            const upward = ((right + 1) & 2) === 0;
+            const y = upward ? size - 1 - vert : vert;
+            if (!isFunction[y * size + x] && bitIndex < allCodewords.length * 8) {
+              modules[y * size + x] = (allCodewords[bitIndex >>> 3] >>> (7 - (bitIndex & 7))) & 1;
+              bitIndex++;
+            }
+          }
+        }
+      }
+
+      /* ⑥ 掩码：8 种各盖一遍，按 N1–N4 罚分取最低 */
+      const maskFn = (mask, x, y) => {
+        switch (mask) {
+          case 0:
+            return (x + y) % 2 === 0;
+          case 1:
+            return y % 2 === 0;
+          case 2:
+            return x % 3 === 0;
+          case 3:
+            return (x + y) % 3 === 0;
+          case 4:
+            return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0;
+          case 5:
+            return ((x * y) % 2) + ((x * y) % 3) === 0;
+          case 6:
+            return (((x * y) % 2) + ((x * y) % 3)) % 2 === 0;
+          default:
+            return (((x + y) % 2) + ((x * y) % 3)) % 2 === 0;
+        }
+      };
+      const applyMask = (mask) => {
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            if (!isFunction[y * size + x] && maskFn(mask, x, y)) modules[y * size + x] ^= 1;
+          }
+        }
+      };
+
+      const penalty = () => {
+        let score = 0;
+        const at = (x, y) => modules[y * size + x];
+        /* N1：行 / 列连续同色，5 个起每多一个 +1（5 个本身 +3） */
+        for (let y = 0; y < size; y++) {
+          let run = 1;
+          for (let x = 1; x < size; x++) {
+            if (at(x, y) === at(x - 1, y)) run++;
+            else {
+              if (run >= 5) score += run - 2;
+              run = 1;
+            }
+          }
+          if (run >= 5) score += run - 2;
+        }
+        for (let x = 0; x < size; x++) {
+          let run = 1;
+          for (let y = 1; y < size; y++) {
+            if (at(x, y) === at(x, y - 1)) run++;
+            else {
+              if (run >= 5) score += run - 2;
+              run = 1;
+            }
+          }
+          if (run >= 5) score += run - 2;
+        }
+        /* N2：2×2 同色块 */
+        for (let y = 0; y < size - 1; y++) {
+          for (let x = 0; x < size - 1; x++) {
+            const c = at(x, y);
+            if (c === at(x + 1, y) && c === at(x, y + 1) && c === at(x + 1, y + 1)) score += 3;
+          }
+        }
+        /* N3：1011101 前后各 4 个浅色，两侧各算一次（越界按浅色） */
+        const pat = [1, 0, 1, 1, 1, 0, 1];
+        const match = (get, from) => {
+          for (let i = 0; i < 7; i++) if (get(from + i) !== pat[i]) return 0;
+          let hits = 0;
+          let left = true;
+          for (let i = 1; i <= 4; i++) {
+            const v = from - i;
+            if (v >= 0 && get(v) !== 0) {
+              left = false;
+              break;
+            }
+          }
+          if (left) hits++;
+          let right = true;
+          for (let i = 7; i < 11; i++) {
+            const v = from + i;
+            if (v < size && get(v) !== 0) {
+              right = false;
+              break;
+            }
+          }
+          if (right) hits++;
+          return hits * 40;
+        };
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x <= size - 7; x++) score += match((i) => at(i, y), x);
+        }
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y <= size - 7; y++) score += match((i) => at(x, i), y);
+        }
+        /* N4：暗模块比例偏离 50% */
+        let dark = 0;
+        for (let i = 0; i < modules.length; i++) dark += modules[i];
+        const total = size * size;
+        score += (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+        return score;
+      };
+
+      let bestMask = 0;
+      let bestScore = Infinity;
+      for (let mask = 0; mask < 8; mask++) {
+        applyMask(mask);
+        drawFormatBits(mask);
+        const score = penalty();
+        if (score < bestScore) {
+          bestScore = score;
+          bestMask = mask;
+        }
+        applyMask(mask);
+      }
+      applyMask(bestMask);
+      drawFormatBits(bestMask);
+
+      return { version, size, mask: bestMask, isDark: (x, y) => modules[y * size + x] === 1 };
+    }
+
+    /* ============================ 组件 ============================ */
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const escapeAttr = (value) =>
+      String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+    export default async () => ({
+      tag: 'mc-qrcode',
+
+      attrs: {
+        // 内容：空 = 什么都不画
+        value: '',
+        // 边长（px）：决定绘制分辨率；改 --mc-qrcode-size 只改盒子
+        size: 160,
+        level: 'M',
+        renderer: 'canvas',
+        color: '#000000',
+        background: '#ffffff',
+        // 静区宽度，单位是模块（规范要求 4）
+        margin: 4,
+        // 中间图案：图片地址（URL / data URI）；空 = 不放
+        logo: '',
+        logoSize: 0.2,
+        logoPadding: 2,
+        logoRadius: 4,
+        logoBackground: null,
+      },
+
+      ready() {
+        const root = this.ele.shadowRoot;
+        this._canvas = root.querySelector('.mc-canvas');
+        this._svg = root.querySelector('.mc-svg');
+        this._logoToken = 0;
+        // proto 方法只挂在 $() 包装对象上；宿主元素上也给一份，普通 HTML 里 el.toDataURL() 直接能用
+        this.ele.toDataURL = (type) => this.toDataURL(type);
+      },
+
+      attached() {
+        // 宿主 style 等构造期结束再写（P31）
+        this._live = true;
+        this.paint();
+      },
+
+      detached() {
+        // 丢掉在飞的图片回调
+        this._logoToken++;
+      },
+
+      watch: {
+        value() {
+          this.paint();
+        },
+        size() {
+          this.paint();
+        },
+        level() {
+          this.paint();
+        },
+        renderer() {
+          this.paint();
+        },
+        color() {
+          this.paint();
+        },
+        background() {
+          this.paint();
+        },
+        margin() {
+          this.paint();
+        },
+        logo() {
+          this.paint();
+        },
+        logoSize() {
+          this.paint();
+        },
+        logoPadding() {
+          this.paint();
+        },
+        logoRadius() {
+          this.paint();
+        },
+        logoBackground() {
+          this.paint();
+        },
+      },
+
+      proto: {
+        /** 布尔 / 数值属性的读法：属性不在或不是数字时用 fallback */
+        readNumber(name, fallback, min, max) {
+          const raw = this.ele.getAttribute(name);
+          const parsed = raw === null || raw.trim() === '' ? NaN : Number(raw);
+          return clamp(Number.isFinite(parsed) ? parsed : fallback, min, max);
+        },
+
+        /** 颜色属性：空串 / 缺省时用 fallback */
+        readColor(name, fallback) {
+          const raw = this.ele.getAttribute(name);
+          const value = raw === null ? '' : raw.trim();
+          return value || fallback;
+        },
+
+        /** 纠错等级：只认 L / M / Q / H，其余按 M */
+        readLevel() {
+          const raw = String(this.ele.getAttribute('level') ?? 'M').toUpperCase();
+          return LEVELS.includes(raw) ? raw : 'M';
+        },
+
+        /** size 按 px 写 --mc-qrcode-size；只删自己写过的那次（同 mc-rate / mc-avatar） */
+        applySize() {
+          const raw = String(this.ele.getAttribute('size') ?? '').trim();
+          const px = Number(raw);
+          if (raw !== '' && Number.isFinite(px) && px > 0) {
+            this.ele.style.setProperty('--mc-qrcode-px', clamp(px, 32, 2048) + 'px');
+            this._sizeSet = true;
+          } else if (this._sizeSet) {
+            this.ele.style.removeProperty('--mc-qrcode-px');
+            this._sizeSet = false;
+          }
+        },
+
+        /** 唯一入口：编码 → 按 renderer 落到 canvas / svg */
+        paint() {
+          if (!this._canvas || !this._svg) return;
+          this.applySize();
+
+          const text = this.ele.getAttribute('value') ?? '';
+          if (!text) {
+            this.clear();
+            return;
+          }
+
+          let qr;
+          try {
+            qr = encodeQr(text, this.readLevel());
+            if (this.ele.hasAttribute('data-error')) this.ele.removeAttribute('data-error');
+          } catch (error) {
+            // 内容超出容量：清掉旧图并留个记号，不弹控制台噪音
+            this.ele.setAttribute('data-error', 'capacity');
+            this.clear();
+            return;
+          }
+
+          const px = this.readNumber('size', 160, 32, 2048);
+          const margin = this.readNumber('margin', 4, 0, 16);
+          const box = {
+            px,
+            margin,
+            total: qr.size + margin * 2,
+            color: this.readColor('color', '#000000'),
+            background: this.readColor('background', '#ffffff'),
+          };
+
+          if (String(this.ele.getAttribute('renderer') ?? '') === 'svg') this.paintSvg(qr, box);
+          else this.paintCanvas(qr, box);
+        },
+
+        /** 清空两种渲染器（内容为空 / 超容量） */
+        clear() {
+          const canvas = this._canvas;
+          if (canvas) {
+            canvas.width = 0;
+            canvas.height = 0;
+          }
+          if (this._svg) this._svg.innerHTML = '';
+          this._logoToken++;
+        },
+
+        /* ---------------- canvas ---------------- */
+
+        paintCanvas(qr, box) {
+          const canvas = this._canvas;
+          const dpr = Math.min(window.devicePixelRatio || 1, 3);
+          /* ⚠️ 全程在**设备像素**坐标里画，不用 setTransform 缩放：
+             缩放坐标系下 CSS 整像素 × 1.25 会落到半个设备像素上，每个格子边缘被抗锯齿糊成灰缝
+             （Windows 125% / 150% 缩放下非常明显）。取整到设备像素才是真的无缝。 */
+          const buffer = Math.round(box.px * dpr);
+          canvas.width = buffer;
+          canvas.height = buffer;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, buffer, buffer);
+          if (box.background !== 'transparent') {
+            ctx.fillStyle = box.background;
+            ctx.fillRect(0, 0, buffer, buffer);
+          }
+
+          /* 逐行把连续深色模块并成一条：边界取整到设备像素，模块之间不会漏缝 */
+          const cell = buffer / box.total;
+          ctx.fillStyle = box.color;
+          const edge = (n) => Math.round(n * cell);
+          for (let y = 0; y < qr.size; y++) {
+            let x = 0;
+            while (x < qr.size) {
+              if (!qr.isDark(x, y)) {
+                x++;
+                continue;
+              }
+              let run = 1;
+              while (x + run < qr.size && qr.isDark(x + run, y)) run++;
+              const top = edge(y + box.margin);
+              ctx.fillRect(
+                edge(x + box.margin),
+                top,
+                edge(x + run + box.margin) - edge(x + box.margin),
+                edge(y + box.margin + 1) - top,
+              );
+              x += run;
+            }
+          }
+
+          // 图案的 px 参数（留白 / 圆角）也跟着换算到设备像素
+          this.drawCanvasLogo(ctx, box, buffer / box.px, buffer);
+        },
+
+        /** 图案底座圆角矩形 + 图片；图片是异步的，回来时若 token 已变就丢弃 */
+        drawCanvasLogo(ctx, box, scale, buffer) {
+          const src = this.ele.getAttribute('logo');
+          if (!src) {
+            this._logoToken++;
+            return;
+          }
+          const ratio = this.readNumber('logo-size', 0.2, 0.05, 0.4);
+          const side = buffer * ratio;
+          const left = (buffer - side) / 2;
+          const padding = this.readNumber('logo-padding', 2, 0, 200) * scale;
+          const radius = this.readNumber('logo-radius', 4, 0, 200) * scale;
+          const back = this.readColor('logo-background', '') || box.background;
+
+          const paintPad = () => {
+            if (back === 'transparent') return;
+            ctx.fillStyle = back;
+            const x = left - padding;
+            const y = left - padding;
+            const w = side + padding * 2;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.arcTo(x + w, y, x + w, y + w, radius);
+            ctx.arcTo(x + w, y + w, x, y + w, radius);
+            ctx.arcTo(x, y + w, x, y, radius);
+            ctx.arcTo(x, y, x + w, y, radius);
+            ctx.closePath();
+            ctx.fill();
+          };
+
+          const token = ++this._logoToken;
+          const img = new Image();
+          img.decoding = 'async';
+          img.onload = () => {
+            if (token !== this._logoToken) return;
+            paintPad();
+            ctx.drawImage(img, left, left, side, side);
+          };
+          img.onerror = () => {
+            if (token !== this._logoToken) return;
+            paintPad(); // 图挂了也只留底座，不留一个破洞
+          };
+          img.src = src;
+        },
+
+        /* ---------------- svg ---------------- */
+
+        paintSvg(qr, box) {
+          const svg = this._svg;
+          const total = box.total;
+          svg.setAttribute('viewBox', '0 0 ' + total + ' ' + total);
+
+          /* 一条 path 装下所有模块：每行连续段写成 M x y h w v1 h-w z */
+          let d = '';
+          for (let y = 0; y < qr.size; y++) {
+            let x = 0;
+            while (x < qr.size) {
+              if (!qr.isDark(x, y)) {
+                x++;
+                continue;
+              }
+              let run = 1;
+              while (x + run < qr.size && qr.isDark(x + run, y)) run++;
+              d += 'M' + (x + box.margin) + ' ' + (y + box.margin) + 'h' + run + 'v1h-' + run + 'z';
+              x += run;
+            }
+          }
+
+          let markup = '';
+          if (box.background !== 'transparent') {
+            markup +=
+              '<rect width="' +
+              total +
+              '" height="' +
+              total +
+              '" fill="' +
+              escapeAttr(box.background) +
+              '"/>';
+          }
+          markup += '<path d="' + d + '" fill="' + escapeAttr(box.color) + '"/>';
+          markup += this.svgLogo(qr, box, total);
+
+          svg.innerHTML = markup;
+          svg.setAttribute('width', String(box.px));
+          svg.setAttribute('height', String(box.px));
+        },
+
+        /** svg 里的图案：同样的比例与留白，坐标都在模块单位里 */
+        svgLogo(qr, box, total) {
+          const src = this.ele.getAttribute('logo');
+          if (!src) return '';
+          const ratio = this.readNumber('logo-size', 0.2, 0.05, 0.4);
+          const cell = box.px / total;
+          const side = total * ratio;
+          const padding = this.readNumber('logo-padding', 2, 0, 200) / cell;
+          const radius = this.readNumber('logo-radius', 4, 0, 200) / cell;
+          const back = this.readColor('logo-background', '') || box.background;
+          const left = (total - side) / 2;
+          const x = left - padding;
+
+          let markup = '';
+          if (back !== 'transparent') {
+            markup +=
+              '<rect x="' +
+              x +
+              '" y="' +
+              x +
+              '" width="' +
+              (side + padding * 2) +
+              '" height="' +
+              (side + padding * 2) +
+              '" rx="' +
+              radius +
+              '" fill="' +
+              escapeAttr(back) +
+              '"/>';
+          }
+          markup +=
+            '<image x="' +
+            left +
+            '" y="' +
+            left +
+            '" width="' +
+            side +
+            '" height="' +
+            side +
+            '" href="' +
+            escapeAttr(src) +
+            '" preserveAspectRatio="xMidYMid meet"/>';
+          return markup;
+        },
+
+        /**
+         * 导出当前图：canvas 给 PNG data URL（画布被跨域图案污染时返回空串），
+         * svg 给 image/svg+xml 的 data URL。
+         */
+        toDataURL(type = 'image/png') {
+          if (String(this.ele.getAttribute('renderer') ?? '') === 'svg') {
+            const text = new XMLSerializer().serializeToString(this._svg);
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text);
+          }
+          try {
+            return this._canvas.toDataURL(type);
+          } catch (error) {
+            return '';
+          }
+        },
+      },
+    });
+  </script>
+</template>

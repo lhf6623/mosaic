@@ -1,0 +1,16 @@
+<template component>
+  <mc-space align="center" wrap-items>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode value="https://mofas.dev/mosaic/qrcode" margin="0"></mc-qrcode>
+      <span class="text-sm">margin 0</span>
+    </mc-space>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+      <span class="text-sm">margin 4（默认）</span>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-qrcode-margin' });
+  </script>
+</template>

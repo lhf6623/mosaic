@@ -1,0 +1,16 @@
+<template component>
+  <mc-space align="center" wrap-items>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+      <span class="text-sm">canvas</span>
+    </mc-space>
+    <mc-space direction="vertical" align="center" gap="sm">
+      <mc-qrcode renderer="svg" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+      <span class="text-sm">svg</span>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-qrcode-renderer' });
+  </script>
+</template>

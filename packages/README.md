@@ -566,6 +566,7 @@ export default async () =>
 | [Space](./space/api.md)               | `mc-space`                             | `space/`       | ✅ 已实现 |
 | [Divider](./divider/api.md)           | `mc-divider`                           | `divider/`     | ✅ 已实现 |
 | [Pagination](./pagination/api.md)     | `mc-pagination`                        | `pagination/`  | ✅ 已实现 |
+| [QR Code](./qrcode/api.md)            | `mc-qrcode`                            | `qrcode/`      | ✅ 已实现 |
 
 ---
 
