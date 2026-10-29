@@ -1,8 +1,23 @@
 <template component>
-  <mc-space block wrap-items>
-    <mc-badge content="新"></mc-badge>
-    <mc-badge content="已发布"></mc-badge>
-    <mc-badge content="v0.1.0"></mc-badge>
+  <mc-space direction="vertical" gap="16">
+    <!-- 第一行：独立徽标 —— 内容走 content，色走 color（不写就是 primary） -->
+    <mc-space block wrap-items>
+      <mc-badge content="新"></mc-badge>
+      <mc-badge color="info" content="信息"></mc-badge>
+      <mc-badge color="success" content="成功"></mc-badge>
+      <mc-badge color="warning" content="警告"></mc-badge>
+      <mc-badge color="danger" content="危险"></mc-badge>
+    </mc-space>
+
+    <!-- 第二行：挂在容器上 —— 容器写进默认插槽，徽标块自动贴右上角 -->
+    <mc-space block wrap-items gap="24">
+      <mc-badge content="5"><mc-button>消息</mc-button></mc-badge>
+      <mc-badge content="120" max="99" color="danger" variant="solid">
+        <mc-button>消息</mc-button>
+      </mc-badge>
+      <mc-badge dot color="success"><mc-button>在线</mc-button></mc-badge>
+      <mc-badge content="9" color="info"><mc-button variant="outline">通知</mc-button></mc-badge>
+    </mc-space>
   </mc-space>
 
   <script>

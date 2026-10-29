@@ -20,29 +20,23 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          不传容器时就是一块独立徽标，内容走
+          内容走
           <code>content</code>
-          属性。徽标只是标记，
+          属性；容器写进默认插槽，徽标块自己贴到它的右上角 —— 不用再写
+          <code>position: relative</code>
+          加绝对定位。徽标只是标记，
           <strong>不交互</strong>
-          —— 要能点、能关、能选中，用
+          —— 要能点、能关、能选中用
           <code>mc-tag</code>
           的
           <code>checkable</code>
           /
           <code>closable</code>
+          ，它也没有中性色，中性标记同样交给
+          <code>mc-tag</code>
           。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
-      </section>
-
-      <section class="doc-demo">
-        <h3>挂在容器上</h3>
-        <p class="doc-hint">
-          容器写进默认插槽，徽标块自动贴到它的右上角 —— 不用再自己写
-          <code>position: relative</code>
-          容器和绝对定位。
-        </p>
-        <doc-playground src="./demos/anchor.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
@@ -55,20 +49,6 @@
           就完全贴在内侧）。
         </p>
         <doc-playground src="./demos/placement.html"></doc-playground>
-      </section>
-
-      <section class="doc-demo">
-        <h3>语义色</h3>
-        <p class="doc-hint">
-          默认
-          <code>primary</code>
-          ；徽标
-          <strong>没有中性色</strong>
-          —— 中性场景交给
-          <code>mc-tag</code>
-          。
-        </p>
-        <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
       <section class="doc-demo">

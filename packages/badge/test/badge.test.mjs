@@ -18,7 +18,7 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(
         () => {
           const badges = window.__deepAll('mc-badge');
-          return badges.length >= 40 && badges.every((b) => !!b.shadowRoot);
+          return badges.length >= 38 && badges.every((b) => !!b.shadowRoot);
         },
         { timeout: 8000 },
       )
@@ -64,10 +64,12 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 语义色（demo-badge-colors，五条都是默认的 subtle）：底 = 浅底槽，字 = 强调色 */
+    /** 语义色（demo-badge-basic 第一行，五条都是默认的 subtle）：底 = 浅底槽，字 = 强调色 */
     const colors = await page.evaluate(() => {
-      const box = window.__deepAll('demo-badge-colors')[0].shadowRoot;
-      return window.__deepAll('mc-badge', box).map((el) => {
+      const box = window.__deepAll('demo-badge-basic')[0].shadowRoot;
+      /* 第一行是独立徽标（语义色），第二行才是挂在容器上的 */
+      const standalone = window.__deepAll('mc-badge', box).slice(0, 5);
+      return standalone.map((el) => {
         const pill = el.shadowRoot.querySelector('.mc-badge');
         const cs = getComputedStyle(pill);
         return {
@@ -124,7 +126,7 @@ export default async function run({ page, visit, check }) {
     /** 圆点（demo-badge-dot）：圆点显示、文字不显示，整块变成正圆 */
     const dots = await page.evaluate(() => {
       const box = window.__deepAll('demo-badge-dot')[0].shadowRoot;
-      const colorBox = window.__deepAll('demo-badge-colors')[0].shadowRoot;
+      const colorBox = window.__deepAll('demo-badge-basic')[0].shadowRoot;
       const read = (el) => {
         const root = el.shadowRoot;
         const pill = root.querySelector('.mc-badge');
@@ -155,14 +157,15 @@ export default async function run({ page, visit, check }) {
       }));
     });
 
-    /** 挂载模式几何（demo-badge-anchor）：宿主盒 = 容器盒；徽标块中心压在右上角；可点穿 */
+    /** 挂载模式几何（demo-badge-basic 第二行）：宿主盒 = 容器盒；徽标块中心压在右上角；可点穿 */
     const anchor = await page.evaluate(() => {
-      const box = window.__deepAll('demo-badge-anchor')[0].shadowRoot;
+      const box = window.__deepAll('demo-badge-basic')[0].shadowRoot;
       const rect = (el) => {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, w: r.width, h: r.height, right: r.right, top: r.top, bottom: r.bottom, left: r.left };
       };
-      return window.__deepAll('mc-badge', box).map((el) => {
+      const anchored = window.__deepAll('mc-badge', box).slice(5);
+      return anchored.map((el) => {
         const pill = el.shadowRoot.querySelector('.mc-badge');
         return {
           anchored: el.hasAttribute('data-anchored'),
@@ -193,10 +196,11 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** 独立模式（demo-badge-basic）：没有容器时不定位，宿主盒 = 徽标块盒 */
+    /** 独立模式（demo-badge-basic 第一行）：没有容器时不定位，宿主盒 = 徽标块盒 */
     const bare = await page.evaluate(() => {
       const box = window.__deepAll('demo-badge-basic')[0].shadowRoot;
-      return window.__deepAll('mc-badge', box).map((el) => {
+      const standalone = window.__deepAll('mc-badge', box).slice(0, 5);
+      return standalone.map((el) => {
         const pill = el.shadowRoot.querySelector('.mc-badge');
         const host = el.getBoundingClientRect();
         const r = pill.getBoundingClientRect();
@@ -467,14 +471,14 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'mc-badge 注册并渲染；shadow 里没有交互控件；一个默认插槽；开 part="indicator"；挂载 11 / 独立 32',
+    'mc-badge 注册并渲染；shadow 里没有交互控件；一个默认插槽；开 part="indicator"；挂载 11 / 独立 29',
     badge.overview.upgraded &&
-      badge.overview.total >= 43 &&
+      badge.overview.total >= 40 &&
       badge.overview.innerControls === 0 &&
       JSON.stringify(badge.overview.slotCounts) === JSON.stringify([1]) &&
       JSON.stringify(badge.overview.parts) === JSON.stringify(['indicator']) &&
       badge.overview.anchored === 11 &&
-      badge.overview.standalone === 32 &&
+      badge.overview.standalone === 29 &&
       badge.failed.length === 0,
     JSON.stringify(badge.overview) + ' · ' + (badge.failed.join(' | ') || '无 404 / 报错'),
   );
@@ -593,7 +597,7 @@ export default async function run({ page, visit, check }) {
 
   check(
     '独立模式：没有容器时不定位（static），宿主盒 = 徽标块盒',
-    badge.bare.length === 3 &&
+    badge.bare.length === 5 &&
       badge.bare.every((b) => !b.anchored && b.position === 'static' && b.sameX && b.sameW && b.sameH),
     JSON.stringify(badge.bare),
   );
