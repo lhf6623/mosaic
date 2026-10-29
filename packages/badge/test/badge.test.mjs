@@ -82,13 +82,14 @@ export default async function run({ page, visit, check }) {
       });
     });
 
-    /** 外观（demo-badge-variants）：只换色槽贴到哪儿，1px 边框恒定 */
+    /** 外观（demo-badge-variants）：三行 = subtle / solid / outline，每行五个语义色，1px 边框恒定 */
     const variants = await page.evaluate(() => {
       const box = window.__deepAll('demo-badge-variants')[0].shadowRoot;
       const read = (el) => {
         const cs = getComputedStyle(el.shadowRoot.querySelector('.mc-badge'));
         return {
           variant: el.getAttribute('variant') ?? 'subtle',
+          color: el.getAttribute('color'),
           bg: cs.backgroundColor,
           fg: cs.color,
           borderWidth: cs.borderTopWidth,
@@ -97,11 +98,12 @@ export default async function run({ page, visit, check }) {
       };
       const badges = window.__deepAll('mc-badge', box);
       return {
-        subtle: read(badges[0]),
-        solid: read(badges[1]),
-        outline: read(badges[2]),
-        dangerSolid: read(badges[3]),
-        dangerOutline: read(badges[4]),
+        count: badges.length,
+        subtle: read(badges[0]), // 第 1 行第 1 个：primary
+        solid: read(badges[5]), // 第 2 行第 1 个
+        outline: read(badges[10]), // 第 3 行第 1 个
+        dangerSolid: read(badges[9]), // 第 2 行第 5 个：danger
+        dangerOutline: read(badges[14]), // 第 3 行第 5 个：danger
       };
     });
 
@@ -471,14 +473,14 @@ export default async function run({ page, visit, check }) {
   })();
 
   check(
-    'mc-badge 注册并渲染；shadow 里没有交互控件；一个默认插槽；开 part="indicator"；挂载 11 / 独立 29',
+    'mc-badge 注册并渲染；shadow 里没有交互控件；一个默认插槽；开 part="indicator"；挂载 11 / 独立 39',
     badge.overview.upgraded &&
-      badge.overview.total >= 40 &&
+      badge.overview.total >= 50 &&
       badge.overview.innerControls === 0 &&
       JSON.stringify(badge.overview.slotCounts) === JSON.stringify([1]) &&
       JSON.stringify(badge.overview.parts) === JSON.stringify(['indicator']) &&
       badge.overview.anchored === 11 &&
-      badge.overview.standalone === 29 &&
+      badge.overview.standalone === 39 &&
       badge.failed.length === 0,
     JSON.stringify(badge.overview) + ' · ' + (badge.failed.join(' | ') || '无 404 / 报错'),
   );
@@ -499,7 +501,8 @@ export default async function run({ page, visit, check }) {
 
   check(
     'variant：subtle 浅底 / solid 实心（字 = on-fill）/ outline 透明 + 描边，三档都是 1px 边框，且与 color 正交',
-    badge.variants.subtle.bg === badge.tokens.primarySubtle &&
+    badge.variants.count === 15 &&
+      badge.variants.subtle.bg === badge.tokens.primarySubtle &&
       badge.variants.subtle.fg === badge.tokens.primary &&
       badge.variants.solid.bg === badge.tokens.primary &&
       badge.variants.solid.fg === badge.tokens.primaryFg &&

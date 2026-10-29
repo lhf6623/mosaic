@@ -20,9 +20,7 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          内容走
-          <code>content</code>
-          属性；容器写进默认插槽，徽标块自己贴到它的右上角 —— 不用再写
+          容器写进默认插槽，徽标块自己贴到它的右上角 —— 不用再写
           <code>position: relative</code>
           加绝对定位。徽标只是标记，
           <strong>不交互</strong>
@@ -42,7 +40,7 @@
       <section class="doc-demo">
         <h3>位置</h3>
         <p class="doc-hint">
-          四个角，徽标块中心压在角上；外挂多少用
+          外挂多少用
           <code>--mc-badge-overlap</code>
           调（
           <code>0</code>
@@ -63,33 +61,18 @@
 
       <section class="doc-demo">
         <h3>圆点</h3>
-        <p class="doc-hint">
-          <code>dot</code>
-          只显示圆点并变成正圆；内容整块不渲染 —— 圆点只说「有事发生」，不显示数字。
-        </p>
         <doc-playground src="./demos/dot.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>数值上限</h3>
-        <p class="doc-hint">
-          <code>max</code>
-          给数字上限：内容超过它就显示
-          <code>99+</code>
-          。只认纯数字内容。
-        </p>
         <doc-playground src="./demos/max.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
-        <h3>hex 颜色</h3>
+        <h3>自定义颜色</h3>
         <p class="doc-hint">
-          <code>color</code>
-          也直接收 hex（
-          <code>#fff000</code>
-          /
-          <code>#fc0</code>
-          ）：浅底按主题派生， 实心上的文字色按对比度自动给。
+          hex 只填色槽 —— 浅底按当前主题派生、实心上的文字色按对比度自动给。
         </p>
         <doc-playground src="./demos/hex.html"></doc-playground>
       </section>
@@ -102,7 +85,7 @@
           <code>dot</code>
           时本来就不渲染；
           <code>invisible</code>
-          用来在内容非空时临时关掉徽标块，容器照常保留。
+          用来在内容非空时临时关掉。
         </p>
         <doc-playground src="./demos/invisible.html"></doc-playground>
       </section>
@@ -112,7 +95,7 @@
         <p class="doc-hint">
           视觉在 shadow 里的
           <code>part="indicator"</code>
-          上；令牌管不到的效果（比如外挂那半圈的挖边）从这里改。
+          上。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
