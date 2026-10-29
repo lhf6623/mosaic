@@ -1,16 +1,26 @@
 <template component>
   <mc-space align="center" wrap-items>
     <mc-space direction="vertical" align="center" gap="sm">
-      <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
-      <span class="text-sm">canvas</span>
+      <mc-qrcode id="qr-canvas" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+      <mc-button size="sm" variant="outline" on:click="save('qr-canvas')">下载 PNG</mc-button>
     </mc-space>
     <mc-space direction="vertical" align="center" gap="sm">
-      <mc-qrcode renderer="svg" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
-      <span class="text-sm">svg</span>
+      <mc-qrcode id="qr-svg" renderer="svg" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+      <mc-button size="sm" variant="outline" on:click="save('qr-svg')">下载 SVG</mc-button>
     </mc-space>
   </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-qrcode-renderer' });
+    export default async () => ({
+      tag: 'demo-qrcode-renderer',
+
+      proto: {
+        /* 下载走组件自己的方法：canvas 存 PNG、svg 存 .svg，文件名按渲染方式给默认值 */
+        save(id) {
+          const target = this.shadow.$('#' + id);
+          (target?.ele ?? target)?.download();
+        },
+      },
+    });
   </script>
 </template>

@@ -239,6 +239,32 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(exported),
   );
 
+  /* ---------- 下载 ---------- */
+  const downloaded = await page.evaluate(() => {
+    const calls = [];
+    const original = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      calls.push({ name: this.download, href: this.href.slice(0, 32) });
+    };
+    const canvasOk = document.getElementById('qr-export').download();
+    const svgOk = document.getElementById('qr-export-svg').download('my-code.svg');
+    const emptyOk = document.getElementById('qr-empty').download();
+    HTMLAnchorElement.prototype.click = original;
+    return { canvasOk, svgOk, emptyOk, calls };
+  });
+  check(
+    'download()：canvas 存 PNG、svg 存 .svg（文件名可指定）；空内容返回 false 且不触发下载',
+    downloaded.canvasOk === true &&
+      downloaded.svgOk === true &&
+      downloaded.emptyOk === false &&
+      downloaded.calls.length === 2 &&
+      downloaded.calls[0].name === 'qrcode.png' &&
+      downloaded.calls[0].href.startsWith('data:image/png;base64,') &&
+      downloaded.calls[1].name === 'my-code.svg' &&
+      downloaded.calls[1].href.startsWith('data:image/svg+xml'),
+    JSON.stringify(downloaded),
+  );
+
   const redraw = await page.evaluate(async () => {
     const el = document.getElementById('qr-change');
     const grab = () => {

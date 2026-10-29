@@ -456,6 +456,7 @@
         this._logoToken = 0;
         // proto 方法只挂在 $() 包装对象上；宿主元素上也给一份，普通 HTML 里 el.toDataURL() 直接能用
         this.ele.toDataURL = (type) => this.toDataURL(type);
+        this.ele.download = (name) => this.download(name);
       },
 
       attached() {
@@ -771,19 +772,44 @@
         },
 
         /**
-         * 导出当前图：canvas 给 PNG data URL（画布被跨域图案污染时返回空串），
-         * svg 给 image/svg+xml 的 data URL。
+         * 导出当前图：canvas 给 PNG data URL，svg 给 image/svg+xml 的 data URL。
+         * 没内容（空 value / 超容量 / 画布被跨域图案污染）时返回空串。
          */
         toDataURL(type = 'image/png') {
           if (String(this.ele.getAttribute('renderer') ?? '') === 'svg') {
-            const text = new XMLSerializer().serializeToString(this._svg);
+            if (!this._svg.firstChild) return '';
+            /* 导出的是干净的图：组件内部的 class / part 不进文件，xmlns 补上给设计工具认 */
+            const clone = this._svg.cloneNode(true);
+            clone.removeAttribute('class');
+            clone.removeAttribute('part');
+            clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            const text = new XMLSerializer().serializeToString(clone);
             return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text);
           }
+          if (!this._canvas.width) return '';
           try {
             return this._canvas.toDataURL(type);
           } catch (error) {
             return '';
           }
+        },
+
+        /**
+         * 下载当前图：canvas 存 PNG、svg 存 .svg 文件（文件名不给就按类型取默认）。
+         * @returns {boolean} 是否真的发起了下载（没内容 / 导出失败时 false）
+         */
+        download(filename) {
+          const href = this.toDataURL();
+          if (!href) return false;
+          const isSvg = String(this.ele.getAttribute('renderer') ?? '') === 'svg';
+          const link = document.createElement('a');
+          link.href = href;
+          link.download = filename || (isSvg ? 'qrcode.svg' : 'qrcode.png');
+          link.rel = 'noopener';
+          document.body.append(link);
+          link.click();
+          link.remove();
+          return true;
         },
       },
     });

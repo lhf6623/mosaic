@@ -72,11 +72,15 @@
           <code>renderer</code>
           默认
           <code>canvas</code>
-          （位图，按 DPR 重绘，适合固定尺寸与导出 PNG）；
+          （位图，按 DPR 重绘，适合固定尺寸）；
           <code>svg</code>
-          是矢量路径，缩放、打印、贴进设计稿都不会糊，也能被
+          是矢量路径，缩放、打印、贴进设计稿都不会糊。两条路都能导出：下面的按钮走组件的
+          <code>download()</code>
+          —— canvas 存 PNG、svg 存
+          <code>.svg</code>
+          文件；要自己拿数据就调
           <code>toDataURL()</code>
-          直接导出。
+          。
         </p>
         <doc-playground src="./demos/renderer.html"></doc-playground>
       </section>
