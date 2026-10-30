@@ -239,7 +239,8 @@
         },
 
         ready() {
-          const panel = this.ele.shadowRoot.querySelector('.mc-panel');
+          // 取引用走 this.shadow.$；面板的下游是原生 popover API 与滚动守卫，取完下 .ele
+          const panel = this.shadow.$('.mc-panel')?.ele;
           /* 视口变化会重新解析锚点定位，箭头偏移跟着重算 */
           this._onViewport = () => {
             if (this.ele.hasAttribute('open')) requestAnimationFrame(() => this.syncArrowShift());
@@ -273,7 +274,7 @@
 
         proto: {
           get panel() {
-            return this.ele.shadowRoot.querySelector('.mc-panel');
+            return this.shadow.$('.mc-panel')?.ele;
           },
 
           /** 把宿主 open 属性 → 原生 popover 状态。两边的真相都收在这一处。 */
@@ -355,7 +356,7 @@
             /* 箭头默认就显示，只有显式 arrow="none" 才跳过（省掉一次无关的测量） */
             if (this.ele.getAttribute('arrow') === 'none') return;
             const panel = this.panel;
-            const anchorEl = rectOf(this.ele.shadowRoot.querySelector('.mc-anchor'));
+            const anchorEl = rectOf(this.shadow.$('.mc-anchor')?.ele);
             const box = rectOf(panel);
             if (!anchorEl || !box) return;
             const placement = this.ele.getAttribute('placement') ?? 'bottom';
