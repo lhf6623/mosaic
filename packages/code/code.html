@@ -570,6 +570,7 @@
             const sheet = await loadSheet(`${base}styles/${name}.min.css`);
             // 等待期间又切了主题 / 组件已经卸载，丢弃这次结果
             if (this._themeName !== name || !this.ele.isConnected) return;
+            // adoptedStyleSheets 是 ShadowRoot 自己的 API，没有 ofa 包等价物，只能从原生 shadowRoot 上拿
             const root = this.ele.shadowRoot;
             // 只换掉自己上次 adopt 的那张，其余（组件基座 / 宿主带来的）原样保留
             root.adoptedStyleSheets = [
@@ -592,9 +593,9 @@
       },
 
       ready() {
-        const root = this.ele.shadowRoot;
-        this._codeEl = root.querySelector('.mc-block');
-        this._bodyEl = root.querySelector('.mc-body');
+        // 取引用走 this.shadow.$；这两个下游读写的是原生 .style / .scrollTop 与带 options 的监听，取完下 .ele
+        this._codeEl = this.shadow.$('.mc-block')?.ele;
+        this._bodyEl = this.shadow.$('.mc-body')?.ele;
 
         this._hlHtml = null;
         this._themeName = '';
