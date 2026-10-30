@@ -449,14 +449,15 @@
         },
 
         ready() {
-          const root = this.ele.shadowRoot;
-          this._control = root.querySelector('.mc-control');
-          this._valueEl = root.querySelector('.mc-value');
-          this._clearEl = root.querySelector('.mc-clear');
-          this._panel = root.querySelector('.mc-panel');
-          this._prefixSlot = root.querySelector('slot[name="prefix"]');
-          this._optionSlot = root.querySelector('slot[name="option"]');
-          this._iconSlot = root.querySelector('slot[name="icon"]');
+          // shadow 内取引用走 this.shadow.$（§1.9）：_control / _valueEl / _panel 的下游是原生方法
+          // 与 helper（focus、showPopover、matches、attachOverflowTip），所以取完下 .ele
+          this._control = this.shadow.$('.mc-control')?.ele;
+          this._valueEl = this.shadow.$('.mc-value')?.ele;
+          this._clearEl = this.shadow.$('.mc-clear')?.ele;
+          this._panel = this.shadow.$('.mc-panel')?.ele;
+          this._prefixSlot = this.shadow.$('slot[name="prefix"]');
+          this._optionSlot = this.shadow.$('slot[name="option"]');
+          this._iconSlot = this.shadow.$('slot[name="icon"]');
           this._optionTemplate = null;
           this._iconTemplate = null;
 
@@ -556,13 +557,13 @@
 
           /* prefix 插槽：有没有分到内容只有 JS 知道，镜像成宿主 data-has-prefix 给 CSS 用 */
           this._onSlotChange = () => this.applySlotState();
-          this._prefixSlot?.addEventListener('slotchange', this._onSlotChange);
+          this._prefixSlot?.on('slotchange', this._onSlotChange);
           this.applySlotState();
 
           /* 行模板插槽：分到的是 <template>，增删会触发 slotchange → 重读并重建行 */
           this._onTemplateChange = () => this.refreshTemplates();
-          this._optionSlot?.addEventListener('slotchange', this._onTemplateChange);
-          this._iconSlot?.addEventListener('slotchange', this._onTemplateChange);
+          this._optionSlot?.on('slotchange', this._onTemplateChange);
+          this._iconSlot?.on('slotchange', this._onTemplateChange);
 
           this.initValue();
         },
@@ -570,9 +571,9 @@
         detached() {
           this._attrMo?.disconnect();
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
-          this._prefixSlot?.removeEventListener('slotchange', this._onSlotChange);
-          this._optionSlot?.removeEventListener('slotchange', this._onTemplateChange);
-          this._iconSlot?.removeEventListener('slotchange', this._onTemplateChange);
+          this._prefixSlot?.off('slotchange', this._onSlotChange);
+          this._optionSlot?.off('slotchange', this._onTemplateChange);
+          this._iconSlot?.off('slotchange', this._onTemplateChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
           this._scrollGuard?.dispose();
@@ -782,10 +783,8 @@
            */
           syncRowContent() {
             if (!this._optionTemplate && !this._iconTemplate) return;
-            const root = this.ele.shadowRoot;
-            if (!root) return;
             const rowOf = new Map(
-              [...root.querySelectorAll('.mc-row')].map((row) => [row.dataset.key, row]),
+              this.shadow.all('.mc-row').map((row) => [row.ele.dataset.key, row.ele]),
             );
             for (const node of this._nodes) {
               const row = rowOf.get(node.key);
@@ -818,8 +817,8 @@
           readTemplates() {
             const templateOf = (slot) =>
               (slot?.assignedElements() ?? []).find((el) => el.tagName === 'TEMPLATE') ?? null;
-            const option = templateOf(this._optionSlot);
-            const icon = templateOf(this._iconSlot);
+            const option = templateOf(this._optionSlot?.ele);
+            const icon = templateOf(this._iconSlot?.ele);
             this._optionTemplate = this.templateHasContent(option) ? option : null;
             this._iconTemplate = this.templateHasContent(icon) ? icon : null;
           },
@@ -956,7 +955,7 @@
 
           /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算（同 mc-input） */
           slotHasContent(slot) {
-            return (slot?.assignedNodes() ?? []).some(
+            return (slot?.ele?.assignedNodes() ?? []).some(
               (node) =>
                 node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
             );
@@ -1019,9 +1018,7 @@
             if (!node || !this.isOpen()) return;
             /* 滚动是行为层（模板表达不了）：等模板把行更新完再滚（宏任务排在 o-fill 的微任务之后） */
             setTimeout(() => {
-              const row = this.ele.shadowRoot?.querySelector(
-                '.mc-row[data-key="' + node.key + '"]',
-              );
+              const row = this.shadow.$('.mc-row[data-key="' + node.key + '"]')?.ele;
               row?.scrollIntoView({ block: 'nearest' });
             }, 0);
           },
