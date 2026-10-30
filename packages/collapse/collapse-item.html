@@ -72,7 +72,7 @@
     }
   </style>
 
-  <details class="mc-details" attr:open="open !== null">
+  <details class="mc-details" attr:open="open !== null" on:toggle="onToggle()">
     <summary class="mc-header" part="header">
       <span class="mc-header-text"><slot name="header">{{header}}</slot></span>
       <span class="mc-chevron mc-icon-chevron-right"></span>
@@ -123,9 +123,7 @@
         },
 
         attached() {
-          this._onToggle = () => this.onToggle();
           this._onHeaderClick = (event) => this.onHeaderClick(event);
-          this._details.on('toggle', this._onToggle);
           // 捕获阶段才能拦到键盘激活（Enter / Space）的合成 click；包装对象的 .on 没有 capture 选项，这条留原生
           this._header.ele.addEventListener('click', this._onHeaderClick, true);
 
@@ -142,7 +140,6 @@
         },
 
         detached() {
-          this._details?.off('toggle', this._onToggle);
           this._header?.ele.removeEventListener('click', this._onHeaderClick, true);
         },
 
