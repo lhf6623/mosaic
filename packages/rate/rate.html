@@ -208,11 +208,12 @@
 
         ready() {
           // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-          const root = this.ele.shadowRoot;
-          this._base = root.querySelector('.mc-base');
-          this._native = root.querySelector('.mc-native');
+          // 取引用走 this.shadow.$（§1.9）：_native / _itemsEl 只做原生调用（focus / getBoundingClientRect），
+          // 取完下 .ele；_base 还要订阅 5 个 pointer 事件，留包装对象，原生方法再用 .ele
+          this._base = this.shadow.$('.mc-base');
+          this._native = this.shadow.$('.mc-native')?.ele;
           /* 星条几何只在行为层量（指针位置 → 分值）；星本身由模板渲染 */
-          this._itemsEl = root.querySelector('.mc-items');
+          this._itemsEl = this.shadow.$('.mc-items')?.ele;
           this._hover = null;
           this._dragging = false;
           this._pressedValue = null;
@@ -418,20 +419,20 @@
             this._onPointerMove = (event) => this.onPointerMove(event);
             this._onPointerUp = (event) => this.onPointerUp(event);
             this._onPointerLeave = () => this.onPointerLeave();
-            this._base.addEventListener('pointerdown', this._onPointerDown);
-            this._base.addEventListener('pointermove', this._onPointerMove);
-            this._base.addEventListener('pointerup', this._onPointerUp);
-            this._base.addEventListener('pointercancel', this._onPointerUp);
-            this._base.addEventListener('pointerleave', this._onPointerLeave);
+            this._base.on('pointerdown', this._onPointerDown);
+            this._base.on('pointermove', this._onPointerMove);
+            this._base.on('pointerup', this._onPointerUp);
+            this._base.on('pointercancel', this._onPointerUp);
+            this._base.on('pointerleave', this._onPointerLeave);
           },
 
           unbindEvents() {
             if (!this._bound || !this._base) return;
-            this._base.removeEventListener('pointerdown', this._onPointerDown);
-            this._base.removeEventListener('pointermove', this._onPointerMove);
-            this._base.removeEventListener('pointerup', this._onPointerUp);
-            this._base.removeEventListener('pointercancel', this._onPointerUp);
-            this._base.removeEventListener('pointerleave', this._onPointerLeave);
+            this._base.off('pointerdown', this._onPointerDown);
+            this._base.off('pointermove', this._onPointerMove);
+            this._base.off('pointerup', this._onPointerUp);
+            this._base.off('pointercancel', this._onPointerUp);
+            this._base.off('pointerleave', this._onPointerLeave);
             this._bound = false;
           },
 
@@ -447,7 +448,7 @@
             this._native.focus({ preventScroll: true });
             this._pointerId = event.pointerId;
             try {
-              this._base.setPointerCapture(event.pointerId);
+              this._base.ele.setPointerCapture(event.pointerId);
             } catch (error) {
               /* 合成事件没有真实指针：拿不到捕获就退化成普通点击 */
             }
@@ -473,7 +474,7 @@
             this._dragging = false;
             this._hover = null;
             try {
-              this._base.releasePointerCapture(this._pointerId);
+              this._base.ele.releasePointerCapture(this._pointerId);
             } catch (error) {
               /* 没有捕获可放 */
             }
