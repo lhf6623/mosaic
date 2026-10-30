@@ -19,9 +19,12 @@
 - 换页的加载条是 `mc-loading-bar`，接线在 `app-config.js`：ofa 每次导航开始都会调 `loading`
   （olink 的 pushState 导航**不发 hashchange**，接在别处会漏掉它），结束信号是 `router-change`；
   慢过一小会儿才露（阈值就在 `app-config.js` 里），快导航不闪。
-- 目标就是当前这一页的导航**不发 `router-change`**（ofa 拿不到新页面就直接返回），加载条会永远卡在
-  loading —— 所以「原地跳」一律不发起：外壳在**捕获阶段**掐掉这类 `olink` 点击，顶栏入口在
-  `openEntry()` 里守卫（首页地址是 `#/docs/pages/home.html` 时点左上角 Mosaic 就是这条）。
+- 目标就是当前这一页的导航**不发 `router-change`**（ofa 的 `_navigate` 建不出新页面就直接返回），而
+  `loading` 在那一刻已经开跑了 → 加载条会永远卡在 loading，不报错也不自己消失（只有再点一个别的菜单，
+  下一次 `router-change` 才顺带把它收掉）。所以「原地跳」一律不发起，两道守卫：
+  **外壳**在捕获阶段掐掉这类**同文档链接**（`olink`，以及左栏 / 搜索那类运行时造的 `<a href="#…">` —
+  它们没有 olink，点下去浏览器照样发一次 popstate，o-router 照样 `goto` 同一个 src，路是同一条）；
+  **顶栏入口**在 `openEntry()` 里提前返回（首页地址是 `#/docs/pages/home.html` 时点左上角 Mosaic 就是这条）。
 - 左栏（`docs/components/nav.html`）换页后把**当前条目滚到竖直中间**：这一栏装的是整棵导航树，
   当前页常常落在视口外。首尾的页面会先撞到滚动边界，那时这个动作退化成「保证它可见」；
   用户自己滚过之后不会被任何自动动作拽回去（只在换页与「视口重新有高度」时动手）。

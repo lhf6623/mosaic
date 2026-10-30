@@ -104,20 +104,24 @@
         };
         this._topNav?.on('click', this._onTopNavClick);
 
-        /* 原地跳（目标就是当前这一页）的 olink 链接：捕获阶段掐掉这次导航。
-           ⚠️ ofa 对「同一页」不发 router-change（它的 _navigate 拿不到新页面就直接 return），
-           而 loading 那一刻已经开跑了 —— 收尾信号永远不来，加载条会一直停在 loading。
-           首页地址是 #/docs/pages/home.html 时点左上角 Mosaic 就是这条（点的就是当前地址）。
-           两个不显然的点：① 链接住在各层 shadow root 里，document 上 event.target 早被重定向成宿主，
+        /* 原地跳（目标就是当前这一页）的站内链接：捕获阶段掐掉这次导航。
+           ⚠️ ofa 对「同一页」不发 router-change（`_navigate` 里 Rt() 建不出新页面就直接 return），
+           而 loading 在 Rt() 一开头就已经开跑了 —— 收尾信号永远不来，加载条一直停在 loading，
+           不报错也不自己消失（只有再点一个别的菜单，下一次 router-change 才顺带把它收掉）。
+           触发面比 olink 大得多：点 `<a href="#…">`（**左栏当前这一条** / 搜索结果是运行时造的普通
+           `<a href="#…">`，都没有 olink）浏览器照样发一次 popstate，o-router 见 history.state 为空
+           就走 fixStateUrl → goto(同一个 src)，落在同一条路上 —— 首页点左上角 Mosaic（olink）只是其中一例。
+           三个不显然的点：① 链接住在各层 shadow root 里，document 上 event.target 早被重定向成宿主，
            只能用 composedPath() 把它捞出来；② 必须捕获阶段 —— ofa 的 olink 处理器挂在页面 shadow root 上，
-           冒泡到那儿就晚了（它看到 defaultPrevented 会自己放弃这次导航）。 */
+           冒泡到那儿就晚了（它看到 defaultPrevented 会自己放弃这次导航）；
+           ③ 只掐「同文档」的（hash 链接 / olink）：不带 hash 的普通 href 是整页加载，那是链接本来的意思。 */
         this._onDocClick = (event) => {
           if (event.defaultPrevented || event.button !== 0) return;
           if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          const anchor = event
-            .composedPath()
-            .find((node) => node instanceof HTMLAnchorElement && node.hasAttribute('olink'));
+          const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
           if (!anchor || anchor.hasAttribute('target') || anchor.hasAttribute('download')) return;
+          /* olink 的 href 在 ofa 改写之前可能还是相对路径，所以「有 hash」不能作为唯一判据 */
+          if (!anchor.hasAttribute('olink') && !anchor.hash) return;
           if (repoPathOf(anchor.href) === route()) event.preventDefault();
         };
         document.addEventListener('click', this._onDocClick, true);
