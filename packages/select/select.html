@@ -335,12 +335,13 @@
         },
 
         ready() {
-          const root = this.ele.shadowRoot;
-          this._control = root.querySelector('.mc-control');
-          this._valueEl = root.querySelector('.mc-value');
-          this._clearEl = root.querySelector('.mc-clear');
-          this._panel = root.querySelector('.mc-panel');
-          this._slot = root.querySelector('slot.mc-options');
+          // shadow 内取引用走 this.shadow.$（§1.9）：下面四个下游都在用原生方法 / 交给 helper
+          // （focus、showPopover、matches、attachOverflowTip），所以取完再下 .ele
+          this._control = this.shadow.$('.mc-control')?.ele;
+          this._valueEl = this.shadow.$('.mc-value')?.ele;
+          this._clearEl = this.shadow.$('.mc-clear')?.ele;
+          this._panel = this.shadow.$('.mc-panel')?.ele;
+          this._slot = this.shadow.$('slot.mc-options');
 
           this._items = [];
           this._active = -1;
@@ -366,7 +367,7 @@
 
         attached() {
           this._onSlotChange = () => this.collectOptions();
-          this._slot.addEventListener('slotchange', this._onSlotChange);
+          this._slot.on('slotchange', this._onSlotChange);
 
           /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
           this._onDocPointerDown = (event) => {
@@ -385,7 +386,7 @@
 
         detached() {
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
-          this._slot?.removeEventListener('slotchange', this._onSlotChange);
+          this._slot?.off('slotchange', this._onSlotChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
           this._scrollGuard?.dispose();
@@ -613,7 +614,7 @@
             if (index < 0) return;
             /* 滚动是行为层（模板表达不了）：等模板把行更新完再滚 */
             queueMicrotask(() => {
-              const row = this.ele.shadowRoot?.querySelectorAll('.mc-option')[index];
+              const row = this.shadow.all('.mc-option')[index]?.ele;
               row?.scrollIntoView({ block: 'nearest' });
             });
           },
