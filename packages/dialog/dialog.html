@@ -243,7 +243,7 @@
         },
 
         ready() {
-          this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+          this._slots = this.shadow.all('slot');
 
           // 运行时状态走 property（规范 1.4）：setter 立刻同步原生 popover，不等 ofa 那一拍（P4）
           Object.defineProperty(this.ele, 'open', {
@@ -271,7 +271,7 @@
         attached() {
           /* data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）；头部还要算上 closable */
           this._onSlotChange = () => this.applyState();
-          for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.on('slotchange', this._onSlotChange);
           this.applyState();
           // 构造期宿主可能还没连上（那时 showPopover 会抛），这里补一次
           this.syncOpen();
@@ -279,8 +279,7 @@
 
         detached() {
           document.removeEventListener('keydown', this._onKeydown, true);
-          for (const slot of this._slots)
-            slot.removeEventListener('slotchange', this._onSlotChange);
+          for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
           this._scrollGuard?.dispose();
         },
 
@@ -312,11 +311,11 @@
 
         proto: {
           get panelRoot() {
-            return this.ele.shadowRoot.querySelector('.mc-root');
+            return this.shadow.$('.mc-root')?.ele;
           },
 
           get panelEl() {
-            return this.ele.shadowRoot.querySelector('.mc-panel');
+            return this.shadow.$('.mc-panel')?.ele;
           },
 
           /** 宿主 open 属性 → 原生 popover 状态；两个方向的真相都收在这一处 */
@@ -410,8 +409,8 @@
           /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算 */
           slotHasContent(name) {
             const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
-            const slot = this.ele.shadowRoot.querySelector(selector);
-            return (slot?.assignedNodes() ?? []).some(
+            const slot = this.shadow.$(selector);
+            return (slot?.ele?.assignedNodes() ?? []).some(
               (node) =>
                 node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
             );
