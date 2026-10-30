@@ -91,6 +91,31 @@
       <code>rules='…'</code>
       这种静态配置），别塞函数。
     </p>
+
+    <h2>按钮点不动、开关关不掉</h2>
+    <p>
+      <code>disabled</code>
+      /
+      <code>checked</code>
+      /
+      <code>loading</code>
+      这类属性只看
+      <strong>在不在</strong>
+      ，不看值写的是什么 —— 这是 HTML 自己的规矩，
+      <code>&lt;input disabled="false"&gt;</code>
+      浏览器一样当成禁用。所以普通页面上写裸属性就够了：
+      <code>&lt;mc-button disabled&gt;</code>
+      。
+    </p>
+    <p>
+      在 ofa 模板里按条件开关，要写
+      <code>attr:disabled="saving"</code>
+      —— 它为假时会把属性整个摘掉。写成
+      <code>:disabled="saving"</code>
+      则相反：条件为假时标签上会留下
+      <code>disabled="false"</code>
+      —— 属性还在，按钮就永远关不掉。
+    </p>
   </div>
   <script>
     export const parent = '../doc-layout.html';
