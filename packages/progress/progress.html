@@ -91,7 +91,7 @@
       },
 
       ready() {
-        this._fill = this.ele.shadowRoot.querySelector('.mc-fill');
+        this._fill = this.shadow.$('.mc-fill')?.ele;
 
         /* 运行时状态走 property（规范 1.4）：setter 写属性并**立刻**重绘，不等 ofa 同步那一拍（P4） */
         for (const name of ['value', 'max']) {
