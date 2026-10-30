@@ -168,22 +168,23 @@ Bootstrap、Vuetify、Shoelace 的主色全是蓝。青釉（205°）能立刻�
 
 ### 颜色
 
-| 令牌                            | 亮色              | 暗色           | 用途                             |
-| ------------------------------- | ----------------- | -------------- | -------------------------------- |
-| `--mc-color-bg`                 | neutral-50        | neutral-950    | 页面底色                         |
-| `--mc-color-surface`            | `#fff`            | neutral-900    | 卡片/面板                        |
-| `--mc-color-surface-raised`     | `#fff`            | neutral-800    | 浮起表面（下拉、弹层）           |
-| `--mc-color-surface-sunken`     | neutral-100       | `#04060c`      | 凹陷区（代码块、输入框底）       |
-| `--mc-color-fg`                 | neutral-900       | neutral-50     | 正文                             |
-| `--mc-color-fg-muted`           | neutral-600       | neutral-300    | 次要文字                         |
-| `--mc-color-fg-subtle`          | neutral-500       | neutral-400    | 占位符（仅大字号 3:1）           |
-| `--mc-color-fg-inverted`        | `#fff`            | neutral-950    | 反色文字                         |
-| `--mc-color-border`             | neutral-200       | neutral-800    | 常规描边                         |
-| `--mc-color-border-strong`      | neutral-300       | neutral-700    | 强描边（输入框、分隔）           |
-| `--mc-color-ring`               | primary-500       | primary-400    | 焦点环                           |
-| `--mc-color-overlay` + `-alpha` | `15 18 30` / 0.45 | `0 0 0` / 0.65 | 遮罩                             |
-| `--mc-color-neutral`            | neutral-200       | neutral-700    | **中性表面**（次要按钮的填充底） |
-| `--mc-color-neutral-fg`         | neutral-900       | neutral-50     | 中性表面上的文字                 |
+| 令牌                            | 亮色              | 暗色           | 用途                                          |
+| ------------------------------- | ----------------- | -------------- | --------------------------------------------- |
+| `--mc-color-bg`                 | neutral-50        | neutral-950    | 页面底色                                      |
+| `--mc-color-surface`            | `#fff`            | neutral-900    | 卡片/面板                                     |
+| `--mc-color-surface-raised`     | `#fff`            | neutral-800    | 浮起表面（下拉、弹层）                        |
+| `--mc-color-surface-sunken`     | neutral-100       | `#04060c`      | 凹陷区（输入框、轨道、表头、条纹）            |
+| `--mc-color-surface-code`       | `#f6f8fa`         | `#04060c`      | 代码块 / 终端底（大面积灰，比 sunken 浅一档） |
+| `--mc-color-fg`                 | neutral-900       | neutral-50     | 正文                                          |
+| `--mc-color-fg-muted`           | neutral-600       | neutral-300    | 次要文字                                      |
+| `--mc-color-fg-subtle`          | neutral-500       | neutral-400    | 占位符（仅大字号 3:1）                        |
+| `--mc-color-fg-inverted`        | `#fff`            | neutral-950    | 反色文字                                      |
+| `--mc-color-border`             | neutral-200       | neutral-800    | 常规描边                                      |
+| `--mc-color-border-strong`      | neutral-300       | neutral-700    | 强描边（输入框、分隔）                        |
+| `--mc-color-ring`               | primary-500       | primary-400    | 焦点环                                        |
+| `--mc-color-overlay` + `-alpha` | `15 18 30` / 0.45 | `0 0 0` / 0.65 | 遮罩                                          |
+| `--mc-color-neutral`            | neutral-200       | neutral-700    | **中性表面**（次要按钮的填充底）              |
+| `--mc-color-neutral-fg`         | neutral-900       | neutral-50     | 中性表面上的文字                              |
 
 > **语法高亮没有令牌**：`mc-code` 的 token 颜色直接来自 highlight.js 的官方主题
 > （默认 `github` / `github-dark`），原样 adopt，不经过令牌层 —— 见

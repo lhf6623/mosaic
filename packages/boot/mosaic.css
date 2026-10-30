@@ -129,6 +129,7 @@
     --mc-color-surface: 255 255 255;
     --mc-color-surface-raised: 255 255 255;
     --mc-color-surface-sunken: var(--mc-neutral-100);
+    --mc-color-surface-code: 246 248 250;
     --mc-color-fg: var(--mc-neutral-900);
     --mc-color-fg-muted: var(--mc-neutral-600);
     --mc-color-fg-subtle: var(--mc-neutral-500);
@@ -177,6 +178,7 @@
     --mc-color-surface: var(--mc-neutral-900);
     --mc-color-surface-raised: var(--mc-neutral-800);
     --mc-color-surface-sunken: 4 6 12;
+    --mc-color-surface-code: 4 6 12;
     --mc-color-fg: var(--mc-neutral-50);
     --mc-color-fg-muted: var(--mc-neutral-300);
     --mc-color-fg-subtle: var(--mc-neutral-400);

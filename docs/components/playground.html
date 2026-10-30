@@ -152,7 +152,8 @@
       position: relative;
       border: 1px solid rgb(var(--mc-color-border));
       border-radius: var(--mc-radius-md);
-      background-color: rgb(var(--mc-color-surface-sunken));
+      /* 跟 mc-code 的代码块同一块底（surface-code），编辑前后视觉不跳 */
+      background-color: rgb(var(--mc-color-surface-code));
       overflow: hidden;
     }
 
@@ -167,7 +168,8 @@
       justify-content: center;
       gap: var(--mc-space-2);
       border-radius: var(--mc-radius-md);
-      background-color: rgb(var(--mc-color-surface-sunken));
+      /* 必须与 .editor-host 同色：这层盖在编辑器上，不同色会在加载完成时闪一下 */
+      background-color: rgb(var(--mc-color-surface-code));
       color: rgb(var(--mc-color-fg-muted));
       font-size: var(--mc-text-sm);
     }

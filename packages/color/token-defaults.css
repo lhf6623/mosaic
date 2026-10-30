@@ -7,7 +7,7 @@
  *
  * 加载方式：由 tools/build-css.mjs 装配进 packages/boot/component-base.css，
  * 每个组件在自己的模板里 <link> 那一份（shadow 作用域，不外溢到宿主页面）。
- * 共 99 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
+ * 共 100 个默认值 —— 与 tokens.css 的 L2 + 标量一一对应。
  * ========================================================================== */
 
 @layer mosaic.tokens {
@@ -16,6 +16,7 @@
     --mc-def-color-surface: 255 255 255;
     --mc-def-color-surface-raised: 255 255 255;
     --mc-def-color-surface-sunken: 233 235 235;
+    --mc-def-color-surface-code: 246 248 250;
     --mc-def-color-fg: 61 67 68;
     --mc-def-color-fg-muted: 103 115 116;
     --mc-def-color-fg-subtle: 126 138 139;

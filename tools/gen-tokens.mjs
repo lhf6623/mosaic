@@ -149,6 +149,11 @@ const THEMES = {
     'color-surface': '255 255 255',
     'color-surface-raised': '255 255 255',
     'color-surface-sunken': ref('neutral', 100),
+    /* 代码块 / 终端底：比 sunken 再浅一档，专门伺候「大面积铺开的灰」。
+       sunken 是 neutral-100（OKLab L .938），做头像底、轨道底这类小面积没问题，铺成整块代码时
+       在白底上发灰发闷；这里取 GitHub Primer 的 bgColor-muted（L .977），只压住「这是一块底」，
+       不跟语法高亮抢颜色。不用 neutral-50 是因为那档恰好 = color-bg，代码块会和页面底糊成一片。 */
+    'color-surface-code': '246 248 250',
     'color-fg': ref('neutral', 900),
     'color-fg-muted': ref('neutral', 600),
     'color-fg-subtle': ref('neutral', 500),
@@ -205,6 +210,7 @@ const THEMES = {
     'color-surface': ref('neutral', 900),
     'color-surface-raised': ref('neutral', 800),
     'color-surface-sunken': '4 6 12',
+    'color-surface-code': '4 6 12', // 沿用 sunken 的值：暗色下代码块本来就该比卡片更黑，借机不动
     'color-fg': ref('neutral', 50),
     'color-fg-muted': ref('neutral', 300),
     'color-fg-subtle': ref('neutral', 400),
