@@ -109,20 +109,20 @@
 
       ready() {
         // 这时 shadow 已建好（同 mc-card）；分到节点的变化靠 slotchange 感知
-        this._slot = this.ele.shadowRoot.querySelector('slot');
+        this._slot = this.shadow.$('slot');
       },
 
       attached() {
         // 宿主属性等构造期结束再写（P31）；首次 slotchange 不一定在挂载前发生，这里补一次
         this._mounted = true;
         this._onSlotChange = () => this.applyContent();
-        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this._slot?.on('slotchange', this._onSlotChange);
         this.applyContent();
         this.applySpacing();
       },
 
       detached() {
-        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this._slot?.off('slotchange', this._onSlotChange);
       },
 
       watch: {
@@ -134,7 +134,7 @@
       proto: {
         /** 默认插槽有没有实质内容 → 宿主 data-has-content（CSS 只认这个属性） */
         applyContent() {
-          const nodes = this._slot?.assignedNodes() ?? [];
+          const nodes = this._slot?.ele?.assignedNodes() ?? [];
           const has = nodes.some(
             (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
           );
