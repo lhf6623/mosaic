@@ -262,11 +262,13 @@
   </style>
 
   <!-- 交互层：透明原生 button 盖满宿主 -->
-  <!-- 内部原生 button 只承载语义：type / disabled 是 HTML 属性，按 ofa 规范走 attr:（false 时移除属性，不会留下 disabled="false"） -->
+  <!-- 内部原生 button 只承载语义：type / disabled 是 HTML 属性，按 ofa 规范走 attr:（false 时移除属性，不会留下 disabled="false"）；
+       click 也在这里绑：单个静态元素 + 单个事件，模板一行就够，不必在 attached 里再 .on / .off 一对（见 packages/README.md §1.9） -->
   <button
     class="mc-native"
     attr:type="type"
-    attr:disabled="disabled !== null || loading !== null"></button>
+    attr:disabled="disabled !== null || loading !== null"
+    on:click="forwardFormAction($event)"></button>
 
   <span class="mc-layer"></span>
   <span class="mc-loader mc-icon-spinner"></span>
@@ -327,20 +329,16 @@
           color.sync(this.ele, this.color);
           if (this.icon || this.iconRight) ensureIcons();
           /* 默认插槽空不空只能看实际分到的节点（模板 o-if 看不到 slot 分配）：
-             文字一没就把 .mc-label 折叠掉，icon 单独用时不留一份空 gap（行为层例外，同 mc-alert）。 */
+             文字一没就把 .mc-label 折叠掉，icon 单独用时不留一份空 gap（行为层例外，同 mc-alert）。
+             这条订阅留在脚本里：与 alert / input / textarea 等 8 个插槽判定组件同一手法，
+             `slotchange` 的引用跨两处（attached 订阅 / detached 退订），模板绑定反而对不上。 */
           this._onSlotChange = () => this.syncLabel();
           this._labelSlot?.on('slotchange', this._onSlotChange);
           this.syncLabel();
-          /* 内部原生 button 在 shadow tree 里：浏览器的 form owner 跨不过 shadow 边界，
-             type="submit" / "reset" 不会自己接到外层 <form> —— 这里替它转发（见 forwardFormAction）。 */
-          this._native = this.shadow.$('.mc-native');
-          this._onNativeClick = (event) => this.forwardFormAction(event);
-          this._native?.on('click', this._onNativeClick);
         },
 
         detached() {
           this._labelSlot?.off('slotchange', this._onSlotChange);
-          this._native?.off('click', this._onNativeClick);
         },
 
         watch: {
@@ -365,7 +363,8 @@
            * 等 click 冒泡完再动手：使用者可能在 on:click 里 preventDefault 表示"别提交"。
            */
           forwardFormAction(event) {
-            const type = this.ele.getAttribute('type') ?? 'button';
+            // type 已在 attrs 里声明（默认 'button'），直接读 ofa 的值，不必再回宿主 getAttribute
+            const type = this.type;
             if (type !== 'submit' && type !== 'reset') return;
             const form = this.ele.closest('form');
             if (!form) return;
