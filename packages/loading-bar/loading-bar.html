@@ -161,9 +161,9 @@
           bar.style.width = '';
         },
 
-        /** 内部那条填充 */
+        /** 内部那条填充（取引用走 this.shadow.$；下游读写的都是原生 .style，取完下 .ele） */
         bar() {
-          return this.ele.shadowRoot?.querySelector('.mc-bar') ?? null;
+          return this.shadow.$('.mc-bar')?.ele ?? null;
         },
       },
     });
