@@ -134,11 +134,12 @@
         },
 
         attached() {
-          const root = this.ele.shadowRoot;
-          this._viewport = root.querySelector('.mc-viewport');
-          this._bar = root.querySelector('.mc-bar');
-          this._thumb = root.querySelector('.mc-thumb');
-          this._slot = root.querySelector('slot');
+          /* shadow 内取引用走 this.shadow.$（§1.9）：视口 / 条子到处在读写原生测量（scrollTop / clientHeight /
+             ResizeObserver.observe），取完直接下 .ele；滑块既要测又要订阅，留包装对象，原生属性再走 .ele */
+          this._viewport = this.shadow.$('.mc-viewport')?.ele;
+          this._bar = this.shadow.$('.mc-bar')?.ele;
+          this._thumb = this.shadow.$('.mc-thumb');
+          this._slot = this.shadow.$('slot');
 
           this._onScroll = () => {
             this.syncScrollbar();
@@ -158,15 +159,17 @@
             /* 真的滚动了才拦：滚不动就放行，让浏览器继续往外交接（不然就把它锁在容器里了） */
             if ((horizontal ? vp.scrollLeft : vp.scrollTop) !== before) event.preventDefault();
           };
-          this._thumb.addEventListener('wheel', this._onThumbWheel, { passive: false });
+          /* 带 { passive: false }：ofa 的 .on 不收 options，这条留原生（同 collapse-item 的捕获阶段那条） */
+          this._thumb.ele.addEventListener('wheel', this._onThumbWheel, { passive: false });
 
-          this._slot.addEventListener('slotchange', () => this.observeContent());
+          /* 这条订阅用 .on：slot 引用是 ofa 包装对象，没有「要不要 passive」的问题 */
+          this._slot.on('slotchange', () => this.observeContent());
           /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
           this._ro = new ResizeObserver(() => this.syncScrollbar());
           this._ro.observe(this._viewport);
 
           this._onThumbDown = (event) => this.startDrag(event);
-          this._thumb.addEventListener('pointerdown', this._onThumbDown);
+          this._thumb.on('pointerdown', this._onThumbDown);
 
           this.syncAxis();
           this.syncReveal();
@@ -176,8 +179,8 @@
 
         detached() {
           this._viewport?.removeEventListener('scroll', this._onScroll);
-          this._thumb?.removeEventListener('pointerdown', this._onThumbDown);
-          this._thumb?.removeEventListener('wheel', this._onThumbWheel);
+          this._thumb?.off('pointerdown', this._onThumbDown);
+          this._thumb?.ele?.removeEventListener('wheel', this._onThumbWheel);
           this._ro?.disconnect();
           this._contentRO?.disconnect();
           window.removeEventListener('pointermove', this._onDragMove);
@@ -213,7 +216,7 @@
           observeContent() {
             this._contentRO?.disconnect();
             this._contentRO = new ResizeObserver(() => this.syncScrollbar());
-            for (const node of this._slot?.assignedElements() ?? []) {
+            for (const node of this._slot?.ele?.assignedElements() ?? []) {
               this._contentRO.observe(node);
             }
           },
@@ -246,11 +249,11 @@
               (total > size ? (vertical ? vp.scrollTop : vp.scrollLeft) / (total - size) : 0);
 
             if (vertical) {
-              this._thumb.style.height = `${length}px`;
-              this._thumb.style.top = `${pos}px`;
+              this._thumb.ele.style.height = `${length}px`;
+              this._thumb.ele.style.top = `${pos}px`;
             } else {
-              this._thumb.style.width = `${length}px`;
-              this._thumb.style.left = `${pos}px`;
+              this._thumb.ele.style.width = `${length}px`;
+              this._thumb.ele.style.left = `${pos}px`;
             }
           },
 
@@ -269,7 +272,7 @@
             const vp = this._viewport;
             const vertical = this.axis !== 'x';
             const bar = vertical ? this._bar.clientHeight : this._bar.clientWidth;
-            const length = vertical ? this._thumb.offsetHeight : this._thumb.offsetWidth;
+            const length = vertical ? this._thumb.ele.offsetHeight : this._thumb.ele.offsetWidth;
             const free = bar - length;
             if (free <= 0) return;
 
@@ -281,7 +284,7 @@
                 (vertical ? vp.scrollHeight - vp.clientHeight : vp.scrollWidth - vp.clientWidth) /
                 free,
             };
-            this._thumb.setPointerCapture?.(event.pointerId);
+            this._thumb.ele.setPointerCapture?.(event.pointerId);
             /* 拖拽期间条子必须一直可见：指针拖出宿主后 :hover 会掉，滑块就在手底下淡没了 */
             this.ele.setAttribute('data-dragging', '');
 
