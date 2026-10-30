@@ -450,9 +450,9 @@
       },
 
       ready() {
-        const root = this.ele.shadowRoot;
-        this._canvas = root.querySelector('.mc-canvas');
-        this._svg = root.querySelector('.mc-svg');
+        // 取引用走 this.shadow.$；canvas / svg 的下游全是原生 2D 上下文与 DOM 操作，取完下 .ele
+        this._canvas = this.shadow.$('.mc-canvas')?.ele;
+        this._svg = this.shadow.$('.mc-svg')?.ele;
         this._logoToken = 0;
         // proto 方法只挂在 $() 包装对象上；宿主元素上也给一份，普通 HTML 里 el.toDataURL() 直接能用
         this.ele.toDataURL = (type) => this.toDataURL(type);
