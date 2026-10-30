@@ -477,15 +477,13 @@
           },
 
           syncChannels() {
-            for (const sub of this.ele.shadowRoot?.querySelectorAll('mc-menu') ?? [])
-              this.copyChannel(sub);
+            // 批量取引用走 this.shadow.all（ofa 包装对象数组）；子菜单要对它写原生 style，逐个下 .ele
+            for (const sub of this.shadow.all('mc-menu')) this.copyChannel(sub.ele);
           },
 
           /** rows 落 DOM 之后的接线：缩进、附加属性、浮层锚点、嵌套菜单的通道。 */
           syncMeta() {
-            const root = this.ele.shadowRoot;
-            if (!root) return;
-            const rows = [...root.querySelectorAll('mc-menu-item[data-row-key]')];
+            const rows = this.shadow.all('mc-menu-item[data-row-key]').map((row) => row.ele);
             const byKey = new Map(rows.map((el) => [el.getAttribute('data-row-key'), el]));
             const models = new Map(this.rows.map((row) => [row.key, row]));
             for (const [key, el] of byKey) {
@@ -516,7 +514,7 @@
 
             this._flyoutRows.clear();
             this._flyoutPanels.clear();
-            const panels = [...root.querySelectorAll('.mc-flyout[data-panel-key]')];
+            const panels = this.shadow.all('.mc-flyout[data-panel-key]').map((p) => p.ele);
             const panelByKey = new Map(panels.map((el) => [el.getAttribute('data-panel-key'), el]));
             for (const row of this.rows) {
               if (!row.flyout || !row.hasChildren) continue;
