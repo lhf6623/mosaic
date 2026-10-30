@@ -197,9 +197,8 @@
       },
 
       ready() {
-        // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）
-        const root = this.ele.shadowRoot;
-        this._slot = root.querySelector('slot');
+        // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）；shadow 内取引用走 this.shadow.$
+        this._slot = this.shadow.$('slot');
       },
 
       attached() {
@@ -208,7 +207,7 @@
         color.sync(this.ele, this.color);
 
         this._onSlotChange = () => this.applyAnchor();
-        this._slot?.addEventListener('slotchange', this._onSlotChange);
+        this._slot?.on('slotchange', this._onSlotChange);
         // 首次 slotchange 不一定在挂载前发生，这里补一次（同 mc-divider）
         this.normalizeBoolAttrs();
         this.applyAnchor();
@@ -216,7 +215,7 @@
       },
 
       detached() {
-        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this._slot?.off('slotchange', this._onSlotChange);
       },
 
       watch: {
@@ -242,7 +241,7 @@
         /** 默认插槽里有没有元素 → 有没有容器；结果镜像到宿主 data-anchored（CSS 只认这个属性） */
         applyAnchor() {
           if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
-          const has = (this._slot?.assignedElements() ?? []).length > 0;
+          const has = (this._slot?.ele?.assignedElements() ?? []).length > 0;
           this.mirror('data-anchored', has);
         },
 
