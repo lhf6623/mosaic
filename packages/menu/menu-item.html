@@ -308,7 +308,7 @@
         },
 
         ready() {
-          this._slot = this.ele.shadowRoot.querySelector('slot');
+          this._slot = this.shadow.$('slot');
         },
 
         attached() {
@@ -317,7 +317,7 @@
             this.syncModel();
           };
           this._onChildChange = () => this.applyState();
-          this._slot.addEventListener('slotchange', this._onSlotChange);
+          this._slot.on('slotchange', this._onSlotChange);
           // data-current 是运行时切来切去的，属性一变就得重新镜像
           this._observer = new MutationObserver(this._onChildChange);
           /* 内置行的模型属性变了要重算模板；数据驱动的项在挂载前就把这些属性写好了 */
@@ -347,7 +347,7 @@
         },
 
         detached() {
-          this._slot?.removeEventListener('slotchange', this._onSlotChange);
+          this._slot?.off('slotchange', this._onSlotChange);
           this._observer?.disconnect();
           this._modelObserver?.disconnect();
           this._menuObserver?.disconnect();
@@ -358,7 +358,7 @@
 
           /** 插槽里有没有使用者写的东西（内置控件在 shadow 里，不算插槽内容） */
           hasContent() {
-            const nodes = this._slot?.assignedNodes({ flatten: true }) ?? [];
+            const nodes = this._slot?.ele?.assignedNodes({ flatten: true }) ?? [];
             return nodes.some(
               (node) =>
                 node.nodeType === 1 || (node.nodeType === 3 && node.textContent.trim() !== ''),
@@ -396,7 +396,7 @@
 
           /** 插槽里那个原生交互元素（一行只放一个）；没有 a/button 就退化成第一个元素 */
           interactive() {
-            const items = this._slot?.assignedElements() ?? [];
+            const items = this._slot?.ele?.assignedElements() ?? [];
             return items.find((el) => el.matches('a, button')) ?? items[0] ?? null;
           },
 
