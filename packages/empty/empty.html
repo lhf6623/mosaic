@@ -76,26 +76,26 @@
 
       ready() {
         // 这时 shadow 已建好（同 mc-card）；宿主属性留到 attached 才写（P31）
-        this._slots = [...this.ele.shadowRoot.querySelectorAll('slot')];
+        this._slots = this.shadow.all('slot');
       },
 
       attached() {
         /* 操作区有没有内容只靠 slotchange 判定：分到节点一变就响，不盯子树（同 mc-card） */
         this._onSlotChange = () => this.applyState();
-        for (const slot of this._slots) slot.addEventListener('slotchange', this._onSlotChange);
+        for (const slot of this._slots) slot.on('slotchange', this._onSlotChange);
         this.applyState();
       },
 
       detached() {
-        for (const slot of this._slots) slot.removeEventListener('slotchange', this._onSlotChange);
+        for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
       },
 
       proto: {
         applyState() {
-          const slot = this.ele.shadowRoot.querySelector('slot[name="footer"]');
+          const slot = this.shadow.$('slot[name="footer"]');
           this.mirror(
             'data-has-footer',
-            (slot?.assignedNodes() ?? []).some(
+            (slot?.ele?.assignedNodes() ?? []).some(
               (node) =>
                 node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
             ),
