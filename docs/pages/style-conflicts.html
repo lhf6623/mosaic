@@ -14,7 +14,47 @@
       <code>::part()</code>
       ：变量管颜色这类主题值，
       <code>::part()</code>
-      管结构里的某一块。每个组件文档页都列了它开放了哪些。
+      管结构里的某一块（见下一节）。
+    </p>
+
+    <h2>用 ::part() 改内部结构</h2>
+    <p>
+      <code>::part()</code>
+      是 shadow DOM 留的一个口子：组件给自己内部的某个元素写上
+      <code>part="thumb"</code>
+      ，页面上的
+      <code>mc-slider::part(thumb)</code>
+      就能选中它。内部元素的 class 和标签名在外面都不可见，只有这样挂过牌的层能碰到。
+    </p>
+    <!-- prettier-ignore -->
+    <mc-code language="css">
+      /* 只动滑块，轨道和填充不动 */
+      mc-slider::part(thumb) {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        background: var(--mc-color-danger);
+      }
+    </mc-code>
+    <p>
+      名字由组件定，没有约定俗成的叫法：每个组件文档页末尾的
+      <code>part</code>
+      表就是它的全部清单 —— 滑动选择开的是
+      <code>base</code>
+      /
+      <code>track</code>
+      /
+      <code>fill</code>
+      /
+      <code>thumb</code>
+      。写错名字不报错，只是那条规则不生效。
+    </p>
+    <p>
+      牌只到那一层：part 里面的子元素没再挂牌，就还是碰不到，也不能顺着往它里面写选择器。想改更深的
+      层次，只能让组件把那一层也挂出来。一点 part 都没开的组件（比如按钮，视觉全在宿主上）没有这条
+      路，只能写
+      <code>style</code>
+      加变量。
     </p>
 
     <h2>覆盖库自己的样式</h2>

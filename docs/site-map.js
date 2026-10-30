@@ -96,7 +96,7 @@ export const SITE = [
             type: 'page',
             label: '样式冲突',
             path: 'docs/pages/style-conflicts.html',
-            summary: '组件样式不外溢，以及怎么反过来盖掉库的默认样式。',
+            summary: '组件样式不外溢、::part() 怎么改内部结构，以及怎么反过来盖掉库的默认样式。',
           },
         ],
       },
