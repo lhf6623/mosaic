@@ -155,7 +155,8 @@
       },
 
       ready() {
-        this._panelEl = this.ele.shadowRoot.querySelector('.mc-panel');
+        // 取引用走 this.shadow.$；面板的下游是原生 popover API（showPopover / matches）与几何，取完下 .ele
+        this._panelEl = this.shadow.$('.mc-panel')?.ele;
         // 滚动守卫：一行接线，它自己监听面板的 beforetoggle / toggle（见 packages/boot/scroll-pin.js）
         this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panelEl);
         // 老浏览器没有 popover API 时不炸：面板由 UA 的 display:none 兜着，交互一律不动
