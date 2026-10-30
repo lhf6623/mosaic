@@ -102,7 +102,11 @@
     }
   </style>
 
-  <img class="mc-image" alt="" />
+  <img
+    class="mc-image"
+    alt=""
+    on:load="mirror('data-has-image', true)"
+    on:error="mirror('data-has-image', false)" />
   <span class="mc-fallback">
     <span class="mc-initials"></span>
     <slot></slot>
@@ -141,11 +145,6 @@
         color.sync(this.ele, this.color);
         this.applySize();
 
-        this._onLoad = () => this.mirror('data-has-image', true);
-        this._onError = () => this.mirror('data-has-image', false);
-        this._image?.on('load', this._onLoad);
-        this._image?.on('error', this._onError);
-
         this._onSlotChange = () => this.applyFallback();
         this._slot?.on('slotchange', this._onSlotChange);
 
@@ -154,8 +153,6 @@
       },
 
       detached() {
-        this._image?.off('load', this._onLoad);
-        this._image?.off('error', this._onError);
         this._slot?.off('slotchange', this._onSlotChange);
       },
 
