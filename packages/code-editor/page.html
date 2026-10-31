@@ -12,21 +12,16 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/page-spec.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
           <h3 slot="title">基本用法</h3>
           <p class="doc-hint" slot="hint">
-            值里含
-            <code>&lt;</code>
-            时属性要转义（
-            <code>&amp;lt;</code>
-            ）；
             <code>name</code>
             是给
             <code>mc-form</code>
-            收集用的。
+            收集字段用的（这个例子不在表单里，只是先标上）。
           </p>
         </doc-example>
       </section>
@@ -34,37 +29,26 @@
       <section class="doc-demo">
         <doc-example src="./demos/language.html">
           <h3 slot="title">语言</h3>
-          <p class="doc-hint" slot="hint">
-            <code>html</code>
-            会连同内联的 JS / CSS 一起高亮。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/controlled.html">
           <h3 slot="title">受控</h3>
-          <p class="doc-hint" slot="hint">
-            输入写回
-            <code>value</code>
-            属性，
-            <code>sync:value</code>
-            再把数据带回来。
-          </p>
+          <p class="doc-hint" slot="hint">改上面的内容，下面那行字符数会跟着变。</p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/states.html">
           <h3 slot="title">状态</h3>
-          <p class="doc-hint" slot="hint">禁用后不进入 Tab 序列；只读还能选中和复制。</p>
+          <p class="doc-hint" slot="hint">只有禁用会退出 Tab 序列；只读仍可聚焦。</p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/auto-resize.html">
           <h3 slot="title">自适应高度</h3>
-          <p class="doc-hint" slot="hint">输入、换行、删行，高度跟着内容走。</p>
         </doc-example>
       </section>
 

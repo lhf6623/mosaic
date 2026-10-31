@@ -164,7 +164,8 @@ ${HAND_END}
 
 ## 改这个单元之前
 
-- 跨组件约定、组件索引与文档页规范：[\`packages/README.md\`](../README.md)
+- 跨组件约定与组件索引：[\`packages/README.md\`](../README.md)
+- 文档页 / 演示区规范：[\`packages/page-spec.md\`](../page-spec.md)
 `;
 
   /* ⚠️ 落盘前过一遍 prettier：模板里的 markdown 表不补空格，直接写出去这些 README 会永远停在「未格式化」。

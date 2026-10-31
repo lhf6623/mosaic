@@ -3,6 +3,7 @@
 文档站是**免构建**的 ofa.js 站点：`index.html` 只做引入，外壳在 `docs/layout.html`，分区布局在
 `docs/doc-layout.html`，页面模块自己 `<link>` 一份 `docs/content.css`。这份文件是站点写法的唯一
 真相源；组件文档页（`packages/<slug>/page.html`）的骨架与演示区约定在
+[`packages/page-spec.md`](../packages/page-spec.md)，组件接口口径在
 [`packages/README.md`](../packages/README.md)。
 
 ## 一、三层布局：谁写布局
@@ -144,8 +145,9 @@ docs/
 
 ## 十、ofa 写法（站点页与站点组件）
 
-判定标准与组件同源（`ofajs-docs` 技能），
-组件接口口径见 [`packages/README.md`](../packages/README.md) §五；站点文件另外守这几条：
+判定标准与组件同源（`ofajs-docs` 技能），组件文档页规范见
+[`packages/page-spec.md`](../packages/page-spec.md)，组件接口口径见
+[`packages/README.md`](../packages/README.md) §五；站点文件另外守这几条：
 
 - **模板是唯一渲染源**：可见结构写模板，脚本只做模板表达不了的行为（测量 / 滚动 / 焦点 /
   popover / 拖拽 / 解析 Markdown / 随机装饰）。例外集中在一个方法里，注释「为什么不能

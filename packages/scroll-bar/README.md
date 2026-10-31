@@ -16,7 +16,7 @@
 | `scroll-bar.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`       | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`          | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`          | 5 个演示（页面用可编辑示例读**同一份文件**）                                  |
+| `demos/`          | 6 个演示（页面用可编辑示例读**同一份文件**）                                  |
 | `test/`           | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -131,4 +131,5 @@ OS 接管时只会来 `pointercancel`，`pointerup` 根本不来。监听残留�
 
 ## 改这个单元之前
 
-- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
+- 跨组件约定与组件索引：[`packages/README.md`](../README.md)
+- 文档页 / 演示区规范：[`packages/page-spec.md`](../page-spec.md)

@@ -16,7 +16,7 @@
 | `icon.html`           | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`           | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`              | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`              | 10 个演示（页面用可编辑示例读**同一份文件**）                                 |
+| `demos/`              | 11 个演示（页面用可编辑示例读**同一份文件**）                                 |
 | `test/`               | 组件自己的冒烟套件（1 个文件）                                                |
 | `icons.generated.css` | 构建产物 / 附属文件                                                           |
 | `icons.generated.js`  | 构建产物 / 附属文件                                                           |
@@ -117,4 +117,5 @@ data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽�
 
 ## 改这个单元之前
 
-- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
+- 跨组件约定与组件索引：[`packages/README.md`](../README.md)
+- 文档页 / 演示区规范：[`packages/page-spec.md`](../page-spec.md)

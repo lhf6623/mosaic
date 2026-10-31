@@ -4,7 +4,7 @@
  * 跑单测：`node tests/lib/md-spec.test.mjs`
  */
 
-/** 渲染进页面的节名（顺序即页面参考区顺序，与 packages/README.md §一 一致） */
+/** 渲染进页面的节名（顺序即页面参考区顺序，与 packages/page-spec.md §一 一致） */
 export const SECTIONS = ['属性', '事件', '插槽', 'part'];
 
 /** 仓库在 GitHub 上的浏览前缀（md 里的相对链接按 md 自身 URL 解析后指到这里） */

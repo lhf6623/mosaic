@@ -1,6 +1,7 @@
 # AGENTS.md — 给 AI / 自动化代理的工作约定
 
-> 仓库的用法、接口规范、文档规范见 [`README.md`](README.md) 与 [`packages/README.md`](packages/README.md)。
+> 仓库的用法、接口规范、文档规范见 [`README.md`](README.md)、[`packages/README.md`](packages/README.md)
+> 与 [`packages/page-spec.md`](packages/page-spec.md)。
 > 这份只记**会话级硬规则**：DeepSeek Harness 在每个新会话的第一次请求自动加载本文件，
 > 不依赖上一次会话聊过什么。
 
@@ -24,6 +25,9 @@
 ## 动手之前
 
 - 先读对应单元的 `README.md`「设计取舍」与 `packages/README.md` 的共用约定，再改代码。
+- 写 / 改组件文档页（`packages/<slug>/page.html`）或增删演示前，先读 `packages/page-spec.md` §一、§二：
+  标题 → 说明 → 示例三段；**说明是导语，只写示例里看不到的信息，示例代码 / 演示正文已经展示的功能
+  不要再复述**（同一信息写两遍也是噪声）。
 - 接口事实的唯一手写源是各单元的 `api.md`；`pnpm check:docs` 会对账，别在组件页手抄接口表。
 - 写 ofa 模板（页面 / 组件 / 站点文件）前先读 `ofajs-docs` 技能与 `docs/README.md` §十「ofa 写法」：
   模板是唯一渲染源、布尔 / HTML 属性用 `attr:`、shadow 内 DOM 走 `this.shadow.$()` + `.on()`。

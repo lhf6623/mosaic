@@ -1,10 +1,41 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-code-editor language="js" default-value="const answer = 42;"></mc-code-editor>
-    <mc-code-editor language="css" default-value=".card { color: red; }"></mc-code-editor>
+    <mc-tabs
+      variant="segmented"
+      no-panel
+      default-value="html"
+      on:change="switchLang($event.data.value)">
+      <mc-tab value="html" name="HTML"></mc-tab>
+      <mc-tab value="js" name="JS"></mc-tab>
+      <mc-tab value="css" name="CSS"></mc-tab>
+    </mc-tabs>
+
+    <mc-code-editor :language="lang" :value="code"></mc-code-editor>
   </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-code-editor-language' });
+    /* 只留一个编辑器：上面切语言，下面换 language（同时换一段对应语法的内容）。
+       html 样例里带内联 <style> / <script>，切到 JS / CSS 时换成各自的小段。 */
+    const SNIPPETS = {
+      html: [
+        "<div class='card'>",
+        '  <style>.card { color: red; }</style>',
+        '  <scr' + 'ipt>const answer = 42;</scr' + 'ipt>',
+        '</div>',
+      ].join('\n'),
+      js: 'const answer = 42;',
+      css: '.card { color: red; }',
+    };
+
+    export default async () => ({
+      tag: 'demo-code-editor-language',
+      data: { lang: 'html', code: SNIPPETS.html },
+      proto: {
+        switchLang(language) {
+          this.lang = language;
+          this.code = SNIPPETS[language] ?? '';
+        },
+      },
+    });
   </script>
 </template>

@@ -71,4 +71,5 @@
 
 ## 改这个单元之前
 
-- 跨组件约定、组件索引与文档页规范：[`packages/README.md`](../README.md)
+- 跨组件约定与组件索引：[`packages/README.md`](../README.md)
+- 文档页 / 演示区规范：[`packages/page-spec.md`](../page-spec.md)

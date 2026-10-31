@@ -1,10 +1,41 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-code-editor readonly default-value="&lt;p&gt;只读：可以选中和复制&lt;/p&gt;"></mc-code-editor>
-    <mc-code-editor disabled invalid default-value="&lt;p&gt;禁用 + 校验失败&lt;/p&gt;"></mc-code-editor>
+    <mc-tabs
+      variant="segmented"
+      no-panel
+      default-value="normal"
+      on:change="switchState($event.data.value)">
+      <mc-tab value="normal" name="正常"></mc-tab>
+      <mc-tab value="readonly" name="只读"></mc-tab>
+      <mc-tab value="disabled" name="禁用"></mc-tab>
+      <mc-tab value="invalid" name="校验失败"></mc-tab>
+    </mc-tabs>
+
+    <mc-code-editor
+      attr:readonly="state === 'readonly'"
+      attr:disabled="state === 'disabled'"
+      attr:invalid="state === 'invalid'"
+      :value="snippet"></mc-code-editor>
   </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-code-editor-states' });
+    /* 一个编辑器 + 分段切换器：状态布尔走 attr:（false 直接摘属性），内容跟着状态换一句。 */
+    const TEXTS = {
+      normal: '<p>正常：可以编辑</p>',
+      readonly: '<p>只读：可以选中和复制</p>',
+      disabled: '<p>禁用：不能聚焦、不能改</p>',
+      invalid: '<p>校验失败：边框变红</p>',
+    };
+
+    export default async () => ({
+      tag: 'demo-code-editor-states',
+      data: { state: 'normal', snippet: TEXTS.normal },
+      proto: {
+        switchState(state) {
+          this.state = state;
+          this.snippet = TEXTS[state] ?? '';
+        },
+      },
+    });
   </script>
 </template>

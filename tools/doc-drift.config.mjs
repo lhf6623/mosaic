@@ -84,7 +84,7 @@ const unitTokens = {
   ],
 };
 
-/** 组件文档：页面骨架（packages/README.md §一 的固定骨架） */
+/** 组件文档：页面骨架（packages/page-spec.md §一 的固定骨架） */
 const pageSkeleton = {
   id: 'page-skeleton',
   title: '组件文档 · 页面骨架（packages/*/page.html）',

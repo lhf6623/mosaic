@@ -23,8 +23,8 @@ export default async function run({ page, newPage, visit, goHash, check }) {
       () => {
         const editors = window.__deepAll('mc-code-editor');
         return (
-          editors.length >= 14 &&
-          editors.filter((el) => el.getBoundingClientRect().width > 0).length >= 8
+          editors.length >= 12 &&
+          editors.filter((el) => el.getBoundingClientRect().width > 0).length >= 6
         );
       },
       { timeout: 20000 },
@@ -36,8 +36,6 @@ export default async function run({ page, newPage, visit, goHash, check }) {
     const all = window.__deepAll('mc-code-editor');
     const visible = all.filter((el) => el.getBoundingClientRect().width > 0);
     const hidden = all.filter((el) => el.getBoundingClientRect().width === 0);
-    const js = visible.find((el) => el.getAttribute('language') === 'js');
-    const css = visible.find((el) => el.getAttribute('language') === 'css');
     const count = (el, sel) => el.shadowRoot?.querySelectorAll(sel).length ?? 0;
     return {
       total: all.length,
@@ -46,8 +44,6 @@ export default async function run({ page, newPage, visit, goHash, check }) {
       mounted: visible.filter((el) => !!el.shadowRoot?.querySelector('.CodeMirror')).length,
       fallbacks: all.filter((el) => el.hasAttribute('data-fallback')).length,
       lineNumbers: visible.filter((el) => count(el, '.CodeMirror-linenumber') > 0).length,
-      jsKeywords: js ? count(js, '.cm-keyword') : 0,
-      cssTokens: css ? count(css, '.cm-property') + count(css, '.cm-qualifier') : 0,
       htmlTags: visible.filter((el) => count(el, '.cm-tag') > 0).length,
       loadingHidden: visible.every(
         (el) => el.shadowRoot?.querySelector('.mc-loading')?.hasAttribute('hidden') ?? false,
@@ -56,8 +52,8 @@ export default async function run({ page, newPage, visit, goHash, check }) {
   });
 
   check(
-    '文档页渲染出 8 个可见编辑器 + 6 个 doc-example 的收起编辑器',
-    pageState.visible === 8 && pageState.hidden === 6,
+    '文档页渲染出 6 个可见编辑器 + 6 个 doc-example 的收起编辑器',
+    pageState.visible === 6 && pageState.hidden === 6,
     JSON.stringify({ total: pageState.total, visible: pageState.visible, hidden: pageState.hidden }),
   );
   check(
@@ -66,17 +62,58 @@ export default async function run({ page, newPage, visit, goHash, check }) {
     JSON.stringify({ mounted: pageState.mounted, fallbacks: pageState.fallbacks }),
   );
   check(
-    '行号、HTML 标签高亮、JS 关键字、CSS token 都出来了',
-    pageState.lineNumbers === pageState.visible &&
-      pageState.htmlTags >= 3 &&
-      pageState.jsKeywords > 0 &&
-      pageState.cssTokens > 0,
+    '行号、HTML 标签高亮都出来了',
+    pageState.lineNumbers === pageState.visible && pageState.htmlTags >= 3,
     JSON.stringify(pageState),
   );
   check(
     '加载态在挂上编辑器后收起',
     pageState.loadingHidden,
     String(pageState.loadingHidden),
+  );
+
+  /* ------------------------------------------------------------------ *
+   * 1b. 语言动态切换：一个编辑器 + 分段切换器，换 language 就换高亮语法
+   * ------------------------------------------------------------------ */
+  const switchLang = async (value) => {
+    await page.evaluate((lang) => {
+      const demo = window.__deep('demo-code-editor-language');
+      const tab = demo?.shadowRoot?.querySelector(`mc-tab[value="${lang}"]`);
+      tab?.shadowRoot?.querySelector('.mc-base')?.click();
+    }, value);
+    await page.waitForTimeout(600);
+  };
+  const readLanguageDemo = () =>
+    page.evaluate(() => {
+      const demo = window.__deep('demo-code-editor-language');
+      const editor = demo?.shadowRoot?.querySelector('mc-code-editor');
+      const count = (sel) => editor?.shadowRoot?.querySelectorAll(sel).length ?? 0;
+      return {
+        language: editor?.getAttribute('language'),
+        value: editor?.value,
+        keywords: count('.cm-keyword'),
+        cssTokens: count('.cm-property') + count('.cm-qualifier'),
+        tags: count('.cm-tag'),
+      };
+    });
+
+  await switchLang('js');
+  const languageJs = await readLanguageDemo();
+  await switchLang('css');
+  const languageCss = await readLanguageDemo();
+  await switchLang('html');
+  const languageHtml = await readLanguageDemo();
+  check(
+    '语言：分段切换器动态改 language，JS / CSS / HTML 高亮跟着换',
+    languageJs.language === 'js' &&
+      languageJs.value === 'const answer = 42;' &&
+      languageJs.keywords > 0 &&
+      languageCss.language === 'css' &&
+      languageCss.value === '.card { color: red; }' &&
+      languageCss.cssTokens > 0 &&
+      languageHtml.language === 'html' &&
+      languageHtml.tags > 0,
+    JSON.stringify({ languageJs, languageCss, languageHtml }),
   );
 
   /* ------------------------------------------------------------------ *
@@ -140,40 +177,80 @@ export default async function run({ page, newPage, visit, goHash, check }) {
   );
 
   /* ------------------------------------------------------------------ *
-   * 4. 只读 / 禁用 / invalid
+   * 4. 状态切换器：正常 / 只读 / 禁用 / 校验失败
    * ------------------------------------------------------------------ */
-  const readonly = await page.evaluateHandle(() => window.__findVisible('<p>只读'));
-  const roBox = await readonly.evaluate((el) => {
-    el.scrollIntoView({ block: 'center' });
-    const r = el.getBoundingClientRect();
-    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-  });
-  await page.mouse.click(roBox.x, roBox.y);
-  await page.keyboard.type('Z');
-  await page.waitForTimeout(250);
-  const roState = await readonly.evaluate((el) => ({
-    value: el.value,
-    readonly: el.hasAttribute('readonly'),
-  }));
+  const switchState = async (value) => {
+    await page.evaluate((state) => {
+      const demo = window.__deep('demo-code-editor-states');
+      const tab = demo?.shadowRoot?.querySelector(`mc-tab[value="${state}"]`);
+      tab?.shadowRoot?.querySelector('.mc-base')?.click();
+    }, value);
+    await page.waitForTimeout(500);
+  };
+  const readStateDemo = () =>
+    page.evaluate(() => {
+      const demo = window.__deep('demo-code-editor-states');
+      const editor = demo?.shadowRoot?.querySelector('mc-code-editor');
+      return {
+        value: editor?.value,
+        readonly: editor?.hasAttribute('readonly') ?? false,
+        disabled: editor?.hasAttribute('disabled') ?? false,
+        invalid: editor?.hasAttribute('invalid') ?? false,
+      };
+    });
+
+  const normalState = await readStateDemo();
   check(
-    'readonly：可聚焦但打字不改变值',
-    roState.readonly && roState.value === '<p>只读：可以选中和复制</p>',
-    JSON.stringify(roState),
+    '状态：默认正常，readonly / disabled / invalid 三个布尔属性都不在',
+    normalState.value === '<p>正常：可以编辑</p>' &&
+      !normalState.readonly &&
+      !normalState.disabled &&
+      !normalState.invalid,
+    JSON.stringify(normalState),
   );
 
-  const stateState = await page.evaluate(() => {
-    const disabled = window.__findVisible('<p>禁用');
-    return {
-      disabled: disabled?.hasAttribute('disabled') ?? false,
-      invalid: disabled?.hasAttribute('invalid') ?? false,
-      disabledValue: disabled?.value,
-    };
+  await switchState('readonly');
+  const readonlyState = await readStateDemo();
+  /* 点进编辑器打一个字：readonly 只聚焦，不改值 */
+  const readonlyBox = await page.evaluate(() => {
+    const demo = window.__deep('demo-code-editor-states');
+    const editor = demo?.shadowRoot?.querySelector('mc-code-editor');
+    editor?.scrollIntoView({ block: 'center' });
+    const r = editor?.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.click(readonlyBox.x, readonlyBox.y);
+  await page.keyboard.type('Z');
+  await page.waitForTimeout(250);
+  const readonlyAfter = await page.evaluate(() => {
+    const demo = window.__deep('demo-code-editor-states');
+    return demo?.shadowRoot?.querySelector('mc-code-editor')?.value;
   });
   check(
-    'disabled / invalid 归一化成宿主属性（CSS 能选中）',
-    stateState.disabled && stateState.invalid,
-    JSON.stringify(stateState),
+    'readonly：可聚焦但打字不改变值',
+    readonlyState.readonly &&
+      !readonlyState.disabled &&
+      readonlyAfter === '<p>只读：可以选中和复制</p>',
+    JSON.stringify({ readonlyState, readonlyAfter }),
   );
+
+  await switchState('disabled');
+  const disabledState = await readStateDemo();
+  check(
+    'disabled：状态切过去后 disabled 属性在、其余状态位摘掉',
+    disabledState.disabled && !disabledState.readonly && !disabledState.invalid,
+    JSON.stringify(disabledState),
+  );
+
+  await switchState('invalid');
+  const invalidState = await readStateDemo();
+  check(
+    'invalid：状态切过去后 invalid 属性在、其余状态位摘掉',
+    invalidState.invalid && !invalidState.readonly && !invalidState.disabled,
+    JSON.stringify(invalidState),
+  );
+
+  await switchState('normal');
 
   /* ------------------------------------------------------------------ *
    * 5. auto-resize：内容变高，宿主跟着变高
@@ -201,8 +278,12 @@ export default async function run({ page, newPage, visit, goHash, check }) {
    * 6. 主题：color-scheme 一换，语法色跟着换
    * ------------------------------------------------------------------ */
   const theme = await page.evaluate(() => {
-    const editor = window.__findVisible('const answer = 42;');
-    const keyword = editor?.shadowRoot?.querySelector('.cm-keyword');
+    /* 语言 demo 现在可切换（切完停在 HTML），别绑死某个编辑器的值：取任意可见编辑器里的 keyword */
+    const keyword = window
+      .__deepAll('mc-code-editor')
+      .filter((el) => el.getBoundingClientRect().width > 0)
+      .map((el) => el.shadowRoot?.querySelector('.cm-keyword'))
+      .find(Boolean);
     const original = document.documentElement.dataset.theme;
     const read = () => (keyword ? getComputedStyle(keyword).color : '');
     const light = read();
