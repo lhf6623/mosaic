@@ -12,8 +12,7 @@
       <code>mc-code</code>
     </h1>
     <p class="doc-lead">
-      代码展示。内容是标签里的纯文本（或一个片段文件），语法高亮按需加载；
-      取不到高亮时只是没有颜色，代码照常显示。
+      代码展示：文本贴在标签里、写在 code 属性里，或来自片段文件；高亮可选，失败时只是少了配色。
     </p>
 
     <h2>例子</h2>
@@ -21,60 +20,35 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">点右上角主题按钮：配色会跟着换成另一份官方主题。</p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>片段文件</h3>
         <p class="doc-hint">
-          内容来自例子旁边的
-          <code>demos/highlight-demo.js</code>
-          ；缺
-          <code>language</code>
-          时按后缀推断（这里是
-          <code>.js</code>
-          → JavaScript）。 相对路径按写它的那个文件解析（和
+          长片段放独立文件就不用转义；相对路径按写它的那个文件解析（和
           <code>&lt;link href&gt;</code>
-          一样）；长片段放独立文件就不用转义。
+          一样）。
         </p>
         <doc-playground src="./demos/src.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>用 code 属性传</h3>
-        <p class="doc-hint">
-          单行或多行都可以；
-          <code>&lt;</code>
-          要写
-          <code>&amp;lt;</code>
-          。
-        </p>
         <doc-playground src="./demos/attribute.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>页面数据</h3>
-        <p class="doc-hint">
-          ofa 的
-          <code>:code="变量"</code>
-          ：文本来自页面/组件自己的
-          <code>data</code>
-          。
-        </p>
         <doc-playground src="./demos/binding.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>运行时读写</h3>
         <p class="doc-hint">
-          两条通道都会重渲染 + 重新高亮：
-          <code>el.code = '…'</code>
-          同步生效，
-          <code>setAttribute('code', '…')</code>
-          走 ofa 的属性观察、要等一个微任务；读回
+          两条通道效果一样，差别只在时序：
           <code>el.code</code>
-          是当前原文（已 dedent）。
+          同步生效，属性要等一个微任务。
         </p>
         <doc-playground src="./demos/runtime.html"></doc-playground>
       </section>
@@ -91,10 +65,6 @@
 
       <section class="doc-demo">
         <h3>限高滚动</h3>
-        <p class="doc-hint">
-          <code>max-height="120"</code>
-          ：超出部分在组件内部滚动，滚到底后继续滚页面。
-        </p>
         <doc-playground src="./demos/max-height.html"></doc-playground>
       </section>
 
@@ -110,37 +80,22 @@
 
       <section class="doc-demo">
         <h3>主题基址</h3>
-        <p class="doc-hint">
-          <code>hljs-base</code>
-          指 highlight.js 的
-          <code>build/</code>
-          目录；不写就用内置的同一个 CDN，换镜像或自托管时改这一条。
-        </p>
         <doc-playground src="./demos/hljs-base.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">改的都在宿主上，不用跨 shadow 边界。</p>
         <doc-playground src="./demos/box-model.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          组件内部默认改不动：只有标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（mc-code 开了
-          <code>body</code>
-          /
-          <code>pre</code>
-          /
-          <code>code</code>
-          /
-          <code>line</code>
-          ）。
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
