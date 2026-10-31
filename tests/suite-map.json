@@ -5,6 +5,7 @@
       "app-config.js",
       "docs/adopt-styles.js",
       "docs/components/demos.html",
+      "docs/components/example.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -38,6 +39,7 @@
       "packages/boot/shadow-base.css",
       "packages/button/api.md",
       "packages/button/button.html",
+      "packages/button/demos/basic-plain.html",
       "packages/button/demos/basic.html",
       "packages/button/demos/block.html",
       "packages/button/demos/hex.html",
@@ -64,7 +66,9 @@
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
       "packages/spinner/spinner.html",
-      "packages/switch/switch.html"
+      "packages/switch/switch.html",
+      "packages/tabs/tab.html",
+      "packages/tabs/tabs.html"
     ],
     "packages/code/test/code.test.mjs": [
       "app-config.js",
@@ -1617,6 +1621,7 @@
     "packages/tabs/test/tabs.test.mjs": [
       "app-config.js",
       "docs/adopt-styles.js",
+      "docs/components/demos.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
       "docs/components/playground.html",
@@ -1625,6 +1630,7 @@
       "docs/components/toc.html",
       "docs/content.css",
       "docs/doc-layout.html",
+      "docs/favicon.svg",
       "docs/fonts/archivo-var-latin.woff2",
       "docs/fonts/fonts.css",
       "docs/fonts/plex-400-latin.woff2",
@@ -1642,7 +1648,9 @@
       "packages/boot/color-attr.js",
       "packages/boot/color-math.js",
       "packages/boot/component-base.css",
+      "packages/boot/emits.js",
       "packages/boot/mosaic.css",
+      "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
       "packages/code/code.html",
@@ -1658,11 +1666,13 @@
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
+      "packages/spinner/spinner.html",
       "packages/tabs/api.md",
       "packages/tabs/demos/basic.html",
       "packages/tabs/demos/disabled.html",
       "packages/tabs/demos/events.html",
       "packages/tabs/demos/part.html",
+      "packages/tabs/demos/segmented.html",
       "packages/tabs/page.html",
       "packages/tabs/tab.html",
       "packages/tabs/tabs.html",
@@ -2557,8 +2567,12 @@
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "docs/components/example.html": [
+      "packages/button/test/button.test.mjs"
     ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2913,6 +2927,7 @@
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
       "packages/slider/test/slider.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
@@ -3773,6 +3788,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs"
     ],
     "packages/boot/mosaic.css": [
@@ -3831,6 +3847,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
@@ -3975,6 +3992,9 @@
       "packages/table/test/table.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "packages/button/demos/basic-plain.html": [
+      "packages/button/test/button.test.mjs"
     ],
     "packages/button/demos/basic.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -5617,6 +5637,7 @@
       "packages/slider/test/slider.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/table/test/table.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
@@ -5714,13 +5735,18 @@
     "packages/tabs/demos/part.html": [
       "packages/tabs/test/tabs.test.mjs"
     ],
+    "packages/tabs/demos/segmented.html": [
+      "packages/tabs/test/tabs.test.mjs"
+    ],
     "packages/tabs/page.html": [
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/tab.html": [
+      "packages/button/test/button.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/tabs.html": [
+      "packages/button/test/button.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/test/tabs.test.mjs": [

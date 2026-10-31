@@ -6,6 +6,7 @@
 
 import { dirname, posix } from 'node:path';
 import { READY } from '../docs/site-map.js';
+import { MOSAIC_VERSION, OFA_VERSION, VERSIONED_GLOBS } from '../docs/lib/version.mjs';
 import { componentSuites } from '../tests/lib/suites.mjs';
 import { emitsSpec, mdTables } from './doc-drift/lib/parse.mjs';
 import { auditComponent, auditDocs, auditSelfTest } from './emits-audit.mjs';
@@ -722,6 +723,33 @@ const rules = [
         const api = `packages/${c.slug}/api.md`;
         if (declared.size && io.exists(api))
           problems.push(...auditDocs(api, io.read(api), declared));
+      }
+    },
+  },
+  {
+    /* 示例 / 文档里的 CDN 版本号只许有一个手写源：docs/lib/version.mjs。
+       版本不对时展示给使用者的代码就是错的（预览会本地化，看不出来）。 */
+    type: 'custom',
+    id: 'doc-versions',
+    title: '文档 · 示例 CDN 版本号与单一版本源一致',
+    run: ({ io, problems }) => {
+      const files = [...new Set(VERSIONED_GLOBS.flatMap((glob) => io.listFiles(glob)))];
+      const checks = [
+        { re: /gh\/lhf6623\/mosaic@([\w.-]+)/g, want: MOSAIC_VERSION, label: 'mosaic' },
+        { re: /gh\/ofajs\/ofa\.js@([\w.-]+)/g, want: OFA_VERSION, label: 'ofa.js' },
+      ];
+      for (const file of files) {
+        const text = io.read(file);
+        for (const { re, want, label } of checks) {
+          for (const match of text.matchAll(re)) {
+            if (match[1] === want) continue;
+            const line = text.slice(0, match.index).split('\n').length;
+            problems.push(
+              `${file}:${line}：${label}@${match[1]} 和版本源 ${label}@${want} 不一致` +
+                '（改 docs/lib/version.mjs 后跑 pnpm versions）',
+            );
+          }
+        }
       }
     },
   },

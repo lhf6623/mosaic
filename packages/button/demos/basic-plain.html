@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-space block wrap-items>
+        <mc-button>默认颜色</mc-button>
+      </mc-space>
+
+      <mc-space block wrap-items>
+        <mc-button color="primary">主要</mc-button>
+        <mc-button color="info">信息</mc-button>
+        <mc-button color="success">成功</mc-button>
+        <mc-button color="warning">警告</mc-button>
+        <mc-button color="danger">危险</mc-button>
+        <mc-button color="neutral">中性</mc-button>
+      </mc-space>
+    </mc-space>
+  </body>
+</html>

@@ -127,9 +127,16 @@
   margin-top: 0;
 }
 
+/* 新版 <doc-example> 把 h3 / .doc-hint 放在自己的 slot 里（同一行或有间距），
+   不再直接挂在 .doc-demo 下；槽内容仍是页面 shadow 里的节点，右栏目录照旧扫得到。 */
+.doc-demo doc-example h3 {
+  margin: 0;
+}
+
 /* 说明在演示区里是**导语**（紧跟标题），自带一段下边距与活样例分开 ——
  * `.doc-hint` 的公共样式配的是「跟在框尾」的场合（「色彩」页那种），别混用。 */
-.doc-demo > .doc-hint {
+.doc-demo > .doc-hint,
+.doc-demo doc-example .doc-hint {
   margin: 0 0 var(--mc-space-4);
 }
 

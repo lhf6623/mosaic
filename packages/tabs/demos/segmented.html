@@ -1,0 +1,20 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-tabs
+      variant="segmented"
+      no-panel
+      default-value="edit"
+      on:change="mode = $event.data.value">
+      <mc-tab value="edit" name="编辑"></mc-tab>
+      <mc-tab value="preview" name="预览"></mc-tab>
+    </mc-tabs>
+    <p class="text-sm text-muted">
+      当前模式：
+      <strong>{{mode}}</strong>
+    </p>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-tabs-segmented', data: { mode: 'edit' } });
+  </script>
+</template>

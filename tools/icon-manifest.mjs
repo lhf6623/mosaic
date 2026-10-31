@@ -41,6 +41,7 @@ export const ICONS = {
   drag: 'lucide:grip-vertical',
   external: 'lucide:external-link',
   copy: 'lucide:copy',
+  code: 'lucide:code',
   download: 'lucide:download',
   upload: 'lucide:upload',
   refresh: 'lucide:refresh-cw',

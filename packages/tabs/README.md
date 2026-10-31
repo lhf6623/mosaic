@@ -17,7 +17,7 @@
 | `tab.html`  | 同族子标签，随本体一起引入                                                    |
 | `page.html` | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`    | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`    | 4 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
+| `demos/`    | 5 个演示（页面用 `<doc-playground src>` 读**同一份文件**）                    |
 | `test/`     | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -26,12 +26,20 @@
 
 ## 设计取舍
 
-### 标签与面板都是使用者的 light DOM
+### 标签用 name，面板内容写在 mc-tab 里
 
-标签（`mc-tab`）与面板（`slot="panel"`）都由使用者写在容器里，容器一个节点都不造、也不搬。
-所以：**面板用 `hidden` 常驻 DOM**，不用 `o-if` / `o-fill` 去渲染 ——
-一旦用 `o-fill` 包一层，容器自己的 `:scope > mc-tab` / `:scope > [slot="panel"]` 收集就会失配
-（那一族），而且切回来时内容与滚动位置会丢。
+`mc-tab` 只渲染一颗按钮：文案取 `name` 属性；面板内容写进它的**默认插槽**（不再有平级的
+`slot="panel"` 子元素）。容器同步状态时给每个 `mc-tab` 造一个 `<div slot="panel" value="…">`
+包装节点、把它的子节点整段搬进去 —— 面板区在容器的 shadow 里，只有容器的 direct child
+才投影得过去。所以：
+
+- 面板内容**仍是 light DOM**（搬到包装节点里，不是搬进 shadow），页面样式照样生效；
+- 面板仍用 `hidden` 常驻 DOM，不用 `o-if` / `o-fill`，切回来内容与滚动位置都在；
+- 代价是容器**会造节点、会搬节点** —— 这条 API（2026-10 起）和原来「一个节点都不造」不同，
+  记在这里，免得以后把它当成 bug 修掉。
+
+`no-panel` 是给「只要一颗分段切换器」的页面：面板区 `hidden`、面板内容不搬也不显示 ——
+`docs/components/example.html` 的视图切换器就是一例。
 
 容器只认**直接子项**：嵌套的 `mc-tabs` 各自算各自的，不会互相误伤（同 `mc-collapse` 的容器策略）。
 
@@ -54,22 +62,33 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
   `ResizeObserver` 盯着标签条与每个标签：字体、文案、容器宽度变了都跟着重摆，
   `mc-tab` 比容器晚升级也能补上。
 
+### 外观：line / segmented
+
+`variant` 只换标签条的样子，不换行为。`line`（默认）是下划线标签；`segmented` 是分段切换器：
+浅底轨道 + 选中项浮起、没有下划线，正好装「编辑 / 预览」这类**模式切换** ——
+样式是从 `docs/components/example.html` 里那颗 ofa.js / 普通例子切换器抽出来的。
+档位差异全落在 `--mc-tabs-*` 令牌上（容器 → 子项继承），`mc-tab` 的 shadow 里不需要认识
+`variant`，新档位不会在子项里长出第二套属性选择器。
+
 ## 令牌
 
-| 令牌                    | 默认                        | 作用                                      |
-| ----------------------- | --------------------------- | ----------------------------------------- |
-| `--mc-tabs-tab-h`       | `--mc-control-h-md`         | 标签高度（只写在容器上，继承进 `mc-tab`） |
-| `--mc-tabs-pad-x`       | `--mc-space-3`              | 标签左右内边距                            |
-| `--mc-tabs-font`        | `--mc-text-sm`              | 标签字号                                  |
-| `--mc-tabs-gap`         | `--mc-space-1`              | 标签之间的间距                            |
-| `--mc-tabs-panel-pad`   | `--mc-space-4`              | 面板容器上下内边距                        |
-| `--mc-tabs-fg`          | `--mc-color-fg-muted`       | 未选中标签的文字色                        |
-| `--mc-tabs-fg-hover`    | `--mc-color-fg`             | 悬停时的文字色                            |
-| `--mc-tabs-fg-selected` | `--mc-color-primary`        | 选中标签的文字色                          |
-| `--mc-tabs-bg-hover`    | `--mc-color-surface-sunken` | 悬停时的标签底色                          |
-| `--mc-tabs-border`      | `--mc-color-border`         | 标签条那根下边线                          |
-| `--mc-tabs-indicator`   | `--mc-color-primary`        | 指示条颜色                                |
-| `--mc-tabs-indicator-h` | `2px`                       | 指示条粗细                                |
+| 令牌                        | 默认                                | 作用                                                  |
+| --------------------------- | ----------------------------------- | ----------------------------------------------------- |
+| `--mc-tabs-tab-h`           | `--mc-control-h-md`                 | 标签高度（只写在容器上，继承进 `mc-tab`）             |
+| `--mc-tabs-pad-x`           | `--mc-space-3`                      | 标签左右内边距                                        |
+| `--mc-tabs-font`            | `--mc-text-sm`                      | 标签字号                                              |
+| `--mc-tabs-gap`             | `--mc-space-1`                      | 标签之间的间距                                        |
+| `--mc-tabs-panel-pad`       | `--mc-space-4`                      | 面板容器上下内边距（`no-panel` 时不生效）             |
+| `--mc-tabs-fg`              | `--mc-color-fg-muted`               | 未选中标签的文字色                                    |
+| `--mc-tabs-fg-hover`        | `--mc-color-fg`                     | 悬停时的文字色                                        |
+| `--mc-tabs-fg-selected`     | `--mc-color-primary`                | 选中标签的文字色                                      |
+| `--mc-tabs-bg-hover`        | `--mc-color-surface-sunken`         | 悬停时的标签底色                                      |
+| `--mc-tabs-border`          | `--mc-color-border`                 | 标签条那根下边线                                      |
+| `--mc-tabs-indicator`       | `--mc-color-primary`                | 指示条颜色                                            |
+| `--mc-tabs-indicator-h`     | `2px`                               | 指示条粗细                                            |
+| `--mc-tabs-bg-selected`     | `transparent`                       | 选中标签的底色（segmented 档 = `--mc-color-surface`） |
+| `--mc-tabs-shadow-selected` | `none`                              | 选中标签的投影（segmented 档有一层浮起阴影）          |
+| `--mc-tabs-tab-radius`      | `--mc-radius-md --mc-radius-md 0 0` | 标签按钮圆角（segmented 档换成 `--mc-radius-sm`）     |
 
 > 令牌不进**文档页**（页面参考区只渲染 api.md 的白名单四节），将来由主题编辑器展示。
 
@@ -80,7 +99,7 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
 
 - 与 [`mc-collapse`](../collapse/) / [`mc-menu`](../menu/) 同族：**容器 + 子项**两个标签，容器管外框与尺寸
   （靠 `--mc-tabs-*` 继承给子项），子项管自己那一格。
-- 本体不依赖任何其它组件（零 `load()`）：标签文案就是普通插槽，图标之类的自己写在标签里。
+- 本体不依赖任何其它组件（零 `load()`）：标签文案是 `name`（纯文本），没有 label 插槽。
 
 <!-- hand:end -->
 

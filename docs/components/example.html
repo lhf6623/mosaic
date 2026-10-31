@@ -1,0 +1,729 @@
+<!--
+  <doc-example> —— 组件文档页的新版可编辑示例（试验中：先只用在 button 的「基本用法」）。
+  与 <doc-playground> 的区别：
+    · 标题 / 说明由页面通过 slot 放进同一行，操作按钮在标题右侧；
+    · 编辑器显示文件原文（含 <template component> 外壳），不再剥掉外壳；
+    · 代码区有「ofa.js 例子 / 普通例子」两个视图，默认 ofa.js；
+      普通例子是完整 HTML 页，点「运行」时用 iframe 跑（CDN 地址预览时映射到本地文件）；
+      切换器用 mc-tabs 的 segmented + no-panel 档 —— 使用页要同时注册 mc-tabs / mc-tab。
+  ⚠️ h3 / .doc-hint 仍必须写在页面里（doc-toc 只扫页面 shadow root），这里只负责排版。
+  ⚠️ 为什么单独一个组件：新布局（标题行 + 操作栏）和普通 / ofa 切换会改掉旧演示的页面骨架，
+      先在 button 页试验；迁移完成再决定是否并回 doc-playground。
+  ⚠️ 预览 / 编辑器是运行时按文件内容造的节点，模板写不出来 —— 见 docs/README §十的站点例外；
+      预览集中在 renderLive()，编辑器在 createEditor()，两处都注明了原因。
+-->
+<template component>
+  <style>
+    :host {
+      display: block;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-3);
+    }
+
+    .title {
+      min-width: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex: none;
+      gap: var(--mc-space-1);
+      margin-left: auto;
+    }
+
+    /* 四个操作按钮用 mc-button（ghost + sm）：28px 方块、accent 跟文字色，
+       运行按钮单独给主色 —— 只覆盖组件的 accent 槽，不另写一套按钮外观 */
+    .actions mc-button {
+      /* 色槽是通道三元组（组件里是 rgb(var(--mc-button-accent))），不要包 rgb() */
+      --mc-button-accent: var(--mc-color-fg-muted);
+      width: 28px;
+      padding-inline: 0;
+    }
+
+    .actions mc-button.is-primary {
+      --mc-button-accent: var(--mc-color-primary);
+    }
+
+    .actions mc-button[data-feedback='copied'] {
+      --mc-button-accent: var(--mc-color-success);
+    }
+
+    .actions mc-button[data-feedback='failed'] {
+      --mc-button-accent: var(--mc-color-danger);
+    }
+
+    /* ── 预览 ── */
+    .live {
+      min-height: 2rem;
+      margin-top: var(--mc-space-4);
+    }
+
+    /* 普通例子跑在 iframe 里：高度由 JS 按内容写（见 fitFrame） */
+    .frame {
+      display: block;
+      width: 100%;
+      min-height: 2rem;
+      border: 0;
+      background: transparent;
+    }
+
+    .load-error {
+      margin: 0;
+      color: rgb(var(--mc-color-danger));
+      font-size: var(--mc-text-sm);
+      line-height: var(--mc-text-sm-lh);
+    }
+
+    /* ── 代码区（点代码图标才展开）── */
+    .panel {
+      margin-top: var(--mc-space-4);
+      padding-top: var(--mc-space-3);
+      border-top: 1px solid rgb(var(--mc-color-border));
+    }
+
+    .panel[hidden] {
+      display: none;
+    }
+
+    /* 视图切换器就是 mc-tabs 的 segmented 档 + no-panel（样式在组件里，站点不再抄一份） */
+    .envs {
+      margin-bottom: var(--mc-space-3);
+    }
+
+    .envs[hidden] {
+      display: none;
+    }
+
+    /* 编辑器盒：高度由 JS 按内容自适应（见 fitEditorHeight） */
+    .editor-host {
+      position: relative;
+      height: var(--doc-example-editor-h, 300px);
+      overflow: hidden;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface-code));
+    }
+
+    .editor-loading {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+
+    .editor-loading[hidden] {
+      display: none;
+    }
+
+    .fallback-editor {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border: 0;
+      resize: none;
+      background: transparent;
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-mono);
+      font-size: var(--mc-text-sm);
+      line-height: 1.7;
+      tab-size: 2;
+      outline: none;
+    }
+
+    .error {
+      margin: var(--mc-space-2) 0 0;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      max-height: 10rem;
+      overflow: auto;
+      border-left: 2px solid rgb(var(--mc-color-danger));
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-danger-subtle));
+      color: rgb(var(--mc-color-fg));
+      font-family: var(--mc-font-mono);
+      font-size: var(--mc-text-xs);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .error[hidden] {
+      display: none;
+    }
+  </style>
+
+  <div class="head">
+    <div class="title"><slot name="title"></slot></div>
+    <div class="actions">
+      <mc-button
+        size="sm"
+        variant="ghost"
+        class="is-primary"
+        icon="play"
+        title="运行"
+        attr:disabled="!loaded"
+        on:click="run()"></mc-button>
+      <mc-button
+        size="sm"
+        variant="ghost"
+        icon="refresh"
+        title="重新运行"
+        attr:disabled="!loaded"
+        on:click="rerun()"></mc-button>
+      <mc-button
+        size="sm"
+        variant="ghost"
+        :icon="copyIcon()"
+        attr:disabled="!loaded"
+        attr:data-feedback="copyState || null"
+        attr:title="copyTitle()"
+        on:click="copy()"></mc-button>
+      <mc-button
+        size="sm"
+        variant="ghost"
+        icon="code"
+        attr:disabled="!loaded"
+        attr:title="codeOpen ? '收起代码' : '查看代码'"
+        on:click="toggleCode()"></mc-button>
+    </div>
+  </div>
+
+  <slot name="hint"></slot>
+
+  <div class="live" part="preview"></div>
+  <p class="load-error" attr:hidden="!previewError">{{previewError}}</p>
+
+  <div class="panel" attr:hidden="!codeOpen">
+    <mc-tabs
+      class="envs"
+      variant="segmented"
+      no-panel
+      attr:hidden="!plainAvailable"
+      on:change="setEnv($event.data.value)">
+      <mc-tab value="ofa" name="ofa.js 例子"></mc-tab>
+      <mc-tab value="plain" name="普通例子"></mc-tab>
+    </mc-tabs>
+    <div class="editor-host" id="editor-host">
+      <div class="editor-loading" attr:hidden="!editorLoading">正在加载编辑器…</div>
+    </div>
+    <pre class="error" attr:hidden="!errorText">{{errorText}}</pre>
+  </div>
+
+  <script>
+    import { compileDemo, loadDemoText } from '../lib/demo-runtime.mjs';
+    import { mountCodeEditor } from '../lib/code-editor.mjs';
+
+    const COPY_FEEDBACK_MS = 3000;
+
+    /* 示例源里的 CDN 前缀：预览时换成站点根目录，没打 tag 的版本也能跑本地文件 */
+    const CDN_RE =
+      /https:\/\/(?:cdn|fastly|gcore|testingcf)\.jsdelivr\.net\/gh\/lhf6623\/mosaic@[^/]+\//g;
+
+    /* 主题信号全页只盯一份：实例集合 + 一个观察者（同 doc-playground） */
+    const darkTargets = new Set();
+    let themeObserver;
+    let themeMq;
+
+    const syncAllDark = () => {
+      for (const target of darkTargets) target.syncDark();
+    };
+
+    const watchTheme = (target) => {
+      darkTargets.add(target);
+      if (!themeObserver) {
+        themeObserver = new MutationObserver(syncAllDark);
+        /* 主题写在文档根上，MutationObserver 是全局观察（docs/README §十：全局监听保留原生并注明原因） */
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-theme', 'class', 'style'],
+        });
+        themeMq = window.matchMedia?.('(prefers-color-scheme: dark)');
+        /* MediaQueryList 不是元素，只能原生监听 */
+        themeMq?.addEventListener?.('change', syncAllDark);
+      }
+      target.syncDark();
+    };
+
+    const unwatchTheme = (target) => {
+      darkTargets.delete(target);
+      if (darkTargets.size) return;
+      themeObserver?.disconnect();
+      themeObserver = undefined;
+      themeMq?.removeEventListener?.('change', syncAllDark);
+      themeMq = undefined;
+    };
+
+    export default () => ({
+      /* ⚠️ 显式 tag：不写按文件名推断，文件一改名就注册失败（P40） */
+      tag: 'doc-example',
+
+      attrs: {
+        /* ofa.js 例子文件地址；ofa 编译页面时已把相对地址改写成绝对地址 */
+        src: '',
+        /* 普通 HTML 例子地址，相对**页面文件**解析（页面写 ./demos/x-plain.html 即可） */
+        plainSrc: '',
+      },
+
+      /* 模板里引用的键必须先声明（技能：未声明键直接 ReferenceError，整块 render 中断） */
+      data: {
+        env: 'ofa', // 当前代码视图
+        codeOpen: false, // 代码区是否展开
+        plainAvailable: false, // 有没有普通例子可切
+        loaded: false, // 源文件是否读完（读完后按钮才可用）
+        copyState: '', // '' | 'copied' | 'failed'，复制按钮的临时反馈
+        errorText: '', // 编辑器 / 编译错误
+        previewError: '', // 预览加载失败
+        editorLoading: false, // 编辑器首次加载中
+      },
+
+      watch: {
+        src() {
+          if (this._mounted) this.loadSources();
+        },
+        plainSrc() {
+          if (this._mounted) this.loadSources();
+        },
+      },
+
+      ready() {
+        this._live = this.shadow.$('.live');
+        this._editorHost = this.shadow.$('#editor-host');
+        this._envTabs = this.shadow.$('.envs')?.ele ?? null; // 模式切换器（mc-tabs）
+
+        this._sources = {};
+        this._drafts = {};
+        this._runSeq = 0;
+        this._loadToken = 0;
+        this._fitRaf = 0;
+        this._firstCompile = true;
+        this._frame = undefined;
+        this._frameRo = undefined;
+
+        this._onResize = () => {
+          this._editor?.refresh();
+          this.scheduleFit();
+        };
+        /* 窗口 resize 是全局事件，模板绑不到，保留原生监听 */
+        window.addEventListener('resize', this._onResize);
+
+        watchTheme(this);
+        this._mounted = true;
+        if (String(this.src ?? '').trim()) this.loadSources();
+      },
+
+      detached() {
+        this._mounted = false;
+        clearTimeout(this._copyTimer);
+        cancelAnimationFrame(this._fitRaf);
+        window.removeEventListener('resize', this._onResize);
+        unwatchTheme(this);
+        this.teardownFrame();
+        this._editor?.destroy();
+        this._editor = undefined;
+        this._editorPromise = undefined;
+      },
+
+      proto: {
+        /** 读两个源文件的原文；ofa 源一定读，普通源读不到就只保留 ofa 视图 */
+        async loadSources() {
+          const src = String(this.src ?? '').trim();
+          if (!src) return;
+
+          const pageSrc = this.ele.getRootNode()?.host?.getAttribute?.('src') || document.baseURI;
+          let base;
+          try {
+            base = new URL(pageSrc, document.baseURI).href;
+          } catch {
+            base = document.baseURI;
+          }
+
+          let ofaUrl;
+          try {
+            ofaUrl = new URL(src, base).href;
+          } catch {
+            return;
+          }
+          let plainUrl = '';
+          const plain = String(this.plainSrc ?? '').trim();
+          if (plain) {
+            try {
+              plainUrl = new URL(plain, base).href;
+            } catch {
+              plainUrl = '';
+            }
+          }
+
+          const token = ++this._loadToken;
+          this.loaded = false;
+          this.errorText = '';
+          this.previewError = '';
+          this._firstCompile = true;
+          try {
+            const ofaText = await loadDemoText(ofaUrl);
+            let plainText = '';
+            if (plainUrl) {
+              try {
+                plainText = await loadDemoText(plainUrl);
+              } catch {
+                plainText = ''; // 普通例子可缺省：不挡住主示例
+              }
+            }
+            if (token !== this._loadToken || !this._mounted) return;
+
+            this._sources = {
+              ofa: { url: ofaUrl, text: ofaText },
+              plain: plainText ? { url: plainUrl, text: plainText } : null,
+            };
+            this._drafts = { ofa: ofaText, plain: plainText };
+            this.env = 'ofa'; // 默认看 ofa.js 例子；普通例子在代码区切换
+            this.plainAvailable = !!plainText;
+            this.syncEnvTabs(); // 重新读源会把视图拨回 ofa.js，切换器要跟着回位
+            if (this._editor) this._editor.setValue(this._drafts[this.env]);
+            this.loaded = true;
+            await this.renderLive();
+          } catch (error) {
+            if (token !== this._loadToken || !this._mounted) return;
+            this.loaded = false;
+            this.showPreviewError(error);
+            this.showError(error);
+          }
+        },
+
+        /**
+         * 预览的**唯一入口**：切换视图不会自动跑，只有点「运行」/「重新运行」或首次加载走这里。
+         * ⚠️ 站点例外（docs/README §十）：预览节点要按运行时编译结果 / iframe 创建，模板写不出来；
+         * 其余可见结构仍然走模板。
+         */
+        async renderLive() {
+          if (this.env === 'plain' && this._sources.plain) {
+            this.renderPlain(this._drafts.plain);
+            return;
+          }
+          await this.renderOfa(this._drafts.ofa);
+        },
+
+        /** renderLive 的 ofa 分支：compileDemo 的 tag 只有运行时才知道 */
+        async renderOfa(text) {
+          const seq = ++this._runSeq;
+          let tag;
+          try {
+            tag = await compileDemo({
+              text,
+              url: this._sources.ofa.url,
+              reuseTag: this._firstCompile,
+            });
+          } catch (error) {
+            if (seq !== this._runSeq || !this._mounted) return;
+            this.showPreviewError(error);
+            this.showError(error);
+            return;
+          }
+          if (seq !== this._runSeq || !this._mounted) return;
+          this._firstCompile = false;
+          this.teardownFrame();
+          this._live.ele.replaceChildren(document.createElement(tag));
+          this.previewError = '';
+          this.hideError();
+        },
+
+        /** renderLive 的普通例子分支：这是完整 HTML 文档，只能 iframe 隔离，模板写不出来 */
+        renderPlain(text) {
+          /* 作废可能在飞的 ofa 编译 */
+          this._runSeq += 1;
+          this.teardownFrame();
+          this._live.ele.replaceChildren();
+
+          const frame = document.createElement('iframe');
+          frame.className = 'frame';
+          frame.title = '普通 HTML 示例预览';
+          frame.setAttribute('part', 'preview');
+          /* 先写 srcdoc 再挂进页面：避免先触发一次 about:blank 的 load，把 once 监听吃掉 */
+          frame.srcdoc = this.previewHtml(text);
+          this._frame = frame;
+          this._live.ele.append(frame);
+          /* 用 shadow.$ 的 ofa 包装对象绑一次性 load（技能：元素用 .on()/.one()，不用原生 addEventListener） */
+          this.shadow.$('.frame').one('load', () => this.onFrameLoad(frame));
+          /* 组件升级 / 字体加载会让 body 从「未定义元素的高度」变成真实高度，补几拍兜底 */
+          this._frameTimers = [100, 400, 1200].map((ms) =>
+            setTimeout(() => {
+              if (this._frame === frame) this.fitFrame();
+            }, ms),
+          );
+          this.previewError = '';
+          this.hideError();
+        },
+
+        /** 示例里的 CDN 地址映射到站点根目录：没打 tag 也能跑本地文件 */
+        previewHtml(text) {
+          const siteRoot = new URL('.', document.baseURI).href;
+          let html = String(text ?? '').replace(CDN_RE, siteRoot);
+          if (!/<html\b/i.test(html)) return html;
+
+          /* 预览专用：普通页面本身不引 mosaic.css；iframe 里补一份，才能跟文档站的亮 / 暗主题。
+             源文件没有这一段，看起来仍是使用者会写的最小页面。 */
+          const theme = this.previewTheme();
+          html = html.replace(/<html\b([^>]*)>/i, (match, attrs) => {
+            const cleaned = attrs.replace(/\sdata-theme="[^"]*"/i, '');
+            return '<html' + cleaned + ' data-theme="' + theme + '">';
+          });
+          const bridge =
+            '<link rel="stylesheet" href="' +
+            siteRoot +
+            'packages/boot/mosaic.css" />\n' +
+            '    <style>html { background: rgb(var(--mc-color-surface)); }</style>';
+          if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, bridge + '\n  </head>');
+          else html = bridge + html;
+          return html;
+        },
+
+        /** 文档站当前主题（普通 iframe 预览跟它走） */
+        previewTheme() {
+          return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+        },
+
+        syncFrameTheme() {
+          const frame = this._frame;
+          if (!frame) return;
+          try {
+            const doc = frame.contentDocument;
+            if (doc?.documentElement) doc.documentElement.dataset.theme = this.previewTheme();
+          } catch {
+            /* srcdoc 同源；拿不到时保持创建时的主题 */
+          }
+        },
+
+        onFrameLoad(frame) {
+          if (frame !== this._frame) return;
+          this.syncFrameTheme();
+          this.fitFrame();
+          try {
+            const doc = frame.contentDocument;
+            if (!doc?.body) return;
+            /* 用 iframe 自己的 ResizeObserver：父窗口的实例观察另一个文档的节点不会触发 */
+            const FrameResizeObserver = doc.defaultView?.ResizeObserver;
+            this._frameRo?.disconnect();
+            if (FrameResizeObserver) {
+              this._frameRo = new FrameResizeObserver(() => this.fitFrame());
+              this._frameRo.observe(doc.body);
+            }
+            doc.fonts?.ready?.then(() => this.fitFrame());
+          } catch {
+            /* srcdoc 同源；真拿不到文档时保留默认高度 */
+          }
+        },
+
+        fitFrame() {
+          const frame = this._frame;
+          if (!frame) return;
+          let doc;
+          try {
+            doc = frame.contentDocument;
+          } catch {
+            return;
+          }
+          const body = doc?.body;
+          if (!body) return;
+          /* 用 body 的内容高 + 上下 margin：documentElement.scrollHeight 至少是 iframe 当前视口高，
+             内容比默认 150px 矮时会量出一个偏大的值 */
+          const style = doc.defaultView?.getComputedStyle(body);
+          const margin =
+            (parseFloat(style?.marginTop ?? '') || 0) +
+            (parseFloat(style?.marginBottom ?? '') || 0);
+          const height = Math.ceil(body.scrollHeight + margin);
+          if (height > 0) frame.style.height = height + 'px';
+        },
+
+        teardownFrame() {
+          this._frameRo?.disconnect();
+          this._frameRo = undefined;
+          for (const timer of this._frameTimers ?? []) clearTimeout(timer);
+          this._frameTimers = undefined;
+          this._frame = undefined;
+        },
+
+        showPreviewError(error) {
+          const message = error instanceof Error ? error.message : String(error);
+          this.previewError = '示例加载失败：' + message;
+        },
+
+        /** 把编辑器里的当前文本存回对应视图（关代码区 / 切视图 / 运行前都调） */
+        saveDraft() {
+          if (this._editor) this._drafts[this.env] = this._editor.getValue();
+        },
+
+        async run() {
+          if (!this._sources.ofa) return;
+          this.saveDraft();
+          await this.renderLive();
+        },
+
+        /** 重新运行 = 丢掉编辑、回到文件原文再跑一遍 */
+        async rerun() {
+          if (!this._sources.ofa) return;
+          this._drafts = {
+            ofa: this._sources.ofa.text,
+            plain: this._sources.plain?.text ?? '',
+          };
+          if (this._editor) this._editor.setValue(this._drafts[this.env]);
+          this.scheduleFit();
+          await this.renderLive();
+        },
+
+        async copy() {
+          const text = this._editor?.getValue() ?? this._drafts[this.env] ?? '';
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            this.flashCopy(true);
+          } catch {
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            /* 剪贴板失败时的全局降级：临时 textarea 挂 body，用完即删 */
+            document.body.append(area);
+            area.select();
+            try {
+              document.execCommand('copy');
+              this.flashCopy(true);
+            } catch {
+              this.flashCopy(false);
+            }
+            area.remove();
+          }
+        },
+
+        flashCopy(ok) {
+          clearTimeout(this._copyTimer);
+          this.copyState = ok ? 'copied' : 'failed';
+          this._copyTimer = setTimeout(() => {
+            this.copyState = '';
+            this._copyTimer = undefined;
+          }, COPY_FEEDBACK_MS);
+        },
+
+        copyTitle() {
+          if (this.copyState === 'copied') return '已复制';
+          if (this.copyState === 'failed') return '复制失败';
+          return '复制代码';
+        },
+
+        copyIcon() {
+          if (this.copyState === 'copied') return 'check';
+          if (this.copyState === 'failed') return 'close';
+          return 'copy';
+        },
+
+        /** 代码图标：图标本身不切换，只开 / 合代码区 */
+        async toggleCode() {
+          const open = !this.codeOpen;
+          if (!open) this.saveDraft();
+          this.codeOpen = open;
+          if (open) {
+            await this.mountEditor();
+            this.scheduleFit();
+          }
+        },
+
+        async mountEditor() {
+          if (this._editor) return;
+          if (this._editorPromise) {
+            await this._editorPromise;
+            return;
+          }
+          this._editorPromise = this.createEditor().catch((error) => {
+            this._editorPromise = undefined;
+            this.showError(error);
+          });
+          await this._editorPromise;
+        },
+
+        /** 例外：编辑器不是模板节点，由 code-editor.mjs 运行时挂到容器上（docs/README §十） */
+        async createEditor() {
+          this.editorLoading = true;
+          let editor;
+          try {
+            editor = await mountCodeEditor(this._editorHost.ele, {
+              value: this._drafts[this.env] ?? '',
+              onChange: () => this.saveDraft(),
+              onRun: () => this.run(),
+              onFold: () => this.scheduleFit(),
+            });
+          } finally {
+            this.editorLoading = false;
+          }
+          if (!this._mounted) {
+            editor.destroy();
+            return;
+          }
+          this._editor = editor;
+          this.scheduleFit();
+        },
+
+        /** 切代码视图：只换编辑器文本，不自动运行（运行仍由「运行」按钮触发） */
+        setEnv(env) {
+          if (env === this.env) return;
+          this.saveDraft();
+          this.env = env;
+          this.syncEnvTabs();
+          if (this._editor) this._editor.setValue(this._drafts[env] ?? '');
+          this.scheduleFit();
+        },
+
+        /** mc-tabs 的值是运行时 property（不反射属性）：脚本把视图拨回去时，切换器跟着回位 */
+        syncEnvTabs() {
+          const tabs = this._envTabs;
+          if (!tabs || !('value' in tabs)) return; // 还没升级：首屏默认就选 ofa，不会错
+          tabs.value = this.env;
+        },
+
+        scheduleFit() {
+          if (this._fitRaf) return;
+          this._fitRaf = requestAnimationFrame(() => {
+            this._fitRaf = 0;
+            this.fitEditorHeight();
+          });
+        },
+
+        fitEditorHeight() {
+          const host = this._editorHost?.ele;
+          const editor = this._editor;
+          if (!host || !editor) return;
+          const content = Math.ceil(editor.getContentHeight());
+          if (!content) return;
+          const next = content + 2 + 'px';
+          if (host.style.height === next) return;
+          host.style.height = next;
+          editor.refresh();
+        },
+
+        showError(error) {
+          this.errorText = error instanceof Error ? error.message : String(error);
+          console.warn('[mosaic] doc-example 示例编译失败：', error);
+        },
+
+        hideError() {
+          this.errorText = '';
+        },
+
+        /** 亮暗：读 color-scheme（令牌层切主题就是切它，且继承、穿得进 shadow root） */
+        syncDark() {
+          const scheme = (getComputedStyle(this.ele).colorScheme || '').toLowerCase();
+          const dark = scheme.includes('dark')
+            ? true
+            : scheme.includes('light')
+              ? false
+              : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
+          this.ele.toggleAttribute('data-dark', dark);
+          this.syncFrameTheme();
+        },
+      },
+    });
+  </script>
+</template>

@@ -22,6 +22,12 @@
       --mc-tabs-border: var(--mc-color-border, var(--mc-def-color-border));
       --mc-tabs-indicator: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-tabs-indicator-h: 2px;
+
+      /* 选中项自己的底色 / 投影 / 圆角（line 档留空，segmented 档换成浮起的那颗） */
+      --mc-tabs-bg-selected: 0 0 0 / 0;
+      --mc-tabs-shadow-selected: none;
+      --mc-tabs-tab-radius: var(--mc-radius-md, var(--mc-def-radius-md))
+        var(--mc-radius-md, var(--mc-def-radius-md)) 0 0;
     }
 
     /* 2. 标签条：指示条是它内部绝对定位的一层，位移 / 宽度由 JS 按激活项写（见 placeIndicator） */
@@ -48,7 +54,32 @@
       pointer-events: none;
     }
 
-    /* 3. 面板：常驻 DOM，非激活的挂 hidden（不用 o-if，P10） */
+    /* 3. 外观档：line 是默认那套下划线；segmented 把标签条收成一排分段切换器 ——
+       尺寸 / 色槽全落在上面那组 --mc-tabs-* 上，mc-tab 在自己的 shadow 里不用知道 variant。
+       样子照 `docs/components/example.html` 里「ofa.js 例子 / 普通例子」那颗切换器：
+       浅底轨道 + 选中项浮起，没有下划线指示条。 */
+    :host([variant='segmented']) {
+      --mc-tabs-tab-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
+      --mc-tabs-pad-x: 10px;
+      --mc-tabs-gap: 2px;
+      --mc-tabs-fg-selected: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-tabs-bg-hover: 0 0 0 / 0;
+      --mc-tabs-bg-selected: var(--mc-color-surface, var(--mc-def-color-surface));
+      --mc-tabs-shadow-selected: 0 1px 2px rgb(0 0 0 / 8%);
+      --mc-tabs-tab-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+    }
+    :host([variant='segmented']) .mc-list {
+      display: inline-flex;
+      padding: 2px;
+      border-bottom: 0;
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      background-color: rgb(var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken)));
+    }
+    :host([variant='segmented']) .mc-indicator {
+      display: none;
+    }
+
+    /* 4. 面板：常驻 DOM，非激活的挂 hidden（不用 o-if，P10） */
     .mc-panel {
       padding-block: var(--mc-tabs-panel-pad);
     }
@@ -58,7 +89,9 @@
     <slot></slot>
     <span class="mc-indicator" part="indicator"></span>
   </div>
-  <div class="mc-panel" part="panel"><slot name="panel"></slot></div>
+  <!-- 面板区：包装节点由 mc-tab 默认插槽里的内容搬进来；内部投影插槽在 ready() 里挂
+       （不写进模板是因为它是容器生成的内部节点，不进 public 插槽表 —— 见 README「设计取舍」） -->
+  <div class="mc-panel" part="panel" attr:hidden="noPanel !== null"></div>
 
   <script>
     import { withEmits } from '../boot/emits.js';
@@ -75,12 +108,24 @@
         attrs: {
           // 初始值走 default-value；运行时值走宿主 property value（规范 1.4），value 不是 attrs 键
           defaultValue: '',
+          // 外观档：line（默认，下划线标签）/ segmented（分段切换器，见 README 与 api.md）
+          variant: 'line',
+          // 布尔：存在即真。有些地方只要一颗分段切换器，不要面板区（P1：布尔默认值必须是 null）
+          noPanel: null,
         },
 
         ready() {
           // 元素引用走 this.shadow.$，原生属性靠 .ele
           this._list = this.shadow.$('.mc-list')?.ele ?? null;
           this._indicator = this.shadow.$('.mc-indicator')?.ele ?? null;
+          this._panelHost = this.shadow.$('.mc-panel')?.ele ?? null;
+          this._panels = new Map(); // mc-tab → 容器生成的 panel 包装节点
+
+          /* 面板内容在 mc-tab 的默认插槽里，要投影进容器 shadow 的面板区 —— 只有 direct child 的 slot
+             才能接住，所以面板区这颗内部 slot 运行时挂（它不是 public 插槽，见 README「设计取舍」） */
+          const panelSlot = document.createElement('slot');
+          panelSlot.name = 'panel';
+          this._panelHost?.append(panelSlot);
 
           /* 运行时值：宿主 DOM property（P18）。这里只挂访问器，不写宿主属性（构造期写宿主会抛，P31） */
           Object.defineProperty(this.ele, 'value', {
@@ -97,10 +142,13 @@
         },
 
         attached() {
+          this._panels ??= new Map(); // 重新挂载时沿用已有包装节点，别重复造
           this._onClick = (event) => this.handleClick(event);
           this._onKeydown = (event) => this.handleKeydown(event);
           this.ele.addEventListener('click', this._onClick);
           this.ele.addEventListener('keydown', this._onKeydown);
+
+          this.normalizeBoolAttrs();
 
           /* 增删标签 / 改 value / 改 disabled 都要重新同步；我们自己写的 selected / hidden 不在过滤表里，不会自激 */
           this._mo = new MutationObserver(() => this.applyState());
@@ -120,6 +168,12 @@
             // 首次触发落在构造期（P5）；property 写过值就不再跟随初始值
             if (this._mounted && this._value === undefined) this.applyState();
           },
+
+          noPanel() {
+            if (!this._mounted) return;
+            this.normalizeBoolAttrs(); // 归一化会再触发一次 watch，第二次就稳定了
+            this.applyState();
+          },
         },
 
         detached() {
@@ -135,9 +189,55 @@
             return [...this.ele.querySelectorAll(':scope > mc-tab')];
           },
 
-          /** 面板 = 带 slot="panel" 的直接子项，按 value 匹配 */
+          /** 面板 = 带 slot="panel" 的直接子项，按 value 匹配（由 collectPanels 按 mc-tab 生成） */
           panelList() {
             return [...this.ele.querySelectorAll(':scope > [slot="panel"]')];
+          },
+
+          /** no-panel 存在即真：只当分段切换器，面板区不渲染、mc-tab 的内容也不搬 */
+          hasNoPanel() {
+            return this.ele.hasAttribute('no-panel');
+          },
+
+          /** ofa 的布尔绑定会把 false 写成 no-panel="false"：摘掉，hasAttribute / CSS 才判得准（P31） */
+          normalizeBoolAttrs() {
+            const raw = this.ele.getAttribute('no-panel');
+            if (raw === null) return;
+            if (raw === 'false' || raw === '0') this.ele.removeAttribute('no-panel');
+            else if (raw !== '') this.ele.setAttribute('no-panel', '');
+          },
+
+          /**
+           * 面板内容写在 mc-tab 的默认插槽里，而面板区在容器的 shadow 里 —— 只有容器的 direct child
+           * 才投影得过去，所以这里给每个 mc-tab 生成一个 `<div slot="panel" value="…">`，把它的子节点整段搬进去。
+           * 行为层例外（造节点 + 搬节点）：新 API 把面板收进了 mc-tab，模板表达不了这次跨 shadow 的交接；
+           * 搬完内容仍是 light DOM，页面样式照常生效。no-panel 时不搬（内容留在 mc-tab 里、也不显示）。
+           */
+          collectPanels() {
+            const map = this._panels;
+            if (!map || this.hasNoPanel()) return;
+
+            const tabs = this.tabList();
+            for (const tab of tabs) {
+              let panel = map.get(tab);
+              if (!panel) {
+                panel = document.createElement('div');
+                panel.setAttribute('slot', 'panel');
+                panel.setAttribute('hidden', '');
+                this.ele.append(panel);
+                map.set(tab, panel);
+              }
+              const value = tab.getAttribute('value') ?? '';
+              if ((panel.getAttribute('value') ?? '') !== value) panel.setAttribute('value', value);
+              // 只搬面板内容：标签文案在 name 属性上，不需要占插槽
+              while (tab.firstChild) panel.append(tab.firstChild);
+            }
+
+            for (const [tab, panel] of map) {
+              if (tabs.includes(tab)) continue;
+              panel.remove();
+              map.delete(tab);
+            }
           },
 
           /**
@@ -167,10 +267,10 @@
 
           /**
            * 把「谁是激活项」落到三处：标签的 selected、button 的 roving tabindex、面板的 hidden；面板用 hidden 常驻 DOM，切回来内容还在。
-           * 行为层：标签与面板都是使用者的 light DOM（见 README「设计取舍」），可见结构不在本组件的模板里 ——
-           * 这里只同步状态属性，不创建、不搬动任何节点。
+           * 面板内容先从 mc-tab 的默认插槽搬进包装节点（collectPanels），其余只同步状态属性。
            */
           applyState() {
+            this.collectPanels();
             const active = this.activeValue();
             const tabs = this.tabList().map((tab) => ({
               tab,

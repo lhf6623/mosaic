@@ -1,10 +1,8 @@
 <template component>
   <mc-space direction="vertical" block>
     <mc-tabs default-value="a" on:change="picked = $event.data.value">
-      <mc-tab value="a">标签 A</mc-tab>
-      <mc-tab value="b">标签 B</mc-tab>
-      <div slot="panel" value="a">切到 B 时，下面那行会变成 b。</div>
-      <div slot="panel" value="b">切回 A 时又会变回 a。</div>
+      <mc-tab value="a" name="标签 A">切到 B 时，下面那行会变成 b。</mc-tab>
+      <mc-tab value="b" name="标签 B">切回 A 时又会变回 a。</mc-tab>
     </mc-tabs>
     <p class="text-sm text-muted">
       最近一次 change：

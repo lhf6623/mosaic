@@ -9,6 +9,7 @@
     "tokens": "node tools/gen-tokens.mjs",
     "check:tokens": "node tools/gen-tokens.mjs --check",
     "check:docs": "node tools/doc-drift/drift.mjs",
+    "versions": "node tools/sync-versions.mjs",
     "check:md-spec": "node tests/lib/md-spec.test.mjs",
     "build:css": "node tools/build-css.mjs",
     "build": "pnpm icons && pnpm tokens && pnpm build:css",

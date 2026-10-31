@@ -1,6 +1,6 @@
 /**
  * mc-tabs / mc-tab · 标签页：初始值、点击切换、value property、方向键、change 载荷、
- * roving tabindex、禁用不可选（packages/tabs）。
+ * roving tabindex、禁用不可选、name 标签 + 面板搬家、外观两档（line / segmented）、no-panel（packages/tabs）。
  */
 
 export default async function run({ page, visit, check }) {
@@ -30,12 +30,9 @@ export default async function run({ page, visit, check }) {
       'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px;width:520px';
     host.innerHTML = `
       <mc-tabs id="p-tabs" default-value="b">
-        <mc-tab id="p-tab-a" value="a">标签 A</mc-tab>
-        <mc-tab id="p-tab-b" value="b">标签 B</mc-tab>
-        <mc-tab id="p-tab-c" value="c" disabled>标签 C</mc-tab>
-        <div id="p-panel-a" slot="panel" value="a">面板 A</div>
-        <div id="p-panel-b" slot="panel" value="b">面板 B</div>
-        <div id="p-panel-c" slot="panel" value="c">面板 C</div>
+        <mc-tab id="p-tab-a" value="a" name="标签 A">面板 A</mc-tab>
+        <mc-tab id="p-tab-b" value="b" name="标签 B">面板 B</mc-tab>
+        <mc-tab id="p-tab-c" value="c" name="标签 C" disabled>面板 C</mc-tab>
       </mc-tabs>`;
     document.body.append(host);
     window.__tabsChanges = [];
@@ -49,7 +46,8 @@ export default async function run({ page, visit, check }) {
           tabs?.shadowRoot &&
           [...tabs.querySelectorAll('mc-tab')].every(
             (tab) => tab.shadowRoot?.querySelector('.mc-base'),
-          )
+          ) &&
+          tabs.querySelectorAll('[slot="panel"]').length === 3
         );
       },
       { timeout: 8000 },
@@ -80,6 +78,9 @@ export default async function run({ page, visit, check }) {
         value: tabs.value,
         upgraded: !!tabs.shadowRoot && tabEls.every((tab) => !!tab.shadowRoot),
         selected: tabEls.map((tab) => tab.hasAttribute('selected')),
+        labels: bases.map((base) => base.textContent.trim()),
+        tabText: tabEls.map((tab) => tab.textContent.trim()),
+        panelTexts: panelEls.map((panel) => panel.textContent.trim()),
         hidden: panelEls.map((panel) => panel.hasAttribute('hidden')),
         display: panelEls.map((panel) => getComputedStyle(panel).display),
         ariaSelected: bases.map((base) => base.getAttribute('aria-selected')),
@@ -127,6 +128,15 @@ export default async function run({ page, visit, check }) {
     }),
   );
   check(
+    'name 渲染成标签文案；mc-tab 默认插槽内容被搬进自动生成的 panel 包装节点（仍在 light DOM）',
+    JSON.stringify(initial.labels) === JSON.stringify(['标签 A', '标签 B', '标签 C']) &&
+      JSON.stringify(initial.tabText) === JSON.stringify(['', '', '']) &&
+      initial.panelTexts.includes('面板 A') &&
+      initial.panelTexts.includes('面板 B') &&
+      initial.panelTexts.includes('面板 C'),
+    JSON.stringify({ labels: initial.labels, tabText: initial.tabText, panels: initial.panelTexts }),
+  );
+  check(
     '不写 role / aria-*：roving tabindex 仍然只有选中项是 0',
     initial.role.every((r) => r === null) &&
       initial.ariaSelected.every((v) => v === null) &&
@@ -142,6 +152,29 @@ export default async function run({ page, visit, check }) {
       Math.abs(initial.indicatorBox.width - initial.activeBox.width) <= 1 &&
       Math.abs(initial.indicatorBox.x - initial.activeBox.x) <= 1,
     JSON.stringify({ indicator: initial.indicatorBox, active: initial.activeBox }),
+  );
+
+  /* ---------- 后加内容：mc-tab 里新增的节点也会被搬进面板包装 ---------- */
+  const appended = await page.evaluate(async () => {
+    const tab = document.querySelector('#p-tabs mc-tab[value="c"]');
+    const extra = document.createElement('span');
+    extra.id = 'p-late';
+    extra.textContent = '后加的内容';
+    tab.append(extra);
+    await new Promise((r) => setTimeout(r, 300));
+    const panel = document.querySelector('#p-tabs > [slot="panel"][value="c"]');
+    return {
+      tabText: tab.textContent.trim(),
+      moved: !!panel?.querySelector('#p-late'),
+      panelText: panel?.textContent.trim() ?? '',
+    };
+  });
+  check(
+    '后加进 mc-tab 的内容也会被搬进面板：mc-tab 自身不残留文本，面板里能拿到',
+    appended.tabText === '' &&
+      appended.moved &&
+      appended.panelText.includes('后加的内容'),
+    JSON.stringify(appended),
   );
 
   /* ---------- 真实点击：切到 a，change 只在这时发 ---------- */
@@ -256,26 +289,159 @@ export default async function run({ page, visit, check }) {
   /* ---------- 动态创建（P31 那条路径）：attrs 不含保留名、构造期不写宿主属性 ---------- */
   const created = await page.evaluate(async () => {
     const tabs = document.createElement('mc-tabs');
-    tabs.innerHTML =
-      '<mc-tab value="x">X</mc-tab><div slot="panel" value="x">面板 X</div>';
+    tabs.innerHTML = '<mc-tab value="x" name="X">面板 X</mc-tab>';
     document.body.append(tabs);
     await new Promise((r) => setTimeout(r, 300));
+    const panel = tabs.querySelector('[slot="panel"]');
     const out = {
       shadow: !!tabs.shadowRoot,
       value: tabs.value,
-      hidden: tabs.querySelector('[slot="panel"]').hasAttribute('hidden'),
-      display: getComputedStyle(tabs.querySelector('[slot="panel"]')).display,
+      label: tabs.querySelector('mc-tab').shadowRoot.querySelector('.mc-base').textContent.trim(),
+      hidden: panel.hasAttribute('hidden'),
+      display: getComputedStyle(panel).display,
+      panelText: panel.textContent.trim(),
     };
     tabs.remove();
     return out;
   });
   check(
-    'document.createElement 创建（未写任何属性）也照常初始化：回落到第一个可用标签',
-    created.shadow && created.value === 'x' && !created.hidden && created.display === 'block',
+    'document.createElement 创建（未写任何属性）也照常初始化：label / 面板都接上，回落到第一个可用标签',
+    created.shadow &&
+      created.value === 'x' &&
+      created.label === 'X' &&
+      !created.hidden &&
+      created.display === 'block' &&
+      created.panelText === '面板 X',
     JSON.stringify(created),
+  );
+
+  /* ---------- 外观档：variant 只换标签条的样子，line（默认）与 segmented 两档 ---------- */
+  const looks = await page.evaluate(async () => {
+    const mount = (variant) => {
+      const host = document.createElement('div');
+      host.className = 'tabs-look-probe';
+      host.innerHTML =
+        '<mc-tabs' +
+        (variant ? ' variant="' + variant + '"' : '') +
+        ' default-value="a">' +
+        '<mc-tab value="a" name="编辑">面板 A</mc-tab>' +
+        '<mc-tab value="b" name="预览">面板 B</mc-tab>' +
+        '</mc-tabs>';
+      document.body.append(host);
+      return host.querySelector('mc-tabs');
+    };
+    const line = mount('');
+    const segmented = mount('segmented');
+    await new Promise((r) => setTimeout(r, 400));
+    const read = (tabs) => {
+      const list = tabs.shadowRoot.querySelector('.mc-list');
+      const indicator = tabs.shadowRoot.querySelector('.mc-indicator');
+      const bases = [...tabs.querySelectorAll('mc-tab')].map((tab) =>
+        tab.shadowRoot?.querySelector('.mc-base'),
+      );
+      const css = (el) => (el ? getComputedStyle(el) : null);
+      return {
+        value: tabs.value,
+        indicator: css(indicator).display,
+        display: css(list).display,
+        borderBottom: css(list).borderBottomWidth,
+        padding: css(list).paddingTop,
+        radius: css(list).borderRadius,
+        selectedBg: css(bases[0]).backgroundColor,
+        idleBg: css(bases[1]).backgroundColor,
+        selectedShadow: css(bases[0]).boxShadow,
+        height: Math.round(bases[0].getBoundingClientRect().height),
+      };
+    };
+    const out = { line: read(line), segmented: read(segmented) };
+    for (const host of document.querySelectorAll('.tabs-look-probe')) host.remove();
+    return out;
+  });
+  check(
+    '默认档 line：下划线指示条在、标签条有下边线、选中项透明',
+    looks.line.indicator !== 'none' &&
+      looks.line.borderBottom === '1px' &&
+      looks.line.selectedBg === 'rgba(0, 0, 0, 0)',
+    JSON.stringify(looks.line),
+  );
+  check(
+    'variant="segmented"：分段切换器 —— 指示条收起、轨道浅底、选中项浮起、标签变矮',
+    looks.segmented.value === 'a' &&
+      looks.segmented.indicator === 'none' &&
+      looks.segmented.borderBottom === '0px' &&
+      looks.segmented.display === 'inline-flex' &&
+      looks.segmented.padding === '2px' &&
+      looks.segmented.radius === '6px' &&
+      looks.segmented.selectedBg !== 'rgba(0, 0, 0, 0)' &&
+      looks.segmented.idleBg === 'rgba(0, 0, 0, 0)' &&
+      looks.segmented.selectedShadow !== 'none' &&
+      looks.segmented.height < looks.line.height,
+    JSON.stringify(looks),
+  );
+
+  /* ---------- no-panel：只要一颗分段切换器，不渲染面板区 ---------- */
+  const noPanel = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.className = 'tabs-nopanel-probe';
+    host.innerHTML =
+      '<mc-tabs id="p-tabs-np" variant="segmented" no-panel default-value="a">' +
+      '<mc-tab value="a" name="编辑">这段不显示</mc-tab>' +
+      '<mc-tab value="b" name="预览">也不显示</mc-tab>' +
+      '</mc-tabs>';
+    document.body.append(host);
+    await new Promise((r) => setTimeout(r, 400));
+    const tabs = host.querySelector('#p-tabs-np');
+    const hostPanel = tabs.shadowRoot.querySelector('.mc-panel');
+    const tabEls = [...tabs.querySelectorAll('mc-tab')];
+    const before = {
+      panelDisplay: getComputedStyle(hostPanel).display,
+      panelCount: tabs.querySelectorAll('[slot="panel"]').length,
+      labels: tabEls.map((tab) => tab.shadowRoot?.querySelector('.mc-base')?.textContent.trim()),
+      contentKept: tabEls.map((tab) => tab.textContent.trim()),
+    };
+    tabEls[1].shadowRoot.querySelector('.mc-base').click();
+    await new Promise((r) => setTimeout(r, 200));
+    const after = {
+      value: tabs.value,
+      selected: tabEls.map((tab) => tab.hasAttribute('selected')),
+    };
+    host.remove();
+    return { before, after };
+  });
+  check(
+    'no-panel：面板区不显示、不生成面板包装；标签照常切换（纯分段切换器）',
+    noPanel.before.panelDisplay === 'none' &&
+      noPanel.before.panelCount === 0 &&
+      JSON.stringify(noPanel.before.labels) === JSON.stringify(['编辑', '预览']) &&
+      JSON.stringify(noPanel.before.contentKept) === JSON.stringify(['这段不显示', '也不显示']) &&
+      noPanel.after.value === 'b' &&
+      JSON.stringify(noPanel.after.selected) === JSON.stringify([false, true]),
+    JSON.stringify(noPanel),
+  );
+
+  /* ---------- no-panel="false"（ofa 布尔绑定的写法）要归一化摘掉，面板照常渲染 ---------- */
+  const noPanelOff = await page.evaluate(async () => {
+    const tabs = document.createElement('mc-tabs');
+    tabs.setAttribute('no-panel', 'false');
+    tabs.innerHTML = '<mc-tab value="a" name="A">面板 A</mc-tab>';
+    document.body.append(tabs);
+    await new Promise((r) => setTimeout(r, 300));
+    const out = {
+      hasAttr: tabs.hasAttribute('no-panel'),
+      panelDisplay: getComputedStyle(tabs.shadowRoot.querySelector('.mc-panel')).display,
+      panelCount: tabs.querySelectorAll('[slot="panel"]').length,
+    };
+    tabs.remove();
+    return out;
+  });
+  check(
+    'no-panel="false" 归一化摘掉：面板区照常渲染（P31）',
+    !noPanelOff.hasAttr && noPanelOff.panelDisplay === 'block' && noPanelOff.panelCount === 1,
+    JSON.stringify(noPanelOff),
   );
 
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => document.getElementById('tabs-probe')?.remove());
   page.off('response', onResponse);
-  page.off('pageerror', onError);}
+  page.off('pageerror', onError);
+}

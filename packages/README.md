@@ -46,8 +46,8 @@
 同一张表里，名称写调用式、类型写 TS 签名（见 §三）。
 
 - 正文最前是 `<l-m>` 注册（本组件 + 页面用到而外壳没注册的组件；**演示不用注册**，页面写
-  `<doc-playground src>` 即可）；之后依次是 `<h1>` / `.doc-lead`、`<h2>例子</h2>`、
-  `<doc-spec src="./api.md">`。
+  `<doc-playground src>` 或 `<doc-example src>` 即可）；之后依次是 `<h1>` / `.doc-lead`、
+  `<h2>例子</h2>`、`<doc-spec src="./api.md">`。
 - 页首只留 `<h1>` + 一句 `doc-lead`，**不要把参考表写在例子前面**：
   先看能做什么（例子），再查怎么配（参考区）。
   ⚠️ **页首没有徽标了**（2026-09 去掉的 `doc-badges`）：「已实现 / `packages/xxx/`」这类胶囊
@@ -116,21 +116,24 @@
   「插槽」/「part」节**只放表**（参考区不写解释句，读者从例子过来时已经懂了）。
   ⚠️ 另一种「看起来有用」的重复：别把演示展开后已经写着的句子再抄一遍
   （导语与演示正文撞车＝同一条信息两遍）。
-  它在演示区里的间距由 `content.css` 的 `.doc-demo > .doc-hint` 给。
+  它在演示区里的间距由 `content.css` 的 `.doc-demo > .doc-hint` /
+  `.doc-demo doc-example .doc-hint` 给。
 - **③ 可编辑示例是一个独立的 ofa 组件文件**（`demos/*.html`）：可单独打开、单独测，一个演示
-  一个文件。文档页只写 `<doc-playground src="./demos/x.html">` —— **不再写 `<l-m>`、也不再写
-  `<demo-x>` 标签**：组件自己读这份文件、运行时编译出初始预览，展开后的编辑 / 运行 / 重置都用
-  同一份源，没有第二份片段会漂移。
+  一个文件。旧演示写 `<doc-playground src="./demos/x.html">`，迁移中的新演示写
+  `<doc-example src="./demos/x.html" plain-src="./demos/x-plain.html">`（见 §二末「迁移中」）——
+  **都不写 `<l-m>`、也不写 `<demo-x>` 标签**：组件自己读这份文件、运行时编译出初始预览，
+  展开后的编辑 / 运行 / 重置都用同一份源，没有第二份片段会漂移。
 - ⚠️ **标题与 `.doc-hint` 必须留在页面里**：`doc-toc` 只扫页面 shadow root 的 `h2` / `h3`，
-  收进 `doc-playground` 会让整页目录少掉所有演示标题（同 `doc-spec` 的理由）。
+  收进可编辑示例组件会让整页目录少掉所有演示标题（同 `doc-spec` 的理由）。
 - ⚠️ **`demos/*.html` 仍整份在 `.prettierignore` 里**：演示内部可能用 `<mc-code>` 逐字展示
   代码片段，prettier 会把换行压掉（2026-10 全仓格式化挂过 code 套件 4 条）。与编辑器无关了，
   但这条忽略继续有效，也别给 demo 文件加逐块 `prettier-ignore`。
 
-> **迁移状态**：全部组件文档页已按这个结构排过（开场白 → 例子 → `<doc-spec>` 参考区 → 页脚），
-> 每个演示区就是一条 `<doc-playground src>`。演示区的段落顺序就是这份指纹
-> （`h3|playground` / `h3|hint|playground`）——说明可以在、可以不在，但**绝不许落在示例之后**；
-> 参考区渲染出来的节与 `api.md` 逐条对账。
+> **迁移状态**：全部组件文档页已按这个结构排过（开场白 → 例子 → `<doc-spec>` 参考区 → 页脚）。
+> 每个演示区是一条可编辑示例：旧页是 `<doc-playground src>`，`button` 的「基本用法」已迁到
+> `<doc-example src plain-src>`（见下节），其余待迁。演示区的段落顺序就是这份指纹
+> （`h3|playground` / `h3|hint|playground`，迁移后对应 `h3|example` / `h3|hint|example`）——
+> 说明可以在、可以不在，但**绝不许落在示例之后**；参考区渲染出来的节与 `api.md` 逐条对账。
 
 ⚠️ **覆盖线**：组件代码里有的**属性** / **命名插槽** / **part**，都至少要有一个演示真的用到它 ——
 属性直接写、插槽写 `slot="x"`、part 用 `::part()` 改（就是这一页的「内部样式」），`demo-covers-api` 守着。
@@ -194,9 +197,34 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - **路径**：`<doc-playground src="./demos/x.html">` 相对**文档页**解析；demo 文件内部的相对
   `src` / `href` / `import` 由 `docs/lib/demo-runtime.mjs` 按 demo 文件地址重写 —— 写例子时
   仍然按 demo 文件所在目录数（从 `demos/` 往上）。
-- 改页面时逐页核对：每个 `.doc-demo` 恰好一条 `<doc-playground src>`、页面里没有
-  `<l-m src="./demos/">` 与 `<demo-*>` 标签、`src` 指向的文件存在；标题 / 说明留在页面里
-  （右栏目录靠它）。
+- 改页面时逐页核对：每个 `.doc-demo` 恰好一条 `<doc-playground>` 或 `<doc-example>`、页面里没有
+  `<l-m src="./demos/">` 与 `<demo-*>` 标签、`src` / `plain-src` 指向的文件存在；标题 / 说明
+  留在页面里（右栏目录靠它）。
+
+### 迁移中：`<doc-example>` 与「普通例子」
+
+目前只有 `button` 的「基本用法」按这套写；其余页仍是 `<doc-playground>`，迁移完成后再统一骨架。
+
+```html
+<section class="doc-demo">
+  <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+    <h3 slot="title">基本用法</h3>
+    <p class="doc-hint" slot="hint">说明（可选）。</p>
+  </doc-example>
+</section>
+```
+
+- 标题 / 说明仍写在页面里，只是改成 slot；`doc-toc` 扫页面 shadow root 的规则不变。
+- `src` 是 ofa 演示文件（如 `packages/button/demos/basic.html`，一个文件一个 `tag`）；`plain-src` 是
+  配套的普通 HTML 完整页（如 `packages/button/demos/basic-plain.html`），只用于「普通例子」代码视图和
+  iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。
+- 默认是 ofa.js 视图（左），普通例子（右）只切代码；只有点「运行」/「重新运行」才重编译或重跑
+  当前视图。普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。
+- `src` / `plain-src` 都相对**页面文件**解析；`src` 会被 ofa 改写成绝对地址，`plain-src` 由组件按
+  页面地址解析（button 页写 `plain-src="./demos/basic-plain.html"`）。
+- `doc-example` 目前由使用页注册（只一页用），页面同时要注册 `mc-button`（工具栏）与
+  `mc-tabs` / `mc-tab`（ofa.js / 普通例子切换器）；多页迁移时再移进 `docs/layout.html`。
+- 站点组件表、运行时例外与 `src` 的解析规则见 [`docs/README.md`](../docs/README.md)。
 
 ## 三、参考区（属性 / 事件 / 插槽 / part）：写进 `api.md`，只放表
 

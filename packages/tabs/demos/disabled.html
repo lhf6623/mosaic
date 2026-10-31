@@ -1,12 +1,9 @@
 <template component>
   <mc-space direction="vertical" block>
     <mc-tabs default-value="a">
-      <mc-tab value="a">可用</mc-tab>
-      <mc-tab value="b" disabled>已停用</mc-tab>
-      <mc-tab value="c">也可用</mc-tab>
-      <div slot="panel" value="a">这一段能看，标签也能点。</div>
-      <div slot="panel" value="b">这一项点不动，方向键也会跳过它。</div>
-      <div slot="panel" value="c">方向键从「可用」往后走会直接到这里。</div>
+      <mc-tab value="a" name="可用">这一段能看，标签也能点。</mc-tab>
+      <mc-tab value="b" name="已停用" disabled>这一项点不动，方向键也会跳过它。</mc-tab>
+      <mc-tab value="c" name="也可用">方向键从「可用」往后走会直接到这里。</mc-tab>
     </mc-tabs>
   </mc-space>
 

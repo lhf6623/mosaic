@@ -5,6 +5,10 @@
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
     <l-m src="./button.html"></l-m>
     <l-m src="../switch/switch.html"></l-m>
+    <!-- doc-example 内部用 mc-tabs / mc-tab 做「ofa.js 例子 / 普通例子」切换器 -->
+    <l-m src="../tabs/tabs.html"></l-m>
+    <l-m src="../tabs/tab.html"></l-m>
+    <l-m src="../../docs/components/example.html"></l-m>
     <h1>
       Button
       <code>mc-button</code>
@@ -14,8 +18,14 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <!-- 新版示例（试验）：标题 / 说明走 slot，代码区有「ofa.js 例子 / 普通例子」切换；
+             plain-src 相对本页面文件解析，指向和 <doc-example> 配套的普通 HTML 版 -->
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            普通 HTML 和 ofa.js 两种写法，点右上角的代码图标查看；选好视图后点「运行」。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
