@@ -1,6 +1,7 @@
 <!-- mc-tabs — 标签页容器（同目录还有 tab.html）；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
   <style>
     /* 1. 宿主盒模型 + 尺寸通道 + 色槽（mc-tab 在另一个 shadow root 里，只能靠继承拿到） */
     :host {
@@ -56,8 +57,11 @@
     .mc-list::-webkit-scrollbar {
       display: none;
     }
-    /* 左右滚动导航：溢出才显示（attr:hidden），到边那侧退成占位透明，列表宽度不抖动；
-       自定义插槽内容的点击也由这层接管 → scrollByStep（想完全自定义行为就 stopPropagation） */
+    /* 左右滚动导航：溢出才显示（attr:hidden）；到边那侧不藏、只禁用 ——
+       图标淡下去、点不动，但占位还在，列表宽度不抖动（藏起来会让轨道在滚动中左右跳）。
+       禁用态只落在**内置箭头**上：页面塞进 prefix / suffix 的自定义内容不动 ——
+       它可能有自己的禁用逻辑、甚至故意一直可点，组件不替它做决定。
+       自定义内容的点击仍由这层接管 → scrollByStep（想完全自定义行为就 stopPropagation） */
     .mc-nav {
       display: flex;
       flex: none;
@@ -66,13 +70,17 @@
     .mc-nav[hidden] {
       display: none;
     }
-    .mc-nav.is-edge {
-      visibility: hidden;
-      pointer-events: none;
+    /* 到边那侧：内置箭头淡出（disabled 由模板上的 attr:disabled 写） */
+    .mc-nav.is-edge > .mc-nav-btn {
+      opacity: 0.35;
     }
     /* 页面给 prefix / suffix 塞了内容时隐藏默认箭头（has-custom 由 slotchange 挂） */
     .mc-nav.has-custom > .mc-nav-btn {
       display: none;
+    }
+    /* 箭头图标用 mc-icon 的生成类（1em 盒子、背景取 currentColor，零请求），尺寸只调 font-size */
+    .mc-nav-icon {
+      font-size: 14px;
     }
     .mc-nav-btn {
       display: flex;
@@ -87,14 +95,20 @@
       color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
       cursor: pointer;
       transition:
+        opacity var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
         color var(--mc-duration-fast, var(--mc-def-duration-fast))
           var(--mc-ease-standard, var(--mc-def-ease-standard)),
         background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
           var(--mc-ease-standard, var(--mc-def-ease-standard));
     }
-    .mc-nav-btn:hover {
+    .mc-nav-btn:not(:disabled):hover {
       background-color: rgb(var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken)));
       color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+    /* 到边那侧：真禁用（不是藏），光标别留手型 */
+    .mc-nav-btn:disabled {
+      cursor: default;
     }
     .mc-indicator {
       position: absolute;
@@ -159,7 +173,8 @@
   </style>
 
   <!-- 标签条外壳：左右是滚动导航插槽（prefix / suffix），中间是可滚动的标签条。
-       溢出时导航才出现（attr:hidden），到边的那侧退成 visibility: hidden（占位不抖动）。
+       溢出时导航才出现（attr:hidden）；到边的那侧禁用内置箭头而不是隐藏（is-edge：淡出 + disabled），
+       占位一直在，轨道宽度不随滚动抖动；页面塞的自定义内容不跟着禁用。
        默认箭头按钮与插槽并列而不是塞进 slot 当默认内容 —— 页面给了同名插槽内容时
        由 slotchange 挂 has-custom 隐藏默认按钮（named slot 的 fallback 在 ofa 里不可靠，实测）。 -->
   <div class="mc-shell">
@@ -169,19 +184,13 @@
       attr:hidden="!hasOverflow"
       class:is-edge="!canStart"
       class:has-custom="hasCustomStart">
-      <button class="mc-nav-btn" type="button" aria-label="向前滚动" title="向前滚动">
-        <svg
-          viewBox="0 0 16 16"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true">
-          <path d="M10 3 5 8l5 5"></path>
-        </svg>
+      <button
+        class="mc-nav-btn"
+        type="button"
+        aria-label="向前滚动"
+        title="向前滚动"
+        attr:disabled="!canStart">
+        <span class="mc-nav-icon mc-icon-chevron-left" aria-hidden="true"></span>
       </button>
       <slot name="prefix"></slot>
     </div>
@@ -195,19 +204,13 @@
       attr:hidden="!hasOverflow"
       class:is-edge="!canEnd"
       class:has-custom="hasCustomEnd">
-      <button class="mc-nav-btn" type="button" aria-label="向后滚动" title="向后滚动">
-        <svg
-          viewBox="0 0 16 16"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true">
-          <path d="m6 3 5 5-5 5"></path>
-        </svg>
+      <button
+        class="mc-nav-btn"
+        type="button"
+        aria-label="向后滚动"
+        title="向后滚动"
+        attr:disabled="!canEnd">
+        <span class="mc-nav-icon mc-icon-chevron-right" aria-hidden="true"></span>
       </button>
       <slot name="suffix"></slot>
     </div>
@@ -240,8 +243,8 @@
         // 模板里引用的键必须先声明（技能：未声明键直接 ReferenceError，整块 render 中断）
         data: {
           hasOverflow: false, // 标签条溢出：左右导航出现的前提
-          canStart: false, // 左侧还没滚到头（false 时该侧退成占位透明）
-          canEnd: false, // 右侧还没滚到头
+          canStart: false, // 左侧还能往前滚（false 时内置箭头禁用：淡出 + 点不动，占位保留）
+          canEnd: false, // 右侧还能往后滚（同上）
           hasCustomStart: false, // prefix 插槽有自定义内容（隐藏默认箭头）
           hasCustomEnd: false, // suffix 插槽有自定义内容
         },
@@ -511,7 +514,8 @@
             this.syncNav();
           },
 
-          /** 左右导航显隐：只在溢出时出现，到边的那侧退成占位透明（布局不抖动） */
+          /** 左右导航状态：只在溢出时出现；到边的那侧禁用**内置箭头**（is-edge：淡出 + disabled），
+             不隐藏、也不动自定义插槽内容 */
           syncNav() {
             const list = this._list;
             if (!list) return;

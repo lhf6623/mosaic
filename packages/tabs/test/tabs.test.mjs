@@ -560,6 +560,15 @@ export default async function run({ page, visit, check }) {
         getComputedStyle(startNav.querySelector('.mc-nav-btn')).display === 'none' &&
         !!tabs.querySelector('#p-nav-custom'),
       endDefaultShown: getComputedStyle(endNav.querySelector('.mc-nav-btn')).display !== 'none',
+      /* 贴左缘时 start 侧在边上，但那边是自定义插槽内容 —— 自定义内容不跟着禁用：
+         不淡、不被 pointer-events 挡住（外壳自己不设禁用态，只禁内置箭头） */
+      startCustomNormal: (() => {
+        const custom = tabs.querySelector('#p-nav-custom');
+        const cs = getComputedStyle(custom);
+        return Number(cs.opacity) === 1 && cs.pointerEvents !== 'none';
+      })(),
+      startBtnDisabled: startNav.querySelector('.mc-nav-btn').disabled,
+      endBtnDisabled: endNav.querySelector('.mc-nav-btn').disabled,
       /* 不溢出的那颗：导航整侧隐藏 */
       fitNavHidden: fitTabs.shadowRoot.querySelector('.mc-nav.is-start').hidden,
     };
@@ -575,8 +584,20 @@ export default async function run({ page, visit, check }) {
     tabs.querySelector('#p-nav-custom').click();
     await waitScrollSettled();
     const customClick = { before, after: Math.round(list.scrollLeft) };
+    /* 拖到最右：end 侧内置箭头淡出禁用而不是消失（按钮还在、变淡、disabled） */
+    list.scrollLeft = list.scrollWidth;
+    await waitScrollSettled();
+    const atEnd = {
+      endEdge: endNav.classList.contains('is-edge'),
+      endBtnDisabled: endNav.querySelector('.mc-nav-btn').disabled,
+      endBtnFaded: Number(getComputedStyle(endNav.querySelector('.mc-nav-btn')).opacity) < 1,
+      endNavVisible:
+        getComputedStyle(endNav).display !== 'none' &&
+        getComputedStyle(endNav).visibility !== 'hidden',
+      startDisabled: startNav.querySelector('.mc-nav-btn').disabled,
+    };
     host.remove();
-    return { initial, scrolled, customClick };
+    return { initial, scrolled, customClick, atEnd };
   });
   check(
     '溢出导航：两侧箭头溢出才出现（不溢出隐藏）、prefix 插槽替换默认箭头、点箭头/自定义内容都能滚动、初始贴左缘',
@@ -593,6 +614,21 @@ export default async function run({ page, visit, check }) {
       !navProbe.scrolled.startEdgeAfter &&
       navProbe.customClick.after < navProbe.customClick.before,
     JSON.stringify(navProbe),
+  );
+  check(
+    '到边那侧只禁内置箭头、不隐藏也不碰自定义内容：箭头淡出 + disabled 且占位还在，prefix 插槽内容照常可点',
+    navProbe.initial.startCustomNormal &&
+      navProbe.initial.startBtnDisabled &&
+      !navProbe.initial.endBtnDisabled &&
+      navProbe.atEnd.endEdge &&
+      navProbe.atEnd.endNavVisible &&
+      navProbe.atEnd.endBtnFaded &&
+      navProbe.atEnd.endBtnDisabled &&
+      !navProbe.atEnd.startDisabled,
+    JSON.stringify({
+      initial: navProbe.initial,
+      atEnd: navProbe.atEnd,
+    }),
   );
 
   /* ---------- 悬停：不铺底色，文字变主题色（与选中项同色） ---------- */

@@ -69,10 +69,15 @@ property `value` —— 它在 `ready()` 里挂访问器，不是 `attrs` 键、
   （在 `placeIndicator` 里手写滚动量，不用 `scrollIntoView` —— 它会把页面级祖先一起滚）。
   y 向 `clip` 防止内容伸出产生纵向滚动，指示条因此不再压住下边线（`bottom: 0`）。
 - **左右滚动导航**：溢出时标签条两侧出现导航（`prefix` / `suffix` 两个插槽 + 同名 part），
-  默认内容是内置箭头按钮（内联 SVG，本体保持零依赖），点击滚一屏的 80%；页面塞了同名插槽
+  默认内容是内置箭头按钮（图标走 `mc-icon` 的生成类 `mc-icon-chevron-*`，随模板 `<link>` 引
+  `../icon/icons.generated.css`，零请求），点击滚一屏的 80%；页面塞了同名插槽
   内容就整体替换默认箭头，点击仍由外壳接管触发滚动（想完全自定义行为就 `stopPropagation`）。
-  不溢出时两侧 `display: none`；滚到头的那一侧退成 `visibility: hidden` —— 占位但不响应，
-  导航显隐不会引起标签条宽度抖动。显隐由 `syncNav()` 算（`placeIndicator` 与 scroll 监听都会调），
+  不溢出时两侧 `display: none`；滚到头的那一侧**禁用而不是隐藏** —— 内置箭头淡到 35%、带 `disabled`
+  点不动，但占位一直在，标签条宽度不随滚动抖动（藏起来会左右跳一截）。
+  **禁用态只落在内置箭头上**：页面塞进插槽的自定义内容不淡、不禁、照常响应 ——
+  它可能有自己的禁用逻辑，甚至故意一直可点，组件不替它做决定（`is-edge` 类仍挂在
+  `::part(prefix)` / `::part(suffix)` 外壳上，要自己接状态就用它）。
+  状态由 `syncNav()` 算（`placeIndicator` 与 scroll 监听都会调），
   滚动条隐藏了它就是唯一的可视滚动入口。
 
 ### 外观：line / segmented
