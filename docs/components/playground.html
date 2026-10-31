@@ -41,10 +41,6 @@
       line-height: var(--mc-text-sm-lh);
     }
 
-    .bar-label {
-      margin-right: auto;
-    }
-
     /* 改过且还没重置：一个小胶囊，免得读者滚回来不知道现在看的是不是官方样例 */
     .dirty {
       display: none;
@@ -80,6 +76,8 @@
       flex: none;
       flex-wrap: wrap;
       gap: var(--mc-space-2);
+      /* 栏里没有文字标签了：按钮组靠右，dirty / status 留在左侧 */
+      margin-left: auto;
     }
 
     /* 图标按钮：方形、只放一个图标，提示信息走 title */
@@ -232,7 +230,6 @@
 
   <div class="drawer" part="drawer">
     <div class="bar" part="bar">
-      <span class="bar-label">编辑示例</span>
       <span class="dirty" part="dirty">已修改</span>
       <span class="status" part="status"></span>
       <div class="actions" id="actions">
