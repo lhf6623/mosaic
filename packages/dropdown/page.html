@@ -32,37 +32,42 @@
       </section>
 
       <section class="doc-demo">
-        <h3>方位</h3>
-        <doc-playground src="./demos/placement.html"></doc-playground>
+        <doc-example src="./demos/placement.html">
+          <h3 slot="title">方位</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>悬停触发</h3>
-        <doc-playground src="./demos/hover.html"></doc-playground>
+        <doc-example src="./demos/hover.html">
+          <h3 slot="title">悬停触发</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>受控开合</h3>
-        <doc-playground src="./demos/controlled.html"></doc-playground>
+        <doc-example src="./demos/controlled.html">
+          <h3 slot="title">受控开合</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式；面板里的菜单项归
-          <code>mc-menu-item</code>
-          自己的单元管。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式；面板里的菜单项归
+            <code>mc-menu-item</code>
+            自己的单元管。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

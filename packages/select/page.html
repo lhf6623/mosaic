@@ -6,7 +6,7 @@
     <l-m src="./select.html"></l-m>
     <l-m src="./option.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <h1>
       Select
       <code>mc-select</code>
@@ -38,50 +38,57 @@
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可清除</h3>
-        <doc-playground src="./demos/clearable.html"></doc-playground>
+        <doc-example src="./demos/clearable.html">
+          <h3 slot="title">可清除</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>多选</h3>
-        <p class="doc-hint">
-          触发框固定宽度：长选项被省略号裁掉，hover / focus 才在下方弹完整文案（宿主同时挂
-          <code>data-overflow</code>
-          ）。
-        </p>
-        <doc-playground src="./demos/multiple.html"></doc-playground>
+        <doc-example src="./demos/multiple.html">
+          <h3 slot="title">多选</h3>
+          <p class="doc-hint" slot="hint">
+            触发框固定宽度：长选项被省略号裁掉，hover / focus 才在下方弹完整文案（宿主同时挂
+            <code>data-overflow</code>
+            ）。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>状态</h3>
-        <doc-playground src="./demos/states.html"></doc-playground>
+        <doc-example src="./demos/states.html">
+          <h3 slot="title">状态</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

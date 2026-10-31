@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./pagination.html"></l-m>
     <h1>
       Pagination
@@ -16,7 +16,7 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
@@ -25,62 +25,70 @@
       </section>
 
       <section class="doc-demo">
-        <h3>页码密度</h3>
-        <doc-playground src="./demos/siblings.html"></doc-playground>
+        <doc-example src="./demos/siblings.html">
+          <h3 slot="title">页码密度</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/size.html"></doc-playground>
+        <doc-example src="./demos/size.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>禁用</h3>
-        <doc-playground src="./demos/disabled.html"></doc-playground>
+        <doc-example src="./demos/disabled.html">
+          <h3 slot="title">禁用</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>输入跳转</h3>
-        <p class="doc-hint">提交后输入框会清空，占位符随之显示当前页。</p>
-        <doc-playground src="./demos/jumper.html"></doc-playground>
+        <doc-example src="./demos/jumper.html">
+          <h3 slot="title">输入跳转</h3>
+          <p class="doc-hint" slot="hint">提交后输入框会清空，占位符随之显示当前页。</p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>每页条数</h3>
-        <p class="doc-hint">
-          它是个原生
-          <code>&lt;select&gt;</code>
-          ：收起时跟组件样式走，展开那层由系统画（不跟
-          <code>data-theme</code>
-          ）；想要主题化的下拉，用
-          <code>suffix</code>
-          插槽放自己的
-          <code>mc-select</code>
-          组件。
-        </p>
-        <doc-playground src="./demos/sizer.html"></doc-playground>
+        <doc-example src="./demos/sizer.html">
+          <h3 slot="title">每页条数</h3>
+          <p class="doc-hint" slot="hint">
+            它是个原生
+            <code>&lt;select&gt;</code>
+            ：收起时跟组件样式走，展开那层由系统画（不跟
+            <code>data-theme</code>
+            ）；想要主题化的下拉，用
+            <code>suffix</code>
+            插槽放自己的
+            <code>mc-select</code>
+            组件。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>前后附加</h3>
-        <doc-playground src="./demos/slots.html"></doc-playground>
+        <doc-example src="./demos/slots.html">
+          <h3 slot="title">前后附加</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

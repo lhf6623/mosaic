@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./card.html"></l-m>
     <h1>
       Card
@@ -29,55 +29,63 @@
       </section>
 
       <section class="doc-demo">
-        <h3>边线</h3>
-        <doc-playground src="./demos/sections.html"></doc-playground>
+        <doc-example src="./demos/sections.html">
+          <h3 slot="title">边线</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外观</h3>
-        <doc-playground src="./demos/variants.html"></doc-playground>
+        <doc-example src="./demos/variants.html">
+          <h3 slot="title">外观</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>浮动</h3>
-        <p class="doc-hint">
-          阴影走
-          <code>--mc-card-shadow</code>
-          令牌、暗色下自动换一档；要更轻 / 更重就覆盖它。
-        </p>
-        <doc-playground src="./demos/float.html"></doc-playground>
+        <doc-example src="./demos/float.html">
+          <h3 slot="title">浮动</h3>
+          <p class="doc-hint" slot="hint">
+            阴影走
+            <code>--mc-card-shadow</code>
+            令牌、暗色下自动换一档；要更轻 / 更重就覆盖它。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内边距</h3>
-        <p class="doc-hint">
-          要让图片或
-          <code>padding="none"</code>
-          的整块内容跟着圆角裁，在宿主
-          <code>style</code>
-          上加
-          <code>overflow: hidden</code>
-          。
-        </p>
-        <doc-playground src="./demos/padding.html"></doc-playground>
+        <doc-example src="./demos/padding.html">
+          <h3 slot="title">内边距</h3>
+          <p class="doc-hint" slot="hint">
+            要让图片或
+            <code>padding="none"</code>
+            的整块内容跟着圆角裁，在宿主
+            <code>style</code>
+            上加
+            <code>overflow: hidden</code>
+            。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <p class="doc-hint">卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。</p>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+          <p class="doc-hint" slot="hint">
+            卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

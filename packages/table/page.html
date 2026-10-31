@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./table.html"></l-m>
     <h1>
       Table
@@ -16,7 +16,7 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
@@ -28,62 +28,71 @@
       </section>
 
       <section class="doc-demo">
-        <h3>运行时换数据</h3>
-        <doc-playground src="./demos/runtime.html"></doc-playground>
+        <doc-example src="./demos/runtime.html">
+          <h3 slot="title">运行时换数据</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>条纹</h3>
-        <doc-playground src="./demos/striped.html"></doc-playground>
+        <doc-example src="./demos/striped.html">
+          <h3 slot="title">条纹</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>悬停</h3>
-        <doc-playground src="./demos/hoverable.html"></doc-playground>
+        <doc-example src="./demos/hoverable.html">
+          <h3 slot="title">悬停</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>密度</h3>
-        <doc-playground src="./demos/size.html"></doc-playground>
+        <doc-example src="./demos/size.html">
+          <h3 slot="title">密度</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外边框</h3>
-        <p class="doc-hint">
-          圆角大小走
-          <code>--mc-table-radius</code>
-          ，不想要圆角就把它设成
-          <code>0</code>
-          。
-        </p>
-        <doc-playground src="./demos/border.html"></doc-playground>
+        <doc-example src="./demos/border.html">
+          <h3 slot="title">外边框</h3>
+          <p class="doc-hint" slot="hint">
+            圆角大小走
+            <code>--mc-table-radius</code>
+            ，不想要圆角就把它设成
+            <code>0</code>
+            。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>加载中</h3>
-        <doc-playground src="./demos/loading.html"></doc-playground>
+        <doc-example src="./demos/loading.html">
+          <h3 slot="title">加载中</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>空态</h3>
-        <doc-playground src="./demos/empty.html"></doc-playground>
+        <doc-example src="./demos/empty.html">
+          <h3 slot="title">空态</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>空态与加载插槽</h3>
-        <doc-playground src="./demos/slots.html"></doc-playground>
+        <doc-example src="./demos/slots.html">
+          <h3 slot="title">空态与加载插槽</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

@@ -1,6 +1,6 @@
 <!--
-  <doc-example> —— 组件文档页的可编辑示例（组件页的「基本用法」都用它，各配一份普通例子；button 页全部演示已迁）。
-  与 <doc-playground> 的区别：
+  <doc-example> —— 组件文档页的可编辑示例：组件页的每个演示都用它；配了 plain-src 的演示还能切普通例子。
+  要点：
     · 标题 / 说明由页面通过 slot 放进同一行，操作按钮在标题右侧；
     · 编辑器显示文件原文（含 <template component> 外壳），不再剥掉外壳；
     · 代码区收起时「运行 / 重新运行」跟着收起（没有可运行的编辑），只留复制与代码入口；
@@ -8,8 +8,6 @@
       普通例子是完整 HTML 页，点「运行」时用 iframe 跑（CDN 地址预览时映射到本地文件）；
       切换器用 mc-tabs 的 segmented + no-panel 档 —— 与工具栏的 mc-button 一起在 docs/layout.html 站点级注册。
   ⚠️ h3 / .doc-hint 仍必须写在页面里（doc-toc 只扫页面 shadow root），这里只负责排版。
-  ⚠️ 为什么单独一个组件：新布局（标题行 + 操作栏）和普通 / ofa 切换会改掉旧演示的页面骨架，
-      先在 button 页试通、再逐页迁移；迁移完成再决定是否并回 doc-playground。
   ⚠️ 预览 / 编辑器是运行时按文件内容造的节点，模板写不出来 —— 见 docs/README §十的站点例外；
       预览集中在 renderLive()，编辑器在 createEditor()，两处都注明了原因。
 -->
@@ -58,7 +56,7 @@
     }
 
     /* 收起代码区时没有可运行的编辑：运行 / 重新运行跟着收起，只留复制与代码两个入口
-       （与 doc-playground 同一口径；mc-button 自己的 :host 是 inline-flex，这里得显式 display: none） */
+       （与旧演示组件同一口径；mc-button 自己的 :host 是 inline-flex，这里得显式 display: none） */
     .actions mc-button[hidden] {
       display: none;
     }
@@ -234,7 +232,7 @@
     const CDN_RE =
       /https:\/\/(?:cdn|fastly|gcore|testingcf)\.jsdelivr\.net\/gh\/lhf6623\/mosaic@[^/]+\//g;
 
-    /* 主题信号全页只盯一份：实例集合 + 一个观察者（同 doc-playground） */
+    /* 主题信号全页只盯一份：实例集合 + 一个观察者（与旧演示组件同一套做法） */
     const darkTargets = new Set();
     let themeObserver;
     let themeMq;

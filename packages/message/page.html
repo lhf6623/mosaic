@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <h1>
       Message
       <code>message()</code>
@@ -23,18 +23,21 @@
       </section>
 
       <section class="doc-demo">
-        <h3>停留时长</h3>
-        <doc-playground src="./demos/duration.html"></doc-playground>
+        <doc-example src="./demos/duration.html">
+          <h3 slot="title">停留时长</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可关闭</h3>
-        <doc-playground src="./demos/closable.html"></doc-playground>
+        <doc-example src="./demos/closable.html">
+          <h3 slot="title">可关闭</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>同 key 更新</h3>
-        <doc-playground src="./demos/key.html"></doc-playground>
+        <doc-example src="./demos/key.html">
+          <h3 slot="title">同 key 更新</h3>
+        </doc-example>
       </section>
     </doc-demos>
 

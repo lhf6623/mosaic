@@ -47,8 +47,8 @@
 - 加规则前先问一句：**是不是只有一个页面在用？** 是就写回那个页面。
 - `docs/content.css` 是给「站点页 + 组件文档页」共用的正文样式准备的；`.doc-demo` 只服务组件
   文档页（卡片外壳）。宽屏分列的流式容器是 `<doc-demos>`（`docs/components/demos.html`，左右位置在
-  组件脚本里算）。示例内部的预览、编辑抽屉、编辑器样式都住在 `doc-playground` / `doc-example` 自己的
-  shadow root 里；页面不再有演示代码面板的样式。
+  组件脚本里算）。示例内部的预览、编辑抽屉、编辑器样式都住在 `doc-example` 自己的 shadow root 里；
+  页面不再有演示代码面板的样式。
 
 ## 三、行内样式：只有三类例外
 
@@ -73,23 +73,22 @@
 
 ## 五、站点组件
 
-| 标签              | 文件                               | 干什么                                                                                                     |
-| ----------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `doc-nav`         | `docs/components/nav.html`         | 左栏 / 窄屏浮层菜单                                                                                        |
-| `doc-toc`         | `docs/components/toc.html`         | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）                                                             |
-| `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到）                                                       |
-| `doc-playground`  | `docs/components/playground.html`  | 组件文档页原来的可编辑示例：页面只给 `src`，组件编译 demo 文件做预览 + 编辑抽屉                            |
-| `doc-example`     | `docs/components/example.html`     | 组件页「基本用法」的可编辑示例：标题 / 说明走 slot，可切 ofa.js / 普通例子（后者用 iframe 跑）；站点级注册 |
-| `doc-demos`       | `docs/components/demos.html`       | 组件文档页的「例子」容器：宽屏按最短列流式排，只算位置、不搬 DOM（目录顺序不变）                           |
-| `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                                                                                   |
-| `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差                                                                     |
-| `doc-search`      | `docs/components/search.html`      | 顶栏搜索：搜整个菜单，输入才出列表，选中跳那一页                                                           |
+| 标签              | 文件                               | 干什么                                                                                                           |
+| ----------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `doc-nav`         | `docs/components/nav.html`         | 左栏 / 窄屏浮层菜单                                                                                              |
+| `doc-toc`         | `docs/components/toc.html`         | 右栏本页目录（扫页面 shadow 里的 `h2` / `h3`）                                                                   |
+| `doc-spec`        | `docs/components/spec.html`        | 渲染 `api.md` 的参考区（进 light DOM，目录才收得到）                                                             |
+| `doc-example`     | `docs/components/example.html`     | 组件页的可编辑示例（每个演示都用它）：标题 / 说明走 slot，可切 ofa.js / 普通例子（后者用 iframe 跑）；站点级注册 |
+| `doc-demos`       | `docs/components/demos.html`       | 组件文档页的「例子」容器：宽屏按最短列流式排，只算位置、不搬 DOM（目录顺序不变）                                 |
+| `doc-palette`     | `docs/components/palette.html`     | 「色彩」页的原始色阶色板                                                                                         |
+| `doc-block-field` | `docs/components/block-field.html` | 首页方块场：四层方块跟随鼠标位移做视差                                                                           |
+| `doc-search`      | `docs/components/search.html`      | 顶栏搜索：搜整个菜单，输入才出列表，选中跳那一页                                                                 |
 
 - 站点组件一律 `<template component>` + 显式 `tag: 'doc-*'`；宿主定位住在布局页，内部样式住在
   组件自己的 `<style>`。
 - 站点级组件在 `docs/layout.html` 注册一次；只被一页用的由那一页自己 `<l-m>` 引入
   （`doc-block-field` 就是 —— 只有首页在用，所以由首页自己引，别的页面不必为此多下一份）。
-- `doc-example` 是站点级组件：组件页的「基本用法」都用它，注册在 `docs/layout.html`。它的工具栏用
+- `doc-example` 是站点级组件：组件页的每个演示都用它，注册在 `docs/layout.html`。它的工具栏用
   `mc-button`、「普通例子」切换器用 `mc-tabs` / `mc-tab`，这两批也由外壳统一注册 —— 页面不用写
   `<l-m>`。
 
@@ -151,8 +150,8 @@ docs/
 
 - **模板是唯一渲染源**：可见结构写模板，脚本只做模板表达不了的行为（测量 / 滚动 / 焦点 /
   popover / 拖拽 / 编辑器 / 解析 Markdown / 随机装饰）。例外集中在一个方法里，注释「为什么不能
-  模板化」——现有四处：`docs/components/playground.html`（编译用户代码）、
-  `docs/components/spec.html`（运行时渲染 `api.md`）、`docs/components/block-field.html`（随机装饰方块）、
+  模板化」——现有三处：`docs/components/spec.html`（运行时渲染 `api.md`）、
+  `docs/components/block-field.html`（随机装饰方块）、
   `docs/components/example.html`（编译 demo + 普通例子 iframe + 挂编辑器）。
 - **指令只属于 ofa 模板**：`{{}}` 只放文本节点；HTML 属性 / 布尔属性用 `attr:`（不用 `:disabled` /
   `:checked`）；组件属性用 `:` / `sync:`；类用 `class:`；样式用 `:style.`。

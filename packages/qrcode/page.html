@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./qrcode.html"></l-m>
     <h1>
       Qrcode
@@ -20,66 +20,76 @@
       </section>
 
       <section class="doc-demo">
-        <h3>纠错等级</h3>
-        <p class="doc-hint">
-          日常用
-          <code>M</code>
-          ；中间要放图案、或预计会被遮挡磨损时才往上提。
-        </p>
-        <doc-playground src="./demos/level.html"></doc-playground>
+        <doc-example src="./demos/level.html">
+          <h3 slot="title">纠错等级</h3>
+          <p class="doc-hint" slot="hint">
+            日常用
+            <code>M</code>
+            ；中间要放图案、或预计会被遮挡磨损时才往上提。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>颜色</h3>
-        <p class="doc-hint">对比度低、或深底浅码（第三张）都不保证能扫：不是所有扫码器都认反色。</p>
-        <doc-playground src="./demos/colors.html"></doc-playground>
+        <doc-example src="./demos/colors.html">
+          <h3 slot="title">颜色</h3>
+          <p class="doc-hint" slot="hint">
+            对比度低、或深底浅码（第三张）都不保证能扫：不是所有扫码器都认反色。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>渲染方式</h3>
-        <doc-playground src="./demos/renderer.html"></doc-playground>
+        <doc-example src="./demos/renderer.html">
+          <h3 slot="title">渲染方式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>中间图案</h3>
-        <p class="doc-hint">
-          图案压住的模块靠纠错补：放图时把
-          <code>level</code>
-          提到 Q 以上，比例别超过 0.25。
-        </p>
-        <doc-playground src="./demos/logo.html"></doc-playground>
+        <doc-example src="./demos/logo.html">
+          <h3 slot="title">中间图案</h3>
+          <p class="doc-hint" slot="hint">
+            图案压住的模块靠纠错补：放图时把
+            <code>level</code>
+            提到 Q 以上，比例别超过 0.25。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>静区</h3>
-        <doc-playground src="./demos/margin.html"></doc-playground>
+        <doc-example src="./demos/margin.html">
+          <h3 slot="title">静区</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <p class="doc-hint">
-          令牌只改盒子，位图不会按新尺寸重绘 —— 要更清晰还是用
-          <code>size</code>
-          属性。
-        </p>
-        <doc-playground src="./demos/external-style.html"></doc-playground>
+        <doc-example src="./demos/external-style.html">
+          <h3 slot="title">外部样式</h3>
+          <p class="doc-hint" slot="hint">
+            令牌只改盒子，位图不会按新尺寸重绘 —— 要更清晰还是用
+            <code>size</code>
+            属性。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./form.html"></l-m>
     <l-m src="./form-item.html"></l-m>
     <l-m src="../input/input.html"></l-m>
@@ -38,78 +38,87 @@
       </section>
 
       <section class="doc-demo">
-        <h3>栅格排布</h3>
-        <doc-playground src="./demos/grid.html"></doc-playground>
+        <doc-example src="./demos/grid.html">
+          <h3 slot="title">栅格排布</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>校验规则</h3>
-        <doc-playground src="./demos/rules.html"></doc-playground>
+        <doc-example src="./demos/rules.html">
+          <h3 slot="title">校验规则</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>隐藏错误文案</h3>
-        <doc-playground src="./demos/hide-error.html"></doc-playground>
+        <doc-example src="./demos/hide-error.html">
+          <h3 slot="title">隐藏错误文案</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>取值</h3>
-        <doc-playground src="./demos/values.html"></doc-playground>
+        <doc-example src="./demos/values.html">
+          <h3 slot="title">取值</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>嵌套字段名</h3>
-        <p class="doc-hint">
-          空段（
-          <code>a..b</code>
-          ）或
-          <code>__proto__</code>
-          这类段名不按路径解析：整条名字当字面键。
-        </p>
-        <doc-playground src="./demos/nested.html"></doc-playground>
+        <doc-example src="./demos/nested.html">
+          <h3 slot="title">嵌套字段名</h3>
+          <p class="doc-hint" slot="hint">
+            空段（
+            <code>a..b</code>
+            ）或
+            <code>__proto__</code>
+            这类段名不按路径解析：整条名字当字面键。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>数据绑定</h3>
-        <doc-playground src="./demos/binding.html"></doc-playground>
+        <doc-example src="./demos/binding.html">
+          <h3 slot="title">数据绑定</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>提交</h3>
-        <p class="doc-hint">
-          单行输入框里按
-          <kbd>Enter</kbd>
-          走的就是提交这条路；
-          <code>textarea</code>
-          里是换行，不提交。
-        </p>
-        <doc-playground src="./demos/methods.html"></doc-playground>
+        <doc-example src="./demos/methods.html">
+          <h3 slot="title">提交</h3>
+          <p class="doc-hint" slot="hint">
+            单行输入框里按
+            <kbd>Enter</kbd>
+            走的就是提交这条路；
+            <code>textarea</code>
+            里是换行，不提交。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <p class="doc-hint">
-          原生
-          <code>focus</code>
-          /
-          <code>blur</code>
-          /
-          <code>keydown</code>
-          照常穿到宿主上：容器不转发、也不拦。
-        </p>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            原生
+            <code>focus</code>
+            /
+            <code>blur</code>
+            /
+            <code>keydown</code>
+            照常穿到宿主上：容器不转发、也不拦。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

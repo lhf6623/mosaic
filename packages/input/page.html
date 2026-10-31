@@ -11,7 +11,7 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
@@ -25,75 +25,85 @@
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>运行时值</h3>
-        <p class="doc-hint">
-          它不参与原生
-          <code>&lt;form&gt;</code>
-          提交（
-          <code>name</code>
-          只是转发）—— 提交时自己取
-          <code>el.value</code>
-          。
-        </p>
-        <doc-playground src="./demos/value.html"></doc-playground>
+        <doc-example src="./demos/value.html">
+          <h3 slot="title">运行时值</h3>
+          <p class="doc-hint" slot="hint">
+            它不参与原生
+            <code>&lt;form&gt;</code>
+            提交（
+            <code>name</code>
+            只是转发）—— 提交时自己取
+            <code>el.value</code>
+            。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>数据绑定</h3>
-        <doc-playground src="./demos/binding.html"></doc-playground>
+        <doc-example src="./demos/binding.html">
+          <h3 slot="title">数据绑定</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>前后缀插槽</h3>
-        <doc-playground src="./demos/slots.html"></doc-playground>
+        <doc-example src="./demos/slots.html">
+          <h3 slot="title">前后缀插槽</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可清除</h3>
-        <doc-playground src="./demos/clearable.html"></doc-playground>
+        <doc-example src="./demos/clearable.html">
+          <h3 slot="title">可清除</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>输入类型</h3>
-        <doc-playground src="./demos/type.html"></doc-playground>
+        <doc-example src="./demos/type.html">
+          <h3 slot="title">输入类型</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>长度限制</h3>
-        <doc-playground src="./demos/maxlength.html"></doc-playground>
+        <doc-example src="./demos/maxlength.html">
+          <h3 slot="title">长度限制</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>状态</h3>
-        <p class="doc-hint">
-          <code>disabled</code>
-          时
-          <kbd>Tab</kbd>
-          会跳过。
-        </p>
-        <doc-playground src="./demos/states.html"></doc-playground>
+        <doc-example src="./demos/states.html">
+          <h3 slot="title">状态</h3>
+          <p class="doc-hint" slot="hint">
+            <code>disabled</code>
+            时
+            <kbd>Tab</kbd>
+            会跳过。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

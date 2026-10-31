@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./alert.html"></l-m>
     <h1>
       Alert
@@ -24,61 +24,71 @@
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <doc-playground src="./demos/colors.html"></doc-playground>
+        <doc-example src="./demos/colors.html">
+          <h3 slot="title">语义色</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>hex 颜色</h3>
-        <p class="doc-hint">极浅的 hex 在浅底上读不清时，控制台会给一条警告。</p>
-        <doc-playground src="./demos/hex.html"></doc-playground>
+        <doc-example src="./demos/hex.html">
+          <h3 slot="title">hex 颜色</h3>
+          <p class="doc-hint" slot="hint">极浅的 hex 在浅底上读不清时，控制台会给一条警告。</p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外观</h3>
-        <doc-playground src="./demos/variants.html"></doc-playground>
+        <doc-example src="./demos/variants.html">
+          <h3 slot="title">外观</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>标题</h3>
-        <doc-playground src="./demos/heading.html"></doc-playground>
+        <doc-example src="./demos/heading.html">
+          <h3 slot="title">标题</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>图标</h3>
-        <doc-playground src="./demos/icon.html"></doc-playground>
+        <doc-example src="./demos/icon.html">
+          <h3 slot="title">图标</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>自定义图标</h3>
-        <doc-playground src="./demos/icon-custom.html"></doc-playground>
+        <doc-example src="./demos/icon-custom.html">
+          <h3 slot="title">自定义图标</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可关闭</h3>
-        <doc-playground src="./demos/closable.html"></doc-playground>
+        <doc-example src="./demos/closable.html">
+          <h3 slot="title">可关闭</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

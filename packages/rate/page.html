@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./rate.html"></l-m>
     <h1>
       Rate
@@ -20,66 +20,77 @@
       </section>
 
       <section class="doc-demo">
-        <h3>星星颗数</h3>
-        <doc-playground src="./demos/max.html"></doc-playground>
+        <doc-example src="./demos/max.html">
+          <h3 slot="title">星星颗数</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>半星</h3>
-        <doc-playground src="./demos/half.html"></doc-playground>
+        <doc-example src="./demos/half.html">
+          <h3 slot="title">半星</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>快速取消</h3>
-        <p class="doc-hint">
-          键盘
-          <kbd>Home</kbd>
-          也回 0（未评分）。
-        </p>
-        <doc-playground src="./demos/clearable.html"></doc-playground>
+        <doc-example src="./demos/clearable.html">
+          <h3 slot="title">快速取消</h3>
+          <p class="doc-hint" slot="hint">
+            键盘
+            <kbd>Home</kbd>
+            也回 0（未评分）。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <doc-playground src="./demos/colors.html"></doc-playground>
+        <doc-example src="./demos/colors.html">
+          <h3 slot="title">语义色</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>禁用</h3>
-        <p class="doc-hint">
-          禁用后
-          <kbd>Tab</kbd>
-          会跳过，鼠标与键盘都改不动值。
-        </p>
-        <doc-playground src="./demos/disabled.html"></doc-playground>
+        <doc-example src="./demos/disabled.html">
+          <h3 slot="title">禁用</h3>
+          <p class="doc-hint" slot="hint">
+            禁用后
+            <kbd>Tab</kbd>
+            会跳过，鼠标与键盘都改不动值。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <p class="doc-hint">悬停预览只画星、不改值也不发事件 —— 点下去拿到的仍是同一个数。</p>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            悬停预览只画星、不改值也不发事件 —— 点下去拿到的仍是同一个数。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/external-style.html"></doc-playground>
+        <doc-example src="./demos/external-style.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

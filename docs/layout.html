@@ -492,9 +492,7 @@
   <l-m src="./components/spec.html"></l-m>
   <!-- 页面占位也是组件（原来在 layout 的脚本里手搓 DOM）：「色彩」页的色板 -->
   <l-m src="./components/palette.html"></l-m>
-  <!-- 组件文档页的可编辑示例：页面只写 <doc-playground src="./demos/x.html">，不再为每个 demo 写 <l-m> / 标签 -->
-  <l-m src="./components/playground.html"></l-m>
-  <!-- 升级版可编辑示例（<doc-example>，组件页的「基本用法」用它）：标题 / 说明走 slot，可切「普通例子」。
+  <!-- 组件文档页的可编辑示例（<doc-example>，组件页的每个演示都用它）：标题 / 说明走 slot，可切「普通例子」。
        工具栏用 mc-button；「ofa.js / 普通例子」切换器用 mc-tabs / mc-tab —— 都由外壳统一注册，页面不用再写 -->
   <l-m src="../packages/button/button.html"></l-m>
   <l-m src="../packages/tabs/tabs.html"></l-m>

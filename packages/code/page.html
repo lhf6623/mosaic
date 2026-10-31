@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <h1>
       Code
       <code>mc-code</code>
@@ -21,80 +21,92 @@
       </section>
 
       <section class="doc-demo">
-        <h3>片段文件</h3>
-        <p class="doc-hint">
-          长片段放独立文件就不用转义；相对路径按写它的那个文件解析（和
-          <code>&lt;link href&gt;</code>
-          一样）。
-        </p>
-        <doc-playground src="./demos/src.html"></doc-playground>
+        <doc-example src="./demos/src.html">
+          <h3 slot="title">片段文件</h3>
+          <p class="doc-hint" slot="hint">
+            长片段放独立文件就不用转义；相对路径按写它的那个文件解析（和
+            <code>&lt;link href&gt;</code>
+            一样）。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>用 code 属性传</h3>
-        <doc-playground src="./demos/attribute.html"></doc-playground>
+        <doc-example src="./demos/attribute.html">
+          <h3 slot="title">用 code 属性传</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>页面数据</h3>
-        <doc-playground src="./demos/binding.html"></doc-playground>
+        <doc-example src="./demos/binding.html">
+          <h3 slot="title">页面数据</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>运行时读写</h3>
-        <p class="doc-hint">
-          两条通道效果一样，差别只在时序：
-          <code>el.code</code>
-          同步生效，属性要等一个微任务。
-        </p>
-        <doc-playground src="./demos/runtime.html"></doc-playground>
+        <doc-example src="./demos/runtime.html">
+          <h3 slot="title">运行时读写</h3>
+          <p class="doc-hint" slot="hint">
+            两条通道效果一样，差别只在时序：
+            <code>el.code</code>
+            同步生效，属性要等一个微任务。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>行号</h3>
-        <doc-playground src="./demos/line-numbers.html"></doc-playground>
+        <doc-example src="./demos/line-numbers.html">
+          <h3 slot="title">行号</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>标记语言</h3>
-        <doc-playground src="./demos/markup.html"></doc-playground>
+        <doc-example src="./demos/markup.html">
+          <h3 slot="title">标记语言</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>限高滚动</h3>
-        <doc-playground src="./demos/max-height.html"></doc-playground>
+        <doc-example src="./demos/max-height.html">
+          <h3 slot="title">限高滚动</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>长行折行</h3>
-        <doc-playground src="./demos/soft-wrap.html"></doc-playground>
+        <doc-example src="./demos/soft-wrap.html">
+          <h3 slot="title">长行折行</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>官方主题</h3>
-        <doc-playground src="./demos/theme.html"></doc-playground>
+        <doc-example src="./demos/theme.html">
+          <h3 slot="title">官方主题</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>主题基址</h3>
-        <doc-playground src="./demos/hljs-base.html"></doc-playground>
+        <doc-example src="./demos/hljs-base.html">
+          <h3 slot="title">主题基址</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/box-model.html"></doc-playground>
+        <doc-example src="./demos/box-model.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

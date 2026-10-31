@@ -274,7 +274,7 @@ export async function mountCodeEditor(container, options = {}) {
     /** @type {any} */
     const cm = CodeMirror(container, {
       value,
-      /* 高度跟随 .editor-host（它由 doc-playground 按内容自适应）；CM 默认 300px 会盖掉容器 */
+      /* 高度跟随 .editor-host（它由 doc-example 按内容自适应）；CM 默认 300px 会盖掉容器 */
       height: '100%',
       mode: 'htmlmixed',
       lineNumbers: true,
@@ -316,7 +316,7 @@ export async function mountCodeEditor(container, options = {}) {
     cm.on('change', () => {
       if (!muting) onChange?.();
     });
-    /* 折叠 / 展开会改变内容高度：交给调用方重算编辑区高度（doc-playground 的 fitEditorHeight） */
+    /* 折叠 / 展开会改变内容高度：交给调用方重算编辑区高度（doc-example 的 fitEditorHeight） */
     cm.on('fold', () => onFold?.());
     cm.on('unfold', () => onFold?.());
     /* 抽屉刚展开时量到的宽度可能还是 0：下一帧再量一次，行号 / 行宽才对 */
@@ -357,7 +357,7 @@ export async function mountCodeEditor(container, options = {}) {
 }
 
 /**
- * 降级：朴素的 textarea，行内样式由 doc-playground 的 .fallback-editor 给。
+ * 降级：朴素的 textarea，行内样式由 doc-example 的 .fallback-editor 给。
  * @param {HTMLElement} container
  * @param {{ value: string, onChange?: () => void, onRun?: () => void }} options
  * @returns {CodeEditor}

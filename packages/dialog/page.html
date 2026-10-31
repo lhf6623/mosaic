@@ -26,49 +26,55 @@
       </section>
 
       <section class="doc-demo">
-        <h3>受控开合</h3>
-        <doc-playground src="./demos/controlled.html"></doc-playground>
+        <doc-example src="./demos/controlled.html">
+          <h3 slot="title">受控开合</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>遮罩</h3>
-        <doc-playground src="./demos/mask.html"></doc-playground>
+        <doc-example src="./demos/mask.html">
+          <h3 slot="title">遮罩</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>富标题</h3>
-        <p class="doc-hint">
-          标题属性叫
-          <code>heading</code>
-          ，不叫
-          <code>title</code>
-          （后者会弹原生 tooltip，与
-          <code>mc-alert</code>
-          一致）。
-        </p>
-        <doc-playground src="./demos/slots.html"></doc-playground>
+        <doc-example src="./demos/slots.html">
+          <h3 slot="title">富标题</h3>
+          <p class="doc-hint" slot="hint">
+            标题属性叫
+            <code>heading</code>
+            ，不叫
+            <code>title</code>
+            （后者会弹原生 tooltip，与
+            <code>mc-alert</code>
+            一致）。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

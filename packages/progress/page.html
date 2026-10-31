@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./progress.html"></l-m>
     <h1>
       Progress
@@ -12,7 +12,7 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
@@ -21,50 +21,56 @@
       </section>
 
       <section class="doc-demo">
-        <h3>数值上限</h3>
-        <doc-playground src="./demos/max.html"></doc-playground>
+        <doc-example src="./demos/max.html">
+          <h3 slot="title">数值上限</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>不确定态</h3>
-        <p class="doc-hint">
-          不知道还要多久时用它，别编一个假比例；此时
-          <code>value</code>
-          不参与。
-        </p>
-        <doc-playground src="./demos/indeterminate.html"></doc-playground>
+        <doc-example src="./demos/indeterminate.html">
+          <h3 slot="title">不确定态</h3>
+          <p class="doc-hint" slot="hint">
+            不知道还要多久时用它，别编一个假比例；此时
+            <code>value</code>
+            不参与。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>语义色</h3>
-        <doc-playground src="./demos/colors.html"></doc-playground>
+        <doc-example src="./demos/colors.html">
+          <h3 slot="title">语义色</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <p class="doc-hint">
-          宿主是
-          <code>display: block</code>
-          ：宽度跟父容器走，行内 / flex 布局里要铺满得先给个能撑开的容器。
-        </p>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+          <p class="doc-hint" slot="hint">
+            宿主是
+            <code>display: block</code>
+            ：宽度跟父容器走，行内 / flex 布局里要铺满得先给个能撑开的容器。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

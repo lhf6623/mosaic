@@ -5,7 +5,7 @@
     <!-- ⚠️ 本页用到的组件必须自己注册（站点外壳只注册站点级那批），漏了会被 `:not(:defined){display:none}` 连文字一起藏掉（P44）。 -->
     <l-m src="./date-picker.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <h1>
       Date Picker
       <code>mc-date-picker</code>
@@ -46,92 +46,106 @@
       </section>
 
       <section class="doc-demo">
-        <h3>类型</h3>
-        <doc-playground src="./demos/types.html"></doc-playground>
+        <doc-example src="./demos/types.html">
+          <h3 slot="title">类型</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>多选</h3>
-        <p class="doc-hint">文案超过固定宽度时被省略号裁掉，hover / focus 触发框才看得到完整值。</p>
-        <doc-playground src="./demos/multiple.html"></doc-playground>
+        <doc-example src="./demos/multiple.html">
+          <h3 slot="title">多选</h3>
+          <p class="doc-hint" slot="hint">
+            文案超过固定宽度时被省略号裁掉，hover / focus 触发框才看得到完整值。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>范围</h3>
-        <doc-playground src="./demos/range-mode.html"></doc-playground>
+        <doc-example src="./demos/range-mode.html">
+          <h3 slot="title">范围</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可选范围</h3>
-        <p class="doc-hint">范围外的日子键盘也选不中；翻月不受限制，方便看上下文。</p>
-        <doc-playground src="./demos/range.html"></doc-playground>
+        <doc-example src="./demos/range.html">
+          <h3 slot="title">可选范围</h3>
+          <p class="doc-hint" slot="hint">范围外的日子键盘也选不中；翻月不受限制，方便看上下文。</p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>可清除</h3>
-        <doc-playground src="./demos/clearable.html"></doc-playground>
+        <doc-example src="./demos/clearable.html">
+          <h3 slot="title">可清除</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>状态</h3>
-        <doc-playground src="./demos/states.html"></doc-playground>
+        <doc-example src="./demos/states.html">
+          <h3 slot="title">状态</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>受控值</h3>
-        <doc-playground src="./demos/binding.html"></doc-playground>
+        <doc-example src="./demos/binding.html">
+          <h3 slot="title">受控值</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>格式化</h3>
-        <doc-playground src="./demos/format.html"></doc-playground>
+        <doc-example src="./demos/format.html">
+          <h3 slot="title">格式化</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <p class="doc-hint">
-          原生
-          <code>focus</code>
-          /
-          <code>blur</code>
-          /
-          <code>keydown</code>
-          本来就会穿到宿主上，不用组件转发；这里演的是组件自己发的那几条。
-        </p>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            原生
+            <code>focus</code>
+            /
+            <code>blur</code>
+            /
+            <code>keydown</code>
+            本来就会穿到宿主上，不用组件转发；这里演的是组件自己发的那几条。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <p class="doc-hint">
-          状态会写成宿主上的
-          <code>[data-open]</code>
-          /
-          <code>[data-filled]</code>
-          /
-          <code>[data-empty]</code>
-          /
-          <code>[data-overflow]</code>
-          这些属性，外层 CSS 直接勾它。
-        </p>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+          <p class="doc-hint" slot="hint">
+            状态会写成宿主上的
+            <code>[data-open]</code>
+            /
+            <code>[data-filled]</code>
+            /
+            <code>[data-empty]</code>
+            /
+            <code>[data-overflow]</code>
+            这些属性，外层 CSS 直接勾它。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部封在 shadow 里：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部封在 shadow 里：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

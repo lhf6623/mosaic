@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./switch.html"></l-m>
     <l-m src="../form/form.html"></l-m>
     <l-m src="../form/form-item.html"></l-m>
@@ -26,35 +26,40 @@
       </section>
 
       <section class="doc-demo">
-        <h3>自定义值</h3>
-        <doc-playground src="./demos/custom-value.html"></doc-playground>
+        <doc-example src="./demos/custom-value.html">
+          <h3 slot="title">自定义值</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>禁用</h3>
-        <doc-playground src="./demos/disabled.html"></doc-playground>
+        <doc-example src="./demos/disabled.html">
+          <h3 slot="title">禁用</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          组件内部只有开了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part()</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部只有开了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part()</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

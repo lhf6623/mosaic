@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./loading-bar.html"></l-m>
     <h1>
       Loading Bar
@@ -12,7 +12,7 @@
 
     <h2>例子</h2>
 
-    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-playground）；取词规则见 packages/README.md「演示区三段」。 -->
+    <!-- 演示区三段：标题 → 说明（可选，是导语不是脚注）→ 可编辑示例（doc-example）；取词规则见 packages/README.md「演示区三段」。 -->
     <doc-demos>
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
@@ -22,33 +22,38 @@
       </section>
 
       <section class="doc-demo">
-        <h3>函数调用</h3>
-        <p class="doc-hint">
-          函数入口不做计数：两件事同时在忙时，先结束的那一次
-          <code>done()</code>
-          就把条子收掉 ——「还有几件事没完」得由调用方自己记账。
-        </p>
-        <doc-playground src="./demos/imperative.html"></doc-playground>
+        <doc-example src="./demos/imperative.html">
+          <h3 slot="title">函数调用</h3>
+          <p class="doc-hint" slot="hint">
+            函数入口不做计数：两件事同时在忙时，先结束的那一次
+            <code>done()</code>
+            就把条子收掉 ——「还有几件事没完」得由调用方自己记账。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>出错</h3>
-        <doc-playground src="./demos/error.html"></doc-playground>
+        <doc-example src="./demos/error.html">
+          <h3 slot="title">出错</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>两档高度</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">两档高度</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>容器内</h3>
-        <doc-playground src="./demos/container.html"></doc-playground>
+        <doc-example src="./demos/container.html">
+          <h3 slot="title">容器内</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
     </doc-demos>
 

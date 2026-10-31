@@ -359,7 +359,8 @@ const rules = [
            什么时候发）得有一节自己的地方说（`mc-input` 的 input / change 一度只藏在「可清除」演示里）。 */
         if (c.facts.union.events.size) {
           const page = `packages/${c.slug}/page.html`;
-          if (io.exists(page) && !/<h3>\s*事件回调\s*<\/h3>/.test(io.read(page))) {
+          /* 页面里的 h3 可能带 `slot="title"`（doc-example 的标题槽），匹配时属性要一起吃掉 */
+          if (io.exists(page) && !/<h3\b[^>]*>\s*事件回调\s*<\/h3>/.test(io.read(page))) {
             problems.push(
               page +
                 '：有事件却没有「事件回调」演示区（' +

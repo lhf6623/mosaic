@@ -19,52 +19,58 @@
       </section>
 
       <section class="doc-demo">
-        <h3>文字</h3>
-        <doc-playground src="./demos/text.html"></doc-playground>
+        <doc-example src="./demos/text.html">
+          <h3 slot="title">文字</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>线型</h3>
-        <doc-playground src="./demos/variants.html"></doc-playground>
+        <doc-example src="./demos/variants.html">
+          <h3 slot="title">线型</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>竖直</h3>
-        <p class="doc-hint">
-          放在 flex 行之外时，竖线只有
-          <code>1em</code>
-          高。
-        </p>
-        <doc-playground src="./demos/vertical.html"></doc-playground>
+        <doc-example src="./demos/vertical.html">
+          <h3 slot="title">竖直</h3>
+          <p class="doc-hint" slot="hint">
+            放在 flex 行之外时，竖线只有
+            <code>1em</code>
+            高。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>留白</h3>
-        <p class="doc-hint">
-          带单位的写法（如
-          <code>12px</code>
-          ）不认，落回默认
-          <code>md</code>
-          。
-        </p>
-        <doc-playground src="./demos/spacing.html"></doc-playground>
+        <doc-example src="./demos/spacing.html">
+          <h3 slot="title">留白</h3>
+          <p class="doc-hint" slot="hint">
+            带单位的写法（如
+            <code>12px</code>
+            ）不认，落回默认
+            <code>md</code>
+            。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/external-style.html"></doc-playground>
+        <doc-example src="./demos/external-style.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

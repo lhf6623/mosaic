@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./popover.html"></l-m>
     <h1>
       Popover
@@ -20,81 +20,90 @@
       </section>
 
       <section class="doc-demo">
-        <h3>方位</h3>
-        <p class="doc-hint">
-          面板走浏览器顶层（top layer）：祖先的
-          <code>transform</code>
-          /
-          <code>filter</code>
-          /
-          <code>contain</code>
-          困不住它。
-        </p>
-        <doc-playground src="./demos/placement.html"></doc-playground>
+        <doc-example src="./demos/placement.html">
+          <h3 slot="title">方位</h3>
+          <p class="doc-hint" slot="hint">
+            面板走浏览器顶层（top layer）：祖先的
+            <code>transform</code>
+            /
+            <code>filter</code>
+            /
+            <code>contain</code>
+            困不住它。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>触发方式</h3>
-        <doc-playground src="./demos/trigger.html"></doc-playground>
+        <doc-example src="./demos/trigger.html">
+          <h3 slot="title">触发方式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>受控开合</h3>
-        <p class="doc-hint">
-          受控时
-          <code>trigger</code>
-          必须同时设成
-          <code>manual</code>
-          ：默认的
-          <code>click</code>
-          也走组件自己的开合，会和外面这份状态抢写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。被
-          <kbd>Esc</kbd>
-          / 点空白关掉时，组件先把
-          <code>open</code>
-          属性删掉再发
-          <code>close</code>
-          —— 外部只管改属性、听
-          <code>close</code>
-          把状态收回去。
-        </p>
-        <doc-playground src="./demos/controlled.html"></doc-playground>
+        <doc-example src="./demos/controlled.html">
+          <h3 slot="title">受控开合</h3>
+          <p class="doc-hint" slot="hint">
+            受控时
+            <code>trigger</code>
+            必须同时设成
+            <code>manual</code>
+            ：默认的
+            <code>click</code>
+            也走组件自己的开合，会和外面这份状态抢写同一个属性（点了没反应、面板不弹，多半就是这两条路混用了）。被
+            <kbd>Esc</kbd>
+            / 点空白关掉时，组件先把
+            <code>open</code>
+            属性删掉再发
+            <code>close</code>
+            —— 外部只管改属性、听
+            <code>close</code>
+            把状态收回去。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>事件回调</h3>
-        <doc-playground src="./demos/events.html"></doc-playground>
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>箭头</h3>
-        <doc-playground src="./demos/arrow.html"></doc-playground>
+        <doc-example src="./demos/arrow.html">
+          <h3 slot="title">箭头</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>贴边翻转</h3>
-        <doc-playground src="./demos/flip.html"></doc-playground>
+        <doc-example src="./demos/flip.html">
+          <h3 slot="title">贴边翻转</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>面板里放菜单</h3>
-        <doc-playground src="./demos/menu.html"></doc-playground>
+        <doc-example src="./demos/menu.html">
+          <h3 slot="title">面板里放菜单</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/customize.html"></doc-playground>
+        <doc-example src="./demos/customize.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

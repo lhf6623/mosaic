@@ -19,64 +19,73 @@
       </section>
 
       <section class="doc-demo">
-        <h3>内置图标</h3>
-        <doc-playground src="./demos/builtins.html"></doc-playground>
+        <doc-example src="./demos/builtins.html">
+          <h3 slot="title">内置图标</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>自定义颜色</h3>
-        <doc-playground src="./demos/hex.html"></doc-playground>
+        <doc-example src="./demos/hex.html">
+          <h3 slot="title">自定义颜色</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>远程图标</h3>
-        <p class="doc-hint">
-          <code>lucide:search</code>
-          的集名等于内置来源集，会退化成裸名先探内置，不联网。
-        </p>
-        <doc-playground src="./demos/remote.html"></doc-playground>
+        <doc-example src="./demos/remote.html">
+          <h3 slot="title">远程图标</h3>
+          <p class="doc-hint" slot="hint">
+            <code>lucide:search</code>
+            的集名等于内置来源集，会退化成裸名先探内置，不联网。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>图标源</h3>
-        <p class="doc-hint">
-          远程取图走公共 API，没有可用性承诺 —— 要稳定就把
-          <code>icon-base</code>
-          指到自托管镜像。
-        </p>
-        <doc-playground src="./demos/source.html"></doc-playground>
+        <doc-example src="./demos/source.html">
+          <h3 slot="title">图标源</h3>
+          <p class="doc-hint" slot="hint">
+            远程取图走公共 API，没有可用性承诺 —— 要稳定就把
+            <code>icon-base</code>
+            指到自托管镜像。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>直接地址</h3>
-        <doc-playground src="./demos/src.html"></doc-playground>
+        <doc-example src="./demos/src.html">
+          <h3 slot="title">直接地址</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>自定义图形</h3>
-        <doc-playground src="./demos/slot.html"></doc-playground>
+        <doc-example src="./demos/slot.html">
+          <h3 slot="title">自定义图形</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/styles.html"></doc-playground>
+        <doc-example src="./demos/styles.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 

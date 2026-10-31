@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./tooltip.html"></l-m>
     <h1>
       Tooltip
@@ -26,41 +26,45 @@
       </section>
 
       <section class="doc-demo">
-        <h3>方位</h3>
-        <doc-playground src="./demos/placement.html"></doc-playground>
+        <doc-example src="./demos/placement.html">
+          <h3 slot="title">方位</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>触发方式</h3>
-        <p class="doc-hint">
-          触发元素要自己能聚焦（原生
-          <code>button</code>
-          /
-          <code>a</code>
-          ，或项目里的
-          <code>mc-button</code>
-          ）—— 组件不会给你的元素加
-          <code>tabindex</code>
-          。
-        </p>
-        <doc-playground src="./demos/trigger.html"></doc-playground>
+        <doc-example src="./demos/trigger.html">
+          <h3 slot="title">触发方式</h3>
+          <p class="doc-hint" slot="hint">
+            触发元素要自己能聚焦（原生
+            <code>button</code>
+            /
+            <code>a</code>
+            ，或项目里的
+            <code>mc-button</code>
+            ）—— 组件不会给你的元素加
+            <code>tabindex</code>
+            。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>延迟</h3>
-        <doc-playground src="./demos/delay.html"></doc-playground>
+        <doc-example src="./demos/delay.html">
+          <h3 slot="title">延迟</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>内部样式</h3>
-        <p class="doc-hint">
-          shadow 里的结构默认改不动：只有标了
-          <code>part</code>
-          的节点，才能从外面用
-          <code>::part(名字)</code>
-          改样式。
-        </p>
-        <doc-playground src="./demos/part.html"></doc-playground>
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
       </section>
     </doc-demos>
 
