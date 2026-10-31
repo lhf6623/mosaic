@@ -16,9 +16,8 @@
       --mc-tabs-panel-pad: var(--mc-space-4, var(--mc-def-space-4));
 
       --mc-tabs-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
-      --mc-tabs-fg-hover: var(--mc-color-fg, var(--mc-def-color-fg));
+      --mc-tabs-fg-hover: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-tabs-fg-selected: var(--mc-color-primary, var(--mc-def-color-primary));
-      --mc-tabs-bg-hover: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       --mc-tabs-border: var(--mc-color-border, var(--mc-def-color-border));
       --mc-tabs-indicator: var(--mc-color-primary, var(--mc-def-color-primary));
       --mc-tabs-indicator-h: 2px;
@@ -30,18 +29,77 @@
         var(--mc-radius-md, var(--mc-def-radius-md)) 0 0;
     }
 
-    /* 2. 标签条：指示条是它内部绝对定位的一层，位移 / 宽度由 JS 按激活项写（见 placeIndicator） */
+    /* 2. 标签条外壳 + 滚动导航 + 标签条：指示条是标签条内部绝对定位的一层，
+       位移 / 宽度由 JS 按激活项写（见 placeIndicator）。
+       子项总宽超过容器（窄容器 / 多标签）时标签条横向滚动兜底，不撑破布局 —— 滚动条收起
+       （左右导航 / 键盘方向键都会滚，见 placeIndicator 与 scrollByStep），
+       y 向 clip 防止内容伸出去产生纵向滚动。 */
+    .mc-shell {
+      display: flex;
+      align-items: stretch;
+    }
     .mc-list {
       position: relative;
+      flex: 1;
+      min-width: 0; /* flex 子项允许收缩到内容以下，溢出才走滚动而不是撑破 */
       display: flex;
       align-items: stretch;
       gap: var(--mc-tabs-gap);
       border-bottom: 1px solid rgb(var(--mc-tabs-border));
+      overflow-x: auto;
+      overflow-y: clip;
+      scrollbar-width: none;
+      /* 标签之间那段 gap 属于这一层：cursor 是继承属性，外层要是 pointer（可点击卡片 / 文档示例壳），
+         缝隙里也会冒出手型 —— 显式改回默认箭头。可点区只有标签本身的按钮，它自己写 pointer */
+      cursor: default;
+    }
+    .mc-list::-webkit-scrollbar {
+      display: none;
+    }
+    /* 左右滚动导航：溢出才显示（attr:hidden），到边那侧退成占位透明，列表宽度不抖动；
+       自定义插槽内容的点击也由这层接管 → scrollByStep（想完全自定义行为就 stopPropagation） */
+    .mc-nav {
+      display: flex;
+      flex: none;
+      align-items: center;
+    }
+    .mc-nav[hidden] {
+      display: none;
+    }
+    .mc-nav.is-edge {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    /* 页面给 prefix / suffix 塞了内容时隐藏默认箭头（has-custom 由 slotchange 挂） */
+    .mc-nav.has-custom > .mc-nav-btn {
+      display: none;
+    }
+    .mc-nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+      cursor: pointer;
+      transition:
+        color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard)),
+        background-color var(--mc-duration-fast, var(--mc-def-duration-fast))
+          var(--mc-ease-standard, var(--mc-def-ease-standard));
+    }
+    .mc-nav-btn:hover {
+      background-color: rgb(var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
     }
     .mc-indicator {
       position: absolute;
       left: 0;
-      bottom: -1px;
+      bottom: 0;
       width: 0;
       height: var(--mc-tabs-indicator-h);
       border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
@@ -57,26 +115,41 @@
     /* 3. 外观档：line 是默认那套下划线；segmented 把标签条收成一排分段切换器 ——
        尺寸 / 色槽全落在上面那组 --mc-tabs-* 上，mc-tab 在自己的 shadow 里不用知道 variant。
        样子照 `docs/components/example.html` 里「ofa.js 例子 / 普通例子」那颗切换器：
-       浅底轨道 + 选中项浮起，没有下划线指示条。 */
+       浅底轨道 + 会滑动的选中浮块（指示条复用为滑块，见下），没有下划线指示条。 */
     :host([variant='segmented']) {
       --mc-tabs-tab-h: var(--mc-control-h-sm, var(--mc-def-control-h-sm));
       --mc-tabs-pad-x: 10px;
       --mc-tabs-gap: 2px;
       --mc-tabs-fg-selected: var(--mc-color-fg, var(--mc-def-color-fg));
-      --mc-tabs-bg-hover: 0 0 0 / 0;
       --mc-tabs-bg-selected: var(--mc-color-surface, var(--mc-def-color-surface));
       --mc-tabs-shadow-selected: 0 1px 2px rgb(0 0 0 / 8%);
       --mc-tabs-tab-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
     }
     :host([variant='segmented']) .mc-list {
       display: inline-flex;
+      /* 轨道收缩到内容宽（基础档的 flex: 1 会让它 grow 满整行，分段切换器就成了一条长灰带）；
+         超宽时 0 1 auto 仍能收到容器宽走滚动。想让它铺满整行，页面用 ::part(list) 覆盖 */
+      flex: 0 1 auto;
       padding: 2px;
       border-bottom: 0;
       border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
       background-color: rgb(var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken)));
     }
+    /* 指示条在 segmented 档是会滑动的「浮块」：placeIndicator 照旧按激活标签内部按钮量宽写位移，
+       transition（上面第 2 节）让它滑过去 —— 选中底色 / 投影也从各标签自画挪到这层上，
+       标签之间切换才有连续动画。上下用 top/bottom 内缩，跟轨道的 2px 内边距对齐。 */
     :host([variant='segmented']) .mc-indicator {
-      display: none;
+      top: 2px;
+      bottom: 2px;
+      height: auto;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      background-color: rgb(var(--mc-tabs-bg-selected, 0 0 0 / 0));
+      box-shadow: var(--mc-tabs-shadow-selected, none);
+    }
+    /* 浮块是定位元素，会盖住标签文字：把 slotted 的 mc-tab 抬一层，文字浮在滑块上 */
+    :host([variant='segmented']) ::slotted(mc-tab) {
+      position: relative;
+      z-index: 1;
     }
 
     /* 4. 面板：常驻 DOM，非激活的挂 hidden（不用 o-if，P10） */
@@ -85,9 +158,59 @@
     }
   </style>
 
-  <div class="mc-list" part="list">
-    <slot></slot>
-    <span class="mc-indicator" part="indicator"></span>
+  <!-- 标签条外壳：左右是滚动导航插槽（prefix / suffix），中间是可滚动的标签条。
+       溢出时导航才出现（attr:hidden），到边的那侧退成 visibility: hidden（占位不抖动）。
+       默认箭头按钮与插槽并列而不是塞进 slot 当默认内容 —— 页面给了同名插槽内容时
+       由 slotchange 挂 has-custom 隐藏默认按钮（named slot 的 fallback 在 ofa 里不可靠，实测）。 -->
+  <div class="mc-shell">
+    <div
+      class="mc-nav is-start"
+      part="prefix"
+      attr:hidden="!hasOverflow"
+      class:is-edge="!canStart"
+      class:has-custom="hasCustomStart">
+      <button class="mc-nav-btn" type="button" aria-label="向前滚动" title="向前滚动">
+        <svg
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true">
+          <path d="M10 3 5 8l5 5"></path>
+        </svg>
+      </button>
+      <slot name="prefix"></slot>
+    </div>
+    <div class="mc-list" part="list">
+      <slot></slot>
+      <span class="mc-indicator" part="indicator"></span>
+    </div>
+    <div
+      class="mc-nav is-end"
+      part="suffix"
+      attr:hidden="!hasOverflow"
+      class:is-edge="!canEnd"
+      class:has-custom="hasCustomEnd">
+      <button class="mc-nav-btn" type="button" aria-label="向后滚动" title="向后滚动">
+        <svg
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true">
+          <path d="m6 3 5 5-5 5"></path>
+        </svg>
+      </button>
+      <slot name="suffix"></slot>
+    </div>
   </div>
   <!-- 面板区：包装节点由 mc-tab 默认插槽里的内容搬进来；内部投影插槽在 ready() 里挂
        （不写进模板是因为它是容器生成的内部节点，不进 public 插槽表 —— 见 README「设计取舍」） -->
@@ -114,12 +237,38 @@
           noPanel: null,
         },
 
+        // 模板里引用的键必须先声明（技能：未声明键直接 ReferenceError，整块 render 中断）
+        data: {
+          hasOverflow: false, // 标签条溢出：左右导航出现的前提
+          canStart: false, // 左侧还没滚到头（false 时该侧退成占位透明）
+          canEnd: false, // 右侧还没滚到头
+          hasCustomStart: false, // prefix 插槽有自定义内容（隐藏默认箭头）
+          hasCustomEnd: false, // suffix 插槽有自定义内容
+        },
+
         ready() {
           // 元素引用走 this.shadow.$，原生属性靠 .ele
           this._list = this.shadow.$('.mc-list')?.ele ?? null;
           this._indicator = this.shadow.$('.mc-indicator')?.ele ?? null;
           this._panelHost = this.shadow.$('.mc-panel')?.ele ?? null;
           this._panels = new Map(); // mc-tab → 容器生成的 panel 包装节点
+
+          /* 左右滚动导航：点击由外壳接管（默认箭头与自定义插槽内容都算），滚一屏的 80% */
+          this.shadow.$('.mc-nav.is-start')?.on('click', () => this.scrollByStep(-1));
+          this.shadow.$('.mc-nav.is-end')?.on('click', () => this.scrollByStep(1));
+
+          /* 自定义导航内容替换默认箭头：slotchange 看 assignedNodes 写进 data（class:has-custom 绑定），
+             不用 classList 直改 —— ofa 重渲染会按模板重写 class 串，直改的类会被抹掉 */
+          const syncNavSlot = (slot, key) => {
+            slot.addEventListener('slotchange', () => {
+              this[key] = slot.assignedNodes().length > 0;
+            });
+            this[key] = slot.assignedNodes().length > 0;
+          };
+          const startSlot = this.shadow.$('.mc-nav.is-start')?.ele?.querySelector('slot');
+          const endSlot = this.shadow.$('.mc-nav.is-end')?.ele?.querySelector('slot');
+          if (startSlot) syncNavSlot(startSlot, 'hasCustomStart');
+          if (endSlot) syncNavSlot(endSlot, 'hasCustomEnd');
 
           /* 面板内容在 mc-tab 的默认插槽里，要投影进容器 shadow 的面板区 —— 只有 direct child 的 slot
              才能接住，所以面板区这颗内部 slot 运行时挂（它不是 public 插槽，见 README「设计取舍」） */
@@ -147,6 +296,10 @@
           this._onKeydown = (event) => this.handleKeydown(event);
           this.ele.addEventListener('click', this._onClick);
           this.ele.addEventListener('keydown', this._onKeydown);
+
+          /* 用户拖滚动条 / 触控板横扫时导航显隐也要跟上（passive：滚动监听不阻塞滚动本身） */
+          this._onScroll = () => this.syncNav();
+          this._list?.addEventListener('scroll', this._onScroll, { passive: true });
 
           this.normalizeBoolAttrs();
 
@@ -179,6 +332,7 @@
         detached() {
           this.ele.removeEventListener('click', this._onClick);
           this.ele.removeEventListener('keydown', this._onKeydown);
+          this._list?.removeEventListener('scroll', this._onScroll);
           this._mo?.disconnect();
           this._ro?.disconnect();
         },
@@ -307,9 +461,11 @@
             for (const tab of this.tabList()) this._ro.observe(tab);
           },
 
-          /** 指示条 = 激活标签内部那个 button 的宽度与左偏移（相对标签条）。没有标签时缩到 0。
-            行为层例外（测量）：宽度 / 位移是量出来的像素值，模板的 class / style 绑定表达不了；
-            ResizeObserver 在字体、文案、容器尺寸变化时重算，结果写进内联 style。 */
+          /** 指示条 = 激活标签内部那个 button 的位置与宽度（相对标签条）。没有标签时缩到 0。
+            line 档贴**文字**实际宽度：从 button 矩形里扣掉左右内边距，下划线不再横贯整个标签格；
+            segmented 档浮块仍要盖满整颗按钮。行为层例外（测量）：宽度 / 位移是量出来的像素值，
+            模板的 class / style 绑定表达不了；ResizeObserver 在字体、文案、容器尺寸变化时重算，
+            结果写进内联 style。 */
           placeIndicator() {
             const indicator = this._indicator;
             if (!indicator) return;
@@ -326,8 +482,50 @@
               return;
             }
             const listRect = list.getBoundingClientRect();
-            indicator.style.width = `${rect.width}px`;
-            indicator.style.transform = `translateX(${rect.left - listRect.left}px)`;
+            let width = rect.width;
+            /* 指示条是滚动容器里的绝对定位层：它的位移原点在**内容系**上（跟内容一起滚），
+               量出来的视口差要加回 scrollLeft，滚动后才不会错位 */
+            let x = rect.left - listRect.left + list.scrollLeft;
+            const isSegmented = this.ele.getAttribute('variant') === 'segmented';
+            if (!isSegmented && base !== tab) {
+              /* 只有真拿到内部 button 时才扣内边距（没升级完的那一拍先画整宽，ResizeObserver 会补） */
+              const cs = getComputedStyle(base);
+              const padL = parseFloat(cs.paddingLeft) || 0;
+              const padR = parseFloat(cs.paddingRight) || 0;
+              width -= padL + padR;
+              x += padL;
+            }
+            /* 激活项滚进可视区：只在它被裁掉时滚、滚最少的量 —— 完整可见就不动，
+               不强求对齐。手写滚动量，不用 scrollIntoView（它会把页面级祖先一起滚）。
+               比可视区还宽的标签对齐左缘（右对齐会把前半截裁掉）。
+               放这里是为了 value 被外部改、键盘移动、点击三条路都覆盖。 */
+            const viewLeft = list.scrollLeft;
+            const viewRight = viewLeft + list.clientWidth;
+            if (x < viewLeft) {
+              list.scrollLeft = x;
+            } else if (x + width > viewRight) {
+              list.scrollLeft = width >= list.clientWidth ? x : x + width - list.clientWidth;
+            }
+            indicator.style.width = `${width}px`;
+            indicator.style.transform = `translateX(${x}px)`;
+            this.syncNav();
+          },
+
+          /** 左右导航显隐：只在溢出时出现，到边的那侧退成占位透明（布局不抖动） */
+          syncNav() {
+            const list = this._list;
+            if (!list) return;
+            const overflow = list.scrollWidth > list.clientWidth + 1;
+            this.hasOverflow = overflow;
+            this.canStart = overflow && list.scrollLeft > 1;
+            this.canEnd = overflow && list.scrollLeft + list.clientWidth < list.scrollWidth - 1;
+          },
+
+          /** 点击左右导航滚一屏的 80%；自定义插槽内容的点击也落到这（外壳统一接管） */
+          scrollByStep(dir) {
+            const list = this._list;
+            if (!list) return;
+            list.scrollBy({ left: dir * list.clientWidth * 0.8, behavior: 'smooth' });
           },
 
           /** 点击标签（原生 click 自带 composed，穿得出 mc-tab 的 shadow） */

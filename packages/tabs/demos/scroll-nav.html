@@ -1,0 +1,74 @@
+<template component>
+  <style>
+    .narrow {
+      width: 220px;
+    }
+    /* ::part(prefix / suffix)：导航外壳也能从外面改样式（这里给两侧垫一层主色淡底） */
+    .tinted::part(prefix),
+    .tinted::part(suffix) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+    }
+    .custom-nav {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding-inline: 2px;
+    }
+    .custom-nav button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm);
+      background-color: rgb(var(--mc-color-primary-subtle));
+      color: rgb(var(--mc-color-primary));
+      cursor: pointer;
+      font: inherit;
+    }
+  </style>
+
+  <mc-space direction="vertical" block>
+    <div class="narrow">
+      <mc-tabs default-value="a">
+        <mc-tab value="a" name="第 1 个标签">面板 1</mc-tab>
+        <mc-tab value="b" name="第 2 个标签">面板 2</mc-tab>
+        <mc-tab value="c" name="第 3 个标签">面板 3</mc-tab>
+        <mc-tab value="d" name="第 4 个标签">面板 4</mc-tab>
+        <mc-tab value="e" name="第 5 个标签">面板 5</mc-tab>
+        <mc-tab value="f" name="第 6 个标签">面板 6</mc-tab>
+      </mc-tabs>
+    </div>
+    <p class="text-sm text-muted">
+      窄容器放不下所有标签：两侧出现默认箭头，点击滚一屏的 80%，滚到头的那侧自动隐藏；键盘移动激活项时也会跟着滚。
+    </p>
+
+    <div class="narrow">
+      <mc-tabs class="tinted" default-value="a">
+        <span class="custom-nav" slot="prefix">
+          <button type="button">«</button>
+          <button type="button">‹</button>
+        </span>
+        <mc-tab value="a" name="第 1 个标签">面板 1</mc-tab>
+        <mc-tab value="b" name="第 2 个标签">面板 2</mc-tab>
+        <mc-tab value="c" name="第 3 个标签">面板 3</mc-tab>
+        <mc-tab value="d" name="第 4 个标签">面板 4</mc-tab>
+        <mc-tab value="e" name="第 5 个标签">面板 5</mc-tab>
+        <mc-tab value="f" name="第 6 个标签">面板 6</mc-tab>
+        <span class="custom-nav" slot="suffix">
+          <button type="button">›</button>
+          <button type="button">»</button>
+        </span>
+      </mc-tabs>
+    </div>
+    <p class="text-sm text-muted">
+      prefix / suffix 插槽塞了内容就替换默认箭头（点击仍由外壳接管触发滚动）；::part(prefix / suffix) 还能给导航外壳垫底色。
+    </p>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-tabs-scroll-nav' });
+  </script>
+</template>
