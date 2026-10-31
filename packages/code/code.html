@@ -570,8 +570,9 @@
             const sheet = await loadSheet(`${base}styles/${name}.min.css`);
             // 等待期间又切了主题 / 组件已经卸载，丢弃这次结果
             if (this._themeName !== name || !this.ele.isConnected) return;
-            // adoptedStyleSheets 是 ShadowRoot 自己的 API，没有 ofa 包等价物，只能从原生 shadowRoot 上拿
-            const root = this.ele.shadowRoot;
+            // adoptedStyleSheets 是 ShadowRoot 自己的 API，没有 ofa 包等价物：先经 this.shadow 拿 ofa 包装对象，
+            // 原生 ShadowRoot 再走 .ele（技能：shadow 内取引用走 this.shadow.$，原生对象走 .ele）
+            const root = this.shadow.ele;
             // 只换掉自己上次 adopt 的那张，其余（组件基座 / 宿主带来的）原样保留
             root.adoptedStyleSheets = [
               ...root.adoptedStyleSheets.filter((s) => s !== this._themeSheet),

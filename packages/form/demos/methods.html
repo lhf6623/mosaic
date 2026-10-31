@@ -23,7 +23,7 @@
 
       proto: {
         form() {
-          return this.ele.shadowRoot.querySelector('#methods-form');
+          return this.shadow.$('#methods-form')?.ele;
         },
         send() {
           this.form().submit();

@@ -7,7 +7,7 @@
 
       /* 没有列、也没有行：空态用 empty-text 的文案（给了 empty 插槽就覆盖它） */
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [{ key: 'name', title: '姓名' }];
         table.data = [];
       },

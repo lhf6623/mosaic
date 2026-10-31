@@ -306,7 +306,7 @@
 
           /* 模板渲染是异步的：行落进 shadow 之后再接线（缩进 / 附加属性 / 浮层锚点 / 通道） */
           this._domMo = new MutationObserver(() => this.scheduleMeta());
-          this._domMo.observe(this.ele.shadowRoot, { childList: true, subtree: true });
+          this._domMo.observe(this.shadow.ele, { childList: true, subtree: true });
           this.scheduleMeta();
         },
 

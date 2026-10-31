@@ -468,7 +468,7 @@
             const input = this._jump?.ele;
             if (!input) return;
             input.max = String(this.pageCount());
-            if (!force && this.ele.shadowRoot.activeElement === input) return;
+            if (!force && this.shadow.ele.activeElement === input) return;
             input.value = '';
             input.placeholder = String(this.currentPage());
           },

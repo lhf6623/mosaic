@@ -6,7 +6,7 @@
       tag: 'demo-table-striped',
 
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [
           { key: 'n', title: '序号' },
           { key: 'text', title: '内容' },

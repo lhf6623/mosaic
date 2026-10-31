@@ -6,7 +6,7 @@
       tag: 'demo-table-hoverable',
 
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [
           { key: 'name', title: '姓名' },
           { key: 'dept', title: '部门' },

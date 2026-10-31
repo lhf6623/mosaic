@@ -185,9 +185,6 @@
             .filter(Boolean);
           this.applyDefaultValue();
 
-          // 自动增高的监听句柄（P43：别用 resize 这样会盖掉 proto 方法的名字）
-          this._onAutoResize = () => this.resizeToContent();
-
           /* 运行时值走宿主 DOM property（规范 1.4）：真相在内部原生元素上，事件里 e.target.value 读得到（P18） */
           Object.defineProperty(this.ele, 'value', {
             configurable: true,
@@ -217,26 +214,23 @@
           value() {
             this.applyBoundValue();
           },
-          // 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫
-          autoResize() {
-            this.bindAutoResize();
-          },
           maxlength() {
             this.applyState();
           },
-          /* 这两个只走 CSS（:host([invalid]) / :host([auto-resize])），也要收一次 */
-          invalid() {
-            this.applyState();
-          },
+          /* 首次触发落在构造期（P5）：bindAutoResize 自己会等 _input 就位，写宿主也走 applyState 的守卫。
+             ⚠️ 别写成两个同名 autoResize 键（后者会静默覆盖前者）：行为 + 宿主属性收口在这一个里 */
           autoResize() {
             this.bindAutoResize();
+            this.applyState();
+          },
+          /* 只走 CSS（:host([invalid])），也要收一次 */
+          invalid() {
             this.applyState();
           },
         },
 
         detached() {
           for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
-          this._input?.removeEventListener('input', this._onAutoResize);
           this.cancelResizeFrame();
         },
 
@@ -268,17 +262,15 @@
             this._defaultApplied = true;
           },
 
-          /** 自动增高只挂一次监听，`auto-resize` 去掉时立刻摘掉并清掉写进去的高度 */
+          /** 自动增高由模板的 on:input（onInput）驱动；这里只管「auto-resize 去掉时清掉写进去的高度」和首次补量 */
           bindAutoResize() {
             if (!this._input) return;
-            this._input.removeEventListener('input', this._onAutoResize);
             this.cancelResizeFrame();
             if (this.autoResize === null) {
               this._resizeRetry = false;
               this._input.style.height = '';
               return;
             }
-            this._input.addEventListener('input', this._onAutoResize);
             // 允许一次"下一帧补量"：attached() 可能早于元素拿到布局
             this._resizeRetry = true;
             this.resizeToContent();
@@ -357,6 +349,8 @@
             this.applyState();
             /* 打字也要回写绑定通道：ofa 的 sync:value 观察宿主 value，不回写就只走了一半 */
             this.reflectBoundValue();
+            /* 自动增高：事件已由模板 on:input 统一收口，不再给内部原生元素另挂一条 addEventListener */
+            if (this.autoResize !== null) this.resizeToContent();
             this.$emit('input', { value: this._input.value });
           },
 

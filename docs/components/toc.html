@@ -117,7 +117,7 @@
         clearTimeout(this._rebuildTimer);
         clearTimeout(this._settleTimer);
         this._observer?.disconnect();
-        this._slot?.removeEventListener('slotchange', this._onSlotChange);
+        this._slot?.off('slotchange', this._onSlotChange);
         this._scroller?.removeEventListener('scroll', this._onScroll);
         window.removeEventListener('resize', this._onResize);
         for (const type of ['wheel', 'touchstart', 'keydown']) {
@@ -140,16 +140,19 @@
 
         /** 当前展示中的子页面（被 <slot> 投影进来的 o-page） */
         contentRoot() {
-          const slot = this.ele.getRootNode()?.querySelector('slot');
+          /* slot 在**布局页的 shadow** 里（本组件就住在那层 shadow）：this.root 是宿主根节点的 ofa 包装，
+             取引用走它的 $()；slot 本身仍要原生对象（assignedElements 是原生接口）。 */
+          const slot = this.root?.$('slot')?.ele;
+          /* 跨组件 shadow，只能原生：被投影 o-page 的 shadowRoot 是别的组件的根 */
           return slot?.assignedElements().find((el) => el.tagName === 'O-PAGE')?.shadowRoot ?? null;
         },
 
-        /** 盯住当前页：换页靠 slotchange，页内渲染靠 observer（slot 在外壳的 shadow 里，宿主层监听保留原生） */
+        /** 盯住当前页：换页靠 slotchange，页内渲染靠 observer（slot 在布局页的 shadow 里，用 ofa 包装的 on / off 订阅） */
         bindContent(root) {
-          const slot = this.ele.getRootNode()?.querySelector('slot');
+          const slot = this.root?.$('slot');
           if (slot && slot !== this._slot) {
-            this._slot?.removeEventListener('slotchange', this._onSlotChange);
-            slot.addEventListener('slotchange', this._onSlotChange);
+            this._slot?.off('slotchange', this._onSlotChange);
+            slot.on('slotchange', this._onSlotChange);
             this._slot = slot;
           }
           if (root !== this._observedRoot) {

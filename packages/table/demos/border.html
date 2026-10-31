@@ -7,7 +7,7 @@
 
       /* bordered：宿主上一圈描边 + 圆角；单元格那条横线不变 */
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [
           { key: 'name', title: '姓名' },
           { key: 'dept', title: '部门' },

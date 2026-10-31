@@ -9,9 +9,10 @@
 
       /* columns / data 是对象数组，推荐用 property 传（绑定通道落点不稳定：首屏可能直接给对象，SPA 导航会序列化成文本）。
          这里在 ready() 里赋给页面上那个 mc-table；写在组件之外的页面里就是
-         document.querySelector('#t').data = [...]。 */
+         $('#t').ele.data = [...]（ofa 取元素用 $()，原生 property 走 .ele）。 */
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        // 取引用走 this.shadow.$（技能：shadow 内 DOM 用 ofa API），赋 property 再下 .ele
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [
           { key: 'name', title: '姓名', width: '30%' },
           { key: 'role', title: '角色' },

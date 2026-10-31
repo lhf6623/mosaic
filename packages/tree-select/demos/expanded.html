@@ -58,9 +58,9 @@
       tag: 'demo-tree-select-expanded',
 
       ready() {
-        this.ele.shadowRoot.querySelector('#by-data').options = OPTIONS_EXPANDED;
-        this.ele.shadowRoot.querySelector('#by-value').options = OPTIONS;
-        this.ele.shadowRoot.querySelector('#by-default').options = OPTIONS;
+        this.shadow.$('#by-data').ele.options = OPTIONS_EXPANDED;
+        this.shadow.$('#by-value').ele.options = OPTIONS;
+        this.shadow.$('#by-default').ele.options = OPTIONS;
       },
     });
   </script>

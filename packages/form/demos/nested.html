@@ -30,7 +30,7 @@
 
       proto: {
         read() {
-          const form = this.ele.shadowRoot.querySelector('#nested-form');
+          const form = this.shadow.$('#nested-form')?.ele;
           this.json = JSON.stringify(form.getValue());
         },
       },

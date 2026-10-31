@@ -20,7 +20,7 @@
           { name: '李四', dept: '研发' },
         ];
         for (const id of ['sm', 'md', 'lg']) {
-          const table = this.ele.shadowRoot.querySelector('#' + id);
+          const table = this.shadow.$('#' + id)?.ele;
           table.columns = columns;
           table.data = data;
         }

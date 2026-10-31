@@ -28,7 +28,7 @@
          ⚠️ 字段别叫 `prev`：ofa 把它留给了自己，data 里出现同名键会让模块注册失败
          （外层只报「错误的模块地址」，同 loading-bar 演示里 `on` 那个坑）。 */
       ready() {
-        const pop = this.ele.shadowRoot.querySelector('#pop');
+        const pop = this.shadow.$('#pop')?.ele;
         const record = (what) => (event) => {
           this.beforeLast = this.last;
           /* ⚠️ 载荷在 event.detail（组件用原生 CustomEvent 派发），不是 event.data */

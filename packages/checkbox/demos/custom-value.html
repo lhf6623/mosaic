@@ -27,8 +27,8 @@
         /* checked-value / unchecked-value 这一对：勾上给前者、没勾给后者（没写 checked-value 就还是布尔）。
            ⚠️ mc-form / mc-checkbox 都是**异步注册**的：ready 这一刻它们可能还没升级完（没有 getValue / formValue），
            直接读会抛错 —— 首帧就停在 {}、change 监听也挂不上。所以等两边都就绪再开始。 */
-        const form = this.ele.shadowRoot.querySelector('mc-form');
-        const boxes = [...this.ele.shadowRoot.querySelectorAll('mc-checkbox')];
+        const form = this.shadow.$('mc-form')?.ele;
+        const boxes = this.shadow.all('mc-checkbox').map((item) => item.ele);
         const read = () => {
           this.json = JSON.stringify(form.getValue());
         };

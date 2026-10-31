@@ -17,11 +17,11 @@
       ready() {
         const columns = [{ key: 'name', title: '姓名' }];
 
-        const empty = this.ele.shadowRoot.querySelector('#empty');
+        const empty = this.shadow.$('#empty')?.ele;
         empty.columns = columns;
         empty.data = [];
 
-        const loading = this.ele.shadowRoot.querySelector('#loading');
+        const loading = this.shadow.$('#loading')?.ele;
         loading.columns = columns;
         loading.data = [{ name: '张三' }];
       },

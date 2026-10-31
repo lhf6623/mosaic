@@ -30,7 +30,7 @@
 
       proto: {
         toggleDialog() {
-          const dialog = this.ele.shadowRoot.querySelector('mc-dialog');
+          const dialog = this.shadow.$('mc-dialog')?.ele;
           dialog.open = !dialog.open;
           this.open = dialog.open;
         },

@@ -20,7 +20,7 @@
 
       proto: {
         target() {
-          return this.ele.shadowRoot.querySelector('#value-target');
+          return this.shadow.$('#value-target')?.ele;
         },
         write() {
           this.target().value = '运行时写进来的';

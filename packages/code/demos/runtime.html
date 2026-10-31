@@ -33,7 +33,7 @@
 
       proto: {
         target() {
-          return this.ele.shadowRoot.querySelector('#runtime-target');
+          return this.shadow.$('#runtime-target')?.ele;
         },
         /* 两条通道都会重渲染 + 重新高亮，区别在时序：property 那条是同步的
            （组件不等 ofa 那一拍），属性那条走 ofa 的属性观察、微任务里才读得到新值 ——

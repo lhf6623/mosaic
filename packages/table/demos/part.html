@@ -23,7 +23,7 @@
       tag: 'demo-table-part',
 
       ready() {
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = [
           { key: 'name', title: '姓名' },
           { key: 'score', title: '得分' },

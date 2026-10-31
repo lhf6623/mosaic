@@ -549,8 +549,9 @@
               try {
                 const css = await loadCssText(CM_BASE);
                 if (!this.isCurrentLoad(sequence)) return;
-                if (!this.ele.shadowRoot) throw new Error('shadow root 已不存在');
-                injectCss(this.ele.shadowRoot, css);
+                const root = this.shadow?.ele;
+                if (!root) throw new Error('shadow root 已不存在');
+                injectCss(root, css);
                 const CodeMirror = await loadCodeMirror(CM_BASE);
                 if (!this.isCurrentLoad(sequence)) return;
                 this.mountCm(CodeMirror);

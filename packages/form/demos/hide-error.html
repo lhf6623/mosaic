@@ -1,6 +1,6 @@
 <template component>
-  <!-- hide-error 用**属性绑定**驱动：改 data 就够了，组件里一行 setAttribute 都没有 -->
-  <mc-form :hide-error="showError" on:submit="send($event)">
+  <!-- hide-error 是布尔属性：ofa 模板里必须用 attr:（`:hide-error` 会把 false 写成 hide-error="false"，属性仍在），改 data 就够了 -->
+  <mc-form attr:hide-error="showError" on:submit="send($event)">
     <mc-form-item
       label="用户名"
       name="username"
@@ -22,7 +22,7 @@
     export default async () => ({
       tag: 'demo-form-hide-error',
 
-      /* showError 是这份演示的"真相"：绑到 hide-error 上，改它属性就跟着变（ofa 的 :attr 绑定） */
+      /* showError 是这份演示的"真相"：绑到 hide-error 上，改它属性就跟着变（布尔属性走 attr:） */
       data: { showError: true, last: '（还没提交）' },
 
       proto: {

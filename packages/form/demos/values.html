@@ -58,7 +58,7 @@
 
       proto: {
         read() {
-          const form = this.ele.shadowRoot.querySelector('#values-form');
+          const form = this.shadow.$('#values-form')?.ele;
           this.json = JSON.stringify(form.getValue());
         },
       },

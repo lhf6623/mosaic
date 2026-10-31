@@ -48,7 +48,7 @@
       data: { lastError: '（还没失败）' },
 
       ready() {
-        const el = this.ele.shadowRoot.querySelector('#async-tree');
+        const el = this.shadow.$('#async-tree')?.ele;
         el.options = OPTIONS;
         /* load 是组件级 property：换掉它，组件会按新数据重算哪些节点是懒父级 */
         el.load = LOADER;

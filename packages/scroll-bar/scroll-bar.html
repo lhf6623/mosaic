@@ -146,6 +146,7 @@
             /* 原生 scroll 事件不冒泡、viewport 又在 shadow 里 —— 外面够不着，所以从宿主上再发一次 */
             this.$emit('scroll');
           };
+          /* { passive: true } 需要原生 options，ofa 的 .on 不收 options —— 这条留原生（同下方 thumb wheel 那条） */
           this._viewport.addEventListener('scroll', this._onScroll, { passive: true });
 
           /* 滑块是条子里唯一开着指针的部分（要能拖），滚轮落上去到不了 viewport —— 就地转过去；只为这一小块挂非 passive 监听 */

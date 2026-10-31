@@ -137,7 +137,8 @@ proto: {
 ```
 
 **只留位置、不显示文案**：容器上写 `hide-error` —— 想静态写死就 `<mc-form hide-error>`，想让数据说了算就用
-**属性绑定** `<mc-form :hide-error="showError">`（改 `showError` 就行，ofa 会把属性写好、组件当场重画）。
+**布尔属性绑定** `<mc-form attr:hide-error="showError">`（改 `showError` 就行，ofa 会按真假加上 / 摘掉属性、组件当场重画；
+布尔属性不能用 `:hide-error`，它会把 `false` 写成 `hide-error="false"`，属性仍然存在）。
 控件照样收 `invalid`（红边框还在）、`invalid` 事件照样报字段，只是错误文案那一格空着。
 **高度不变**：那一格本来就是行间距，所以显示 / 隐藏文案不会让整张表变矮。
 

@@ -74,7 +74,7 @@
 
       ready() {
         /* 树数据用 property 传（属性通道只作 JSON 初始值）；pre-upgrade 赋值会由组件在 ready 时收下 */
-        const tree = this.ele.shadowRoot.querySelector('mc-tree-select');
+        const tree = this.shadow.$('mc-tree-select')?.ele;
         if (tree) {
           tree.options = [
             {

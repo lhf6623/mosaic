@@ -59,11 +59,11 @@
 
       ready() {
         /* 前两条有数据：一条只换 prefix / chevron，一条换行正文 + 换行首展开图标 */
-        this.ele.shadowRoot.querySelector('#with-slots').options = CITIES;
-        this.ele.shadowRoot.querySelector('#with-row-templates').options = CITIES;
+        this.shadow.$('#with-slots').ele.options = CITIES;
+        this.shadow.$('#with-row-templates').ele.options = CITIES;
         /* 后两条空数据：empty 插槽与 empty-text 各看一条 */
-        this.ele.shadowRoot.querySelector('#empty-slot').options = [];
-        this.ele.shadowRoot.querySelector('#empty-text').options = [];
+        this.shadow.$('#empty-slot').ele.options = [];
+        this.shadow.$('#empty-text').ele.options = [];
       },
     });
   </script>

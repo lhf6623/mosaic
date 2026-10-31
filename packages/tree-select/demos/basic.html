@@ -42,7 +42,7 @@
       tag: 'demo-tree-select-basic',
 
       ready() {
-        for (const el of this.ele.shadowRoot.querySelectorAll('mc-tree-select')) {
+        for (const el of this.shadow.all('mc-tree-select').map((item) => item.ele)) {
           el.options = OPTIONS;
         }
       },

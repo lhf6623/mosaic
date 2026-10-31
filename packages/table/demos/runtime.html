@@ -34,7 +34,7 @@
       ready() {
         /* columns / data 是**宿主 property**：绑定通道落点不稳定（首屏可能给对象、SPA 导航是 JSON 文本），
            `data` 更是 ofa 的保留名、进不了 attrs —— 就在元素上赋值。 */
-        const table = this.ele.shadowRoot.querySelector('#t');
+        const table = this.shadow.$('#t')?.ele;
         table.columns = COLUMNS;
         this.render(BATCHES[0]);
       },
@@ -42,7 +42,7 @@
       proto: {
         /* 赋 property 就是重渲染入口：整体换一个数组也行（组件会重新规范化） */
         render(rows) {
-          this.ele.shadowRoot.querySelector('#t').data = rows;
+          this.shadow.$('#t').ele.data = rows;
           this.rows = rows;
           this.count = rows.length;
         },

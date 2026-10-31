@@ -31,7 +31,7 @@
 
       proto: {
         openDialog() {
-          const dialog = this.ele.shadowRoot.querySelector('mc-dialog');
+          const dialog = this.shadow.$('mc-dialog')?.ele;
           dialog.open = true;
           this.open = dialog.open;
         },

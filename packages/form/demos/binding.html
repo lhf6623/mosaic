@@ -49,7 +49,7 @@
           this.formEl().clearValidate();
         },
         formEl() {
-          return this.ele.shadowRoot.querySelector('mc-form');
+          return this.shadow.$('mc-form')?.ele;
         },
       },
     });

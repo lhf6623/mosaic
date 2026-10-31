@@ -254,7 +254,8 @@
 
         /** 挂上类名 → 问 CSS。⚠️ 图标样式表是组件自己 <link> 进 shadow root 的、**异步**到达，没到位时 maskImage 同样是 none，必须等可读才能下结论；集名等于内置来源集时退化成裸名再探一次。 */
         async probe(name) {
-          const root = this.ele.shadowRoot;
+          // 原生 ShadowRoot 走 this.shadow.ele（技能：shadow 内取引用走 this.shadow.$，原生对象走 .ele）
+          const root = this.shadow.ele;
           const [prefix, icon] = splitName(name);
           const candidates = [`mc-icon-${prefix ? `${prefix}-${icon}` : icon}`];
           if (prefix && prefix === this.setName()) candidates.push(`mc-icon-${icon}`);

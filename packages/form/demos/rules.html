@@ -58,7 +58,7 @@
 
       ready() {
         /* ④ …… property 里补「带函数」的那部分（⑤ 手机号也续在这条线上：属性拦空值，函数管格式与查重） */
-        this.ele.shadowRoot.querySelector('mc-form').rules = {
+        this.shadow.$('mc-form').ele.rules = {
           phone: {
             trigger: 'blur',
             validator: async (rule, value) => {
@@ -87,7 +87,7 @@
           this.last = 'validate() → ' + (await form.validate());
         },
         form() {
-          return this.ele.shadowRoot.querySelector('mc-form');
+          return this.shadow.$('mc-form')?.ele;
         },
         /* 全部：派发一个冒泡的 clear-validate（等价于 form.clearValidate()） */
         clearAll() {
