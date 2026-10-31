@@ -1596,9 +1596,9 @@
       "app-config.js",
       "docs/adopt-styles.js",
       "docs/components/demos.html",
+      "docs/components/example.html",
       "docs/components/nav.html",
       "docs/components/palette.html",
-      "docs/components/playground.html",
       "docs/components/search.html",
       "docs/components/spec.html",
       "docs/components/toc.html",
@@ -1626,6 +1626,8 @@
       "packages/boot/overflow-tip.js",
       "packages/boot/scroll-pin.js",
       "packages/boot/shadow-base.css",
+      "packages/button/button.html",
+      "packages/code-editor/code-editor.html",
       "packages/code/code.html",
       "packages/collapse/collapse-item.html",
       "packages/collapse/collapse.html",
@@ -1639,12 +1641,13 @@
       "packages/popover/popover.html",
       "packages/scroll-bar/scroll-bar.html",
       "packages/space/space.html",
-      "packages/spinner/spinner.html",
       "packages/tabs/api.md",
+      "packages/tabs/demos/basic-plain.html",
       "packages/tabs/demos/basic.html",
       "packages/tabs/demos/disabled.html",
       "packages/tabs/demos/events.html",
       "packages/tabs/demos/part.html",
+      "packages/tabs/demos/scroll-nav.html",
       "packages/tabs/demos/segmented.html",
       "packages/tabs/page.html",
       "packages/tabs/tab.html",
@@ -2625,7 +2628,8 @@
     ],
     "docs/components/example.html": [
       "packages/button/test/button.test.mjs",
-      "packages/code-editor/test/code-editor.test.mjs"
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/tabs/test/tabs.test.mjs"
     ],
     "docs/components/nav.html": [
       "packages/alert/test/alert.test.mjs",
@@ -2749,7 +2753,6 @@
       "packages/spinner/test/spinner.test.mjs",
       "packages/switch/test/switch.test.mjs",
       "packages/table/test/table.test.mjs",
-      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
@@ -4032,6 +4035,7 @@
       "packages/select/test/select.test.mjs",
       "packages/space/test/space.test.mjs",
       "packages/table/test/table.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
@@ -4190,7 +4194,8 @@
       "packages/code-editor/test/code-editor.test.mjs"
     ],
     "packages/code-editor/code-editor.html": [
-      "packages/code-editor/test/code-editor.test.mjs"
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/code-editor/demos/auto-resize.html": [
       "packages/code-editor/test/code-editor.test.mjs"
@@ -5776,7 +5781,6 @@
       "packages/slider/test/slider.test.mjs",
       "packages/spinner/test/spinner.test.mjs",
       "packages/table/test/table.test.mjs",
-      "packages/tabs/test/tabs.test.mjs",
       "packages/tag/test/tag.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
@@ -5863,6 +5867,9 @@
     "packages/tabs/api.md": [
       "packages/tabs/test/tabs.test.mjs"
     ],
+    "packages/tabs/demos/basic-plain.html": [
+      "packages/tabs/test/tabs.test.mjs"
+    ],
     "packages/tabs/demos/basic.html": [
       "packages/tabs/test/tabs.test.mjs"
     ],
@@ -5873,6 +5880,9 @@
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/demos/part.html": [
+      "packages/tabs/test/tabs.test.mjs"
+    ],
+    "packages/tabs/demos/scroll-nav.html": [
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/demos/segmented.html": [
