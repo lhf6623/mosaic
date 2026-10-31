@@ -8,7 +8,7 @@
       Progress
       <code>mc-progress</code>
     </h1>
-    <p class="doc-lead">进度条：一条轨道 + 一条填充，确定态给比例，不确定态只说「还在跑」。</p>
+    <p class="doc-lead">进度条：一条轨道 + 一条填充。</p>
 
     <h2>例子</h2>
 
@@ -27,10 +27,9 @@
       <section class="doc-demo">
         <h3>不确定态</h3>
         <p class="doc-hint">
-          <code>indeterminate</code>
-          打开后填充条自己滑：不知道还要多久时用它，不要编一个假比例。 此时不要再写
+          不知道还要多久时用它，别编一个假比例；此时
           <code>value</code>
-          （比例交给动画）。
+          不参与。
         </p>
         <doc-playground src="./demos/indeterminate.html"></doc-playground>
       </section>
@@ -43,35 +42,26 @@
       <section class="doc-demo">
         <h3>尺寸</h3>
         <p class="doc-hint">
-          只有
-          <code>sm</code>
-          /
-          <code>md</code>
-          两档轨道高：4 / 8px。宿主是
+          宿主是
           <code>display: block</code>
-          ，宽度由父容器决定 —— 行内 / flex 布局里想让它铺满，就给它一个能撑开的容器。
+          ：宽度跟父容器走，行内 / flex 布局里要铺满得先给个能撑开的容器。
         </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          轨道高、圆角、轨道底色、不确定态的转速都在宿主上（L3 令牌或一句
-          <code>style="…"</code>
-          ）。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          填充条是组件内部唯一的元素，标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
-          ：从外面用
-          <code>::part(bar)</code>
-          就能改它（下面第二条没改，作对照）。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

@@ -10,30 +10,13 @@
       Badge
       <code>mc-badge</code>
     </h1>
-    <p class="doc-lead">
-      徽标：挂在容器（按钮、头像…）角上的语义色小片，也可独立使用；支持纯圆点与数值上限。
-    </p>
+    <p class="doc-lead">徽标：挂在容器角上的语义色小片，也可独立使用。</p>
 
     <h2>例子</h2>
 
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          容器写进默认插槽，徽标块自己贴到它的右上角 —— 不用再写
-          <code>position: relative</code>
-          加绝对定位。徽标只是标记，
-          <strong>不交互</strong>
-          —— 要能点、能关、能选中用
-          <code>mc-tag</code>
-          的
-          <code>checkable</code>
-          /
-          <code>closable</code>
-          ，它也没有中性色，中性标记同样交给
-          <code>mc-tag</code>
-          。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
@@ -71,31 +54,22 @@
 
       <section class="doc-demo">
         <h3>自定义颜色</h3>
-        <p class="doc-hint">
-          hex 只填色槽 —— 浅底按当前主题派生、实心上的文字色按对比度自动给。
-        </p>
         <doc-playground src="./demos/hex.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>隐藏</h3>
-        <p class="doc-hint">
-          <code>content</code>
-          为空且没开
-          <code>dot</code>
-          时本来就不渲染；
-          <code>invisible</code>
-          用来在内容非空时临时关掉。
-        </p>
         <doc-playground src="./demos/invisible.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          视觉在 shadow 里的
-          <code>part="indicator"</code>
-          上。
+          shadow 里的结构默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

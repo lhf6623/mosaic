@@ -9,11 +9,7 @@
       Tabs
       <code>mc-tabs</code>
     </h1>
-    <p class="doc-lead">
-      标签页。容器管标签条、面板显隐与键盘；标签就是那一颗能点的按钮，值走 property、变化走
-      <code>change</code>
-      。
-    </p>
+    <p class="doc-lead">标签页：容器 + 标签两个标签，容器管标签条与面板显隐。</p>
 
     <h2>例子</h2>
 
@@ -21,33 +17,23 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          <code>default-value</code>
-          指定首屏显示哪一面；点标签切换，方向键在标签之间移动并激活。
-        </p>
+        <p class="doc-hint">方向键在标签之间移动并激活，焦点跟着走。</p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>禁用</h3>
         <p class="doc-hint">
-          点不动，方向键与
           <kbd>Home</kbd>
           /
           <kbd>End</kbd>
-          也会跳过它。
+          键也会跳过禁用项。
         </p>
         <doc-playground src="./demos/disabled.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          <code>change</code>
-          只在激活项真的变了时发，载荷是
-          <code>$event.data.value</code>
-          。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
@@ -58,15 +44,7 @@
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（这里开了
-          <code>list</code>
-          /
-          <code>indicator</code>
-          /
-          <code>panel</code>
-          ，标签自己的
-          <code>base</code>
-          也在）。
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

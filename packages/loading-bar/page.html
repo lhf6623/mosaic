@@ -17,47 +17,13 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          <code>state</code>
-          是这个组件的唯一入口（
-          <code>idle</code>
-          /
-          <code>loading</code>
-          /
-          <code>done</code>
-          /
-          <code>error</code>
-          ）。条子在
-          <strong>视口顶部</strong>
-          （不在演示区里）：点「开始加载」看它爬升， 点「完成」看它滑满淡出。
-        </p>
+        <p class="doc-hint">条子钉在视口顶部、不在演示区里 —— 点按钮后看页面顶部。</p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>函数调用</h3>
         <p class="doc-hint">
-          整页在忙那一根通常由 JS 驱动：引
-          <code>loading-bar.js</code>
-          ，然后
-          <code>start()</code>
-          /
-          <code>done()</code>
-          /
-          <code>error()</code>
-          ——
-          <strong>
-            函数与
-            <code>state</code>
-            一一对应
-          </strong>
-          ，只是不用自己找元素、写属性。 给
-          <code>start()</code>
-          一个
-          <code>target</code>
-          （元素或选择器），条子就落进那一块的
-          <strong>最上沿</strong>
-          、和标签那一种同义；不给就是钉在视口顶部那条。
           函数入口不做计数：两件事同时在忙时，先结束的那一次
           <code>done()</code>
           就把条子收掉 ——「还有几件事没完」得由调用方自己记账。
@@ -67,10 +33,6 @@
 
       <section class="doc-demo">
         <h3>出错</h3>
-        <p class="doc-hint">
-          出错与成功同一条收尾（滑满再淡出），只差填充色：在跑用主色、出错用
-          danger。三条都在演示区里；钉顶那条只在本页第一个演示。
-        </p>
         <doc-playground src="./demos/error.html"></doc-playground>
       </section>
 
@@ -81,22 +43,11 @@
 
       <section class="doc-demo">
         <h3>容器内</h3>
-        <p class="doc-hint">
-          <code>position="static"</code>
-          ：就在它所在的容器里占 2 / 4px、通宽 —— 说「这一块在刷新」。 想盖在容器上沿，给它一句内联
-          <code>position: absolute</code>
-          就行（组件不去猜容器）。
-        </p>
         <doc-playground src="./demos/container.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          填充条是
-          <code>part="bar"</code>
-          ，圆角 / 渐变直接改它；颜色、轨道底色、爬升终点 各有令牌 —— 下面三条分别演示这三件事。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
     </doc-demos>

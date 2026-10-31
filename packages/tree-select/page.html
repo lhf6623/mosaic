@@ -16,20 +16,6 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          <code>options</code>
-          用 property 传（示例脚本里
-          <code>el.options = […]</code>
-          ），数据里不写层级 ——
-          <code>children</code>
-          就是层级，缩进由容器自己算。
-          <code>value</code>
-          是当前值，
-          <code>default-value</code>
-          只在挂载时读一次。触发框被限窄后长标签会被省略号裁掉，hover / focus 会弹完整文案（宿主挂
-          <code>data-overflow</code>
-          ）。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
@@ -40,66 +26,27 @@
 
       <section class="doc-demo">
         <h3>初始展开</h3>
-        <p class="doc-hint">
-          展开状态归组件、不写回数据：数据里
-          <code>expanded: true</code>
-          让某支开场就展开；选中节点的祖先也会自动展开 ——
-          第二条选了杭州，点开面板时浙江已经是展开的。
-        </p>
         <doc-playground src="./demos/expanded.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>异步加载</h3>
-        <p class="doc-hint">
-          要懒加载的节点不写
-          <code>children</code>
-          、只标
-          <code>lazy: true</code>
-          ；loader 是组件级 property
-          <code>load(node) =&gt; Promise&lt;节点数组&gt;</code>
-          ，不写进
-          <code>options</code>
-          （数据是纯
-          JSON，函数放不进去）。点行首箭头才调用，等待时箭头变转圈；成功后返回的数组成为子节点并自动展开，返回的节点默认是叶子。失败发
-          <code>load-error</code>
-          （载荷
-          <code>{ value, error }</code>
-          ）、箭头变危险色，再点一次就是重试。
-        </p>
         <doc-playground src="./demos/async.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>禁用</h3>
-        <p class="doc-hint">
-          <code>disabled</code>
-          写在组件上整支不可选；写在节点上只禁这一行，而
-          <b>子孙继承</b>
-          ——江苏禁了，底下的南京、苏州也选不了。禁用的行不进键盘高亮，但展开箭头仍然可用，结构照样看得全。
-        </p>
+        <p class="doc-hint">禁用的行不进键盘高亮。</p>
         <doc-playground src="./demos/disabled.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>只读与校验</h3>
-        <p class="doc-hint">
-          <code>readonly</code>
-          能聚焦、能 Tab 到，但不弹面板、值也改不了；
-          <code>invalid</code>
-          只把触发框边框换成危险色，交互不变 —— 两条对照看外观差在哪。
-        </p>
         <doc-playground src="./demos/readonly.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>空数据</h3>
-        <p class="doc-hint">
-          <code>options</code>
-          为空时面板里显示
-          <code>empty-text</code>
-          ；不写就用默认的「暂无数据」，第二条用来对照。
-        </p>
         <doc-playground src="./demos/empty.html"></doc-playground>
       </section>
 
@@ -111,24 +58,11 @@
       <section class="doc-demo">
         <h3>事件回调</h3>
         <p class="doc-hint">
+          选中后面板收起时，
           <code>change</code>
-          的载荷是
-          <code>$event.data.value</code>
-          ，选中与清除后各发一次；清除时顺序是
-          <code>clear</code>
-          →
-          <code>change</code>
-          ，选中后是
-          <code>change</code>
-          →
+          先于
           <code>close</code>
-          。另三个事件没有
-          <code>data</code>
-          ；懒加载失败的
-          <code>load-error</code>
-          在「异步加载」里演示，载荷是
-          <code>{ value, error }</code>
-          。
+          发。
         </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
@@ -136,11 +70,7 @@
       <section class="doc-demo">
         <h3>外部样式</h3>
         <p class="doc-hint">
-          组件在宿主上开了
-          <code>--mc-tree-select-*</code>
-          令牌：在
-          <code>style</code>
-          里按实例覆盖，不用碰内部结构。第一条改触发框的底色、描边和圆角；第二条改面板最大高与圆角（点开看）。状态会写成宿主上的
+          状态会写成宿主上的
           <code>[data-open]</code>
           /
           <code>[data-filled]</code>
@@ -156,55 +86,17 @@
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          内部节点封在 shadow 里，只有标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
-          的节点能从外面改：
-          <code>base</code>
-          （触发框）、
-          <code>panel</code>
-          （面板）、
-          <code>option</code>
-          （树里每一行）、
-          <code>expand</code>
-          （行首展开 / 收起图标的容器）、
-          <code>prefix</code>
-          （prefix 插槽的容器）、
-          <code>chevron</code>
-          （触发框右端的箭头容器）。第二条是默认对照。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>插槽</h3>
-        <p class="doc-hint">
-          <code>prefix</code>
-          是触发框左侧附加物（空着不占位），
-          <code>chevron</code>
-          换掉右端箭头（不给就落回内置箭头，展开时容器转 180°），
-          <code>empty</code>
-          是面板空态内容 —— 给了它
-          <code>empty-text</code>
-          就不再使用，最后两条是两者的对照。
-          <code>option</code>
-          是行正文模板、
-          <code>icon</code>
-          是行首展开 / 收起图标的模板：都写在 light DOM 的
-          <code>&lt;template slot="option"&gt;</code>
-          /
-          <code>&lt;template slot="icon"&gt;</code>
-          里，按行克隆，元素上的
-          <code>data-field="字段名"</code>
-          填文本、
-          <code>data-field-attr="属性名:字段名"</code>
-          填属性。不给
-          <code>option</code>
-          就落回
-          <code>label</code>
-          文本；不给
-          <code>icon</code>
-          就用内置右箭头 —— 叶子行不显示图标，加载中一律换转圈。
-        </p>
         <doc-playground src="./demos/slots.html"></doc-playground>
       </section>
     </doc-demos>

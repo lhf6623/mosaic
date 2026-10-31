@@ -17,11 +17,7 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          可点的级写原生
-          <code>&lt;a&gt;</code>
-          ，当前页写纯文本 +
-          <code>current</code>
-          。每一级必须是容器的直接子元素 —— 用
+          每一级必须是容器的直接子元素：用
           <code>o-fill</code>
           /
           <code>o-if</code>
@@ -32,25 +28,11 @@
 
       <section class="doc-demo">
         <h3>分隔符</h3>
-        <p class="doc-hint">
-          上面那条用
-          <code>separator</code>
-          属性（注意 HTML 里要写
-          <code>&amp;gt;</code>
-          ）， 下面那条直接覆盖
-          <code>--mc-breadcrumb-sep</code>
-          令牌 —— 值是 CSS 字符串，要带引号。 两条通道同时写时属性优先；写回默认值时以令牌为准。
-        </p>
         <doc-playground src="./demos/separator.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          颜色、间距、分隔符各是一条令牌，覆盖在容器自己的
-          <code>style</code>
-          上， 令牌靠继承进每一级，不用碰组件内部。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
 
@@ -62,15 +44,11 @@
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          内层结构封在 shadow 里，只有
-          <code>::part(base)</code>
-          （内层
-          <code>&lt;nav&gt;</code>
-          ）与
-          <code>::part(list)</code>
-          （内层
-          <code>&lt;ol&gt;</code>
-          ）能从外面改。
+          shadow 里的结构默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

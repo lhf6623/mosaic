@@ -8,132 +8,75 @@
       Rate
       <code>mc-rate</code>
     </h1>
-    <p class="doc-lead">
-      评分：一排星，点第几颗就是几分；
-      <code>allow-half</code>
-      下可以点半颗。
-    </p>
+    <p class="doc-lead">评分：一排星，点第几颗就是几分。</p>
 
     <h2>例子</h2>
 
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          <code>value</code>
-          是初始 / 受控值；只想给一次初值就写
-          <code>default-value</code>
-          —— 它只在挂载时读一次，之后改它不再生效。都不写就是 0，即未评分。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>星星颗数</h3>
-        <p class="doc-hint">
-          <code>max</code>
-          是星星颗数（默认 5）；改它会重建星条，超出新上限的分值被夹回。
-        </p>
         <doc-playground src="./demos/max.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>半星</h3>
-        <p class="doc-hint">
-          <code>allow-half</code>
-          把步进从 1 改成 0.5：点 / 悬停按每颗星的左右半边取分，键盘方向键也按 0.5 走。
-        </p>
         <doc-playground src="./demos/half.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>快速取消</h3>
         <p class="doc-hint">
-          开了
-          <code>clearable</code>
-          ，再点一次当前分值所在的星就清回 0（未评分）—— 清空同样发
-          <code>input</code>
-          /
-          <code>change</code>
-          ，载荷是 0；键盘
+          键盘
           <kbd>Home</kbd>
-          本来就回到 0。下面第二条没开，重复点同一颗星不会变化，用来对照。
+          也回 0（未评分）。
         </p>
         <doc-playground src="./demos/clearable.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          也收纯数字按 px（
-          <code>size="40"</code>
-          ）：数字是单颗星直径，行高取 max(36px, 星直径)。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>语义色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          只染实心星，空星描边走
-          <code>--mc-rate-empty</code>
-          ；默认
-          <code>warning</code>
-          ，也收 hex（
-          <code>#1a7f5a</code>
-          ）。
-        </p>
         <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>禁用</h3>
         <p class="doc-hint">
-          禁用转发给内部原生 range：
+          禁用后
           <kbd>Tab</kbd>
-          会跳过，鼠标与键盘都改不动值；下面一条是正常态作对照。
+          会跳过，鼠标与键盘都改不动值。
         </p>
         <doc-playground src="./demos/disabled.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          <code>input</code>
-          在分值每次改变时发（点星 / 拖动 / 键盘），
-          <code>change</code>
-          在一次交互结束时发一次；载荷都是
-          <code>$event.data.value</code>
-          （number），都气泡 + composed。悬停预览只画星、不改值也不发事件 ——
-          点下去拿到的仍是同一个数。
-        </p>
+        <p class="doc-hint">悬停预览只画星、不改值也不发事件 —— 点下去拿到的仍是同一个数。</p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          星标直径、星间距、实心 / 空星颜色都是组件在宿主上开的 L3 令牌（
-          <code>--mc-rate-*</code>
-          ），在
-          <code>style</code>
-          里覆盖即可，不用碰内部结构。
-        </p>
         <doc-playground src="./demos/external-style.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          内部节点标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
-          ：
-          <code>base</code>
-          是整行命中区、
-          <code>item</code>
-          是单颗星 —— 能改的就是这两个；没标 part 的节点（比如里面那个原生
-          range）从外面改不动。下面第二条是默认对照。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

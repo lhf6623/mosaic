@@ -8,124 +8,61 @@
       Qrcode
       <code>mc-qrcode</code>
     </h1>
-    <p class="doc-lead">
-      把一段文字编成二维码：像素尺寸、前景 / 底色、纠错等级、静区与中间图案都可配， 渲染可选
-      <code>canvas</code>
-      或
-      <code>svg</code>
-      。
-    </p>
+    <p class="doc-lead">把一段文字编成二维码。</p>
 
     <h2>例子</h2>
 
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          <code>value</code>
-          就是要编码的内容（链接、文本、一段 JSON 都行，内部按 UTF-8 字节模式编码）。
-          什么都不写时什么都不画 —— 空的二维码没有意义。默认
-          <code>size</code>
-          160px、
-          <code>level</code>
-          M。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>纠错等级</h3>
         <p class="doc-hint">
-          四档纠错 L / M / Q / H 分别能恢复约 7% / 15% / 25% / 30% 的破损模块。等级越高、
-          同样内容需要越多模块（版本更大、格子更密），可扫距离更近 ——
-          只在中间要放图案或预计会被遮挡磨损时才往上提，日常用 M。
+          日常用
+          <code>M</code>
+          ；中间要放图案、或预计会被遮挡磨损时才往上提。
         </p>
         <doc-playground src="./demos/level.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          <code>size</code>
-          是边长像素，也是绘制分辨率：给多大就按多少像素重画（canvas 还会乘设备像素比）。 它跟用 CSS
-          把盒子放大不是一回事 —— 后者只是把位图拉伸。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>颜色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          是深色模块、
-          <code>background</code>
-          是底色（含静区），都收任意 CSS 颜色；写
-          <code>transparent</code>
-          就不铺底。两者对比度越低越难扫，深底浅码（反色）也不是所有扫码器都认 —— 第三张是反例。
-        </p>
+        <p class="doc-hint">对比度低、或深底浅码（第三张）都不保证能扫：不是所有扫码器都认反色。</p>
         <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>渲染方式</h3>
-        <p class="doc-hint">
-          <code>renderer</code>
-          默认
-          <code>canvas</code>
-          （位图，按 DPR 重绘，适合固定尺寸）；
-          <code>svg</code>
-          是矢量路径，缩放、打印、贴进设计稿都不会糊。两条路都能导出：下面的按钮走组件的
-          <code>download()</code>
-          —— canvas 存 PNG、svg 存
-          <code>.svg</code>
-          文件；要自己拿数据就调
-          <code>toDataURL()</code>
-          。
-        </p>
         <doc-playground src="./demos/renderer.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>中间图案</h3>
         <p class="doc-hint">
-          <code>logo</code>
-          收图片地址（URL 或 data URI），居中压在二维码上。
-          <code>logo-size</code>
-          是图案占边长的比例（0.05–0.4），
-          <code>logo-padding</code>
-          是图案周围的留白、
-          <code>logo-radius</code>
-          是留白底座的圆角（都是 px），
-          <code>logo-background</code>
-          空着就跟底色一致。图案盖住的模块全靠纠错补回来 —— 放图时把
+          图案压住的模块靠纠错补：放图时把
           <code>level</code>
-          至少提到 Q，比例别超过 0.25。
+          提到 Q 以上，比例别超过 0.25。
         </p>
         <doc-playground src="./demos/logo.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>静区</h3>
-        <p class="doc-hint">
-          <code>margin</code>
-          是二维码四周的空白，单位是模块，规范要求 4。调到 0 时定位图案贴着边，
-          只有放在现成的白底卡片里才建议这么用 —— 旁边有深色内容就会扫不出来。
-        </p>
         <doc-playground src="./demos/margin.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
         <p class="doc-hint">
-          宿主上的
-          <code>--mc-qrcode-size</code>
-          直接决定边长，优先级高于
-          <code>size</code>
-          属性（要跟着容器走就写它）；圆角、阴影、外框也写在宿主
-          <code>style</code>
-          上（宿主自己的圆角要配
-          <code>overflow: hidden</code>
-          才裁得到画布）。注意：令牌只改盒子，位图不会按新尺寸重绘 —— 要更清晰用
+          令牌只改盒子，位图不会按新尺寸重绘 —— 要更清晰还是用
           <code>size</code>
           属性。
         </p>
@@ -135,11 +72,11 @@
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          画布 / 矢量图这一层标了
-          <code>part="image"</code>
-          ：
-          <code>::part(image)</code>
-          能给它加圆角、描边、滤镜 —— 圆角会把二维码的角一起裁掉，裁掉的部分同样靠纠错兜底。
+          shadow 里的结构默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

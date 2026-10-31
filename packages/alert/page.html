@@ -9,7 +9,7 @@
       <code>mc-alert</code>
     </h1>
     <p class="doc-lead">
-      页内提示条：一块语义色的小面，带图标、标题与描述，可关。要「自己进场、自己走掉」的浮层消息用
+      页内提示条：一块语义色的小面。要「自己进场、自己走掉」的浮层消息用
       <code>message()</code>
       。
     </p>
@@ -29,15 +29,7 @@
 
       <section class="doc-demo">
         <h3>hex 颜色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          也直接收 hex（
-          <code>#fff000</code>
-          /
-          <code>#fc0</code>
-          ）：浅底按主题派生，
-          文字色按对比度自动给；极浅的牌子色在浅底上读不清时会有一条控制台警告。
-        </p>
+        <p class="doc-hint">极浅的 hex 在浅底上读不清时，控制台会给一条警告。</p>
         <doc-playground src="./demos/hex.html"></doc-playground>
       </section>
 
@@ -48,13 +40,6 @@
 
       <section class="doc-demo">
         <h3>标题</h3>
-        <p class="doc-hint">
-          纯文本标题用
-          <code>heading</code>
-          ，富内容用
-          <code>slot="title"</code>
-          ；两者都没有时标题块不占位。
-        </p>
         <doc-playground src="./demos/heading.html"></doc-playground>
       </section>
 
@@ -65,45 +50,21 @@
 
       <section class="doc-demo">
         <h3>自定义图标</h3>
-        <p class="doc-hint">
-          <code>slot="icon"</code>
-          有内容就让内置图形让位。
-        </p>
         <doc-playground src="./demos/icon-custom.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>可关闭</h3>
-        <p class="doc-hint">
-          <code>closable</code>
-          在右侧加一个原生
-          <code>&lt;button&gt;</code>
-          ；点击只发
-          <code>close</code>
-          ，组件不自己删 DOM。
-        </p>
         <doc-playground src="./demos/closable.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          只有
-          <code>close</code>
-          一个事件，不带载荷 —— 想知道是哪一条读
-          <code>event.target</code>
-          。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          内边距、圆角、色槽、边框都在宿主上（L3 令牌或一句
-          <code>style="…"</code>
-          ），不用跨 shadow 边界。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
 

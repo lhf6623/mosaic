@@ -17,13 +17,11 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          容器 + 子项两个标签搭起来：第二项写了
-          <code>open</code>
-          ，首屏就是展开的；点头部或按
+          点头部或按
           <kbd>Enter</kbd>
           /
           <kbd>空格</kbd>
-          都能开合。 头部文案用
+          都能开合；头部文案用
           <code>header</code>
           ，别用
           <code>title</code>
@@ -44,11 +42,6 @@
 
       <section class="doc-demo">
         <h3>禁用</h3>
-        <p class="doc-hint">
-          点不动，
-          <kbd>Tab</kbd>
-          也会跳过。
-        </p>
         <doc-playground src="./demos/disabled.html"></doc-playground>
       </section>
 
@@ -59,44 +52,32 @@
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          事件挂在容器上就能收到所有子项的通知，
-          <code>$event.data.name</code>
-          是子项的
-          <code>name</code>
-          属性。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>嵌套</h3>
-        <p class="doc-hint">子项里再放一个容器：内层自己互斥，不会影响外层已经展开的分支。</p>
+        <p class="doc-hint">
+          各层只认自己的直接子项：内层开合不影响外层，
+          <code>accordion</code>
+          也只在本容器的子项之间互斥。
+        </p>
         <doc-playground src="./demos/nested.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          样式写在宿主上，一句
-          <code>style="…"</code>
-          直接压过去，不用跨 shadow 边界。
-        </p>
         <doc-playground src="./demos/style-override.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          组件内部默认改不动：只有标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（这里开了
-          <code>header</code>
-          /
-          <code>body</code>
-          两个）。 组件不做高度过渡：要动画自己加在
+          改样式；开合不做高度过渡，要动画自己加在
           <code>::part(body)</code>
           上。
         </p>

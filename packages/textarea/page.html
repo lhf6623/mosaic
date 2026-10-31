@@ -9,11 +9,9 @@
       <code>mc-textarea</code>
     </h1>
     <p class="doc-lead">
-      多行输入框。高度由
+      多行输入框：高度由
       <code>rows</code>
-      与内容决定，另有自动增高与字数统计；值读写与
-      <code>mc-input</code>
-      同一套。
+      与内容决定。
     </p>
 
     <h2>例子</h2>
@@ -22,11 +20,6 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          第二条的
-          <code>default-value</code>
-          是初始值，只读一次；之后改属性不会回头覆盖当前值。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
@@ -42,51 +35,26 @@
 
       <section class="doc-demo">
         <h3>自动增高</h3>
-        <p class="doc-hint">
-          <code>auto-resize</code>
-          跟着内容长高，不再出现滚动条；第二条是关闭时的对照。
-        </p>
         <doc-playground src="./demos/auto-resize.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>字数统计</h3>
-        <p class="doc-hint">
-          给了
-          <code>maxlength</code>
-          才显示右下角的
-          <code>当前/上限</code>
-          ，它随输入实时更新。
-        </p>
         <doc-playground src="./demos/counter.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>状态</h3>
         <p class="doc-hint">
-          四个状态布尔都转发给内部原生控件：
-          <code>disabled</code>
-          用原生
-          <code>disabled</code>
-          （
+          禁用后
           <kbd>Tab</kbd>
-          会跳过），
-          <code>invalid</code>
-          只是把边框换成危险色。
+          会跳过。
         </p>
         <doc-playground src="./demos/states.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          <code>input</code>
-          每打一个字都发、
-          <code>change</code>
-          在失焦 / 回车时发（载荷都是
-          <code>$event.data.value</code>
-          ）。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 

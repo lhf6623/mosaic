@@ -21,41 +21,21 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          触发元素写进默认插槽；
-          <code>content</code>
-          是气泡里的那句话，悬停与聚焦都会显示。 需要原生 popover 与 CSS 锚点定位（Chrome 125+ /
-          Safari 17+ / Firefox 125+），否则气泡不弹也不报错；内容只放纯文本 —— 要按钮 /
-          链接这类可交互内容请换
-          <code>mc-popover</code>
-          。
+          需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
+          125+），否则气泡不弹也不报错。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>方位</h3>
-        <p class="doc-hint">
-          <code>placement</code>
-          与
-          <code>mc-popover</code>
-          同一套取值（12 个方向，不写后缀 = 居中）； 默认在触发元素
-          <strong>上方</strong>
-          ，空间不够时浏览器自动翻到另一侧。
-        </p>
         <doc-playground src="./demos/placement.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>触发方式</h3>
         <p class="doc-hint">
-          <code>trigger</code>
-          三选一：
-          <code>hover</code>
-          （默认，悬停与聚焦都算）/
-          <code>focus</code>
-          /
-          <code>click</code>
-          （再点一下或点空白收起）。 触发元素本身要能聚焦（原生
+          触发元素要自己能聚焦（原生
           <code>button</code>
           /
           <code>a</code>
@@ -70,21 +50,17 @@
 
       <section class="doc-demo">
         <h3>延迟</h3>
-        <p class="doc-hint">
-          <code>delay</code>
-          是显示与隐藏共用的延迟（ms）：
-          <code>0</code>
-          立刻弹， 大一点就不会划过一串图标时到处乱冒。
-        </p>
         <doc-playground src="./demos/delay.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          气泡本体是从外面唯一够得到的节点：
-          <code>::part(panel)</code>
-          。
+          shadow 里的结构默认改不动：只有标了
+          <code>part</code>
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

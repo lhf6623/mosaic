@@ -10,7 +10,11 @@
       <code>mc-radio</code>
     </h1>
     <p class="doc-lead">
-      单选项，容器 + 子项两个标签：组管互斥 / 方向 / 尺寸 / 事件，子项只是一格。
+      单选项：容器
+      <code>mc-radio-group</code>
+      + 子项
+      <code>mc-radio</code>
+      两个标签。
     </p>
 
     <h2>例子</h2>
@@ -19,14 +23,11 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          <code>name</code>
-          是字段名，
-          <code>default-value</code>
-          是初始选中项 —— 同一页可以有多个互不干扰的组。 组只认直接子项（用
+          组只认直接子项：用
           <code>o-if</code>
           /
           <code>o-fill</code>
-          包一层就互斥失效）；不在组里的 radio 只能切换自己。
+          包一层，互斥就失效；不在组里的 radio 只能切换自己。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -48,28 +49,17 @@
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          组上只发一次
-          <code>change</code>
-          ，载荷是
-          <code>$event.data.value</code>
-          ；子项不会各自再发一遍。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          组与子项各有自己的
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
-          ：
-          <code>::part(circle)</code>
-          改圆圈、
-          <code>::part(label)</code>
-          改文案、
-          <code>::part(base)</code>
-          改整格 / 整行。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

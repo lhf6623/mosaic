@@ -24,40 +24,16 @@
 
       <section class="doc-demo">
         <h3>方向</h3>
-        <p class="doc-hint">
-          纵向时宿主改成一列，默认把子项拉伸到同一宽度；要按内容宽度排就写
-          <code>align="start"</code>
-          。
-        </p>
         <doc-playground src="./demos/direction.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>间距</h3>
-        <p class="doc-hint">
-          <code>gap</code>
-          有三档令牌（
-          <code>sm</code>
-          /
-          <code>md</code>
-          /
-          <code>lg</code>
-          ），也可以直接写数字（单位 px，如
-          <code>gap="10"</code>
-          ）—— 数值不用再覆盖 CSS 变量。
-        </p>
         <doc-playground src="./demos/gap.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>对齐</h3>
-        <p class="doc-hint">
-          不写
-          <code>align</code>
-          时横向居中、纵向拉伸；
-          <code>baseline</code>
-          让不同字号的文字按基线对齐。
-        </p>
         <doc-playground src="./demos/align.html"></doc-playground>
       </section>
 
@@ -68,56 +44,21 @@
 
       <section class="doc-demo">
         <h3>反向</h3>
-        <p class="doc-hint">
-          <code>reverse-order</code>
-          只翻主轴方向：横向从右往左、纵向从下往上；间距与对齐语义不变。
-        </p>
         <doc-playground src="./demos/reverse-order.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>换行</h3>
-        <p class="doc-hint">
-          写
-          <code>wrap-items</code>
-          后空间不够就换行，行距与列距共用同一个
-          <code>gap</code>
-          。宿主默认是
-          <code>inline-flex</code>
-          ，会按内容撑开 —— 演示里用
-          <code>max-width</code>
-          给它一个上限。
-        </p>
         <doc-playground src="./demos/wrap.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>撑满</h3>
-        <p class="doc-hint">
-          写
-          <code>block</code>
-          后宿主变成
-          <code>display: flex</code>
-          、宽度 100%；不写时是行内的
-          <code>inline-flex</code>
-          ，只占内容宽度。
-        </p>
         <doc-playground src="./demos/block.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          宿主
-          <code>style</code>
-          的优先级高于属性：
-          <code>gap: 6px</code>
-          盖过
-          <code>gap="lg"</code>
-          。任意数值优先用
-          <code>gap="10"</code>
-          ，不必再覆盖令牌。
-        </p>
         <doc-playground src="./demos/external-style.html"></doc-playground>
       </section>
     </doc-demos>

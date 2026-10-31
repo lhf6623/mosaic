@@ -24,17 +24,7 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          演示里在它自己的
-          <code>ready()</code>
-          里把
-          <code>columns</code>
-          /
-          <code>data</code>
-          赋给这个
-          <code>mc-table</code>
-          ；页面里就是
-          <code>document.querySelector('#t').data = […]</code>
-          。 单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
+          单元格文本按纯文本渲染（组件自己转义），要富内容就把整列的值当字符串拼好再传。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -56,15 +46,13 @@
 
       <section class="doc-demo">
         <h3>密度</h3>
-        <p class="doc-hint">三档只动字号与单元格内边距，行高不动。</p>
         <doc-playground src="./demos/size.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外边框</h3>
         <p class="doc-hint">
-          <code>bordered</code>
-          给整块加一圈描边（单元格横线不变）；圆角大小走
+          圆角大小走
           <code>--mc-table-radius</code>
           ，不想要圆角就把它设成
           <code>0</code>
@@ -75,28 +63,11 @@
 
       <section class="doc-demo">
         <h3>加载中</h3>
-        <p class="doc-hint">
-          <code>loading</code>
-          期间盖在表格上一层的
-          <code>loading</code>
-          插槽（不给就是
-          <code>mc-spinner</code>
-          + 一行「加载中…」）：表格留在原位不跳版，层里的内容居中。
-        </p>
         <doc-playground src="./demos/loading.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>空态</h3>
-        <p class="doc-hint">
-          一行数据都没有时显示
-          <code>empty</code>
-          插槽；不给内容就用内置的
-          <code>mc-empty</code>
-          兜底（图形 + 一行文案），文案默认「暂无数据」，可以用
-          <code>empty-text</code>
-          换掉。
-        </p>
         <doc-playground src="./demos/empty.html"></doc-playground>
       </section>
 
@@ -112,13 +83,7 @@
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（这里开了
-          <code>table</code>
-          /
-          <code>row</code>
-          /
-          <code>cell</code>
-          ）。
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

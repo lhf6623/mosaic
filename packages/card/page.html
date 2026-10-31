@@ -17,11 +17,7 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          头尾写
-          <code>slot="header"</code>
-          /
-          <code>slot="footer"</code>
-          ，其余进默认插槽。 整卡可点自己写：给卡内那个元素铺一条伪元素，
+          整卡可点自己写：给卡内元素铺一条伪元素，
           <code>inset</code>
           按
           <code>--mc-card-border-w</code>
@@ -39,10 +35,6 @@
 
       <section class="doc-demo">
         <h3>外观</h3>
-        <p class="doc-hint">
-          <code>outline</code>
-          适合放在已经有底色的容器里（侧栏、弹层内部）。
-        </p>
         <doc-playground src="./demos/variants.html"></doc-playground>
       </section>
 
@@ -72,9 +64,7 @@
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。
-        </p>
+        <p class="doc-hint">卡内元素的默认外边距照旧（组件不带页面 reset），要归零自己写。</p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
 
@@ -85,15 +75,7 @@
           <code>part</code>
           的节点，才能从外面用
           <code>::part(名字)</code>
-          改样式（这里开了
-          <code>base</code>
-          /
-          <code>body</code>
-          /
-          <code>header</code>
-          /
-          <code>footer</code>
-          四个）。
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

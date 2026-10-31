@@ -21,39 +21,11 @@
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          文案写在默认插槽；
-          <code>on:change</code>
-          载荷是
-          <code>$event.data</code>
-          （
-          <code>{ checked, value }</code>
-          ）。
-          <code>checked</code>
-          是受控 / 运行时状态，只想给一次初值写
-          <code>default-checked</code>
-          。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>自定义值</h3>
-        <p class="doc-hint">
-          给
-          <code>checked-value</code>
-          与
-          <code>unchecked-value</code>
-          ：表单收集时开着给前者、关着给后者（不写就是布尔
-          <code>true</code>
-          /
-          <code>false</code>
-          ）。这一对专管「这个控件交出什么值」，
-          <code>on:change</code>
-          的载荷仍是
-          <code>{ checked }</code>
-          。
-        </p>
         <doc-playground src="./demos/custom-value.html"></doc-playground>
       </section>
 
@@ -69,29 +41,17 @@
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          状态变化时发
-          <code>change</code>
-          ，载荷
-          <code>$event.data.checked</code>
-          。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          轨道是
-          <code>track</code>
-          、滑块是
-          <code>thumb</code>
-          、整行是
-          <code>base</code>
-          —— 没有开
+          组件内部只有开了
           <code>part</code>
-          的内部节点从外面改不动。滑块行程由轨道 / 滑块 / 内边距三条令牌算出来，
-          改轨道长度不用再改第二条规则。
+          的节点，才能从外面用
+          <code>::part()</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

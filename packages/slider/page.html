@@ -8,109 +8,59 @@
       Slider
       <code>mc-slider</code>
     </h1>
-    <p class="doc-lead">滑动选择：在一段连续区间里拖一个值；轨道 / 填充 / 滑块自绘并开放 part。</p>
+    <p class="doc-lead">滑动选择：在一段连续区间里拖一个值。</p>
 
     <h2>例子</h2>
 
     <doc-demos>
       <section class="doc-demo">
         <h3>基本用法</h3>
-        <p class="doc-hint">
-          不写值时从下限开始（原生 range 默认停在区间中点，组件把它改成落在
-          <code>min</code>
-          ）；HTML 里写
-          <code>value</code>
-          是初始 / 受控值，只想给一次初值就用
-          <code>default-value</code>
-          —— 它只在挂载时读一次，之后改它不再生效。
-        </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>范围与步长</h3>
-        <p class="doc-hint">
-          <code>min</code>
-          /
-          <code>max</code>
-          /
-          <code>step</code>
-          管区间与步长：拖动和键盘按 step 取整，step 也收小数（第三条在 0～1 之间按 0.1 一档）。
-        </p>
         <doc-playground src="./demos/range.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>尺寸</h3>
-        <p class="doc-hint">
-          也收纯数字按 px（
-          <code>size="48"</code>
-          ）：数字是控件高，轨道高 / 滑块直径按 md 的比例算。
-        </p>
         <doc-playground src="./demos/sizes.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>语义色</h3>
-        <p class="doc-hint">
-          <code>color</code>
-          只染填充条与滑块描边，滑块底色仍是 surface —— 所以换色不用动结构；除五个语义色外也收 hex（
-          <code>#1a7f5a</code>
-          ）。
-        </p>
         <doc-playground src="./demos/colors.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>禁用</h3>
         <p class="doc-hint">
-          禁用转发给内部原生 input：
+          禁用后
           <kbd>Tab</kbd>
-          会跳过，鼠标与键盘都改不动值；下面一条是正常态作对照。
+          会跳过，鼠标与键盘都改不动值。
         </p>
         <doc-playground src="./demos/disabled.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          <code>input</code>
-          在拖动过程中 / 键盘每按一次就发，
-          <code>change</code>
-          在一次交互结束时发一次（松开指针 / 键盘调整结束）。两者的载荷都是
-          <code>$event.data.value</code>
-          （number，不是字符串），并且都气泡 + composed。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          轨道高、滑块直径、轨道与填充的颜色都是组件在宿主上开的 L3 令牌（
-          <code>--mc-slider-*</code>
-          ），在
-          <code>style</code>
-          里覆盖即可，不用碰内部结构。
-        </p>
         <doc-playground src="./demos/external-style.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          内部节点标了
+          组件内部默认改不动：只有标了
           <code>part</code>
-          ：
-          <code>base</code>
-          是整行命中区、
-          <code>track</code>
-          是未填充轨道、
-          <code>fill</code>
-          是已填充部分、
-          <code>thumb</code>
-          是滑块 —— 能改的就是这四个，没标 part 的节点（比如里面那个原生
-          input）从外面改不动。下面第二条是默认对照。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>

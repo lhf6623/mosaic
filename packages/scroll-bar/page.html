@@ -17,67 +17,30 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          默认竖向（
-          <code>axis</code>
-          不写就是
-          <code>y</code>
-          ）：鼠标滚轮、拖动条子、Tab 进来按方向键 —— 三条路都在。条子平时藏着，鼠标移入才淡入。
-          多高（或多宽）得你自己给：宿主跟着内容长，不给高度它就永远不滚，看着像坏了。
+          内容溢出时
+          <kbd>Tab</kbd>
+          才进得去，方向键滚动。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>常显</h3>
-        <p class="doc-hint">
-          要一直在（截图、大屏演示）就写
-          <code>reveal="always"</code>
-          ；触屏设备没有「移入」，同样常显。
-        </p>
         <doc-playground src="./demos/always-visible.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>横向滚动</h3>
-        <p class="doc-hint">
-          <code>axis="x"</code>
-          ：宽表格、时间轴这类内容用它，条子贴在底沿。一次只滚一条轴 —— 真要两轴同时滚，用普通的
-          <code>overflow</code>
-          容器。
-        </p>
         <doc-playground src="./demos/horizontal.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>事件回调</h3>
-        <p class="doc-hint">
-          内部滚动时组件会在
-          <strong>宿主</strong>
-          上重发一次
-          <code>scroll</code>
-          （原生
-          <code>scroll</code>
-          不冒泡、viewport 又在 shadow 里）—— 挂在祖先上就收得到；滚到哪儿要自己读
-          <code>part="viewport"</code>
-          。
-        </p>
         <doc-playground src="./demos/events.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          三个 part（
-          <code>viewport</code>
-          /
-          <code>bar</code>
-          /
-          <code>thumb</code>
-          ）分别对应 「内容」「轨道」「滑块」，粗细与颜色各有令牌。
-          条子是覆盖式的：长代码块这类内容的最后几个字符会被压住 —— 给自己的
-          <code>part="viewport"</code>
-          加右内边距。
-        </p>
         <doc-playground src="./demos/customize.html"></doc-playground>
       </section>
     </doc-demos>

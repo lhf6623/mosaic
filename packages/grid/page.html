@@ -9,9 +9,7 @@
       Grid
       <code>mc-grid</code>
     </h1>
-    <p class="doc-lead">
-      栅格。容器只决定列与间距，子项决定自己跨几列 —— 布局走 CSS Grid，子项内容由使用者自己写。
-    </p>
+    <p class="doc-lead">栅格：容器只决定列与间距，子项决定自己跨几列；子项内容由使用者自己写。</p>
 
     <h2>例子</h2>
 
@@ -20,13 +18,11 @@
       <section class="doc-demo">
         <h3>基本用法</h3>
         <p class="doc-hint">
-          容器 + 子项两个标签搭起来，
-          <code>cols="2"</code>
-          就是两列。子项要能压缩：里面放长内容时给子元素
+          子项里的长内容要给子元素设
           <code>min-width: 0</code>
-          （或
-          <code>class="min-w-0"</code>
-          ），否则长文本会把列撑宽。
+          或加
+          <code>min-w-0</code>
+          类，否则会把列撑宽。
         </p>
         <doc-playground src="./demos/basic.html"></doc-playground>
       </section>
@@ -43,11 +39,6 @@
 
       <section class="doc-demo">
         <h3>最小宽度自适应</h3>
-        <p class="doc-hint">
-          不写列数、只给
-          <code>min-item-width</code>
-          ：容器窄了就少几列，宽了就多几列，不用写断点。
-        </p>
         <doc-playground src="./demos/min-width.html"></doc-playground>
       </section>
 

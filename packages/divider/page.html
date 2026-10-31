@@ -6,9 +6,7 @@
       Divider
       <code>mc-divider</code>
     </h1>
-    <p class="doc-lead">
-      分割线：一条线把内容分开，水平 / 竖直两个方向；线上可以放一段文字，线型与留白都能配。
-    </p>
+    <p class="doc-lead">分割线：一条线把内容分开。</p>
 
     <h2>例子</h2>
 
@@ -21,17 +19,6 @@
 
       <section class="doc-demo">
         <h3>文字</h3>
-        <p class="doc-hint">
-          不写
-          <code>align</code>
-          就居中（两侧线等长）；
-          <code>start</code>
-          /
-          <code>end</code>
-          只缩短靠近文字的那一侧，另一侧仍然撑满。竖线没有左右，所以
-          <code>align</code>
-          只在水平线且线上有内容时生效。
-        </p>
         <doc-playground src="./demos/text.html"></doc-playground>
       </section>
 
@@ -43,9 +30,9 @@
       <section class="doc-demo">
         <h3>竖直</h3>
         <p class="doc-hint">
-          竖线不写高度：放在 flex 行里就拉满整行，行高由最高的那一项决定；不在行里时是
+          放在 flex 行之外时，竖线只有
           <code>1em</code>
-          高的一小段。
+          高。
         </p>
         <doc-playground src="./demos/vertical.html"></doc-playground>
       </section>
@@ -53,10 +40,7 @@
       <section class="doc-demo">
         <h3>留白</h3>
         <p class="doc-hint">
-          <code>spacing</code>
-          收三档令牌或纯数字（按 px，如
-          <code>spacing="10"</code>
-          ）；带单位的写法（如
+          带单位的写法（如
           <code>12px</code>
           ）不认，落回默认
           <code>md</code>
@@ -67,26 +51,17 @@
 
       <section class="doc-demo">
         <h3>外部样式</h3>
-        <p class="doc-hint">
-          线色 / 粗细 / 文字间距都是 L3 令牌，在宿主
-          <code>style</code>
-          上覆盖即可。颜色是 RGB 三元组（空格分隔、不带
-          <code>rgb()</code>
-          ），另外两个是长度。
-        </p>
         <doc-playground src="./demos/external-style.html"></doc-playground>
       </section>
 
       <section class="doc-demo">
         <h3>内部样式</h3>
         <p class="doc-hint">
-          shadow 内部只有标了
+          shadow 里的结构默认改不动：只有标了
           <code>part</code>
-          的节点能从外面改：分割线两侧的线段都是
-          <code>part="line"</code>
-          ，用
-          <code>::part(line)</code>
-          就能改它们的颜色与粗细。
+          的节点，才能从外面用
+          <code>::part(名字)</code>
+          改样式。
         </p>
         <doc-playground src="./demos/part.html"></doc-playground>
       </section>
