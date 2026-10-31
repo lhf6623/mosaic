@@ -203,7 +203,7 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 
 ### 迁移中：`<doc-example>` 与「普通例子」
 
-目前只有 `button` 的「基本用法」按这套写；其余页仍是 `<doc-playground>`，迁移完成后再统一骨架。
+`button` 整页已按这套写（所有演示都是 `<doc-example>`）；其余页仍是 `<doc-playground>`，迁移完成后再统一骨架。
 
 ```html
 <section class="doc-demo">
@@ -217,14 +217,16 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - 标题 / 说明仍写在页面里，只是改成 slot；`doc-toc` 扫页面 shadow root 的规则不变。
 - `src` 是 ofa 演示文件（如 `packages/button/demos/basic.html`，一个文件一个 `tag`）；`plain-src` 是
   配套的普通 HTML 完整页（如 `packages/button/demos/basic-plain.html`），只用于「普通例子」代码视图和
-  iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。
+  iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。普通版可缺省：没写 `plain-src`
+  的演示只有 ofa.js 视图，切换器自动隐藏（目前 `button` 的 `basic` / `type` / `states` 配了普通版）。
 - 默认是 ofa.js 视图（左），普通例子（右）只切代码；只有点「运行」/「重新运行」才重编译或重跑
   当前视图。这两个按钮只在代码区展开时出现（收起时没有可运行的编辑），收起态只留复制与代码入口。
   普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。
 - `src` / `plain-src` 都相对**页面文件**解析；`src` 会被 ofa 改写成绝对地址，`plain-src` 由组件按
   页面地址解析（button 页写 `plain-src="./demos/basic-plain.html"`）。
-- `doc-example` 目前由使用页注册（只一页用），页面同时要注册 `mc-button`（工具栏）与
-  `mc-tabs` / `mc-tab`（ofa.js / 普通例子切换器）；多页迁移时再移进 `docs/layout.html`。
+- `doc-example` 目前由使用页注册（只一页用），页面同时要注册 `mc-button`（工具栏）；有
+  `plain-src` 的页面再加 `mc-tabs` / `mc-tab`（ofa.js / 普通例子切换器）；多页迁移时再移进
+  `docs/layout.html`。
 - 站点组件表、运行时例外与 `src` 的解析规则见 [`docs/README.md`](../docs/README.md)。
 
 ## 三、参考区（属性 / 事件 / 插槽 / part）：写进 `api.md`，只放表

@@ -98,9 +98,7 @@ for (const slug of SLUGS) {
     const extras = demoExtras.length
       ? ' + ' + demoExtras.map((n) => `\`demos/${n}\``).join(' / ') + '（演示读的样例文件）'
       : '';
-    rows.push(
-      `| \`demos/\` | ${demoCount} 个演示（页面用 \`<doc-playground src>\` 读**同一份文件**）${extras} |`,
-    );
+    rows.push(`| \`demos/\` | ${demoCount} 个演示（页面用可编辑示例读**同一份文件**）${extras} |`);
   }
   if (testCount) rows.push(`| \`test/\` | 组件自己的冒烟套件（${testCount} 个文件） |`);
   for (const f of otherFiles) rows.push(`| \`${f}\` | 构建产物 / 附属文件 |`);
@@ -134,7 +132,10 @@ for (const slug of SLUGS) {
   /* ⚠️ 必须剥掉 `\r`：Windows 工作区（core.autocrlf=true）里 api.md 是 CRLF，`split('\n')` 会把 `\r`
      留在行尾 → tag 变 `mc-alert\r` → prettier 把 `\r` 当换行，标题被拆成「# mc-alert」+ 空行 +
      「（提示条）」、`**状态**` 那行的反引号也被切断。Mac 工作区是 LF，所以这个坑只在 Windows 上现形。 */
-  const apiHead = (fs.readFileSync(`${dir}/api.md`, 'utf8').split('\n')[0] ?? '').replace(/\r$/, '');
+  const apiHead = (fs.readFileSync(`${dir}/api.md`, 'utf8').split('\n')[0] ?? '').replace(
+    /\r$/,
+    '',
+  );
   const tag = apiHead.replace(/^#\s*/, '').split(' / ')[0].replace(/\(\)$/, '') || `mc-${slug}`;
   const zh = node.zh ? `（${node.zh}）` : '';
 

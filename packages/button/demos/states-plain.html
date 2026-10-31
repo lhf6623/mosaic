@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/switch/switch.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-switch id="states-switch" checked>开启 loading / disabled</mc-switch>
+
+      <mc-space block wrap-items>
+        <mc-button>默认</mc-button>
+        <mc-button icon="upload" id="loading-icon"></mc-button>
+        <mc-button id="loading-text">正在保存…</mc-button>
+        <mc-button id="disabled-filled">已禁用</mc-button>
+        <mc-button variant="outline" id="disabled-outline">已禁用</mc-button>
+      </mc-space>
+    </mc-space>
+
+    <script>
+      const statesSwitch = document.getElementById('states-switch');
+      const loadingIcon = document.getElementById('loading-icon');
+      const loadingText = document.getElementById('loading-text');
+      const disabledFilled = document.getElementById('disabled-filled');
+      const disabledOutline = document.getElementById('disabled-outline');
+
+      const applyStates = (on) => {
+        loadingIcon.toggleAttribute('loading', on);
+        loadingText.toggleAttribute('loading', on);
+        loadingText.textContent = on ? '正在保存…' : '保存';
+        disabledFilled.toggleAttribute('disabled', on);
+        disabledOutline.toggleAttribute('disabled', on);
+        disabledFilled.textContent = on ? '已禁用' : '可点击';
+        disabledOutline.textContent = on ? '已禁用' : '可点击';
+      };
+
+      // 开关初值 true（同 ofa 示例）：先把动态状态落到标记上
+      applyStates(true);
+      // mc-switch 的 change 事件载荷在 event.data.checked（见组件 api.md）
+      statesSwitch.addEventListener('change', (event) => applyStates(event.data.checked));
+    </script>
+  </body>
+</html>

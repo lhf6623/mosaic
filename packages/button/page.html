@@ -2,10 +2,11 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./button.html"></l-m>
     <l-m src="../switch/switch.html"></l-m>
-    <!-- doc-example 内部用 mc-tabs / mc-tab 做「ofa.js 例子 / 普通例子」切换器 -->
+    <!-- doc-example 只这一页在用，所以由本页注册（多页迁移时再移进 docs/layout.html）：
+         工具栏是 mc-button；配了 plain-src 的演示（basic / type / states）还用 mc-tabs / mc-tab -->
     <l-m src="../tabs/tabs.html"></l-m>
     <l-m src="../tabs/tab.html"></l-m>
     <l-m src="../../docs/components/example.html"></l-m>
@@ -18,8 +19,8 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <!-- 新版示例（试验）：标题 / 说明走 slot，代码区有「ofa.js 例子 / 普通例子」切换；
-             plain-src 相对本页面文件解析，指向和 <doc-example> 配套的普通 HTML 版 -->
+        <!-- 可编辑示例：标题 / 说明走 slot；配了 plain-src 的演示，打开代码区后可切「ofa.js 例子 / 普通例子」两种视图
+             （plain-src 相对本页面文件解析，指向配套的普通 HTML 完整页） -->
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
           <h3 slot="title">基本用法</h3>
           <p class="doc-hint" slot="hint">
@@ -29,54 +30,63 @@
       </section>
 
       <section class="doc-demo">
-        <h3>外观 × 颜色</h3>
-        <doc-playground src="./demos/variants.html"></doc-playground>
+        <doc-example src="./demos/variants.html">
+          <h3 slot="title">外观 × 颜色</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>行内文字按钮</h3>
-        <doc-playground src="./demos/inline.html"></doc-playground>
+        <doc-example src="./demos/inline.html">
+          <h3 slot="title">行内文字按钮</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>自定义颜色</h3>
-        <p class="doc-hint">非 hex 的值只报警告、不给颜色。</p>
-        <doc-playground src="./demos/hex.html"></doc-playground>
+        <doc-example src="./demos/hex.html">
+          <h3 slot="title">自定义颜色</h3>
+          <p class="doc-hint" slot="hint">非 hex 的值只报警告、不给颜色。</p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>尺寸</h3>
-        <doc-playground src="./demos/sizes.html"></doc-playground>
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>表单类型</h3>
-        <doc-playground src="./demos/type.html"></doc-playground>
+        <doc-example src="./demos/type.html" plain-src="./demos/type-plain.html">
+          <h3 slot="title">表单类型</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>状态</h3>
-        <p class="doc-hint">
-          用
-          <kbd>Tab</kbd>
-          走一遍能看到焦点环。
-        </p>
-        <doc-playground src="./demos/states.html"></doc-playground>
+        <doc-example src="./demos/states.html" plain-src="./demos/states-plain.html">
+          <h3 slot="title">状态</h3>
+          <p class="doc-hint" slot="hint">
+            用
+            <kbd>Tab</kbd>
+            走一遍能看到焦点环。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>图标</h3>
-        <doc-playground src="./demos/icons.html"></doc-playground>
+        <doc-example src="./demos/icons.html">
+          <h3 slot="title">图标</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>撑满宽度</h3>
-        <doc-playground src="./demos/block.html"></doc-playground>
+        <doc-example src="./demos/block.html">
+          <h3 slot="title">撑满宽度</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
-        <h3>外部样式</h3>
-        <doc-playground src="./demos/override.html"></doc-playground>
+        <doc-example src="./demos/override.html">
+          <h3 slot="title">外部样式</h3>
+        </doc-example>
       </section>
     </doc-demos>
 
