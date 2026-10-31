@@ -100,6 +100,21 @@
       margin-bottom: var(--mc-space-3);
     }
 
+    /* 撑满整行：segmented 轨道在 mc-tabs 里默认收缩到内容宽（分段切换器本来的样子），
+       这里用 part 穿透放宽 —— 轨道铺满、两颗 mc-tab 平分，按钮跟着拉宽 */
+    .envs::part(list) {
+      display: flex;
+      flex: 1;
+    }
+
+    .envs mc-tab {
+      flex: 1;
+    }
+
+    .envs mc-tab::part(base) {
+      flex: 1;
+    }
+
     .envs[hidden] {
       display: none;
     }
