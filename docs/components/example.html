@@ -3,6 +3,7 @@
   与 <doc-playground> 的区别：
     · 标题 / 说明由页面通过 slot 放进同一行，操作按钮在标题右侧；
     · 编辑器显示文件原文（含 <template component> 外壳），不再剥掉外壳；
+    · 代码区收起时「运行 / 重新运行」跟着收起（没有可运行的编辑），只留复制与代码入口；
     · 代码区有「ofa.js 例子 / 普通例子」两个视图，默认 ofa.js；
       普通例子是完整 HTML 页，点「运行」时用 iframe 跑（CDN 地址预览时映射到本地文件）；
       切换器用 mc-tabs 的 segmented + no-panel 档 —— 使用页要同时注册 mc-tabs / mc-tab。
@@ -54,6 +55,12 @@
 
     .actions mc-button[data-feedback='failed'] {
       --mc-button-accent: var(--mc-color-danger);
+    }
+
+    /* 收起代码区时没有可运行的编辑：运行 / 重新运行跟着收起，只留复制与代码两个入口
+       （与 doc-playground 同一口径；mc-button 自己的 :host 是 inline-flex，这里得显式 display: none） */
+    .actions mc-button[hidden] {
+      display: none;
     }
 
     /* ── 预览 ── */
@@ -168,6 +175,7 @@
         icon="play"
         title="运行"
         attr:disabled="!loaded"
+        attr:hidden="!codeOpen"
         on:click="run()"></mc-button>
       <mc-button
         size="sm"
@@ -175,6 +183,7 @@
         icon="refresh"
         title="重新运行"
         attr:disabled="!loaded"
+        attr:hidden="!codeOpen"
         on:click="rerun()"></mc-button>
       <mc-button
         size="sm"

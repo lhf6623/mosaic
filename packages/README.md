@@ -219,7 +219,8 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
   配套的普通 HTML 完整页（如 `packages/button/demos/basic-plain.html`），只用于「普通例子」代码视图和
   iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。
 - 默认是 ofa.js 视图（左），普通例子（右）只切代码；只有点「运行」/「重新运行」才重编译或重跑
-  当前视图。普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。
+  当前视图。这两个按钮只在代码区展开时出现（收起时没有可运行的编辑），收起态只留复制与代码入口。
+  普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。
 - `src` / `plain-src` 都相对**页面文件**解析；`src` 会被 ofa 改写成绝对地址，`plain-src` 由组件按
   页面地址解析（button 页写 `plain-src="./demos/basic-plain.html"`）。
 - `doc-example` 目前由使用页注册（只一页用），页面同时要注册 `mc-button`（工具栏）与
