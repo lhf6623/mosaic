@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/menu/menu.html"></l-m>
+
+    <mc-space block wrap-items align="start">
+      <mc-button size="sm" variant="outline" id="add">加一项</mc-button>
+      <mc-menu id="options-menu" style="width: 13rem"></mc-menu>
+    </mc-space>
+
+    <script>
+      /* options 是对象数组，用 property 传；href 是最终地址（普通页面里不用 ofa 的 hash 路由） */
+      const OPTIONS = [
+        { label: '首页', icon: 'menu', href: '#', current: true },
+        { type: 'group', label: '导航' },
+        {
+          label: '组件',
+          icon: 'file',
+          /* children = 二级菜单：父级是开合按钮（不导航），子项点开才出现 */
+          children: [
+            { label: '按钮', href: '#' },
+            { label: '图标', href: '#' },
+            { label: '折叠面板', href: '#' },
+          ],
+        },
+        { label: '设置', icon: 'settings', href: '#' },
+        { label: '禁用项', icon: 'lock', disabled: true },
+        {
+          label: 'ofa.js',
+          icon: 'external',
+          href: 'https://ofajs.com',
+          attrs: { target: '_blank', rel: 'noreferrer', title: '外链：新窗口打开' },
+        },
+      ];
+
+      const menu = document.getElementById('options-menu');
+      let extra = 0;
+
+      customElements.whenDefined('mc-menu').then(() => {
+        menu.options = OPTIONS;
+      });
+
+      /* 换一份 options：原样的行原地复用，只有多出来的那条才建新节点 */
+      document.getElementById('add').addEventListener('click', () => {
+        extra += 1;
+        menu.options = [
+          ...OPTIONS,
+          { label: `动态项 ${extra}`, icon: 'star', href: '#' },
+        ];
+      });
+    </script>
+
+  </body>
+</html>

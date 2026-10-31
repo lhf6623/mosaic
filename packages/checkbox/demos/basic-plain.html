@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/checkbox/checkbox.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-checkbox value="terms" checked>同意用户协议</mc-checkbox>
+      <mc-checkbox value="email">接收邮件通知</mc-checkbox>
+      <mc-checkbox value="digest" checked>每周摘要</mc-checkbox>
+      <!-- 非受控初值：只在挂载时读一次（之后改它不再生效），受控用法写 checked -->
+      <mc-checkbox default-checked>默认勾上（default-checked）</mc-checkbox>
+    </mc-space>
+
+  </body>
+</html>

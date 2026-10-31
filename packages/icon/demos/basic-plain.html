@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/icon/icon.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <p class="text-base">
+        搜不到就换个词
+        <mc-icon name="search" color="neutral"></mc-icon>
+        ，或者
+        <mc-icon name="filter" color="neutral"></mc-icon>
+        缩小范围。
+      </p>
+
+      <mc-space block wrap-items>
+        <mc-space>
+          <mc-icon name="star" color="primary"></mc-icon>
+          <span class="text-xs">主要</span>
+        </mc-space>
+        <mc-space>
+          <mc-icon name="star" color="info"></mc-icon>
+          <span class="text-xs">信息</span>
+        </mc-space>
+        <mc-space>
+          <mc-icon name="star" color="success"></mc-icon>
+          <span class="text-xs">成功</span>
+        </mc-space>
+        <mc-space>
+          <mc-icon name="star" color="warning"></mc-icon>
+          <span class="text-xs">警告</span>
+        </mc-space>
+        <mc-space>
+          <mc-icon name="star" color="danger"></mc-icon>
+          <span class="text-xs">危险</span>
+        </mc-space>
+        <mc-space>
+          <mc-icon name="star" color="neutral"></mc-icon>
+          <span class="text-xs">中性</span>
+        </mc-space>
+      </mc-space>
+    </mc-space>
+
+  </body>
+</html>

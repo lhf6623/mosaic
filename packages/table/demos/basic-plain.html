@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/table/table.html"></l-m>
+
+    <mc-table id="t"></mc-table>
+
+    <script>
+      /* columns / data 是对象数组：用 property 传（不是属性），等组件升级完再赋值 */
+      customElements.whenDefined('mc-table').then(() => {
+        const table = document.getElementById('t');
+        table.columns = [
+          { key: 'name', title: '姓名', width: '30%' },
+          { key: 'role', title: '角色' },
+          { key: 'city', title: '城市' },
+        ];
+        table.data = [
+          { name: '张三', role: '前端工程师', city: '杭州' },
+          { name: '李四', role: '后端工程师', city: '成都' },
+          { name: '王五', role: '产品经理', city: '北京' },
+        ];
+      });
+    </script>
+
+  </body>
+</html>

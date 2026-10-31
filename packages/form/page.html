@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <l-m src="./form.html"></l-m>
     <l-m src="./form-item.html"></l-m>
     <l-m src="../input/input.html"></l-m>
@@ -16,7 +16,6 @@
     <l-m src="../tree-select/tree-select.html"></l-m>
     <l-m src="../radio/radio.html"></l-m>
     <l-m src="../radio/radio-group.html"></l-m>
-    <l-m src="../button/button.html"></l-m>
     <l-m src="../grid/grid.html"></l-m>
     <l-m src="../grid/grid-item.html"></l-m>
     <h1>
@@ -33,8 +32,9 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

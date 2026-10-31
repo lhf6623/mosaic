@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/slider/slider.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <!-- 不写值：从 min 开始（原生 range 默认停在区间中点，组件把它改成落在 min） -->
+      <mc-slider></mc-slider>
+      <!-- value：初始 / 受控值 -->
+      <mc-slider value="30"></mc-slider>
+      <!-- default-value：只在挂载时读一次的非受控初值 -->
+      <mc-slider default-value="60"></mc-slider>
+    </mc-space>
+
+  </body>
+</html>

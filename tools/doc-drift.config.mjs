@@ -667,7 +667,8 @@ const rules = [
         const files = [
           `packages/${c.slug}/page.html`,
           ...io.listFiles(`packages/${c.slug}/demos/*.html`),
-        ].filter((f) => io.exists(f));
+          /* `*-plain.html` 是「普通例子」的完整页：只在 iframe 里单独跑，不与页面上的演示同时渲染，不算 */
+        ].filter((f) => io.exists(f) && !/-plain\.html$/.test(f));
         const fixed = [];
         for (const file of files) {
           for (const tag of io.read(file).matchAll(/<mc-loading-bar\b[^>]*>/g)) {

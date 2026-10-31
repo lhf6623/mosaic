@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/form/form.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/form/form-item.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/input/input.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/slider/slider.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+
+    <mc-form id="basic-form">
+      <mc-form-item label="用户名" name="username">
+        <mc-input placeholder="随便写点什么"></mc-input>
+      </mc-form-item>
+      <mc-form-item label="邮箱" name="email">
+        <mc-input type="email" placeholder="you@example.com"></mc-input>
+      </mc-form-item>
+      <mc-form-item label="音量" name="volume">
+        <mc-slider default-value="60"></mc-slider>
+      </mc-form-item>
+      <mc-form-item>
+        <mc-space block>
+          <mc-button type="submit">提交</mc-button>
+        </mc-space>
+      </mc-form-item>
+    </mc-form>
+
+    <p class="mt-3 text-sm text-muted">
+      最近一次提交：
+      <strong id="last">（还没提交）</strong>
+    </p>
+
+    <script>
+      /* submit 的载荷在 event.data.value（见组件 api） */
+      document.getElementById('basic-form').addEventListener('submit', (event) => {
+        document.getElementById('last').textContent = JSON.stringify(event.data.value);
+      });
+    </script>
+
+  </body>
+</html>

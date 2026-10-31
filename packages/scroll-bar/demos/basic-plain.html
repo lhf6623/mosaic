@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/scroll-bar/scroll-bar.html"></l-m>
+
+    <!-- 高度由使用者给：不给高度宿主就跟着内容长，永远不溢出、也就永远不滚 -->
+    <mc-scroll-bar
+      style="
+        height: 10rem;
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: var(--mc-radius-md);
+      ">
+      <mc-space id="rows" direction="vertical" block></mc-space>
+    </mc-scroll-bar>
+
+    <script>
+      /* 24 行示例数据：普通页面没有 o-fill，直接在脚本里搭节点 */
+      const list = document.getElementById('rows');
+      for (let i = 1; i <= 24; i += 1) {
+        const row = document.createElement('mc-space');
+        row.setAttribute('block', '');
+        row.setAttribute('justify', 'between');
+        const name = document.createElement('span');
+        name.textContent = `成员 ${String(i).padStart(2, '0')}`;
+        const state = document.createElement('span');
+        state.className = 'text-xs text-muted';
+        state.textContent = '在线';
+        row.append(name, state);
+        list.append(row);
+      }
+    </script>
+
+  </body>
+</html>

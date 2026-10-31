@@ -3,7 +3,6 @@
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
     <l-m src="./space.html"></l-m>
-    <l-m src="../button/button.html"></l-m>
     <l-m src="../card/card.html"></l-m>
     <h1>
       Space
@@ -18,8 +17,9 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

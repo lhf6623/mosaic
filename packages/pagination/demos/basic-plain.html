@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/pagination/pagination.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-pagination total="85" page-size="10" default-current="3"></mc-pagination>
+      <p class="text-sm text-muted">85 条、每页 10 条，初始落在第 3 页。</p>
+    </mc-space>
+
+  </body>
+</html>

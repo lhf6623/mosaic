@@ -2,9 +2,8 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <l-m src="./card.html"></l-m>
-    <l-m src="../button/button.html"></l-m>
     <h1>
       Card
       <code>mc-card</code>
@@ -15,17 +14,18 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <p class="doc-hint">
-          整卡可点自己写：给卡内元素铺一条伪元素，
-          <code>inset</code>
-          按
-          <code>--mc-card-border-w</code>
-          取负值盖住边框那圈，
-          <code>cursor</code>
-          要显式写，悬停别给卡片加位移。
-        </p>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            整卡可点自己写：给卡内元素铺一条伪元素，
+            <code>inset</code>
+            按
+            <code>--mc-card-border-w</code>
+            取负值盖住边框那圈，
+            <code>cursor</code>
+            要显式写，悬停别给卡片加位移。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

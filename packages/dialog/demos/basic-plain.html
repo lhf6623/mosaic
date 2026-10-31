@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/dialog/dialog.html"></l-m>
+
+    <mc-space block wrap-items>
+      <mc-button id="open-dialog">打开对话框</mc-button>
+      <mc-dialog heading="确认删除" closable id="dialog">
+        <p>删除后无法恢复，确定继续吗？</p>
+        <mc-button slot="footer" color="danger" id="delete">删除</mc-button>
+        <mc-button slot="footer" variant="outline" id="cancel">取消</mc-button>
+      </mc-dialog>
+    </mc-space>
+
+    <script>
+      const dialog = document.getElementById('dialog');
+      const close = () => dialog.removeAttribute('open');
+      document.getElementById('open-dialog').addEventListener('click', () => {
+        dialog.setAttribute('open', '');
+      });
+      document.getElementById('delete').addEventListener('click', close);
+      document.getElementById('cancel').addEventListener('click', close);
+      /* × / Esc / 点遮罩关闭时组件会派发 close（见组件 api） */
+      dialog.addEventListener('close', close);
+    </script>
+
+  </body>
+</html>

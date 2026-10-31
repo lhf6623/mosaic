@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/skeleton/skeleton.html"></l-m>
+
+    <div>
+      <p class="text-xs text-muted mb-2">一块「头像 + 两行文字」的卡片占位</p>
+      <mc-space align="start">
+        <mc-skeleton variant="circle" width="2.5rem" height="2.5rem"></mc-skeleton>
+        <mc-space direction="vertical">
+          <mc-skeleton width="9rem" height="0.875rem"></mc-skeleton>
+          <mc-skeleton width="6rem" height="0.875rem"></mc-skeleton>
+        </mc-space>
+      </mc-space>
+    </div>
+
+  </body>
+</html>

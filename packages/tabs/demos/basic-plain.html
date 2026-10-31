@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/tabs/tabs.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/tabs/tab.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-tabs default-value="overview">
+        <mc-tab value="overview" name="概览">
+          概览面板。初始值写在
+          <code>default-value</code>
+          上；面板内容放进
+          <code>mc-tab</code>
+          的默认插槽。
+        </mc-tab>
+        <mc-tab value="members" name="成员">成员面板：点上面的标签就能切过来。</mc-tab>
+        <mc-tab value="settings" name="设置">设置面板：没有权限的项在下面那个例子里被禁用。</mc-tab>
+      </mc-tabs>
+    </mc-space>
+
+  </body>
+</html>

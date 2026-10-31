@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/switch/switch.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-switch checked id="first-switch">开启通知</mc-switch>
+      <mc-switch>同步到云端</mc-switch>
+      <mc-switch checked>记住登录状态</mc-switch>
+      <!-- 非受控初值：只在挂载时读一次（之后改它不再生效），受控用法写 checked -->
+      <mc-switch default-checked>默认打开（default-checked）</mc-switch>
+    </mc-space>
+
+    <p class="mt-3 text-sm text-muted">
+      第一个开关当前：
+      <strong id="switch-state">打开</strong>
+    </p>
+
+    <script>
+      /* change 的载荷在 event.data.checked（见组件 api） */
+      document.getElementById('first-switch').addEventListener('change', (event) => {
+        document.getElementById('switch-state').textContent = event.data.checked ? '打开' : '关闭';
+      });
+    </script>
+
+  </body>
+</html>

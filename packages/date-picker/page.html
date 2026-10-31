@@ -2,11 +2,10 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 本页用到的组件必须自己注册（外壳只注册 code / icon / collapse / menu / breadcrumb / card），漏了会被 `:not(:defined){display:none}` 连文字一起藏掉（P44）。 -->
+    <!-- ⚠️ 本页用到的组件必须自己注册（站点外壳只注册站点级那批），漏了会被 `:not(:defined){display:none}` 连文字一起藏掉（P44）。 -->
     <l-m src="./date-picker.html"></l-m>
-    <l-m src="../button/button.html"></l-m>
 
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <h1>
       Date Picker
       <code>mc-date-picker</code>
@@ -21,28 +20,29 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <p class="doc-hint">
-          键盘可完成全部操作：
-          <kbd>↓</kbd>
-          打开后
-          <kbd>←</kbd>
-          <kbd>→</kbd>
-          <kbd>↑</kbd>
-          <kbd>↓</kbd>
-          逐日 / 逐周移动，
-          <kbd>PageUp</kbd>
-          <kbd>PageDown</kbd>
-          换月（按住
-          <kbd>Shift</kbd>
-          换年），
-          <kbd>Enter</kbd>
-          选中、
-          <kbd>Esc</kbd>
-          关闭。 面板依赖原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+），
-          不满足时不会弹出；前后补位的相邻月份日期（颜色更浅）点了也会直接选中并收起。
-        </p>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            键盘可完成全部操作：
+            <kbd>↓</kbd>
+            打开后
+            <kbd>←</kbd>
+            <kbd>→</kbd>
+            <kbd>↑</kbd>
+            <kbd>↓</kbd>
+            逐日 / 逐周移动，
+            <kbd>PageUp</kbd>
+            <kbd>PageDown</kbd>
+            换月（按住
+            <kbd>Shift</kbd>
+            换年），
+            <kbd>Enter</kbd>
+            选中、
+            <kbd>Esc</kbd>
+            关闭。 面板依赖原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+），
+            不满足时不会弹出；前后补位的相邻月份日期（颜色更浅）点了也会直接选中并收起。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

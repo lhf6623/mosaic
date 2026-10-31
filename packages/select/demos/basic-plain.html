@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/select/select.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/select/option.html"></l-m>
+
+    <mc-space block wrap-items>
+      <mc-select placeholder="选择城市" default-value="sh">
+        <mc-option value="bj">北京</mc-option>
+        <mc-option value="sh">上海</mc-option>
+        <mc-option value="gz">广州</mc-option>
+        <mc-option value="sz" disabled>深圳（暂未开通）</mc-option>
+      </mc-select>
+    </mc-space>
+
+  </body>
+</html>

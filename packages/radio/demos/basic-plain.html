@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/radio/radio-group.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/radio/radio.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-radio-group name="plan" default-value="year" id="plan-group">
+        <mc-radio value="month">月付</mc-radio>
+        <mc-radio value="year">年付（省两个月）</mc-radio>
+        <mc-radio value="once">一次性买断</mc-radio>
+      </mc-radio-group>
+
+      <mc-radio-group name="channel" default-value="web">
+        <mc-radio value="web">网页</mc-radio>
+        <mc-radio value="app">App</mc-radio>
+      </mc-radio-group>
+    </mc-space>
+
+    <p class="mt-3 text-sm text-muted">
+      第一个组当前值：
+      <strong id="plan-value">year</strong>
+    </p>
+
+    <script>
+      /* change 的载荷在 event.data.value（见组件 api） */
+      document.getElementById('plan-group').addEventListener('change', (event) => {
+        document.getElementById('plan-value').textContent = event.data.value;
+      });
+    </script>
+
+  </body>
+</html>

@@ -2,10 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 外壳只注册 code / icon / collapse / menu / breadcrumb / card：演示里的 mc-button 要本页注册，漏了会被 `*:not(:defined){display:none}` 整块藏掉（P44）。 -->
-    <l-m src="../button/button.html"></l-m>
-
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <l-m src="./tooltip.html"></l-m>
     <h1>
       Tooltip
@@ -19,12 +16,13 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <p class="doc-hint">
-          需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
-          125+），否则气泡不弹也不报错。
-        </p>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
+            125+），否则气泡不弹也不报错。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

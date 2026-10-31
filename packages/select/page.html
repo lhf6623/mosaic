@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html（本页只写正文）；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 本页用到的组件必须自己注册（外壳只注册 code / icon / collapse / menu / breadcrumb / card），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）；本单元两个标签都要注册。 -->
+    <!-- ⚠️ 本页用到的组件必须自己注册（站点外壳只注册站点级那批），漏了会被 `*:not(:defined){display:none}` 连文字一起藏掉（P44）；本单元两个标签都要注册。 -->
     <l-m src="./select.html"></l-m>
     <l-m src="./option.html"></l-m>
 
@@ -17,23 +17,24 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <p class="doc-hint">
-          点触发框或按
-          <kbd>↓</kbd>
-          打开；
-          <kbd>↑</kbd>
-          <kbd>↓</kbd>
-          移高亮、
-          <kbd>Enter</kbd>
-          选中、
-          <kbd>Esc</kbd>
-          关闭。面板要原生 popover + CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
-          125+），版本不够就不弹；
-          <code>mc-option</code>
-          也要本页注册。
-        </p>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            点触发框或按
+            <kbd>↓</kbd>
+            打开；
+            <kbd>↑</kbd>
+            <kbd>↓</kbd>
+            移高亮、
+            <kbd>Enter</kbd>
+            选中、
+            <kbd>Esc</kbd>
+            关闭。面板要原生 popover + CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox
+            125+），版本不够就不弹；
+            <code>mc-option</code>
+            也要本页注册。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

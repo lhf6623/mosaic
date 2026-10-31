@@ -2,11 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- ⚠️ 演示用到的组件必须本页注册（P44）：ofa 给组件模板注入了 `*:not(:defined){display:none}`，
-         没注册的标签会连同文字一起被藏掉、还不报错 —— 站点外壳也不含 mc-button，深链 + 刷新时更明显。 -->
-    <l-m src="../button/button.html"></l-m>
-
-    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <h1>
       Message
       <code>message()</code>
@@ -21,8 +17,9 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+        </doc-example>
       </section>
 
       <section class="doc-demo">

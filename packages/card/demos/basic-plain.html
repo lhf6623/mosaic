@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/card/card.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+
+    <mc-card style="width: 24rem">
+      <span slot="header" class="font-semibold">项目设置</span>
+      <mc-button slot="suffix" variant="ghost" icon="close" color="neutral">
+      </mc-button>
+      正文放什么由你决定：说明文字、表单、列表都可以。
+      <mc-space block justify="end" slot="footer">
+        <mc-button size="sm" variant="ghost">取消</mc-button>
+        <mc-button size="sm">保存</mc-button>
+      </mc-space>
+    </mc-card>
+
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/icon/icon.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+
+    <mc-space block wrap-items>
+      <mc-icon name="info"></mc-icon>
+      <mc-button data-type="neutral">普通提示</mc-button>
+      <mc-button data-type="info" color="info" variant="outline">信息</mc-button>
+      <mc-button data-type="success" color="success" variant="outline">成功</mc-button>
+      <mc-button data-type="warning" color="warning" variant="outline">警告</mc-button>
+      <mc-button data-type="danger" color="danger" variant="outline">错误</mc-button>
+    </mc-space>
+
+    <script type="module">
+      import message from 'https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/message/message.js';
+
+      const TEXTS = {
+        neutral: '默认是中性：只有文案，没有图标',
+        info: '信息：告知，不需要做什么',
+        success: '成功：操作已经完成',
+        warning: '警告：需要注意，但还没出错',
+        error: '错误：出错了，需要处理',
+      };
+
+      /* 演示 type 这一个维度：其余都走默认（duration 3000 → 自己走；closable true → 带 ×） */
+      for (const button of document.querySelectorAll('[data-type]')) {
+        button.addEventListener('click', () => {
+          const type = button.dataset.type;
+          message(TEXTS[type], { type });
+        });
+      }
+    </script>
+
+  </body>
+</html>

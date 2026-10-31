@@ -130,10 +130,10 @@
   但这条忽略继续有效，也别给 demo 文件加逐块 `prettier-ignore`。
 
 > **迁移状态**：全部组件文档页已按这个结构排过（开场白 → 例子 → `<doc-spec>` 参考区 → 页脚）。
-> 每个演示区是一条可编辑示例：旧页是 `<doc-playground src>`，`button` 的「基本用法」已迁到
-> `<doc-example src plain-src>`（见下节），其余待迁。演示区的段落顺序就是这份指纹
-> （`h3|playground` / `h3|hint|playground`，迁移后对应 `h3|example` / `h3|hint|example`）——
-> 说明可以在、可以不在，但**绝不许落在示例之后**；参考区渲染出来的节与 `api.md` 逐条对账。
+> 每个组件的「基本用法」都已迁到 `<doc-example src plain-src>`（各配一份同目录的 `basic-plain.html`），
+> 其余演示仍是 `<doc-playground src>`；`button` 页所有演示都已迁到 `<doc-example>`。演示区的段落顺序
+> 就是这份指纹（`h3|example` / `h3|hint|example`）—— 说明可以在、可以不在，但**绝不许落在示例之后**；
+> 参考区渲染出来的节与 `api.md` 逐条对账。
 
 ⚠️ **覆盖线**：组件代码里有的**属性** / **命名插槽** / **part**，都至少要有一个演示真的用到它 ——
 属性直接写、插槽写 `slot="x"`、part 用 `::part()` 改（就是这一页的「内部样式」），`demo-covers-api` 守着。
@@ -177,19 +177,22 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - **例子不给组件化妆。** 演示行为时，内容用项目自己的组件（按钮 / 卡片）或纯文本，
   别手写 `.cell` / `.chip` 这类装饰层；`<style>` 只留给以样式为主题的演示
   （`part` / 自定义外观）—— 否则读者分不清是组件在起作用，还是示例的样式在起作用。
-- **`doc-playground` 是站点级组件**：在 `docs/layout.html` 注册一次，组件文档页不用为演示
-  写任何 `<l-m>`。
-- ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的只有
+- **`doc-playground` / `doc-example` 都是站点级组件**：在 `docs/layout.html` 注册一次，组件文档页
+  不用为演示写任何 `<l-m>`。`doc-example` 的工具栏用 `mc-button`、普通例子切换器用
+  `mc-tabs` / `mc-tab`，这三样也由外壳统一注册（组件页的「基本用法」都用 `doc-example`）。
+- ⚠️ **演示里用到的组件，只要不在站点级那批里，就要本页注册**：外壳注册的是
   `mc-code` / `mc-icon` / `mc-space` / `mc-collapse(-item)` / `mc-menu(-item)` /
-  `mc-scroll-bar` / `mc-dropdown` / `mc-popover` / `mc-input` / `doc-playground` 那一批，
-  **不含 `mc-button` / `mc-card` / `mc-breadcrumb`**。漏了的话 ofa 的
-  `*:not(:defined){display:none}` 会把没注册的标签连同文字一起藏掉 —— 不报错，只是演示区里
-  那排按钮整个消失；而且同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就空白
-  （首页碰巧注册过 `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过）。
-  写法照 `packages/card/page.html`，正文最前面一行：
+  `mc-scroll-bar` / `mc-dropdown` / `mc-popover` / `mc-input` / `mc-button` / `mc-tabs` /
+  `mc-tab` / `doc-playground` / `doc-example` 那一批，**不含 `mc-card` / `mc-breadcrumb`**。
+  漏了的话 ofa 的 `*:not(:defined){display:none}` 会把没注册的标签连同文字一起藏掉 —— 不报错，
+  只是演示区里那排按钮整个消失；而且同一个页面**两种表现**：从首页点进来正常，深链打开再刷新就
+  空白（首页碰巧注册过 `mc-button`，深链 + 刷新时不保证渲染 —— message / popover 两页就这么炸过）。
+  写法照 `packages/checkbox/page.html`：演示里用到 `mc-form` / `mc-form-item`（不在站点级那批），
+  正文最前面就写它们的 `<l-m>`：
 
   ```html
-  <l-m src="../button/button.html"></l-m>
+  <l-m src="../form/form.html"></l-m>
+  <l-m src="../form/form-item.html"></l-m>
   ```
 
   改这条约定时自己逐页对账：站点外壳 ∪ 本页 `<l-m>` ∪ 演示自己的 `load()` 必须盖住演示里用到的每个项目组件。
@@ -203,7 +206,8 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 
 ### 迁移中：`<doc-example>` 与「普通例子」
 
-`button` 整页已按这套写（所有演示都是 `<doc-example>`）；其余页仍是 `<doc-playground>`，迁移完成后再统一骨架。
+所有组件页的「基本用法」都已按这套写（每页一份 `basic-plain.html`）；`button` 页所有演示都已迁到
+`<doc-example>`。其余演示仍是 `<doc-playground>`，迁移完成后再统一骨架。
 
 ```html
 <section class="doc-demo">
@@ -218,15 +222,16 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - `src` 是 ofa 演示文件（如 `packages/button/demos/basic.html`，一个文件一个 `tag`）；`plain-src` 是
   配套的普通 HTML 完整页（如 `packages/button/demos/basic-plain.html`），只用于「普通例子」代码视图和
   iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。普通版可缺省：没写 `plain-src`
-  的演示只有 ofa.js 视图，切换器自动隐藏（目前 `button` 的 `basic` / `type` / `states` 配了普通版）。
+  的演示只有 ofa.js 视图，切换器自动隐藏（现在每个组件的 `basic` 都有普通版；`button` 的
+  `type` / `states` 也有）。
 - 默认是 ofa.js 视图（左），普通例子（右）只切代码；只有点「运行」/「重新运行」才重编译或重跑
   当前视图。这两个按钮只在代码区展开时出现（收起时没有可运行的编辑），收起态只留复制与代码入口。
   普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。
 - `src` / `plain-src` 都相对**页面文件**解析；`src` 会被 ofa 改写成绝对地址，`plain-src` 由组件按
   页面地址解析（button 页写 `plain-src="./demos/basic-plain.html"`）。
-- `doc-example` 目前由使用页注册（只一页用），页面同时要注册 `mc-button`（工具栏）；有
-  `plain-src` 的页面再加 `mc-tabs` / `mc-tab`（ofa.js / 普通例子切换器）；多页迁移时再移进
-  `docs/layout.html`。
+- `doc-example` 是站点级组件（`docs/layout.html` 注册），页面只写标签；它的工具栏依赖
+  `mc-button`、普通例子切换器依赖 `mc-tabs` / `mc-tab`，也都由外壳注册。只有配了 `plain-src`
+  的演示才会显示切换器。
 - 站点组件表、运行时例外与 `src` 的解析规则见 [`docs/README.md`](../docs/README.md)。
 
 ## 三、参考区（属性 / 事件 / 插槽 / part）：写进 `api.md`，只放表

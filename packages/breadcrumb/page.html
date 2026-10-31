@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="../../docs/content.css" />
   <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
   <div class="doc-body">
-    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-playground src> 读同一份源 -->
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用可编辑示例（<doc-example> / <doc-playground>）读同一份源 -->
     <l-m src="./breadcrumb.html"></l-m>
     <l-m src="./breadcrumb-item.html"></l-m>
     <h1>
@@ -15,15 +15,16 @@
 
     <doc-demos>
       <section class="doc-demo">
-        <h3>基本用法</h3>
-        <p class="doc-hint">
-          每一级必须是容器的直接子元素：用
-          <code>o-fill</code>
-          /
-          <code>o-if</code>
-          包一层，分隔符会静默消失。
-        </p>
-        <doc-playground src="./demos/basic.html"></doc-playground>
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            每一级必须是容器的直接子元素：用
+            <code>o-fill</code>
+            /
+            <code>o-if</code>
+            包一层，分隔符会静默消失。
+          </p>
+        </doc-example>
       </section>
 
       <section class="doc-demo">
