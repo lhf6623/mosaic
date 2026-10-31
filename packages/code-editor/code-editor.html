@@ -1,0 +1,780 @@
+<!-- mc-code-editor — 代码编辑器（表单控件）；设计取舍见 README.md 的「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主盒模型 + 色槽默认值（使用者的内联 style / 宿主令牌才压得住） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      height: var(--mc-code-editor-h);
+      overflow: hidden;
+      border: 1px solid rgb(var(--mc-code-editor-border));
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      background-color: rgb(var(--mc-code-editor-fill));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-family: var(--mc-font-mono, var(--mc-def-font-mono));
+      font-size: var(--mc-code-editor-font-size);
+      line-height: var(--mc-code-editor-line-height);
+      tab-size: 2;
+
+      /* L3 组件令牌：默认引用 L2 语义令牌 / 明暗两套语法色（light-dark 跟随 color-scheme） */
+      --mc-code-editor-h: 8rem;
+      --mc-code-editor-fill: var(--mc-color-surface-code, var(--mc-def-color-surface-code));
+      --mc-code-editor-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-code-editor-gutter-fill: var(
+        --mc-color-surface-sunken,
+        var(--mc-def-color-surface-sunken)
+      );
+      --mc-code-editor-gutter-fg: var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle));
+      --mc-code-editor-font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-code-editor-line-height: 1.7;
+
+      /* 语法色：Token 名对齐 CodeMirror 的类名，使用者可按实例覆盖任一格 */
+      --mc-code-editor-keyword: light-dark(#d73a49, #ff7b72);
+      --mc-code-editor-string: light-dark(#032f62, #a5d6ff);
+      --mc-code-editor-comment: light-dark(#6a737d, #8b949e);
+      --mc-code-editor-tag: light-dark(#22863a, #7ee787);
+      --mc-code-editor-attribute: light-dark(#6f42c1, #d2a8ff);
+      --mc-code-editor-number: light-dark(#005cc5, #79c0ff);
+      --mc-code-editor-variable: light-dark(#e36209, #ffa657);
+      --mc-code-editor-def: light-dark(#6f42c1, #d2a8ff);
+    }
+
+    /* 2. 状态：焦点环画在宿主上（内部 CM / 降级 textarea 都算 focus-within） */
+    :host(:focus-within) {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: -1px;
+    }
+    :host([invalid]) {
+      border-color: rgb(var(--mc-color-danger, var(--mc-def-color-danger)));
+    }
+    :host([disabled]) {
+      opacity: 0.5;
+    }
+
+    /* 3. 编辑器挂载点 / 加载态 / 降级 textarea */
+    .mc-editor {
+      position: relative;
+      height: 100%;
+    }
+    .mc-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgb(var(--mc-code-editor-fill));
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+    }
+    .mc-loading[hidden] {
+      display: none;
+    }
+    .mc-fallback {
+      display: none;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: var(--mc-space-3, var(--mc-def-space-3)) var(--mc-space-4, var(--mc-def-space-4));
+      border: 0;
+      resize: none;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      line-height: var(--mc-code-editor-line-height);
+      tab-size: 2;
+      outline: none;
+    }
+    /* 降级只换输入载体：外层盒子的边框 / 底色 / 焦点环都不变 */
+    :host([data-fallback]) .mc-editor {
+      display: none;
+    }
+    :host([data-fallback]) .mc-fallback {
+      display: block;
+    }
+
+    /* 4. CodeMirror 外观：CM 的基础样式由脚本注入到本 shadow root 的最前面，这里后写、负责覆盖 */
+    .cm-s-default.CodeMirror {
+      height: 100%;
+      background: transparent;
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    .cm-s-default .CodeMirror-lines {
+      padding: var(--mc-space-2, var(--mc-def-space-2)) 0;
+    }
+    /* 行号列必须是不透明实底：gutter 是叠在滚动内容之上的绝对定位层，横向滚动时代码会从它底下透出来 */
+    .cm-s-default .CodeMirror-gutters {
+      border-right: 1px solid rgb(var(--mc-code-editor-border));
+      background-color: rgb(var(--mc-code-editor-gutter-fill));
+    }
+    .cm-s-default .CodeMirror-gutter-filler,
+    .cm-s-default .CodeMirror-scrollbar-filler {
+      background-color: rgb(var(--mc-code-editor-gutter-fill));
+    }
+    .cm-s-default .CodeMirror-linenumber {
+      color: rgb(var(--mc-code-editor-gutter-fg));
+    }
+    .cm-s-default .CodeMirror-cursor {
+      border-left-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+    .cm-s-default .CodeMirror-selected {
+      background: rgb(
+        var(--mc-color-primary-subtle, var(--mc-def-color-primary-subtle))
+      ) !important;
+    }
+    .cm-s-default .CodeMirror-matchingbracket {
+      color: rgb(var(--mc-color-primary, var(--mc-def-color-primary))) !important;
+      text-decoration: underline;
+    }
+    .cm-s-default .cm-keyword,
+    .cm-s-default .cm-type,
+    .cm-s-default .cm-builtin {
+      color: var(--mc-code-editor-keyword);
+    }
+    .cm-s-default .cm-string,
+    .cm-s-default .cm-string-2 {
+      color: var(--mc-code-editor-string);
+    }
+    .cm-s-default .cm-comment {
+      color: var(--mc-code-editor-comment);
+      font-style: normal;
+    }
+    .cm-s-default .cm-tag,
+    .cm-s-default .cm-name {
+      color: var(--mc-code-editor-tag);
+    }
+    .cm-s-default .cm-attribute,
+    .cm-s-default .cm-qualifier {
+      color: var(--mc-code-editor-attribute);
+    }
+    .cm-s-default .cm-number,
+    .cm-s-default .cm-atom {
+      color: var(--mc-code-editor-number);
+    }
+    .cm-s-default .cm-variable,
+    .cm-s-default .cm-variable-2,
+    .cm-s-default .cm-variable-3 {
+      color: var(--mc-code-editor-variable);
+    }
+    .cm-s-default .cm-def {
+      color: var(--mc-code-editor-def);
+    }
+    .cm-s-default .cm-bracket,
+    .cm-s-default .cm-operator {
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+    }
+  </style>
+
+  <!-- 可见结构全在模板；CM 的节点是第三方库运行时造的（见脚本顶部注释） -->
+  <div class="mc-editor" on:input="onCmNativeInput($event)" on:keydown="onCmKeydown($event)">
+    <div class="mc-loading" attr:hidden="!loading">正在加载编辑器…</div>
+  </div>
+  <textarea
+    class="mc-fallback"
+    spellcheck="false"
+    wrap="off"
+    on:input="onFallbackInput($event)"
+    on:change="onFallbackChange()"
+    on:keydown="onFallbackKeydown($event)"></textarea>
+
+  <script>
+    import { withEmits } from '../boot/emits.js';
+
+    /*
+     * 行为层例外（packages/README.md §1.9）：可见结构只有模板；CodeMirror 的节点只能由它自己在运行时造。
+     * 除此之外的测量（自适应高度）、懒加载判定、第三方脚本加载、主题跟随都已收进下面几个方法，并注明了原因。
+     *
+     * 组件 vendor 了 CodeMirror 5（见 vendor/codemirror/SOURCES.txt），只在第一次真正需要时下载：
+     * 不可见（如收起的抽屉）先不加载，等 IntersectionObserver 判定可见 / 拿到焦点 / 被点一下再加载。
+     */
+
+    const CM_FILES = [
+      'lib/codemirror.min.js',
+      'mode/xml/xml.min.js',
+      'mode/javascript/javascript.min.js',
+      'mode/css/css.min.js',
+      'mode/htmlmixed/htmlmixed.min.js',
+      'addon/edit/closebrackets.min.js',
+      /* closetag 的自动闭合走 xml-fold 里的 scanForClosingTag：不是折叠功能，是 closetag 的依赖 */
+      'addon/fold/xml-fold.min.js',
+      'addon/edit/closetag.min.js',
+      'addon/edit/matchbrackets.min.js',
+      'addon/comment/comment.min.js',
+    ];
+
+    /** 语言名 → CM mode。只收四个值：多出来的模式就多一份 vendor，不划算 */
+    const MODES = {
+      html: 'htmlmixed',
+      js: 'javascript',
+      css: 'css',
+      text: null,
+    };
+
+    /** base 相同的实例共享同一份 promise：脚本只取一次、CSS 文本只取一次 */
+    const CM_BY_BASE = new Map();
+    const CSS_BY_BASE = new Map();
+
+    /** @param {string} src */
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`编辑器脚本加载失败：${src}`));
+        document.head.append(script);
+      });
+    }
+
+    /** @param {string} base */
+    function loadCssText(base) {
+      if (!CSS_BY_BASE.has(base)) {
+        const promise = fetch(`${base}lib/codemirror.min.css`).then((res) => {
+          if (!res.ok) throw new Error(`编辑器样式加载失败：HTTP ${res.status}`);
+          return res.text();
+        });
+        CSS_BY_BASE.set(base, promise);
+        promise.catch(() => CSS_BY_BASE.delete(base)); // 失败不缓存，允许重试
+      }
+      return CSS_BY_BASE.get(base);
+    }
+
+    /** @param {string} base */
+    function loadCodeMirror(base) {
+      if (!CM_BY_BASE.has(base)) {
+        const promise = (async () => {
+          if (window.CodeMirror) return window.CodeMirror;
+          for (const file of CM_FILES) await loadScript(base + file);
+          if (!window.CodeMirror) throw new Error('编辑器脚本没有注册 window.CodeMirror');
+          return window.CodeMirror;
+        })();
+        CM_BY_BASE.set(base, promise);
+        promise.catch(() => CM_BY_BASE.delete(base));
+      }
+      return CM_BY_BASE.get(base);
+    }
+
+    /**
+     * CM 的样式必须进本组件的 shadow root。插到最前面：组件自己的 <style> 后写，
+     * 主题覆盖才压得住 CM 的默认规则（adoptedStyleSheets 的优先级更高，但不参与这里的覆盖）。
+     * @param {ShadowRoot} root
+     * @param {string} css
+     */
+    function injectCss(root, css) {
+      if (root.querySelector('style[data-mc-code-editor]')) return;
+      const style = document.createElement('style');
+      style.dataset.mcCodeEditor = '';
+      style.textContent = css;
+      root.insertBefore(style, root.firstChild);
+    }
+
+    export default async ({ url }) => {
+      /* 组件自己的地址：vendor 相对它解析 —— CDN / 本地 / 子路径部署都对 */
+      const CM_BASE = new URL('./vendor/codemirror/', url).href;
+
+      return withEmits({
+        tag: 'mc-code-editor',
+
+        emits: {
+          input: { data: ['value'] },
+          change: { data: ['value'] },
+        },
+
+        attrs: {
+          /* 绑定通道：ofa 的 `:value`（单向）/ `sync:value`（双向）写的是这个属性；
+             真相仍是宿主 property value（读值走 el.value） */
+          value: null,
+          // HTML 里的初始值（kebab：default-value），只在挂载时读一次
+          defaultValue: '',
+          name: '',
+          /* 编辑器语言：html（含内联 js/css）、js、css、text；不认识的按 text 处理 */
+          language: 'html',
+          readonly: null,
+          disabled: null,
+          invalid: null,
+          // 内容自适应高度（输入 / 换行时把宿主高度设成内容高度）；不写就是固定高度
+          autoResize: null,
+        },
+
+        data: {
+          loading: false,
+        },
+
+        ready() {
+          this._editorHost = this.shadow.$('.mc-editor')?.ele ?? null;
+          this._fallback = this.shadow.$('.mc-fallback')?.ele ?? null;
+          this._value = '';
+          this._committed = '';
+          this._defaultApplied = false;
+          this._ready = false;
+          this._mounted = false;
+          this._cm = null;
+          this._loading = false;
+          this._muted = false;
+          this._fallbackActive = false;
+          this._loadSeq = 0;
+          this._fitRaf = 0;
+          this._heightSet = false;
+          this._ro = null;
+          this._io = null;
+          this._onForceLoad = () => this.ensureLoaded();
+
+          /* 规范 1.4：运行时读写走宿主 DOM property；改值不派发 input / change（那是使用者输入才有的） */
+          Object.defineProperty(this.ele, 'value', {
+            configurable: true,
+            get: () => this.getValue(),
+            set: (next) => this.setValue(next, { reflect: true }),
+          });
+
+          this._ready = true;
+          this.applyDefaultValue();
+          this.applyInitialValue();
+        },
+
+        attached() {
+          this._mounted = true;
+          this.applyDefaultValue();
+          this.applyInitialValue();
+          this.applyState();
+          this.initObservers();
+
+          /* 宿主上的全局式监听：懒加载的兜底（模板绑不了「整个宿主」），指针 / 焦点一到就加载 */
+          this.ele.addEventListener('focusin', this._onForceLoad);
+          this.ele.addEventListener('pointerdown', this._onForceLoad);
+
+          if (this.isVisible()) this.ensureLoaded();
+          else this.observeVisibility();
+        },
+
+        detached() {
+          this._mounted = false;
+          this._loadSeq += 1;
+          this._loading = false;
+          this.disconnectObservers();
+          this.disconnectVisibility();
+          this.ele.removeEventListener('focusin', this._onForceLoad);
+          this.ele.removeEventListener('pointerdown', this._onForceLoad);
+          this.destroyCm();
+          this.loading = false;
+        },
+
+        watch: {
+          /* 绑定写的是属性：数据变了铺进编辑器（相等就跳过，免得每次按键重置光标） */
+          value() {
+            this.applyBoundValue();
+          },
+          language() {
+            this.applyLanguage();
+          },
+          /* 这三个只改 CM 的 readOnly / CSS，收一次 */
+          readonly() {
+            this.applyState();
+          },
+          disabled() {
+            this.applyState();
+          },
+          invalid() {
+            this.applyState();
+          },
+          /* 开关 auto-resize：开 -> 按内容量高；关 -> 清掉脚本写的行内高度（applyState 里同时规范布尔属性） */
+          autoResize() {
+            this.applyState();
+          },
+        },
+
+        proto: {
+          /* ---------- 值：属性通道（初始 / 绑定）+ property（运行时） ---------- */
+
+          getValue() {
+            if (this._cm) return this._cm.getValue();
+            if (this._fallbackActive && this._fallback) return this._fallback.value;
+            return this._value ?? '';
+          },
+
+          setValue(next, { reflect = false } = {}) {
+            const value = next === null || next === undefined ? '' : String(next);
+            this._value = value;
+            if (this.getValue() !== value) {
+              if (this._cm) this.setCmValue(value);
+              else if (this._fallbackActive && this._fallback) this._fallback.value = value;
+              this._committed = value;
+              this.scheduleFit();
+            }
+            if (reflect) this.reflectBoundValue();
+          },
+
+          /** CM 的 setValue 会触发 change：静音，避免把程序写入当成使用者输入再发一遍 input */
+          setCmValue(value) {
+            if (!this._cm) return;
+            this._muted = true;
+            try {
+              this._cm.setValue(value);
+            } finally {
+              this._muted = false;
+            }
+          },
+
+          /** 初始值只认 default-value，而且只读一次（同 mc-textarea）：之后改它不覆盖运行时值 */
+          applyDefaultValue() {
+            if (this._defaultApplied) return;
+            const initial = this.ele.getAttribute('default-value');
+            if (initial === null || initial === '') return;
+            this._defaultApplied = true;
+            this._value = initial;
+            if (this._cm) this.setCmValue(initial);
+            else if (this._fallbackActive && this._fallback) this._fallback.value = initial;
+          },
+
+          /** `value` 属性在挂载前已经写好时，把它当运行时值铺进去（绑定通道的初始落点） */
+          applyInitialValue() {
+            const raw = this.ele.getAttribute('value');
+            if (raw === null || raw === this.getValue()) return;
+            this.setValue(raw);
+          },
+
+          /** 属性变了：铺进当前载体（CM / 降级 textarea / 待挂载的 _value） */
+          applyBoundValue() {
+            if (!this._ready) return;
+            const raw = this.ele.getAttribute('value');
+            if (raw === null || raw === this.getValue()) return;
+            this.setValue(raw);
+          },
+
+          /** 反向：输入后把当前值写回属性，让 ofa 的 sync:value 观察得到（双向的另一半） */
+          reflectBoundValue() {
+            const value = this.getValue();
+            if (this.ele.getAttribute('value') === value) return;
+            this.ele.setAttribute('value', value);
+          },
+
+          /* ---------- 状态 / 语言 ---------- */
+
+          /** 布尔属性按值读：ofa 的 :disabled="false" 会写成 disabled="false"，不能只看属性在不在 */
+          boolAttr(name) {
+            const raw = this.ele.getAttribute(name);
+            return raw !== null && raw !== 'false';
+          },
+
+          /** 规范化宿主上的布尔属性：CSS 的 :host([disabled]) / [invalid] 才判得准（P31：attached 之后写） */
+          normalizeBoolAttrs() {
+            if (!this._mounted) return;
+            for (const name of ['readonly', 'disabled', 'invalid', 'auto-resize']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
+
+          hasAutoResize() {
+            return this.boolAttr('auto-resize');
+          },
+
+          applyState() {
+            if (!this._mounted) return;
+            this.normalizeBoolAttrs();
+
+            const disabled = this.boolAttr('disabled');
+            const readonly = this.boolAttr('readonly');
+            if (this._fallback) {
+              this._fallback.disabled = disabled;
+              this._fallback.readOnly = readonly;
+            }
+            if (this._cm) this._cm.setOption('readOnly', disabled ? 'nocursor' : readonly);
+
+            if (this.hasAutoResize()) this.scheduleFit();
+            else this.clearFit();
+          },
+
+          /** language 属性缺失 / 空串按 html（不读 this.language：ready 时 attrs 还没铺进实例） */
+          currentLanguage() {
+            const raw = this.ele.getAttribute('language');
+            return raw === null || raw === '' ? 'html' : raw;
+          },
+
+          modeOf(language) {
+            return (
+              MODES[
+                String(language ?? '')
+                  .trim()
+                  .toLowerCase()
+              ] ?? null
+            );
+          },
+
+          applyLanguage() {
+            if (!this._cm) return;
+            this._cm.setOption('mode', this.modeOf(this.currentLanguage()));
+          },
+
+          /* ---------- 懒加载 / 挂载 / 降级 ---------- */
+
+          /** 宿主可见（有尺寸）才值得现在下 245 KB；收起的面板等 IO 叫醒 */
+          isVisible() {
+            const rect = this.ele.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+          },
+
+          observeVisibility() {
+            if (typeof IntersectionObserver !== 'function') {
+              this.ensureLoaded();
+              return;
+            }
+            this._io = new IntersectionObserver((entries) => {
+              if (!entries.some((entry) => entry.isIntersecting)) return;
+              this.disconnectVisibility();
+              this.ensureLoaded();
+            });
+            this._io.observe(this.ele);
+          },
+
+          disconnectVisibility() {
+            this._io?.disconnect();
+            this._io = null;
+          },
+
+          /** 唯一入口：同一实例同时只跑一轮；卸载 / 重新挂载用 _loadSeq 作废在飞的那轮 */
+          ensureLoaded() {
+            if (!this._mounted || this._cm || this._loading) return;
+            this._loading = true;
+            this.loading = true;
+            const sequence = ++this._loadSeq;
+
+            (async () => {
+              try {
+                const css = await loadCssText(CM_BASE);
+                if (!this.isCurrentLoad(sequence)) return;
+                if (!this.ele.shadowRoot) throw new Error('shadow root 已不存在');
+                injectCss(this.ele.shadowRoot, css);
+                const CodeMirror = await loadCodeMirror(CM_BASE);
+                if (!this.isCurrentLoad(sequence)) return;
+                this.mountCm(CodeMirror);
+              } catch (error) {
+                if (!this.isCurrentLoad(sequence)) return;
+                if (this._cm) this.destroyCm();
+                this.mountFallback(error);
+              } finally {
+                if (sequence === this._loadSeq) {
+                  this._loading = false;
+                  this.loading = false;
+                }
+              }
+            })();
+          },
+
+          isCurrentLoad(sequence) {
+            return this._mounted && sequence === this._loadSeq;
+          },
+
+          /** 第三方库运行时造节点：唯一一处不经过模板的可见结构（见文件顶部注释） */
+          mountCm(CodeMirror) {
+            if (!this._editorHost) throw new Error('缺少编辑器挂载点');
+
+            const cm = CodeMirror(this._editorHost, {
+              value: this._value,
+              mode: this.modeOf(this.currentLanguage()),
+              height: '100%',
+              lineNumbers: true,
+              matchBrackets: true,
+              autoCloseBrackets: true,
+              autoCloseTags: true,
+              lineWrapping: false,
+              indentUnit: 2,
+              tabSize: 2,
+              indentWithTabs: false,
+              viewportMargin: 20,
+              spellcheck: false,
+              extraKeys: {
+                /* Tab 插两个空格（有选区时整体缩进）；Esc 是键盘用户离开编辑器的出口 */
+                Tab: (editor) => {
+                  if (editor.somethingSelected()) editor.indentSelection('add');
+                  else editor.replaceSelection(' '.repeat(editor.getOption('indentUnit')));
+                },
+                'Shift-Tab': (editor) => editor.indentSelection('subtract'),
+                Esc: (editor) => editor.getInputField().blur(),
+                'Ctrl-/': 'toggleComment',
+                'Cmd-/': 'toggleComment',
+              },
+            });
+
+            this._cm = cm;
+            cm.on('change', () => this.onCmChange());
+            cm.on('focus', () => {
+              this._committed = cm.getValue();
+            });
+            cm.on('blur', () => this.onCmBlur());
+
+            this._value = cm.getValue();
+            this._committed = this._value;
+            this.applyState();
+            this.applyLanguage();
+            this.mountFallbackReset();
+
+            /* 抽屉刚展开时量到的宽度可能还是 0：下一帧再量一次 */
+            requestAnimationFrame(() => {
+              if (this._cm !== cm || !this._mounted) return;
+              cm.refresh();
+              this.scheduleFit();
+            });
+          },
+
+          /** CM 成功挂载时把降级痕拆掉（重新挂载 / 先降级后恢复都可能走到） */
+          mountFallbackReset() {
+            this._fallbackActive = false;
+            this.ele.removeAttribute('data-fallback');
+            this.loading = false;
+          },
+
+          /** 加载失败只降级不改契约：还是同一个 value property，还是 input / change 两个事件 */
+          mountFallback(error) {
+            console.warn(
+              '[mosaic] mc-code-editor 编辑器加载失败，已降级为普通文本框（代码照常可改）：',
+              error,
+            );
+            this._fallbackActive = true;
+            this.ele.setAttribute('data-fallback', '');
+            if (this._fallback) this._fallback.value = this._value;
+            this._committed = this._value;
+            this.applyState();
+            this.loading = false;
+          },
+
+          destroyCm() {
+            if (this._cm) {
+              this._cm.getWrapperElement()?.remove();
+              this._cm = null;
+            }
+            this._fallbackActive = false;
+            this.ele.removeAttribute('data-fallback');
+            this.clearFit();
+          },
+
+          /* ---------- CodeMirror / textarea 的事件 → 组件事件 ---------- */
+
+          /** 原生 input 是 composed：不拦的话宿主先收到一条没有 data 的事件（规范 §1.5） */
+          onCmNativeInput(event) {
+            event.stopPropagation();
+          },
+
+          onCmKeydown(event) {
+            /* 屏蔽浏览器「保存网页」：CM 的 keymap 不管这个组合，宿主这一层兜一下 */
+            if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 's') {
+              event.preventDefault();
+            }
+          },
+
+          onCmChange() {
+            if (!this._cm || this._muted) return;
+            const value = this._cm.getValue();
+            this._value = value;
+            this.reflectBoundValue();
+            this.$emit('input', { value });
+            this.scheduleFit();
+          },
+
+          onCmBlur() {
+            if (!this._cm) return;
+            const value = this._cm.getValue();
+            if (value === this._committed) return;
+            this._committed = value;
+            this.$emit('change', { value });
+          },
+
+          /* ---------- 降级 textarea 的同一套契约 ---------- */
+
+          onFallbackInput(event) {
+            event.stopPropagation();
+            if (!this._fallback) return;
+            const value = this._fallback.value;
+            this._value = value;
+            this.reflectBoundValue();
+            this.$emit('input', { value });
+            this.scheduleFit();
+          },
+
+          onFallbackChange() {
+            if (!this._fallback) return;
+            const value = this._fallback.value;
+            if (value === this._committed) return;
+            this._committed = value;
+            this.$emit('change', { value });
+          },
+
+          onFallbackKeydown(event) {
+            if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 's') {
+              event.preventDefault();
+              return;
+            }
+            if (event.key === 'Escape') this._fallback.blur();
+          },
+
+          /* ---------- 尺寸 ---------- */
+
+          initObservers() {
+            if (typeof ResizeObserver !== 'function' || !this._editorHost) return;
+            this._ro = new ResizeObserver(() => {
+              this._cm?.refresh();
+              this.scheduleFit();
+            });
+            this._ro.observe(this._editorHost);
+
+            /* 字体晚到会把行高量歪：等一次 fonts.ready 再量，量到的实例已经卸载就跳过 */
+            document.fonts?.ready?.then(() => {
+              if (!this._mounted) return;
+              this._cm?.refresh();
+              this.scheduleFit();
+            });
+          },
+
+          disconnectObservers() {
+            this._ro?.disconnect();
+            this._ro = null;
+            if (this._fitRaf) cancelAnimationFrame(this._fitRaf);
+            this._fitRaf = 0;
+          },
+
+          scheduleFit() {
+            if (!this._cm || !this._mounted || !this.hasAutoResize()) return;
+            if (this._fitRaf) return;
+            this._fitRaf = requestAnimationFrame(() => {
+              this._fitRaf = 0;
+              this.fitToContent();
+            });
+          },
+
+          /** 行为层例外（测量）：高度取决于内容布局，只能运行时量 sizer 再写宿主 style（同 mc-textarea 的 auto-resize） */
+          fitToContent() {
+            const cm = this._cm;
+            if (!cm || !this._mounted || !this.hasAutoResize()) return;
+            const sizer = cm.getWrapperElement()?.querySelector('.CodeMirror-sizer');
+            if (!sizer) return;
+            const height = Math.ceil(sizer.getBoundingClientRect().height);
+            if (!height) return;
+
+            const style = getComputedStyle(this.ele);
+            const border =
+              (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.borderBottomWidth) || 0);
+            const next = `${height + border}px`;
+            if (this.ele.style.height === next) return;
+            this.ele.style.height = next;
+            this._heightSet = true;
+            cm.refresh();
+          },
+
+          clearFit() {
+            if (this._fitRaf) cancelAnimationFrame(this._fitRaf);
+            this._fitRaf = 0;
+            if (!this._heightSet) return;
+            this.ele.style.removeProperty('height');
+            this._heightSet = false;
+          },
+        },
+      });
+    };
+  </script>
+</template>

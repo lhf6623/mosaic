@@ -1,0 +1,13 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-code-editor sync:value="code"></mc-code-editor>
+    <p class="text-sm">当前 {{ code.length }} 个字符</p>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-code-editor-controlled',
+      data: { code: '<p>改这里，外面跟着变</p>' },
+    });
+  </script>
+</template>

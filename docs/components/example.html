@@ -8,8 +8,9 @@
       普通例子是完整 HTML 页，点「运行」时用 iframe 跑（CDN 地址预览时映射到本地文件）；
       切换器用 mc-tabs 的 segmented + no-panel 档 —— 与工具栏的 mc-button 一起在 docs/layout.html 站点级注册。
   ⚠️ h3 / .doc-hint 仍必须写在页面里（doc-toc 只扫页面 shadow root），这里只负责排版。
-  ⚠️ 预览 / 编辑器是运行时按文件内容造的节点，模板写不出来 —— 见 docs/README §十的站点例外；
-      预览集中在 renderLive()，编辑器在 createEditor()，两处都注明了原因。
+  ⚠️ 预览是运行时按文件内容造的节点，模板写不出来 —— 见 docs/README §十的站点例外；
+      集中在 renderLive()，那里注明了原因。编辑器本身是框架组件 <mc-code-editor>（站点级注册），
+      这里是模板节点，不再由脚本挂载。
 -->
 <template component>
   <style>
@@ -103,46 +104,6 @@
       display: none;
     }
 
-    /* 编辑器盒：高度由 JS 按内容自适应（见 fitEditorHeight） */
-    .editor-host {
-      position: relative;
-      height: var(--doc-example-editor-h, 300px);
-      overflow: hidden;
-      border: 1px solid rgb(var(--mc-color-border));
-      border-radius: var(--mc-radius-md);
-      background-color: rgb(var(--mc-color-surface-code));
-    }
-
-    .editor-loading {
-      display: flex;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-sm);
-    }
-
-    .editor-loading[hidden] {
-      display: none;
-    }
-
-    .fallback-editor {
-      display: block;
-      box-sizing: border-box;
-      width: 100%;
-      height: 100%;
-      padding: var(--mc-space-2) var(--mc-space-3);
-      border: 0;
-      resize: none;
-      background: transparent;
-      color: rgb(var(--mc-color-fg));
-      font-family: var(--mc-font-mono);
-      font-size: var(--mc-text-sm);
-      line-height: 1.7;
-      tab-size: 2;
-      outline: none;
-    }
-
     .error {
       margin: var(--mc-space-2) 0 0;
       padding: var(--mc-space-2) var(--mc-space-3);
@@ -216,15 +177,17 @@
       <mc-tab value="ofa" name="ofa.js 例子"></mc-tab>
       <mc-tab value="plain" name="普通例子"></mc-tab>
     </mc-tabs>
-    <div class="editor-host" id="editor-host">
-      <div class="editor-loading" attr:hidden="!editorLoading">正在加载编辑器…</div>
-    </div>
+    <mc-code-editor
+      class="editor"
+      auto-resize
+      on:input="onEditorInput($event)"
+      on:change="onEditorChange($event)"
+      on:keydown="onEditorKeydown($event)"></mc-code-editor>
     <pre class="error" attr:hidden="!errorText">{{errorText}}</pre>
   </div>
 
   <script>
     import { compileDemo, loadDemoText } from '../lib/demo-runtime.mjs';
-    import { mountCodeEditor } from '../lib/code-editor.mjs';
 
     const COPY_FEEDBACK_MS = 3000;
 
@@ -232,19 +195,19 @@
     const CDN_RE =
       /https:\/\/(?:cdn|fastly|gcore|testingcf)\.jsdelivr\.net\/gh\/lhf6623\/mosaic@[^/]+\//g;
 
-    /* 主题信号全页只盯一份：实例集合 + 一个观察者（与旧演示组件同一套做法） */
-    const darkTargets = new Set();
+    /* 主题信号全页只盯一份：实例集合 + 一个观察者。编辑器自己跟 color-scheme，这里只管普通例子的 iframe */
+    const themeTargets = new Set();
     let themeObserver;
     let themeMq;
 
-    const syncAllDark = () => {
-      for (const target of darkTargets) target.syncDark();
+    const syncAllTheme = () => {
+      for (const target of themeTargets) target.syncFrameTheme();
     };
 
     const watchTheme = (target) => {
-      darkTargets.add(target);
+      themeTargets.add(target);
       if (!themeObserver) {
-        themeObserver = new MutationObserver(syncAllDark);
+        themeObserver = new MutationObserver(syncAllTheme);
         /* 主题写在文档根上，MutationObserver 是全局观察（docs/README §十：全局监听保留原生并注明原因） */
         themeObserver.observe(document.documentElement, {
           attributes: true,
@@ -252,17 +215,17 @@
         });
         themeMq = window.matchMedia?.('(prefers-color-scheme: dark)');
         /* MediaQueryList 不是元素，只能原生监听 */
-        themeMq?.addEventListener?.('change', syncAllDark);
+        themeMq?.addEventListener?.('change', syncAllTheme);
       }
-      target.syncDark();
+      target.syncFrameTheme();
     };
 
     const unwatchTheme = (target) => {
-      darkTargets.delete(target);
-      if (darkTargets.size) return;
+      themeTargets.delete(target);
+      if (themeTargets.size) return;
       themeObserver?.disconnect();
       themeObserver = undefined;
-      themeMq?.removeEventListener?.('change', syncAllDark);
+      themeMq?.removeEventListener?.('change', syncAllTheme);
       themeMq = undefined;
     };
 
@@ -284,9 +247,8 @@
         plainAvailable: false, // 有没有普通例子可切
         loaded: false, // 源文件是否读完（读完后按钮才可用）
         copyState: '', // '' | 'copied' | 'failed'，复制按钮的临时反馈
-        errorText: '', // 编辑器 / 编译错误
+        errorText: '', // 编译错误
         previewError: '', // 预览加载失败
-        editorLoading: false, // 编辑器首次加载中
       },
 
       watch: {
@@ -300,24 +262,17 @@
 
       ready() {
         this._live = this.shadow.$('.live');
-        this._editorHost = this.shadow.$('#editor-host');
+        /* 编辑器是模板里的框架组件；属性通道在它升级前也安全（早写 property 会被自己的属性遮住） */
+        this._editorEl = this.shadow.$('.editor')?.ele ?? null;
         this._envTabs = this.shadow.$('.envs')?.ele ?? null; // 模式切换器（mc-tabs）
 
         this._sources = {};
         this._drafts = {};
         this._runSeq = 0;
         this._loadToken = 0;
-        this._fitRaf = 0;
         this._firstCompile = true;
         this._frame = undefined;
         this._frameRo = undefined;
-
-        this._onResize = () => {
-          this._editor?.refresh();
-          this.scheduleFit();
-        };
-        /* 窗口 resize 是全局事件，模板绑不到，保留原生监听 */
-        window.addEventListener('resize', this._onResize);
 
         watchTheme(this);
         this._mounted = true;
@@ -327,13 +282,9 @@
       detached() {
         this._mounted = false;
         clearTimeout(this._copyTimer);
-        cancelAnimationFrame(this._fitRaf);
-        window.removeEventListener('resize', this._onResize);
         unwatchTheme(this);
         this.teardownFrame();
-        this._editor?.destroy();
-        this._editor = undefined;
-        this._editorPromise = undefined;
+        this._editorEl = null;
       },
 
       proto: {
@@ -391,7 +342,7 @@
             this.env = 'ofa'; // 默认看 ofa.js 例子；普通例子在代码区切换
             this.plainAvailable = !!plainText;
             this.syncEnvTabs(); // 重新读源会把视图拨回 ofa.js，切换器要跟着回位
-            if (this._editor) this._editor.setValue(this._drafts[this.env]);
+            this.setEditorValue(this._drafts[this.env]);
             this.loaded = true;
             await this.renderLive();
           } catch (error) {
@@ -559,15 +510,31 @@
           this.previewError = '示例加载失败：' + message;
         },
 
-        /** 把编辑器里的当前文本存回对应视图（关代码区 / 切视图 / 运行前都调） */
-        saveDraft() {
-          if (this._editor) this._drafts[this.env] = this._editor.getValue();
-        },
-
         async run() {
           if (!this._sources.ofa) return;
-          this.saveDraft();
           await this.renderLive();
+        },
+
+        /** 输入事件里已经把 _drafts 更新了；这里只负责把值铺回组件（属性通道在组件升级前也安全） */
+        setEditorValue(text) {
+          this._editorEl?.setAttribute('value', text ?? '');
+        },
+
+        onEditorInput(event) {
+          if (!this._drafts) return;
+          this._drafts[this.env] = event.data.value;
+        },
+
+        onEditorChange(event) {
+          if (!this._drafts) return;
+          this._drafts[this.env] = event.data.value;
+        },
+
+        /** 编辑器不吞 Ctrl/Cmd+Enter：这里接「运行」 */
+        onEditorKeydown(event) {
+          if (!(event.ctrlKey || event.metaKey) || event.key !== 'Enter') return;
+          event.preventDefault();
+          this.run();
         },
 
         /** 重新运行 = 丢掉编辑、回到文件原文再跑一遍 */
@@ -577,13 +544,12 @@
             ofa: this._sources.ofa.text,
             plain: this._sources.plain?.text ?? '',
           };
-          if (this._editor) this._editor.setValue(this._drafts[this.env]);
-          this.scheduleFit();
+          this.setEditorValue(this._drafts[this.env]);
           await this.renderLive();
         },
 
         async copy() {
-          const text = this._editor?.getValue() ?? this._drafts[this.env] ?? '';
+          const text = this._drafts[this.env] ?? '';
           if (!text) return;
           try {
             await navigator.clipboard.writeText(text);
@@ -627,60 +593,18 @@
           return 'copy';
         },
 
-        /** 代码图标：图标本身不切换，只开 / 合代码区 */
-        async toggleCode() {
-          const open = !this.codeOpen;
-          if (!open) this.saveDraft();
-          this.codeOpen = open;
-          if (open) {
-            await this.mountEditor();
-            this.scheduleFit();
-          }
-        },
-
-        async mountEditor() {
-          if (this._editor) return;
-          if (this._editorPromise) {
-            await this._editorPromise;
-            return;
-          }
-          this._editorPromise = this.createEditor().catch((error) => {
-            this._editorPromise = undefined;
-            this.showError(error);
-          });
-          await this._editorPromise;
-        },
-
-        /** 例外：编辑器不是模板节点，由 code-editor.mjs 运行时挂到容器上（docs/README §十） */
-        async createEditor() {
-          this.editorLoading = true;
-          let editor;
-          try {
-            editor = await mountCodeEditor(this._editorHost.ele, {
-              value: this._drafts[this.env] ?? '',
-              onChange: () => this.saveDraft(),
-              onRun: () => this.run(),
-              onFold: () => this.scheduleFit(),
-            });
-          } finally {
-            this.editorLoading = false;
-          }
-          if (!this._mounted) {
-            editor.destroy();
-            return;
-          }
-          this._editor = editor;
-          this.scheduleFit();
+        /** 代码图标：图标本身不切换，只开 / 合代码区（编辑器首次可见时才由它自己加载 CM） */
+        toggleCode() {
+          this.codeOpen = !this.codeOpen;
+          if (this.codeOpen) this.setEditorValue(this._drafts[this.env]);
         },
 
         /** 切代码视图：只换编辑器文本，不自动运行（运行仍由「运行」按钮触发） */
         setEnv(env) {
           if (env === this.env) return;
-          this.saveDraft();
           this.env = env;
           this.syncEnvTabs();
-          if (this._editor) this._editor.setValue(this._drafts[env] ?? '');
-          this.scheduleFit();
+          this.setEditorValue(this._drafts[env] ?? '');
         },
 
         /** mc-tabs 的值是运行时 property（不反射属性）：脚本把视图拨回去时，切换器跟着回位 */
@@ -690,26 +614,6 @@
           tabs.value = this.env;
         },
 
-        scheduleFit() {
-          if (this._fitRaf) return;
-          this._fitRaf = requestAnimationFrame(() => {
-            this._fitRaf = 0;
-            this.fitEditorHeight();
-          });
-        },
-
-        fitEditorHeight() {
-          const host = this._editorHost?.ele;
-          const editor = this._editor;
-          if (!host || !editor) return;
-          const content = Math.ceil(editor.getContentHeight());
-          if (!content) return;
-          const next = content + 2 + 'px';
-          if (host.style.height === next) return;
-          host.style.height = next;
-          editor.refresh();
-        },
-
         showError(error) {
           this.errorText = error instanceof Error ? error.message : String(error);
           console.warn('[mosaic] doc-example 示例编译失败：', error);
@@ -717,18 +621,6 @@
 
         hideError() {
           this.errorText = '';
-        },
-
-        /** 亮暗：读 color-scheme（令牌层切主题就是切它，且继承、穿得进 shadow root） */
-        syncDark() {
-          const scheme = (getComputedStyle(this.ele).colorScheme || '').toLowerCase();
-          const dark = scheme.includes('dark')
-            ? true
-            : scheme.includes('light')
-              ? false
-              : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
-          this.ele.toggleAttribute('data-dark', dark);
-          this.syncFrameTheme();
         },
       },
     });

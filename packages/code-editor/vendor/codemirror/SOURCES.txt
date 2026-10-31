@@ -1,0 +1,30 @@
+CodeMirror 5.65.20 (MIT)
+https://github.com/codemirror/codemirror5 · https://www.npmjs.com/package/codemirror/v/5.65.20
+
+mc-code-editor 的编辑器内核。只搬运行必需的几份，全部来自 jsDelivr 的 npm 包
+（.min.js / .min.css 是 jsDelivr 用 Terser 生成的压缩版）：
+
+  lib/codemirror.min.js / lib/codemirror.min.css
+  mode/xml/xml.min.js
+  mode/javascript/javascript.min.js
+  mode/css/css.min.js
+  mode/htmlmixed/htmlmixed.min.js
+  addon/edit/closebrackets.min.js
+  addon/edit/closetag.min.js
+  addon/edit/matchbrackets.min.js
+  addon/comment/comment.min.js
+  addon/fold/xml-fold.min.js
+  LICENSE
+
+为什么随组件 vendor 而不是运行时从 CDN 取：编辑器是「点开 / 滚到就要用」的东西，
+首开走 CDN 要等好几秒（实测 jsDelivr 单文件 1–5s）；这些文件总共约 245 KB（gzip 约 83 KB），
+组件自己按需懒加载，使用者只在真的用到 mc-code-editor 时才下。
+
+刻意没搬：折叠（addon/fold 里除 xml-fold 外的几份）与补全 / 提示（addon/hint/*、show-hint.css）——
+v1 的 API 不收这几个开关，编辑器只做「改一段代码」这件事。xml-fold 是唯一留下的 fold addon：
+closetag 的自动闭合要用它提供 CodeMirror.scanForClosingTag，不是折叠功能。
+需要时再补文件 + 在 code-editor.html 的 CM_FILES 里加一行，并把对应行为接上。
+
+jsDelivr 的压缩产物末尾带 `//# sourceMappingURL=/sm/*.map`（CSS 是 `/*# ... */`），
+但 map 文件没有 vendor —— DevTools 打开编辑器时会因此报一串 404。这些注释已统一删掉；
+将来替换 / 新增 vendor 文件时，记得同样删掉那一行。

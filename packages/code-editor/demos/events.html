@@ -1,0 +1,24 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-code-editor
+      default-value="&lt;p&gt;在这里打字&lt;/p&gt;"
+      on:input="onInput($event)"
+      on:change="onChange($event)"></mc-code-editor>
+    <p class="text-sm">input {{ inputCount }} 次 · change 最近一次：{{ lastChange }}</p>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-code-editor-events',
+      data: { inputCount: 0, lastChange: '—' },
+      proto: {
+        onInput() {
+          this.inputCount += 1;
+        },
+        onChange(event) {
+          this.lastChange = event.data.value;
+        },
+      },
+    });
+  </script>
+</template>

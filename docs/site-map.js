@@ -272,6 +272,15 @@ export const SITE = [
             summary: '多行输入框。支持自动增高与字数统计。',
           },
           {
+            order: 25,
+            label: 'Code Editor',
+            zh: '代码编辑',
+            path: 'packages/code-editor/page.html',
+            type: 'component',
+            summary:
+              '代码编辑器。轻量 HTML / JS / CSS 编辑：语法高亮 + 行号，值按表单控件那套读（value / input / change）；CodeMirror 随组件懒加载，失败降级成普通文本框。',
+          },
+          {
             order: 30,
             label: 'Checkbox',
             zh: '复选框',

@@ -557,7 +557,8 @@ export default async () =>
 两条口径，改代码前先过一遍 —— 它们决定了「这行 JS 该不该存在」。
 
 **① 节点操作本身是允许的，判据是「场景」，不是「碰没碰 DOM」。** 可见结构只有一个渲染源 = 模板；
-只有模板表达不了的才进脚本（测量 / 滚动 / 焦点 / 插槽内容判定 / 表单转发 / 写宿主 CSS 变量），
+只有模板表达不了的才进脚本（测量 / 滚动 / 焦点 / 插槽内容判定 / 表单转发 / 写宿主 CSS 变量 /
+第三方库自己的挂载点——如 `mc-code-editor` 把 CodeMirror 挂进 shadow root），
 而且必须走 ofa 的 API：
 
 | 要干的事           | 用这个                                    | 不用这个                                |
@@ -624,6 +625,7 @@ export default async () =>
 | [Empty](./empty/api.md)               | `mc-empty`                             | `empty/`       | ✅ 已实现 |
 | [Input](./input/api.md)               | `mc-input`                             | `input/`       | ✅ 已实现 |
 | [Textarea](./textarea/api.md)         | `mc-textarea`                          | `textarea/`    | ✅ 已实现 |
+| [Code Editor](./code-editor/api.md)   | `mc-code-editor`                       | `code-editor/` | ✅ 已实现 |
 | [Checkbox](./checkbox/api.md)         | `mc-checkbox`                          | `checkbox/`    | ✅ 已实现 |
 | [Radio](./radio/api.md)               | `mc-radio` / `mc-radio-group`          | `radio/`       | ✅ 已实现 |
 | [Switch](./switch/api.md)             | `mc-switch`                            | `switch/`      | ✅ 已实现 |

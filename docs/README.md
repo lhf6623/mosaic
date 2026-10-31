@@ -47,8 +47,8 @@
 - 加规则前先问一句：**是不是只有一个页面在用？** 是就写回那个页面。
 - `docs/content.css` 是给「站点页 + 组件文档页」共用的正文样式准备的；`.doc-demo` 只服务组件
   文档页（卡片外壳）。宽屏分列的流式容器是 `<doc-demos>`（`docs/components/demos.html`，左右位置在
-  组件脚本里算）。示例内部的预览、编辑抽屉、编辑器样式都住在 `doc-example` 自己的 shadow root 里；
-  页面不再有演示代码面板的样式。
+  组件脚本里算）。示例内部的预览、编辑抽屉样式住在 `doc-example` 自己的 shadow root 里；
+  编辑器本身是框架组件 `mc-code-editor`，外观住在它自己的 shadow root；页面不再有演示代码面板的样式。
 
 ## 三、行内样式：只有三类例外
 
@@ -111,8 +111,7 @@ docs/
   components/           站点组件（见上一节）
   pages/                站点页（清单与分组见 site-map.js）
   snippets/             可复制的片段（quick-start.html 等）
-  lib/                  站点内部工具（版本源 / md-spec 渲染器 / 示例运行时编译 / 代码编辑器）
-  vendor/               第三方只读资产（CodeMirror，编辑示例用；provenance 见 codemirror/SOURCES.txt）
+  lib/                  站点内部工具（版本源 / md-spec 渲染器 / 示例运行时编译）
 ```
 
 ## 七、最少代码：抽组件的阈值
@@ -149,10 +148,12 @@ docs/
 组件接口口径见 [`packages/README.md`](../packages/README.md) §五；站点文件另外守这几条：
 
 - **模板是唯一渲染源**：可见结构写模板，脚本只做模板表达不了的行为（测量 / 滚动 / 焦点 /
-  popover / 拖拽 / 编辑器 / 解析 Markdown / 随机装饰）。例外集中在一个方法里，注释「为什么不能
+  popover / 拖拽 / 解析 Markdown / 随机装饰）。例外集中在一个方法里，注释「为什么不能
   模板化」——现有三处：`docs/components/spec.html`（运行时渲染 `api.md`）、
   `docs/components/block-field.html`（随机装饰方块）、
-  `docs/components/example.html`（编译 demo + 普通例子 iframe + 挂编辑器）。
+  `docs/components/example.html`（编译 demo + 普通例子 iframe）。
+  编辑器本身不是站点例外：它是框架组件 `<mc-code-editor>`，CodeMirror 的挂载收在组件自己的
+  `packages/code-editor/` 里（见 `packages/README.md` §1.9）。
 - **指令只属于 ofa 模板**：`{{}}` 只放文本节点；HTML 属性 / 布尔属性用 `attr:`（不用 `:disabled` /
   `:checked`）；组件属性用 `:` / `sync:`；类用 `class:`；样式用 `:style.`。
 - **列表与条件**：`o-fill`（有唯一键带 `fill-key`）+ `o-if`；`o-fill` 内用 `$data` / `$index` /

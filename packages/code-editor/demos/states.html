@@ -1,0 +1,10 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-code-editor readonly default-value="&lt;p&gt;只读：可以选中和复制&lt;/p&gt;"></mc-code-editor>
+    <mc-code-editor disabled invalid default-value="&lt;p&gt;禁用 + 校验失败&lt;/p&gt;"></mc-code-editor>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-code-editor-states' });
+  </script>
+</template>

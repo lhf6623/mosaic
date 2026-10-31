@@ -60,6 +60,16 @@ const COMPONENT_RAW_LIMITS = new Map([
   ['packages/date-picker/date-picker.html', 49 * 1024],
 ]);
 
+/**
+ * 组件随包发布的第三方资产（不是 .html 本体，所以不套上面的单文件上限）。
+ * 只列真的会进使用者浏览器的目录；数值同样必须显式写在这里。
+ */
+const COMPONENT_ASSET_LIMITS = [
+  // CodeMirror 5：core + mode（xml / js / css / htmlmixed）+ 4 个 edit / comment addon + xml-fold，10 个 js + 1 个 css
+  // 2026-10 从文档站 docs/vendor 搬进来，raw 247.8 KB / gzip 84.3 KB
+  { dir: 'packages/code-editor/vendor/codemirror', raw: 250 * 1024, gzip: 88 * 1024 },
+];
+
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 const problems = [];
 const rows = [];
@@ -98,9 +108,44 @@ for (const entry of readdirSync(join(ROOT, 'packages'), { withFileTypes: true })
 }
 bodies.sort((a, b) => b[1] - a[1]);
 
+/** 目录里 js / css 全部加起来（LICENSE / SOURCES.txt 不算使用者的字节） */
+const assetRows = [];
+for (const item of COMPONENT_ASSET_LIMITS) {
+  let raw = 0;
+  let gzip = 0;
+  const walk = (dir) => {
+    for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+      const rel = dir + '/' + entry.name;
+      if (entry.isDirectory()) {
+        walk(rel);
+        continue;
+      }
+      if (!/\.(?:js|css)$/.test(entry.name)) continue;
+      const buf = readFileSync(join(ROOT, rel));
+      raw += buf.length;
+      gzip += gzipSync(buf).length;
+    }
+  };
+  try {
+    walk(item.dir);
+  } catch {
+    problems.push(item.dir + '：读不到 —— 资产是不是没搬进来？');
+    continue;
+  }
+  assetRows.push([item.dir, kb(raw) + ' / ' + kb(gzip), kb(item.raw) + ' / ' + kb(item.gzip)]);
+  if (raw > item.raw) problems.push(item.dir + '：raw ' + kb(raw) + '，超预算 ' + kb(item.raw));
+  if (gzip > item.gzip)
+    problems.push(item.dir + '：gzip ' + kb(gzip) + '，超预算 ' + kb(item.gzip));
+}
+
 console.log('\n[mosaic] 体积预算（raw / gzip）');
 for (const row of rows) {
   console.log('  ' + row[0].padEnd(40) + row[1].padStart(18) + '   预算 ' + row[2]);
+}
+for (const row of assetRows) {
+  console.log(
+    '  ' + row[0].padEnd(40) + row[1].padStart(18) + '   预算 ' + row[2] + '（目录合计）',
+  );
 }
 console.log(
   '\n  组件本体单文件上限 ' +

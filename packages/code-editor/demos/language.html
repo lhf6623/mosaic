@@ -1,0 +1,10 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <mc-code-editor language="js" default-value="const answer = 42;"></mc-code-editor>
+    <mc-code-editor language="css" default-value=".card { color: red; }"></mc-code-editor>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-code-editor-language' });
+  </script>
+</template>
