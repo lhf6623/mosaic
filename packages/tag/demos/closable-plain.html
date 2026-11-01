@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；反馈文字的样式来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/tag/tag.html"></l-m>
+
+    <mc-space block wrap-items>
+      <mc-tag closable color="primary">设计</mc-tag>
+      <mc-tag closable color="info">前端</mc-tag>
+      <mc-tag closable>日常</mc-tag>
+      <mc-tag closable disabled>禁用（× 也点不动）</mc-tag>
+    </mc-space>
+
+    <p class="mt-3 text-sm text-muted">
+      点 × 移除；最近一次
+      <code>close</code>
+      ：
+      <strong id="last-closed">（还没关过）</strong>
+    </p>
+
+    <script>
+      const lastClosed = document.getElementById('last-closed');
+
+      // close 冒泡 + composed：挂一次就能收全部标签，不用逐个绑
+      document.addEventListener('close', (event) => {
+        lastClosed.textContent = event.target.textContent.trim();
+        event.target.remove(); // 组件只发事件，删不删 DOM 是使用者的事
+      });
+    </script>
+  </body>
+</html>
