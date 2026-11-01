@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/tabs/tabs.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/tabs/tab.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-tabs id="tabs" default-value="a">
+        <mc-tab value="a" name="标签 A">面板 A</mc-tab>
+        <mc-tab value="b" name="标签 B">面板 B</mc-tab>
+        <mc-tab value="c" name="标签 C">面板 C</mc-tab>
+      </mc-tabs>
+      <mc-space>
+        <mc-button size="sm" data-pick="a">切到 A</mc-button>
+        <mc-button size="sm" data-pick="b">切到 B</mc-button>
+        <mc-button size="sm" data-pick="c">切到 C</mc-button>
+      </mc-space>
+    </mc-space>
+
+    <script>
+      /* 运行时切换激活项：读写成宿主 property value（default-value 只管初始值） */
+      const tabs = document.getElementById('tabs');
+      for (const button of document.querySelectorAll('[data-pick]')) {
+        button.addEventListener('click', () => {
+          tabs.value = button.dataset.pick;
+        });
+      }
+    </script>
+
+  </body>
+</html>

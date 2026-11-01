@@ -1649,6 +1649,8 @@
       "packages/tabs/demos/part.html",
       "packages/tabs/demos/scroll-nav.html",
       "packages/tabs/demos/segmented.html",
+      "packages/tabs/demos/value-plain.html",
+      "packages/tabs/demos/value.html",
       "packages/tabs/page.html",
       "packages/tabs/tab.html",
       "packages/tabs/tabs.html",
@@ -5886,6 +5888,12 @@
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/demos/segmented.html": [
+      "packages/tabs/test/tabs.test.mjs"
+    ],
+    "packages/tabs/demos/value-plain.html": [
+      "packages/tabs/test/tabs.test.mjs"
+    ],
+    "packages/tabs/demos/value.html": [
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/page.html": [

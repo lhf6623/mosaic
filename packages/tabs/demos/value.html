@@ -1,0 +1,30 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 受控写法：:value 把数据铺进组件，change 把用户点击写回数据 -->
+    <mc-tabs :value="active" default-value="a" on:change="active = $event.data.value">
+      <mc-tab value="a" name="标签 A">面板 A</mc-tab>
+      <mc-tab value="b" name="标签 B">面板 B</mc-tab>
+      <mc-tab value="c" name="标签 C">面板 C</mc-tab>
+    </mc-tabs>
+    <mc-space>
+      <mc-button size="sm" on:click="pick('a')">切到 A</mc-button>
+      <mc-button size="sm" on:click="pick('b')">切到 B</mc-button>
+      <mc-button size="sm" on:click="pick('c')">切到 C</mc-button>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-tabs-value',
+
+      data: { active: 'b' },
+
+      /* 数据 → 组件走 :value；组件 → 数据走 change（两者都写同一个 active，就是受控） */
+      proto: {
+        pick(value) {
+          this.active = value;
+        },
+      },
+    });
+  </script>
+</template>

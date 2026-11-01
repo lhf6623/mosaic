@@ -175,6 +175,8 @@
   <!-- 标签条外壳：左右是滚动导航插槽（prefix / suffix），中间是可滚动的标签条。
        溢出时导航才出现（attr:hidden）；到边的那侧禁用内置箭头而不是隐藏（is-edge：淡出 + disabled），
        占位一直在，轨道宽度不随滚动抖动；页面塞的自定义内容不跟着禁用。
+       滚动只在带 data-scroll="prev|next" 的元素上触发（内置箭头也走这条路）——
+       插槽里没标记的内容点了一点反应都没有，不存在「看起来能点其实没用」。
        默认箭头按钮与插槽并列而不是塞进 slot 当默认内容 —— 页面给了同名插槽内容时
        由 slotchange 挂 has-custom 隐藏默认按钮（named slot 的 fallback 在 ofa 里不可靠，实测）。 -->
   <div class="mc-shell">
@@ -189,6 +191,7 @@
         type="button"
         aria-label="向前滚动"
         title="向前滚动"
+        data-scroll="prev"
         attr:disabled="!canStart">
         <span class="mc-nav-icon mc-icon-chevron-left" aria-hidden="true"></span>
       </button>
@@ -209,6 +212,7 @@
         type="button"
         aria-label="向后滚动"
         title="向后滚动"
+        data-scroll="next"
         attr:disabled="!canEnd">
         <span class="mc-nav-icon mc-icon-chevron-right" aria-hidden="true"></span>
       </button>
@@ -232,8 +236,12 @@
         },
 
         attrs: {
-          // 初始值走 default-value；运行时值走宿主 property value（规范 1.4），value 不是 attrs 键
+          // 初始值走 default-value；运行时值走宿主 property value（规范 1.4）
           defaultValue: '',
+          /* ofa 的绑定通道：模板里的 `:value="x"` 写的就是这个键（和 mc-input 同一套做法）。
+             它只是「数据 → 组件」那半边，运行时读写仍然走宿主 property；两条通道都收敛到 this._value。
+             默认 null = 没人绑过，别把 default-value 顶掉 */
+          value: null,
           // 外观档：line（默认，下划线标签）/ segmented（分段切换器，见 README 与 api.md）
           variant: 'line',
           // 布尔：存在即真。有些地方只要一颗分段切换器，不要面板区（P1：布尔默认值必须是 null）
@@ -256,9 +264,17 @@
           this._panelHost = this.shadow.$('.mc-panel')?.ele ?? null;
           this._panels = new Map(); // mc-tab → 容器生成的 panel 包装节点
 
-          /* 左右滚动导航：点击由外壳接管（默认箭头与自定义插槽内容都算），滚一屏的 80% */
-          this.shadow.$('.mc-nav.is-start')?.on('click', () => this.scrollByStep(-1));
-          this.shadow.$('.mc-nav.is-end')?.on('click', () => this.scrollByStep(1));
+          /* 左右滚动：点击走委托（见 handleClick），只认带 data-scroll 的元素 —— 内置箭头也带这个属性，
+             所以「点箭头」和「点页面自己的按钮」是同一条路，没有第二套绑定 */
+          this._scrollByStep = this.scrollByStep.bind(this);
+
+          /* 公开方法 scrollByStep(dir)：宿主 property，供外部按钮 / 下拉菜单调（ofa 不会把组件方法
+             挂到元素上，得自己接一下；和上面的 value 一样用 defineProperty）。先存内部引用再覆盖，
+             万一 this 与 this.ele 是同一个代理也不会自激 */
+          Object.defineProperty(this.ele, 'scrollByStep', {
+            configurable: true,
+            value: (dir) => this._scrollByStep(dir),
+          });
 
           /* 自定义导航内容替换默认箭头：slotchange 看 assignedNodes 写进 data（class:has-custom 绑定），
              不用 classList 直改 —— ofa 重渲染会按模板重写 class 串，直改的类会被抹掉 */
@@ -323,6 +339,14 @@
           defaultValue() {
             // 首次触发落在构造期（P5）；property 写过值就不再跟随初始值
             if (this._mounted && this._value === undefined) this.applyState();
+          },
+
+          /* 绑定通道（模板 `:value="x"`）：null = 没绑过，别动 default-value 那条路；
+             构造期也可能触发（P5），所以先记账，挂载与否都能拿到最新值 */
+          value(next) {
+            if (next == null) return;
+            this._value = String(next);
+            if (this._mounted) this.applyState();
           },
 
           noPanel() {
@@ -525,16 +549,28 @@
             this.canEnd = overflow && list.scrollLeft + list.clientWidth < list.scrollWidth - 1;
           },
 
-          /** 点击左右导航滚一屏的 80%；自定义插槽内容的点击也落到这（外壳统一接管） */
+          /** 滚一屏的 80%（也对外暴露成宿主方法，见 ready 里的 defineProperty） */
           scrollByStep(dir) {
             const list = this._list;
             if (!list) return;
             list.scrollBy({ left: dir * list.clientWidth * 0.8, behavior: 'smooth' });
           },
 
-          /** 点击标签（原生 click 自带 composed，穿得出 mc-tab 的 shadow） */
+          /** 点击：先看有没有 data-scroll（滚动委托），再看是不是点了某一颗标签。
+              原生 click 自带 composed，穿得出 mc-tab / 插槽内容的 shadow */
           handleClick(event) {
             const path = event.composedPath();
+
+            /* 滚动委托：只认带 data-scroll="prev|next" 的元素 —— 插槽里其它东西一概不碰，
+               页面想接管自己的按钮就什么都不用写（不加属性即可），不需要懂 stopPropagation */
+            const scroller = path.find(
+              (node) => node instanceof Element && node.hasAttribute('data-scroll'),
+            );
+            if (scroller) {
+              this._scrollByStep(scroller.getAttribute('data-scroll') === 'prev' ? -1 : 1);
+              return;
+            }
+
             const tab = this.tabList().find((item) => path.includes(item));
             if (!tab || tab.hasAttribute('disabled')) return;
             this.activate(tab.getAttribute('value') ?? '', tab);

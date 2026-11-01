@@ -219,6 +219,32 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(byProp),
   );
 
+  /* ---------- value 绑定通道：模板 :value 写的就是这个属性（property 写不回声到属性） ---------- */
+  const byChannel = await page.evaluate(async () => {
+    const tabs = document.querySelector('#p-tabs');
+    tabs.setAttribute('value', 'a'); // 绑定通道：属性 → 组件
+    await new Promise((r) => setTimeout(r, 50));
+    const read = tabs.value;
+    tabs.value = 'b'; // 运行时 property：直接切，不动属性
+    await new Promise((r) => setTimeout(r, 50));
+    return {
+      read,
+      afterProp: tabs.value,
+      attr: tabs.getAttribute('value'),
+      selected: [...tabs.querySelectorAll('mc-tab')].map((tab) => tab.hasAttribute('selected')),
+      changes: window.__tabsChanges.slice(),
+    };
+  });
+  check(
+    'value 绑定通道：写 value 属性切换激活项；运行时写 property 不回声到属性、不发 change',
+    byChannel.read === 'a' &&
+      byChannel.afterProp === 'b' &&
+      byChannel.attr === 'a' &&
+      JSON.stringify(byChannel.selected) === JSON.stringify([false, true, false]) &&
+      JSON.stringify(byChannel.changes) === JSON.stringify(['a']),
+    JSON.stringify(byChannel),
+  );
+
   /* ---------- 键盘：方向键移动并激活，跳过禁用项，Home / End 到头尾 ---------- */
   await page.locator('#p-tab-b button').focus();
   await page.keyboard.press('ArrowRight');
@@ -515,15 +541,17 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(overflow),
   );
 
-  /* ---------- 溢出导航：默认左右箭头，prefix / suffix 插槽可替换，点击滚动 ---------- */
+  /* ---------- 溢出导航：默认左右箭头；插槽内容显式 data-scroll 才委托滚动 ---------- */
   const navProbe = await page.evaluate(async () => {
     const host = document.createElement('div');
     host.className = 'tabs-nav-probe';
     host.style.width = '180px';
-    /* 标签取中等宽度：明显放不下一屏（触发溢出），又明显窄于一屏（不踩「比可视区还宽」的边界） */
+    /* 标签取中等宽度：明显放不下一屏（触发溢出），又明显窄于一屏（不踩「比可视区还宽」的边界）。
+       prefix 里放两颗：一颗没标记（不该触发滚动）、一颗带 data-scroll="prev"（触发）。 */
     host.innerHTML =
       '<mc-tabs id="p-tabs-nav" default-value="a">' +
-      '<span slot="prefix" id="p-nav-custom">«自定义</span>' +
+      '<span slot="prefix" id="p-nav-custom">«</span>' +
+      '<span slot="prefix" id="p-nav-scroll" data-scroll="prev">‹</span>' +
       ['一', '二', '三', '四', '五', '六']
         .map((n, i) => `<mc-tab value="t${i}" name="第${n}个标签">面板 ${n}</mc-tab>`)
         .join('') +
@@ -572,18 +600,28 @@ export default async function run({ page, visit, check }) {
       /* 不溢出的那颗：导航整侧隐藏 */
       fitNavHidden: fitTabs.shadowRoot.querySelector('.mc-nav.is-start').hidden,
     };
-    /* 点右侧默认箭头 → 向后滚 */
+    /* 点右侧默认箭头 → 向后滚（内置箭头自己也带 data-scroll，走同一条委托） */
     endNav.querySelector('.mc-nav-btn').click();
     await waitScrollSettled();
     const scrolled = {
       scrollLeft: Math.round(list.scrollLeft),
       startEdgeAfter: startNav.classList.contains('is-edge'),
     };
-    /* 点自定义插槽内容 → 同样触发滚动（外壳统一接管；light DOM 上的点击冒泡穿透 slot） */
-    const before = Math.round(list.scrollLeft);
+    /* 点插槽里没标记的内容 → 一点都不滚（默认不接管，不靠 stopPropagation 退出） */
+    const plainBefore = Math.round(list.scrollLeft);
     tabs.querySelector('#p-nav-custom').click();
     await waitScrollSettled();
-    const customClick = { before, after: Math.round(list.scrollLeft) };
+    const plainClick = { before: plainBefore, after: Math.round(list.scrollLeft) };
+    /* 点插槽里带 data-scroll="prev" 的内容 → 往回滚 */
+    const markedBefore = Math.round(list.scrollLeft);
+    tabs.querySelector('#p-nav-scroll').click();
+    await waitScrollSettled();
+    const markedClick = { before: markedBefore, after: Math.round(list.scrollLeft) };
+    /* 公开方法：外部直接调宿主上的 scrollByStep(1) */
+    const methodBefore = Math.round(list.scrollLeft);
+    tabs.scrollByStep(1);
+    await waitScrollSettled();
+    const methodScroll = { before: methodBefore, after: Math.round(list.scrollLeft) };
     /* 拖到最右：end 侧内置箭头淡出禁用而不是消失（按钮还在、变淡、disabled） */
     list.scrollLeft = list.scrollWidth;
     await waitScrollSettled();
@@ -597,10 +635,10 @@ export default async function run({ page, visit, check }) {
       startDisabled: startNav.querySelector('.mc-nav-btn').disabled,
     };
     host.remove();
-    return { initial, scrolled, customClick, atEnd };
+    return { initial, scrolled, plainClick, markedClick, methodScroll, atEnd };
   });
   check(
-    '溢出导航：两侧箭头溢出才出现（不溢出隐藏）、prefix 插槽替换默认箭头、点箭头/自定义内容都能滚动、初始贴左缘',
+    '溢出导航：两侧箭头溢出才出现（不溢出隐藏）、prefix 插槽替换默认箭头、点箭头能滚、初始贴左缘',
     navProbe.initial.overflow &&
       navProbe.initial.scrollLeft === 0 &&
       !navProbe.initial.startHidden &&
@@ -611,9 +649,19 @@ export default async function run({ page, visit, check }) {
       navProbe.initial.endDefaultShown &&
       navProbe.initial.fitNavHidden &&
       navProbe.scrolled.scrollLeft > navProbe.initial.scrollLeft &&
-      !navProbe.scrolled.startEdgeAfter &&
-      navProbe.customClick.after < navProbe.customClick.before,
+      !navProbe.scrolled.startEdgeAfter,
     JSON.stringify(navProbe),
+  );
+  check(
+    '滚动委托：只有 data-scroll 的元素才滚（没标记的插槽内容一点都不动），宿主 scrollByStep(±1) 同样可用',
+    navProbe.plainClick.after === navProbe.plainClick.before &&
+      navProbe.markedClick.after < navProbe.markedClick.before &&
+      navProbe.methodScroll.after > navProbe.methodScroll.before,
+    JSON.stringify({
+      plainClick: navProbe.plainClick,
+      markedClick: navProbe.markedClick,
+      methodScroll: navProbe.methodScroll,
+    }),
   );
   check(
     '到边那侧只禁内置箭头、不隐藏也不碰自定义内容：箭头淡出 + disabled 且占位还在，prefix 插槽内容照常可点',

@@ -23,6 +23,21 @@
       </section>
 
       <section class="doc-demo">
+        <doc-example src="./demos/value.html" plain-src="./demos/value-plain.html">
+          <h3 slot="title">设激活项</h3>
+          <p class="doc-hint" slot="hint">
+            初始值写
+            <code>default-value</code>
+            ；运行时读写成宿主 property
+            <code>value</code>
+            ，模板里用
+            <code>:value</code>
+            绑定。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
         <doc-example src="./demos/segmented.html">
           <h3 slot="title">切换模式</h3>
         </doc-example>
@@ -50,13 +65,13 @@
         <doc-example src="./demos/scroll-nav.html">
           <h3 slot="title">溢出滚动</h3>
           <p class="doc-hint" slot="hint">
-            窄容器溢出时两侧出现箭头（到头那侧只禁内置箭头：变淡禁用，不隐藏）。自定义箭头走
+            自定义箭头走
             <code>prefix</code>
             /
             <code>suffix</code>
-            两个插槽（不塞就是默认箭头；自定义内容不受禁用态影响），外壳样式走同名
-            <code>part</code>
-            。
+            插槽，元素上写
+            <code>data-scroll="prev | next"</code>
+            才会滚。
           </p>
         </doc-example>
       </section>

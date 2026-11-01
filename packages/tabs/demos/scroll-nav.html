@@ -28,6 +28,11 @@
       cursor: pointer;
       font: inherit;
     }
+    .external-nav {
+      display: flex;
+      gap: var(--mc-space-2);
+      margin-top: var(--mc-space-2);
+    }
   </style>
 
   <mc-space direction="vertical" block>
@@ -41,16 +46,13 @@
         <mc-tab value="f" name="第 6 个标签">面板 6</mc-tab>
       </mc-tabs>
     </div>
-    <p class="text-sm text-muted">
-      窄容器放不下所有标签：两侧出现默认箭头，点击滚一屏的 80%；滚到头的那一侧不会消失，只是变淡禁用。
-      键盘移动激活项时也会跟着滚。
-    </p>
+    <p class="text-sm text-muted">窄容器溢出时两侧出现箭头；到头那侧变淡禁用，不会消失。</p>
 
     <div class="narrow">
       <mc-tabs class="tinted" default-value="a">
         <span class="custom-nav" slot="prefix">
-          <button type="button">«</button>
-          <button type="button">‹</button>
+          <button type="button" data-scroll="prev">«</button>
+          <button type="button" data-scroll="prev">‹</button>
         </span>
         <mc-tab value="a" name="第 1 个标签">面板 1</mc-tab>
         <mc-tab value="b" name="第 2 个标签">面板 2</mc-tab>
@@ -59,18 +61,43 @@
         <mc-tab value="e" name="第 5 个标签">面板 5</mc-tab>
         <mc-tab value="f" name="第 6 个标签">面板 6</mc-tab>
         <span class="custom-nav" slot="suffix">
-          <button type="button">›</button>
-          <button type="button">»</button>
+          <button type="button" data-scroll="next">›</button>
+          <button type="button" data-scroll="next">»</button>
         </span>
       </mc-tabs>
     </div>
     <p class="text-sm text-muted">
-      prefix / suffix 插槽塞了内容就替换默认箭头（点击仍由外壳接管触发滚动）；::part(prefix / suffix) 还能给导航外壳垫底色。
-      注意自定义内容不会被组件的禁用态影响：滚到头时只有内置箭头变淡禁用，这两颗一直可点。
+      带 data-scroll="prev | next" 的元素点击才滚，没标记的不碰；::part(prefix / suffix) 可改外壳样式。
     </p>
+
+    <div class="narrow">
+      <mc-tabs id="nav-method" default-value="a">
+        <mc-tab value="a" name="第 1 个标签">面板 1</mc-tab>
+        <mc-tab value="b" name="第 2 个标签">面板 2</mc-tab>
+        <mc-tab value="c" name="第 3 个标签">面板 3</mc-tab>
+        <mc-tab value="d" name="第 4 个标签">面板 4</mc-tab>
+        <mc-tab value="e" name="第 5 个标签">面板 5</mc-tab>
+        <mc-tab value="f" name="第 6 个标签">面板 6</mc-tab>
+      </mc-tabs>
+      <div class="external-nav">
+        <mc-button size="sm" on:click="step(-1)">上一屏</mc-button>
+        <mc-button size="sm" on:click="step(1)">下一屏</mc-button>
+      </div>
+    </div>
+    <p class="text-sm text-muted">外部元素调 scrollByStep(-1 | 1)，不用非要点箭头。</p>
   </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-tabs-scroll-nav' });
+    export default async () => ({
+      tag: 'demo-tabs-scroll-nav',
+
+      /* 外部按钮 → 宿主方法：-1 向前、1 向后，滚一屏的 80%（方法名别叫 scroll，
+         会和元素代理上的原生 scroll 撞名，README「1.2」记过这个坑） */
+      proto: {
+        step(dir) {
+          this.shadow.$('#nav-method').ele.scrollByStep(dir);
+        },
+      },
+    });
   </script>
 </template>
