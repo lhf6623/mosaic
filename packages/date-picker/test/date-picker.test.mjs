@@ -898,15 +898,21 @@ export default async function run({ page, visit, check }) {
       [...root.querySelectorAll(selector)].map((cell) => cell.dataset.value || cell.dataset.key);
     const out = {};
 
+    /* ⚠️ 别写死日期：没给 default-value 时面板停在「今天所在月」，硬编码 `2026-10-10` 一翻月
+       就不在网格里（空点 → value 仍是 []，假红）。取本月网格第 8 / 13 格，断言按它们的 data-date 走。 */
     window.__make({ range: '' });
     await pause();
     let d = window.__dp();
     d.control.click();
     await pause();
-    d.root.querySelector('.mc-day[data-date="2026-10-10"]')?.click();
+    const inMonth = [...d.root.querySelectorAll('.mc-day:not([data-outside])')];
+    const startCell = inMonth[7];
+    const endCell = inMonth[12];
+    out.day = { start: startCell.dataset.date, end: endCell.dataset.date };
+    startCell.click();
     await pause(120);
-    out.day = { first: { value: d.host.value, text: d.value.textContent, open: d.panel.matches(':popover-open') } };
-    d.root.querySelector('.mc-day[data-date="2026-10-15"]')?.click();
+    out.day.first = { value: d.host.value, text: d.value.textContent, open: d.panel.matches(':popover-open') };
+    endCell.click();
     await pause(220);
     out.day.second = {
       value: d.host.value,
@@ -964,18 +970,18 @@ export default async function run({ page, visit, check }) {
   });
   check(
     '范围：day 两次点击后 value 是 [起, 止]、中间 data-in-range；month / year / week 的范围渲染与端点都对',
-    JSON.stringify(rangeModes.day.first.value) === JSON.stringify(['2026-10-10']) &&
-      rangeModes.day.first.text === '2026-10-10 ~ …' &&
+    JSON.stringify(rangeModes.day.first.value) === JSON.stringify([rangeModes.day.start]) &&
+      rangeModes.day.first.text === `${rangeModes.day.start} ~ …` &&
       rangeModes.day.first.open === true &&
       JSON.stringify(rangeModes.day.second.value) ===
-        JSON.stringify(['2026-10-10', '2026-10-15']) &&
-      rangeModes.day.second.text === '2026-10-10 ~ 2026-10-15' &&
-      rangeModes.day.second.attr === '2026-10-10,2026-10-15' &&
+        JSON.stringify([rangeModes.day.start, rangeModes.day.end]) &&
+      rangeModes.day.second.text === `${rangeModes.day.start} ~ ${rangeModes.day.end}` &&
+      rangeModes.day.second.attr === `${rangeModes.day.start},${rangeModes.day.end}` &&
       rangeModes.day.second.open === false &&
       rangeModes.day.reopened.open === true &&
       rangeModes.day.reopened.inRange === 4 &&
       JSON.stringify(rangeModes.day.reopened.selected) ===
-        JSON.stringify(['2026-10-10', '2026-10-15']) &&
+        JSON.stringify([rangeModes.day.start, rangeModes.day.end]) &&
       JSON.stringify(rangeModes.month.value) === JSON.stringify(['2026-02', '2026-05']) &&
       rangeModes.month.title === '2026 年' &&
       JSON.stringify(rangeModes.month.selected) === JSON.stringify(['2026-02', '2026-05']) &&

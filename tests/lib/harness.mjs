@@ -92,11 +92,21 @@ export function pageHelpers() {
   /* <doc-nav> 是 ofa 组件模板（docs/components/nav.html），条目住在它**自己的** shadow root 里。
      CSS 选择器跨不过 shadow 边界，所以 `__deep*('doc-nav a')` 永远匹配不到 ——
      选择器里没法同时包含宿主和宿主 shadow 内的节点（P12 那条的同一个道理）。
-     查组件内部一律走这个「宿主 + shadow 双路」助手。 */
+     查组件内部一律走这个助手；**整棵宿主子树里的 shadow 都要钻**：左栏的行由 mc-menu 数据驱动
+     渲染在第二层 shadow（doc-nav → mc-menu），只查一层时 `mc-menu-item[data-current]` 恒为空。 */
   window.__inside = (hostSel, sel) => {
     const host = window.__deep(hostSel);
     if (!host) return [];
-    return [...host.querySelectorAll(sel), ...(host.shadowRoot?.querySelectorAll(sel) ?? [])];
+    const out = [...host.querySelectorAll(sel), ...(host.shadowRoot?.querySelectorAll(sel) ?? [])];
+    const walk = (root) => {
+      for (const el of root.querySelectorAll('*')) {
+        if (!el.shadowRoot) continue;
+        out.push(...el.shadowRoot.querySelectorAll(sel));
+        walk(el.shadowRoot);
+      }
+    };
+    if (host.shadowRoot) walk(host.shadowRoot);
+    return out;
   };
 }
 

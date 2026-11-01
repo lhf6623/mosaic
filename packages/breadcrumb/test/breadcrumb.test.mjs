@@ -227,7 +227,8 @@ const crumb = await (async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     window
       .__inside('doc-nav', 'a')
-      .find((a) => a.textContent.includes('Button'))
+      /* 整棵子树里还有隐藏的「全部菜单」浮层副本同文案，只点看得见的那条 */
+      .find((a) => a.textContent.includes('Button') && a.getClientRects().length > 0)
       ?.click();
     await wait(1200);
     return {
@@ -237,9 +238,14 @@ const crumb = await (async () => {
           .find((b) => b.hasAttribute('data-current'))
           ?.textContent.trim() ?? null,
       /* 当前项挂在**行**上（mc-menu-item[data-current]，见 menu-item 的状态镜像出口）：
-         options 重做之后内置 <a> 只是行里的控件，它身上没有 data-current —— 老选择器恒为 null。 */
+         options 重做之后内置 <a> 只是行里的控件，它身上没有 data-current —— 老选择器恒为 null。
+         行由 mc-menu 渲染在第二层 shadow 里，所以取全部当前项的 label 一起判（顺序不保证）。 */
       nav:
-        window.__inside('doc-nav', 'mc-menu-item[data-current]')[0]?.getAttribute('label') ?? null,
+        window
+          .__inside('doc-nav', 'mc-menu-item[data-current]')
+          .map((row) => row.getAttribute('label') ?? '')
+          .filter(Boolean)
+          .join(' / ') || null,
     };
   });
 
