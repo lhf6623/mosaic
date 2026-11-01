@@ -81,38 +81,7 @@
       的用武之地：
     </p>
 
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;template component&gt;
-        &lt;mc-form on:submit="save()"&gt;
-          &lt;mc-form-item label="用户名" name="user.name" rules='[{"required":true,"trigger":"input"}]'&gt;
-            &lt;mc-input sync:value="form.user.name"&gt;&lt;/mc-input&gt;
-          &lt;/mc-form-item&gt;
-
-          &lt;mc-form-item label="同意条款" name="agree" rules='[{"required":true,"message":"要同意才能提交"}]'&gt;
-            &lt;mc-checkbox attr:checked="form.agree" on:change="form.agree = $event.data.checked"&gt;
-              同意条款
-            &lt;/mc-checkbox&gt;
-          &lt;/mc-form-item&gt;
-
-          &lt;mc-form-item&gt;
-            &lt;mc-button type="submit"&gt;提交&lt;/mc-button&gt;
-          &lt;/mc-form-item&gt;
-        &lt;/mc-form&gt;
-
-        &lt;script&gt;
-          export default async () =&gt; ({
-            data: { form: { user: { name: '' }, agree: false } },
-            proto: {
-              save() {
-                /* 受控：this.form 已经是最新的，直接交给接口 */
-                fetch('/api', { method: 'POST', body: JSON.stringify(this.form) });
-              },
-            },
-          });
-        &lt;/script&gt;
-      &lt;/template&gt;
-    </mc-code>
+    <mc-code language="html" src="../snippets/controlled-form.html"></mc-code>
 
     <p>
       两种绑定的分工：
@@ -155,33 +124,7 @@
       适合几格的小表单、或者不关心数据流的地方：
     </p>
 
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;mc-form on:submit="send($event)"&gt;
-        &lt;mc-form-item label="姓名" name="name" required&gt;
-          &lt;mc-input default-value="张三"&gt;&lt;/mc-input&gt;
-        &lt;/mc-form-item&gt;
-
-        &lt;mc-form-item label="备注" rules='[{"required":true}]'&gt;
-          &lt;mc-textarea rows="2"&gt;&lt;/mc-textarea&gt;
-        &lt;/mc-form-item&gt;
-
-        &lt;mc-form-item&gt;
-          &lt;mc-button type="submit"&gt;发送&lt;/mc-button&gt;
-        &lt;/mc-form-item&gt;
-      &lt;/mc-form&gt;
-
-      &lt;script&gt;
-        export default async () =&gt; ({
-          proto: {
-            send(event) {
-              /* 非受控：event.data.value 就是那份快照 */
-              fetch('/api', { method: 'POST', body: JSON.stringify(event.data.value) });
-            },
-          },
-        });
-      &lt;/script&gt;
-    </mc-code>
+    <mc-code language="html" src="../snippets/uncontrolled-form.html"></mc-code>
 
     <p class="doc-hint">
       <code>event.data.value</code>

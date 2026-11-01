@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/code/code.html"></l-m>
+
+    <!-- 普通页里 src 按文档地址（document.baseURI）解析，所以这里写完整地址；
+         ofa 模块里的相对路径会被编译成绝对地址，可以写 ./highlight-demo.js -->
+    <mc-code
+      src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/code/demos/highlight-demo.js"
+      line-numbers></mc-code>
+
+  </body>
+</html>

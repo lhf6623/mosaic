@@ -1,15 +1,17 @@
 <template component>
-  <!-- prettier-ignore -->
-  <mc-code language="json" max-height="120">
-    {
-      "name": "mosaic-ui",
-      "private": true,
-      "scripts": {
-        "dev": "node tools/serve.mjs",
-        "test": "node tests/smoke.mjs"
+  <mc-code
+    language="json"
+    max-height="120"
+    code='
+      {
+        "name": "mosaic-ui",
+        "private": true,
+        "scripts": {
+          "dev": "node tools/serve.mjs",
+          "test": "node tests/smoke.mjs"
+        }
       }
-    }
-  </mc-code>
+    '></mc-code>
 
   <script>
     export default async () => ({ tag: 'demo-code-max-height' });

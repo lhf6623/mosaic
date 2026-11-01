@@ -26,16 +26,17 @@
       <code>mc-slider::part(thumb)</code>
       就能选中它。内部元素的 class 和标签名在外面都不可见，只有这样挂过牌的层能碰到。
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="css">
-      /* 只动滑块，轨道和填充不动 */
-      mc-slider::part(thumb) {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-        background: var(--mc-color-danger);
-      }
-    </mc-code>
+    <mc-code
+      language="css"
+      code="
+        /* 只动滑块，轨道和填充不动 */
+        mc-slider::part(thumb) {
+          width: 20px;
+          height: 20px;
+          border-radius: 4px;
+          background: var(--mc-color-danger);
+        }
+      "></mc-code>
     <p>
       名字由组件定，没有约定俗成的叫法：每个组件文档页末尾的
       <code>part</code>
@@ -66,13 +67,14 @@
       <code>!important</code>
       ，也不用管引入顺序：
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="css">
-      /* 没写 @layer，所以这条会赢过库里的默认值 */
-      .my-card {
-        border-radius: 2px;
-      }
-    </mc-code>
+    <mc-code
+      language="css"
+      code="
+        /* 没写 @layer，所以这条会赢过库里的默认值 */
+        .my-card {
+          border-radius: 2px;
+        }
+      "></mc-code>
 
     <h2>几种常见情况</h2>
     <table class="doc-table">

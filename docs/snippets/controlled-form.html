@@ -1,0 +1,32 @@
+<template component>
+  <mc-form on:submit="save()">
+    <mc-form-item label="用户名" name="user.name" rules='[{"required":true,"trigger":"input"}]'>
+      <mc-input sync:value="form.user.name"></mc-input>
+    </mc-form-item>
+
+    <mc-form-item
+      label="同意条款"
+      name="agree"
+      rules='[{"required":true,"message":"要同意才能提交"}]'>
+      <mc-checkbox attr:checked="form.agree" on:change="form.agree = $event.data.checked">
+        同意条款
+      </mc-checkbox>
+    </mc-form-item>
+
+    <mc-form-item>
+      <mc-button type="submit">提交</mc-button>
+    </mc-form-item>
+  </mc-form>
+
+  <script>
+    export default async () => ({
+      data: { form: { user: { name: '' }, agree: false } },
+      proto: {
+        save() {
+          /* 受控：this.form 已经是最新的，直接交给接口 */
+          fetch('/api', { method: 'POST', body: JSON.stringify(this.form) });
+        },
+      },
+    });
+  </script>
+</template>

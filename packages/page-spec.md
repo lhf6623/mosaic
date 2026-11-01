@@ -51,15 +51,17 @@
   文档页不再单独抄一遍。
 - 实现说明（为什么这么分层、底层用了什么机制）不进文档页 —— 留在组件文件头与同单元 `README.md` 的「设计取舍」节。
 - 每个演示的标题与 `.doc-hint` 留在 `<section>` 里；演示之间不插属性表。
-- **`<mc-code>` 文本是逐字展示的**（「色彩」页那种内联样例、以及 demo 文件里演示 `mc-code`
-  的样例）—— 整份 `packages/*/demos/*.html` 都在 `.prettierignore` 里（2026-10 定的：
+- **`<mc-code>` 的 `code` 属性值是逐字展示的**（「色彩」页那种内联样例、以及 demo 文件里演示
+  `mc-code` 的样例）—— 整份 `packages/*/demos/*.html` 都在 `.prettierignore` 里（2026-10 定的：
   `pnpm format` 曾把 7 个 demo 的样例挤行，code 套件连挂 4 条），所以内联样例直接写、
   **不需要 `<!-- prettier-ignore -->`**；代价是这些 demo 的 `<script>` 与属性折行也得手写保持风格。
   长片段改用 `src="…"` 仍然更省事。
+  ⚠️ 样例走**属性值**，不是标签体：`mc-code` 不读标签里的文本（那是默认插槽的位置，见
+  [`code/api.md`](./code/api.md)）。属性值里的 `<` 不用转义，但**引号要挑** —— 属性包一种、
+  代码里只能是另一种，两种都有就落成 `src` 文件。
   ⚠️ `.prettierignore` 只有 **Prettier** 认：编辑器用的格式化器不是 Prettier（VSCode 没装 /
-  没用 Prettier 扩展时，「格式化文档」走的就是内置那份）时它照旧会重排 —— 块内多个空格被并成一个、
-  相对缩进被抹平。块里是要**逐字展示**的原文，重排 = 文档内容变了（`mc-code` 只 dedent 掉最小公共
-  缩进，少掉的 2 空格就是渲染出来的层级）。改这几个文件前确认编辑器用的格式化器是 Prettier
+  没用 Prettier 扩展时，「格式化文档」走的就是内置那份）时它照旧会重排标签本身 —— 属性值里的
+  换行它不动，但手写的对齐会白写。改这几个文件前确认编辑器用的格式化器是 Prettier
   （即 `pnpm format` 跑的那份）。
 
 ## 二、演示区三段：标题 → 说明 → 可编辑示例
@@ -124,8 +126,8 @@
 - ⚠️ **标题与 `.doc-hint` 必须留在页面里**：`doc-toc` 只扫页面 shadow root 的 `h2` / `h3`，
   收进可编辑示例组件会让整页目录少掉所有演示标题（同 `doc-spec` 的理由）。
 - ⚠️ **`demos/*.html` 仍整份在 `.prettierignore` 里**：演示内部可能用 `<mc-code>` 逐字展示
-  代码片段，prettier 会把换行压掉（2026-10 全仓格式化挂过 code 套件 4 条）。与编辑器无关了，
-  但这条忽略继续有效，也别给 demo 文件加逐块 `prettier-ignore`。
+  代码片段（`code` 属性里的多行样例），prettier 会重排标签、手写的对齐白写（2026-10 全仓格式化
+  挂过 code 套件 4 条）。与编辑器无关了，但这条忽略继续有效，也别给 demo 文件加逐块 `prettier-ignore`。
 
 > **迁移状态**：全部组件文档页已按这个结构排过（开场白 → 例子 → `<doc-spec>` 参考区 → 页脚）。
 > 所有演示都已迁到 `<doc-example>`；「基本用法」还各配一份同目录的 `basic-plain.html`（普通例子）。
@@ -154,8 +156,8 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 ```
 
 - **演示文件不参与 `pnpm format`**（在 `.prettierignore` 里）：里面的 `mc-code`
-  文本是逐字展示的样例代码，prettier 会把它的换行压掉（实测 JSON 被压成两行、
-  bash 丢了所有换行）。它本身就是要展示的内容，照旧手写。
+  `code` 属性值是逐字展示的样例代码，prettier 会重排标签、把手写的对齐抹平（2026-10 那次
+  更狠：整块被压成一行，JSON 两行、bash 丢光换行）。它本身就是要展示的内容，照旧手写。
 - **一个演示文件只讲一件事。** 同一件事的多个变体可以放一起（六种颜色、三档尺寸），
   但**两个不同的 API / 特性要拆成两个文件、两节**（`max-height` 与 `soft-wrap`、
   `code` 属性与 `:code` 绑定）—— 一个文件里塞两件事，可编辑示例给出的就不是一个
@@ -218,8 +220,8 @@ ofa.js 组件（`<template component>` + 一行 `tag`）；页面只按 `src` �
 - `src` 是 ofa 演示文件（如 `packages/button/demos/basic.html`，一个文件一个 `tag`）；`plain-src` 是
   配套的普通 HTML 完整页（如 `packages/button/demos/basic-plain.html`），只用于「普通例子」代码视图和
   iframe 预览。两个文件都要在页面里出现，`page-demos` 才不会报孤儿。普通版可缺省：没写 `plain-src`
-  的演示只有 ofa.js 视图，切换器自动隐藏（现在每个组件的 `basic` 都有普通版；`button` 的
-  `type` / `states` 也有）。
+  的演示只有 ofa.js 视图，切换器自动隐藏（现在每个组件的 `basic` 都有普通版；交互类演示按需配，
+  如 `button` 的 `type` / `states`、`tabs` 的 `value`、`code` 的 `src`）。
 - 默认是 ofa.js 视图（左），普通例子（右）只切代码；只有点「运行」/「重新运行」才重编译或重跑
   当前视图。这两个按钮只在代码区展开时出现（收起时没有可运行的编辑），收起态只留复制与代码入口。
   普通例子的 CDN 地址在预览时映射到本地仓库，不依赖发布 tag。

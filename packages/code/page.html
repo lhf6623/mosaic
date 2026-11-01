@@ -17,39 +17,25 @@
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
           <h3 slot="title">基本用法</h3>
-        </doc-example>
-      </section>
-
-      <section class="doc-demo">
-        <doc-example src="./demos/src.html">
-          <h3 slot="title">片段文件</h3>
           <p class="doc-hint" slot="hint">
-            长片段放独立文件就不用转义；相对路径按写它的那个文件解析（和
-            <code>&lt;link href&gt;</code>
-            一样）。
+            文本放在组件 data 里，用
+            <code>:code</code>
+            绑过去（也可以直接写
+            <code>code</code>
+            属性）；改 data 会实时写回块里，直接写
+            <code>el.code</code>
+            / 属性只是临时覆盖。
           </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
-        <doc-example src="./demos/attribute.html">
-          <h3 slot="title">用 code 属性传</h3>
-        </doc-example>
-      </section>
-
-      <section class="doc-demo">
-        <doc-example src="./demos/binding.html">
-          <h3 slot="title">页面数据</h3>
-        </doc-example>
-      </section>
-
-      <section class="doc-demo">
-        <doc-example src="./demos/runtime.html">
-          <h3 slot="title">运行时读写</h3>
+        <doc-example src="./demos/src.html" plain-src="./demos/src-plain.html">
+          <h3 slot="title">片段文件</h3>
           <p class="doc-hint" slot="hint">
-            两条通道效果一样，差别只在时序：
-            <code>el.code</code>
-            同步生效，属性要等一个微任务。
+            长片段放独立文件就不用转义；相对路径按写它的那个文件解析（和
+            <code>&lt;link href&gt;</code>
+            一样）。普通 HTML 页没有这层改写，按文档地址解析。
           </p>
         </doc-example>
       </section>

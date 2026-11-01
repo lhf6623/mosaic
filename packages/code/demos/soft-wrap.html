@@ -1,11 +1,13 @@
 <template component>
-  <!-- prettier-ignore -->
-  <mc-code language="bash" soft-wrap>
-    if pnpm build &amp;&amp; pnpm check:drift; then
-      echo "deploying to /srv/mosaic"
-      rsync -av --delete --exclude node_modules --exclude .git ./ user@example.com:/srv/mosaic/
-    fi
-  </mc-code>
+  <mc-code
+    language="bash"
+    soft-wrap
+    code='
+      if pnpm build && pnpm check:drift; then
+        echo "deploying to /srv/mosaic"
+        rsync -av --delete --exclude node_modules --exclude .git ./ user@example.com:/srv/mosaic/
+      fi
+    '></mc-code>
 
   <script>
     export default async () => ({ tag: 'demo-code-soft-wrap' });

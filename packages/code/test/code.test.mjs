@@ -86,8 +86,9 @@ const codeSources = await codePage.evaluate(async () => {
   const textOf = (el) => el.shadowRoot.querySelector('.mc-block').textContent;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  const byAttr = window.__deepAll('mc-code').find((el) => (el.getAttribute('code') || '').includes('byAttr'));
-  const bound = window.__deepAll('mc-code').find((el) => textOf(el).includes('mc-code :code'));
+  /* 演示里已经不再有单行的 code 属性，所以属性通道直接用下面那个 holder 元素量
+     （多行属性值 dedent 后与原文不同，比不了逐字相等） */
+  const bound = window.__deepAll('mc-code').find((el) => textOf(el).includes('绑定来源'));
 
   const holder = document.createElement('div');
   holder.innerHTML =
@@ -96,6 +97,7 @@ const codeSources = await codePage.evaluate(async () => {
   await wait(700);
   const mixedEl = holder.querySelector('mc-code');
   const mixed = textOf(mixedEl); // 必须在移除之前读：移除后组件会走 teardown
+  const byAttr = { attr: mixedEl.getAttribute('code'), text: mixed.trim() };
 
   const target = window.__deepAll('mc-code')[0];
   target.setAttribute('code', 'const viaAttr = 1;');
@@ -121,7 +123,7 @@ const codeSources = await codePage.evaluate(async () => {
   holder.remove();
   preset.remove();
   return {
-    byAttr: byAttr ? textOf(byAttr) : null,
+    byAttr: byAttr ? { attr: byAttr.attr, text: byAttr.text.trim() } : null,
     bound: bound ? textOf(bound) : null,
     mixed,
     viaAttr,
@@ -133,16 +135,16 @@ const codeSources = await codePage.evaluate(async () => {
 });
 check(
   'code 属性传值：内容直接来自属性',
-  codeSources.byAttr === "const byAttr = 'code 属性传进来的';",
+  !!codeSources.byAttr && codeSources.byAttr.text === codeSources.byAttr.attr.trim(),
   JSON.stringify(codeSources.byAttr),
 );
 check(
   'ofa :code 绑定：内容来自页面 data（:prop 只对 attrs 里声明过的键生效）',
-  !!codeSources.bound && codeSources.bound.includes('mc-code :code'),
+  !!codeSources.bound && codeSources.bound.includes('绑定来源'),
   JSON.stringify(codeSources.bound),
 );
 check(
-  'code 属性优先于标签内文本',
+  '标签里的文本不读：只渲染 code 属性传的值',
   codeSources.mixed.includes('fromAttr') && !codeSources.mixed.includes('fromText'),
   JSON.stringify(codeSources.mixed),
 );
@@ -350,7 +352,7 @@ check(
 const codeCreate = await codePage.evaluate(async () => {
   const el = document.createElement('mc-code');
   el.setAttribute('language', 'javascript');
-  el.textContent = 'const a = 1;';
+  el.code = 'const a = 1;';
   document.body.append(el);
   await new Promise((r) => setTimeout(r, 800));
   const out = {
@@ -366,6 +368,29 @@ check(
   codeCreate.shadow && codeCreate.text === 'const a = 1;' && codeCreate.tokens > 0,
   JSON.stringify(codeCreate),
 );
+/* 标签体通道已删除（那是默认插槽的位置）：只写文本、不给 code / src 时不渲染，并留一条 [mosaic] 警告 ——
+   静默的空块最难查，所以警告本身也是契约的一部分。 */
+const ignoredText = await codePage.evaluate(async () => {
+  const el = document.createElement('mc-code');
+  el.setAttribute('language', 'javascript');
+  el.textContent = 'const onlyText = 1;';
+  document.body.append(el);
+  await new Promise((r) => setTimeout(r, 500));
+  const out = { text: el.shadowRoot?.querySelector('.mc-block')?.textContent ?? null };
+  el.remove();
+  return out;
+});
+check(
+  '标签里只放文本（不给 code / src）→ 不渲染，也不猜',
+  ignoredText.text === '',
+  JSON.stringify(ignoredText),
+);
+check(
+  '这种情况给一条 [mosaic] 警告（静默空块最难查）',
+  codeWarnings.some((w) => w.includes('不读标签里的文本')),
+  codeWarnings.find((w) => w.includes('不读标签里的文本')) ?? '没有警告',
+);
+
 check(
   '组件注册没有撞 $.fn 保留名（ofa.js 只会在控制台留一条 warning）',
   !codeWarnings.some((w) => w.includes('already occupied')) && codeProblems.length === 0,

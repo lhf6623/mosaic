@@ -5,17 +5,18 @@
     <p class="doc-lead">主题就是一组 CSS 变量。切状态改属性，换颜色改变量。</p>
 
     <h2>亮色与暗色</h2>
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;!-- 亮色（默认）：不写属性 --&gt;
-      &lt;html&gt;
+    <mc-code
+      language="html"
+      code='
+        <!-- 亮色（默认）：不写属性 -->
+        <html>
 
-      &lt;!-- 亮色 --&gt;
-      &lt;html data-theme="light"&gt;
+        <!-- 亮色 -->
+        <html data-theme="light">
 
-      &lt;!-- 暗色 --&gt;
-      &lt;html data-theme="dark"&gt;
-    </mc-code>
+        <!-- 暗色 -->
+        <html data-theme="dark">
+      '></mc-code>
     <p>
       属性写在页面根元素上就行，组件跟着变。令牌表只提供亮、暗两套：不写属性是亮色，
       不适配暗色的站点，不会因为用户系统是暗色就被带着变暗。
@@ -27,13 +28,14 @@
       <code>!important</code>
       ，也不用管引入顺序：
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="css">
-      :root {
-        --mc-color-bg: 250 250 250;
-        --mc-color-primary: 16 185 129;
-      }
-    </mc-code>
+    <mc-code
+      language="css"
+      code="
+        :root {
+          --mc-color-bg: 250 250 250;
+          --mc-color-primary: 16 185 129;
+        }
+      "></mc-code>
     <p>
       有两个地方容易写错。格式上，变量存的是
       <code>"R G B"</code>

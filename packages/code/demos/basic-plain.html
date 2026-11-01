@@ -3,18 +3,61 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
     <script
       src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
       type="module"></script>
   </head>
   <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
     <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/code/code.html"></l-m>
 
-    <mc-code language="javascript">
-      // 内容就是标签里的纯文本，直接粘贴即可
-      const greet = (name) => `Hello, ${name}!`;
-      console.log(greet('Mosaic')); // → Hello, Mosaic!
-    </mc-code>
+    <mc-space direction="vertical" block>
+      <mc-space block wrap-items>
+        <mc-button size="sm" id="by-property">el.code = …</mc-button>
+        <mc-button size="sm" variant="outline" id="by-attribute">
+          setAttribute('code', …)
+        </mc-button>
+      </mc-space>
 
+      <!-- 普通 HTML 里没有 ofa 的 data 绑定，初始内容直接写在 code 属性上 -->
+      <mc-code
+        id="runtime-target"
+        language="javascript"
+        code="// 初始内容：点上面的按钮换掉它"></mc-code>
+
+      <div class="text-sm">
+        读回 <code>el.code</code>：<strong id="shown">（还没写）</strong>
+      </div>
+    </mc-space>
+
+    <script>
+      const target = document.getElementById('runtime-target');
+      const shown = document.getElementById('shown');
+
+      const BY_PROPERTY = `const byProperty = 'el.code = "…"';`;
+      const BY_ATTRIBUTE = `const byAttribute = "setAttribute('code', '…')";`;
+
+      /* 两条通道都会重渲染 + 重新高亮，区别在时序：property 那条是同步的，
+         属性那条走 ofa 的属性观察、微任务里才读得到新值 —— 读回统一放在微任务里 */
+      const write = (code, how) => {
+        if (how === 'property') target.code = code;
+        else target.setAttribute('code', code);
+        queueMicrotask(() => {
+          shown.textContent = target.code;
+        });
+      };
+
+      document
+        .getElementById('by-property')
+        .addEventListener('click', () => write(BY_PROPERTY, 'property'));
+      document
+        .getElementById('by-attribute')
+        .addEventListener('click', () => write(BY_ATTRIBUTE, 'attribute'));
+    </script>
   </body>
 </html>

@@ -107,9 +107,7 @@
       "packages/button/button.html",
       "packages/code/api.md",
       "packages/code/code.html",
-      "packages/code/demos/attribute.html",
       "packages/code/demos/basic.html",
-      "packages/code/demos/binding.html",
       "packages/code/demos/box-model.html",
       "packages/code/demos/highlight-demo.js",
       "packages/code/demos/hljs-base.html",
@@ -117,7 +115,6 @@
       "packages/code/demos/markup.html",
       "packages/code/demos/max-height.html",
       "packages/code/demos/part.html",
-      "packages/code/demos/runtime.html",
       "packages/code/demos/soft-wrap.html",
       "packages/code/demos/src.html",
       "packages/code/demos/theme.html",
@@ -4305,13 +4302,7 @@
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
-    "packages/code/demos/attribute.html": [
-      "packages/code/test/code.test.mjs"
-    ],
     "packages/code/demos/basic.html": [
-      "packages/code/test/code.test.mjs"
-    ],
-    "packages/code/demos/binding.html": [
       "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/box-model.html": [
@@ -4333,9 +4324,6 @@
       "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/part.html": [
-      "packages/code/test/code.test.mjs"
-    ],
-    "packages/code/demos/runtime.html": [
       "packages/code/test/code.test.mjs"
     ],
     "packages/code/demos/soft-wrap.html": [

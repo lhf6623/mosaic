@@ -143,6 +143,7 @@
     let hljsWarned = false;
     let themeWarned = false;
     let srcWarned = false;
+    let textIgnoredWarned = false;
 
     function loadCore(base) {
       if (!coreByBase.has(base)) {
@@ -330,9 +331,10 @@
       tag: 'mc-code',
 
       attrs: {
-        /* 代码文本。声明在 attrs 里 `:code="expr"` 才对它生效（P6），非空时优先于标签内纯文本 */
+        /* 代码文本（唯一的文本来源，另一条是 src）。声明在 attrs 里 `:code="expr"` 才对它生效（P6）。
+           标签里的内容不读：那是默认插槽的位置，容易被当成「能放任何东西」 */
         code: '',
-        /* 片段文件：文件就是真 HTML/JS/CSS，长片段 / 免转义用；路径按 document.baseURI 解析。优先级 src > code 属性 > 标签内文本 */
+        /* 片段文件：文件就是真 HTML/JS/CSS，长片段 / 免引号转义用；路径按 document.baseURI 解析。优先级 src > code 属性 */
         src: '',
         language: '',
         // 换自托管 / 换镜像：指向 highlight.js 的 build/ 目录
@@ -457,7 +459,7 @@
                   ? this.code
                   : '';
           this._pendingCode = undefined;
-          const source = attr.trim() ? dedent(attr) : dedent(this.ele.textContent);
+          const source = attr.trim() ? dedent(attr) : '';
           if (source !== this._raw) {
             this._raw = source;
             this._hlHtml = null;
@@ -643,21 +645,28 @@
 
         this._mounted = true;
 
-        // 极端情况下 ready() 读 HTML 解析中途升级的元素时会读到空内容，补几拍再读、自限；句柄留给 detached() 清。
-        if (!this._raw && !String(this.code || '').trim()) {
+        /* 标签里写了文本、却没给 src / code：组件**不读**标签里的内容（那是默认插槽的位置，见 README），
+           结果是一个静默的空框 —— 最难查的那种。补几拍等 HTML 解析完，确认有文本就给一条警告，自限一次。 */
+        if (!this._raw && !String(this.code || '').trim() && !String(this.src || '').trim()) {
           let tries = 0;
-          const settle = () => {
+          const warnIgnoredText = () => {
             this._settleTimer = undefined;
-            if (!this._mounted || this._raw || !this.ele.isConnected) return;
-            const text = dedent(this.ele.textContent);
-            if (text) {
-              this._raw = text;
-              this.applyAttrs();
+            if (!this._mounted || !this.ele.isConnected) return;
+            if (this._raw || String(this.code || '').trim() || String(this.src || '').trim())
+              return;
+            if (this.ele.textContent.trim()) {
+              if (!textIgnoredWarned) {
+                textIgnoredWarned = true;
+                console.warn(
+                  '[mosaic] mc-code 不读标签里的文本，代码要写进 code 属性（多行也行，`<` 不用转义）或 src 文件：\n' +
+                    '         <mc-code language="js" code="…"></mc-code>',
+                );
+              }
             } else if (++tries < 10) {
-              this._settleTimer = setTimeout(settle, 30);
+              this._settleTimer = setTimeout(warnIgnoredText, 30);
             }
           };
-          this._settleTimer = setTimeout(settle, 30);
+          this._settleTimer = setTimeout(warnIgnoredText, 30);
         }
       },
 

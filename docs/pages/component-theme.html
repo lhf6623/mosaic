@@ -10,11 +10,12 @@
       <code>color</code>
       ，直接写 hex 或者语义色名：
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;mc-button color="#fff000"&gt;品牌按钮&lt;/mc-button&gt;
-      &lt;mc-tag color="#1a7f5a"&gt;标签&lt;/mc-tag&gt;
-    </mc-code>
+    <mc-code
+      language="html"
+      code='
+        <mc-button color="#fff000">品牌按钮</mc-button>
+        <mc-tag color="#1a7f5a">标签</mc-tag>
+      '></mc-code>
     <p>
       组件只往自己的色槽里填值，
       <code>variant</code>
@@ -30,15 +31,16 @@
       <code>style</code>
       上只影响这一个实例：
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;mc-button
-        style="--mc-color-primary: 220 38 38; --mc-color-primary-fg: 255 255 255;
-               --mc-color-primary-subtle: 254 226 226; --mc-color-primary-hover: 185 28 28;
-               --mc-color-primary-active: 153 27 27; --mc-color-ring: 220 38 38"&gt;
-        删除
-      &lt;/mc-button&gt;
-    </mc-code>
+    <mc-code
+      language="html"
+      code='
+        <mc-button
+          style="--mc-color-primary: 220 38 38; --mc-color-primary-fg: 255 255 255;
+                 --mc-color-primary-subtle: 254 226 226; --mc-color-primary-hover: 185 28 28;
+                 --mc-color-primary-active: 153 27 27; --mc-color-ring: 220 38 38">
+          删除
+        </mc-button>
+      '></mc-code>
     <p>六个变量要给全，少给的那个状态不会跟着变。</p>
 
     <h2>给一整块区域换色</h2>
@@ -47,13 +49,14 @@
       <code>data-tone</code>
       ，里面所有用主色的组件一起变，派生颜色和文字色自动算：
     </p>
-    <!-- prettier-ignore -->
-    <mc-code language="html">
-      &lt;div data-tone="#fff000"&gt;
-        &lt;mc-button color="primary"&gt;按钮&lt;/mc-button&gt;
-        &lt;mc-tag color="primary"&gt;标签&lt;/mc-tag&gt;
-      &lt;/div&gt;
-    </mc-code>
+    <mc-code
+      language="html"
+      code='
+        <div data-tone="#fff000">
+          <mc-button color="primary">按钮</mc-button>
+          <mc-tag color="primary">标签</mc-tag>
+        </div>
+      '></mc-code>
     <p>
       品牌色不随主题翻转，但悬停、浅底、焦点环会跟着主题重新算。要在脚本里动态切换，用同一个模块的
       <code>applyTone(选择器, 颜色)</code>

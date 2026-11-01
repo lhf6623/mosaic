@@ -1,12 +1,71 @@
 <template component>
-  <!-- prettier-ignore -->
-  <mc-code language="javascript">
-    // 内容就是标签里的纯文本，直接粘贴即可
-    const greet = (name) => `Hello, ${name}!`;
-    console.log(greet('Mosaic')); // → Hello, Mosaic!
-  </mc-code>
+  <mc-space direction="vertical" block>
+    <mc-space block wrap-items>
+      <mc-button size="sm" on:click="byData()">改 data 里的 snippet</mc-button>
+      <mc-button size="sm" variant="outline" on:click="byProperty()">el.code = …</mc-button>
+      <mc-button size="sm" variant="outline" on:click="byAttribute()">
+        setAttribute('code', …)
+      </mc-button>
+    </mc-space>
+
+    <mc-code id="snippet-target" language="javascript" :code="snippet"></mc-code>
+
+    <div class="text-sm">
+      读回
+      <code>el.code</code>
+      ：
+      <strong id="shown">（还没写）</strong>
+    </div>
+  </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-code-basic' });
+    const BY_DATA = `// 改 data：绑定把新文本写回块里
+const fromData = 'data.snippet 换了一份';`;
+    const BY_PROPERTY = `const byProperty = 'el.code = "…"';`;
+    const BY_ATTRIBUTE = `const byAttribute = "setAttribute('code', '…')";`;
+
+    export default async () => ({
+      tag: 'demo-code-basic',
+
+      data: {
+        /*
+         * 代码文本放在组件自己的 data 里，模板用 `:code` 绑过去 ——
+         * `:prop` 只对 mc-code 在 attrs 里声明过的键生效（它声明了 code）。
+         */
+        snippet: `// 绑定来源：这个组件的 data.snippet
+const greet = (name) => 'Hello, ' + name;
+console.log(greet('Mosaic'));`,
+      },
+
+      proto: {
+        target() {
+          return this.shadow.$('#snippet-target')?.ele;
+        },
+        /* 读回写进 DOM 而不是 data：改 data 会让模板重新渲染，
+           `:code` 会把元素上的临时改动按 data 重新盖一遍，读回就白读了。 */
+        write(code, how) {
+          if (how === 'data') this.snippet = code;
+          else if (how === 'property') this.target().code = code;
+          else this.target().setAttribute('code', code);
+          /* 改 data 要等绑定把新文本写进元素（属性那条也要等一个微任务），
+             统一放到下一帧再读，三条通道读到的都是稳定值 */
+          requestAnimationFrame(() => {
+            this.shadow.$('#shown').ele.textContent = this.target().code;
+          });
+        },
+        /* 换 data 是正路：绑定立刻把新文本写回块里 */
+        byData() {
+          this.write(BY_DATA, 'data');
+        },
+        /* 直接写元素是临时覆盖：这次能改，data 下一次变就盖回 data 的值；
+           property 那条同步生效，属性那条走 ofa 的属性观察、微任务里才读得到 */
+        byProperty() {
+          this.write(BY_PROPERTY, 'property');
+        },
+        byAttribute() {
+          this.write(BY_ATTRIBUTE, 'attribute');
+        },
+      },
+    });
   </script>
 </template>
