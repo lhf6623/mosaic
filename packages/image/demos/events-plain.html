@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/image.html"></l-m>
+
+    <mc-space block wrap-items align="center">
+      <mc-image
+        id="ok"
+        src="https://picsum.photos/id/13/640/427"
+        alt="海岸线"
+        style="width: 120px"></mc-image>
+      <mc-image id="bad" src="data:image/png;base64,AAAA" alt="坏图" style="width: 120px"></mc-image>
+    </mc-space>
+
+    <p>
+      load：<strong id="loaded">（还没发）</strong> error：<strong id="failed">（还没发）</strong>
+      open：<strong id="opened">（还没开）</strong>
+    </p>
+
+    <script type="module">
+      /* 组件事件都是原生 Event（bubbles + composed），载荷挂在 event.data 上；
+         所以要挂祖先也行，事件会穿过 shadow 边界冒上来 */
+      const out = (id) => document.getElementById(id);
+      const ok = document.getElementById('ok');
+
+      /* load：带原图尺寸 */
+      ok.addEventListener('load', (event) => {
+        out('loaded').textContent = event.data.width + '×' + event.data.height;
+      });
+
+      /* error：只带地址 */
+      document.getElementById('bad').addEventListener('error', (event) => {
+        out('failed').textContent = '打不开（' + event.data.src.slice(0, 12) + '…）';
+      });
+
+      /* open：带当前第几张 / 一共几张 */
+      ok.addEventListener('open', (event) => {
+        out('opened').textContent = '第 ' + (event.data.index + 1) + ' / ' + event.data.total + ' 张';
+      });
+
+      /* close：浮层真正收起之后才发（焦点也还回来了） */
+      ok.addEventListener('close', () => {
+        out('opened').textContent = '已关闭';
+      });
+    </script>
+  </body>
+</html>

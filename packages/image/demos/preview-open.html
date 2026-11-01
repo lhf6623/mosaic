@@ -1,0 +1,37 @@
+<template component>
+  <mc-space block wrap-items align="center">
+    <!-- 图不展示：按钮上写 on:click 调 open()，按钮想长什么样就长什么样 -->
+    <mc-image-preview
+      id="pv-one"
+      src="https://picsum.photos/id/12/1200/800"
+      alt="雪山下的湖泊"></mc-image-preview>
+    <mc-button on:click="show('#pv-one')">查看大图</mc-button>
+
+    <!-- 多张：子元素就是相册（<img> / <mc-image> 都行），加的 loop 让末尾绕回第一张 -->
+    <mc-image-preview id="pv-album" loop>
+      <img src="https://picsum.photos/id/78/1200/800" alt="雾中的山谷" />
+      <img src="https://picsum.photos/id/16/800/1200" alt="海边的礁石" />
+    </mc-image-preview>
+    <mc-button variant="outline" on:click="show('#pv-album')">查看相册</mc-button>
+
+    <!-- 从第几张开始也能指定：直接给 open(index) -->
+    <mc-image-preview id="pv-second">
+      <img src="https://picsum.photos/id/78/1200/800" alt="雾中的山谷" />
+      <img src="https://picsum.photos/id/16/800/1200" alt="海边的礁石" />
+    </mc-image-preview>
+    <mc-button variant="outline" on:click="show('#pv-second', 1)">从第二张开始</mc-button>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-image-preview-open',
+
+      proto: {
+        /** 拿到无渲染宿主的实例调它的 open()：任意按钮、任意逻辑都能这么干 */
+        show(id, index = 0) {
+          this.shadow.$(id)?.ele?.open(index);
+        },
+      },
+    });
+  </script>
+</template>

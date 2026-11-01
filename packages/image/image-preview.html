@@ -1,0 +1,100 @@
+<!-- mc-image-preview — 不渲染的预览入口（与 mc-image 同目录：同一层浮层，不同的入口）。设计取舍见 README.md；本文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 本体什么都不画：display: none 的宿主没有盒子 —— 不占位、不进无障碍树、也聚焦不到。
+       浮层不住在 shadow 里（preview.js 的单例挂在 body 上），所以这里连子结构都不需要。 */
+    :host {
+      display: none;
+    }
+  </style>
+
+  <script>
+    import { withEmits } from '../boot/emits.js';
+    import { openPreview, closePreview, focusedElement, boolAttr } from './preview.js';
+
+    /** 元素读 src / alt 属性 */
+    const readItem = (el) => ({
+      src: (el.getAttribute('src') ?? '').trim(),
+      alt: el.getAttribute('alt') ?? '',
+    });
+
+    export default async () =>
+      withEmits({
+        tag: 'mc-image-preview',
+
+        // 与 mc-image 的预览事件同形：open 只在「打开那一刻」发，close 每条关闭路径都只发一次
+        emits: {
+          open: { data: ['src', 'index', 'total'] },
+          close: {},
+        },
+
+        attrs: {
+          src: '',
+          alt: '',
+          // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-image-preview loop> 失效
+          loop: null,
+        },
+
+        attached() {
+          this._live = true; // 宿主属性一律挂载后才写（P31）
+          /* 公开方法 open / close 要挂到宿主上：ofa 不会把组件方法挂到元素上，得自己接
+             （同 mc-tabs 的 scrollByStep）。先存内部引用再覆盖，万一 this 与 this.ele 是同一个代理也不会自激。 */
+          this._open = this.open.bind(this);
+          this._close = this.close.bind(this);
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            value: (index = 0, opener = null) => this._open(index, opener),
+          });
+          Object.defineProperty(this.ele, 'close', {
+            configurable: true,
+            value: () => this._close(),
+          });
+        },
+
+        detached() {
+          this._live = false;
+        },
+
+        proto: {
+          /**
+           * 打开预览。谁想开都能开 —— 按钮上写 `on:click="open()"`，或者任意逻辑里拿到宿主再调。
+           * @param {number} [index] 从第几张开始（越界夹到两端、非数字当 0 —— 归一在 openPreview 里做）
+           * @param {Element | null} [opener] 关闭后焦点还给它；不传就记住调用那一刻的焦点元素（通常正是刚点的按钮）
+           */
+          open(index = 0, opener = null) {
+            // 一张图都没有时 openPreview 返回 null，这里什么都不发（同「点了没反应」）
+            const opened = openPreview({
+              items: this.previewItems(),
+              index,
+              loop: this.flag('loop'),
+              opener: opener ?? focusedElement(),
+              onClose: () => this.$emit('close'),
+            });
+            if (opened) this.$emit('open', opened);
+          },
+
+          /** 关掉浮层。整页只有一层，关的就是当前这次预览 */
+          close() {
+            closePreview();
+          },
+
+          /**
+           * 这次能看的图：子元素优先（`<img>` / `<mc-image>` 都行，只读它们的 src / alt），
+           * 一个带 src 的子元素都没有才用宿主自己的 src / alt。
+           */
+          previewItems() {
+            const kids = [...this.ele.children].map(readItem).filter((item) => item.src);
+            if (kids.length) return kids;
+            const self = readItem(this.ele);
+            return self.src ? [self] : [];
+          },
+
+          /** 布尔属性看「在不在」，`="false"` 不算真（同 README 1.4 的 boolAttr） */
+          flag(name) {
+            return boolAttr(this.ele, name);
+          },
+        },
+      });
+  </script>
+</template>

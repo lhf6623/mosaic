@@ -1,21 +1,24 @@
 <template component>
   <mc-space block wrap-items align="center">
-    <!-- preview：图就绪后光标变放大镜，点开大图；Esc / 点遮罩 / 右上角 × 都能关 -->
+    <!-- 预览默认开：图就绪后光标变放大镜，点开大图；Esc / 点遮罩 / 工具条上的关闭都能关 -->
     <mc-image
-      src="./photo.svg"
-      alt="山间的日出"
-      preview
+      src="https://picsum.photos/id/22/800/533"
+      alt="过马路的行人"
       style="width: 200px; height: 140px"></mc-image>
     <mc-image
-      src="./portrait.svg"
-      alt="窗边的人像"
-      preview
+      src="https://picsum.photos/id/195/400/600"
+      alt="夜市灯串"
+      style="width: 120px; height: 140px"></mc-image>
+    <!-- 装饰用、不该被点的图：写 preview-disabled 关掉（光标不变成放大镜，Tab 也停不上去） -->
+    <mc-image
+      src="https://picsum.photos/id/60/300/200"
+      alt="办公桌面"
+      preview-disabled
       style="width: 120px; height: 140px"></mc-image>
     <!-- 失败图不响应预览：没有图可看，点了只会是一块黑 -->
     <mc-image
       src="data:image/png;base64,AAAA"
       alt="坏图不可预览"
-      preview
       style="width: 120px; height: 140px"></mc-image>
   </mc-space>
 

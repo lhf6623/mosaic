@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/image.html"></l-m>
+    <l-m
+      src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/image-group.html"></l-m>
+
+    <mc-space direction="vertical" block gap="16">
+      <!-- 单张：图铺在页面上，入口也可以是自己按钮调 open() -->
+      <mc-space block wrap-items align="center">
+        <mc-image
+          id="open-one"
+          src="https://picsum.photos/id/22/1200/800"
+          alt="海边的公路"
+          style="width: 160px; height: 110px"></mc-image>
+        <mc-button variant="outline" data-open="#open-one">放大这张</mc-button>
+      </mc-space>
+
+      <!-- 组：open(index) 从第 index 张开始，打开后左右还能走完整组 -->
+      <mc-space block wrap-items align="center">
+        <mc-image-group id="open-group" loop>
+          <mc-image
+            src="https://picsum.photos/id/12/800/600"
+            alt="雪山与湖"
+            style="width: 120px; height: 90px"></mc-image>
+          <mc-image
+            src="https://picsum.photos/id/16/800/1200"
+            alt="海边的礁石"
+            style="width: 68px; height: 90px"></mc-image>
+          <mc-image
+            src="https://picsum.photos/id/35/800/600"
+            alt="桌上的书"
+            style="width: 120px; height: 90px"></mc-image>
+        </mc-image-group>
+        <mc-button variant="outline" data-open="#open-group" data-index="1"
+          >从第二张看起</mc-button
+        >
+      </mc-space>
+    </mc-space>
+
+    <script type="module">
+      /* 宿主上挂着 open(index?)：拿到元素直接调，index 不写就是「从这张开始」 */
+      for (const button of document.querySelectorAll('[data-open]')) {
+        button.addEventListener('click', () => {
+          const host = document.querySelector(button.dataset.open);
+          host?.open(Number(button.dataset.index ?? 0));
+        });
+      }
+    </script>
+  </body>
+</html>

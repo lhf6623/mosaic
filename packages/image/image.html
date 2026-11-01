@@ -96,8 +96,9 @@
       max-width: 100%;
     }
 
-    /* 7. 预览：只有「开了 preview + 图已就绪」才可点可聚焦 —— 失败图点了也没东西看 */
-    :host([preview][data-has-image]) {
+    /* 7. 预览：图一就绪就能点（默认开）；写了 preview-disabled 退回一张普通图 —— 失败图点了也没东西看。
+       能不能点由脚本镜像成 data-preview-on（P32）：CSS 认不了 `preview-disabled="false"` 这种写法 */
+    :host([data-has-image][data-preview-on]) {
       cursor: zoom-in;
     }
     /* 宿主是按钮语义时的焦点环：用 ring 令牌，不用 currentColor（P16） */
@@ -122,7 +123,7 @@
 
   <script>
     import { withEmits } from '../boot/emits.js';
-    import { openPreview } from './preview.js';
+    import { openPreview, focusedElement, groupImages, boolAttr } from './preview.js';
 
     /** 插槽里有没有真内容：元素算，纯空白文本不算（同 mc-avatar 的判法） */
     const slotHasContent = (slot) =>
@@ -151,8 +152,9 @@
           radius: 'none',
           // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-image lazy> 失效
           lazy: null,
-          // 点击图片看大图；组内点一张会从这张开始，左右能走完整组（见 previewItems）
-          preview: null,
+          // 点击图片看大图 —— **默认开**，不用写属性；写了 preview-disabled 才关掉（见 previewOn）。
+          // 组内点一张会从这张开始，左右能走完整组（见 previewItems）
+          previewDisabled: null,
         },
 
         ready() {
@@ -175,6 +177,14 @@
              注意力在宿主上，所以 keydown 只能挂宿主，挂不到 shadow 里的 img。 */
           this._onHostKeydown = (event) => this.onHostKeydown(event);
           this.ele.addEventListener('keydown', this._onHostKeydown);
+
+          /* 公开方法 open 挂到宿主上：ofa 不会把组件方法挂到元素上，得自己接
+             （同 mc-image-preview / mc-tabs 的 scrollByStep）。先存内部引用再覆盖，防止自激。 */
+          this._open = this.open.bind(this);
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            value: (opener = null) => this._open(opener),
+          });
 
           this.applyImage();
           this.applyFallback();
@@ -201,7 +211,7 @@
           ratio() {
             this.applyRatio();
           },
-          preview() {
+          previewDisabled() {
             this.syncA11y();
           },
         },
@@ -265,39 +275,49 @@
             this.$emit('error', { src: this.ele.getAttribute('src') ?? '' });
           },
 
-          /** 预览：只有「开了 preview + 图已就绪」才响应；失败图点了也没东西看 */
+          /** 点击预览：图已就绪才响应（默认开）；失败图点了也没东西看 —— 主动调 open() 不走这道门 */
           onClick() {
-            if (!this.flag('preview') || !this.ele.hasAttribute('data-has-image')) return;
-            const items = this.previewItems();
-            const index = Math.max(0, items.indexOf(this.ele));
-            openPreview({
-              items,
-              index,
+            if (!this.previewOn() || !this.ele.hasAttribute('data-has-image')) return;
+            this.open(this.ele);
+          },
+
+          /**
+           * 打开自己的预览。组内就是「从这张开始」，左右能走完整组。
+           *
+           * 点击路径要过 `preview-disabled` / 加载状态两道门；这里是显式调用，不拦 —— 写了
+           * `preview-disabled` 的图自己也能被打开，只是它不进别人的相册（见 previewItems）。
+           * 起点与载荷都由 openPreview 归一后交回，这里不自己夹、不自己拼。
+           * @param {Element | null} [opener] 关闭后焦点还给它：默认记调用那一刻的焦点元素（通常是按钮），
+           *   都没有就还给自己
+           * @returns {{ src: string, index: number, total: number } | null} 打开后的起点；没图可看时为 null
+           */
+          open(opener = null) {
+            const siblings = this.previewItems();
+            const at = siblings.indexOf(this.ele);
+            // 自己不在相册里（写了 preview-disabled）：这一趟只看自己
+            const opened = openPreview({
+              items: at < 0 ? [this.ele] : siblings,
+              index: at < 0 ? 0 : at,
               loop: this.previewLoop(),
-              opener: this.ele,
+              opener: opener ?? focusedElement() ?? this.ele,
               onClose: () => this.$emit('close'),
             });
-            this.$emit('open', {
-              src: this.ele.getAttribute('src') ?? '',
-              index,
-              total: items.length,
-            });
+            if (opened) this.$emit('open', opened);
+            return opened;
           },
 
           /** 宿主带按钮语义就得有按钮的行为：Enter / Space 等价于点击 */
           onHostKeydown(event) {
             if (event.target !== this.ele) return;
             if (event.key !== 'Enter' && event.key !== ' ') return;
-            if (!this.flag('preview') || !this.ele.hasAttribute('data-has-image')) return;
+            if (!this.previewOn() || !this.ele.hasAttribute('data-has-image')) return;
             event.preventDefault();
             this.onClick();
           },
 
-          /** 组内预览的成员：最近的 mc-image-group 里所有开了 preview 的图，按 DOM 顺序 */
+          /** 组内预览的成员：最近的 mc-image-group 里所有没关预览的图，按 DOM 顺序 */
           previewItems() {
-            const group = this.previewGroup();
-            if (!group) return [this.ele];
-            const items = [...group.querySelectorAll('mc-image[preview]')];
+            const items = groupImages(this.previewGroup());
             return items.length ? items : [this.ele];
           },
 
@@ -307,16 +327,28 @@
 
           /** 组上的 loop：到头绕回第一张；不写就停在两端，按钮禁用 */
           previewLoop() {
-            const raw = this.previewGroup()?.getAttribute('loop') ?? null;
-            return raw !== null && raw !== 'false';
+            const group = this.previewGroup();
+            return !!group && boolAttr(group, 'loop');
           },
 
-          /** 预览可点 = 宿主是按钮：preview 且有图才给 role / tabindex，否则退回一张普通图 */
+          /** 预览可点 = 宿主是按钮：没写 preview-disabled、且有图，才给 role / tabindex */
           syncA11y() {
             if (!this._live) return;
-            const on = this.flag('preview') && this.ele.hasAttribute('data-has-image');
-            this.setAttr('role', on ? 'button' : '');
-            this.setAttr('tabindex', on ? '0' : '');
+            const on = this.previewOn();
+            this.mirror('data-preview-on', on); // CSS 的 cursor 认这个（判不了 `="false"`）
+            const interactive = on && this.ele.hasAttribute('data-has-image');
+            this.setAttr('role', interactive ? 'button' : '');
+            this.setAttr('tabindex', interactive ? '0' : '');
+          },
+
+          /**
+           * preview 是「默认开」的开关：没写属性算开，写了 preview-disabled 才算关。
+           * 用正向的 disabled 而不是 preview 本身，是因为 ofa 的布尔绑定把 `false` 写成
+           * `attr="false"`（README 1.4），正向开关让 `:preview-disabled="false"` 自然等于「开」，
+           * 不用为「默认值 true」发明一个反向读法。
+           */
+          previewOn() {
+            return !this.flag('preview-disabled');
           },
 
           /** 三条状态一起落：宿主属性即状态，CSS 只认它们 */
@@ -329,8 +361,7 @@
 
           /** 布尔属性看「在不在」，`="false"` 不算真（同 README 1.4 的 boolAttr） */
           flag(name) {
-            const raw = this.ele.getAttribute(name);
-            return raw !== null && raw !== 'false';
+            return boolAttr(this.ele, name);
           },
 
           /** 值型属性：空值表示撤掉（mirror 只管布尔，带值的走这里） */

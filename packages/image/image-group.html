@@ -17,13 +17,53 @@
   <slot></slot>
 
   <script>
-    /* 组没有行为：预览的成员范围与 loop 都是 mc-image 打开预览时回来问的
-       （见 image.html 的 previewItems / previewLoop）—— 组只声明 loop 这个属性存在。 */
+    import { groupImages } from './preview.js';
+
+    /* 组不存状态：成员范围与 loop 都是 mc-image 打开预览时回来问的
+       （见 image.html 的 previewItems / previewLoop）。组唯一的行为是 open()：
+       自己不开浮层，只把「从第几张开始」转给那一张 —— 省得调用方自己去数成员。 */
     export default async () => ({
       tag: 'mc-image-group',
       attrs: {
         // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-image-group loop> 失效
         loop: null,
+      },
+
+      attached() {
+        this._live = true;
+        /* 公开方法挂宿主（ofa 不代劳，同 mc-image / mc-image-preview） */
+        this._open = this.open.bind(this);
+        Object.defineProperty(this.ele, 'open', {
+          configurable: true,
+          value: (index = 0, opener = null) => this._open(index, opener),
+        });
+      },
+
+      detached() {
+        this._live = false;
+      },
+
+      proto: {
+        /**
+         * 打开组里的预览：`index` 是**可预览成员**的序号（0 起，越界夹到两端）。
+         *
+         * 起点交给那张 mc-image 的 open()：它自己知道整组是谁、loop 有没有写，
+         * 组不用把成员列表和属性再传一遍。整组都写了 `preview-disabled` 时没成员可开，什么也不做。
+         * @param {number} [index] 从第几张开始
+         * @param {Element | null} [opener] 关闭后焦点还给它；默认由那张图记住调用时的焦点
+         * @returns {{ src: string, index: number, total: number } | null} 打开后的起点；没开成时为 null
+         */
+        open(index = 0, opener = null) {
+          const items = this.members();
+          if (!items.length) return null;
+          const at = Math.min(Math.max(Math.trunc(Number(index)) || 0, 0), items.length - 1);
+          return items[at].open?.(opener) ?? null;
+        },
+
+        /** 能进相册的成员：组内的 mc-image，没写 `preview-disabled`，按 DOM 顺序 */
+        members() {
+          return groupImages(this.ele);
+        },
       },
     });
   </script>

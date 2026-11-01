@@ -1,0 +1,50 @@
+<template component>
+  <mc-space direction="vertical" gap="16">
+    <!-- 第一行：单张 —— 图铺在页面上，入口也可以是自己按钮调 open() -->
+    <mc-space block wrap-items align="center">
+      <mc-image
+        id="open-one"
+        src="https://picsum.photos/id/22/1200/800"
+        alt="海边的公路"
+        style="width: 160px; height: 110px"></mc-image>
+      <mc-button variant="outline" on:click="openOne()">放大这张</mc-button>
+    </mc-space>
+
+    <!-- 第二行：组 —— open(index) 从第 index 张开始，打开后左右还能走完整组 -->
+    <mc-space block wrap-items align="center">
+      <mc-image-group id="open-group" loop>
+        <mc-image
+          src="https://picsum.photos/id/12/800/600"
+          alt="雪山与湖"
+          style="width: 120px; height: 90px"></mc-image>
+        <mc-image
+          src="https://picsum.photos/id/16/800/1200"
+          alt="海边的礁石"
+          style="width: 68px; height: 90px"></mc-image>
+        <mc-image
+          src="https://picsum.photos/id/35/800/600"
+          alt="桌上的书"
+          style="width: 120px; height: 90px"></mc-image>
+      </mc-image-group>
+      <mc-button variant="outline" on:click="openGroup(1)">从第二张看起</mc-button>
+    </mc-space>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-image-open',
+
+      proto: {
+        /** 图自己有 open()：不给参数就是「从这张开始」 */
+        openOne() {
+          this.shadow.$('#open-one')?.ele?.open();
+        },
+
+        /** 组也有 open(index)：序号按「能进相册的成员」数，越界夹到两端 */
+        openGroup(index) {
+          this.shadow.$('#open-group')?.ele?.open(index);
+        },
+      },
+    });
+  </script>
+</template>

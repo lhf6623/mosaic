@@ -5,6 +5,7 @@
     <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./image.html"></l-m>
     <l-m src="./image-group.html"></l-m>
+    <l-m src="./image-preview.html"></l-m>
     <h1>
       Image
       <code>mc-image</code>
@@ -26,9 +27,6 @@
       <section class="doc-demo">
         <doc-example src="./demos/fit.html">
           <h3 slot="title">填充方式</h3>
-          <p class="doc-hint" slot="hint">
-            cover / contain / fill / none / scale-down 依次排开，框都是同一个 160×100。
-          </p>
         </doc-example>
       </section>
 
@@ -47,68 +45,48 @@
       <section class="doc-demo">
         <doc-example src="./demos/preview.html">
           <h3 slot="title">点击预览</h3>
-          <p class="doc-hint" slot="hint">
-            <code>preview</code>
-            让图变成可点的（光标是放大镜、Tab 能停上去、Enter 能开）；浮层是整页共用的一个， 关掉是
-            Esc / 点遮罩 / 右上角 × 三条路。失败图不响应 —— 点开也只是一块黑。
-          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/open.html" plain-src="./demos/open-plain.html">
+          <h3 slot="title">不用点击，主动打开</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/preview-open.html" plain-src="./demos/preview-open-plain.html">
+          <h3 slot="title">不展示的图，按钮打开</h3>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/group.html">
           <h3 slot="title">图片组</h3>
-          <p class="doc-hint" slot="hint">
-            <code>mc-image-group</code>
-            只做两件事：把图排成一行并换行、给预览划范围。点组里任意一张，预览就从那张开始，
-            左右箭头 / 方向键走完整组；组上写
-            <code>loop</code>
-            末尾绕回第一张。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/fallback.html">
           <h3 slot="title">失败兜底</h3>
-          <p class="doc-hint" slot="hint">
-            兜底内容三级：具名
-            <code>fallback</code>
-            槽 &gt; 默认插槽 &gt;
-            <code>alt</code>
-            文字。要放图标 / 按钮这种结构就用具名槽，只写一句话用默认插槽。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/lazy.html">
           <h3 slot="title">懒加载</h3>
-          <p class="doc-hint" slot="hint">
-            lazy 只是把原生
-            <code>loading="lazy"</code>
-            转给内部图片，视口内看不出差别 —— 它的效果要在长页面往下滚时才出现。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
-        <doc-example src="./demos/events.html">
+        <doc-example src="./demos/events.html" plain-src="./demos/events-plain.html">
           <h3 slot="title">事件回调</h3>
-          <p class="doc-hint" slot="hint">
-            load 的载荷带原图尺寸，error 只带地址；两条都冒泡 + composed，挂在祖先上也能收。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/part.html">
           <h3 slot="title">内部样式</h3>
-          <p class="doc-hint" slot="hint">
-            组件内部只有开了 part 的节点，才能从外面用
-            <code>::part()</code>
-            改样式。
-          </p>
         </doc-example>
       </section>
     </doc-demos>

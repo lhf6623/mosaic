@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+    <l-m
+      src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/image-preview.html"></l-m>
+
+    <!-- 图不展示：宿主自己 display:none，只交出「预览图 + 起点」 -->
+    <mc-image-preview
+      id="pv-one"
+      src="https://picsum.photos/id/12/1200/800"
+      alt="雪山下的湖泊"></mc-image-preview>
+    <mc-button data-open="#pv-one">查看大图</mc-button>
+
+    <!-- 多张：子元素就是相册（<img> / <mc-image> 都行），加的 loop 让末尾绕回第一张 -->
+    <mc-image-preview id="pv-album" loop>
+      <img src="https://picsum.photos/id/78/1200/800" alt="雾中的山谷" />
+      <img src="https://picsum.photos/id/16/800/1200" alt="海边的礁石" />
+    </mc-image-preview>
+    <mc-button variant="outline" data-open="#pv-album">查看相册</mc-button>
+
+    <mc-image-preview id="pv-second">
+      <img src="https://picsum.photos/id/78/1200/800" alt="雾中的山谷" />
+      <img src="https://picsum.photos/id/16/800/1200" alt="海边的礁石" />
+    </mc-image-preview>
+    <mc-button variant="outline" data-open="#pv-second" data-index="1">从第二张开始</mc-button>
+
+    <script type="module">
+      /* 拿到无渲染宿主的实例调它的 open(index?)：任意按钮、任意逻辑都能这么干 */
+      for (const button of document.querySelectorAll('[data-open]')) {
+        button.addEventListener('click', () => {
+          const host = document.querySelector(button.dataset.open);
+          host?.open(Number(button.dataset.index ?? 0));
+        });
+      }
+    </script>
+  </body>
+</html>

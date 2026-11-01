@@ -1,12 +1,65 @@
 <template component>
-  <!-- 同一张 480×320 的图塞进 160×100 的框：从左到右是 cover / contain / fill / none / scale-down -->
+  <!-- 同一张 800×533 的图塞进 140×140 的方框（比例差拉开才能看出填充差异）：
+       cover 裁两侧 / contain 上下留白 / fill 拉伸变形 / none 原尺寸裁切；
+       scale-down 用一张 120×80 的小图 —— 比容器小时保持原尺寸不放大 -->
   <mc-space block wrap-items align="center">
-    <mc-image src="./photo.svg" fit="cover" style="width: 160px; height: 100px"></mc-image>
-    <mc-image src="./photo.svg" fit="contain" style="width: 160px; height: 100px"></mc-image>
-    <mc-image src="./photo.svg" fit="fill" style="width: 160px; height: 100px"></mc-image>
-    <mc-image src="./photo.svg" fit="none" style="width: 160px; height: 100px"></mc-image>
-    <mc-image src="./photo.svg" fit="scale-down" style="width: 160px; height: 100px"></mc-image>
+    <div class="fit-item">
+      <mc-image
+        src="https://picsum.photos/id/15/800/533"
+        alt="瀑布"
+        fit="cover"
+        style="width: 140px; height: 140px"></mc-image>
+      <span class="fit-name">cover</span>
+    </div>
+    <div class="fit-item">
+      <mc-image
+        src="https://picsum.photos/id/15/800/533"
+        alt="瀑布"
+        fit="contain"
+        style="width: 140px; height: 140px"></mc-image>
+      <span class="fit-name">contain</span>
+    </div>
+    <div class="fit-item">
+      <mc-image
+        src="https://picsum.photos/id/15/800/533"
+        alt="瀑布"
+        fit="fill"
+        style="width: 140px; height: 140px"></mc-image>
+      <span class="fit-name">fill</span>
+    </div>
+    <div class="fit-item">
+      <mc-image
+        src="https://picsum.photos/id/15/800/533"
+        alt="瀑布"
+        fit="none"
+        style="width: 140px; height: 140px"></mc-image>
+      <span class="fit-name">none</span>
+    </div>
+    <div class="fit-item">
+      <mc-image
+        src="https://picsum.photos/id/15/120/80"
+        alt="瀑布"
+        fit="scale-down"
+        style="width: 140px; height: 140px"></mc-image>
+      <span class="fit-name">scale-down</span>
+    </div>
   </mc-space>
+
+  <style>
+    /* 每格：图在上、类型名在下，整格居中 */
+    .fit-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .fit-name {
+      font-family: var(--mc-font-mono, ui-monospace, monospace);
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgb(var(--mc-color-fg-muted, 82 82 82));
+    }
+  </style>
 
   <script>
     export default async () => ({ tag: 'demo-image-fit' });
