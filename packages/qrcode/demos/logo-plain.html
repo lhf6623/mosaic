@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：text-sm 这类工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/qrcode/qrcode.html"></l-m>
+
+    <mc-space align="center" wrap-items>
+      <mc-space direction="vertical" align="center" gap="sm">
+        <mc-qrcode
+          id="logo-default"
+          value="https://mofas.dev/mosaic/qrcode"
+          logo-size="0.22"></mc-qrcode>
+        <span class="text-sm">默认留白 / 圆角</span>
+      </mc-space>
+      <mc-space direction="vertical" align="center" gap="sm">
+        <mc-qrcode
+          id="logo-tight"
+          value="https://mofas.dev/mosaic/qrcode"
+          logo-size="0.14"
+          logo-padding="1"
+          logo-radius="0"
+          logo-background="#ccfbf1"></mc-qrcode>
+        <span class="text-sm">小一圈 / 直角 / 浅色底座</span>
+      </mc-space>
+    </mc-space>
+
+    <script>
+      /* 内联的占位图案：换成自己的 logo 地址即可（跨域图能画，但 toDataURL 会拿不到） */
+      const LOGO =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Ccircle cx='32' cy='26' r='9' fill='%23fff'/%3E%3Crect x='18' y='41' width='28' height='6' rx='3' fill='%23fff'/%3E%3C/svg%3E";
+
+      /* 普通 HTML 没有 `:logo` 绑定：设属性交给组件重画 */
+      for (const code of document.querySelectorAll('mc-qrcode')) {
+        code.setAttribute('logo', LOGO);
+      }
+    </script>
+  </body>
+</html>

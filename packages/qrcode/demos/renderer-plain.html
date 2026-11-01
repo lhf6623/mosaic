@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/qrcode/qrcode.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/button/button.html"></l-m>
+
+    <mc-space align="center" wrap-items>
+      <mc-space direction="vertical" align="center" gap="sm">
+        <mc-qrcode id="qr-canvas" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+        <mc-button id="save-canvas" size="sm" variant="outline">下载 PNG</mc-button>
+      </mc-space>
+      <mc-space direction="vertical" align="center" gap="sm">
+        <mc-qrcode id="qr-svg" renderer="svg" value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+        <mc-button id="save-svg" size="sm" variant="outline">下载 SVG</mc-button>
+      </mc-space>
+    </mc-space>
+
+    <script>
+      /* 下载走组件挂在宿主上的方法：canvas 存 PNG、svg 存 .svg，文件名按渲染方式取默认值 */
+      for (const [buttonId, codeId] of [
+        ['save-canvas', 'qr-canvas'],
+        ['save-svg', 'qr-svg'],
+      ]) {
+        document.getElementById(buttonId).addEventListener('click', () => {
+          document.getElementById(codeId).download();
+        });
+      }
+    </script>
+  </body>
+</html>
