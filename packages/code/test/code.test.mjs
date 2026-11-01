@@ -88,7 +88,7 @@ const codeSources = await codePage.evaluate(async () => {
 
   /* 演示里已经不再有单行的 code 属性，所以属性通道直接用下面那个 holder 元素量
      （多行属性值 dedent 后与原文不同，比不了逐字相等） */
-  const bound = window.__deepAll('mc-code').find((el) => textOf(el).includes('绑定来源'));
+  const bound = window.__deepAll('mc-code').find((el) => textOf(el).includes('data.snippet'));
 
   const holder = document.createElement('div');
   holder.innerHTML =
@@ -140,7 +140,7 @@ check(
 );
 check(
   'ofa :code 绑定：内容来自页面 data（:prop 只对 attrs 里声明过的键生效）',
-  !!codeSources.bound && codeSources.bound.includes('绑定来源'),
+  !!codeSources.bound && codeSources.bound.includes('data.snippet'),
   JSON.stringify(codeSources.bound),
 );
 check(

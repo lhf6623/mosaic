@@ -1,10 +1,13 @@
 <template component>
   <mc-space direction="vertical" block>
     <mc-space block wrap-items>
-      <mc-button size="sm" on:click="byData()">改 data 里的 snippet</mc-button>
-      <mc-button size="sm" variant="outline" on:click="byProperty()">el.code = …</mc-button>
-      <mc-button size="sm" variant="outline" on:click="byAttribute()">
-        setAttribute('code', …)
+      <!-- 实心那颗 = 当前内容来自哪条通道；未选中的用 outline -->
+      <mc-button size="sm" data-channel="data" on:click="byData()">换一份文本（改 data）</mc-button>
+      <mc-button size="sm" variant="outline" data-channel="property" on:click="byProperty()">
+        写 JS 属性（el.code）
+      </mc-button>
+      <mc-button size="sm" variant="outline" data-channel="attribute" on:click="byAttribute()">
+        写 HTML 属性（setAttribute）
       </mc-button>
     </mc-space>
 
@@ -14,13 +17,15 @@
       读回
       <code>el.code</code>
       ：
-      <strong id="shown">（还没写）</strong>
+      <strong id="shown">{{snippet}}</strong>
     </div>
   </mc-space>
 
   <script>
-    const BY_DATA = `// 改 data：绑定把新文本写回块里
-const fromData = 'data.snippet 换了一份';`;
+    /* 初始内容就是 data 通道写入的那一份：一开始实心的是「改 data」那颗，
+       块里的文本、读回的值也都是它，三处对得上 */
+    const DATA_A = `const fromData = 'data.snippet 第一份';`;
+    const DATA_B = `const fromData = '再点一次，data 又换了一份';`;
     const BY_PROPERTY = `const byProperty = 'el.code = "…"';`;
     const BY_ATTRIBUTE = `const byAttribute = "setAttribute('code', '…')";`;
 
@@ -32,30 +37,35 @@ const fromData = 'data.snippet 换了一份';`;
          * 代码文本放在组件自己的 data 里，模板用 `:code` 绑过去 ——
          * `:prop` 只对 mc-code 在 attrs 里声明过的键生效（它声明了 code）。
          */
-        snippet: `// 绑定来源：这个组件的 data.snippet
-const greet = (name) => 'Hello, ' + name;
-console.log(greet('Mosaic'));`,
+        snippet: DATA_A,
       },
 
       proto: {
         target() {
           return this.shadow.$('#snippet-target')?.ele;
         },
-        /* 读回写进 DOM 而不是 data：改 data 会让模板重新渲染，
-           `:code` 会把元素上的临时改动按 data 重新盖一遍，读回就白读了。 */
+        /* 选中态与读回值只能命令式改：模板表达不了 —— 它们要跟着元素上**实际**的内容走，
+           写进 data 会触发模板重渲染，`:code` 立刻把元素上的临时写入按 snippet 盖回去。 */
+        markSelected(how) {
+          for (const btn of this.ele.shadowRoot.querySelectorAll('mc-button[data-channel]')) {
+            btn.setAttribute('variant', btn.dataset.channel === how ? 'filled' : 'outline');
+          }
+        },
+        readBack() {
+          this.ele.shadowRoot.querySelector('#shown').textContent = this.target().code;
+        },
         write(code, how) {
           if (how === 'data') this.snippet = code;
           else if (how === 'property') this.target().code = code;
           else this.target().setAttribute('code', code);
+          this.markSelected(how);
           /* 改 data 要等绑定把新文本写进元素（属性那条也要等一个微任务），
              统一放到下一帧再读，三条通道读到的都是稳定值 */
-          requestAnimationFrame(() => {
-            this.shadow.$('#shown').ele.textContent = this.target().code;
-          });
+          requestAnimationFrame(() => this.readBack());
         },
-        /* 换 data 是正路：绑定立刻把新文本写回块里 */
+        /* 换 data 是正路：绑定立刻把新文本写回块里。两份交替，点一下就看得出变化 */
         byData() {
-          this.write(BY_DATA, 'data');
+          this.write(this.snippet === DATA_A ? DATA_B : DATA_A, 'data');
         },
         /* 直接写元素是临时覆盖：这次能改，data 下一次变就盖回 data 的值；
            property 那条同步生效，属性那条走 ofa 的属性观察、微任务里才读得到 */
