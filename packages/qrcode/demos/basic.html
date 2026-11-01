@@ -1,7 +1,19 @@
 <template component>
-  <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+  <mc-space direction="vertical" gap="md">
+    <mc-qrcode :value="payload"></mc-qrcode>
+
+    <!-- 改内容 → 写回 payload → :value 交给组件重画 -->
+    <mc-input
+      style="width: 160px"
+      default-value="扫码看看"
+      placeholder="改内容，码跟着变"
+      on:input="payload = $event.data.value"></mc-input>
+  </mc-space>
 
   <script>
-    export default async () => ({ tag: 'demo-qrcode-basic' });
+    export default async () => ({
+      tag: 'demo-qrcode-basic',
+      data: { payload: '扫码看看' },
+    });
   </script>
 </template>

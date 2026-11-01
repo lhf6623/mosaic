@@ -8,9 +8,25 @@
       type="module"></script>
   </head>
   <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
     <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/qrcode/qrcode.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/input/input.html"></l-m>
 
-    <mc-qrcode value="https://mofas.dev/mosaic/qrcode"></mc-qrcode>
+    <mc-space direction="vertical" gap="md">
+      <mc-qrcode id="dynamic" value="扫码看看"></mc-qrcode>
 
+      <!-- 普通 HTML 没有模板绑定：输入框的值写回属性，组件自己重画 -->
+      <mc-input
+        id="text"
+        style="width: 160px"
+        default-value="扫码看看"
+        placeholder="改内容，码跟着变"></mc-input>
+    </mc-space>
+
+    <script type="module">
+      const input = document.getElementById('text');
+      const code = document.getElementById('dynamic');
+      input.addEventListener('input', (event) => code.setAttribute('value', event.data.value));
+    </script>
   </body>
 </html>
