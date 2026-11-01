@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/image.html"></l-m>
+
+    <mc-space block wrap-items align="center">
+      <!-- 不给尺寸：按图片自身大小落版 -->
+      <mc-image
+        src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/demos/photo.svg"
+        alt="山间的日出"></mc-image>
+      <!-- 只给宽度：高度按原图比例跟着缩 -->
+      <mc-image
+        src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/image/demos/photo.svg"
+        alt="山间的日出"
+        style="width: 96px"></mc-image>
+    </mc-space>
+
+  </body>
+</html>

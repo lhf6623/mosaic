@@ -1,0 +1,29 @@
+<template component>
+  <mc-space block wrap-items align="center">
+    <!-- 坏掉的 data URI：真实场景就是地址写错 / 图片损坏；没内容时兜底显示 alt -->
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="山间的日出"
+      style="width: 160px; height: 100px"></mc-image>
+    <!-- 默认插槽优先于 alt -->
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="山间的日出"
+      style="width: 160px; height: 100px">图片打不开</mc-image>
+    <!-- 具名 fallback 槽：要放图标 / 按钮这类结构时用它，优先级高于默认插槽 -->
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="山间的日出"
+      style="width: 160px; height: 100px">
+      <span
+        slot="fallback"
+        style="padding: 2px 10px; border: 1px solid currentColor; border-radius: 999px">
+        重新上传
+      </span>
+    </mc-image>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-image-fallback' });
+  </script>
+</template>

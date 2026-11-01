@@ -1,0 +1,30 @@
+<!-- mc-image-group — 图片组（与 mc-image 同目录：排图 + 预览分组）。设计取舍见 README.md；本文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 排图容器：换行 flex + gap。尺寸是每张图自己的事（style 宽高或 ratio），
+       组不管成员多大 —— 它只管「排成一行、放不下就换行」。 */
+    :host {
+      display: flex;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+      gap: var(--mc-image-group-gap, var(--mc-space-2, var(--mc-def-space-2)));
+      align-items: flex-start;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    /* 组没有行为：预览的成员范围与 loop 都是 mc-image 打开预览时回来问的
+       （见 image.html 的 previewItems / previewLoop）—— 组只声明 loop 这个属性存在。 */
+    export default async () => ({
+      tag: 'mc-image-group',
+      attrs: {
+        // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-image-group loop> 失效
+        loop: null,
+      },
+    });
+  </script>
+</template>

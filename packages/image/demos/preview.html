@@ -1,0 +1,25 @@
+<template component>
+  <mc-space block wrap-items align="center">
+    <!-- preview：图就绪后光标变放大镜，点开大图；Esc / 点遮罩 / 右上角 × 都能关 -->
+    <mc-image
+      src="./photo.svg"
+      alt="山间的日出"
+      preview
+      style="width: 200px; height: 140px"></mc-image>
+    <mc-image
+      src="./portrait.svg"
+      alt="窗边的人像"
+      preview
+      style="width: 120px; height: 140px"></mc-image>
+    <!-- 失败图不响应预览：没有图可看，点了只会是一块黑 -->
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="坏图不可预览"
+      preview
+      style="width: 120px; height: 140px"></mc-image>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-image-preview' });
+  </script>
+</template>

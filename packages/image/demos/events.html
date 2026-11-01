@@ -1,0 +1,53 @@
+<template component>
+  <mc-space block wrap-items align="center">
+    <mc-image
+      src="./photo.svg"
+      alt="山间的日出"
+      preview
+      style="width: 120px"
+      on:load="markLoad($event)"
+      on:error="markError($event)"
+      on:open="markOpen($event)"
+      on:close="markClose()"></mc-image>
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="坏图"
+      style="width: 120px"
+      on:load="markLoad($event)"
+      on:error="markError($event)"></mc-image>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    load：<strong>{{loaded}}</strong>
+    　error：<strong>{{failed}}</strong>
+    　open：<strong>{{opened}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-image-events',
+
+      data: { loaded: '（还没发）', failed: '（还没发）', opened: '（还没开）' },
+
+      proto: {
+        /* load 带原图尺寸，error 只带地址；open 带当前第几张 / 一共几张 */
+        markLoad(event) {
+          this.loaded = event.data.width + '×' + event.data.height;
+        },
+
+        markError(event) {
+          this.failed = '打不开（' + event.data.src.slice(0, 12) + '…）';
+        },
+
+        markOpen(event) {
+          this.opened = '第 ' + (event.data.index + 1) + ' / ' + event.data.total + ' 张';
+        },
+
+        /* close 在浮层真正收起之后才发（焦点也还回来了） */
+        markClose() {
+          this.opened = '已关闭';
+        },
+      },
+    });
+  </script>
+</template>

@@ -333,6 +333,7 @@ export default async () =>
 | [Tag](./tag/api.md)                   | `mc-tag`                               | `tag/`         | ✅ 已实现 |
 | [Badge](./badge/api.md)               | `mc-badge`                             | `badge/`       | ✅ 已实现 |
 | [Avatar](./avatar/api.md)             | `mc-avatar`                            | `avatar/`      | ✅ 已实现 |
+| [Image](./image/api.md)               | `mc-image` / `mc-image-group`          | `image/`       | ✅ 已实现 |
 | [Spinner](./spinner/api.md)           | `mc-spinner`                           | `spinner/`     | ✅ 已实现 |
 | [Skeleton](./skeleton/api.md)         | `mc-skeleton`                          | `skeleton/`    | ✅ 已实现 |
 | [Empty](./empty/api.md)               | `mc-empty`                             | `empty/`       | ✅ 已实现 |

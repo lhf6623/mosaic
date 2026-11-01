@@ -1,0 +1,356 @@
+<!-- mc-image — 图像；设计取舍见 README.md「设计取舍」。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 = 图框：盒子由使用者定（style 宽高，或 ratio 按父级宽度算高），图片铺满整框 */
+    :host {
+      display: inline-block;
+      box-sizing: border-box;
+      max-width: 100%;
+      overflow: hidden; /* 圆角裁到图片上 */
+      vertical-align: middle;
+      border-radius: var(--mc-image-radius);
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      color: rgb(var(--mc-image-fallback-color));
+
+      /* L3 组件令牌 */
+      --mc-image-radius: var(--mc-radius-none, var(--mc-def-radius-none));
+      --mc-image-placeholder: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-image-fallback-color: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+    }
+
+    /* 2. radius：四档 + 全圆，只换圆角 */
+    :host([radius='sm']) {
+      --mc-image-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+    }
+    :host([radius='md']) {
+      --mc-image-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+    }
+    :host([radius='lg']) {
+      --mc-image-radius: var(--mc-radius-lg, var(--mc-def-radius-lg));
+    }
+    :host([radius='full']) {
+      --mc-image-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+    }
+
+    /* 3. 图片铺满整框；fit 只决定它怎么落进去（框没有确定尺寸时看不出来） */
+    .mc-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    :host([fit='contain']) .mc-image {
+      object-fit: contain;
+    }
+    :host([fit='fill']) .mc-image {
+      object-fit: fill;
+    }
+    :host([fit='none']) .mc-image {
+      object-fit: none;
+    }
+    :host([fit='scale-down']) .mc-image {
+      object-fit: scale-down;
+    }
+
+    /* 4. ratio：宽度交给父级，高度由 --mc-image-ratio 算（写非法值时退回内容高度） */
+    :host([ratio]:not([ratio=''])) {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--mc-image-ratio, auto);
+    }
+
+    /* 5. 状态：加载中 / 失败都是一块占位底；成功后图盖住整框，透明区域不染色 */
+    :host([data-loading]),
+    :host([data-error]) {
+      background-color: rgb(var(--mc-image-placeholder));
+    }
+    :host([data-error]) .mc-image {
+      display: none;
+    }
+
+    /* 6. 兜底层：失败才出现；两级插槽都优先于 alt 文字（data-has-fallback / data-has-named 由脚本镜像，P32） */
+    .mc-fallback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: var(--mc-space-2, var(--mc-def-space-2));
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    :host([data-error]) .mc-fallback {
+      display: flex;
+    }
+    :host([data-has-fallback]) .mc-alt {
+      display: none;
+    }
+    /* 具名兜底槽有内容时默认插槽让位：两级都是「有内容才占位」，具名的那一级更具体 */
+    :host([data-has-named]) .mc-slot {
+      display: none;
+    }
+    ::slotted(*) {
+      max-width: 100%;
+    }
+
+    /* 7. 预览：只有「开了 preview + 图已就绪」才可点可聚焦 —— 失败图点了也没东西看 */
+    :host([preview][data-has-image]) {
+      cursor: zoom-in;
+    }
+    /* 宿主是按钮语义时的焦点环：用 ring 令牌，不用 currentColor（P16） */
+    :host(:focus-visible) {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+  </style>
+
+  <img
+    class="mc-image"
+    part="image"
+    alt=""
+    on:load="onLoad()"
+    on:error="onError()"
+    on:click="onClick()" />
+  <div class="mc-fallback" part="fallback">
+    <span class="mc-alt"></span>
+    <slot class="mc-slot"></slot>
+    <slot name="fallback"></slot>
+  </div>
+
+  <script>
+    import { withEmits } from '../boot/emits.js';
+    import { openPreview } from './preview.js';
+
+    /** 插槽里有没有真内容：元素算，纯空白文本不算（同 mc-avatar 的判法） */
+    const slotHasContent = (slot) =>
+      (slot?.ele?.assignedNodes() ?? []).some(
+        (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
+      );
+
+    export default async () =>
+      withEmits({
+        tag: 'mc-image',
+
+        // 原生 <img> 的 load / error 冒不出 shadow，由组件带载荷重发
+        emits: {
+          load: { data: ['src', 'width', 'height'] },
+          error: { data: ['src'] },
+          // 预览打开 / 关闭：组内切图不重发 open（open 只在「打开那一刻」有意义）
+          open: { data: ['src', 'index', 'total'] },
+          close: {},
+        },
+
+        attrs: {
+          src: '',
+          alt: '',
+          fit: 'cover',
+          ratio: '',
+          radius: 'none',
+          // 布尔属性默认值必须是 null（P1）：false 会让裸属性 <mc-image lazy> 失效
+          lazy: null,
+          // 点击图片看大图；组内点一张会从这张开始，左右能走完整组（见 previewItems）
+          preview: null,
+        },
+
+        ready() {
+          // 这时 shadow 已建好；结构全在模板里，这里只拿引用
+          this._image = this.shadow.$('.mc-image');
+          this._alt = this.shadow.$('.mc-alt');
+          this._slot = this.shadow.$('slot:not([name])');
+          this._namedSlot = this.shadow.$('slot[name="fallback"]');
+        },
+
+        attached() {
+          this._live = true; // 宿主属性一律挂载后才写（P31）
+          this.applyRatio();
+
+          this._onSlotChange = () => this.applyFallback();
+          this._slot?.on('slotchange', this._onSlotChange);
+          this._namedSlot?.on('slotchange', this._onSlotChange);
+
+          /* 预览是可点的，键盘也得能开：宿主在「preview + 有图」时带 tabindex（见 syncA11y），
+             注意力在宿主上，所以 keydown 只能挂宿主，挂不到 shadow 里的 img。 */
+          this._onHostKeydown = (event) => this.onHostKeydown(event);
+          this.ele.addEventListener('keydown', this._onHostKeydown);
+
+          this.applyImage();
+          this.applyFallback();
+          this.syncA11y();
+        },
+
+        detached() {
+          this._slot?.off('slotchange', this._onSlotChange);
+          this._namedSlot?.off('slotchange', this._onSlotChange);
+          this.ele.removeEventListener('keydown', this._onHostKeydown);
+        },
+
+        watch: {
+          src() {
+            this.applyImage();
+          },
+          alt() {
+            this.applyImage();
+            this.applyFallback(); // 失败兜底的文字也跟着 alt 走
+          },
+          lazy() {
+            this.applyLoading();
+          },
+          ratio() {
+            this.applyRatio();
+          },
+          preview() {
+            this.syncA11y();
+          },
+        },
+
+        proto: {
+          /** ratio 只是 CSS 的写法搬到属性上：值写进宿主变量，非法值交回 CSS（同 mc-avatar 的 size 通道） */
+          applyRatio() {
+            if (!this._live) return;
+            const raw = (this.ele.getAttribute('ratio') ?? '').trim();
+            if (raw) this.ele.style.setProperty('--mc-image-ratio', raw);
+            else this.ele.style.removeProperty('--mc-image-ratio');
+          },
+
+          /** lazy → 内部 img 的原生 loading；eager 是它的默认值 */
+          applyLoading() {
+            if (!this._live || !this._image) return;
+            this._image.ele.loading = this.flag('lazy') ? 'lazy' : 'eager';
+          },
+
+          /** src / alt 落到内部 img；换地址时先回「加载中」，等 load / error 再定状态 */
+          applyImage() {
+            if (!this._live || !this._image) return;
+            const el = this.ele;
+            const img = this._image.ele;
+            img.alt = el.getAttribute('alt') ?? '';
+            this.applyLoading();
+
+            const src = (el.getAttribute('src') ?? '').trim();
+            if (src === (img.getAttribute('src') ?? '')) return;
+
+            this.state({ loading: !!src, image: false, error: false });
+            if (!src) {
+              img.removeAttribute('src');
+              return;
+            }
+            img.setAttribute('src', src);
+          },
+
+          /** 失败兜底的文字来源：alt；插槽给了内容就让位 —— 具名 fallback > 默认插槽 > alt */
+          applyFallback() {
+            if (!this._live || !this._alt) return;
+            this._alt.text = this.ele.getAttribute('alt') ?? '';
+            const named = slotHasContent(this._namedSlot);
+            this.mirror('data-has-named', named);
+            this.mirror('data-has-fallback', named || slotHasContent(this._slot));
+          },
+
+          onLoad() {
+            const img = this._image.ele;
+            if (!img.getAttribute('src')) return;
+            this.state({ loading: false, image: true, error: false });
+            this.$emit('load', {
+              src: img.currentSrc || img.getAttribute('src'),
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            });
+          },
+
+          onError() {
+            this.state({ loading: false, image: false, error: true });
+            this.$emit('error', { src: this.ele.getAttribute('src') ?? '' });
+          },
+
+          /** 预览：只有「开了 preview + 图已就绪」才响应；失败图点了也没东西看 */
+          onClick() {
+            if (!this.flag('preview') || !this.ele.hasAttribute('data-has-image')) return;
+            const items = this.previewItems();
+            const index = Math.max(0, items.indexOf(this.ele));
+            openPreview({
+              items,
+              index,
+              loop: this.previewLoop(),
+              opener: this.ele,
+              onClose: () => this.$emit('close'),
+            });
+            this.$emit('open', {
+              src: this.ele.getAttribute('src') ?? '',
+              index,
+              total: items.length,
+            });
+          },
+
+          /** 宿主带按钮语义就得有按钮的行为：Enter / Space 等价于点击 */
+          onHostKeydown(event) {
+            if (event.target !== this.ele) return;
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            if (!this.flag('preview') || !this.ele.hasAttribute('data-has-image')) return;
+            event.preventDefault();
+            this.onClick();
+          },
+
+          /** 组内预览的成员：最近的 mc-image-group 里所有开了 preview 的图，按 DOM 顺序 */
+          previewItems() {
+            const group = this.previewGroup();
+            if (!group) return [this.ele];
+            const items = [...group.querySelectorAll('mc-image[preview]')];
+            return items.length ? items : [this.ele];
+          },
+
+          previewGroup() {
+            return this.ele.closest('mc-image-group');
+          },
+
+          /** 组上的 loop：到头绕回第一张；不写就停在两端，按钮禁用 */
+          previewLoop() {
+            const raw = this.previewGroup()?.getAttribute('loop') ?? null;
+            return raw !== null && raw !== 'false';
+          },
+
+          /** 预览可点 = 宿主是按钮：preview 且有图才给 role / tabindex，否则退回一张普通图 */
+          syncA11y() {
+            if (!this._live) return;
+            const on = this.flag('preview') && this.ele.hasAttribute('data-has-image');
+            this.setAttr('role', on ? 'button' : '');
+            this.setAttr('tabindex', on ? '0' : '');
+          },
+
+          /** 三条状态一起落：宿主属性即状态，CSS 只认它们 */
+          state({ loading, image, error }) {
+            this.mirror('data-loading', loading);
+            this.mirror('data-has-image', image);
+            this.mirror('data-error', error);
+            this.syncA11y(); // 「有图」决定能不能点 —— 状态一变角色跟着变
+          },
+
+          /** 布尔属性看「在不在」，`="false"` 不算真（同 README 1.4 的 boolAttr） */
+          flag(name) {
+            const raw = this.ele.getAttribute(name);
+            return raw !== null && raw !== 'false';
+          },
+
+          /** 值型属性：空值表示撤掉（mirror 只管布尔，带值的走这里） */
+          setAttr(name, value) {
+            if (!this._live) return;
+            if (!value) {
+              if (this.ele.hasAttribute(name)) this.ele.removeAttribute(name);
+              return;
+            }
+            if (this.ele.getAttribute(name) !== value) this.ele.setAttribute(name, value);
+          },
+
+          /** 宿主属性即状态：值没变就不写（P31：只有挂载后才会调到这里） */
+          mirror(name, on) {
+            if (!this._live) return;
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+        },
+      });
+  </script>
+</template>

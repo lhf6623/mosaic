@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" width="480" height="320">
+  <defs>
+    <linearGradient id="photo-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8e6ea" />
+      <stop offset="1" stop-color="#eef9fa" />
+    </linearGradient>
+    <linearGradient id="photo-hill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00808a" />
+      <stop offset="1" stop-color="#00526a" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#photo-sky)" />
+  <circle cx="372" cy="84" r="42" fill="#f4b942" />
+  <path d="M0 232c62-52 116-58 168-24s96 26 148-22 116-44 164-8v142H0z" fill="url(#photo-hill)" />
+  <path d="M0 268c72-34 128-30 182-2s104 22 152-12 100-24 146 4v62H0z" fill="#00394a" />
+  <g fill="#eef9fa" opacity="0.85">
+    <circle cx="96" cy="96" r="14" />
+    <circle cx="124" cy="96" r="20" />
+    <circle cx="152" cy="96" r="12" />
+  </g>
+</svg>

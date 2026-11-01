@@ -1,0 +1,14 @@
+<template component>
+  <!-- 同一张 480×320 的图塞进 160×100 的框：从左到右是 cover / contain / fill / none / scale-down -->
+  <mc-space block wrap-items align="center">
+    <mc-image src="./photo.svg" fit="cover" style="width: 160px; height: 100px"></mc-image>
+    <mc-image src="./photo.svg" fit="contain" style="width: 160px; height: 100px"></mc-image>
+    <mc-image src="./photo.svg" fit="fill" style="width: 160px; height: 100px"></mc-image>
+    <mc-image src="./photo.svg" fit="none" style="width: 160px; height: 100px"></mc-image>
+    <mc-image src="./photo.svg" fit="scale-down" style="width: 160px; height: 100px"></mc-image>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-image-fit' });
+  </script>
+</template>

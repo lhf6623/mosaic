@@ -1,0 +1,30 @@
+<template component>
+  <!-- 组只负责「排成一行 + 换行」，以及预览时把整组当作一个相册：
+       点任意一张都从那张开始，左右箭头 / 方向键走完整组（loop 让末尾绕回第一张） -->
+  <mc-image-group loop>
+    <mc-image
+      src="./photo.svg"
+      alt="山间的日出"
+      preview
+      style="width: 140px; height: 100px"></mc-image>
+    <mc-image
+      src="./portrait.svg"
+      alt="窗边的人像"
+      preview
+      style="width: 140px; height: 100px"></mc-image>
+    <mc-image
+      src="./photo.svg"
+      alt="第二天的日出"
+      preview
+      style="width: 140px; height: 100px"></mc-image>
+    <mc-image
+      src="./portrait.svg"
+      alt="午后的人像"
+      preview
+      style="width: 140px; height: 100px"></mc-image>
+  </mc-image-group>
+
+  <script>
+    export default async () => ({ tag: 'demo-image-group' });
+  </script>
+</template>

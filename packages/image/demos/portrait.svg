@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 480" width="320" height="480">
+  <defs>
+    <linearGradient id="tall-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fcf4e6" />
+      <stop offset="1" stop-color="#f6e3c4" />
+    </linearGradient>
+    <linearGradient id="tall-trunk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00808a" />
+      <stop offset="1" stop-color="#004552" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="480" fill="url(#tall-bg)" />
+  <circle cx="160" cy="128" r="64" fill="#9ad9df" />
+  <rect x="146" y="300" width="28" height="150" rx="6" fill="#a9743f" />
+  <g fill="url(#tall-trunk)">
+    <ellipse cx="160" cy="240" rx="86" ry="70" />
+    <ellipse cx="112" cy="196" rx="46" ry="40" />
+    <ellipse cx="208" cy="196" rx="46" ry="40" />
+  </g>
+  <path d="M0 440c58-18 104-16 160 4s104 18 160 2v34H0z" fill="#00526a" opacity="0.25" />
+</svg>

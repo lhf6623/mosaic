@@ -1,0 +1,25 @@
+<template component>
+  <style>
+    /* 内部样式：只有标了 part 的节点能从外面改 —— image 是内部 <img>，fallback 是失败兜底层 */
+    mc-image::part(image) {
+      filter: grayscale(1) contrast(1.15);
+    }
+    mc-image::part(fallback) {
+      background: rgb(var(--mc-color-danger-subtle));
+      color: rgb(var(--mc-color-danger));
+      font-weight: var(--mc-weight-medium);
+    }
+  </style>
+
+  <mc-space block wrap-items align="center">
+    <mc-image src="./photo.svg" alt="山间的日出" style="width: 160px"></mc-image>
+    <mc-image
+      src="data:image/png;base64,AAAA"
+      alt="山间的日出"
+      style="width: 160px; height: 100px"></mc-image>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-image-part' });
+  </script>
+</template>

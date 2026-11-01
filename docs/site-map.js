@@ -180,6 +180,15 @@ export const SITE = [
               '头像。有图显示图，没图 / 加载失败落到首字母或自定义兜底；尺寸、圆角与兜底色可配。',
           },
           {
+            order: 38,
+            label: 'Image',
+            zh: '图像',
+            path: 'packages/image/page.html',
+            type: 'component',
+            summary:
+              '图像。一个图框：填充方式、圆角、宽高比可配，点开看大图；图片组里预览能左右切；失败落到 alt 或插槽。',
+          },
+          {
             order: 40,
             label: 'Table',
             zh: '表格',

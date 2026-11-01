@@ -1,0 +1,125 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <!-- 三栏与左栏菜单在 docs/doc-layout.html；面包屑/翻页由导航数据派生 -->
+  <div class="doc-body">
+    <!-- 例子 = demos/*.html（ofa 组件，可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
+    <l-m src="./image.html"></l-m>
+    <l-m src="./image-group.html"></l-m>
+    <h1>
+      Image
+      <code>mc-image</code>
+    </h1>
+    <p class="doc-lead">
+      图像：一张图加一个框 —— 填充方式、圆角、宽高比可配，点开能看大图；容器 + 子项两个标签，
+      组内的预览能左右切换。加载中留一块底色，失败落到 alt 或插槽。
+    </p>
+
+    <h2>例子</h2>
+
+    <doc-demos>
+      <section class="doc-demo">
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/fit.html">
+          <h3 slot="title">填充方式</h3>
+          <p class="doc-hint" slot="hint">
+            cover / contain / fill / none / scale-down 依次排开，框都是同一个 160×100。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/ratio.html">
+          <h3 slot="title">宽高比</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/radius.html">
+          <h3 slot="title">圆角</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/preview.html">
+          <h3 slot="title">点击预览</h3>
+          <p class="doc-hint" slot="hint">
+            <code>preview</code>
+            让图变成可点的（光标是放大镜、Tab 能停上去、Enter 能开）；浮层是整页共用的一个， 关掉是
+            Esc / 点遮罩 / 右上角 × 三条路。失败图不响应 —— 点开也只是一块黑。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/group.html">
+          <h3 slot="title">图片组</h3>
+          <p class="doc-hint" slot="hint">
+            <code>mc-image-group</code>
+            只做两件事：把图排成一行并换行、给预览划范围。点组里任意一张，预览就从那张开始，
+            左右箭头 / 方向键走完整组；组上写
+            <code>loop</code>
+            末尾绕回第一张。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/fallback.html">
+          <h3 slot="title">失败兜底</h3>
+          <p class="doc-hint" slot="hint">
+            兜底内容三级：具名
+            <code>fallback</code>
+            槽 &gt; 默认插槽 &gt;
+            <code>alt</code>
+            文字。要放图标 / 按钮这种结构就用具名槽，只写一句话用默认插槽。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/lazy.html">
+          <h3 slot="title">懒加载</h3>
+          <p class="doc-hint" slot="hint">
+            lazy 只是把原生
+            <code>loading="lazy"</code>
+            转给内部图片，视口内看不出差别 —— 它的效果要在长页面往下滚时才出现。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            load 的载荷带原图尺寸，error 只带地址；两条都冒泡 + composed，挂在祖先上也能收。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            组件内部只有开了 part 的节点，才能从外面用
+            <code>::part()</code>
+            改样式。
+          </p>
+        </doc-example>
+      </section>
+    </doc-demos>
+
+    <!-- 参考区（属性 / 事件 / 插槽 / part）由 api.md 渲染，不手抄 —— 改接口改那份 -->
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    // 挂到分区布局页（三栏 + 左右栏目录都在它那里）；相对本页面文件解析
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>
