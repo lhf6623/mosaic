@@ -144,10 +144,15 @@ const sameKeys = (a, b) => [...a].sort().join(',') === [...b].sort().join(',');
 export function auditComponent(file, text) {
   const problems = [];
   const declared = emitsSpec(text);
-  const wired = /\bwithEmits\s*\(/.test(maskComments(text));
+  const wired = /\b(?:withEmits|withOptions)\s*\(/.test(maskComments(text));
+  // 包装器现在管两半（emits + slots）：只写了 slots 的组件同样是合法用法
+  const hasSlotDecl = /\bslots\s*:\s*\{/.test(maskComments(text));
   if (declared.size && !wired)
-    problems.push(`${file}：声明了 emits，但组件定义没有用 withEmits(...) 包起来 —— 声明不会生效`);
-  if (wired && !declared.size) problems.push(`${file}：用了 withEmits(...) 却没有 emits 声明`);
+    problems.push(
+      `${file}：声明了 emits，但组件定义没有用 withOptions(...) 包起来 —— 声明不会生效`,
+    );
+  if (wired && !declared.size && !hasSlotDecl)
+    problems.push(`${file}：用了 withOptions(...) 却既没有 emits 也没有 slots 声明`);
 
   for (const raw of rawDispatches(text)) {
     problems.push(
@@ -400,8 +405,8 @@ export function auditSelfTest() {
 
   const unwired = ok.replace('withEmits({', '({');
   eq(
-    '声明没接 withEmits',
-    auditComponent('x.html', unwired).some((p) => p.includes('withEmits')),
+    '声明没接 withOptions',
+    auditComponent('x.html', unwired).some((p) => p.includes('withOptions')),
     true,
   );
 

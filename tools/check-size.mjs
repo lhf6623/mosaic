@@ -36,9 +36,12 @@ const SHARED = [
   { file: 'packages/boot/color-math.js', raw: 3 * 1024, gzip: 1.75 * 1024 },
   // 组件共用：color 收 hex 的接线器，接了它的组件才下
   { file: 'packages/boot/color-attr.js', raw: 7.5 * 1024, gzip: 3.75 * 1024 },
-  // 组件共用：事件声明 → $emit 派发；有事件的组件才下（声明住在组件定义里）
-  // 2026-10 把 $emit 挂到 proto、并保留 proto 上的 getter（descriptor 合并），实测 3.6 / 1.8 KB
-  { file: 'packages/boot/emits.js', raw: 4 * 1024, gzip: 2 * 1024 },
+  // 组件共用：声明 → 运行时出口（emits 的 $emit 派发 + slots 的 $slots / data-has-* 反射）；
+  // 有事件或插槽判定的组件才下（声明住在组件定义里）
+  // 2026-11 事件与插槽合流到 options.js：实测 12.4 / 4.9 KB（多出来的主要是 JSDoc 类型注释）
+  { file: 'packages/boot/options.js', raw: 13 * 1024, gzip: 5.25 * 1024 },
+  // 旧路径，只剩一行转发（外部 import 不至于 404）
+  { file: 'packages/boot/emits.js', raw: 1 * 1024, gzip: 0.75 * 1024 },
   // 按需引入：整段子树要任意色才下；数学已抽到 color-math.js
   { file: 'packages/boot/tone.js', raw: 10.5 * 1024, gzip: 5.0 * 1024 },
   // 已被 mosaic.css 包含，单列为了盯住令牌的增长

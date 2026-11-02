@@ -229,15 +229,15 @@
 
   <script>
     import { colorAttr } from '../boot/color-attr.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-tag',
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['selected'] },
           close: {},

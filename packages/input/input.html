@@ -161,13 +161,14 @@
   <script>
     /* 输入框内容被裁掉时，hover 弹完整值（聚焦后让位给编辑；密码 / 文件不回显） */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-input',
+        slots: { prefix: { reflect: 'prefix' }, suffix: { reflect: 'suffix' } },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           input: { data: ['value'] },
           change: { data: ['value'] },
@@ -197,9 +198,8 @@
           // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
           /* 行为层只拿元素引用（模板已渲染），不造节点：原生元素走 .ele，插槽事件走 ofa 的 on / off */
           this._input = this.shadow.$('.mc-input')?.ele ?? null;
-          this._slots = ['prefix', 'suffix']
-            .map((name) => this.shadow.$(`slot[name="${name}"]`))
-            .filter(Boolean);
+          // 前后缀进出一变就重判（订阅由插槽声明统一接线，见 boot/options.js）
+          this.$slots.onChange(() => this.applyState());
           // 声明式 HTML：升级时 default-value 已经在宿主上，这里就能读到
           this.applyDefaultValue();
 
@@ -233,13 +233,10 @@
           // createElement 之后再写 default-value 的那种：ready() 那会儿属性还没在，补一次
           this.applyDefaultValue();
           this._defaultApplied = true;
-          this._onSlotChange = () => this.applyState();
-          for (const slot of this._slots) slot.on('slotchange', this._onSlotChange);
           this.applyState();
         },
 
         detached() {
-          for (const slot of this._slots) slot.off('slotchange', this._onSlotChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
         },
@@ -328,19 +325,7 @@
                 !this.boolOn('readonly') &&
                 value !== '',
             );
-            this.mirror('data-has-prefix', this.slotHasContent('prefix'));
-            this.mirror('data-has-suffix', this.slotHasContent('suffix'));
             this._overflowTip?.check();
-          },
-
-          /** 具名插槽有没有分到东西：**元素即内容**；纯文本 / 注释节点要非空白才算。
-            插槽分没分到内容是运行时的 DOM 事实（模板看不见），只能读 slot.assignedNodes()。 */
-          slotHasContent(name) {
-            const slot = this.shadow.$(`slot[name="${name}"]`);
-            return (slot?.ele?.assignedNodes() ?? []).some(
-              (node) =>
-                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-            );
           },
 
           /** 只在真的变了时才写宿主 —— 否则每次按键都白触发一轮样式重算 */

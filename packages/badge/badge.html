@@ -169,119 +169,112 @@
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；徽标默认浅底外观，所以接 subtle-fill */
     import { colorAttr } from '../boot/color-attr.js';
+    import { withOptions } from '../boot/options.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
-    export default async () => ({
-      tag: 'mc-badge',
+    export default async () =>
+      withOptions({
+        tag: 'mc-badge',
+        slots: { default: {} },
 
-      attrs: {
-        color: 'primary',
-        variant: 'subtle',
-        size: 'md',
-        // 徽标文字。原来走默认插槽；现在默认插槽是容器，内容改走这里
-        content: '',
-        // 有容器时徽标块贴哪个角；没有容器时无意义
-        placement: 'top-end',
-        // 布尔属性默认值必须是 null（P1）
-        dot: null,
-        invisible: null,
-        // 数字型属性：attr 是字符串，applyText 里自己 parse（P4：属性到 data 是异步的）
-        max: null,
-      },
-
-      /* 徽标文字由模板渲染（content / max / dot 三者的结果落在这里），脚本只算值 */
-      data: {
-        // 不叫 text：`text` 是 ofa $.fn 上的方法名，data 同名字段注册会直接抛错
-        textValue: '',
-      },
-
-      ready() {
-        // 这里 shadow 已建好（宿主属性一律留到 attached 才写，P31）；shadow 内取引用走 this.shadow.$
-        this._slot = this.shadow.$('slot');
-      },
-
-      attached() {
-        this._live = true;
-        // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
-        color.sync(this.ele, this.color);
-
-        this._onSlotChange = () => this.applyAnchor();
-        this._slot?.on('slotchange', this._onSlotChange);
-        // 首次 slotchange 不一定在挂载前发生，这里补一次（同 mc-divider）
-        this.normalizeBoolAttrs();
-        this.applyAnchor();
-        this.applyText();
-      },
-
-      detached() {
-        this._slot?.off('slotchange', this._onSlotChange);
-      },
-
-      watch: {
-        // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心「值变了」
-        color(value) {
-          color.change(this.ele, value);
+        attrs: {
+          color: 'primary',
+          variant: 'subtle',
+          size: 'md',
+          // 徽标文字。原来走默认插槽；现在默认插槽是容器，内容改走这里
+          content: '',
+          // 有容器时徽标块贴哪个角；没有容器时无意义
+          placement: 'top-end',
+          // 布尔属性默认值必须是 null（P1）
+          dot: null,
+          invisible: null,
+          // 数字型属性：attr 是字符串，applyText 里自己 parse（P4：属性到 data 是异步的）
+          max: null,
         },
-        content() {
-          this.applyText();
+
+        /* 徽标文字由模板渲染（content / max / dot 三者的结果落在这里），脚本只算值 */
+        data: {
+          // 不叫 text：`text` 是 ofa $.fn 上的方法名，data 同名字段注册会直接抛错
+          textValue: '',
         },
-        max() {
-          this.applyText();
-        },
-        dot() {
-          this.applyText();
-        },
-        invisible() {
+
+        attached() {
+          this._live = true;
+          // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
+          color.sync(this.ele, this.color);
+
+          // 容器进出一变就重判（订阅由插槽声明统一接线，见 boot/options.js）
+          this.$slots.onChange(() => this.applyAnchor());
           this.normalizeBoolAttrs();
-        },
-      },
-
-      proto: {
-        /** 默认插槽里有没有元素 → 有没有容器；结果镜像到宿主 data-anchored（CSS 只认这个属性） */
-        applyAnchor() {
-          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
-          const has = (this._slot?.ele?.assignedElements() ?? []).length > 0;
-          this.mirror('data-anchored', has);
+          this.applyAnchor();
+          this.applyText();
         },
 
-        /** content / max / dot → 徽标文字。dot 打开时内容整块不显示（两状态互斥） */
-        applyText() {
-          const el = this.ele;
-          const dot = this.boolAttr('dot');
-          const raw = dot ? '' : (el.getAttribute('content') ?? '');
-          const maxAttr = el.getAttribute('max');
-          const max = maxAttr === null ? NaN : Number(maxAttr);
-          const over = /^[0-9]+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
-          /* 文字写 data、由模板 {{textValue}} 渲染（模板是唯一渲染源） */
-          this.textValue = over ? String(max) + '+' : raw;
-          if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
-          this.mirror('data-empty', !dot && raw.trim() === '');
+        watch: {
+          // 首次触发落在构造期（P5），跳过由 colorAttr 内部处理；这里只关心「值变了」
+          color(value) {
+            color.change(this.ele, value);
+          },
+          content() {
+            this.applyText();
+          },
+          max() {
+            this.applyText();
+          },
+          dot() {
+            this.applyText();
+          },
+          invisible() {
+            this.normalizeBoolAttrs();
+          },
         },
 
-        /** 布尔属性的读法：存在且值不是 "false"（ofa 的绑定会把 false 写成 attr="false"） */
-        boolAttr(name) {
-          const raw = this.ele.getAttribute(name);
-          return raw !== null && raw !== 'false';
-        },
+        proto: {
+          /** 默认插槽里有没有元素 → 有没有容器；结果镜像到宿主 data-anchored（CSS 只认这个属性）。
+            只数元素：纯文本不算容器（与 $slots.has 的「有内容」不是一回事） */
+          applyAnchor() {
+            if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
+            this.mirror('data-anchored', this.$slots.elements('default').length > 0);
+          },
 
-        /** 把绑定写法 dot="false" / invisible="false" 规范化掉，CSS :host([...]) 才判得准（P31） */
-        normalizeBoolAttrs() {
-          if (!this._live) return;
-          for (const name of ['dot', 'invisible']) {
+          /** content / max / dot → 徽标文字。dot 打开时内容整块不显示（两状态互斥） */
+          applyText() {
+            const el = this.ele;
+            const dot = this.boolAttr('dot');
+            const raw = dot ? '' : (el.getAttribute('content') ?? '');
+            const maxAttr = el.getAttribute('max');
+            const max = maxAttr === null ? NaN : Number(maxAttr);
+            const over = /^[0-9]+$/.test(raw) && Number.isFinite(max) && Number(raw) > max;
+            /* 文字写 data、由模板 {{textValue}} 渲染（模板是唯一渲染源） */
+            this.textValue = over ? String(max) + '+' : raw;
+            if (!this._live) return; // P31：构造期往宿主写属性会抛 NotSupportedError
+            this.mirror('data-empty', !dot && raw.trim() === '');
+          },
+
+          /** 布尔属性的读法：存在且值不是 "false"（ofa 的绑定会把 false 写成 attr="false"） */
+          boolAttr(name) {
             const raw = this.ele.getAttribute(name);
-            if (raw === null || raw === '') continue;
-            if (raw === 'false' || raw === '0') this.ele.removeAttribute(name);
-            else this.ele.setAttribute(name, '');
-          }
-        },
+            return raw !== null && raw !== 'false';
+          },
 
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
+          /** 把绑定写法 dot="false" / invisible="false" 规范化掉，CSS :host([...]) 才判得准（P31） */
+          normalizeBoolAttrs() {
+            if (!this._live) return;
+            for (const name of ['dot', 'invisible']) {
+              const raw = this.ele.getAttribute(name);
+              if (raw === null || raw === '') continue;
+              if (raw === 'false' || raw === '0') this.ele.removeAttribute(name);
+              else this.ele.setAttribute(name, '');
+            }
+          },
+
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

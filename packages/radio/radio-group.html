@@ -45,13 +45,14 @@
   <div class="mc-base" part="base"><slot></slot></div>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-radio-group',
+        slots: { default: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['value'] },
         },
@@ -83,11 +84,9 @@
           this._mounted = true; // 宿主属性只能在这之后写（P31）
 
           /* 行为层只拿元素引用（模板已渲染），不造节点：插槽事件走 ofa 的 on / off */
-          this._slot = this.shadow.$('slot');
-          this._onSlotChange = () => this.onSlotChange();
+          this.$slots.onChange(() => this.onSlotChange());
           this._onClick = (event) => this.onClick(event);
           this._onKeydown = (event) => this.onKeydown(event);
-          this._slot?.on('slotchange', this._onSlotChange);
           /* 行为层（组内交互）：子项住 light DOM，模板看不到它们的事件；click / keydown 都是 composed，
              从子项 shadow 里的原生 radio 冒到组宿主上，所以监听挂在宿主。 */
           this.ele.addEventListener('click', this._onClick);
@@ -109,7 +108,6 @@
         },
 
         detached() {
-          this._slot?.off('slotchange', this._onSlotChange);
           this.ele.removeEventListener('click', this._onClick);
           this.ele.removeEventListener('keydown', this._onKeydown);
         },

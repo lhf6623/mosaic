@@ -192,7 +192,7 @@
   <script>
     /* 定住滚动条的小工具：开合原生浮层时浏览器可能顺手滚页面（见该文件头的实测） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     /* 行为层例外（模板只落锚点 / 面板 / 箭头结构，下面这些模板表达不了）：
        · 原生 popover 开合与 light dismiss（showPopover / hidePopover / 原生 toggle）；
@@ -212,10 +212,10 @@
     };
 
     export default () =>
-      withEmits({
+      withOptions({
         tag: 'mc-popover',
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           'before-open': { detail: ['reason'], cancelable: true },
           open: { detail: ['reason'] },

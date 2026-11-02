@@ -143,13 +143,13 @@
   </label>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-switch',
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['checked'] },
         },

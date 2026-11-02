@@ -294,16 +294,17 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     export default async ({ load }) => {
       /* mc-option 是这个单元的另一半：先注册它，attached() 收选项时它们才已升级好（路径相对本文件） */
       await load('./option.html');
 
-      return withEmits({
+      return withOptions({
         tag: 'mc-select',
+        slots: { default: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['value'] },
           clear: {},
@@ -341,7 +342,6 @@
           this._valueEl = this.shadow.$('.mc-value')?.ele;
           this._clearEl = this.shadow.$('.mc-clear')?.ele;
           this._panel = this.shadow.$('.mc-panel')?.ele;
-          this._slot = this.shadow.$('slot.mc-options');
 
           this._items = [];
           this._active = -1;
@@ -366,8 +366,8 @@
         },
 
         attached() {
-          this._onSlotChange = () => this.collectOptions();
-          this._slot.on('slotchange', this._onSlotChange);
+          /* 选项进出一变就重收集（订阅由插槽声明统一接线，见 boot/options.js） */
+          this.$slots.onChange(() => this.collectOptions());
 
           /* 点外部关闭必须用 composedPath（P20）：contains(e.target) 在 shadow 边界上拿到的是宿主，必然误判 */
           this._onDocPointerDown = (event) => {
@@ -386,7 +386,6 @@
 
         detached() {
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
-          this._slot?.off('slotchange', this._onSlotChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
           this._scrollGuard?.dispose();

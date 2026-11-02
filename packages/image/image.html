@@ -122,18 +122,13 @@
   </div>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
     import { openPreview, focusedElement, groupImages, boolAttr } from './preview.js';
-
-    /** 插槽里有没有真内容：元素算，纯空白文本不算（同 mc-avatar 的判法） */
-    const slotHasContent = (slot) =>
-      (slot?.ele?.assignedNodes() ?? []).some(
-        (node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-      );
+    import { withOptions } from '../boot/options.js';
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-image',
+        slots: { default: {}, fallback: {} },
 
         // 原生 <img> 的 load / error 冒不出 shadow，由组件带载荷重发
         emits: {
@@ -161,17 +156,13 @@
           // 这时 shadow 已建好；结构全在模板里，这里只拿引用
           this._image = this.shadow.$('.mc-image');
           this._alt = this.shadow.$('.mc-alt');
-          this._slot = this.shadow.$('slot:not([name])');
-          this._namedSlot = this.shadow.$('slot[name="fallback"]');
+          // 槽内容变了要重判兜底层（订阅由插槽声明统一接线，见 boot/options.js）
+          this.$slots.onChange(() => this.applyFallback());
         },
 
         attached() {
           this._live = true; // 宿主属性一律挂载后才写（P31）
           this.applyRatio();
-
-          this._onSlotChange = () => this.applyFallback();
-          this._slot?.on('slotchange', this._onSlotChange);
-          this._namedSlot?.on('slotchange', this._onSlotChange);
 
           /* 预览是可点的，键盘也得能开：宿主在「preview + 有图」时带 tabindex（见 syncA11y），
              注意力在宿主上，所以 keydown 只能挂宿主，挂不到 shadow 里的 img。 */
@@ -192,8 +183,6 @@
         },
 
         detached() {
-          this._slot?.off('slotchange', this._onSlotChange);
-          this._namedSlot?.off('slotchange', this._onSlotChange);
           this.ele.removeEventListener('keydown', this._onHostKeydown);
         },
 
@@ -254,9 +243,10 @@
           applyFallback() {
             if (!this._live || !this._alt) return;
             this._alt.text = this.ele.getAttribute('alt') ?? '';
-            const named = slotHasContent(this._namedSlot);
+            /* 两条状态是组合出来的（具名兜底 / 具名兜底或默认槽），所以不交给 reflect 自动反射 */
+            const named = this.$slots.has('fallback');
             this.mirror('data-has-named', named);
-            this.mirror('data-has-fallback', named || slotHasContent(this._slot));
+            this.mirror('data-has-fallback', named || this.$slots.has('default'));
           },
 
           onLoad() {

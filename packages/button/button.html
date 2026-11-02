@@ -290,6 +290,7 @@
     /* color 也收 hex（语义名交给 CSS，hex 走这一个接线器）；语义、边界与三条坑见 color-attr.js 文件头。
        hex 是行为层的例外：值不是语义名，CSS 属性选择器表达不了；只写宿主 CSS 变量（原生属性走 .ele），不碰渲染结构。 */
     import { colorAttr } from '../boot/color-attr.js';
+    import { withOptions } from '../boot/options.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent'] });
 
@@ -299,8 +300,9 @@
       let iconsLoaded;
       const ensureIcons = () => (iconsLoaded ??= load('../icon/icon.html'));
 
-      return {
+      return withOptions({
         tag: 'mc-button',
+        slots: { icon: {}, default: {}, 'icon-right': {} },
 
         attrs: {
           color: 'primary',
@@ -321,7 +323,6 @@
 
         ready() {
           // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）
-          this._labelSlot = this.shadow.$('slot:not([name])');
         },
 
         attached() {
@@ -330,15 +331,9 @@
           if (this.icon || this.iconRight) ensureIcons();
           /* 默认插槽空不空只能看实际分到的节点（模板 o-if 看不到 slot 分配）：
              文字一没就把 .mc-label 折叠掉，icon 单独用时不留一份空 gap（行为层例外，同 mc-alert）。
-             这条订阅留在脚本里：与 alert / input / textarea 等 8 个插槽判定组件同一手法，
-             `slotchange` 的引用跨两处（attached 订阅 / detached 退订），模板绑定反而对不上。 */
-          this._onSlotChange = () => this.syncLabel();
-          this._labelSlot?.on('slotchange', this._onSlotChange);
+             订阅由插槽声明统一接线、detached 自动退订（见 boot/options.js）。 */
+          this.$slots.onChange(() => this.syncLabel());
           this.syncLabel();
-        },
-
-        detached() {
-          this._labelSlot?.off('slotchange', this._onSlotChange);
         },
 
         watch: {
@@ -379,14 +374,10 @@
             });
           },
 
-          /** 默认插槽有没有内容：文字 / 图标都算（空内容折叠的唯一输入，见 attached） */
+          /** 默认插槽有没有内容：文字 / 图标都算（空内容折叠的唯一输入，见 attached）。
+             属性名是 data-no-label（否定式），跟 data-has-* 的反射前缀对不上，所以手写 */
           syncLabel() {
-            const nodes = this._labelSlot?.ele?.assignedNodes() ?? [];
-            const has = nodes.some(
-              (node) =>
-                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-            );
-            this.mirror('data-no-label', !has);
+            this.mirror('data-no-label', !this.$slots.has('default'));
           },
 
           /** 只改宿主上的布尔属性：CSS 的 :host([…]) 只认属性在不在（P1） */
@@ -396,7 +387,7 @@
             else this.ele.removeAttribute(name);
           },
         },
-      };
+      });
     };
   </script>
 </template>

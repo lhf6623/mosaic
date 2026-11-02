@@ -10,6 +10,7 @@ import { MOSAIC_VERSION, OFA_VERSION, VERSIONED_GLOBS } from '../docs/lib/versio
 import { componentSuites } from '../tests/lib/suites.mjs';
 import { emitsSpec, mdTables } from './doc-drift/lib/parse.mjs';
 import { auditComponent, auditDocs, auditSelfTest } from './emits-audit.mjs';
+import { auditComponent as auditSlots, auditSelfTest as slotSelfTest } from './slots-audit.mjs';
 
 /* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
 
@@ -725,6 +726,24 @@ const rules = [
         const api = `packages/${c.slug}/api.md`;
         if (declared.size && io.exists(api))
           problems.push(...auditDocs(api, io.read(api), declared));
+      }
+    },
+  },
+  {
+    /* 插槽声明 ↔ 模板 <slot> ↔ 宿主 data-has-*。模板 ↔ api.md 由 api-spec 面守，
+       这里补上「声明」这一环：声明是运行时的唯一来源（$slots / 反射），它不能和模板各说各话。 */
+    type: 'custom',
+    id: 'slot-calls',
+    title: '组件代码 · 插槽声明、模板 <slot> 与反射属性（slots ↔ 模板）',
+    run: ({ io, components, problems }) => {
+      problems.push(...slotSelfTest());
+      for (const c of components) {
+        for (const file of c.facts.files) {
+          if (!file.endsWith('.html')) continue;
+          const text = io.read(file);
+          if (!/<template\s+component>/i.test(text)) continue;
+          problems.push(...auditSlots(file, text));
+        }
       }
     },
   },

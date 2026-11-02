@@ -404,16 +404,17 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     export default async ({ load }) => {
       /* 面板里的滚动条复用 mc-scroll-bar：它是独立组件，先注册再渲染面板 */
       await load('../scroll-bar/scroll-bar.html');
 
-      return withEmits({
+      return withOptions({
         tag: 'mc-tree-select',
+        slots: { prefix: {}, chevron: {}, empty: {}, option: {}, icon: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['value'] },
           clear: {},
@@ -455,9 +456,9 @@
           this._valueEl = this.shadow.$('.mc-value')?.ele;
           this._clearEl = this.shadow.$('.mc-clear')?.ele;
           this._panel = this.shadow.$('.mc-panel')?.ele;
-          this._prefixSlot = this.shadow.$('slot[name="prefix"]');
-          this._optionSlot = this.shadow.$('slot[name="option"]');
-          this._iconSlot = this.shadow.$('slot[name="icon"]');
+          this._prefixSlot = this.$slots.node('prefix');
+          this._optionSlot = this.$slots.node('option');
+          this._iconSlot = this.$slots.node('icon');
           this._optionTemplate = null;
           this._iconTemplate = null;
 
@@ -555,15 +556,13 @@
           };
           document.addEventListener('pointerdown', this._onDocPointerDown, true);
 
-          /* prefix 插槽：有没有分到内容只有 JS 知道，镜像成宿主 data-has-prefix 给 CSS 用 */
-          this._onSlotChange = () => this.applySlotState();
-          this._prefixSlot?.on('slotchange', this._onSlotChange);
+          /* 三个槽各有各的活：prefix 决定 data-has-prefix；option / icon 分到的是 <template>，
+             增删要重读并重建行。订阅由插槽声明统一接线（见 boot/options.js），这里只挂回调 */
+          this.$slots.onChange((name) => {
+            if (name === 'prefix') this.applySlotState();
+            else this.refreshTemplates();
+          });
           this.applySlotState();
-
-          /* 行模板插槽：分到的是 <template>，增删会触发 slotchange → 重读并重建行 */
-          this._onTemplateChange = () => this.refreshTemplates();
-          this._optionSlot?.on('slotchange', this._onTemplateChange);
-          this._iconSlot?.on('slotchange', this._onTemplateChange);
 
           this.initValue();
         },
@@ -571,9 +570,6 @@
         detached() {
           this._attrMo?.disconnect();
           document.removeEventListener('pointerdown', this._onDocPointerDown, true);
-          this._prefixSlot?.off('slotchange', this._onSlotChange);
-          this._optionSlot?.off('slotchange', this._onTemplateChange);
-          this._iconSlot?.off('slotchange', this._onTemplateChange);
           this._overflowTip?.dispose();
           this._overflowTip = null;
           this._scrollGuard?.dispose();

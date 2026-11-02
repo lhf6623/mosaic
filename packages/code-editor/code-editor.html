@@ -184,8 +184,6 @@
     on:keydown="onFallbackKeydown($event)"></textarea>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
-
     /*
      * 行为层例外（packages/README.md §1.9）：可见结构只有模板；CodeMirror 的节点只能由它自己在运行时造。
      * 除此之外的测量（自适应高度）、懒加载判定、第三方脚本加载、主题跟随都已收进下面几个方法，并注明了原因。
@@ -273,11 +271,13 @@
       root.insertBefore(style, root.firstChild);
     }
 
+    import { withOptions } from '../boot/options.js';
+
     export default async ({ url }) => {
       /* 组件自己的地址：vendor 相对它解析 —— CDN / 本地 / 子路径部署都对 */
       const CM_BASE = new URL('./vendor/codemirror/', url).href;
 
-      return withEmits({
+      return withOptions({
         tag: 'mc-code-editor',
 
         emits: {

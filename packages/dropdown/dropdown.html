@@ -156,7 +156,7 @@
   <script>
     /* 定住滚动条：开合原生浮层时浏览器可能顺手滚页面（火狐实测，见那个文件头） */
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     /* 行为层例外（模板只落锚点 / 面板结构，下面这些模板表达不了）：
        · 原生 popover 开合、点外部关闭（composedPath 跨 shadow 判定）；
@@ -169,10 +169,11 @@
       /* 面板里通常放 mc-menu-item（菜单项）：注册 mc-dropdown 时把它一并就位。菜单项是**复用**另一个单元的组件，不在这里改它 */
       await load('../menu/menu-item.html');
 
-      return withEmits({
+      return withOptions({
         tag: 'mc-dropdown',
+        slots: { trigger: {}, default: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           open: {},
           close: {},
@@ -190,7 +191,7 @@
         ready() {
           // 取引用走 this.shadow.$；面板走原生 popover API、触发槽只做 assignedElements，两个都取完下 .ele
           this._panel = this.shadow.$('.mc-panel')?.ele;
-          this._triggerSlot = this.shadow.$('slot[name="trigger"]')?.ele;
+          this._triggerSlot = this.$slots.node('trigger')?.ele;
           this._openState = false;
           this._returnFocus = false;
           this._hoverTimer = null;

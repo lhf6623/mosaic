@@ -424,6 +424,7 @@
     import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
     /* 触发框内容被 ellipsis 裁掉时，hover / focus 弹完整文案 */
     import { attachOverflowTip } from '../boot/overflow-tip.js';
+    import { withOptions } from '../boot/options.js';
 
     /* 日期算法 / canonical key / 格式串：通用部分抽在 boot/date.js（以后的日期类组件共用） */
     import {
@@ -440,7 +441,6 @@
       TYPE_DEFAULTS,
       weekdayIndex,
     } from '../boot/date.js';
-    import { withEmits } from '../boot/emits.js';
 
     const DEFAULT_TYPE = 'day';
     const TYPE_PLACEHOLDERS = {
@@ -451,10 +451,10 @@
     };
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-date-picker',
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['value'] },
           clear: {},

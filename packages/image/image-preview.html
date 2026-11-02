@@ -10,8 +10,8 @@
   </style>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
     import { openPreview, closePreview, focusedElement, boolAttr } from './preview.js';
+    import { withOptions } from '../boot/options.js';
 
     /** 元素读 src / alt 属性 */
     const readItem = (el) => ({
@@ -20,7 +20,7 @@
     });
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-image-preview',
 
         // 与 mc-image 的预览事件同形：open 只在「打开那一刻」发，close 每条关闭路径都只发一次

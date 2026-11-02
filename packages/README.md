@@ -198,11 +198,12 @@ item.open = true; // 组件提供了访问器时同样可以
 所以 `api.md` 的「事件」表**只列组件自己发的那些**（`change` / `input` / `open` / `close`…）；
 原生事件不列 —— 列了就是第二份事实，还得跟浏览器对齐。
 
-**组件作者怎么发**：定义顶部 `emits` 声明（与 `attrs` 对称），组件定义包一层 `withEmits(...)`，调用点只写 `this.$emit('name', payload)`：
+**组件作者怎么发**：组件定义包一层 `withOptions(...)`，顶部两块声明 —— `emits`（事件）与 `slots`（插槽，见 1.6）
+都挂在同一个对象上，声明即唯一事实源：
 
 ```js
 export default async () =>
-  withEmits({
+  withOptions({
     tag: 'mc-input',
 
     emits: {
@@ -210,6 +211,8 @@ export default async () =>
       change: { data: ['value'] },
       clear: {}, // 无载荷
     },
+
+    slots: { prefix: { reflect: 'prefix' }, suffix: { reflect: 'suffix' } },
 
     // …
     onInput() {
@@ -223,7 +226,7 @@ export default async () =>
 守卫：`event-calls`（声明 ↔ `$emit`，禁止裸 `this.emit` / `new CustomEvent` / `dispatchEvent`）与
 `event-doc`（通道 / 载荷键 ↔ 事件表的「类型」列）。
 
-### 1.6 插槽命名
+### 1.6 插槽命名与声明
 
 | 名字                    | 用途                                                                         |
 | ----------------------- | ---------------------------------------------------------------------------- |
@@ -237,6 +240,37 @@ export default async () =>
 按钮的图标槽是例外：叫 `icon` / `icon-right`，和它的两个属性同名 —— 否则会出现「属性 `icon`、槽 `prefix`」两套叫法。
 
 > 默认插槽在「被挂载」类组件里放的是**被挂载的元素**（`mc-tooltip` / `mc-popover` 的触发元素、`mc-badge` 的容器），不是主内容 —— 这类组件的默认插槽没有别的用途。
+
+**声明是可选的，按需写**：纯渲染的组件（`mc-breadcrumb` / `mc-grid` / `mc-space` 这类）模板里
+有 `<slot>` 就够了，`slots` 一行不写；一旦组件需要**运行时**知道槽里有没有东西，就必须声明。
+判断标准只有一条：
+
+| 组件要做的事                                     | 要不要声明 |
+| ------------------------------------------------ | ---------- |
+| 只在模板里渲染 `<slot>`                          | 不写       |
+| 按槽内容决定宿主属性（`data-has-*`）、折叠空结构 | 写         |
+| 要读槽里分到的节点（`$slots.nodes` / `node`）    | 写         |
+| 订阅 `slotchange` 重算自己的一堆状态             | 写         |
+
+```js
+slots: {
+  default: { reflect: 'content' }, // 有内容 → 宿主 data-has-content（CSS 的唯一切换输入）
+  prefix: {}, // 只接线：$slots.has('prefix') 能用，不反射属性
+  'icon-right': {}, // 带短横线的名字要加引号，否则不是合法 JS 键
+}
+```
+
+- 默认槽的键写 `default`（模板里是无 `name` 的 `<slot>`，api.md 里写「（默认）」）。
+- **出口都在实例上**：`this.$options`（`{ emits, slots }` 的冻结快照）、`this.$slots.names` /
+  `has(name)` / `nodes(name)` / `elements(name)` / `node(name)` / `onChange(fn)`（`fn` 收到变化的槽名）。
+  订阅由声明统一接线，`detached` 自动退订 —— 组件里不再手写 `this._slots = [...]` 与 `.on/.off`。
+- **`reflect` 只做一对一的「有内容 → `data-has-<名>`」**。组合判定（`mc-alert` 的 title 还要算
+  `heading` 属性、`mc-card` 的 header 还认 suffix、`mc-image` 的 fallback 是两级槽的并集）
+  反射表达不了，继续在组件里 `this.mirror(...)`。
+- 守卫：`slot-calls` —— 声明了模板里没有的槽（死声明）、`$slots.xxx('未声明的名字')`、
+  `reflect` 写了但 CSS 里没有 `:host([data-has-<名>]`、以及组件里还在手写
+  `shadow.$('slot…')` / `shadow.all('slot')`，都会被拦。声明与 api.md 的取舍：**说明文字只写在
+  api.md**（Reference 的唯一手写源），声明里只有名字与 `reflect`。
 
 ### 1.7 `part` 命名
 

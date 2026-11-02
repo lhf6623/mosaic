@@ -266,7 +266,7 @@ ofa 的 `emit(type, { data })` 交过来的是**原生 `Event` 加一个 `data`*
 `(event: CustomEvent<{ reason: string }>) => void`，别照抄 `data`。
 
 **代码侧的同一事实写在组件定义顶部的 `emits` 里**（与 `attrs` 对称）：`data` / `detail` / `native` 选通道，数组写载荷键；
-`withEmits(...)` 把它接成唯一派发口 `this.$emit('name', payload)`。`event-doc` 守卫拿这份声明跟这里的「类型」列对账：
+`withOptions(...)` 把它接成唯一派发口 `this.$emit('name', payload)`（同一个包装器还接插槽声明，见 `packages/README.md` §1.6）。`event-doc` 守卫拿这份声明跟这里的「类型」列对账：
 `data` 通道写 `Event & { data: … }`，`detail` 写 `CustomEvent<…>`，无载荷写 `Event`。
 
 **方法也写进这张表**：名称写调用式（`` `show()` `` / `` `loadingBar.start(config?)` ``），

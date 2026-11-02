@@ -28,7 +28,7 @@
   <div class="mc-base" part="base"><slot></slot></div>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     /** 单行输入框（回车 = 提交）；textarea 与原生 checkbox 那种「回车没意义」的控件不在里面 */
     const TEXT_INPUTS = ['text', 'search', 'email', 'password', 'tel', 'url', 'number'];
@@ -40,10 +40,11 @@
     const TRIGGER_OF = { input: 'input', change: 'change', focusout: 'blur' };
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-form',
+        slots: { default: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           submit: { data: ['value'] },
           invalid: { data: ['fields'] },
@@ -103,9 +104,7 @@
 
           /* 行后来才插进来 / 子项晚升级：都要重算一次必填星号。
              shadow 里的 slot 用 ofa 包装对象（this.shadow.$）挂监听，原生属性仍走 .ele */
-          this._onSlotChange = () => this.syncRequired();
-          this._slot = this.shadow.$('slot');
-          this._slot?.on('slotchange', this._onSlotChange);
+          this.$slots.onChange(() => this.syncRequired());
           this.syncRequired();
         },
 
@@ -121,7 +120,6 @@
         },
 
         detached() {
-          this._slot?.off('slotchange', this._onSlotChange);
           this.ele.removeEventListener('input', this._onInput);
           this.ele.removeEventListener('change', this._onChange);
           this.ele.removeEventListener('focusout', this._onFocusout);

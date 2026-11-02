@@ -204,7 +204,7 @@
   <script>
     /* color 也收 hex（语义名交给 CSS，hex 走共享接线器）；提示条是浅底外观，所以接 subtle-fill */
     import { colorAttr } from '../boot/color-attr.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     const color = colorAttr({ slots: ['fill', 'on-fill', 'accent', 'subtle-fill'] });
 
@@ -222,10 +222,11 @@
       /* 图标是独立组件：注册前先就位（路径相对本文件 URL）；代价是只引 mc-alert 也会取一次 icon.html */
       await load('../icon/icon.html');
 
-      return withEmits({
+      return withOptions({
         tag: 'mc-alert',
+        slots: { icon: { reflect: 'icon' }, title: {}, default: { reflect: 'body' } },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           close: {},
         },
@@ -240,28 +241,14 @@
           closable: null,
         },
 
-        ready() {
-          // 这里 shadow 已建好；宿主属性一律留到 attached 才写（P31）。插槽引用走 this.shadow.$，原生节点靠 .ele
-          this._slots = {
-            icon: this.shadow.$('slot[name="icon"]'),
-            title: this.shadow.$('slot[name="title"]'),
-            body: this.shadow.$('slot:not([name])'),
-          };
-        },
-
         attached() {
           // 宿主 style 等构造期结束再写（P31），color 的首次同步在这里
           color.sync(this.ele, this.color);
 
-          /* 空内容折叠靠 slotchange 判定：分到节点一变就响；icon 插槽同理 —— 有自定义图标时内置图形让位 */
-          this._onSlotChange = () => this.applyState();
-          for (const slot of Object.values(this._slots)) slot?.on('slotchange', this._onSlotChange);
+          /* 空内容折叠靠 slotchange 判定：分到节点一变就响。
+             icon / body 由插槽声明反射（data-has-icon / data-has-body），这里只补标题那条组合判定 */
+          this.$slots.onChange(() => this.applyState());
           this.applyState();
-        },
-
-        detached() {
-          for (const slot of Object.values(this._slots))
-            slot?.off('slotchange', this._onSlotChange);
         },
 
         watch: {
@@ -285,31 +272,16 @@
             return GLYPH_NAMES[this.color] ?? 'info';
           },
 
-          /** 三个 data-has-* 是 CSS 唯一的输入：宿主属性 + 插槽内容一起判定（P32：不能只看属性在不在）。
-            行为层例外（插槽内容判定）：标题 / 正文 / 图标空不空只能看「实际分到插槽的节点」，
-            模板的 o-if 只能判 data、看不到 slot 分配；所以由 slotchange 驱动，把结果写成宿主上的
-            data-has-*（CSS 据此折叠），这条路上不造任何可见结构。 */
+          /** data-has-title 是「插槽内容 + heading 属性」两处合起来的判定，反射表达不了，留手写；
+             data-has-body / data-has-icon 一对一，由插槽声明反射（见 boot/options.js）。
+             CSS 只认这几个宿主属性（P32：不能只看属性在不在），这条路上不造任何可见结构。 */
           applyState() {
-            this.mirror(
-              'data-has-title',
-              this.slotHasContent('title') || this.headingText() !== '',
-            );
-            this.mirror('data-has-body', this.slotHasContent(null));
-            this.mirror('data-has-icon', this.slotHasContent('icon'));
+            this.mirror('data-has-title', this.$slots.has('title') || this.headingText() !== '');
           },
 
           /** 标题文案。⚠️ attach 时宿主还没有 heading 属性（ofa 稍后写空值，P32），必须先落成空串 */
           headingText() {
             return (this.ele.getAttribute('heading') ?? '').trim();
-          },
-
-          /** 插槽有没有分到内容：默认插槽用 body 那一个（空内容折叠的行为层入口） */
-          slotHasContent(name) {
-            const slot = name ? this._slots?.[name] : this._slots?.body;
-            return (slot?.ele?.assignedNodes() ?? []).some(
-              (node) =>
-                node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '',
-            );
           },
 
           mirror(name, on) {

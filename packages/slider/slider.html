@@ -194,15 +194,15 @@
   <script>
     /* color 也收 hex：语义名照旧交给 CSS，hex 走共享接线器，填的还是 --mc-slider-fill 色槽 */
     import { colorAttr } from '../boot/color-attr.js';
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     const color = colorAttr({ slots: ['fill'] });
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-slider',
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           input: { data: ['value'] },
           change: { data: ['value'] },

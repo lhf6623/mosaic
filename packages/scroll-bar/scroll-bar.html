@@ -111,17 +111,18 @@
   </div>
 
   <script>
-    import { withEmits } from '../boot/emits.js';
+    import { withOptions } from '../boot/options.js';
 
     /* 行为层例外（模板只落 viewport / bar / thumb 三块结构，下面这些模板表达不了）：
        · 滚动几何测量：溢出判定、滑块长度与位置（clientHeight / scrollHeight / 量矩形）；
        · 拖拽滑块、滚轮转发、scroll 事件重发与 ResizeObserver。 */
 
     export default async () =>
-      withEmits({
+      withOptions({
         tag: 'mc-scroll-bar',
+        slots: { default: {} },
 
-        // 本组件对外事件：声明即派发入口（见 boot/emits.js）
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           scroll: { native: true },
         },
@@ -139,7 +140,6 @@
           this._viewport = this.shadow.$('.mc-viewport')?.ele;
           this._bar = this.shadow.$('.mc-bar')?.ele;
           this._thumb = this.shadow.$('.mc-thumb');
-          this._slot = this.shadow.$('slot');
 
           this._onScroll = () => {
             this.syncScrollbar();
@@ -163,8 +163,8 @@
           /* 带 { passive: false }：ofa 的 .on 不收 options，这条留原生（同 collapse-item 的捕获阶段那条） */
           this._thumb.ele.addEventListener('wheel', this._onThumbWheel, { passive: false });
 
-          /* 这条订阅用 .on：slot 引用是 ofa 包装对象，没有「要不要 passive」的问题 */
-          this._slot.on('slotchange', () => this.observeContent());
+          /* 内容进出一变就重盯（订阅由插槽声明统一接线，见 boot/options.js） */
+          this.$slots.onChange(() => this.observeContent());
           /* 视口变大变小要重算；内容变高变矮同样要重算 —— 后者 ResizeObserver 不会替我们看，得盯住塞进来的那些元素 */
           this._ro = new ResizeObserver(() => this.syncScrollbar());
           this._ro.observe(this._viewport);
@@ -217,7 +217,7 @@
           observeContent() {
             this._contentRO?.disconnect();
             this._contentRO = new ResizeObserver(() => this.syncScrollbar());
-            for (const node of this._slot?.ele?.assignedElements() ?? []) {
+            for (const node of this.$slots.elements('default')) {
               this._contentRO.observe(node);
             }
           },
