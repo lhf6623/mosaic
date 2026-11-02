@@ -2,6 +2,10 @@
 node_modules/
 pnpm-lock.yaml
 
+# 本地工作区数据（.gitignore 里也忽略）：会话记忆、临时草稿、导出备份都在里面。
+# 它不是仓库内容，不该被仓库的风格检查管 —— 记忆日志是随手写的，重排只会制造无意义的 diff。
+.workbuddy/
+
 # 生成产物：格式化它会让产物和生成器漂移（pnpm check:drift 会红）
 #   · packages/color/tokens.css        ← tools/gen-tokens.mjs
 #   · packages/icon/icons.generated.js  ← tools/gen-icons.mjs
