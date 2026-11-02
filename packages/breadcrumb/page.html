@@ -17,12 +17,22 @@
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
           <h3 slot="title">基本用法</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/data.html" plain-src="./demos/data-plain.html">
+          <h3 slot="title">数据渲染</h3>
           <p class="doc-hint" slot="hint">
-            每一级必须是容器的直接子元素：用
-            <code>o-fill</code>
-            /
-            <code>o-if</code>
-            包一层，分隔符会静默消失。
+            这几级没写链接：
+            <code>olink</code>
+            是编译期指令，补不了数据里的地址。要可点的级，自己拼
+            <code>hashOf()</code>
+            （
+            <code>docs/routes.js</code>
+            ）再绑
+            <code>attr:href</code>
+            。
           </p>
         </doc-example>
       </section>

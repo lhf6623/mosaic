@@ -2,13 +2,17 @@
 <template component>
   <link rel="stylesheet" href="../boot/component-base.css" />
   <style>
-    /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道；font 退回继承 */
+    /* 1. 宿主 = 一段文字。⚠️ --mc-breadcrumb-* 不能在这里写默认值，会盖掉容器继承来的通道；
+       ⚠️ 字号 / 行高读容器的**令牌**，不靠 `font: inherit`：级被 o-fill / o-if 或使用者的组件包一层时，
+       中间那层的基座样式 `:host { font-size: var(--mc-text-base) }` 会打断继承链（14px → 16px，实测） */
     :host {
       display: inline-flex;
       align-items: center;
       min-width: 0;
       max-width: 100%;
-      font: inherit;
+      font-family: inherit;
+      font-size: var(--mc-breadcrumb-font, inherit);
+      line-height: var(--mc-breadcrumb-line, inherit);
       color: rgb(
         var(--mc-breadcrumb-item-color, var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)))
       );
@@ -22,7 +26,38 @@
       font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
     }
 
-    /* 5. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。⚠️ ::slotted(a) 上的颜色/下划线安全
+    /* 5. 分隔符盒子：两条通道共用一个位置 —— 文本画在 ::before 上（内容来自容器继承下来的变量），
+       插槽内容由容器克隆进盒子的子节点。⚠️ 分隔符画在**级自己的 shadow 里**，不在容器的 ::slotted 上：
+       级被 o-fill / o-if 包一层（两者都 display: contents）时不再是被投影的元素，::slotted 选不中。
+       默认不画，容器按「是不是第一级」写 data-sep（见下方三条状态规则）。 */
+    .mc-sep {
+      display: none;
+      align-items: center;
+      margin-inline-end: var(--mc-breadcrumb-gap, var(--mc-space-2, var(--mc-def-space-2)));
+      color: rgb(
+        var(--mc-breadcrumb-sep-color, var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)))
+      );
+      user-select: none;
+    }
+    .mc-sep::before {
+      /* @internal：容器 separator 属性写进来的内部变量（挡在令牌前面，属性优先） */
+      content: var(--mc-breadcrumb-sep-attr, var(--mc-breadcrumb-sep, ''));
+    }
+    /* 插槽内容来了就不画文本（同一个位置只留一个；::before 不算 :empty，所以这条只认克隆进来的节点） */
+    .mc-sep:not(:empty)::before {
+      content: none;
+    }
+    /* 兜底：没有容器的 data-sep 也知道自己是第一项（父级就是容器时成立） */
+    :host(:first-of-type) .mc-sep {
+      display: none;
+    }
+    /* 容器说了算：它按文档顺序数（级可能散在好几个 o-fill / o-if 里，CSS 看不到那种顺序）。
+       放在兜底那条后面，同特异性靠源码顺序胜出 */
+    :host([data-sep]) .mc-sep {
+      display: inline-flex;
+    }
+
+    /* 6. 插槽里的原生 <a>：行盒子在宿主上，链接只承载语义与交互。⚠️ ::slotted(a) 上的颜色/下划线安全
        （祖先 shadow 树没声明过），但 <button> 不承诺 —— shadow-base 的 reset 会赢（P33） */
     ::slotted(a) {
       color: inherit;
@@ -43,6 +78,7 @@
     }
   </style>
 
+  <span class="mc-sep" part="separator" aria-hidden="true"></span>
   <slot></slot>
 
   <script>
@@ -52,6 +88,43 @@
       attrs: {
         // 布尔属性默认值必须是 null，否则 <mc-breadcrumb-item current> 会被默认值冲掉（P1）
         current: null,
+      },
+
+      ready() {
+        /* 容器拿到的是元素、调不到 proto（同 mc-form-item 的 control）：分发通道挂宿主 */
+        Object.defineProperty(this.ele, 'setSeparator', {
+          configurable: true,
+          value: (nodes) => this.setSeparator(nodes),
+        });
+      },
+
+      attached() {
+        /* 比容器晚就绪时，容器那次分发没投到我 —— 报个到让它重投一次。
+           容器自己也会在 attached / slotchange 时推，两条路互为兜底，不靠定时器等 */
+        this._bar = this.ele.closest('mc-breadcrumb');
+        this._bar?.syncSeparators?.();
+      },
+
+      detached() {
+        /* 我被拿掉了（数据驱动的列表删掉一级）→ 新的第一级要让位，容器得重数一遍。
+           用 attached 里存下的引用：这时候已经在树外，closest 找不到容器了 */
+        this._bar?.syncSeparators?.();
+      },
+
+      proto: {
+        /** 容器投进来的分隔符：`null` = 这一级是第一级、不画；数组 = 画，空数组表示画文本那条。
+         *  有节点就克隆进盒子（`data-sep` 同时让文本 ::before 让位，见 CSS `:not(:empty)`） */
+        setSeparator(nodes) {
+          const box = this.shadow.$('.mc-sep')?.ele;
+          if (!box) return;
+          if (nodes === null) {
+            box.replaceChildren();
+            this.ele.removeAttribute('data-sep');
+            return;
+          }
+          box.replaceChildren(...nodes.map((node) => node.cloneNode(true)));
+          this.ele.setAttribute('data-sep', '');
+        },
       },
     });
   </script>

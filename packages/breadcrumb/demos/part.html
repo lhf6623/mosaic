@@ -1,6 +1,7 @@
 <template component>
   <style>
-    /* base 是内层 <nav>、list 是内层 <ol>：内部结构封在 shadow 里，只有这两个 part 能从外面改。 */
+    /* base 是内层 <nav>、list 是内层 <ol>、separator 是每一级装分隔符的盒子：
+       内部结构封在 shadow 里，只有这几个 part 能从外面改。 */
     mc-breadcrumb::part(base) {
       padding: var(--mc-space-2) var(--mc-space-3);
       background-color: rgb(var(--mc-color-surface-sunken));
@@ -9,9 +10,14 @@
     mc-breadcrumb::part(list) {
       background-color: rgb(var(--mc-color-primary-subtle));
     }
+    mc-breadcrumb-item::part(separator) {
+      color: rgb(var(--mc-color-primary));
+      font-size: var(--mc-text-base);
+    }
   </style>
 
   <mc-breadcrumb>
+    <mc-icon slot="separator" name="chevron-right"></mc-icon>
     <mc-breadcrumb-item><a href="../../../docs/pages/home.html" olink>首页</a></mc-breadcrumb-item>
     <mc-breadcrumb-item><a href="../../button/page.html" olink>组件</a></mc-breadcrumb-item>
     <mc-breadcrumb-item current>面包屑</mc-breadcrumb-item>

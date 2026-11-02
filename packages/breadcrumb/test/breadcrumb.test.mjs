@@ -20,17 +20,31 @@ const crumb = await (async () => {
   page.on('response', onResponse);
   page.on('pageerror', onError);
 
+  /* 分隔符画在**级自己的 shadow** 里（`.mc-sep`），不是容器的 ::slotted::before —— 这样级被
+     o-fill / o-if 包着也照样有分隔符。全套件统一从这两个助手读，别再直接摸宿主的 ::before。
+     「有没有分隔符」= 盒子显不显示（容器按文档顺序写 data-sep）；文本再从盒子的 ::before 取。 */
+  await page.addInitScript(() => {
+    window.__sepBox = (item) => item.shadowRoot?.querySelector('.mc-sep') ?? null;
+    window.__sepText = (item) => {
+      const box = window.__sepBox(item);
+      if (!box) return 'missing';
+      return getComputedStyle(box).display === 'none'
+        ? 'none'
+        : getComputedStyle(box, '::before').content;
+    };
+  });
+
   await visit(page, '/index.html?breadcrumb=1#/packages/breadcrumb/page.html');
   await page
     .waitForFunction(
       () => {
         const bars = window.__deepAll('mc-breadcrumb');
         const items = window.__deepAll('mc-breadcrumb-item');
-        // 4 个演示（5 个容器）全部升级完成
+        // 演示区里的容器与级全部升级完成（含动态创建那条用例所需的宿主）
         return (
-          bars.length >= 5 &&
+          bars.length >= 7 &&
           bars.every((b) => b.shadowRoot) &&
-          items.length >= 16 &&
+          items.length >= 25 &&
           items.every((i) => i.shadowRoot)
         );
       },
@@ -44,6 +58,7 @@ const crumb = await (async () => {
     const bar = window.__deepAll('mc-breadcrumb', box)[0];
     const items = window.__deepAll('mc-breadcrumb-item', box);
     const cs = (el, pe) => getComputedStyle(el, pe);
+    const sepBox = (item) => item.shadowRoot.querySelector('.mc-sep');
     const nav = bar.shadowRoot.querySelector('nav');
     const ol = bar.shadowRoot.querySelector('ol');
     /** L2 令牌存的是 "R G B" 三元组，转成计算样式的写法才能逐字对比 */
@@ -65,8 +80,11 @@ const crumb = await (async () => {
       colors: items.map((i) => cs(i).color),
       weights: items.map((i) => cs(i).fontWeight),
       fontSizes: items.map((i) => cs(i).fontSize),
-      before: items.map((i) => cs(i, '::before').content),
-      beforeColor: items.map((i) => cs(i, '::before').color),
+      /* 分隔符画在级自己的 shadow 里（.mc-sep），不是容器的 ::slotted::before：
+         级被 o-fill / o-if 包着时也算数 —— 所以这里统一读 .mc-sep */
+      before: items.map((i) => window.__sepText(i)),
+      beforeColor: items.map((i) => cs(sepBox(i), '::before').color),
+      sepShown: items.map((i) => cs(sepBox(i)).display !== 'none'),
       anchorColor: items.map((i) => (i.querySelector('a') ? cs(i.querySelector('a')).color : null)),
       anchorDecoration: items.map((i) =>
         i.querySelector('a') ? cs(i.querySelector('a')).textDecorationLine : null,
@@ -114,11 +132,69 @@ const crumb = await (async () => {
     const cs = (el, pe) => getComputedStyle(el, pe);
     return window.__deepAll('mc-breadcrumb', box).map((bar) => {
       const items = [...bar.querySelectorAll('mc-breadcrumb-item')];
+      const sepBox = (item) => item.shadowRoot.querySelector('.mc-sep');
       return {
         attr: bar.getAttribute('separator'),
-        before: items.map((i) => cs(i, '::before').content),
+        before: items.map((i) => window.__sepText(i)),
+        shown: items.map((i) => cs(sepBox(i)).display !== 'none'),
       };
     });
+  });
+
+  /** 数据渲染：固定的第一级 + o-fill 里的几级。级**不是容器的直接子元素**（o-fill 是
+      display: contents 的包裹元素），分隔符仍按文档顺序数：第一级不画，其余都画。
+      这也是 CSS 的 :first-of-type 判不了的那种情况 —— o-fill 里第一个本来就是 :first-of-type，
+      靠容器写的 data-sep 纠正回来 */
+  const dataDriven = await page.evaluate(() => {
+    const box = window.__deepAll('demo-breadcrumb-data')[0].shadowRoot;
+    const bar = box.querySelector('mc-breadcrumb');
+    const items = [...bar.querySelectorAll('mc-breadcrumb-item')];
+    const fill = bar.querySelector('o-fill');
+    return {
+      itemCount: items.length,
+      parents: items.map((i) => i.parentElement.tagName),
+      fillIsChild: fill?.parentElement === bar,
+      fillDisplay: fill ? getComputedStyle(fill).display : null,
+      labels: items.map((i) => i.textContent.trim()),
+      sepText: items.map((i) => window.__sepText(i)),
+      sepAttrs: items.map((i) => i.hasAttribute('data-sep')),
+      currentFlags: items.map((i) => i.hasAttribute('current')),
+      firstInFillIsFirstOfType: items[1]?.matches(':first-of-type') ?? null,
+      weights: items.map((i) => getComputedStyle(i).fontWeight),
+      /* 字号 / 行高：o-fill 自己是一个渲染过的组件，基座样式 `:host { font-size: var(--mc-text-base) }`
+         会把继承链打断 —— 级必须读容器的令牌，否则这两级会变成 16px / 24px（实测踩过） */
+      fontSizes: items.map((i) => getComputedStyle(i).fontSize),
+      lineHeights: items.map((i) => getComputedStyle(i).lineHeight),
+    };
+  });
+
+  /** 分隔符插槽：写一次分发到每一级（第一级不画），原节点留在容器里不渲染，文本那条让位 */
+  const separatorSlot = await page.evaluate(() => {
+    const box = window.__deepAll('demo-breadcrumb-separator')[0].shadowRoot;
+    const bar = window.__deepAll('mc-breadcrumb', box)[2];
+    const items = [...bar.querySelectorAll('mc-breadcrumb-item')];
+    const source = bar.querySelector('[slot="separator"]');
+    const cs = (el, pe) => getComputedStyle(el, pe);
+    const rect = source?.getBoundingClientRect();
+    const seal = (item) => item.shadowRoot.querySelector('.mc-sep');
+    const tokenRgb = (name) => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v ? `rgb(${v.split(/\s+/).join(', ')})` : null;
+    };
+    return {
+      sourceTag: source?.tagName.toLowerCase() ?? null,
+      sourceInBar: source?.parentElement === bar,
+      sourceHidden: !!rect && rect.width === 0 && rect.height === 0,
+      /* data-sep 是容器按文档顺序写的「这一级要画分隔符」；第一级没有 */
+      attrs: items.map((i) => i.hasAttribute('data-sep')),
+      before: items.map((i) => window.__sepText(i)),
+      sepDisplay: items.map((i) => cs(seal(i)).display),
+      iconNames: items.map((i) => seal(i).querySelector('mc-icon')?.getAttribute('name') ?? null),
+      iconCount: items.map((i) => seal(i).querySelectorAll('mc-icon').length),
+      sepColor: cs(seal(items[1])).color,
+      sepMargin: cs(seal(items[1])).marginInlineEnd,
+      expectedColor: tokenRgb('--mc-color-fg-subtle'),
+    };
   });
 
   /** 定制演示：令牌（色 + 间距 + 分隔符）整组生效。三条色令牌用的值互不相同，
@@ -128,13 +204,14 @@ const crumb = await (async () => {
     const bar = window.__deepAll('mc-breadcrumb', box)[0];
     const own = [...bar.querySelectorAll('mc-breadcrumb-item')];
     const cs = (el, pe) => getComputedStyle(el, pe);
+    const sepBox = (item) => item.shadowRoot.querySelector('.mc-sep');
     const tokenRgb = (name) => {
       const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
       return v ? `rgb(${v.split(/\s+/).join(', ')})` : null;
     };
     return {
-      before: own.map((i) => cs(i, '::before').content),
-      sepColor: cs(own[1], '::before').color,
+      before: own.map((i) => window.__sepText(i)),
+      sepColor: cs(sepBox(own[1]), '::before').color,
       gap: cs(bar.shadowRoot.querySelector('ol')).gap,
       normalColor: cs(own[0]).color,
       currentColor: cs(own[2]).color,
@@ -156,7 +233,11 @@ const crumb = await (async () => {
       items: own.length,
       barHeight: Math.round(rect(bar).height),
       rowHeight: Math.round(rect(own[0]).height),
-      beforeCount: own.filter((i) => getComputedStyle(i, '::before').content !== 'none').length,
+      beforeCount: own.filter(
+        (i) =>
+          getComputedStyle(i.shadowRoot.querySelector('.mc-sep')).display !== 'none' &&
+          getComputedStyle(i.shadowRoot.querySelector('.mc-sep'), '::before').content !== 'none',
+      ).length,
     };
   });
 
@@ -180,7 +261,7 @@ const crumb = await (async () => {
     document.body.append(bar);
     await wait(400);
 
-    const contents = () => items.map((i) => cs(i, '::before').content);
+    const contents = () => items.map((i) => window.__sepText(i));
     const out = {
       atCreate,
       shadow: !!bar.shadowRoot,
@@ -209,6 +290,61 @@ const crumb = await (async () => {
     await wait(250);
     out.afterRemove = items[0].hasAttribute('current');
     out.weightAfterRemove = cs(items[0]).fontWeight;
+
+    bar.remove();
+    return out;
+  });
+
+  /** 分隔符插槽运行时插上 / 摘掉：内容通道 ↔ 文本通道来回切，不叠加、不残留。
+      内容写在**最前面**（prepend）—— 第一级的判定按文档顺序数，不会被挤成第二个 */
+  const separatorDynamic = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const cs = (el, pe) => getComputedStyle(el, pe);
+    const bar = document.createElement('mc-breadcrumb');
+    const items = ['一', '二', '三'].map((text) => {
+      const item = document.createElement('mc-breadcrumb-item');
+      item.textContent = text;
+      return item;
+    });
+    bar.append(...items);
+    document.body.append(bar);
+    await wait(400);
+
+    const seal = (item) => item.shadowRoot.querySelector('.mc-sep');
+    const snapshot = () => ({
+      before: items.map((i) => window.__sepText(i)),
+      attrs: items.map((i) => i.hasAttribute('data-sep')),
+      sep: items.map((i) => cs(seal(i)).display),
+      icons: items.map((i) => seal(i).querySelectorAll('mc-icon').length),
+    });
+    const out = { text: snapshot(), itemShadows: items.every((i) => i.shadowRoot) };
+
+    const icon = document.createElement('mc-icon');
+    icon.setAttribute('slot', 'separator');
+    icon.setAttribute('name', 'chevron-right');
+    bar.prepend(icon);
+    await wait(400);
+    out.slot = snapshot();
+    out.sourceInBar = icon.parentElement === bar;
+    out.sourceHidden = icon.getBoundingClientRect().width === 0;
+
+    icon.remove();
+    await wait(400);
+    out.removed = snapshot();
+
+    // <template> 那种写法：取 content 里的节点（它自己克隆出来是空的）
+    const tpl = document.createElement('template');
+    tpl.setAttribute('slot', 'separator');
+    tpl.innerHTML = '<span>»</span><span class="sep-b">·</span>';
+    bar.prepend(tpl);
+    await wait(400);
+    out.template = {
+      sepChildren: items.map((i) => seal(i).childElementCount),
+      attrs: items.map((i) => i.hasAttribute('data-sep')),
+      before: items.map((i) => window.__sepText(i)),
+      text: seal(items[2])?.textContent ?? null,
+    };
+    tpl.remove();
 
     bar.remove();
     return out;
@@ -256,6 +392,9 @@ const crumb = await (async () => {
     hover,
     keyboard,
     separator,
+    dataDriven,
+    separatorSlot,
+    separatorDynamic,
     customize,
     long,
     dynamic,
@@ -295,9 +434,82 @@ check(
 );
 
 check(
-  '分隔符画在每一项的 ::before 上：第一项没有，其余是默认 /',
+  '分隔符画在每一级自己的 .mc-sep 上：第一级没有，其余是默认 /',
   JSON.stringify(crumb.basic.before) === JSON.stringify(['none', '"/"', '"/"']),
   JSON.stringify(crumb.basic.before),
+);
+
+/* 分隔符盒子的 computed display 是 flex 不是 inline-flex：它是宿主（inline-flex）的 flex 项，
+   行内级 display 会被 blockify（CSS Display 3.7）—— 断言按 flex 判 */
+check(
+  '分隔符插槽：写一次分发到每一级（第一级不画），原节点留在容器里不渲染，文本分隔符让位',
+  crumb.separatorSlot.sourceTag === 'mc-icon' &&
+    crumb.separatorSlot.sourceInBar &&
+    crumb.separatorSlot.sourceHidden &&
+    JSON.stringify(crumb.separatorSlot.attrs) === JSON.stringify([false, true, true]) &&
+    JSON.stringify(crumb.separatorSlot.before) === JSON.stringify(['none', 'none', 'none']) &&
+    JSON.stringify(crumb.separatorSlot.sepDisplay) ===
+      JSON.stringify(['none', 'flex', 'flex']) &&
+    JSON.stringify(crumb.separatorSlot.iconNames) ===
+      JSON.stringify([null, 'chevron-right', 'chevron-right']) &&
+    JSON.stringify(crumb.separatorSlot.iconCount) === JSON.stringify([0, 1, 1]),
+  JSON.stringify(crumb.separatorSlot),
+);
+
+check(
+  '分隔符插槽与文本通道共用间距 / 颜色：副本用 --mc-breadcrumb-gap 与 --mc-breadcrumb-sep-color',
+  crumb.separatorSlot.sepMargin === '8px' &&
+    crumb.separatorSlot.sepColor === crumb.separatorSlot.expectedColor,
+  JSON.stringify({
+    margin: crumb.separatorSlot.sepMargin,
+    color: crumb.separatorSlot.sepColor,
+    expected: crumb.separatorSlot.expectedColor,
+  }),
+);
+
+check(
+  '分隔符插槽运行时插上 / 摘掉：内容通道 ↔ 文本通道来回切（不叠加、不残留）',
+  crumb.separatorDynamic.itemShadows &&
+    JSON.stringify(crumb.separatorDynamic.text.before) === JSON.stringify(['none', '"/"', '"/"']) &&
+    JSON.stringify(crumb.separatorDynamic.text.attrs) === JSON.stringify([false, true, true]) &&
+    crumb.separatorDynamic.sourceInBar &&
+    crumb.separatorDynamic.sourceHidden &&
+    JSON.stringify(crumb.separatorDynamic.slot.before) === JSON.stringify(['none', 'none', 'none']) &&
+    JSON.stringify(crumb.separatorDynamic.slot.attrs) === JSON.stringify([false, true, true]) &&
+    JSON.stringify(crumb.separatorDynamic.slot.sep) ===
+      JSON.stringify(['none', 'flex', 'flex']) &&
+    JSON.stringify(crumb.separatorDynamic.slot.icons) === JSON.stringify([0, 1, 1]) &&
+    JSON.stringify(crumb.separatorDynamic.removed.before) ===
+      JSON.stringify(['none', '"/"', '"/"']) &&
+    JSON.stringify(crumb.separatorDynamic.removed.attrs) ===
+      JSON.stringify([false, true, true]) &&
+    JSON.stringify(crumb.separatorDynamic.removed.icons) === JSON.stringify([0, 0, 0]) &&
+    JSON.stringify(crumb.separatorDynamic.template.sepChildren) === JSON.stringify([0, 2, 2]) &&
+    JSON.stringify(crumb.separatorDynamic.template.attrs) === JSON.stringify([false, true, true]) &&
+    JSON.stringify(crumb.separatorDynamic.template.before) ===
+      JSON.stringify(['none', 'none', 'none']) &&
+    crumb.separatorDynamic.template.text === '»·',
+  JSON.stringify(crumb.separatorDynamic),
+);
+
+check(
+  '数据渲染（o-fill 包一层）：级不是容器的子元素也照样有分隔符，第一级按文档顺序判',
+  crumb.dataDriven.itemCount === 3 &&
+    JSON.stringify(crumb.dataDriven.parents) ===
+      JSON.stringify(['MC-BREADCRUMB', 'O-FILL', 'O-FILL']) &&
+    crumb.dataDriven.fillIsChild &&
+    crumb.dataDriven.fillDisplay === 'contents' &&
+    JSON.stringify(crumb.dataDriven.labels) === JSON.stringify(['首页', '组件', '面包屑']) &&
+    JSON.stringify(crumb.dataDriven.sepText) === JSON.stringify(['none', '"/"', '"/"']) &&
+    JSON.stringify(crumb.dataDriven.sepAttrs) === JSON.stringify([false, true, true]) &&
+    JSON.stringify(crumb.dataDriven.currentFlags) === JSON.stringify([false, false, true]) &&
+    /* o-fill 里第一个本来是 :first-of-type，CSS 兜底想藏它 —— data-sep 要压回来 */
+    crumb.dataDriven.firstInFillIsFirstOfType === true &&
+    /* 字号 / 行高跟着容器令牌走，不被包裹层的基座样式（16px / 24px）顶掉 */
+    crumb.dataDriven.fontSizes.every((s) => s === '14px') &&
+    crumb.dataDriven.lineHeights.every((h) => h === '20px') &&
+    Number(crumb.dataDriven.weights[2]) > Number(crumb.dataDriven.weights[0]),
+  JSON.stringify(crumb.dataDriven),
 );
 
 check(

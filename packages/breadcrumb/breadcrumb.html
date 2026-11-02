@@ -6,11 +6,17 @@
     :host {
       display: block;
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
-      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
-      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      font-size: var(--mc-breadcrumb-font);
+      line-height: var(--mc-breadcrumb-line);
       color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
 
-      /* 分隔符。separator 属性会在 attached() 里落到同一个变量上，所以两条路都通：
+      /* 字号 / 行高**必须走令牌**，不能让级靠继承拿：级可能被 o-fill / o-if（甚至使用者自己的组件）
+         包一层，而每个渲染过的组件 shadow 都带着基座样式 `:host { font-size: var(--mc-text-base) }`
+         —— 继承链在那里断掉，14px 会变成 16px（实测）。自定义属性照常穿过去。 */
+      --mc-breadcrumb-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-breadcrumb-line: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+
+      /* 分隔符（文本通道）。separator 属性会在 attached() 里落到同一个变量上，所以两条路都通：
          separator=">" 与 style="--mc-breadcrumb-sep: '·'" */
       --mc-breadcrumb-sep: '/';
 
@@ -36,16 +42,15 @@
       list-style: none;
     }
 
-    /* 分隔符 = 每一项自己的 ::before（第一项没有），间距由同一条 gap 通道补上；::slotted() 只接受复合选择器。
-       ⚠️ 属性走 -attr 内部变量，不写 --mc-breadcrumb-sep：JS 覆盖 / 清理会把使用者的令牌一起抹掉 */
-    ::slotted(mc-breadcrumb-item:not(:first-child))::before {
-      content: var(
-        --mc-breadcrumb-sep-attr,
-        var(--mc-breadcrumb-sep)
-      ); /* @internal：属性写进来的内部变量 */
-      margin-inline-end: var(--mc-breadcrumb-gap);
-      color: rgb(var(--mc-breadcrumb-sep-color));
-      user-select: none;
+    /* 分隔符不在这里画 —— 每个级在自己的 shadow 里画（见 breadcrumb-item.html §5）。
+       原因：级可以被 o-fill / o-if 包一层（两者都 display: contents），那时它不再是「被投影的元素」，
+       ::slotted(mc-breadcrumb-item) 一条都选不中，分隔符会整排消失。容器只按文档顺序告诉每一级画不画
+       （distributeSeparator → data-sep）。
+       ⚠️ separator 属性走 -attr 内部变量，不写 --mc-breadcrumb-sep：JS 覆盖 / 清理会把使用者的令牌一起抹掉 */
+
+    /* 分隔符内容的来源：DOM 只出现在这一处，各级 shadow 里的是它的克隆（见 distributeSeparator） */
+    slot[name='separator'] {
+      display: none;
     }
   </style>
 
@@ -54,40 +59,91 @@
       <slot></slot>
     </ol>
   </nav>
+  <slot name="separator"></slot>
 
   <script>
-    export default async () => ({
-      tag: 'mc-breadcrumb',
+    import { withOptions } from '../boot/options.js';
 
-      attrs: {
-        separator: '/',
-      },
+    export default async () =>
+      withOptions({
+        tag: 'mc-breadcrumb',
 
-      attached() {
-        // 宿主属性一律等构造期结束再写（P31：ready 还太早，写宿主会抛 NotSupportedError）
-        this.applySeparator();
-      },
+        attrs: {
+          separator: '/',
+        },
 
-      watch: {
-        separator() {
-          // 首次触发落在构造期，跳过（P5）
-          if (this._sepWatchInit === undefined) {
-            this._sepWatchInit = true;
-            return;
-          }
+        /* separator 是**内容**槽（图标 / 富文本），文本分隔符走 separator 属性或令牌；
+           声明 default 是为了级增删时也能收到 slotchange */
+        slots: { separator: {}, default: {} },
+
+        ready() {
+          /* 级的就绪时刻不确定（容器与级是两个 <l-m>，并行加载）：把「重投一次」挂到宿主元素上，
+             让晚就绪的级自己来报到（同 mc-form-item 把跨标签接口挂宿主） */
+          Object.defineProperty(this.ele, 'syncSeparators', {
+            configurable: true,
+            value: () => this.distributeSeparator(),
+          });
+        },
+
+        attached() {
+          // 宿主属性一律等构造期结束再写（P31：ready 还太早，写宿主会抛 NotSupportedError）
           this.applySeparator();
+          /* 分隔符内容变了、级增删了都要重新分发（首条 slotchange 不一定落在挂载前，先补一次） */
+          this.$slots.onChange((name) => {
+            if (name === 'separator' || name === 'default') this.distributeSeparator();
+          });
+          this.distributeSeparator();
         },
-      },
 
-      proto: {
-        /** separator → --mc-breadcrumb-sep-attr（content 兜底链第一段）。⚠️ 回默认值要删掉这个内部变量而不是写 '/'，
-         *  否则写同一族变量会把「直接覆盖令牌」那条路堵死 */
-        applySeparator() {
-          const value = (this.ele.getAttribute('separator') ?? '').trim();
-          if (!value || value === '/') this.ele.style.removeProperty('--mc-breadcrumb-sep-attr');
-          else this.ele.style.setProperty('--mc-breadcrumb-sep-attr', JSON.stringify(value));
+        watch: {
+          separator() {
+            // 首次触发落在构造期，跳过（P5）
+            if (this._sepWatchInit === undefined) {
+              this._sepWatchInit = true;
+              return;
+            }
+            this.applySeparator();
+          },
         },
-      },
-    });
+
+        proto: {
+          /** separator → --mc-breadcrumb-sep-attr（content 兜底链第一段）。⚠️ 回默认值要删掉这个内部变量而不是写 '/'，
+           *  否则写同一族变量会把「直接覆盖令牌」那条路堵死 */
+          applySeparator() {
+            const value = (this.ele.getAttribute('separator') ?? '').trim();
+            if (!value || value === '/') this.ele.style.removeProperty('--mc-breadcrumb-sep-attr');
+            else this.ele.style.setProperty('--mc-breadcrumb-sep-attr', JSON.stringify(value));
+          },
+
+          /**
+           * 分隔符插槽 + 「谁是第一级」→ 每一级。同一份内容要出现在 N 个 shadow 里，而一个节点只能待在一处 ——
+           * 只有复制一条路（同 tree-select 的行模板：ofa 模板表达不了「一份内容渲染 N 次」）。
+           * 只递过去克隆，不搬使用者的原节点；顺序按**文档顺序**数（级可能散在几个 o-fill / o-if 里），
+           * 第一级给 null（不画）。还没升级的级跳过，它在自己的 attached 里会调 syncSeparators 补一次。
+           */
+          distributeSeparator() {
+            const nodes = this.$slots
+              .nodes('separator')
+              /* <template slot="separator"> 是「要放好几个节点」时的写法：它自己克隆出来是空的，
+                 拿它 content 里的节点（否则会安静地什么也不画） */
+              .flatMap((node) =>
+                node.tagName === 'TEMPLATE' ? [...node.content.childNodes] : [node],
+              )
+              .filter((node) => node.nodeType === 1 || (node.textContent ?? '').trim() !== '');
+            this.items().forEach((item, index) => {
+              // 跨标签接口挂在宿主元素上（proto 里的方法外面调不到，同 mc-form-item 的 control）
+              item.setSeparator?.(index === 0 ? null : nodes);
+            });
+          },
+
+          /** 自己这一棵里的级，按文档顺序 —— 不看直接子元素：级被 o-fill / o-if 包着时（两者都是
+           *  display: contents）仍属于这一棵，但已经不是宿主的子节点（同 mc-form 认领自己的 form-item） */
+          items() {
+            return [...this.ele.querySelectorAll('mc-breadcrumb-item')].filter(
+              (item) => item.closest('mc-breadcrumb') === this.ele,
+            );
+          },
+        },
+      });
   </script>
 </template>

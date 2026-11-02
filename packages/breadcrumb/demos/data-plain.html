@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/breadcrumb/breadcrumb.html"></l-m>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/breadcrumb/breadcrumb-item.html"></l-m>
+
+    <mc-breadcrumb id="trail"></mc-breadcrumb>
+
+    <script>
+      /* 普通页面没有模板编译，数据靠 JS 造节点：一个数组 → 一级一个 mc-breadcrumb-item。
+         最后一级没有 href，标 current；普通页面里链接就是最终地址，不走 ofa 的 hash 路由 */
+      const CRUMBS = [
+        { label: '首页', href: 'https://ofajs.com' },
+        { label: '组件', href: 'https://github.com/lhf6623/mosaic' },
+        { label: '面包屑' },
+      ];
+
+      const trail = document.getElementById('trail');
+
+      customElements.whenDefined('mc-breadcrumb-item').then(() => {
+        for (const crumb of CRUMBS) {
+          const item = document.createElement('mc-breadcrumb-item');
+          if (crumb.href) {
+            const a = document.createElement('a');
+            a.href = crumb.href;
+            a.textContent = crumb.label;
+            item.append(a);
+          } else {
+            item.setAttribute('current', '');
+            item.textContent = crumb.label;
+          }
+          trail.append(item);
+        }
+      });
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,20 @@
+<template component>
+  <mc-breadcrumb>
+    <!-- 固定的一级 + 数据驱动的几级混着写：分隔符按**文档顺序**数，不看 DOM 层级 -->
+    <mc-breadcrumb-item>
+      <a href="../../../docs/pages/home.html" olink>首页</a>
+    </mc-breadcrumb-item>
+    <o-fill :value="crumbs" fill-key="label">
+      <mc-breadcrumb-item attr:current="$data.current">{{$data.label}}</mc-breadcrumb-item>
+    </o-fill>
+  </mc-breadcrumb>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-breadcrumb-data',
+      data: {
+        crumbs: [{ label: '组件' }, { label: '面包屑', current: true }],
+      },
+    });
+  </script>
+</template>
