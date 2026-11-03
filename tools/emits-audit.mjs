@@ -4,13 +4,13 @@
  * 三条硬规则（config 里的两条 custom 规则直接调这里）：
  *   ① 组件里只认 `this.$emit('name', payload)`：名字必须字面量（或三元列全）、必须在 emits 里；
  *      声明了必须有调用点；禁止裸 `this.emit` / `new CustomEvent` / `dispatchEvent`。
- *   ② `emits` 非空 ⇔ 组件定义包了 `withEmits(...)`。
+ *   ② `emits` 非空 ⇔ 组件定义包了 `withOptions(...)`。
  *   ③ api.md 的事件表：通道（data / detail / native）与载荷键必须跟声明一致；internal 事件不许进表。
  *
  * 引擎只负责「事件名」的集合对账；这里管写法、通道与载荷——所以它属于仓库，不属于通用引擎。
  */
 
-import { withEmits } from '../packages/boot/emits.js';
+import { withOptions } from '../packages/boot/options.js';
 import { emitsSpec, mdTables } from './doc-drift/lib/parse.mjs';
 
 const IDENT = /^[A-Za-z_$][\w$]*$/;
@@ -144,7 +144,7 @@ const sameKeys = (a, b) => [...a].sort().join(',') === [...b].sort().join(',');
 export function auditComponent(file, text) {
   const problems = [];
   const declared = emitsSpec(text);
-  const wired = /\b(?:withEmits|withOptions)\s*\(/.test(maskComments(text));
+  const wired = /\bwithOptions\s*\(/.test(maskComments(text));
   // 包装器现在管两半（emits + slots）：只写了 slots 的组件同样是合法用法
   const hasSlotDecl = /\bslots\s*:\s*\{/.test(maskComments(text));
   if (declared.size && !wired)
@@ -354,7 +354,7 @@ export function auditSelfTest() {
     }
   };
 
-  const ok = `export default async () => withEmits({
+  const ok = `export default async () => withOptions({
     tag: 'x-demo',
     emits: { change: { data: ['value'] } },
   });
@@ -403,7 +403,7 @@ export function auditSelfTest() {
     true,
   );
 
-  const unwired = ok.replace('withEmits({', '({');
+  const unwired = ok.replace('withOptions({', '({');
   eq(
     '声明没接 withOptions',
     auditComponent('x.html', unwired).some((p) => p.includes('withOptions')),
@@ -451,7 +451,7 @@ export function auditSelfTest() {
     true,
   );
 
-  // ⚠️ 回归：$emit 必须挂在 proto 上，且 withEmits 不能 spread proto（getter 会提前求值）
+  // ⚠️ 回归：$emit 必须挂在 proto 上，且 withOptions 不能 spread proto（getter 会提前求值）
   let getterRead = false;
   const proto = {
     get _ele() {
@@ -462,8 +462,8 @@ export function auditSelfTest() {
       return 'panel';
     },
   };
-  const wired = withEmits({ emits: { change: { data: ['value'] } }, proto });
-  eq('withEmits 不读 proto getter', getterRead, false);
+  const wired = withOptions({ emits: { change: { data: ['value'] } }, proto });
+  eq('withOptions 不读 proto getter', getterRead, false);
   eq('$emit 挂在 proto 上', Object.hasOwn(wired.proto, '$emit'), true);
   const instance = Object.create(wired.proto);
   instance.ele = { dispatchEvent: () => true };

@@ -62,7 +62,7 @@ function matchObject(text, open) {
  * @returns {Map<string, { reflect: string | null }>}
  */
 export function slotsSpec(text) {
-  const wired = text.search(/\b(?:withOptions|withEmits)\s*\(/);
+  const wired = text.search(/\bwithOptions\s*\(/);
   if (wired < 0) return new Map();
 
   const decl = /\bslots\s*:\s*\{/.exec(text.slice(wired));

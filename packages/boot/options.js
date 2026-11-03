@@ -323,12 +323,3 @@ export function withOptions(config) {
   }
   return wrapped;
 }
-
-/**
- * 旧名字，保留两条理由：
- *   ① 仓库里还有组件按 `withEmits` 引；路径 `packages/boot/emits.js` 在 CDN 上可直达，
- *      外部写 `import { withEmits }` 的地方不该因为改名 404。
- *   ② 语义没变 —— `withOptions` 就是它加上插槽那一半。
- * 新代码一律用 `withOptions`。
- */
-export const withEmits = withOptions;

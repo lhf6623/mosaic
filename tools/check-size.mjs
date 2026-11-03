@@ -40,8 +40,6 @@ const SHARED = [
   // 有事件或插槽判定的组件才下（声明住在组件定义里）
   // 2026-11 事件与插槽合流到 options.js：实测 12.4 / 4.9 KB（多出来的主要是 JSDoc 类型注释）
   { file: 'packages/boot/options.js', raw: 13 * 1024, gzip: 5.25 * 1024 },
-  // 旧路径，只剩一行转发（外部 import 不至于 404）
-  { file: 'packages/boot/emits.js', raw: 1 * 1024, gzip: 0.75 * 1024 },
   // 按需引入：整段子树要任意色才下；数学已抽到 color-math.js
   { file: 'packages/boot/tone.js', raw: 10.5 * 1024, gzip: 5.0 * 1024 },
   // 已被 mosaic.css 包含，单列为了盯住令牌的增长
