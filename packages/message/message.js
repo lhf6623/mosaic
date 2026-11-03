@@ -1,6 +1,6 @@
 /**
  * message — 命令式消息条（使用者只碰这个文件）：
- *   import message from '../../message/message.js';
+ *   import message from './message.js';
  *   message.success('已保存');
  *   const m = message('正在上传…', { duration: 0 });  m.close();
  * 函数与容器组件只传数据；⚠️ 必须原地改数组，整体替换 rows 之后 o-fill 不更新且不报错；必须挂 document.body。

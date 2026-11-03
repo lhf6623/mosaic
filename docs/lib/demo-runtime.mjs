@@ -97,11 +97,49 @@ const isRelativeUrl = (value) =>
   typeof value === 'string' && value !== '' && !/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(value);
 
 /**
+ * demo 源里可用的站内别名：`@doc/` → 站点根，`@pkg/` → packages/。
+ *
+ * ⚠️ 这是**编译器自己的展开**，不是 ofa 的 `$.config({ alias })`：demo 脚本被塞进 blob 再 `import()`，
+ * 走浏览器原生解析，ofa 的别名拦截点不在那条链路上（docs/README §十）。所以两边各管各的，
+ * 写法一致是刻意的，实现不能合并。
+ *
+ * 值按**站点根**（document.baseURI）解析，子路径部署（GitHub Pages 的 /mosaic/）自动带前缀。
+ */
+const ALIASES = [
+  ['@doc/', 'docs/'],
+  ['@pkg/', 'packages/'],
+];
+
+/**
+ * @param {string} value
+ * @returns {string | null} 命中别名时返回绝对地址，否则 null
+ */
+const resolveAlias = (value) => {
+  for (const [prefix, target] of ALIASES) {
+    if (!value.startsWith(prefix)) continue;
+    try {
+      return new URL(target + value.slice(prefix.length), document.baseURI).href;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+/**
  * @param {string} value
  * @param {string} baseUrl
  * @returns {string}
  */
 const toAbsolute = (value, baseUrl) => {
+  /* `@` 开头只可能是别名：没命中就大声失败，别让它落到「按 demo 目录拼」那条路变成静默 404 */
+  if (typeof value === 'string' && value.startsWith('@')) {
+    const aliased = resolveAlias(value);
+    if (aliased) return aliased;
+    throw new Error(
+      `未知的 demo 别名：${value}（目前只有 ${ALIASES.map(([name]) => name).join(' ')}）`,
+    );
+  }
   if (!isRelativeUrl(value)) return value;
   try {
     return new URL(value, baseUrl).href;

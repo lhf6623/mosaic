@@ -1,6 +1,6 @@
 /**
  * loadingBar — 命令式加载条（函数入口）。使用者只碰这个文件：
- *   import loadingBar from '../../loading-bar/loading-bar.js';
+ *   import loadingBar from './loading-bar.js';
  *   loadingBar.start();  loadingBar.done();
  *   const task = loadingBar.start({ target: panel });  task.done();
  * 它只把组件的某个 `state` 写上去（没有队列 / 计数）；默认那条必须挂 body 才压得住弹层。

@@ -774,6 +774,36 @@ const rules = [
       }
     },
   },
+  {
+    /* `@doc/` `@pkg/` 是**demo 编译器**的别名（docs/lib/demo-runtime.mjs 的 ALIASES），
+       只有 packages/<slug>/demos/ 走那条链路（rebaseImports / rebaseMarkup）。
+       写到别处不会报错、只会 404，三种都是静默失效：
+         · 组件本体：要发给使用者，那边没有这张表；
+         · page.html / docs/**：走 ofa 编译，ofa 不认识这两个前缀（它自己的别名要 $.config 注册）。 */
+    type: 'custom',
+    id: 'demo-alias-scope',
+    title: '组件代码 · @doc/ @pkg/ 只许出现在 demos 里',
+    run: ({ io, problems }) => {
+      const ALLOWED = /^packages\/[^/]+\/demos\//;
+      const HIT = /@(?:doc|pkg)\//;
+      const files = [
+        ...io.listFiles('packages/**/*.html'),
+        ...io.listFiles('packages/**/*.js'),
+        ...io.listFiles('docs/**/*.html'),
+      ];
+      for (const file of files) {
+        if (ALLOWED.test(file)) continue;
+        const text = io.read(file);
+        for (const match of text.matchAll(new RegExp(HIT.source, 'g'))) {
+          const line = text.slice(0, match.index).split('\n').length;
+          problems.push(
+            `${file}:${line}：\`${match[0]}\` 是 demo 编译器的别名，只有 demos/ 里能解析 —— ` +
+              '这里写它不会报错、只会 404（别处请用相对路径）',
+          );
+        }
+      }
+    },
+  },
 ];
 
 /** check:docs 的总组数 = 每个面一条 + 每条规则一条 + 自检一条；文档里写「N 组全绿」按它对账。

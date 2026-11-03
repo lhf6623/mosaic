@@ -2,7 +2,7 @@
   <mc-menu id="nested-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
 
   <script>
-    import { hashOf } from '../../../docs/routes.js';
+    import { hashOf } from '@doc/routes.js';
 
     /* children 逐级渲染：每深一级缩进一档（--mc-menu-indent-step），父级行是开合开关、不导航。
        层级由容器自己算，使用者的数据里没有 level 这种字段。 */
