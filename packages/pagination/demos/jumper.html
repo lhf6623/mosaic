@@ -4,10 +4,10 @@
       total="85"
       page-size="10"
       default-current="2"
-      jumper
+      blocks='["prev","pages","next","jumper"]'
       on:change="picked = $event.data.current"></mc-pagination>
     <p class="text-sm text-muted">
-      在输入框里敲 7 再回车：翻到第 7 页；敲 99 会被夹到最后一页（第 9 页）。当前第
+      敲 99 回车会被夹到第 9 页。当前第
       <strong>{{picked}}</strong>
       页。
     </p>

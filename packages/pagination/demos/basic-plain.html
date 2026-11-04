@@ -16,8 +16,11 @@
     <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/pagination/pagination.html"></l-m>
 
     <mc-space direction="vertical" block>
-      <mc-pagination total="85" page-size="10" default-current="3"></mc-pagination>
-      <p class="text-sm text-muted">85 条、每页 10 条，初始落在第 3 页。</p>
+      <mc-pagination
+        total="85"
+        page-size="10"
+        default-current="3"
+        blocks='["prev","pages","next"]'></mc-pagination>
     </mc-space>
 
   </body>

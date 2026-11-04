@@ -43,7 +43,7 @@
       </section>
 
       <section class="doc-demo">
-        <doc-example src="./demos/events.html">
+        <doc-example src="./demos/events.html" plain-src="./demos/events-plain.html">
           <h3 slot="title">事件回调</h3>
         </doc-example>
       </section>
@@ -59,15 +59,13 @@
         <doc-example src="./demos/sizer.html">
           <h3 slot="title">每页条数</h3>
           <p class="doc-hint" slot="hint">
-            它是个原生
+            原生
             <code>&lt;select&gt;</code>
-            ：收起时跟组件样式走，展开那层由系统画（不跟
-            <code>data-theme</code>
-            ）；想要主题化的下拉，用
+            ：展开那层由系统画、不跟主题；要主题化的下拉就用
             <code>suffix</code>
-            插槽放自己的
+            插槽放
             <code>mc-select</code>
-            组件。
+            。
           </p>
         </doc-example>
       </section>
@@ -75,6 +73,19 @@
       <section class="doc-demo">
         <doc-example src="./demos/slots.html">
           <h3 slot="title">前后附加</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/blocks.html" plain-src="./demos/blocks-plain.html">
+          <h3 slot="title">块的顺序与显隐</h3>
+          <p class="doc-hint" slot="hint">
+            数组顺序就是显示顺序，没列出来的块不渲染；不写数组时只有页码。给了它，
+            <code>jumper</code>
+            /
+            <code>sizer</code>
+            两个布尔就不起作用了。
+          </p>
         </doc-example>
       </section>
 

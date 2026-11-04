@@ -4,6 +4,7 @@
       total="85"
       page-size="10"
       default-current="3"
+      blocks='["prev","pages","next"]'
       on:change="picked = '第 ' + $event.data.current + ' 页 · 每页 ' + $event.data.pageSize + ' 条'"></mc-pagination>
     <p class="text-sm text-muted">
       最近一次 change：

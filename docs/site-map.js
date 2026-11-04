@@ -255,7 +255,7 @@ export const SITE = [
             path: 'packages/pagination/page.html',
             type: 'component',
             summary:
-              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至某页」输入跳转与「每页 N 条」选择器，翻页发 change。',
+              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至某页」输入跳转与「每页 N 条」选择器，各块的出现与先后由 blocks 数组控制，翻页发 change。',
           },
         ],
       },

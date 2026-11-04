@@ -27,11 +27,11 @@
   </style>
 
   <mc-space direction="vertical" block>
-    <mc-pagination total="85" page-size="10" default-current="4" jumper sizer></mc-pagination>
-    <p class="text-sm text-muted">
-      间距、页码形状、前后两枚按钮的描边，以及跳页输入框 / 每页条数选择器的字号与形状，都是从外面用
-      `::part()` 改的。
-    </p>
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="4"
+      blocks='["prev","pages","next","jumper","sizer"]'></mc-pagination>
   </mc-space>
 
   <script>

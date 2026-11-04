@@ -16,7 +16,7 @@
 | `pagination.html` | **入口一**：使用者 CDN 引入的本体（源 = 产物，构建不碰它）                    |
 | `page.html`       | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`          | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`          | 10 个演示（页面用可编辑示例读**同一份文件**）                                 |
+| `demos/`          | 13 个演示（页面用可编辑示例读**同一份文件**）                                 |
 | `test/`           | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -86,6 +86,36 @@
 
 前后两枚 chevron 直接吃 `../icon/icons.generated.css` 里的 `mc-icon-*` 类名
 （同 `mc-button` / `mc-select`），不引 `mc-icon` 组件、不额外发一次请求。
+
+### 块顺序与显隐：一个数组，CSS 的 `order` 与 `data-blocks`
+
+`blocks` 数组同时表达两件事：**列出来的才显示，数组下标就是位次**（没有第二个 `hidden` 字段，
+免得「不在数组里」和 `hidden: true` 变成两种说法）。
+
+实现刻意**不搬 DOM**：宿主与 `.mc-list` 都是 flex 容器，脚本只往宿主写两样东西 ——
+`data-blocks="prev pages next"`（CSS 用 `[data-blocks~='…']` 判显隐）与 8 个内部排序变量
+（`--mc-pagination-o-*`）。搬节点会让 `o-fill` 的 key 复用、插槽分配、ul 上的事件委托全部抖一遍。
+
+- **默认只有页码主体**：不写 `blocks` 就是 `['pages']`，`sizer` / `jumper` 两个布尔各自往后追加一块 ——
+  上一页 / 下一页不是天然的，要就在数组里点名。**页码是主体，箭头是增强**。
+  因此 `data-blocks` 总是存在，「块在不在」只有数组这一条真相（两个布尔只是未配置时的捷径）。
+- **写宿主必须等 `attached`**：`ready()` 阶段写 `data-blocks` / order 变量会抛
+  `NotSupportedError: The result must not have attributes`（ofa 的异步定义，P31）——
+  `applyBlocks()` 第一行就是 `if (!this._attached) return`。
+- **两条通道都收**：property 传数组（运行时唯一通道），属性通道 `blocks='[…]'` 只作 JSON 初值。
+  `blocks` **是 `attrs` 键**（值列写 `string`，同 `mc-table` 的 `columns`）：`attrs` 里只放文本通道的
+  初值，规范化后的数组住 `data.blockList` —— 规范化结果绝不写回 `attrs` 键，否则会被 ofa 再序列化成
+  属性文本，输入与渲染源就分叉了。`ele.blocks` 读到的是白名单过滤过的结果。
+- **`prev` / `pages` / `next` 不能被穿插**：三者共用一个 `<ul part="list">`，`::part(list)` 的 gap 靠它
+  （`demos/part.html` 就在用）。所以它们作为一个整体参与外层排序，内部彼此可以换先后；
+  数组里把 `sizer` 夹在 `prev` 和 `pages` 中间会 `console.warn` 并把它排到页码条之后 ——
+  这条限制说出来，比悄悄挪位强。
+- **`prefix` / `suffix` 的排序落在 `::slotted(*)` 上**：`<slot>` 是 `display: contents`，
+  自己不生成盒子、不是 flex item，给它写 `order` 没用。
+- **方向键改成按视觉位置排**（`getBoundingClientRect().left`）：`blocks` 能把 `next` 挪到页码前面，
+  再按 DOM 顺序走方向键就和眼睛看到的不一致了。
+- **告警一次就够**：未知键 / 重复键 / `blocks` 与两个布尔并存 / JSON 写坏，都走 `warnOnce`
+  并忽略，不静默吞也不刷屏。
 
 ## 令牌
 

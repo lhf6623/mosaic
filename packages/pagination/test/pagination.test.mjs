@@ -1,7 +1,7 @@
 /**
  * mc-pagination · 分页：页码序列与省略号折叠、上一页/下一页可用态、点击翻页与 change 载荷、
- * property 写入（不发事件、越界夹回）、disabled、键盘移动焦点、prefix/suffix 插槽、part、尺寸三档
- * （packages/pagination）。
+ * property 写入（不发事件、越界夹回）、disabled、键盘移动焦点、prefix/suffix 插槽、part、尺寸三档、
+ * blocks 数组（顺序 / 显隐 / 告警）（packages/pagination）。
  */
 
 export default async function run({ page, visit, check }) {
@@ -10,8 +10,14 @@ export default async function run({ page, visit, check }) {
     if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
   };
   const onError = (e) => failed.push(String(e));
+  /* 组件自己 console.warn 的问题（未知块 / 交叉 / 布尔并存）也要收，不然「说了没说不清」 */
+  const warns = [];
+  const onConsole = (msg) => {
+    if (msg.type() === 'warning' && msg.text().includes('[mc-pagination]')) warns.push(msg.text());
+  };
   page.on('response', onResponse);
   page.on('pageerror', onError);
+  page.on('console', onConsole);
 
   await visit(page, '/index.html?pagination=1#/packages/pagination/page.html');
   await page
@@ -25,21 +31,28 @@ export default async function run({ page, visit, check }) {
     host.style.cssText =
       'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px;display:flex;flex-direction:column;gap:8px';
     host.innerHTML = `
-      <mc-pagination id="p-main" total="85" page-size="10" default-current="3"></mc-pagination>
-      <mc-pagination id="p-small" total="30" page-size="10" default-current="2"></mc-pagination>
-      <mc-pagination id="p-zero" total="0"></mc-pagination>
-      <mc-pagination id="p-over" total="85" page-size="10" default-current="99"></mc-pagination>
-      <mc-pagination id="p-disabled" total="42" page-size="10" default-current="2" disabled jumper sizer></mc-pagination>
-      <mc-pagination id="p-jump" total="85" page-size="10" default-current="2" jumper></mc-pagination>
+      <mc-pagination id="p-main" total="85" page-size="10" default-current="3" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-small" total="30" page-size="10" default-current="2" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-zero" total="0" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-over" total="85" page-size="10" default-current="99" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-disabled" total="42" page-size="10" default-current="2" disabled blocks='["prev","pages","next","jumper","sizer"]'></mc-pagination>
+      <mc-pagination id="p-jump" total="85" page-size="10" default-current="2" blocks='["prev","pages","next","jumper"]'></mc-pagination>
       <mc-pagination id="p-sizer" total="85" page-size="10" default-current="3" sizer></mc-pagination>
       <mc-pagination id="p-sizer-custom" total="5000" page-size="25" default-current="5" sizer page-sizes="10,50"></mc-pagination>
-      <mc-pagination id="p-size-sm" total="30" page-size="10" size="sm"></mc-pagination>
-      <mc-pagination id="p-size-md" total="30" page-size="10"></mc-pagination>
-      <mc-pagination id="p-size-lg" total="30" page-size="10" size="lg"></mc-pagination>
-      <mc-pagination id="p-slots" total="85" page-size="10">
+      <mc-pagination id="p-size-sm" total="30" page-size="10" size="sm" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-size-md" total="30" page-size="10" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-size-lg" total="30" page-size="10" size="lg" blocks='["prev","pages","next"]'></mc-pagination>
+      <mc-pagination id="p-default" total="85" page-size="10"></mc-pagination>
+      <mc-pagination id="p-slots" total="85" page-size="10" blocks='["prefix","prev","pages","next","suffix"]'>
         <span id="p-prefix" slot="prefix">共 85 条</span>
         <span id="p-suffix" slot="suffix">每页 10 条</span>
-      </mc-pagination>`;
+      </mc-pagination>
+      <mc-pagination id="p-blocks" total="85" page-size="10" default-current="3" blocks='["sizer","prev","pages","next","jumper"]'></mc-pagination>
+      <mc-pagination id="p-blocks-bare" total="85" page-size="10" blocks='["pages","prev","next"]'></mc-pagination>
+      <mc-pagination id="p-blocks-empty" total="85" page-size="10" blocks='[]'></mc-pagination>
+      <mc-pagination id="p-blocks-cross" total="85" page-size="10" blocks='["prev","sizer","pages"]'></mc-pagination>
+      <mc-pagination id="p-blocks-bad" total="85" page-size="10" blocks='["prev","nope","prev","pages"]'></mc-pagination>
+      <mc-pagination id="p-blocks-prop" total="85" page-size="10"></mc-pagination>`;
     document.body.append(host);
     window.__pgChanges = [];
     for (const id of ['p-main', 'p-jump', 'p-sizer']) {
@@ -79,8 +92,8 @@ export default async function run({ page, visit, check }) {
         isButtonEllipsis: [...root.querySelectorAll('.mc-ellipsis')].some(
           (node) => node.tagName === 'BUTTON',
         ),
-        prevDisabled: root.querySelector('button[part="prev"]').disabled,
-        nextDisabled: root.querySelector('button[part="next"]').disabled,
+        prevDisabled: root.querySelector('button[part="prev"]')?.disabled ?? null,
+        nextDisabled: root.querySelector('button[part="next"]')?.disabled ?? null,
         allDisabled: buttons.every((b) => b.disabled),
         itemHeight: Math.round(items[0].getBoundingClientRect().height),
         itemWidth: Math.round(items[0].getBoundingClientRect().width),
@@ -535,8 +548,171 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(heights),
   );
 
+  /* ---------- ⑪ blocks：默认值 / 顺序 / 显隐 / 告警 ---------- */
+  /* 默认（不写 blocks）：页码是主体，上一页 / 下一页不带 —— 要就点名 */
+  const defaults = await page.evaluate(async () => {
+    const el = document.getElementById('p-default');
+    await new Promise((r) => requestAnimationFrame(() => r()));
+    const root = el.shadowRoot;
+    return {
+      flag: el.getAttribute('data-blocks'),
+      pages: root.querySelectorAll('button[part="item"]').length,
+      prevWidth: Math.round(root.querySelector('[data-block="prev"]').getBoundingClientRect().width),
+      nextWidth: Math.round(root.querySelector('[data-block="next"]').getBoundingClientRect().width),
+    };
+  });
+  check(
+    '不写 blocks：默认只渲染页码主体，上一页 / 下一页不出现',
+    defaults.flag === 'pages' &&
+      defaults.pages > 0 &&
+      defaults.prevWidth === 0 &&
+      defaults.nextWidth === 0,
+    JSON.stringify(defaults),
+  );
+
+  const sizerOnly = await page.evaluate(() => ({
+    flag: document.getElementById('p-sizer').getAttribute('data-blocks'),
+    custom: document.getElementById('p-sizer-custom').getAttribute('data-blocks'),
+  }));
+  check(
+    '不写 blocks 时 sizer 仍按捷径追加在页码之后（pages sizer）',
+    sizerOnly.flag === 'pages sizer' && sizerOnly.custom === 'pages sizer',
+    JSON.stringify(sizerOnly),
+  );
+
+  /** 一台分页的横向排布：各块的 left 与宽度（display:none 的块宽高为 0） */
+  const layout = (id) =>
+    page.evaluate((hostId) => {
+      const el = document.getElementById(hostId);
+      const root = el.shadowRoot;
+      const box = (sel) => {
+        const node = root.querySelector(sel);
+        if (!node) return null;
+        const rect = node.getBoundingClientRect();
+        return { left: Math.round(rect.left), width: Math.round(rect.width) };
+      };
+      const hostRect = el.getBoundingClientRect();
+      return {
+        flag: el.getAttribute('data-blocks'),
+        size: { w: Math.round(hostRect.width), h: Math.round(hostRect.height) },
+        list: box('.mc-list'),
+        prev: box('[data-block="prev"]'),
+        next: box('[data-block="next"]'),
+        page: box('[data-block="pages"]'),
+        sizer: box('.mc-sizer'),
+        jumper: box('.mc-jumper'),
+      };
+    }, id);
+
+  const blocksWide = await layout('p-blocks');
+  check(
+    'blocks：数组顺序写进 data-blocks，sizer 排到页码条之前、jumper 排到之后',
+    blocksWide.flag === 'sizer prev pages next jumper' &&
+      blocksWide.sizer.width > 0 &&
+      blocksWide.sizer.left < blocksWide.list.left &&
+      blocksWide.jumper.width > 0 &&
+      blocksWide.jumper.left > blocksWide.list.left,
+    JSON.stringify(blocksWide),
+  );
+
+  const blocksBare = await layout('p-blocks-bare');
+  check(
+    'blocks：prev / next 能在页码条内部换到 pages 后面，没列出来的 sizer / jumper 不渲染',
+    blocksBare.flag === 'pages prev next' &&
+      blocksBare.page.left < blocksBare.prev.left &&
+      blocksBare.prev.width > 0 &&
+      blocksBare.next.width > 0 &&
+      blocksBare.sizer.width === 0 &&
+      blocksBare.jumper.width === 0,
+    JSON.stringify(blocksBare),
+  );
+
+  const blocksEmpty = await layout('p-blocks-empty');
+  check(
+    'blocks 空数组：一块都不渲染（宿主高度塌成 0，各块宽度都是 0）',
+    blocksEmpty.flag === '' &&
+      blocksEmpty.size.h === 0 &&
+      [blocksEmpty.list, blocksEmpty.sizer, blocksEmpty.jumper].every((box) => box.width === 0),
+    JSON.stringify(blocksEmpty),
+  );
+
+  const blocksCross = await layout('p-blocks-cross');
+  check(
+    'blocks：插进页码条内部的块被整体挪到页码条之后，并 warn 一次（不静默挪位）',
+    blocksCross.sizer.width > 0 &&
+      blocksCross.sizer.left > blocksCross.list.left &&
+      warns.some((text) => text.includes('不能插在页码条内部')),
+    JSON.stringify({ blocksCross, warns }),
+  );
+
+  const blocksBad = await layout('p-blocks-bad');
+  check(
+    'blocks：未知键与重复键被忽略，只留合法且首次出现的',
+    blocksBad.flag === 'prev pages' &&
+      warns.some((text) => text.includes('不是可用的块')) &&
+      warns.some((text) => text.includes('出现多次')),
+    JSON.stringify({ blocksBad, warns }),
+  );
+
+  const blocksProp = await page.evaluate(async () => {
+    const el = document.getElementById('p-blocks-prop');
+    const raf = () => new Promise((r) => requestAnimationFrame(() => r()));
+    el.blocks = ['jumper', 'pages'];
+    await raf();
+    const root = el.shadowRoot;
+    const box = (sel) => {
+      const node = root.querySelector(sel);
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { left: Math.round(rect.left), width: Math.round(rect.width) };
+    };
+    return {
+      flag: el.getAttribute('data-blocks'),
+      shown: el.blocks,
+      jumper: box('.mc-jumper'),
+      page: box('[data-block="pages"]'),
+      prev: box('[data-block="prev"]'),
+      next: box('[data-block="next"]'),
+    };
+  });
+  check(
+    'blocks：property 通道实时生效，不在数组里的 prev / next 立刻消失',
+    blocksProp.flag === 'jumper pages' &&
+      JSON.stringify(blocksProp.shown) === '["jumper","pages"]' &&
+      blocksProp.page.left > blocksProp.jumper.left &&
+      blocksProp.prev.width === 0 &&
+      blocksProp.next.width === 0,
+    JSON.stringify(blocksProp),
+  );
+
+  /* 挂载前赋 property + 与布尔并存：数组说了算，布尔被忽略并 warn */
+  const blocksPreset = await page.evaluate(async () => {
+    const el = document.createElement('mc-pagination');
+    el.setAttribute('total', '85');
+    el.setAttribute('sizer', '');
+    el.blocks = ['pages'];
+    document.getElementById('pagination-probe').append(el);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+    const root = el.shadowRoot;
+    const sizer = root.querySelector('.mc-sizer');
+    const result = {
+      flag: el.getAttribute('data-blocks'),
+      sizerWidth: Math.round(sizer.getBoundingClientRect().width),
+    };
+    el.remove();
+    return result;
+  });
+  check(
+    'blocks：挂载前赋 property 也认；与 sizer 布尔并存时只认数组（选择器不显示）并 warn',
+    blocksPreset.flag === 'pages' &&
+      blocksPreset.sizerWidth === 0 &&
+      warns.some((text) => text.includes('布尔被忽略')),
+    JSON.stringify({ blocksPreset, warns }),
+  );
+
   /* ---------- 收摊 ---------- */
   await page.evaluate(() => document.getElementById('pagination-probe')?.remove());
   page.off('response', onResponse);
   page.off('pageerror', onError);
+  page.off('console', onConsole);
 }

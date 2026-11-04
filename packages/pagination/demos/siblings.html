@@ -1,11 +1,18 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-pagination total="200" page-size="10" default-current="9" sibling-count="2"></mc-pagination>
-    <mc-pagination total="200" page-size="10" default-current="9" sibling-count="0"></mc-pagination>
-    <p class="text-sm text-muted">
-      20 页、当前第 9 页：上面 `sibling-count="2"`（当前页两侧各 2 个），下面
-      `sibling-count="0"`（只剩首尾与当前页）。
-    </p>
+    <mc-pagination
+      total="200"
+      page-size="10"
+      default-current="9"
+      sibling-count="2"
+      blocks='["prev","pages","next"]'></mc-pagination>
+    <mc-pagination
+      total="200"
+      page-size="10"
+      default-current="9"
+      sibling-count="0"
+      blocks='["prev","pages","next"]'></mc-pagination>
+    <p class="text-sm text-muted">上：两侧各 2 个；下：只留首尾与当前页。</p>
   </mc-space>
 
   <script>

@@ -1,0 +1,22 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <!-- 属性通道：普通 HTML 只能这么写，JSON 文本，只作初值 -->
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="3"
+      blocks='["sizer","prev","pages","next","jumper"]'></mc-pagination>
+
+    <!-- property 通道：模板里传数组，改它就实时重排 -->
+    <mc-pagination total="85" page-size="10" default-current="3" :blocks="flipped">
+      <span slot="prefix">共 85 条</span>
+    </mc-pagination>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-pagination-blocks',
+      data: { flipped: ['prefix', 'pages', 'prev', 'next'] },
+    });
+  </script>
+</template>

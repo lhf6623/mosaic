@@ -29,6 +29,17 @@
         --mc-color-primary-subtle,
         var(--mc-def-color-primary-subtle)
       );
+
+      /* @internal：blocks 数组按位次写进来的排序值，不是使用者的覆盖点。
+         不写 blocks 时全为 0（相等 → flex 按 DOM 顺序排），等于零改动。 */
+      --mc-pagination-o-prefix: 0; /* @internal */
+      --mc-pagination-o-prev: 0; /* @internal */
+      --mc-pagination-o-pages: 0; /* @internal */
+      --mc-pagination-o-next: 0; /* @internal */
+      --mc-pagination-o-list: 0; /* @internal */
+      --mc-pagination-o-sizer: 0; /* @internal */
+      --mc-pagination-o-jumper: 0; /* @internal */
+      --mc-pagination-o-suffix: 0; /* @internal */
     }
 
     /* 2. 尺寸：三档只换控件高度与字号，内部按钮靠变量与 inherit 跟上 */
@@ -59,6 +70,46 @@
     }
     .mc-cell {
       display: flex;
+    }
+
+    /* 4.1 块顺序：宿主与页码条都是 flex 容器，只改 order 不改 DOM ——
+       o-fill 的 key 复用、插槽分配、事件委托都不受影响。
+       prefix / suffix 是 slot（display: contents，自身不是 flex item），
+       排序落在被分配进来的那层节点上，所以走 ::slotted。 */
+    .mc-list {
+      order: var(--mc-pagination-o-list);
+    }
+    [data-block='prev'] {
+      order: var(--mc-pagination-o-prev);
+    }
+    [data-block='pages'] {
+      order: var(--mc-pagination-o-pages);
+    }
+    [data-block='next'] {
+      order: var(--mc-pagination-o-next);
+    }
+    slot[name='prefix']::slotted(*) {
+      order: var(--mc-pagination-o-prefix);
+    }
+    slot[name='suffix']::slotted(*) {
+      order: var(--mc-pagination-o-suffix);
+    }
+
+    /* 4.2 块显隐：只有写了自己的 data-blocks 才管（~= 按空格分词匹配）；
+       没写它时下面这些 :not() 一条都不命中，老样子由 jumper / sizer 两个布尔决定。 */
+    :host([data-blocks]:not([data-blocks~='prev'])) [data-block='prev'],
+    :host([data-blocks]:not([data-blocks~='pages'])) [data-block='pages'],
+    :host([data-blocks]:not([data-blocks~='next'])) [data-block='next'] {
+      display: none;
+    }
+    /* prev / pages / next 全不在数组里：页码条整条不留 */
+    :host(
+        [data-blocks]:not([data-blocks~='prev']):not([data-blocks~='pages']):not(
+            [data-blocks~='next']
+          )
+      )
+      .mc-list {
+      display: none;
     }
 
     /* 5. 按钮：页码 / 上一页 / 下一页是同一颗，尺寸只由 --mc-pagination-h 决定 */
@@ -117,12 +168,15 @@
 
     /* 7. 输入跳转：原生 number 输入框，jumper 打开才显示（节点常驻，靠属性显隐，P10） */
     .mc-jumper {
+      order: var(--mc-pagination-o-jumper);
       display: none;
       align-items: center;
       gap: var(--mc-space-1, var(--mc-def-space-1));
       color: rgb(var(--mc-pagination-fg));
     }
-    :host([jumper]) .mc-jumper {
+    /* 写了自己的 data-blocks 时，显隐只认数组 —— 布尔属性让位（脚本会 warn 一次） */
+    :host(:not([data-blocks])[jumper]) .mc-jumper,
+    :host([data-blocks~='jumper']) .mc-jumper {
       display: inline-flex;
     }
     /* 原生 number 的上下箭头（spinner）一律去掉：跟页码按钮抢位置，而 ±1 已经有上一页 / 下一页 */
@@ -160,12 +214,15 @@
 
     /* 8. 每页条数：原生 <select>（零依赖），sizer 打开才显示 */
     .mc-sizer {
+      order: var(--mc-pagination-o-sizer);
       display: none;
       align-items: center;
       gap: var(--mc-space-1, var(--mc-def-space-1));
       color: rgb(var(--mc-pagination-fg));
     }
-    :host([sizer]) .mc-sizer {
+    /* 写了自己的 data-blocks 时，显隐只认数组 —— 布尔属性让位（脚本会 warn 一次） */
+    :host(:not([data-blocks])[sizer]) .mc-sizer,
+    :host([data-blocks~='sizer']) .mc-sizer {
       display: inline-flex;
     }
     .mc-size-field {
@@ -211,7 +268,7 @@
   <slot name="prefix"></slot>
 
   <ul class="mc-list" part="list">
-    <li class="mc-cell">
+    <li class="mc-cell" data-block="prev">
       <button
         class="mc-btn"
         part="prev"
@@ -226,10 +283,10 @@
     <o-fill :value="pages" fill-key="key">
       <div style="display: contents">
         <o-if :value="$data.ellipsis">
-          <li class="mc-cell"><span class="mc-ellipsis">…</span></li>
+          <li class="mc-cell" data-block="pages"><span class="mc-ellipsis">…</span></li>
         </o-if>
         <o-if :value="!$data.ellipsis">
-          <li class="mc-cell">
+          <li class="mc-cell" data-block="pages">
             <button
               class="mc-btn mc-item"
               part="item"
@@ -244,7 +301,7 @@
       </div>
     </o-fill>
 
-    <li class="mc-cell">
+    <li class="mc-cell" data-block="next">
       <button
         class="mc-btn"
         part="next"
@@ -291,6 +348,11 @@
   <script>
     import { withOptions } from '../boot/options.js';
 
+    /* blocks 的合法键：位置就是显示顺序，没列出来的块不渲染。
+       prev / pages / next 共用一个 <ul>，整条参与外层排序（见 README「块顺序与显隐」）。 */
+    const BLOCKS = ['prefix', 'prev', 'pages', 'next', 'sizer', 'jumper', 'suffix'];
+    const PAGER_BLOCKS = ['prev', 'pages', 'next'];
+
     export default async () =>
       withOptions({
         tag: 'mc-pagination',
@@ -314,6 +376,9 @@
           // 打开「每页 __ 条」选择器（原生 <select>）；候选项由 page-sizes 给
           sizer: null,
           pageSizes: '10,20,50,100',
+          /* 块清单（数组）。attrs 里只放**属性文本 / 绑定通道的初值**，运行时推荐 property：
+             规范化后的数组住 data.blockList —— 规范化结果绝不写回 attrs 键，否则会被 ofa 再序列化成文本（同 mc-table 的 columns） */
+          blocks: null,
         },
 
         data: {
@@ -321,6 +386,9 @@
           pages: [],
           atFirst: true,
           atLast: true,
+          /* 块清单：null = 没配过（只有页码主体，sizer / jumper 两个布尔各追加一块）。
+              对象数组放 data，property / JSON 属性两条通道见 ready 与 attached */
+          blockList: null,
         },
 
         ready() {
@@ -328,6 +396,12 @@
           this._list = this.shadow.$('.mc-list');
           this._jump = this.shadow.$('.mc-jump');
           this._sizer = this.shadow.$('.mc-size-select');
+
+          /* 挂载前赋的 property（createElement 之后马上 el.blocks = […]）落在宿主上只是普通属性，
+             先收下来；构造期不往宿主写属性（P31） */
+          this._presetBlocks = Object.prototype.hasOwnProperty.call(this.ele, 'blocks')
+            ? this.ele.blocks
+            : undefined;
 
           /* 运行时值走宿主 property（P18）：setter 不写属性、也不发 change（change 只由使用者操作触发） */
           Object.defineProperty(this.ele, 'current', {
@@ -339,11 +413,45 @@
             },
           });
 
+          /* blocks 的 property 通道：读的是规范化后的数组，写什么进来都过一遍白名单 */
+          Object.defineProperty(this.ele, 'blocks', {
+            configurable: true,
+            get: () => this.blockList,
+            set: (value) => {
+              this._propBlocks = true;
+              this.blockList = this.toBlocks(value);
+            },
+          });
+
           this._mounted = true; // 之后的 watch 才算真变化（P5）
           this.applyState();
         },
 
         attached() {
+          this._attached = true;
+
+          /* 初始值放在这里而不是 ready()：ofa 会把 data 的初值铺在实例上，构造期写进去的会被它盖掉。
+             顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢），同 mc-menu 的 options */
+          if (!this._applied) {
+            this._applied = true;
+            if (this.ele.hasAttribute('blocks')) {
+              this.blockList = this.toBlocks(this.ele.getAttribute('blocks'));
+            }
+            if (this._presetBlocks !== undefined) {
+              this._propBlocks = true;
+              this.blockList = this.toBlocks(this._presetBlocks);
+              this._presetBlocks = undefined;
+            }
+          }
+
+          /* blocks 也进 attrs 了，但属性通道仍自己听一遍：绑定通道可能后到一段 JSON 文本，
+             而 property 一旦写过值就不该再被它覆盖（同 mc-table 的 data） */
+          this._blocksMo = new MutationObserver(() => {
+            if (this._propBlocks) return; // property 已写过值：属性通道不覆盖它
+            this.blockList = this.toBlocks(this.ele.getAttribute('blocks'));
+          });
+          this._blocksMo.observe(this.ele, { attributes: true, attributeFilter: ['blocks'] });
+
           /* 页码 / 键盘都在 ul 上委托：按钮是 o-fill 渲染的，绑不到具体元素（P12）。
              跳页输入框与每页条数都是模板里的静态节点，订阅写在模板里（§1.9），不在这里挂。 */
           this._onActivate = (event) => this.handleActivate(event);
@@ -354,6 +462,8 @@
         },
 
         detached() {
+          this._attached = false;
+          this._blocksMo?.disconnect();
           this._list?.off('click', this._onActivate);
           this._list?.off('keydown', this._onActivate);
         },
@@ -375,8 +485,21 @@
           disabled() {
             if (this._mounted) this.applyState();
           },
+          /* blocks 的 attrs 文本先规范化成数组，再走 blockList 那一条 —— 属性 / property / 挂载前赋值
+             三条路最终都落到同一个观察点上，不用各自记得再调一次 applyBlocks */
+          blocks(value) {
+            // 首次触发落在构造期（P5）；property 写过值之后属性通道让位
+            if (!this._mounted || this._propBlocks) return;
+            this.blockList = this.toBlocks(value);
+          },
+          blockList() {
+            if (this._attached) this.applyBlocks();
+          },
           sizer() {
-            if (this._mounted) this.applyState();
+            if (this._mounted) this.applyBlocks();
+          },
+          jumper() {
+            if (this._mounted) this.applyBlocks();
           },
           pageSizes() {
             if (this._mounted) this.applyState();
@@ -389,6 +512,114 @@
             const raw = this.ele.getAttribute(name);
             const parsed = raw === null ? NaN : Number(raw);
             return Number.isFinite(parsed) ? parsed : fallback;
+          },
+
+          /* ---------- blocks：哪些块、按什么顺序（顺序 = 数组下标） ---------- */
+
+          /** 同一个问题只喊一次：属性通道可能来好几拍，重复刷 console 没有信息量 */
+          warnOnce(key, message) {
+            this._warns ??= new Set();
+            if (this._warns.has(key)) return;
+            this._warns.add(key);
+            console.warn('[mc-pagination] ' + message);
+          },
+
+          /** blocks 的原料 → 白名单数组。不认识的键 / 重复的键 warn 一次就丢；
+              非数组（含属性文本不是合法 JSON）当「没配」处理，回 null */
+          toBlocks(value) {
+            let list = value;
+            if (typeof list === 'string') {
+              try {
+                list = JSON.parse(list);
+              } catch {
+                this.warnOnce('blocks-json', `blocks 不是合法 JSON，已当没写处理：${list}`);
+                return null;
+              }
+            }
+            if (list === null || list === undefined) return null;
+            if (!Array.isArray(list)) {
+              this.warnOnce('blocks-type', 'blocks 只收数组（属性通道写 JSON 文本），已当没写处理');
+              return null;
+            }
+            const out = [];
+            for (const name of list) {
+              if (typeof name !== 'string' || !BLOCKS.includes(name)) {
+                this.warnOnce(
+                  'blocks-unknown',
+                  `blocks 里「${String(name)}」不是可用的块，已忽略；可用：${BLOCKS.join(' / ')}`,
+                );
+                continue;
+              }
+              if (out.includes(name)) {
+                this.warnOnce('blocks-dup', `blocks 里「${name}」出现多次，只认第一次`);
+                continue;
+              }
+              out.push(name);
+            }
+            return out;
+          },
+
+          /**
+           * 实际生效的块。没配 `blocks` 时**只有页码主体** —— 上一页 / 下一页不是天然的，
+           * 想要就在数组里点名；`sizer` / `jumper` 两个布尔按需追加在页码之后（老写法的捷径）。
+           */
+          resolveBlocks() {
+            if (this.blockList) return this.blockList;
+            const list = ['pages'];
+            if (this.ele.hasAttribute('sizer')) list.push('sizer');
+            if (this.ele.hasAttribute('jumper')) list.push('jumper');
+            return list;
+          },
+
+          /**
+           * blocks → DOM：data-blocks 管显隐（CSS 的 `[data-blocks~='…']`），8 个 order 变量管先后。
+           * 只在签名变化时写 DOM —— applyState 每次翻页都会经过这里。
+           */
+          applyBlocks() {
+            /* 构造 / 升级期不往宿主写属性（P31）—— ofa 的异步定义下这会抛 NotSupportedError。
+               ready() 里的 applyState 只算 data，data-blocks 与排序变量等 attached 之后再落。 */
+            if (!this._attached) return;
+            const list = this.resolveBlocks();
+            const host = this.ele;
+            const signature = list.join(' ') + '|' + host.hasAttribute('jumper');
+            if (signature === this._blocksSignature) return;
+            this._blocksSignature = signature;
+
+            if (this.blockList && (host.hasAttribute('jumper') || host.hasAttribute('sizer'))) {
+              this.warnOnce(
+                'blocks-vs-bool',
+                'blocks 已给出：jumper / sizer 两个布尔被忽略，块在不在只看数组',
+              );
+            }
+
+            /* prev / pages / next 共用一个 <ul>（`::part(list)` 的 gap 靠它），外面插不进去 ——
+               明说，不静默挪位 */
+            const indexes = PAGER_BLOCKS.map((name) => list.indexOf(name)).filter((at) => at >= 0);
+            if (indexes.length) {
+              const lo = Math.min(...indexes);
+              const hi = Math.max(...indexes);
+              const crossed = list.slice(lo + 1, hi).filter((name) => !PAGER_BLOCKS.includes(name));
+              if (crossed.length) {
+                this.warnOnce(
+                  'blocks-cross',
+                  `「${crossed.join('」「')}」不能插在页码条内部（prev / pages / next 共用一条 ul），` +
+                    '已整体排到页码条之后',
+                );
+              }
+            }
+
+            host.setAttribute('data-blocks', list.join(' '));
+            for (const name of [...BLOCKS, 'list']) {
+              host.style.removeProperty(`--mc-pagination-o-${name}`);
+            }
+            for (const [at, name] of list.entries()) {
+              host.style.setProperty(`--mc-pagination-o-${name}`, String(at));
+            }
+            /* 页码条的位次 = 三块里最靠前的那个；三块都不在就随便给（ul 已被 CSS 隐藏） */
+            host.style.setProperty(
+              '--mc-pagination-o-list',
+              String(indexes.length ? Math.min(...indexes) : 0),
+            );
           },
 
           totalValue() {
@@ -461,6 +692,7 @@
             this.atLast = current >= this.pageCount();
             this.syncJump(false);
             this.syncSizer();
+            this.applyBlocks();
           },
 
           /** 跳页输入框只读：placeholder 常驻当前页、max 跟着总页数；正在输入时不覆盖别人的内容 */
@@ -554,9 +786,12 @@
             else this.go(Number(button.getAttribute('data-page')));
           },
 
-          /** 方向键 / Home / End 在可用按钮之间移动焦点；到边就停，不绕回 */
+          /** 方向键 / Home / End 在可用按钮之间移动焦点；到边就停，不绕回。
+             按**视觉**左右排：blocks 会把 prev / next 挪到页码后面，DOM 顺序不等于看到的顺序 */
           moveFocus(button, key) {
-            const buttons = [...(this._list?.ele.querySelectorAll('button:not(:disabled)') ?? [])];
+            const buttons = [
+              ...(this._list?.ele.querySelectorAll('button:not(:disabled)') ?? []),
+            ].sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
             const at = buttons.indexOf(button);
             if (at < 0) return;
             const target =

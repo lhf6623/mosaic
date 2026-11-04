@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 普通 HTML 页：引 ofa.js + 用到的组件；排版工具类来自可选的 mosaic.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/space/space.html"></l-m>
+    <l-m
+      src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/pagination/pagination.html"></l-m>
+
+    <mc-space direction="vertical" block>
+      <mc-pagination
+        id="pg"
+        total="85"
+        page-size="10"
+        default-current="3"
+        blocks='["prev","pages","next"]'></mc-pagination>
+      <p class="text-sm text-muted">
+        最近一次 change：
+        <strong id="picked">（还没翻过页）</strong>
+      </p>
+    </mc-space>
+
+    <script>
+      /* change 是原生 Event（bubbles + composed），载荷挂在 event.data 上；
+         换每页条数也会发，所以 data 里同时有 current 与 pageSize */
+      const picked = document.getElementById('picked');
+      document.getElementById('pg').addEventListener('change', (event) => {
+        picked.textContent =
+          '第 ' + event.data.current + ' 页 · 每页 ' + event.data.pageSize + ' 条';
+      });
+    </script>
+  </body>
+</html>

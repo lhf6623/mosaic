@@ -1,9 +1,12 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-pagination total="42" page-size="10" default-current="2" disabled></mc-pagination>
-    <p class="text-sm text-muted">
-      整条都点不动，键盘也进不来，翻页事件不会发。
-    </p>
+    <mc-pagination
+      total="42"
+      page-size="10"
+      default-current="2"
+      disabled
+      blocks='["prev","pages","next"]'></mc-pagination>
+    <p class="text-sm text-muted">键盘也进不来，不发 change。</p>
   </mc-space>
 
   <script>

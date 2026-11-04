@@ -1,10 +1,23 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-pagination total="85" page-size="10" default-current="3" size="sm"></mc-pagination>
-    <mc-pagination total="85" page-size="10" default-current="3"></mc-pagination>
-    <mc-pagination total="85" page-size="10" default-current="3" size="lg"></mc-pagination>
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="3"
+      size="sm"
+      blocks='["prev","pages","next"]'></mc-pagination>
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="3"
+      blocks='["prev","pages","next"]'></mc-pagination>
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="3"
+      size="lg"
+      blocks='["prev","pages","next"]'></mc-pagination>
   </mc-space>
-
   <script>
     export default async () => ({ tag: 'demo-pagination-size' });
   </script>

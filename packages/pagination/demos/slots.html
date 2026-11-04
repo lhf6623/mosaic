@@ -1,5 +1,9 @@
 <template component>
-  <mc-pagination total="85" page-size="10" default-current="2">
+  <mc-pagination
+    total="85"
+    page-size="10"
+    default-current="2"
+    blocks='["prefix","prev","pages","next","suffix"]'>
     <span slot="prefix" class="text-sm">共 85 条</span>
     <span slot="suffix" class="text-sm">每页 10 条</span>
   </mc-pagination>
