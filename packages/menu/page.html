@@ -73,8 +73,30 @@
       </section>
 
       <section class="doc-demo">
-        <doc-example src="./demos/states.html">
+        <doc-example src="./demos/current.html">
           <h3 slot="title">当前项与禁用</h3>
+          <p class="doc-hint" slot="hint">
+            <code>current</code>
+            写命中行的
+            <code>href</code>
+            或 label
+            路径：那一行高亮，它所在的分支开场就展开；右侧按钮改这一个属性。换当前项只「补开」命中的那一支，
+            已经摊开的分支不会收（只有
+            <code>accordion</code>
+            下才收同层别的分支）。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            <code>navigate</code>
+            在行上触发、冒泡到容器；这个演示用
+            <code>preventDefault()</code>
+            把跳转拦下来，日志才留在页面上。
+          </p>
         </doc-example>
       </section>
 

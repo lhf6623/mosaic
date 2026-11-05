@@ -2,34 +2,36 @@
   <mc-space block wrap-items align="start">
     <mc-button on:click="toggle()">{{collapsed ? '展开' : '压缩'}}</mc-button>
 
-    <mc-menu id="collapsed-menu" attr:collapsed="collapsed ? '' : null" :options="menuOptions"></mc-menu>
+    <mc-menu
+      id="collapsed-menu"
+      current="首页"
+      attr:collapsed="collapsed ? '' : null"
+      :options="menuOptions"></mc-menu>
   </mc-space>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
     /* 压缩态：整栏收成方形，项上只留 icon、分组标题整行折掉；有子菜单的行鼠标移入（或键盘聚焦）
        后弹出浮层。⚠️ 不要在压缩态那份菜单上写死 width —— 行内宽度会压过 --mc-menu-collapsed-w */
     const OPTIONS = [
       { type: 'group', label: '导航' },
-      { label: '首页', icon: 'menu', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '首页', icon: 'menu', href: 'packages/menu/page.html' },
       {
         label: '组件',
         icon: 'file',
         children: [
-          { label: '按钮', icon: 'file', href: hashOf('packages/button/page.html') },
-          { label: '图标', icon: 'star', href: hashOf('packages/icon/page.html') },
+          { label: '按钮', icon: 'file', href: 'packages/button/page.html' },
+          { label: '图标', icon: 'star', href: 'packages/icon/page.html' },
           {
             label: '表单',
             icon: 'settings',
             children: [
-              { label: '输入框', href: hashOf('packages/input/page.html') },
-              { label: '下拉选择', href: hashOf('packages/select/page.html') },
+              { label: '输入框', href: 'packages/input/page.html' },
+              { label: '下拉选择', href: 'packages/select/page.html' },
             ],
           },
         ],
       },
-      { label: '设置', icon: 'settings', href: hashOf('packages/color/page.html') },
+      { label: '设置', icon: 'settings', href: 'packages/color/page.html' },
     ];
 
     export default async () => ({

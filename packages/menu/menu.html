@@ -208,12 +208,23 @@
           collapsed: null,
           /* 手风琴：同一层只允许一个子菜单展开（同 mc-collapse 的口径） */
           accordion: null,
+          /* 默认展开：整棵摊开（每个父级行开场都是展开的），并往下传给嵌套实例。
+             内联模式才有意义 —— 压缩态 / 浮层里的子菜单归 hover / focus 管。
+             只摊开当前那一支不用写它：`current` 命中的分支自己会展开（见 buildRows）。 */
+          expanded: null,
+          /* 当前项：值是命中行的 href（最终地址）或 label 路径（祖先 label 用 / 连，如 `组件/表单`）。
+             命中的行换底色加粗，**它所在的分支开场自动展开**；手风琴下同层优先留这一支。
+             状态不进 options —— 路由变化只改这一个属性，行按 key 原地复用；嵌套实例由 syncChannels 下发 */
+          current: null,
+          /* 菜单树数据。声明进 attrs 是为了进 api.md 的「属性」表参与对账；属性通道只作 JSON 初值，
+             运行时推荐 property，两条通道在 attached / watch 里汇到 data.optionList —— 规范化结果绝不写回这个键，
+             否则会被 ofa 再序列化成属性文本（同 mc-pagination 的 blocks） */
+          options: null,
         },
 
         data: {
-          /* 对象数组放 data（技能口径），外部用 :options / property 传。
-             options 属性仍作为普通 HTML 的 JSON 初始值兼容通道，由 attached 手动监听，不写回 attrs */
-          options: [],
+          /* 渲染源：options 规范化后的数组。o-fill 只读它（P6：别写回 attrs 声明的键） */
+          optionList: [],
           rows: [],
         },
 
@@ -231,13 +242,14 @@
             ? this.ele.options
             : undefined;
 
-          /* 公开的 property 通道：getter 读数据，setter 写数据；属性通道由 attached 里的 MutationObserver 补 */
+          /* 公开的 property 通道：getter 读规范化后的数组，setter 写进去；属性通道由 watch / attached 里的
+             MutationObserver 补（同 mc-pagination 的 blocks） */
           Object.defineProperty(this.ele, 'options', {
             configurable: true,
-            get: () => this.options,
+            get: () => this.optionList,
             set: (value) => {
               this._propOptions = true;
-              this.options = this.toOptions(value);
+              this.applyOptions(value);
             },
           });
         },
@@ -248,44 +260,41 @@
           if (!this._applied) {
             this._applied = true;
             if (this.ele.hasAttribute('options')) {
-              this.options = this.toOptions(this.ele.getAttribute('options'));
+              this.applyOptions(this.ele.getAttribute('options'));
             }
             if (this._presetOptions !== undefined) {
               this._propOptions = true;
-              this.options = this.toOptions(this._presetOptions);
+              this.applyOptions(this._presetOptions);
               this._presetOptions = undefined;
             }
           }
           this._mounted = true;
-          this._modeKey =
-            String(this.flyoutChildren()) +
-            ':' +
-            this.baseLevel() +
-            ':' +
-            this.ele.hasAttribute('accordion');
+          this._modeKey = this.modeKeyOf();
+          this._currentAttr = this.ele.getAttribute('current');
           this._modeMo = new MutationObserver(() => {
-            const key =
-              String(this.flyoutChildren()) +
-              ':' +
-              this.baseLevel() +
-              ':' +
-              this.ele.hasAttribute('accordion');
-            if (key === this._modeKey) return;
+            const key = this.modeKeyOf();
+            const currentAttr = this.ele.getAttribute('current');
+            const modeChanged = key !== this._modeKey;
+            if (!modeChanged && currentAttr === this._currentAttr) return;
             this._modeKey = key;
-            this.closeFlyouts();
-            this.rows = this.buildRows(this.options);
+            this._currentAttr = currentAttr;
+            /* 换渲染结构才收浮层；只是换了当前项时开着的那层别塌掉 */
+            if (modeChanged) this.closeFlyouts();
+            /* 只换 current 时保留已摊开的分支（不开手风琴就没有「开一个收一个」）；结构变了才整棵重算 */
+            this.rows = this.buildRows(this.optionList, { keepOpen: !modeChanged });
             this.scheduleMeta();
           });
           this._modeMo.observe(this.ele, {
             attributes: true,
-            attributeFilter: ['data-flyout', 'data-level', 'accordion'],
+            attributeFilter: ['data-flyout', 'data-level', 'accordion', 'expanded', 'current'],
           });
-          this.rows = this.buildRows(this.options);
+          this.rows = this.buildRows(this.optionList);
 
-          /* options 的属性通道自己听（同 mc-table 的 data）；我们从不写这个属性，所以不会自激 */
+          /* options 的属性通道仍自己听一遍（同 mc-pagination 的 blocks）：绑定通道可能后到一段 JSON 文本；
+             property 一旦写过值就不该再被它覆盖。我们从不写这个属性，所以不会自激 */
           this._attrMo = new MutationObserver(() => {
-            if (this._propOptions) return; // property 已写过值：属性通道（含绑定后到的 JSON 文本）不覆盖它
-            this.options = this.toOptions(this.ele.getAttribute('options'));
+            if (this._propOptions) return;
+            this.applyOptions(this.ele.getAttribute('options'));
           });
           this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['options'] });
 
@@ -322,16 +331,22 @@
         },
 
         watch: {
+          /* options 的属性 / 绑定通道先规范化（property 写过值后让位），渲染统一落在 optionList 那一条 */
           options(value) {
-            if (!this._mounted) return; // 首次触发落在构造期（P5）；attached 里会自己建一次
-            this.rows = this.buildRows(this.toOptions(value));
+            if (!this._mounted || this._propOptions) return; // 首次触发落在构造期（P5）；attached 里会自己建一次
+            this.applyOptions(value);
+          },
+          optionList() {
+            if (!this._mounted) return;
+            /* 换数据也按 key 保住已摊开的分支（展开是 UI 状态，不是数据）：同 key 的行才带得过来，新树自然全收起 */
+            this.rows = this.buildRows(this.optionList, { keepOpen: true });
             this.scheduleMeta();
           },
           /* 压缩态换的是整个渲染结构（子菜单从内联折叠换成浮层），所以整棵重建 */
           collapsed() {
             if (!this._mounted) return;
             this.closeFlyouts();
-            this.rows = this.buildRows(this.options);
+            this.rows = this.buildRows(this.optionList);
             this.scheduleMeta();
           },
           /* 尺寸变了要重新下发通道：嵌套实例拿的是建立那一刻的内联副本 */
@@ -358,11 +373,63 @@
             return Array.isArray(value) ? value : [];
           },
 
+          /** options 的三条通道（属性 / 绑定 / property）都汇到这里：同一段属性文本只规范化一次 */
+          applyOptions(raw) {
+            if (typeof raw === 'string' && raw === this._optionsSource) return; // watch 与 MutationObserver 可能各来一次
+            this._optionsSource = raw;
+            this.optionList = this.toOptions(raw);
+          },
+
           /** 一条数据是什么：分组 / 有子菜单的父级 / 叶子 */
           kindOf(option) {
             const data = typeof option === 'string' ? { label: option } : (option ?? {});
             if (data.group || data.type === 'group') return 'group';
             return Array.isArray(data.children) && data.children.length ? 'parent' : 'leaf';
+          },
+
+          /** 当前项的目标：容器属性 `current` 的文本（空 = 没有当前项） */
+          currentTarget() {
+            const raw = this.ele.getAttribute('current');
+            const text = raw == null ? '' : raw.trim();
+            return text || null;
+          },
+
+          /** 目标 → 命中的那一行（返回它的 label 路径 + href），**当前项只有一个**：
+              先按 label 路径精确命中，再按 href 全等（同一个 href 在树里出现多次时只认第一处）。
+              对不上（写错 / 该页没进菜单）就是 null，不会有半截高亮 */
+          resolveCurrent(items) {
+            const target = this.currentTarget();
+            if (!target) return null;
+            let byHref = null;
+            let byPath = null;
+            const walk = (nodes, trail) => {
+              for (const option of nodes ?? []) {
+                if (byPath) return;
+                const data = typeof option === 'string' ? { label: option } : (option ?? {});
+                const label = String(data.label ?? '');
+                const path = [...trail, label].filter(Boolean).join('/');
+                if (this.kindOf(data) !== 'leaf') {
+                  walk(data.children, [...trail, label]);
+                  continue;
+                }
+                /* 禁用的行不给 href，也就不可能是当前项 */
+                if (data.disabled || !data.href) continue;
+                if (!byHref && data.href === target) byHref = { path, href: data.href };
+                if (path === target) byPath = { path, href: data.href };
+              }
+            };
+            walk(items, []);
+            return byPath ?? byHref;
+          },
+
+          /** 换渲染结构的那几个属性：变了就整棵重建（watch 不够用，它们可能是内部写法） */
+          modeKeyOf() {
+            return [
+              this.flyoutChildren(),
+              this.baseLevel(),
+              this.ele.hasAttribute('accordion'),
+              this.ele.hasAttribute('expanded'),
+            ].join(':');
           },
 
           /** 本实例的层级：根 = 0，父级渲染嵌套实例时写进 data-level（内部接线，不是给使用者的属性） */
@@ -376,15 +443,29 @@
             return this.ele.hasAttribute('collapsed') || this.ele.hasAttribute('data-flyout');
           },
 
-          /** options → 模板用的扁平行模型。分组子项摊到同一层；父级的 children 留给嵌套 mc-menu。 */
-          buildRows(items) {
+          /** options → 模板用的扁平行模型。分组子项摊到同一层；父级的 children 留给嵌套 mc-menu。
+              `keepOpen`：只换 `current` / 重新赋同 key 的 `options` 时用 —— 已经摊开的分支保持原样，
+              当前项只负责「把命中的那一支补开」，收别人的事归 `accordion` 管（不开手风琴就没有「只能开一个」）。
+              结构真变了（collapsed / expanded / accordion）就整棵重算，不带旧状态。 */
+          buildRows(items, { keepOpen = false } = {}) {
             const level = this.baseLevel();
             const flyout = this.flyoutChildren();
+            /* 默认展开的两条来路：`expanded` 属性（整棵摊开）、current 命中的那一支（自动） */
+            const allExpanded = this.ele.hasAttribute('expanded');
+            const target = this.resolveCurrent(items);
+            /* 只换当前项时把上一份行模型的展开状态带过来（key 稳定，一一行对得上） */
+            const prevOpen = keepOpen
+              ? new Map(this.rows.map((row) => [row.key, row.expanded === true]))
+              : null;
+            /* 留给 syncChannels：嵌套实例拿到的 children 在另一个实例里，自己那份数据认不出目标 */
+            this._currentPath = target?.path ?? null;
             const out = [];
             const seen = new Map();
             let index = 0;
-            const push = (data, level, step, prefix, kind) => {
+            const push = (data, level, step, prefix, trail, kind) => {
               const label = String(data.label ?? '');
+              /* label 路径：分组标题算一档，和使用者写 current="组件/表单/输入框" 的口径一致 */
+              const path = [...trail, label].filter(Boolean).join('/');
               const base =
                 data.key != null
                   ? String(data.key)
@@ -399,45 +480,62 @@
               const n = seen.get(key) ?? 0;
               seen.set(key, n + 1);
               if (n) key += '#' + (n + 1);
+              /* 命中的那一行在自己的分支里：开场摊开（不必写 expanded） */
+              const currentBranch =
+                kind === 'parent' && !!target && target.path.startsWith(path + '/');
               out.push({
                 key,
                 kind,
                 label,
+                path,
                 level,
                 step,
                 icon: kind === 'group' ? null : (data.icon ?? null),
                 href: kind === 'leaf' && !data.disabled ? (data.href ?? null) : null,
-                current: kind === 'leaf' && !!data.current,
+                /* 按路径比，不按 href：同一个 href 写了两行时只有命中的那一行亮 */
+                current: kind === 'leaf' && !!target && path === target.path,
                 disabled: !!data.disabled,
                 expandable: kind === 'parent',
                 hasChildren: kind === 'parent',
                 children: kind === 'parent' ? data.children : null,
                 childLevel: flyout ? 0 : level + 1,
                 flyout,
-                expanded: kind === 'parent' && data.expanded === true,
+                currentBranch,
+                /* 浮层里的子菜单归 hover / focus 管，展开状态不参与 */
+                expanded:
+                  kind === 'parent' &&
+                  !flyout &&
+                  (allExpanded || currentBranch || prevOpen?.get(key) === true),
                 attrs: data.attrs ?? null,
                 anchor: '--mc-item-anchor-' + this._uid + '-' + index++,
               });
               return key;
             };
-            const walk = (nodes, level, step, prefix) => {
-              for (const option of nodes) {
+            const walk = (nodes, level, step, prefix, trail) => {
+              for (const option of nodes ?? []) {
                 const data = typeof option === 'string' ? { label: option } : (option ?? {});
                 const kind = this.kindOf(data);
-                const key = push(data, level, step, prefix, kind);
+                const key = push(data, level, step, prefix, trail, kind);
                 if (kind === 'group')
-                  walk(data.children ?? [], level + 1, step ?? GROUP_STEP, key + '/');
+                  walk(data.children ?? [], level + 1, step ?? GROUP_STEP, key + '/', [
+                    ...trail,
+                    String(data.label ?? ''),
+                  ]);
               }
             };
-            walk(items, level, undefined, '');
-            /* options 里多个 expanded 时手风琴只留最后一个（与手动点开同一套规则） */
+            walk(items, level, undefined, '', []);
+            /* 手风琴：同一层只留一个 —— 含 current 的那一支优先（默认展开选中分支），否则最后开着的赢 */
             if (this.ele.hasAttribute('accordion')) {
-              let last = -1;
+              let keep = -1;
+              let currentKeep = -1;
               for (let i = 0; i < out.length; i += 1) {
-                if (out[i].kind === 'parent' && out[i].expanded) last = i;
+                if (out[i].kind !== 'parent' || !out[i].expanded) continue;
+                keep = i;
+                if (out[i].currentBranch) currentKeep = i;
               }
+              if (currentKeep >= 0) keep = currentKeep;
               for (let i = 0; i < out.length; i += 1) {
-                if (out[i].kind === 'parent' && i !== last && out[i].expanded) {
+                if (out[i].kind === 'parent' && i !== keep && out[i].expanded) {
                   out[i] = { ...out[i], expanded: false };
                 }
               }
@@ -478,7 +576,28 @@
 
           syncChannels() {
             // 批量取引用走 this.shadow.all（ofa 包装对象数组）；子菜单要对它写原生 style，逐个下 .ele
-            for (const sub of this.shadow.all('mc-menu')) this.copyChannel(sub.ele);
+            const allExpanded = this.ele.hasAttribute('expanded');
+            /* 当前项也往下发：发的是**相对那个子菜单的 label 路径**（绝对路径在子实例里没有上下文，
+               发 href 又会把「同一个 href 写了两行」的歧义带下去） */
+            const currentPath = this._currentPath ?? null;
+            const models = new Map(this.rows.map((row) => [row.key, row]));
+            for (const sub of this.shadow.all('mc-menu')) {
+              this.copyChannel(sub.ele);
+              /* `expanded` 也要传下去：嵌套实例是模板造的，拿不到使用者写在根上的那个属性 */
+              if (sub.ele.hasAttribute('expanded') !== allExpanded) {
+                sub.ele.toggleAttribute('expanded', allExpanded);
+              }
+              const item = sub.ele.closest('.mc-node')?.querySelector('mc-menu-item');
+              const row = models.get(item?.getAttribute('data-row-key'));
+              const relative =
+                row && currentPath && currentPath.startsWith(row.path + '/')
+                  ? currentPath.slice(row.path.length + 1)
+                  : null;
+              if ((sub.ele.getAttribute('current') || null) !== relative) {
+                if (relative) sub.ele.setAttribute('current', relative);
+                else sub.ele.removeAttribute('current');
+              }
+            }
           },
 
           /** rows 落 DOM 之后的接线：缩进、附加属性、浮层锚点、嵌套菜单的通道。 */

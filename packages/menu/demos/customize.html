@@ -13,26 +13,22 @@
   </style>
 
   <div id="customize-demo">
-    <mc-menu id="customize-menu" :options="menuOptions"></mc-menu>
+    <mc-menu id="customize-menu" expanded current="当前项换成信息色" :options="menuOptions"></mc-menu>
   </div>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
     /* ② 行级装饰走 options.attrs.style：行生成在 mc-menu 的 shadow 里，外层选择器选不中它，
        单行补的竖条 / 虚线框只能写成行上的内联 style（data-* 留给 JS 查状态，CSS 同样够不到）。 */
     const OPTIONS = [
       {
         label: '当前项换成信息色',
-        href: hashOf('packages/menu/page.html'),
-        current: true,
+        href: 'packages/menu/page.html',
         attrs: { style: 'box-shadow: inset 3px 0 0 rgb(var(--mc-color-info))' },
       },
-      { label: '行距和内边距也换了', href: hashOf('packages/button/page.html') },
+      { label: '行距和内边距也换了', href: 'packages/button/page.html' },
       {
         label: '子菜单缩进也换了',
-        expanded: true,
-        children: [{ label: '子项', href: hashOf('packages/icon/page.html') }],
+        children: [{ label: '子项', href: 'packages/icon/page.html' }],
       },
       {
         label: '禁用项：外面补了虚线',

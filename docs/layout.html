@@ -108,9 +108,9 @@
            ⚠️ ofa 对「同一页」不发 router-change（`_navigate` 里 Rt() 建不出新页面就直接 return），
            而 loading 在 Rt() 一开头就已经开跑了 —— 收尾信号永远不来，加载条一直停在 loading，
            不报错也不自己消失（只有再点一个别的菜单，下一次 router-change 才顺带把它收掉）。
-           触发面比 olink 大得多：点 `<a href="#…">`（**左栏当前这一条** / 搜索结果是运行时造的普通
-           `<a href="#…">`，都没有 olink）浏览器照样发一次 popstate，o-router 见 history.state 为空
-           就走 fixStateUrl → goto(同一个 src)，落在同一条路上 —— 首页点左上角 Mosaic（olink）只是其中一例。
+           触发面：手写 olink（顶栏 Mosaic）；左栏菜单的 `<a>` 是 mc-menu 渲染时补的 olink 形态；
+           **搜索结果**那类运行时造的普通 `<a href="#…">` 没有 olink，点下去浏览器照样发一次 popstate，
+           o-router 见 history.state 为空就走 fixStateUrl → goto(同一个 src)，落在同一条路上。
            三个不显然的点：① 链接住在各层 shadow root 里，document 上 event.target 早被重定向成宿主，
            只能用 composedPath() 把它捞出来；② 必须捕获阶段 —— ofa 的 olink 处理器挂在页面 shadow root 上，
            冒泡到那儿就晚了（它看到 defaultPrevented 会自己放弃这次导航）；

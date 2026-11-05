@@ -23,21 +23,20 @@
 
   <!-- 条子走组件默认的 hover：菜单是拿来读的，常驻一条会压在条目背景上 -->
   <mc-scroll-bar label="站点菜单">
-    <mc-menu id="nav-menu" :options="menuOptions"></mc-menu>
+    <mc-menu id="nav-menu" attr:current="currentPath" :options="menuOptions"></mc-menu>
   </mc-scroll-bar>
 
   <script>
     import { displayName, menuOf, hasPage, SPEC_URL, TOPBAR } from '../site-map.js';
-    import { hashOf } from '../routes.js';
     import { onRouteChange, routeState } from '../state/route.js';
 
-    /** 页面节点 → options 一条：待建的不给死链（外链规范 + 压暗），链接走 options.href（行是运行时造的，olink 够不着） */
-    const optionOf = (page, current) => {
+    /** 页面节点 → options 一条：待建的不给死链（外链规范 + 压暗）。链接就是站内路径本身
+        （相对应用根），ofa 应用里 mc-menu 会把它渲染成 olink 形态交给路由 */
+    const optionOf = (page) => {
       const ready = hasPage(page);
       return {
         label: displayName(page),
-        href: ready ? hashOf(page.path) : SPEC_URL,
-        current: ready && page.path === current,
+        href: ready ? page.path : SPEC_URL,
         attrs: {
           target: ready ? null : '_blank',
           rel: ready ? null : 'noreferrer',
@@ -50,35 +49,36 @@
     };
 
     /** 一个分区的行：带 children 的节点出 group（标题 + 组内条目），其余是链接（左栏与「全部菜单」共用） */
-    const optionsOf = (entry, current) =>
+    const optionsOf = (entry) =>
       menuOf(entry).map((node) =>
         node.children
           ? {
               type: 'group',
               label: displayName(node),
-              children: node.children.map((page) => optionOf(page, current)),
+              children: node.children.map((page) => optionOf(page)),
             }
-          : optionOf(node, current),
+          : optionOf(node),
       );
 
-    /** 全部菜单的顶层：整棵树、顶层分区可开合、当前这一支默认展开；展开认 label 不认对象（顶层 label 唯一） */
-    const fullOptionsOf = (current, entry) =>
+    /** 全部菜单的顶层：整棵树、顶层分区可开合。当前项与展开都交给容器（current 属性命中哪一支就摊开哪一支），
+        这里不往数据里塞状态 */
+    const fullOptionsOf = () =>
       TOPBAR.map((node) =>
         node.children
           ? {
               label: displayName(node),
-              expanded: entry ? node.label === entry.label : false,
-              children: optionsOf(node, current),
+              children: optionsOf(node),
             }
-          : optionOf(node, current),
+          : optionOf(node),
       );
 
     export default () => ({
       /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断标签名，文件一改名 / 挪目录就注册失败（P40） */
       tag: 'doc-nav',
 
-      /* 对象 / 数组传播走 data + :options（普通 HTML 才用 property；这里是 ofa 模板） */
-      data: { menuOptions: [] },
+      /* 对象 / 数组传播走 data + :options（普通 HTML 才用 property；这里是 ofa 模板）；
+         当前项只是一条站内路径 → 走 attr:current（属性通道），路由变化只改它，行按 key 原地复用 */
+      data: { menuOptions: [], currentPath: '' },
 
       ready() {
         this._menu = this.shadow.$('#nav-menu');
@@ -110,11 +110,9 @@
         renderRows() {
           /* ⚠️ 别再调一次 locate()：routeState() 里已经是算好的 entry / node */
           const { path: current, entry } = routeState();
-          this.menuOptions = this._full
-            ? fullOptionsOf(current, entry)
-            : entry
-              ? optionsOf(entry, current)
-              : [];
+          /* 当前项与菜单数据同形：都是站内路径（packages/xxx/page.html），不再经过 hashOf */
+          this.currentPath = current;
+          this.menuOptions = this._full ? fullOptionsOf() : entry ? optionsOf(entry) : [];
           /* 首次显示（或首帧行还没渲染出来）才居中；之后的换页只更新 current */
           this.centerInitial();
         },

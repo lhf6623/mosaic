@@ -259,9 +259,12 @@
       <a
         class="mc-control"
         attr:href="linkHref"
+        attr:olink="linkOlink"
+        attr:origin-href="linkOrigin"
         attr:target="linkTarget"
         attr:rel="linkRel"
-        attr:title="linkTitle">
+        attr:title="linkTitle"
+        on:click="onLinkClick($event)">
         {{labelText}}
       </a>
     </o-if>
@@ -283,6 +286,12 @@
         tag: 'mc-menu-item',
         slots: { default: {} },
 
+        // 本组件对外事件：声明即派发入口（见 boot/options.js）
+        emits: {
+          /* 内置行被点击：可取消（preventDefault 后原生 / ofa 的跳转都不发生） */
+          navigate: { detail: ['href', 'resolved'], cancelable: true },
+        },
+
         attrs: {
           // 分组标题行。布尔默认值必须是 null（P1）
           group: null,
@@ -290,8 +299,9 @@
           // 于是 :host([icon]) 对每一行都成立、所有行都白留一份图标缩进（实测踩过）
           icon: null,
           /* 内置行：插槽里不写控件时，组件按这几个属性自己造 <a> / <button>。
-             ⚠️ 内置 <a> 是运行时造的，拿不到 olink 的部署前缀 —— href 要给最终地址；
-             要 olink 或自备控件，就照旧往插槽里写 <a> / <button>（那条路优先级更高）。 */
+             href 照普通链接的写法写（相对应用根 / 绝对路径 / 完整 URL 都行）：
+             ofa 应用内会渲染成 olink 形态交给 ofa 导航，普通 HTML 里原样输出、浏览器原生跳转
+             （见 proto.resolveLink）。要自备控件就照旧往插槽里写 <a> / <button>（那条路优先级更高）。 */
           label: null,
           href: null,
           current: null,
@@ -305,6 +315,9 @@
           labelText: '',
           caret: CARET_CLOSED,
           linkHref: null,
+          /* ofa 应用内才渲染出 olink / origin-href（见 resolveLink） */
+          linkOlink: null,
+          linkOrigin: null,
           linkTarget: null,
           linkRel: null,
           linkTitle: null,
@@ -382,12 +395,48 @@
             this.expandable = expandable;
             this.labelText = label;
             this.caret = this.ele.hasAttribute('data-expanded') ? CARET_OPEN : CARET_CLOSED;
-            this.linkHref =
-              built && !expandable && !disabled ? this.ele.getAttribute('href') || null : null;
+            const link = this.resolveLink(
+              built && !expandable && !disabled ? this.ele.getAttribute('href') || null : null,
+            );
+            this.linkHref = link.href;
+            this.linkOlink = link.olink;
+            this.linkOrigin = link.origin;
             this.linkTarget = this.ele.getAttribute('target');
             this.linkRel = this.ele.getAttribute('rel');
             this.linkTitle = this.ele.getAttribute('title');
             this.applyState();
+          },
+
+          /** href 按环境解析出渲染形态：
+              · 页内锚点（# 开头）与跨域链接：原样输出，永远走原生行为；
+              · ofa 应用内（composedPath 上找得到 o-app）：渲染成 olink 形态 —— href 改写成地址栏的
+                hash 形态（与路由 pushState / 手写 olink 一致，新标签页、复制链接可用），原地址记
+                origin-href，点击由 ofa 挂在 shadow root 上的 olink 处理器接管（preventDefault + goto）；
+              · 普通 HTML（没有 o-app）：原样输出，浏览器原生跳转。 */
+          resolveLink(href) {
+            const plain = { href, olink: null, origin: null };
+            if (!href || href.startsWith('#')) return plain;
+            const resolved = new URL(href, document.baseURI);
+            if (resolved.origin !== location.origin) return plain;
+            if (!$(this.ele).app) return plain;
+            return {
+              href: `${location.origin}${location.pathname}#${resolved.pathname}${resolved.search}`,
+              olink: '',
+              origin: resolved.href,
+            };
+          },
+
+          /** 内置 <a> 的点击：先给宿主一个可取消的 navigate 事件（埋点 / 接管跳转），
+              之后的导航归 ofa（应用内）或浏览器（普通 HTML）—— 本函数不自己跳转 */
+          onLinkClick(event) {
+            if (!this.linkHref) return;
+            /* $emit 走 cancelable 的 CustomEvent：宿主 preventDefault → dispatchEvent 返回 false →
+               把原生 / ofa 的导航一起掐掉。data.href 是写出来的原值，resolved 是解析后的最终地址 */
+            const allowed = this.$emit('navigate', {
+              href: this.ele.getAttribute('href'),
+              resolved: this.linkOrigin ?? this.linkHref,
+            });
+            if (!allowed) event.preventDefault();
           },
 
           /* ---------- 插槽那条路：使用者自备 <a> / <button> ---------- */

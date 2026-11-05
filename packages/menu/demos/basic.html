@@ -1,28 +1,28 @@
 <template component>
   <mc-space block wrap-items align="start">
     <mc-button size="sm" variant="outline" on:click="add()">加一项</mc-button>
-    <mc-menu id="options-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
+    <mc-menu id="options-menu" current="首页" :options="menuOptions" style="width: 13rem"></mc-menu>
   </mc-space>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
-    /* href 是**最终地址**：站内链接的部署前缀由站点自己补（这里用 docs/routes.js 的 hashOf）。
-       attrs = 行上的额外属性（target / rel / title 会转给内置 <a>，其余落在行上给 JS 钩子 / 行内样式） */
+    /* href 照普通链接的写法写（相对应用根的路径）：ofa 应用内组件会把它渲染成 olink 形态交给路由，
+       普通 HTML 里原样输出、原生跳转。attrs = 行上的额外属性（target / rel / title 转给内置 <a>，
+       其余落在行上给 JS 钩子 / 行内样式）
+       当前项在容器上（current="首页"，也收 href）：数据里不存高亮 / 展开这类状态 */
     const OPTIONS = [
-      { label: '首页', icon: 'menu', href: hashOf('packages/menu/page.html'), current: true },
+      { label: '首页', icon: 'menu', href: 'packages/menu/page.html' },
       { type: 'group', label: '导航' },
       {
         label: '组件',
         icon: 'file',
         /* children = 二级菜单：父级是个开合按钮（不导航），子项点开才出现 */
         children: [
-          { label: '按钮', href: hashOf('packages/button/page.html') },
-          { label: '图标', href: hashOf('packages/icon/page.html') },
-          { label: '折叠面板', href: hashOf('packages/collapse/page.html') },
+          { label: '按钮', href: 'packages/button/page.html' },
+          { label: '图标', href: 'packages/icon/page.html' },
+          { label: '折叠面板', href: 'packages/collapse/page.html' },
         ],
       },
-      { label: '设置', icon: 'settings', href: hashOf('packages/color/page.html') },
+      { label: '设置', icon: 'settings', href: 'packages/color/page.html' },
       { label: '禁用项', icon: 'lock', disabled: true },
       {
         label: 'ofa.js',
@@ -44,7 +44,7 @@
           this.extra += 1;
           this.menuOptions = [
             ...OPTIONS,
-            { label: `动态项 ${this.extra}`, icon: 'star', href: hashOf('packages/tag/page.html') },
+            { label: `动态项 ${this.extra}`, icon: 'star', href: 'packages/tag/page.html' },
           ];
         },
       },

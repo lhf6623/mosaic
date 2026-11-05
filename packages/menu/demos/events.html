@@ -1,0 +1,33 @@
+<template component>
+  <mc-menu id="events-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次事件：
+    <strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-menu-events',
+
+      data: {
+        menuOptions: [
+          { label: '按钮', href: 'packages/button/page.html' },
+          { label: '输入框', href: 'packages/input/page.html' },
+          { label: '标签', href: 'packages/tag/page.html' },
+        ],
+        last: '（还没点过）',
+      },
+
+      /* navigate 在行上触发、冒泡 + composed，挂在容器上能收全部行；载荷在 event.detail。
+         这个演示把跳转拦下来（preventDefault）—— 不然一点就 SPA 切页，日志看不到。
+         不拦时由环境决定跳法：ofa 应用内走路由（olink 形态），普通 HTML 原生跳转 */
+      ready() {
+        this.shadow.$('#events-menu')?.ele.addEventListener('navigate', (event) => {
+          this.last = `href=${event.detail.href}，已拦截未跳转`;
+          event.preventDefault();
+        });
+      },
+    });
+  </script>
+</template>

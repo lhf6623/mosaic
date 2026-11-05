@@ -6,14 +6,16 @@
     }
   </style>
 
-  <mc-menu id="part-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
+  <mc-menu
+    id="part-menu"
+    current="项间距被拉开"
+    :options="menuOptions"
+    style="width: 14rem"></mc-menu>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
     const OPTIONS = [
-      { label: '项间距被拉开', href: hashOf('packages/menu/page.html'), current: true },
-      { label: '整列的行距都变了', href: hashOf('packages/button/page.html') },
+      { label: '项间距被拉开', href: 'packages/menu/page.html' },
+      { label: '整列的行距都变了', href: 'packages/button/page.html' },
     ];
 
     export default async () => ({

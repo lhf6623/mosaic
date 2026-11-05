@@ -17,7 +17,7 @@
 | `menu-item.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`      | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`         | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`         | 13 个演示（页面用可编辑示例读**同一份文件**）                                 |
+| `demos/`         | 14 个演示（页面用可编辑示例读**同一份文件**）                                 |
 | `test/`          | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -35,7 +35,7 @@ mc-menu — 数据驱动的垂直菜单容器
 生成的行住在 `mc-menu` 自己的 **shadow root** 里；使用者手写的 `<mc-menu-item>` 仍走 `<slot>` 留在
 light DOM，两条路共用同一个行组件。`doc-nav` 因此改从 `mc-menu` 的 shadowRoot 查当前行。
 
-**更新按 key 复用，不整棵重建**：`o-fill` 按 `fill-key` 复用节点；只换 `current` 时只更新属性，
+**更新按 key 复用，不整棵重建**：`o-fill` 按 `fill-key` 复用节点；只换当前项 / 展开状态时只更新属性，
 新 key 才建节点、旧 key 才拆。key 优先用 `options` 里的 `key`，否则分组用 label、父级用 label、
 叶子用 href（没有 href 再用 label），同层重名自动加序号。doc-nav 同一分区切页时 47 行原地复用。
 
@@ -84,23 +84,52 @@ light DOM，两条路共用同一个行组件。`doc-nav` 因此改从 `mc-menu`
 开合原生 popover 时浏览器可能顺手把页面滚一下（火狐实测），显式 `showPopover()` / `hidePopover()`
 那两行包成 `guard.run(() => …)`，重建 / 卸载时 `dispose()`。
 
-**`options`（数据驱动）**：对象数组放 `data.options`（技能口径：复杂数据不进 `attrs`）。
-ofa 模板里用 `:options` 传；普通 HTML 用宿主 property（`menu.options = [...]`）或
-`<mc-menu options='[...]'>` 的 JSON 初始值——后者由 `attached` 手动监听，只作首屏兼容，不写回 attrs。
-property 通过 `Object.defineProperty` 暴露，挂载前赋的值先收进 `_presetOptions`（P31：构造期不往宿主写属性）。
+**`options`（数据驱动）**：对象数组，**声明进 `attrs`**（和 `mc-pagination` 的 `blocks` 同一套接线）——
+属性通道 `<mc-menu options='[…]'>` 只作 JSON 初值，运行时用宿主 property（`menu.options = [...]`）；
+ofa 模板里用 `:options`。`watch.options` 与 `attached` 里的 MutationObserver 都汇到 `applyOptions()`，
+规范化结果住 `data.optionList`（渲染源），**绝不写回 attrs 声明的键** —— 写回去会被 ofa 再序列化成属性文本，
+渲染源与输入就分叉了。property 通过 `Object.defineProperty` 暴露，挂载前赋的值先收进 `_presetOptions`
+（P31：构造期不往宿主写属性）；property 一旦写过值，属性通道不再覆盖它。
+⚠️ 声明进 `attrs` 是为了让 `api.md` 的「属性」表能对账 —— 那份表原来挂在 `| 对象属性 |` 下面，
+不参与 attrs 对账，等于给接口事实开了个口子（全仓只有本单元这么写，已收掉）。
 
-字段：`label` / `icon` / `href`（最终地址）/ `current` / `disabled` / `attrs`（附加到行上的属性：
+字段：`label` / `icon` / `href` / `disabled` / `attrs`（附加到行上的属性：
 `target` / `rel` / `title` 由菜单项转给内置 `<a>`，其余（如 `data-status`）留在行上给宿主钩子），
-分组用 `type: 'group'`，子菜单用 `children`（同形状的数组，递归）。数据里不存 `#/…`、也不存部署前缀。
+分组用 `type: 'group'`，子菜单用 `children`（同形状的数组，递归）。
+
+**href 照普通链接的写法写**（相对**应用根**的路径、绝对路径、完整 URL 都行），数据里不存 `#/…` 这种
+地址栏形态 —— 那是运行时的渲染结果，不是数据。跳转方式由菜单项按环境决定（`resolveLink()`）：
+ofa 应用内（composedPath 上找得到 `o-app`）渲染成 **olink 形态**（href 改写成地址栏的 hash 形态 +
+`origin-href` 记原地址 + `olink` 属性），点击由 ofa 挂在每个组件 shadow root 上的代理处理器接管
+（preventDefault + `app.goto`，与手写 olink 完全同一条路）；普通 HTML 里 href 原样输出，浏览器原生跳转。
+页内锚点（`#` 开头）与跨域链接永远原生。点击先派发可取消的 `navigate` 事件（`event.detail = { href, resolved }`），
+宿主 preventDefault 即接管。
 
 `children` 有两种落法：**普通行**带 `children` → 父级是开合开关、子菜单折叠；**分组行**
 （`type: 'group'`）带 `children` → 标题不可交互、组内条目**常显**并缩进一档（`doc-nav` 的左栏
-就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。模板里的嵌套 `mc-menu` 直接用 `:options="$data.children"`：
-对象数组走 data 绑定，不会被 ofa 序列化成属性文本。
+就是这个形状：分组名 + 一列页面）。两种都不写 `level`，层级由容器算。模板里的嵌套 `mc-menu` 直接用
+`:options="$data.children"`：对象数组走绑定通道，不会被 ofa 序列化成属性文本。
 
-`expanded: true`：父级行开场就展开。`accordion` 下同层只留一个，多个 `expanded` 时**后面的赢**
-（与手动点开的规则一致）—— 窄屏「全部菜单」用它把当前分区默认摊开。只在普通（内联）模式有意义：
-压缩态的浮层子菜单归 hover / focus 管。
+**当前项 / 默认展开都是属性，不是数据** —— 它们是「外部世界现在在哪」的状态，不是菜单树的一部分：
+
+- `current="…"`：值是命中行的 `href`（与数据里同一个写法）或 label 路径（祖先 label 用 `/` 连）。`resolveCurrent()`
+  先按路径精确命中、再按 href 全等（同一个 href 在树里写了两行时只认第一处），返回**那一行的路径**；
+  行的 `current` 与分支展开都按路径比（`target.path.startsWith(row.path + '/')`）—— 所以**命中的那一支自动
+  展开**（`buildRows` 的 `currentBranch`），也保证了**当前项只会有一行**。对不上就是没有当前项
+  （写错不会留下半截高亮）。按路径而不是按 href 比是有来路的：`基础` 与 `组件/按钮` 指向同一页时，
+  按 href 比会把两行一起点亮。
+- **换当前项只「补开」命中的那一支，不负责收别人的**：`buildRows(items, { keepOpen })` 在只换 `current`
+  （或重新赋同 key 的 `options`）时把上一份行模型的展开状态按 `key` 带过来，用户手动摊开的分支保持原样；
+  收人只有两种来路 —— 手动点父级行（只翻它自己）、`accordion`（同层只留一个）。所以「当前项一换，别的分支
+  就塌」是错的观感，那是把 `current` 当成了手风琴。
+- `expanded`：每个父级行开场就展开（整棵摊开）。
+- 两者都要下发给嵌套实例（`syncChannels()`）：嵌套实例是模板造的、拿不到使用者写在根上的属性，
+  而且它手里只有 `children` —— 所以下发的不是原始文本、也不是 href（href 会把「同一个地址两行」的歧义
+  带下去），而是**相对那个子菜单的 label 路径**（绝对路径减去父级行的前缀）。
+- `current` 的变更走 `_modeMo`（`attributeFilter` 里带它），只是换当前项时**不**收浮层、也不重算展开；
+  `expanded` / `collapsed` / `accordion` 变了才整棵重算（带着旧状态没有意义）。
+- `accordion` 下同层只留一个：`current` 那一支优先，没有时最后开着的赢。
+  压缩态的浮层子菜单不看这两个来路，归 hover / focus 管。
 
 ### `menu-item.html`
 
@@ -111,11 +140,12 @@ mc-menu-item — 菜单项（配合 mc-menu 使用）
 
 - **内置行**（`mc-menu` 渲染每一行时走的就是它）：给 `label`（+ `href`）就够了，菜单项自己造
   `<a>`；带内部 `data-expandable` 的行造 `<button>`，行尾再插一枚箭头（方向看 `data-expanded`）。
-  内置 `<a>` 是**运行时**造的，拿不到 `olink` 的部署前缀 —— `href` 必须是最终地址。
+  内置 `<a>` 的值是运行时算的，但**导航不用自己实现**：ofa 给每个组件的 shadow root 都挂了
+  olink 的代理点击处理器（`initLink`），只要渲染时补上 `olink` + `origin-href`，点击就走进
+  `app.goto` 那条路（见 `resolveLink()`）。
 - **自备控件**（插槽里有元素时优先）：使用者在插槽里放原生 `<a>` / `<button>`，它承载全部语义与
   交互：href、键盘、焦点环、`data-current`、`disabled` / `data-disabled` 都由使用者写，组件只读
-  它、不改它。`olink` 只能走这条路（编译期指令，只作用于模板里的元素，
-  见 [`docs/routes.js`](../../docs/routes.js)）。
+  它、不改它。这条路的 `<a>` 是写在模板里的，`olink` 照常吃（编译期指令只作用于模板里的元素）。
 
 两条路共用同一套行盒子：内置控件由模板渲染在 `mc-menu-item` 自己的 shadow 里，直接吃 `.mc-control`
 类规则；自备控件在插槽里，吃 `::slotted()` 规则。两份样式保持等价，外观只有一套。

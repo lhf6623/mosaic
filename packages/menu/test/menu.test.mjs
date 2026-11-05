@@ -30,7 +30,7 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(
         () => {
           const hosts = window.__deepAll(
-            'demo-menu-basic, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-states, demo-menu-slot',
+            'demo-menu-basic, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-current, demo-menu-slot',
           );
           return hosts.length > 0 && hosts.every((el) => !!el.shadowRoot);
         },
@@ -149,7 +149,7 @@ export default async function run({ page, visit, check }) {
       return { before, subHiddenBefore, opened, closed, afterAdd, attrItems, afterClear };
     });
 
-    /** key 复用：同一份菜单换 current，行 / 子菜单节点不重建、也不移动 */
+    /** key 复用：同一份菜单换当前项（容器属性 current），行 / 子菜单节点不重建、也不移动 */
     const reuse = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
@@ -167,14 +167,9 @@ export default async function run({ page, visit, check }) {
         }
       });
       mo.observe(menu, { childList: true });
-      const clone = (nodes, target) =>
-        nodes.map((node) => {
-          const copy = { ...node };
-          if (Array.isArray(node.children)) copy.children = clone(node.children, target);
-          else copy.current = node.label === target;
-          return copy;
-        });
-      menu.options = clone(menu.options, '设置');
+      /* 只换当前项：数据一个字都不动，命中的行按 href 认（这里取「设置」那一行的 href） */
+      const targetHref = menu.options.find((option) => option.label === '设置')?.href ?? '';
+      menu.setAttribute('current', targetHref);
       await wait(200);
       mo.disconnect();
       const afterRows = [...window.__menuRows(menu)];
@@ -194,7 +189,7 @@ export default async function run({ page, visit, check }) {
       };
     });
     check(
-      '换 options 但 key 不变：行 / 子菜单节点复用、不移位，只更新 current',
+      '换当前项只改容器属性 current：行 / 子菜单节点复用、不移位',
       reuse.sameRows &&
         reuse.sameSubs &&
         reuse.added === 0 &&
@@ -244,10 +239,12 @@ export default async function run({ page, visit, check }) {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const menu = document.createElement('mc-menu');
       menu.style.width = '12rem';
+      /* 当前项在容器上（值 = 那行的 href）：行自己不带高亮字段 */
+      menu.setAttribute('current', '#/built-current.html');
       document.body.append(menu);
       await wait(200);
       menu.options = [
-        { label: '内置当前项', href: '#/built-current.html', current: true },
+        { label: '内置当前项', href: '#/built-current.html' },
         { label: '内置普通项', href: '#/built-normal.html' },
         { label: '内置禁用项', disabled: true },
         {
@@ -586,19 +583,24 @@ export default async function run({ page, visit, check }) {
     await page.locator('demo-menu-collapsed mc-button').first().click();
     await page.waitForTimeout(350);
 
-    /** options 的状态：current / disabled 镜像到宿主；禁用的行不给 href */
+    /** 禁用：数据里写 disabled —— 镜像到宿主、压暗、不给 href；当前行（标签路径命中的那个）镜像成 data-current */
     const states = await page.evaluate(() => {
-      const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
+      const box = window.__deepAll('demo-menu-current')[0].shadowRoot;
       const items = [...window.__deepAll('mc-menu-item', box)];
-      const rows = items.map((i) => window.__menuControl(i));
+      const byLabel = (label) =>
+        items.find((item) => item.getAttribute('label') === label) ?? null;
       const cs = (el) => getComputedStyle(el);
+      const current = byLabel('输入框');
+      const disabled = byLabel('禁用项');
+      const parent = byLabel('组件');
       return {
-        currentFlags: items.map((i) => i.hasAttribute('data-current')),
-        disabledFlags: items.map((i) => i.hasAttribute('data-disabled')),
-        opacity: items.map((i) => cs(i).opacity),
-        cursor: items.map((i) => cs(i).cursor),
-        tags: rows.map((r) => r.tagName),
-        disabledHref: rows[2].getAttribute('href'),
+        currentFlag: !!current?.hasAttribute('data-current'),
+        currentCount: items.filter((item) => item.hasAttribute('data-current')).length,
+        disabledFlag: !!disabled?.hasAttribute('data-disabled'),
+        disabledHref: disabled ? window.__menuControl(disabled).getAttribute('href') : undefined,
+        opacity: disabled ? cs(disabled).opacity : null,
+        cursor: disabled ? cs(disabled).cursor : null,
+        parentTag: parent ? window.__menuControl(parent).tagName : null,
       };
     });
 
@@ -620,11 +622,13 @@ export default async function run({ page, visit, check }) {
     });
 
     /** 真实鼠标悬停禁用项不亮 */
-    await page.locator('demo-menu-states mc-menu-item').nth(2).hover();
+    await page.locator('demo-menu-current mc-menu-item[label="禁用项"]').hover();
     await page.waitForTimeout(300);
     const hoverDisabled = await page.evaluate(() => {
-      const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
-      const item = window.__deepAll('mc-menu-item', box)[2];
+      const box = window.__deepAll('demo-menu-current')[0].shadowRoot;
+      const item = window.__deepAll('mc-menu-item', box).find(
+        (i) => i.getAttribute('label') === '禁用项',
+      );
       return { hovered: item.matches(':hover'), bg: getComputedStyle(item).backgroundColor };
     });
 
@@ -660,14 +664,14 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 键盘：Tab 进到下一项、焦点环用 ring 令牌；禁用的两行进不来 */
+    /** 键盘：Tab 进到下一项、焦点环用 ring 令牌；禁用的行进不来 */
     const keyboard = await (async () => {
-      const links = page.locator('demo-menu-states a');
+      const links = page.locator('demo-menu-current a');
       await links.nth(0).focus();
       await page.keyboard.press('Tab');
       await page.waitForTimeout(150);
       const byKeyboard = await page.evaluate(() => {
-        const box = window.__deepAll('demo-menu-states')[0].shadowRoot;
+        const box = window.__deepAll('demo-menu-current')[0].shadowRoot;
         let active = box.activeElement;
         while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
         return {
@@ -772,18 +776,21 @@ export default async function run({ page, visit, check }) {
     };
   })();
 
-  /* options 的 expanded：开场展开；手风琴下同层只留一个（同层多个 expanded 时后面的赢）。
-     单独再搭两个菜单跑：一个带 accordion、一个不带，免得搅乱上面那套共享探针状态。 */
+  /* 默认展开是容器上的布尔属性：整棵摊开；手风琴下同层只留一个。
+     另外「当前项那一支自动展开」单列一条 —— 它不写 expanded 属性，也不在数据里（数据里没有状态）。 */
   const expandedOption = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    const make = (accordion) => {
+    const make = ({ accordion = false, expanded = false, current = null } = {}) => {
       const menu = document.createElement('mc-menu');
       if (accordion) menu.setAttribute('accordion', '');
+      if (expanded) menu.setAttribute('expanded', '');
+      /* 当前项只写在容器上，值是 label 路径（祖先 label 用 / 连） */
+      if (current) menu.setAttribute('current', current);
       menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
-      /* 挂载前赋的 property 走 _presetOptions 那条路（P31）：两行都声明 expanded，手风琴下应当只剩后一行开着 */
+      /* 挂载前赋的 property 走 _presetOptions 那条路（P31）：数据里只有 label / children / href */
       menu.options = [
-        { label: '甲', expanded: true, children: [{ label: '甲一', href: '#a' }] },
-        { label: '乙', expanded: true, children: [{ label: '乙一', href: '#b' }] },
+        { label: '甲', children: [{ label: '甲一', href: '#a' }] },
+        { label: '乙', children: [{ label: '乙一', href: '#b' }] },
       ];
       document.body.append(menu);
       return menu;
@@ -795,17 +802,105 @@ export default async function run({ page, visit, check }) {
       hiddenSubs: [...window.__menuSubs(menu)].map((sub) =>
         sub.hasAttribute('hidden'),
       ),
+      currentRows: [...window.__menuRows(menu)].map((row) => row.hasAttribute('current')),
     });
-    const accordion = make(true);
-    const plain = make(false);
+    const plain = make({ expanded: true });
+    const accordion = make({ accordion: true, expanded: true });
+    const pinned = make({ accordion: true, current: '甲/甲一' });
     await wait(400);
-    const out = { accordion: read(accordion), plain: read(plain) };
-    accordion.remove();
-    plain.remove();
+    const out = {
+      plain: read(plain),
+      accordion: read(accordion),
+      pinned: read(pinned),
+      /* 嵌套实例吃到的是解出来的 href：子菜单里的行也要标成当前项 */
+      pinnedSubCurrent: [...window.__menuSubs(pinned)].map(
+        (sub) => [...window.__menuRows(sub)].filter((row) => row.hasAttribute('current')).length,
+      ),
+    };
+    for (const menu of [plain, accordion, pinned]) menu.remove();
     return out;
   });
 
-  /* 文档页「默认展开」演示：expanded: true 的行开场展开，嵌套父级各自摊开 */
+  /* 同一个 href 写了两行（甲 / 乙▸丙）：当前项只亮一行 —— label 路径精确到那一行，写 href 时认第一处 */
+  const duplicateHref = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const menu = document.createElement('mc-menu');
+    menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
+    menu.options = [
+      { label: '甲', href: '#/same.html' },
+      { label: '乙', children: [{ label: '丙', href: '#/same.html' }] },
+    ];
+    document.body.append(menu);
+    await wait(300);
+    const read = () => ({
+      current: [...window.__menuRows(menu)]
+        .filter((row) => row.hasAttribute('current'))
+        .map((row) => window.__menuText(row)),
+      expanded: [...window.__menuRows(menu)].map((row) => row.hasAttribute('data-expanded')),
+      sub: window.__menuSubs(menu).map((sub) =>
+        [...window.__menuRows(sub)].map(
+          (row) => window.__menuText(row) + (row.hasAttribute('current') ? '*' : ''),
+        ),
+      ),
+    });
+    const empty = read();
+    menu.setAttribute('current', '乙/丙');
+    await wait(300);
+    const byPath = read();
+    menu.setAttribute('current', '#/same.html');
+    await wait(300);
+    const byHref = read();
+    menu.remove();
+    return { empty, byPath, byHref };
+  });
+
+  /* 换当前项只「补开命中的那一支」，不负责收别人的：手风琴下才收同层其它分支 */
+  const currentKeepsOpen = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const make = (accordion) => {
+      const menu = document.createElement('mc-menu');
+      if (accordion) menu.setAttribute('accordion', '');
+      menu.setAttribute('current', '甲/甲一');
+      menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
+      menu.options = [
+        { label: '甲', children: [{ label: '甲一', href: '#a' }] },
+        { label: '乙', children: [{ label: '乙一', href: '#b' }] },
+        { label: '丙', children: [{ label: '丙一', href: '#c' }] },
+      ];
+      document.body.append(menu);
+      return menu;
+    };
+    const read = (menu) => ({
+      expanded: [...window.__menuRows(menu)].map((row) => row.hasAttribute('data-expanded')),
+      hidden: [...window.__menuSubs(menu)].map((sub) => sub.hasAttribute('hidden')),
+      current: [...window.__menuRows(menu)]
+        .filter((row) => row.hasAttribute('current'))
+        .map((row) => window.__menuText(row)),
+    });
+    const clickParent = (menu, label) => {
+      const row = [...window.__menuRows(menu)].find((item) => window.__menuText(item) === label);
+      window.__menuControl(row).closest('button').click();
+    };
+    const plain = make(false);
+    const accordion = make(true);
+    await wait(400);
+    const start = { plain: read(plain), accordion: read(accordion) };
+    /* 手动再多开一支：普通模式两支并存，手风琴下前一支被收掉 */
+    clickParent(plain, '乙');
+    clickParent(accordion, '乙');
+    await wait(250);
+    const manual = { plain: read(plain), accordion: read(accordion) };
+    /* 换当前项：普通模式收进来的那支不收，手风琴下只留命中的这一支 */
+    plain.setAttribute('current', '丙/丙一');
+    accordion.setAttribute('current', '丙/丙一');
+    await wait(300);
+    const swapped = { plain: read(plain), accordion: read(accordion) };
+    plain.remove();
+    accordion.remove();
+    return { start, manual, swapped };
+  });
+
+  /* 文档页「默认展开」演示：expanded 属性整棵摊开，嵌套父级各自摊开 */
   const expandedDemo = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const find = () => {
@@ -836,17 +931,113 @@ export default async function run({ page, visit, check }) {
     };
   });
 
+  /* 文档页「当前项」演示：current 写 label 路径，命中的行高亮、祖先分支开场展开；
+     右边几个按钮改的是同一个属性（点按钮 → 数据变 → 属性变），只换高亮分支（行不重建），换回去也回得来 */
+  const currentDemo = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const find = () =>
+      window.__deepAll('demo-menu-current')[0]?.shadowRoot?.querySelector('mc-menu') ?? null;
+    let menu = find();
+    for (let i = 0; i < 40 && !menu?.shadowRoot?.querySelector('mc-menu-item'); i += 1) {
+      await wait(100);
+      menu = find();
+    }
+    if (!menu) return null;
+    const snapshot = () => {
+      const rows = [...window.__menuRows(menu)];
+      const sub = window.__menuSubs(menu)[0] ?? null;
+      const nested = sub ? [...sub.shadowRoot.querySelectorAll('mc-menu')][0] : null;
+      const pick = (m) =>
+        [...window.__menuRows(m)]
+          .filter((row) => row.hasAttribute('current'))
+          .map((row) => window.__menuText(row));
+      return {
+        current: pick(menu),
+        expanded: rows.map((row) => row.hasAttribute('data-expanded')),
+        hidden: [...window.__menuSubs(menu)].map((item) => item.hasAttribute('hidden')),
+        deepHidden: nested ? [...sub.shadowRoot.querySelectorAll('mc-menu')].map((m) => m.hasAttribute('hidden')) : null,
+        deepCurrent: nested ? pick(nested) : null,
+      };
+    };
+    const before = snapshot();
+    const rowsBefore = [...window.__menuRows(menu)];
+    /* 演示右侧的按钮：点「设置」换到另一支，再点「组件/表单/输入框」换回来 */
+    const buttons = [...window.__deepAll('demo-menu-current')[0].shadowRoot.querySelectorAll('mc-button')];
+    buttons[3].click();
+    await wait(400);
+    const after = snapshot();
+    after.sameRows =
+      rowsBefore.length === [...window.__menuRows(menu)].length &&
+      [...window.__menuRows(menu)].every((row, index) => row === rowsBefore[index]);
+    buttons[2].click();
+    await wait(400);
+    return { before, after, restored: snapshot() };
+  });
+
   check(
-    'options 的 expanded：父级行开场就展开；手风琴下同层只留一个（后面的赢）',
+    '默认展开：expanded 属性整棵摊开；手风琴下同层只留一个；current 那一支优先（不写属性也开）',
     JSON.stringify(expandedOption.plain.expandedRows) === JSON.stringify([true, true]) &&
       JSON.stringify(expandedOption.plain.hiddenSubs) === JSON.stringify([false, false]) &&
       JSON.stringify(expandedOption.accordion.expandedRows) === JSON.stringify([false, true]) &&
-      JSON.stringify(expandedOption.accordion.hiddenSubs) === JSON.stringify([true, false]),
+      JSON.stringify(expandedOption.accordion.hiddenSubs) === JSON.stringify([true, false]) &&
+      JSON.stringify(expandedOption.pinned.expandedRows) === JSON.stringify([true, false]) &&
+      JSON.stringify(expandedOption.pinned.hiddenSubs) === JSON.stringify([false, true]) &&
+      JSON.stringify(expandedOption.pinned.currentRows) === JSON.stringify([false, false]) &&
+      JSON.stringify(expandedOption.pinnedSubCurrent) === JSON.stringify([1, 0]),
     JSON.stringify(expandedOption),
   );
 
   check(
-    '默认展开的演示：expanded 的父级行开场展开，嵌套父级各自摊开（整条分支可见）',
+    '当前项：current 命中 label 路径的那一行高亮、祖先分支开场展开（含第二层）；点演示按钮换属性只换分支，行不重建',
+    currentDemo !== null &&
+      JSON.stringify(currentDemo.before.current) === JSON.stringify([]) &&
+      JSON.stringify(currentDemo.before.expanded) === JSON.stringify([false, true, false, false]) &&
+      JSON.stringify(currentDemo.before.hidden) === JSON.stringify([false]) &&
+      currentDemo.before.deepHidden !== null &&
+      JSON.stringify(currentDemo.before.deepHidden) === JSON.stringify([false]) &&
+      JSON.stringify(currentDemo.before.deepCurrent) === JSON.stringify(['输入框']) &&
+      JSON.stringify(currentDemo.after.current) === JSON.stringify(['设置']) &&
+      /* 不是手风琴：换当前项不收起已经开着的「组件」分支 */
+      JSON.stringify(currentDemo.after.expanded) === JSON.stringify([false, true, false, false]) &&
+      JSON.stringify(currentDemo.after.hidden) === JSON.stringify([false]) &&
+      JSON.stringify(currentDemo.after.deepCurrent) === JSON.stringify([]) &&
+      currentDemo.after.sameRows &&
+      JSON.stringify(currentDemo.restored) === JSON.stringify(currentDemo.before),
+    JSON.stringify(currentDemo),
+  );
+
+  check(
+    '换 current 只补开命中的那一支：不开手风琴就保留已摊开的分支，accordion 才收同层其它分支',
+    JSON.stringify(currentKeepsOpen.start.plain.expanded) === JSON.stringify([true, false, false]) &&
+      JSON.stringify(currentKeepsOpen.start.accordion.expanded) === JSON.stringify([true, false, false]) &&
+      JSON.stringify(currentKeepsOpen.manual.plain.expanded) === JSON.stringify([true, true, false]) &&
+      JSON.stringify(currentKeepsOpen.manual.accordion.expanded) ===
+        JSON.stringify([false, true, false]) &&
+      JSON.stringify(currentKeepsOpen.swapped.plain.expanded) === JSON.stringify([true, true, true]) &&
+      JSON.stringify(currentKeepsOpen.swapped.plain.hidden) === JSON.stringify([false, false, false]) &&
+      JSON.stringify(currentKeepsOpen.swapped.accordion.expanded) ===
+        JSON.stringify([false, false, true]) &&
+      JSON.stringify(currentKeepsOpen.swapped.accordion.hidden) ===
+        JSON.stringify([true, true, false]),
+    JSON.stringify(currentKeepsOpen),
+  );
+
+  check(
+    '同一个 href 写了两行：当前项只亮一行 —— label 路径精确到那一行，写 href 时认第一处',
+    JSON.stringify(duplicateHref.empty.current) === JSON.stringify([]) &&
+      JSON.stringify(duplicateHref.empty.expanded) === JSON.stringify([false, false]) &&
+      JSON.stringify(duplicateHref.byPath.current) === JSON.stringify([]) &&
+      JSON.stringify(duplicateHref.byPath.expanded) === JSON.stringify([false, true]) &&
+      JSON.stringify(duplicateHref.byPath.sub) === JSON.stringify([['丙*']]) &&
+      JSON.stringify(duplicateHref.byHref.current) === JSON.stringify(['甲']) &&
+      /* 换到「甲」时「乙」不收：非手风琴下开着的分支保持原样 */
+      JSON.stringify(duplicateHref.byHref.expanded) === JSON.stringify([false, true]) &&
+      JSON.stringify(duplicateHref.byHref.sub) === JSON.stringify([['丙']]),
+    JSON.stringify(duplicateHref),
+  );
+
+  check(
+    '默认展开的演示：expanded 属性让父级行开场展开，嵌套父级各自摊开（整条分支可见）',
     expandedDemo !== null &&
       JSON.stringify(expandedDemo.labels) === JSON.stringify(['基础', '组件', '设置']) &&
       JSON.stringify(expandedDemo.expanded) === JSON.stringify([false, true, false]) &&
@@ -1064,12 +1255,14 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'options 的 current / disabled 镜像到宿主：禁用的行不给 href、压暗、悬停不亮',
-    menu.states.currentFlags.join() === 'true,false,false' &&
-      menu.states.disabledFlags.join() === 'false,false,true' &&
+    '当前项 / 禁用镜像到宿主：命中的那一行 data-current、禁用的行 data-disabled / 压暗 / 不给 href，父级行是按钮',
+    menu.states.currentFlag === true &&
+      menu.states.currentCount === 1 &&
+      menu.states.disabledFlag === true &&
       menu.states.disabledHref === null &&
-      Number(menu.states.opacity[2]) < 1 &&
-      menu.states.cursor[2] === 'not-allowed',
+      Number(menu.states.opacity) < 1 &&
+      menu.states.cursor === 'not-allowed' &&
+      menu.states.parentTag === 'BUTTON',
     JSON.stringify(menu.states),
   );
 
@@ -1133,6 +1326,80 @@ export default async function run({ page, visit, check }) {
       menu.priority.rows.includes('来自 property') &&
       !menu.priority.rows.includes('来自属性'),
     JSON.stringify(menu.priority),
+  );
+
+  /* 跳转：ofa 应用内内置 <a> 渲染成 olink 形态（hash 地址 + origin-href + olink），
+     点击走 ofa 的 SPA 导航（地址栏换 hash、不整刷）；navigate 事件可取消 —— 取消就不跳。
+     外链与 # 锚点不吃这一套（原样 href、无 olink）。
+     ⚠️ 菜单要挂进文档页里（o-app 的子树）：直接 append 到 body 上没有应用上下文，href 会按普通链接原生跳转 */
+  const navigation = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const host = window.__deepAll('demo-menu-basic')[0];
+    const menu = document.createElement('mc-menu');
+    menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
+    menu.options = [
+      { label: '站内页', href: 'packages/button/page.html' },
+      { label: '外链', href: 'https://example.com/x.html' },
+      { label: '锚点', href: '#part' },
+    ];
+    host.append(menu);
+    await wait(300);
+    const controlOf = (index) => window.__menuControl(window.__menuRows(menu)[index]);
+    const shape = (index) => {
+      const a = controlOf(index);
+      return {
+        href: a.getAttribute('href'),
+        olink: a.hasAttribute('olink'),
+        origin: a.getAttribute('origin-href'),
+      };
+    };
+    const rows = [shape(0), shape(1), shape(2)];
+    const events = [];
+    const onNav = (e) => {
+      events.push({ ...e.detail });
+      /* 第一次取消：地址栏不许动 */
+      if (events.length === 1) e.preventDefault();
+    };
+    menu.addEventListener('navigate', onNav);
+    const hashBefore = location.hash;
+    controlOf(0).click();
+    await wait(300);
+    const hashAfterCancel = location.hash;
+    controlOf(0).click();
+    await wait(600);
+    const hashAfterAllow = location.hash;
+    menu.removeEventListener('navigate', onNav);
+    /* 把路由退回去（ofa 的 back），别影响套件收尾 */
+    history.back();
+    await wait(600);
+    const hashRestored = location.hash;
+    menu.remove();
+    return { rows, events, hashBefore, hashAfterCancel, hashAfterAllow, hashRestored };
+  });
+
+  check(
+    '跳转：应用内内置 <a> 渲染成 olink 形态（hash 地址 + origin-href）；外链 / 锚点原样输出',
+    navigation.rows[0].olink === true &&
+      navigation.rows[0].href.endsWith('#/packages/button/page.html') &&
+      navigation.rows[0].origin.endsWith('/packages/button/page.html') &&
+      !navigation.rows[0].origin.includes('#') &&
+      navigation.rows[1].olink === false &&
+      navigation.rows[1].href === 'https://example.com/x.html' &&
+      navigation.rows[1].origin === null &&
+      navigation.rows[2].olink === false &&
+      navigation.rows[2].href === '#part',
+    JSON.stringify(navigation.rows),
+  );
+
+  check(
+    '跳转：navigate 事件可取消（取消不跳、放行后 ofa 接管换 hash、back 回得来）',
+    navigation.events.length === 2 &&
+      navigation.events[0].href === 'packages/button/page.html' &&
+      navigation.events[0].resolved.endsWith('/packages/button/page.html') &&
+      navigation.hashAfterCancel === navigation.hashBefore &&
+      navigation.hashAfterAllow.endsWith('#/packages/button/page.html') &&
+      navigation.hashRestored === navigation.hashBefore,
+    JSON.stringify(navigation),
   );
 
   check('页面无 404 / 报错', menu.failed.length === 0, menu.failed.join('\n'));

@@ -14,13 +14,13 @@
 
     <mc-space block wrap-items align="start">
       <mc-button size="sm" variant="outline" id="add">加一项</mc-button>
-      <mc-menu id="options-menu" style="width: 13rem"></mc-menu>
+      <mc-menu id="options-menu" current="首页" style="width: 13rem"></mc-menu>
     </mc-space>
 
     <script>
-      /* options 是对象数组，用 property 传；href 是最终地址（普通页面里不用 ofa 的 hash 路由） */
+      /* options 是对象数组，用 property 传；href 照普通链接的写法写 —— 普通页面里就是原生跳转 */
       const OPTIONS = [
-        { label: '首页', icon: 'menu', href: '#', current: true },
+        { label: '首页', icon: 'menu', href: '#' },
         { type: 'group', label: '导航' },
         {
           label: '组件',

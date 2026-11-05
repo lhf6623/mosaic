@@ -2,32 +2,30 @@
   <mc-menu accordion id="accordion-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
     /* accordion 写在容器上：同一层只保留一个展开的分支 —— 点第二个父级，第一个自己收起来 */
     const OPTIONS = [
       {
         label: '组件',
         icon: 'file',
         children: [
-          { label: '按钮', href: hashOf('packages/button/page.html') },
-          { label: '图标', href: hashOf('packages/icon/page.html') },
+          { label: '按钮', href: 'packages/button/page.html' },
+          { label: '图标', href: 'packages/icon/page.html' },
         ],
       },
       {
         label: '表单',
         icon: 'settings',
         children: [
-          { label: '输入框', href: hashOf('packages/input/page.html') },
-          { label: '下拉选择', href: hashOf('packages/select/page.html') },
+          { label: '输入框', href: 'packages/input/page.html' },
+          { label: '下拉选择', href: 'packages/select/page.html' },
         ],
       },
       {
         label: '布局',
         icon: 'menu',
         children: [
-          { label: '栅格', href: hashOf('packages/grid/page.html') },
-          { label: '折叠面板', href: hashOf('packages/collapse/page.html') },
+          { label: '栅格', href: 'packages/grid/page.html' },
+          { label: '折叠面板', href: 'packages/collapse/page.html' },
         ],
       },
     ];

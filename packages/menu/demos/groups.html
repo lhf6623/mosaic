@@ -1,9 +1,11 @@
 <template component>
-  <mc-menu id="groups-menu" :options="menuOptions" style="width: 12rem"></mc-menu>
+  <mc-menu
+    id="groups-menu"
+    current="布局/Menu"
+    :options="menuOptions"
+    style="width: 12rem"></mc-menu>
 
   <script>
-    import { hashOf } from '@doc/routes.js';
-
     /* 分组 = type: 'group'：标题不可交互。带 children 时标题下面一列条目**常显**、缩进一档
        （侧栏用法，doc-nav 就是这么渲染的）；不带 children 就是一条纯标题。 */
     const OPTIONS = [
@@ -13,16 +15,16 @@
         type: 'group',
         label: '基础',
         children: [
-          { label: 'Button', href: hashOf('packages/button/page.html') },
-          { label: 'Code', href: hashOf('packages/code/page.html') },
+          { label: 'Button', href: 'packages/button/page.html' },
+          { label: 'Code', href: 'packages/code/page.html' },
         ],
       },
       {
         type: 'group',
         label: '布局',
         children: [
-          { label: 'Collapse', href: hashOf('packages/collapse/page.html') },
-          { label: 'Menu', href: hashOf('packages/menu/page.html'), current: true },
+          { label: 'Collapse', href: 'packages/collapse/page.html' },
+          { label: 'Menu', href: 'packages/menu/page.html' },
         ],
       },
     ];

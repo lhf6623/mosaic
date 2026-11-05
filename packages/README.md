@@ -36,23 +36,24 @@
 
 同一颗组件在两种环境里消费；**模板指令只属于 ofa 模板，普通 HTML 里不要写**。
 
-| 需求        | 普通 HTML                                  | ofa 模板（`<template page>` / `<template component>`） |
-| ----------- | ------------------------------------------ | ------------------------------------------------------ |
-| 静态标量    | 普通属性 `size="sm"`                       | 普通属性 `size="sm"`                                   |
-| 动态标量    | `setAttribute` / JS property               | `:size="size"`                                         |
-| 布尔        | 普通属性 / `setAttribute`                  | `attr:disabled="disabled"`（**不许** `:disabled`）     |
-| 对象 / 数组 | `$('#id').options = [...]`（组件走 data）  | `data` + `:options="items"`（**不许** `attr:`）        |
-| 事件        | `addEventListener` / `$().on()`            | `on:click="handler"`                                   |
-| 列表 / 条件 | 手写 DOM 或组件 API                        | `o-fill` / `o-if`                                      |
-| 子组件注册  | `<l-m>`（等 `customElements.whenDefined`） | `<l-m>` 放页面顶部，或 `await load()`                  |
+| 需求        | 普通 HTML                                       | ofa 模板（`<template page>` / `<template component>`） |
+| ----------- | ----------------------------------------------- | ------------------------------------------------------ |
+| 静态标量    | 普通属性 `size="sm"`                            | 普通属性 `size="sm"`                                   |
+| 动态标量    | `setAttribute` / JS property                    | `:size="size"`                                         |
+| 布尔        | 普通属性 / `setAttribute`                       | `attr:disabled="disabled"`（**不许** `:disabled`）     |
+| 对象 / 数组 | `$('#id').options = [...]`（组件归一化到 data） | `data` + `:options="items"`（**不许** `attr:`）        |
+| 事件        | `addEventListener` / `$().on()`                 | `on:click="handler"`                                   |
+| 列表 / 条件 | 手写 DOM 或组件 API                             | `o-fill` / `o-if`                                      |
+| 子组件注册  | `<l-m>`（等 `customElements.whenDefined`）      | `<l-m>` 放页面顶部，或 `await load()`                  |
 
 - **普通 HTML** 没有模板编译：`{{}}` / `:prop` / `sync:` / `attr:` / `on:` / `o-fill` / `o-if` 都只是普通属性字符串，不会被 ofa 处理。对象 / 数组只能走 JS property（`$()`）或组件显式支持的 JSON 属性初始值；JSON 属性**只作初值**，运行时改值仍走 property。
 - **ofa 模板**：标量进 `attrs` / 用 `:prop`；布尔用 `attr:`；对象 / 数组放 `data`、用 `:prop` 传。**对象不需要 `sync:`**（引用共享）。
-- **组件作者**：标量进 `attrs`，对象 / 数组进 `data`；为普通 HTML 暴露同名 property（对象字段在 `data` 里时 `$('#id').options` 即可生效；要支持原生 `el.options` 再补 accessor）；JSON 属性兼容必须单独监听，且只作初值。
-- **对象属性的文档位置**：声明进 `attrs` 的（JSON 文本属性 + 同名 property accessor，如 `mc-table` 的
-  `columns`、`mc-pagination` 的 `blocks`）**进「属性」表**，值列写 `string`、说明里讲清 property 通道；
-  没进 `attrs`、只走宿主 property 的（如 `mc-menu` 的 `options`）才在 `api.md` 用
-  `| 对象属性 | 值 | 说明 |` 单独列表 —— 那张表不参与 attrs 对账。
+- **组件作者**：标量进 `attrs`；对象 / 数组**也声明进 `attrs`**（只作 JSON 初值），规范化后的数组放 `data` 当渲染源；为普通 HTML 暴露同名 property accessor；JSON 属性兼容必须单独监听，且只作初值。唯一例外是与宿主 property 保留名撞车的（如 `mc-table` 的 `data`，`$.fn.data` 已占用），它只走宿主 property。
+- **对象属性的文档位置**：一律**声明进 `attrs`**（JSON 文本属性 + 同名 property accessor，如 `mc-table` 的
+  `columns`、`mc-pagination` 的 `blocks`、`mc-menu` 的 `options`），**进「属性」表**，值列写 `string`、
+  说明里讲清 property 通道；规范化结果住另一个 `data` 字段（如 `blockList` / `optionList`），
+  **不能写回 attrs 声明的键** —— 写回去会被 ofa 再序列化成属性文本。
+  `api.md` **不另设「对象属性」表**：那张表不参与 attrs 对账，等于给接口事实开一个不会被发现的口子。
 
 ### 1.1.2 demos 里的路径写法
 
