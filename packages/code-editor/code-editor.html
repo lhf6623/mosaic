@@ -323,6 +323,7 @@
           this._ro = null;
           this._io = null;
           this._onForceLoad = () => this.ensureLoaded();
+          this._onPointerFocus = () => this.focusCm();
 
           /* 规范 1.4：运行时读写走宿主 DOM property；改值不派发 input / change（那是使用者输入才有的） */
           Object.defineProperty(this.ele, 'value', {
@@ -346,6 +347,8 @@
           /* 宿主上的全局式监听：懒加载的兜底（模板绑不了「整个宿主」），指针 / 焦点一到就加载 */
           this.ele.addEventListener('focusin', this._onForceLoad);
           this.ele.addEventListener('pointerdown', this._onForceLoad);
+          /* 先聚焦再让 CM 处理这轮按下 —— 原因见 focusCm() */
+          this.ele.addEventListener('pointerdown', this._onPointerFocus);
 
           if (this.isVisible()) this.ensureLoaded();
           else this.observeVisibility();
@@ -359,6 +362,7 @@
           this.disconnectVisibility();
           this.ele.removeEventListener('focusin', this._onForceLoad);
           this.ele.removeEventListener('pointerdown', this._onForceLoad);
+          this.ele.removeEventListener('pointerdown', this._onPointerFocus);
           this.destroyCm();
           this.loading = false;
         },
@@ -622,6 +626,21 @@
               cm.refresh();
               this.scheduleFit();
             });
+          },
+
+          /**
+           * 指针按到宿主时先把焦点交给 CM —— 修「打开后第一下就拖选，选中的代码自己消失」。
+           *
+           * shadow root 里浏览器不会像 light DOM 那样在这次按下时给出焦点：CM 直到 mouseup 那一轮
+           * operation 里才 focus() 自己，而 CM 的 onFocus 有 `if (!cm.curOp) input.reset()` 的守卫 ——
+           * 焦点落在 operation 里，reset 被跳过，隐藏 textarea 一直空着；100ms 后的 poll 读到
+           * 「textarea 是空的、文档里却有选区」，就当成用户把选区删掉了，发一条 origin=+input 的删除。
+           * 先在 pointerdown（早于 mousedown / 选区建立）聚焦，reset 就能在选区形成前后各跑一次，
+           * poll 也就不会误判。第二次起本来就没问题（焦点已在），这条只是补第一次。
+           */
+          focusCm() {
+            if (!this._cm) return;
+            this._cm.focus();
           },
 
           /** CM 成功挂载时把降级痕拆掉（重新挂载 / 先降级后恢复都可能走到） */

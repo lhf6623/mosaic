@@ -342,6 +342,46 @@ export default async function run({ page, newPage, visit, goHash, check }) {
   );
 
   /* ------------------------------------------------------------------ *
+   * 7b. 首次手势就是拖选：选中的内容不能被吞掉
+   *     回归「打开代码区后不先点一下、直接拖选，松手时代码消失」—— CM 在 shadow root 里
+   *     要等 mouseup 那一轮才聚焦，跳过把选区写进隐藏 textarea，随后的 poll 把选区当成删除。
+   * ------------------------------------------------------------------ */
+  const freshDrag = await page.evaluate(() => {
+    const demo = window.__deep('doc-example');
+    const editor = demo?.shadowRoot?.querySelector('mc-code-editor');
+    const rect = editor?.shadowRoot?.querySelector('.CodeMirror-line')?.getBoundingClientRect();
+    return {
+      value: editor?.value,
+      rect: rect && { x: rect.x, y: rect.y, h: rect.height },
+    };
+  });
+  await page.mouse.move(freshDrag.rect.x + 4, freshDrag.rect.y + freshDrag.rect.h / 2);
+  await page.mouse.down();
+  await page.mouse.move(freshDrag.rect.x + 120, freshDrag.rect.y + freshDrag.rect.h / 2, {
+    steps: 6,
+  });
+  await page.mouse.up();
+  /* 等过 CM 的 pollInterval（默认 100ms）—— 吞内容就是那一次 poll 干的 */
+  await page.waitForTimeout(600);
+  const afterDrag = await page.evaluate(() => {
+    const demo = window.__deep('doc-example');
+    const editor = demo?.shadowRoot?.querySelector('mc-code-editor');
+    const cm = editor?.shadowRoot?.querySelector('.CodeMirror')?.CodeMirror;
+    return { value: editor?.value, selection: cm?.getSelection() ?? '' };
+  });
+  check(
+    '首次拖选：不先点一下直接选，松手后内容不丢、选区还在',
+    !!freshDrag.value &&
+      afterDrag.value === freshDrag.value &&
+      afterDrag.selection.length > 0,
+    JSON.stringify({
+      beforeLen: freshDrag.value?.length,
+      afterLen: afterDrag.value?.length,
+      selection: afterDrag.selection,
+    }),
+  );
+
+  /* ------------------------------------------------------------------ *
    * 8. 降级：vendor 不可达时换成 textarea，值 / 事件契约不变
    * ------------------------------------------------------------------ */
   const fallbackPage = await newPage();

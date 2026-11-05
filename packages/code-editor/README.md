@@ -33,6 +33,8 @@
 
 **CodeMirror 随组件 vendor，懒加载**：`vendor/codemirror/` 是 MIT 的 CodeMirror 5.65.20（provenance 见 `vendor/codemirror/SOURCES.txt`），组件用 `url`（ofa 传给组件模块的真实地址）拼出 `new URL('./vendor/codemirror/', url)`，所以 CDN / 本地 / 子路径部署都对，不需要使用者配 base。第一次**可见**才下载：收起的抽屉先不加载，由 IntersectionObserver 等可见后再开始；指针 / 焦点到宿主也强制加载。加载失败降级成模板里的 `<textarea>`，值 / 事件契约不变。这是「第三方库自己造节点」的例外，理由写在组件脚本顶部，也登记在 [`packages/README.md`](../README.md) §1.9。
 
+**pointerdown 里先聚焦 CM（shadow root 的必要补丁）**：桌面端 CM 用隐藏 textarea 收键，它靠 `poll()` 比对「textarea 里有什么」和「文档里选了什么」。在 light DOM 里浏览器会在 mousedown 时就给出焦点，`reset()` 因此能在选区前后各跑一次；进了 shadow root，焦点要到 mouseup 那一轮 operation 里才到（CM 的 onFocus 又因为 `curOp` 非空跳过 `reset()`），隐藏 textarea 一直是空的 —— 100ms 后的 poll 就把它当成「用户把选区删掉了」，发一条 `origin=+input` 的删除。表现是**打开编辑器后第一下就拖选，松手时选中的代码消失**（第二次起没事，焦点已在）。所以组件在宿主的 `pointerdown` 上先把焦点交给 CM（见 `focusCm()`），把这半拍补回来。回归用例见 `test/` 的「首次拖选」。
+
 **主题**：CM 的基础样式由脚本 fetch 后插到本 shadow root 的**最前面**，组件自己的 `<style>` 后写，所以主题覆盖压得住 CM 默认规则。语法色是 L3 令牌（见下表），默认值用 `light-dark()` 跟随 `color-scheme`；没有 JS 主题观察者，切主题只靠令牌层已经写好的 `color-scheme`。
 
 **高度**：不写 `auto-resize` 时宿主固定 `--mc-code-editor-h`（8rem）；写了就由脚本量 `.CodeMirror-sizer` 的内容高度并写宿主行内 `height`（同 mc-textarea 的 auto-resize，测量是模板表达不了的）。`ResizeObserver` 在容器尺寸变化时 `refresh()` 并重新量高；卸载时断开。
