@@ -5,21 +5,23 @@
     /* children 逐级渲染：每深一级缩进一档（--mc-menu-indent-step），父级行是开合开关、不导航。
        层级由容器自己算，使用者的数据里没有 level 这种字段。 */
     const OPTIONS = [
-      { label: '基础', href: 'packages/button/page.html' },
+      { key: 'basic', label: '基础', href: 'packages/button/page.html' },
       {
+        key: 'components',
         label: '组件',
         children: [
-          { label: '按钮', href: 'packages/button/page.html' },
+          { key: 'components/button', label: '按钮', href: 'packages/button/page.html' },
           {
+            key: 'components/form',
             label: '表单',
             children: [
-              { label: '输入框', href: 'packages/input/page.html' },
-              { label: '下拉选择', href: 'packages/select/page.html' },
+              { key: 'components/form/input', label: '输入框', href: 'packages/input/page.html' },
+              { key: 'components/form/select', label: '下拉选择', href: 'packages/select/page.html' },
             ],
           },
         ],
       },
-      { label: '设置', href: 'packages/color/page.html' },
+      { key: 'settings', label: '设置', href: 'packages/color/page.html' },
     ];
 
     export default async () => ({

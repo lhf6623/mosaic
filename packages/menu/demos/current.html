@@ -7,10 +7,10 @@
       style="width: 14rem"></mc-menu>
 
     <mc-space direction="vertical" gap="sm">
-      <mc-button size="sm" on:click="pick('基础')">基础</mc-button>
-      <mc-button size="sm" on:click="pick('组件/按钮')">组件/按钮</mc-button>
-      <mc-button size="sm" on:click="pick('组件/表单/输入框')">组件/表单/输入框</mc-button>
-      <mc-button size="sm" on:click="pick('设置')">设置</mc-button>
+      <mc-button size="sm" on:click="pick('basic')">基础</mc-button>
+      <mc-button size="sm" on:click="pick('components/button')">组件/按钮</mc-button>
+      <mc-button size="sm" on:click="pick('components/form/input')">组件/表单/输入框</mc-button>
+      <mc-button size="sm" on:click="pick('settings')">设置</mc-button>
     </mc-space>
   </mc-space>
 
@@ -20,27 +20,29 @@
        路由变化时只改这一个属性（下面几个按钮就是在改它）：行按 key 原地复用，不重建。
        禁用在数据里（disabled）：禁用的行不给 href（点不动、也进不了焦点顺序）。 */
     const OPTIONS = [
-      { label: '基础', href: 'packages/menu/page.html' },
+      { key: 'basic', label: '基础', href: 'packages/menu/page.html' },
       {
+        key: 'components',
         label: '组件',
         children: [
-          { label: '按钮', href: 'packages/button/page.html' },
+          { key: 'components/button', label: '按钮', href: 'packages/button/page.html' },
           {
+            key: 'components/form',
             label: '表单',
             children: [
-              { label: '输入框', href: 'packages/input/page.html' },
-              { label: '下拉选择', href: 'packages/select/page.html' },
+              { key: 'components/form/input', label: '输入框', href: 'packages/input/page.html' },
+              { key: 'components/form/select', label: '下拉选择', href: 'packages/select/page.html' },
             ],
           },
         ],
       },
-      { label: '设置', href: 'packages/color/page.html' },
-      { label: '禁用项', disabled: true },
+      { key: 'settings', label: '设置', href: 'packages/color/page.html' },
+      { key: 'disabled', label: '禁用项', disabled: true },
     ];
 
     export default async () => ({
       tag: 'demo-menu-current',
-      data: { currentItem: '组件/表单/输入框', menuOptions: OPTIONS },
+      data: { currentItem: 'components/form/input', menuOptions: OPTIONS },
 
       proto: {
         /* 换当前项只动这一个属性：写 href 或 label 路径都行，这里用 label 路径更好读 */

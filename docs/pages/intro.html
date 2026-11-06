@@ -51,16 +51,14 @@
     const components = [];
     const collect = (nodes) => {
       for (const node of nodes) {
-        if (node.type === 'component' && node.path) components.push(node);
+        if (node.meta?.type === 'component' && node.href) components.push(node);
         if (node.children) collect(node.children);
       }
     };
     collect(SITE);
 
-    /* 「组件」那一支的直接子节点就是分类（基础 / 表单 / 反馈 / 浮层 / 布局），hidden 的整支不算 */
-    const categories = (SITE.find((node) => node.label === '组件')?.children ?? []).filter(
-      (node) => node.hidden !== true,
-    );
+    /* 「组件」那一支的直接子节点就是分类（基础 / 表单 / 反馈 / 浮层 / 布局） */
+    const categories = SITE.find((node) => node.label === '组件')?.children ?? [];
 
     /* 分类个数写中文数字，保持原句语气（「分在……五类里」）；超过十类就直接落数字 */
     const CN_NUM = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];

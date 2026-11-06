@@ -22,6 +22,8 @@ const SHARED = [
   { file: 'packages/boot/mosaic.css', raw: 106 * 1024, gzip: 23 * 1024 },
   // mc-icon 自己 <link> 的那份（也被 mosaic.css 包含）；单列为了盯住图标集增长
   { file: 'packages/icon/icons.generated.css', raw: 86 * 1024, gzip: 16 * 1024 },
+  // mc-icon 运行时 import 的名字清单（只有键名，不含图形数据）
+  { file: 'packages/icon/icons.generated.names.js', raw: 4 * 1024, gzip: 2 * 1024 },
   // 组件自带的基座（shadow reset + 令牌默认值），每个组件 <link> 一次、浏览器共享缓存
   { file: 'packages/boot/component-base.css', raw: 8192, gzip: 3072 },
   { file: 'packages/boot/shadow-base.css', raw: 3 * 1024, gzip: 1.5 * 1024 },

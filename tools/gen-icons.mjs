@@ -291,14 +291,24 @@ ${Object.entries(icons)
 }
 `;
 
+/* mc-icon 运行时只加载这份名字清单（几 KB）：内置图标查表直接挂 .mc-icon-<名字>，
+ * 不靠 CSS 探测、不发远程请求；图形数据仍在 icons.generated.css / .js 里。 */
+const namesJs = `/* 由 tools/gen-icons.mjs 生成 —— 勿手改；清单在 tools/icon-manifest.mjs。
+ * mc-icon 运行时内置图标的名字清单：查表命中就直接挂 .mc-icon-<名字>，零远程请求。
+ */
+export const ICON_NAMES = new Set(${JSON.stringify(Object.keys(icons))});
+`;
+
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(resolve(OUT_DIR, 'icons.generated.js'), collectionJs);
 writeFileSync(resolve(OUT_DIR, 'icons.generated.css'), iconCss);
+writeFileSync(resolve(OUT_DIR, 'icons.generated.names.js'), namesJs);
 writeFileSync(resolve(OUT_DIR, 'icons.license.txt'), licenseLines.join('\n'));
 const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
 console.log(
   `\n[mosaic] 内置图标：${Object.keys(icons).length} 个 · 来源 ${usedSets.join(' + ')}\n` +
     `         packages/icon/icons.generated.js    ${kb(collectionJs)}\n` +
     `         packages/icon/icons.generated.css  ${kb(iconCss)}\n` +
+    `         packages/icon/icons.generated.names.js  ${kb(namesJs)}\n` +
     `         packages/icon/icons.license.txt    ${kb(licenseLines.join('\n'))}\n`,
 );

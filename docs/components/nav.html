@@ -1,7 +1,7 @@
 <!--
   <doc-nav> —— 文档站左栏二级菜单（`full` 模式给窄屏浮层的「全部菜单」）。
-  整包数据交给 mc-menu 的 options（行由组件渲染，住在 mc-menu 的 shadow 里）；
-  条目样式不要指望本组件的 <style>，状态走 options.attrs 的 data-* / style。
+  整包数据直接来自 site-map.js 的 SITE（**本身就是 options**，没有翻译层）；行由组件渲染在 shadow 里。
+  条目样式不要指望本组件的 <style>，行外观由组件自己的状态属性决定。
   ⚠️ 路由变化整包换 options，但 mc-menu 按 key 复用行：同分区切页只更新 current，不重建
   —— 改这里请手验。滚动只在**首次显示**时居中一次（等到行渲染完、位置落定为止）；之后换页 / 重新展开都不再改 scrollTop。
 -->
@@ -23,65 +23,27 @@
 
   <!-- 条子走组件默认的 hover：菜单是拿来读的，常驻一条会压在条目背景上 -->
   <mc-scroll-bar label="站点菜单">
-    <mc-menu id="nav-menu" attr:current="currentPath" :options="menuOptions"></mc-menu>
+    <mc-menu id="nav-menu" attr:current="currentKey" :options="menuOptions"></mc-menu>
   </mc-scroll-bar>
 
   <script>
-    import { displayName, menuOf, hasPage, SPEC_URL, TOPBAR } from '../site-map.js';
+    import { menuOf, TOPBAR } from '../site-map.js';
     import { onRouteChange, routeState } from '../state/route.js';
-
-    /** 页面节点 → options 一条：待建的不给死链（外链规范 + 压暗）。链接就是站内路径本身
-        （相对应用根），ofa 应用里 mc-menu 会把它渲染成 olink 形态交给路由 */
-    const optionOf = (page) => {
-      const ready = hasPage(page);
-      return {
-        label: displayName(page),
-        href: ready ? page.path : SPEC_URL,
-        attrs: {
-          target: ready ? null : '_blank',
-          rel: ready ? null : 'noreferrer',
-          title: page.summary ? (ready ? page.summary : `待建 —— ${page.summary}`) : null,
-          'data-status': ready ? null : 'planned',
-          /* 行在 mc-menu 的 shadow 里，页面 CSS 够不到；压暗走行上的内联 style（menu 会先写 attrs 再补缩进通道） */
-          style: ready ? null : 'opacity: 0.72',
-        },
-      };
-    };
-
-    /** 一个分区的行：带 children 的节点出 group（标题 + 组内条目），其余是链接（左栏与「全部菜单」共用） */
-    const optionsOf = (entry) =>
-      menuOf(entry).map((node) =>
-        node.children
-          ? {
-              type: 'group',
-              label: displayName(node),
-              children: node.children.map((page) => optionOf(page)),
-            }
-          : optionOf(node),
-      );
-
-    /** 全部菜单的顶层：整棵树、顶层分区可开合。当前项与展开都交给容器（current 属性命中哪一支就摊开哪一支），
-        这里不往数据里塞状态 */
-    const fullOptionsOf = () =>
-      TOPBAR.map((node) =>
-        node.children
-          ? {
-              label: displayName(node),
-              children: optionsOf(node),
-            }
-          : optionOf(node),
-      );
 
     export default () => ({
       /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断标签名，文件一改名 / 挪目录就注册失败（P40） */
       tag: 'doc-nav',
 
-      /* 对象 / 数组传播走 data + :options（普通 HTML 才用 property；这里是 ofa 模板）；
-         当前项只是一条站内路径 → 走 attr:current（属性通道），路由变化只改它，行按 key 原地复用 */
-      data: { menuOptions: [], currentPath: '' },
+      /* :options 绑定直接吃 SITE 的 options 子树；当前项传命中节点的 key，走 attr:current */
+      data: { menuOptions: [], currentKey: '' },
 
       ready() {
         this._menu = this.shadow.$('#nav-menu');
+        /* 点当前页就拦掉：直接比命中节点的 key，不用回查 href / meta，也不必在外壳挂兜底 */
+        this._onNavigate = (event) => {
+          if (event.detail?.key === routeState().node?.key) event.preventDefault();
+        };
+        this._menu.ele.addEventListener('navigate', this._onNavigate);
         this._bar = this.shadow.$('mc-scroll-bar');
         /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
@@ -100,6 +62,7 @@
       // 组件随切页建毁，退订必须在 detached 里做，否则旧实例还会改新菜单
       detached() {
         this._unwatch?.();
+        this._menu?.ele.removeEventListener('navigate', this._onNavigate);
         this._vpRo?.disconnect();
         cancelAnimationFrame(this._centerRaf);
         if (this._onLoad) window.removeEventListener('load', this._onLoad);
@@ -109,10 +72,10 @@
         /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
           /* ⚠️ 别再调一次 locate()：routeState() 里已经是算好的 entry / node */
-          const { path: current, entry } = routeState();
-          /* 当前项与菜单数据同形：都是站内路径（packages/xxx/page.html），不再经过 hashOf */
-          this.currentPath = current;
-          this.menuOptions = this._full ? fullOptionsOf() : entry ? optionsOf(entry) : [];
+          const { node, entry } = routeState();
+          /* current 传命中节点的 key；站内路径留在 href，不再当身份用 */
+          this.currentKey = node?.key ?? '';
+          this.menuOptions = this._full ? TOPBAR : entry ? menuOf(entry) : [];
           /* 首次显示（或首帧行还没渲染出来）才居中；之后的换页只更新 current */
           this.centerInitial();
         },

@@ -74,9 +74,9 @@ export default async function run({ page, visit, check }) {
         for (const [k, v] of Object.entries(attrs)) host.setAttribute(k, v);
         host.innerHTML =
           `<span slot="trigger">${trigger}</span>` +
-          `<mc-menu-item><button type="button">个人资料</button></mc-menu-item>` +
-          `<mc-menu-item><button type="button">账号设置</button></mc-menu-item>` +
-          `<mc-menu-item><button type="button" disabled>退出登录</button></mc-menu-item>`;
+          `<mc-menu-item label="个人资料"></mc-menu-item>` +
+          `<mc-menu-item label="账号设置"></mc-menu-item>` +
+          `<mc-menu-item label="退出登录" disabled></mc-menu-item>`;
         window.__probe.append(host);
         return host.id;
       };
@@ -157,7 +157,9 @@ export default async function run({ page, visit, check }) {
       wideEnough: p.width >= t.width - 1,
       /* 菜单项的文字没有被面板挤掉（真回归过：min-width 失效时面板只剩内容宽、文案被裁成一个字） */
       rowTextFits: (() => {
-        const item = s.host.querySelector('mc-menu-item button');
+        const item = s.host
+          .querySelector('mc-menu-item')
+          .shadowRoot.querySelector('.mc-control');
         return item.scrollWidth <= item.clientWidth + 1;
       })(),
       openAttr: s.host.hasAttribute('open'),
@@ -193,7 +195,7 @@ export default async function run({ page, visit, check }) {
       const host = document.createElement('mc-dropdown');
       host.innerHTML =
         `<span slot="trigger"><button type="button">开</button></span>` +
-        `<mc-menu-item><button type="button">${label}</button></mc-menu-item>`;
+        `<mc-menu-item label="${label}"></mc-menu-item>`;
       probe.append(host);
       return host;
     };
@@ -444,8 +446,9 @@ export default async function run({ page, visit, check }) {
   await waitOpen(true);
   const itemClick = await page.evaluate(() => {
     const item = window.__dd().items[0];
-    const button = item.querySelector('button');
-    return window.__point(button);
+    /* 控件在 mc-menu-item 的 shadow 里：属性式行没有 light DOM 按钮 */
+    const control = item.shadowRoot.querySelector('.mc-control');
+    return window.__point(control);
   });
   await page.mouse.click(itemClick.x, itemClick.y);
   await page.waitForTimeout(200);
@@ -454,7 +457,7 @@ export default async function run({ page, visit, check }) {
     return {
       clicks: window.__clicks.slice(),
       itemRole: items[0]?.getAttribute('role'),
-      buttonText: items[0]?.querySelector('button')?.textContent?.trim(),
+      buttonText: items[0]?.getAttribute('label'),
       open: window.__dd().panel.matches(':popover-open'),
     };
   });

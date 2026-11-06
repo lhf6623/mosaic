@@ -5,27 +5,30 @@
     /* accordion 写在容器上：同一层只保留一个展开的分支 —— 点第二个父级，第一个自己收起来 */
     const OPTIONS = [
       {
+        key: 'components',
         label: '组件',
         icon: 'file',
         children: [
-          { label: '按钮', href: 'packages/button/page.html' },
-          { label: '图标', href: 'packages/icon/page.html' },
+          { key: 'components/button', label: '按钮', href: 'packages/button/page.html' },
+          { key: 'components/icon', label: '图标', href: 'packages/icon/page.html' },
         ],
       },
       {
+        key: 'form',
         label: '表单',
         icon: 'settings',
         children: [
-          { label: '输入框', href: 'packages/input/page.html' },
-          { label: '下拉选择', href: 'packages/select/page.html' },
+          { key: 'form/input', label: '输入框', href: 'packages/input/page.html' },
+          { key: 'form/select', label: '下拉选择', href: 'packages/select/page.html' },
         ],
       },
       {
+        key: 'layout',
         label: '布局',
         icon: 'menu',
         children: [
-          { label: '栅格', href: 'packages/grid/page.html' },
-          { label: '折叠面板', href: 'packages/collapse/page.html' },
+          { key: 'layout/grid', label: '栅格', href: 'packages/grid/page.html' },
+          { key: 'layout/collapse', label: '折叠面板', href: 'packages/collapse/page.html' },
         ],
       },
     ];

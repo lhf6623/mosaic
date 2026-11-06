@@ -1,7 +1,7 @@
 /**
  * mc-menu / mc-menu-item · 数据驱动的垂直菜单：
  * 渲染（分组 / 图标 / 当前 / 禁用 / href / children / 属性通道）、层级缩进、内联开合、
- * 手风琴、压缩态与浮层子菜单（hover / focus / Esc / 点外部）、尺寸通道、自备控件状态镜像、P31 动态创建
+ * 手风琴、压缩态与浮层子菜单（hover / focus / Esc / 点外部）、尺寸通道、P31 动态创建
  */
 
 export default async function run({ page, visit, check }) {
@@ -30,7 +30,7 @@ export default async function run({ page, visit, check }) {
       .waitForFunction(
         () => {
           const hosts = window.__deepAll(
-            'demo-menu-basic, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-current, demo-menu-slot',
+            'demo-menu-basic, demo-menu-nested, demo-menu-accordion, demo-menu-collapsed, demo-menu-expanded, demo-menu-current',
           );
           return hosts.length > 0 && hosts.every((el) => !!el.shadowRoot);
         },
@@ -53,8 +53,8 @@ export default async function run({ page, visit, check }) {
 
     /** 基础：注册、part、菜单项都升级了 */
     const basic = await page.evaluate(() => {
-      const box = window.__deepAll('demo-menu-slot')[0];
-      const menu = window.__deepAll('mc-menu', box.shadowRoot)[0];
+      const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
+      const menu = box.querySelector('#options-menu');
       return {
         upgraded: !!menu?.shadowRoot,
         items: window.__deepAll('mc-menu-item').length,
@@ -62,6 +62,41 @@ export default async function run({ page, visit, check }) {
         listPart: menu?.shadowRoot.querySelector('[part="list"]')?.getAttribute('part') ?? null,
       };
     });
+
+    /** 一刀切契约：页面上所有数据驱动的菜单，options 每一项（含 children 递归）都写了非空且唯一的 key */
+    const keyCoverage = await page.evaluate(() => {
+      const report = { menus: 0, checked: 0, missing: [], duplicate: [] };
+      for (const menu of window.__deepAll('mc-menu')) {
+        const list = menu.options;
+        if (!list || typeof list[Symbol.iterator] !== 'function') continue;
+        const items = [...list];
+        if (!items.length) continue;
+        report.menus += 1;
+        const seen = new Set();
+        const walk = (nodes, trail) => {
+          for (const option of nodes ?? []) {
+            if (!option || typeof option !== 'object') continue;
+            const where = trail + '/' + (option.label ?? '?');
+            const key = option.key == null ? '' : String(option.key).trim();
+            if (!key) report.missing.push(where);
+            else if (seen.has(key)) report.duplicate.push(key);
+            else seen.add(key);
+            report.checked += 1;
+            walk(option.children, where);
+          }
+        };
+        walk(items, menu.id || 'mc-menu');
+      }
+      return report;
+    });
+    check(
+      '页面上所有 options（含 children）都写了非空且唯一的 key',
+      keyCoverage.menus >= 8 &&
+        keyCoverage.checked >= 20 &&
+        keyCoverage.missing.length === 0 &&
+        keyCoverage.duplicate.length === 0,
+      JSON.stringify(keyCoverage),
+    );
 
     /** 数据驱动：字段、分组、children 内联开合、运行时换数据、属性通道 */
     const options = await page.evaluate(async () => {
@@ -134,8 +169,8 @@ export default async function run({ page, visit, check }) {
       attrMenu.setAttribute(
         'options',
         JSON.stringify([
-          { type: 'group', label: '属性组' },
-          { label: '属性项', icon: 'star', href: '#/attr-target.html' },
+          { key: 'attr-group', type: 'group', label: '属性组' },
+          { key: 'attr-item', label: '属性项', icon: 'star', href: '#/attr-target.html' },
         ]),
       );
       document.body.append(attrMenu);
@@ -168,8 +203,8 @@ export default async function run({ page, visit, check }) {
       });
       mo.observe(menu, { childList: true });
       /* 只换当前项：数据一个字都不动，命中的行按 href 认（这里取「设置」那一行的 href） */
-      const targetHref = menu.options.find((option) => option.label === '设置')?.href ?? '';
-      menu.setAttribute('current', targetHref);
+      const targetKey = menu.options.find((option) => option.label === '设置')?.key ?? '';
+      menu.setAttribute('current', targetKey);
       await wait(200);
       mo.disconnect();
       const afterRows = [...window.__menuRows(menu)];
@@ -240,14 +275,15 @@ export default async function run({ page, visit, check }) {
       const menu = document.createElement('mc-menu');
       menu.style.width = '12rem';
       /* 当前项在容器上（值 = 那行的 href）：行自己不带高亮字段 */
-      menu.setAttribute('current', '#/built-current.html');
+      menu.setAttribute('current', 'built-current');
       document.body.append(menu);
       await wait(200);
       menu.options = [
-        { label: '内置当前项', href: '#/built-current.html' },
-        { label: '内置普通项', href: '#/built-normal.html' },
-        { label: '内置禁用项', disabled: true },
+        { key: 'built-current', label: '内置当前项', href: '#/built-current.html' },
+        { key: 'built-normal', label: '内置普通项', href: '#/built-normal.html' },
+        { key: 'built-disabled', label: '内置禁用项', disabled: true },
         {
+          key: 'built-external',
           label: '内置外链项',
           href: 'https://example.com',
           attrs: {
@@ -353,8 +389,8 @@ export default async function run({ page, visit, check }) {
       const host = document.createElement('mc-menu');
       host.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:14rem';
       host.options = [
-        { label: '带图标父级', icon: 'file', children: [{ label: '子项', href: '#sub' }] },
-        { label: '带图标叶子', icon: 'file', href: '#leaf' },
+        { key: 'parent', label: '带图标父级', icon: 'file', children: [{ key: 'parent/child', label: '子项', href: '#sub' }] },
+        { key: 'leaf', label: '带图标叶子', icon: 'file', href: '#leaf' },
       ];
       document.body.append(host);
       await wait(400);
@@ -393,7 +429,7 @@ export default async function run({ page, visit, check }) {
       host.style.setProperty('--mc-menu-pad-x', '40px');
       document.body.append(host);
       await wait(300);
-      host.options = [{ label: '父级', children: [{ label: '子项' }] }];
+      host.options = [{ key: 'parent', label: '父级', children: [{ key: 'parent/child', label: '子项' }] }];
       await wait(400);
       const parentRow = window.__menuRows(host)[0];
       const sub = window.__menuSubs(host)[0];
@@ -604,23 +640,6 @@ export default async function run({ page, visit, check }) {
       };
     });
 
-    /** 自备控件（兼容通道）：状态从插槽元素读 → 镜像到宿主，两种原生元素都一致 */
-    const slot = await page.evaluate(() => {
-      const box = window.__deepAll('demo-menu-slot')[0].shadowRoot;
-      const items = [...window.__deepAll('mc-menu-item', box)];
-      const rows = items.map((i) => window.__menuControl(i));
-      const cs = (el) => getComputedStyle(el);
-      return {
-        tags: rows.map((r) => r.tagName),
-        currentFlags: items.map((i) => i.hasAttribute('data-current')),
-        disabledFlags: items.map((i) => i.hasAttribute('data-disabled')),
-        opacity: items.map((i) => cs(i).opacity),
-        cursor: items.map((i) => cs(i).cursor),
-        buttonDisabled: rows[4].disabled,
-        disabledHref: rows[3].getAttribute('href'),
-      };
-    });
-
     /** 真实鼠标悬停禁用项不亮 */
     await page.locator('demo-menu-current mc-menu-item[label="禁用项"]').hover();
     await page.waitForTimeout(300);
@@ -682,34 +701,14 @@ export default async function run({ page, visit, check }) {
       return byKeyboard;
     })();
 
-    /** 状态镜像：运行时改插槽元素上的 data-current / data-disabled 也跟着走 */
-    const mirror = await page.evaluate(async () => {
-      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-      const box = window.__deepAll('demo-menu-slot')[0].shadowRoot;
-      const item = [...window.__deepAll('mc-menu-item', box)][1];
-      const a = window.__menuControl(item).closest('a');
-      a.setAttribute('data-current', '');
-      await wait(200);
-      const afterSet = item.hasAttribute('data-current');
-      a.removeAttribute('data-current');
-      await wait(200);
-      const afterRemove = item.hasAttribute('data-current');
-      a.setAttribute('data-disabled', '');
-      await wait(200);
-      const disabled = item.hasAttribute('data-disabled');
-      a.removeAttribute('data-disabled');
-      await wait(200);
-      return { afterSet, afterRemove, disabled, afterEnabled: item.hasAttribute('data-disabled') };
-    });
-
     /** P31：document.createElement 创建的实例照常初始化，构造期没往宿主写属性；property 预设值也收 */
     const dynamic = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const host = document.createElement('mc-menu');
       const atCreate = host.getAttributeNames().length;
       const opts = [
-        { type: 'group', label: '动态组' },
-        { label: '动态项', icon: 'star' },
+        { key: 'dynamic-group', type: 'group', label: '动态组' },
+        { key: 'dynamic-item', label: '动态项', icon: 'star' },
       ];
       host.options = opts; // 挂载前赋 property
       document.body.append(host);
@@ -730,8 +729,8 @@ export default async function run({ page, visit, check }) {
       const el = document.createElement('mc-menu');
       document.body.append(el);
       await new Promise((r) => setTimeout(r, 80));
-      el.options = [{ label: '来自 property' }];
-      el.setAttribute('options', JSON.stringify([{ label: '来自属性' }]));
+      el.options = [{ key: 'property', label: '来自 property' }];
+      el.setAttribute('options', JSON.stringify([{ key: 'attr', label: '来自属性' }]));
       await new Promise((r) => setTimeout(r, 300));
       const out = {
         labels: el.options.map((option) => option.label),
@@ -766,11 +765,9 @@ export default async function run({ page, visit, check }) {
       afterEsc,
       afterOutside,
       states,
-      slot,
       hoverDisabled,
       groups,
       keyboard,
-      mirror,
       dynamic,
       failed,
     };
@@ -789,8 +786,8 @@ export default async function run({ page, visit, check }) {
       menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
       /* 挂载前赋的 property 走 _presetOptions 那条路（P31）：数据里只有 label / children / href */
       menu.options = [
-        { label: '甲', children: [{ label: '甲一', href: '#a' }] },
-        { label: '乙', children: [{ label: '乙一', href: '#b' }] },
+        { key: 'a', label: '甲', children: [{ key: 'a/1', label: '甲一', href: '#a' }] },
+        { key: 'b', label: '乙', children: [{ key: 'b/1', label: '乙一', href: '#b' }] },
       ];
       document.body.append(menu);
       return menu;
@@ -806,7 +803,7 @@ export default async function run({ page, visit, check }) {
     });
     const plain = make({ expanded: true });
     const accordion = make({ accordion: true, expanded: true });
-    const pinned = make({ accordion: true, current: '甲/甲一' });
+    const pinned = make({ accordion: true, current: 'a/1' });
     await wait(400);
     const out = {
       plain: read(plain),
@@ -827,8 +824,8 @@ export default async function run({ page, visit, check }) {
     const menu = document.createElement('mc-menu');
     menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
     menu.options = [
-      { label: '甲', href: '#/same.html' },
-      { label: '乙', children: [{ label: '丙', href: '#/same.html' }] },
+      { key: 'a', label: '甲', href: '#/same.html' },
+      { key: 'b', label: '乙', children: [{ key: 'b/c', label: '丙', href: '#/same.html' }] },
     ];
     document.body.append(menu);
     await wait(300);
@@ -844,10 +841,10 @@ export default async function run({ page, visit, check }) {
       ),
     });
     const empty = read();
-    menu.setAttribute('current', '乙/丙');
+    menu.setAttribute('current', 'b/c');
     await wait(300);
     const byPath = read();
-    menu.setAttribute('current', '#/same.html');
+    menu.setAttribute('current', 'a');
     await wait(300);
     const byHref = read();
     menu.remove();
@@ -860,12 +857,12 @@ export default async function run({ page, visit, check }) {
     const make = (accordion) => {
       const menu = document.createElement('mc-menu');
       if (accordion) menu.setAttribute('accordion', '');
-      menu.setAttribute('current', '甲/甲一');
+      menu.setAttribute('current', 'a/1');
       menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
       menu.options = [
-        { label: '甲', children: [{ label: '甲一', href: '#a' }] },
-        { label: '乙', children: [{ label: '乙一', href: '#b' }] },
-        { label: '丙', children: [{ label: '丙一', href: '#c' }] },
+        { key: 'a', label: '甲', children: [{ key: 'a/1', label: '甲一', href: '#a' }] },
+        { key: 'b', label: '乙', children: [{ key: 'b/1', label: '乙一', href: '#b' }] },
+        { key: 'c', label: '丙', children: [{ key: 'c/1', label: '丙一', href: '#c' }] },
       ];
       document.body.append(menu);
       return menu;
@@ -891,8 +888,8 @@ export default async function run({ page, visit, check }) {
     await wait(250);
     const manual = { plain: read(plain), accordion: read(accordion) };
     /* 换当前项：普通模式收进来的那支不收，手风琴下只留命中的这一支 */
-    plain.setAttribute('current', '丙/丙一');
-    accordion.setAttribute('current', '丙/丙一');
+    plain.setAttribute('current', 'c/1');
+    accordion.setAttribute('current', 'c/1');
     await wait(300);
     const swapped = { plain: read(plain), accordion: read(accordion) };
     plain.remove();
@@ -1266,19 +1263,6 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(menu.states),
   );
 
-  check(
-    '自备控件（兼容通道）：状态从插槽元素读并镜像到宿主（当前 / 禁用两种原生元素都一致）',
-    menu.slot.tags.join() === 'A,A,A,A,BUTTON' &&
-      menu.slot.currentFlags.join() === 'true,false,false,false,false' &&
-      menu.slot.disabledFlags.join() === 'false,false,false,true,true' &&
-      menu.slot.buttonDisabled === true &&
-      menu.slot.disabledHref === null &&
-      Number(menu.slot.opacity[3]) < 1 &&
-      Number(menu.slot.opacity[4]) < 1 &&
-      menu.slot.cursor[3] === 'not-allowed' &&
-      menu.slot.cursor[4] === 'not-allowed',
-    JSON.stringify(menu.slot),
-  );
 
   check(
     '禁用项不响应悬停；分组标题鼠标穿透；分组子项常显、缩进走自己那档 28px（改 collapsible 步长不影响它）',
@@ -1300,14 +1284,6 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(menu.keyboard),
   );
 
-  check(
-    '状态镜像跟随运行时变化：data-current / data-disabled 加了就跟着走、摘掉就恢复',
-    menu.mirror.afterSet === true &&
-      menu.mirror.afterRemove === false &&
-      menu.mirror.disabled === true &&
-      menu.mirror.afterEnabled === false,
-    JSON.stringify(menu.mirror),
-  );
 
   check(
     'createElement 创建的实例照常初始化（P31：构造期没往宿主写属性），挂载前赋的 property 收得到',
@@ -1338,9 +1314,9 @@ export default async function run({ page, visit, check }) {
     const menu = document.createElement('mc-menu');
     menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:12rem';
     menu.options = [
-      { label: '站内页', href: 'packages/button/page.html' },
-      { label: '外链', href: 'https://example.com/x.html' },
-      { label: '锚点', href: '#part' },
+      { key: 'inner', label: '站内页', href: 'packages/button/page.html' },
+      { key: 'external', label: '外链', href: 'https://example.com/x.html' },
+      { key: 'anchor', label: '锚点', href: '#part' },
     ];
     host.append(menu);
     await wait(300);

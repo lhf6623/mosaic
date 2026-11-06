@@ -1,7 +1,7 @@
 <template component>
   <mc-menu
     id="groups-menu"
-    current="布局/Menu"
+    current="group-layout/menu"
     :options="menuOptions"
     style="width: 12rem"></mc-menu>
 
@@ -10,21 +10,23 @@
        （侧栏用法，doc-nav 就是这么渲染的）；不带 children 就是一条纯标题。 */
     const OPTIONS = [
       /* 不带 children：只有一条标题 */
-      { type: 'group', label: '概览' },
+      { key: 'group-overview', type: 'group', label: '概览' },
       {
+        key: 'group-basic',
         type: 'group',
         label: '基础',
         children: [
-          { label: 'Button', href: 'packages/button/page.html' },
-          { label: 'Code', href: 'packages/code/page.html' },
+          { key: 'group-basic/button', label: 'Button', href: 'packages/button/page.html' },
+          { key: 'group-basic/code', label: 'Code', href: 'packages/code/page.html' },
         ],
       },
       {
+        key: 'group-layout',
         type: 'group',
         label: '布局',
         children: [
-          { label: 'Collapse', href: 'packages/collapse/page.html' },
-          { label: 'Menu', href: 'packages/menu/page.html' },
+          { key: 'group-layout/collapse', label: 'Collapse', href: 'packages/collapse/page.html' },
+          { key: 'group-layout/menu', label: 'Menu', href: 'packages/menu/page.html' },
         ],
       },
     ];

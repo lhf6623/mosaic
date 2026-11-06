@@ -21,6 +21,7 @@ const PRODUCTS = [
   'packages/boot/component-base.css',
   'packages/icon/icons.generated.js',
   'packages/icon/icons.generated.css',
+  'packages/icon/icons.generated.names.js',
   'packages/icon/icons.license.txt',
 ];
 

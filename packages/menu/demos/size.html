@@ -1,15 +1,15 @@
 <template component>
   <mc-space block wrap-items align="start">
-    <mc-menu id="size-sm" size="sm" current="当前项" :options="menuOptions" style="width: 9rem"></mc-menu>
-    <mc-menu id="size-md" size="md" current="当前项" :options="menuOptions" style="width: 9rem"></mc-menu>
-    <mc-menu id="size-lg" size="lg" current="当前项" :options="menuOptions" style="width: 9rem"></mc-menu>
+    <mc-menu id="size-sm" size="sm" current="current" :options="menuOptions" style="width: 9rem"></mc-menu>
+    <mc-menu id="size-md" size="md" current="current" :options="menuOptions" style="width: 9rem"></mc-menu>
+    <mc-menu id="size-lg" size="lg" current="current" :options="menuOptions" style="width: 9rem"></mc-menu>
   </mc-space>
 
   <script>
     /* 尺寸写在容器上，options 渲染出来的整棵树跟着走 */
     const OPTIONS = [
-      { label: '普通项', href: 'packages/menu/page.html' },
-      { label: '当前项', href: 'packages/button/page.html' },
+      { key: 'normal', label: '普通项', href: 'packages/menu/page.html' },
+      { key: 'current', label: '当前项', href: 'packages/button/page.html' },
     ];
 
     export default async () => ({

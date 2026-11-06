@@ -14,27 +14,29 @@
 
     <mc-space block wrap-items align="start">
       <mc-button size="sm" variant="outline" id="add">加一项</mc-button>
-      <mc-menu id="options-menu" current="首页" style="width: 13rem"></mc-menu>
+      <mc-menu id="options-menu" current="home" style="width: 13rem"></mc-menu>
     </mc-space>
 
     <script>
       /* options 是对象数组，用 property 传；href 照普通链接的写法写 —— 普通页面里就是原生跳转 */
       const OPTIONS = [
-        { label: '首页', icon: 'menu', href: '#' },
-        { type: 'group', label: '导航' },
+        { key: 'home', label: '首页', icon: 'menu', href: '#' },
+        { key: 'group-nav', type: 'group', label: '导航' },
         {
+          key: 'components',
           label: '组件',
           icon: 'file',
           /* children = 二级菜单：父级是开合按钮（不导航），子项点开才出现 */
           children: [
-            { label: '按钮', href: '#' },
-            { label: '图标', href: '#' },
-            { label: '折叠面板', href: '#' },
+            { key: 'components/button', label: '按钮', href: '#' },
+            { key: 'components/icon', label: '图标', href: '#' },
+            { key: 'components/collapse', label: '折叠面板', href: '#' },
           ],
         },
-        { label: '设置', icon: 'settings', href: '#' },
-        { label: '禁用项', icon: 'lock', disabled: true },
+        { key: 'settings', label: '设置', icon: 'settings', href: '#' },
+        { key: 'disabled', label: '禁用项', icon: 'lock', disabled: true },
         {
+          key: 'ofajs',
           label: 'ofa.js',
           icon: 'external',
           href: 'https://ofajs.com',
@@ -54,7 +56,7 @@
         extra += 1;
         menu.options = [
           ...OPTIONS,
-          { label: `动态项 ${extra}`, icon: 'star', href: '#' },
+          { key: `dynamic-${extra}`, label: `动态项 ${extra}`, icon: 'star', href: '#' },
         ];
       });
     </script>

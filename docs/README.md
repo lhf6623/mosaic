@@ -16,15 +16,15 @@
 
 - 页面里**不写** `position: fixed`、侧栏宽度与 `@media` 断点 —— 那是布局页的事。
 - `docs/pages/` 下只有首页挂 `layout.html`（单栏），其余站点页都挂 `doc-layout.html`（三栏）。
-- 页面清单与分组**不在本文档里抄第二份** —— 唯一来源是 `docs/site-map.js`。
+- 页面清单与分组**不在本文档里抄第二份** —— 唯一来源是 `docs/site-map.js`；那里的 `SITE` **本身就是 `mc-menu` 的 options**（`key` / `label` / `href` / `meta` / `children`），左栏与窄屏「全部菜单」直接绑定它，没有翻译层。
 - 换页的加载条是 `mc-loading-bar`，接线在 `app-config.js`：ofa 每次导航开始都会调 `loading`
   （olink 的 pushState 导航**不发 hashchange**，接在别处会漏掉它），结束信号是 `router-change`；
   慢过一小会儿才露（阈值就在 `app-config.js` 里），快导航不闪。
 - 目标就是当前这一页的导航**不发 `router-change`**（ofa 的 `_navigate` 建不出新页面就直接返回），而
   `loading` 在那一刻已经开跑了 → 加载条会永远卡在 loading，不报错也不自己消失（只有再点一个别的菜单，
   下一次 `router-change` 才顺带把它收掉）。所以「原地跳」一律不发起，两道守卫：
-  **外壳**在捕获阶段掐掉这类**同文档链接**（手写 `olink`；左栏菜单的 `<a>` 由 mc-menu 渲染时已补成
-  olink 形态；**搜索结果**那类运行时造的普通 `<a href="#…">` 没有 olink，点下去浏览器照样发一次
+  **点当前页**由 `doc-nav` 在 `navigate` 事件里拦：命中的 `key` 与 `routeState().node.key`
+  对上就 `preventDefault()`，外壳不再挂捕获阶段的同文档链接兜底。
   popstate，o-router 照样 `goto` 同一个 src，路是同一条）；
   **顶栏入口**在 `openEntry()` 里提前返回（首页地址是 `#/docs/pages/home.html` 时点左上角 Mosaic 就是这条）。
 - 左栏（`docs/components/nav.html`）换页后把**当前条目滚到竖直中间**：这一栏装的是整棵导航树，
@@ -66,7 +66,7 @@
 
 | 事实                       | 唯一来源                                              |
 | -------------------------- | ----------------------------------------------------- |
-| hash 地址（含部署前缀）    | `docs/routes.js` 的 `hashOf()` / `route()`            |
+| hash 地址（含部署前缀）    | `docs/routes.js` 的 `goto()` / `route()`              |
 | 导航树、顶栏入口、分区     | `docs/site-map.js`                                    |
 | 原始色阶色值               | 运行时读 `packages/color/tokens.css`（`doc-palette`） |
 | 组件参考表                 | 各单元的 `api.md`（`doc-spec` 渲染，页面不手抄）      |

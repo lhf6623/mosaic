@@ -11,13 +11,12 @@ import { route } from '../routes.js';
  * 响应式 store 的形状。⚠️ 与模板里读的路径同形：给 null 会在首帧抛 text expression（P37）
  * @typedef {object} RouteState
  * @property {string} path
- * @property {import('../site-map.js').NavNode | null} entry
- * @property {import('../site-map.js').NavNode | null} node
- * @property {boolean} hidden
+ * @property {import('../site-map.js').MenuOption | null} entry
+ * @property {import('../site-map.js').MenuOption | null} node
  */
 
 /** @type {RouteState} */
-const SHAPE = { path: '', entry: null, node: null, hidden: false };
+const SHAPE = { path: '', entry: null, node: null };
 
 /** @type {RouteState | null} */
 let store = null;
@@ -36,7 +35,6 @@ function read() {
     path,
     entry: hit?.entry ?? null,
     node: hit?.node ?? null,
-    hidden: hit?.hidden ?? false,
   };
 }
 

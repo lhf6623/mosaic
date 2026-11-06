@@ -120,8 +120,8 @@
       }
     }
 
-    /* ⚠️ 条目自己的样式（待建压暗、当前项高亮）不在这里：<doc-nav> 是 ofa 组件模板、自带 shadow root，
-       这里只能作用到宿主标签本身；那些规则写在 docs/components/nav.html 的 <style> 里。 */
+    /* ⚠️ 菜单行的样式不在这里：<doc-nav> 与 mc-menu 各自带 shadow root，
+       条目外观由 mc-menu / mc-menu-item 自己的状态属性决定。 */
 
     /* 中档宽度放不下右栏：收掉它，右侧的占位也跟着去掉 */
     @media (max-width: 78rem) {

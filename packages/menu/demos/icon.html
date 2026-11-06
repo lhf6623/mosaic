@@ -1,13 +1,13 @@
 <template component>
-  <mc-menu id="icon-menu" current="导航" :options="menuOptions" style="width: 13rem"></mc-menu>
+  <mc-menu id="icon-menu" current="nav" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
     /* icon 是 options 里的一个字段：取 mc-icon 的 name 语法（内置零请求、查不到才远程取一次） */
     const OPTIONS = [
-      { label: '导航', icon: 'menu', href: 'packages/menu/page.html' },
-      { label: '组件', icon: 'file', href: 'packages/button/page.html' },
-      { label: '设置', icon: 'settings', href: 'packages/code/page.html' },
-      { label: '通知', icon: 'bell', href: 'packages/collapse/page.html' },
+      { key: 'nav', label: '导航', icon: 'menu', href: 'packages/menu/page.html' },
+      { key: 'components', label: '组件', icon: 'file', href: 'packages/button/page.html' },
+      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/code/page.html' },
+      { key: 'notice', label: '通知', icon: 'bell', href: 'packages/collapse/page.html' },
     ];
 
     export default async () => ({

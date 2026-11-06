@@ -36,12 +36,12 @@ mc-icon — 图标
 2. src="URL" → 任意 SVG 文件（自托管 / 品牌多色图）
 3. name="…" → 先查本地，查不到再取远程
 
-「本地」= mosaic.css 里有没有对应那条图标类规则（内置集由 `tools/gen-icons.mjs` 编译成
-data-URI mask，零请求、零 JS、首屏就有）。判定方式不是抄一份名单，而是直接问 CSS：
-给一个**一次性隐藏探针节点**挂上类名，再看 getComputedStyle().maskImage 是不是 none ——
-于是「本地」的定义就是「你发出去的那份样式表里有什么」，扩了内置集自动生效。
-探针刻意不复用模板里的图形槽：那是 `attr:class` 绑定的，运行时改名同一拍 ofa 会异步重渲染，
-探针类名会被盖掉，本地图标会偶发误判成「没有」而白跑远程。
+「本地」= `tools/gen-icons.mjs` 产出的内置名字清单 `icons.generated.names.js`（清单源是
+`tools/icon-manifest.mjs`）。运行时查表：命中就直接挂 `.mc-icon-<名字>`，零请求、不等
+样式表、不探测 CSS；CSS 到位后那条 data-URI mask 自然生效。
+清单与 `icons.generated.css` 由同一个生成器同步产出 —— 不是手抄一份名单，加内置图标跑一次
+`pnpm icons` 两边一起更新。早先靠隐藏探针量 `getComputedStyle().maskImage` 判定，样式表异步
+到达时会偶发误判成「本地没有」而白跑远程，已删掉。
 
 远程只在这两种写法下发生：name 本地查不到，或显式给了 src。所以「没用到的图标一个请求都不发」。
 · name="mdi:home" 有冒号 → 冒号前是图标集
@@ -59,8 +59,8 @@ WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 W
 
 ⚠️ 文件里不写任何内联 SVG 标记（Live Server 的注入点会抢走模块 script，见 mc-alert 文件头）；
 远程图标是运行时用 DOMParser 解析后经模板 `:html` 落进图形槽的，源码里没有它们的形状。
-本地命中 / 远程 SVG 的两个动作 —— 探针节点挂类名问 CSS、取回 SVG 文本 —— 是行为层例外，集中写在
-`probe()` / `load()` 里；图形槽本身（类名 + 内联内容）由模板的 `attr:class` / `:html` 渲染。
+唯一的行为层例外是 `load()`（远程 SVG 的取回与内联）；本地命中只是挂类名，图形槽本身由模板
+的 `attr:class` 渲染。
 
 ## 令牌
 
@@ -71,12 +71,13 @@ WebKit 一致拒绝，shadow root 里引用文档级 #id 也不成立，而且 W
 > 颜色走 `currentColor`（没有色槽）；尺寸除了三档 em，数字 `size` 会写 `--mc-icon-size`。
 > 按实例改样式也可以直接写宿主 `style="font-size:…"`（inline 仍赢过令牌），要进内部用 `::part(glyph)`。
 
-**「本地」的定义是「你发出去的那份样式表里有什么」**：内置集由构建期 presetIcons 编译成
-data-URI 的 `mask-image` 规则（`.mc-icon-<名字>`），组件给图形槽挂上类名、问
-`getComputedStyle().maskImage` 判定命中 —— 不是抄一份名单，扩了内置集自动生效。
-`lucide:search`（集名等于内置来源集）会退化成裸名再查一次本地，命中就零请求；
-`mdi:home` 本地没有 → 取 `{icon-base}mdi/home.svg`；`circle-check-big`（无冒号）→ 按
-`icon-set` 拼。
+**「本地」的定义 = 生成器产出的名字清单**：`tools/gen-icons.mjs` 同时产出
+`icons.generated.css`（data-URI 的 `mask-image` 规则 `.mc-icon-<名字>`）与
+`icons.generated.names.js`（同名清单）。组件查表命中就挂类名、零请求；清单不是手抄的，
+加内置图标跑一次 `pnpm icons` 两份产物同步更新。
+`lucide:search`（集名等于内置来源集）退化成裸名查表，命中就零请求；
+`mdi:home` 带别的集名 → 取 `{icon-base}mdi/home.svg`；`circle-check-big`（无冒号且不在清单）→
+按 `icon-set` 拼远程地址。
 
 **取不到图标 = 空盒子 + 一条警告**：占住 1em、不跳版、不抛错，控制台只留一条 `[mosaic]`
 警告；同一个图标（含取失败的名字）全页只请求一次。

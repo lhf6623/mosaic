@@ -63,14 +63,14 @@
   </section>
 
   <script>
-    import { hashOf } from '../routes.js';
+    import { goto } from '../routes.js';
     import { TOPBAR, firstPageOf } from '../site-map.js';
 
     /* 「浏览组件」落到组件分区的第一个页面。分区自己可能没有落地页（「组件」就是），
        landing 的算法与外壳顶栏同一套（docs/layout.html），这里不抄第二份路径。 */
     const componentsEntry = TOPBAR.find((entry) => entry.label === '组件');
     const BROWSE_PATH =
-      (componentsEntry && (componentsEntry.path ?? firstPageOf(componentsEntry)?.path)) ??
+      (componentsEntry && (componentsEntry.href ?? firstPageOf(componentsEntry)?.href)) ??
       'packages/button/page.html';
 
     export const parent = '../layout.html';
@@ -80,11 +80,11 @@
 
       proto: {
         openInstall() {
-          location.hash = hashOf('docs/pages/install.html');
+          goto('docs/pages/install.html');
         },
 
         openBrowse() {
-          location.hash = hashOf(BROWSE_PATH);
+          goto(BROWSE_PATH);
         },
       },
     });

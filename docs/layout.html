@@ -4,7 +4,7 @@
     /* 外壳的脚本：页面模块也能静态 import（ofa 编译期会把相对说明符改写成绝对 URL），
        所以导航数据、路由工具、路由状态都直接用站点共用模块，不再各抄一份。这里同时是**站点级行为**的归属地：
          · 换页复位：把 `.doc-main` 滚回顶部；· 滚轮接力：两栏滚到底后把滚轮转给正文带（两栏是 fixed，滚轮链终点是视口，视口不滚）。 */
-    import { hashOf, repoPathOf, route } from './routes.js';
+    import { goto, route } from './routes.js';
     import { TOPBAR, firstPageOf, locate } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
@@ -63,10 +63,10 @@
 
       ready() {
         /* 顶栏入口来自 docs/site-map.js 的 TOPBAR（加一个入口 = 那里加一行）。
-           ⚠️ 链接一律用 hashOf() 生成、不走 olink：olink 是编译期指令，这份数据是运行时拼的 */
+           ⚠️ 入口的落地页从 href 取；跳转统一走 routes.js 的 goto() */
         this.links = TOPBAR.map((entry) => {
           /* 分区可能没有自己的落地页（「组件」就是）：入口落到子树里第一个有页面的节点，否则顶栏会出现一个点不动的入口。path 仍是 o-fill 的 fill-key，必须唯一 */
-          const landing = entry.path ?? firstPageOf(entry)?.path ?? null;
+          const landing = entry.href ?? firstPageOf(entry)?.href ?? null;
           return landing ? { path: landing, label: entry.label, current: null } : null;
         }).filter(Boolean);
         /* 窄屏才有那颗菜单按钮（宽屏左栏常驻）。**媒体查询是唯一真相**，与 docs/doc-layout.html 里藏左栏的那条 @media 用同一个断点（52rem）。
@@ -104,28 +104,6 @@
         };
         this._topNav?.on('click', this._onTopNavClick);
 
-        /* 原地跳（目标就是当前这一页）的站内链接：捕获阶段掐掉这次导航。
-           ⚠️ ofa 对「同一页」不发 router-change（`_navigate` 里 Rt() 建不出新页面就直接 return），
-           而 loading 在 Rt() 一开头就已经开跑了 —— 收尾信号永远不来，加载条一直停在 loading，
-           不报错也不自己消失（只有再点一个别的菜单，下一次 router-change 才顺带把它收掉）。
-           触发面：手写 olink（顶栏 Mosaic）；左栏菜单的 `<a>` 是 mc-menu 渲染时补的 olink 形态；
-           **搜索结果**那类运行时造的普通 `<a href="#…">` 没有 olink，点下去浏览器照样发一次 popstate，
-           o-router 见 history.state 为空就走 fixStateUrl → goto(同一个 src)，落在同一条路上。
-           三个不显然的点：① 链接住在各层 shadow root 里，document 上 event.target 早被重定向成宿主，
-           只能用 composedPath() 把它捞出来；② 必须捕获阶段 —— ofa 的 olink 处理器挂在页面 shadow root 上，
-           冒泡到那儿就晚了（它看到 defaultPrevented 会自己放弃这次导航）；
-           ③ 只掐「同文档」的（hash 链接 / olink）：不带 hash 的普通 href 是整页加载，那是链接本来的意思。 */
-        this._onDocClick = (event) => {
-          if (event.defaultPrevented || event.button !== 0) return;
-          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
-          if (!anchor || anchor.hasAttribute('target') || anchor.hasAttribute('download')) return;
-          /* olink 的 href 在 ofa 改写之前可能还是相对路径，所以「有 hash」不能作为唯一判据 */
-          if (!anchor.hasAttribute('olink') && !anchor.hash) return;
-          if (repoPathOf(anchor.href) === route()) event.preventDefault();
-        };
-        document.addEventListener('click', this._onDocClick, true);
-
         /* 路由变化：只改 links[i].current 这一个字段（o-fill 按 fill-key 复用节点，绝不重建 DOM），顺带把正文带滚回顶部 */
         this._unwatch = onRouteChange(() => {
           this.syncTopNav();
@@ -134,32 +112,23 @@
           this.resetScroll();
         });
 
-        /* 标题直接跟 URL 走，不依赖布局页实例的订阅时机：布局页会随路由重建，
-           重建窗口里发生的一次导航可能赶在订阅挂上之前 —— 窗口级监听 + 挂载时按当前 URL 补一次，两头都兜住。 */
-        this._onTitleChange = () => this.syncTitle();
-        window.addEventListener('hashchange', this._onTitleChange);
-        document.addEventListener('router-change', this._onTitleChange);
+        /* 标题跟着路由 store 走：onRouteChange 里会同步，挂载时按当前 URL 补一次 */
         this.syncTitle();
       },
 
       detached() {
         this._unwatch?.();
-        window.removeEventListener('hashchange', this._onTitleChange);
-        document.removeEventListener('router-change', this._onTitleChange);
         document.removeEventListener('wheel', this._onWheel);
         this._topNav?.off('click', this._onTopNavClick);
-        document.removeEventListener('click', this._onDocClick, true);
         this._mq?.removeEventListener('change', this._onMQ);
         this._sysMQ?.removeEventListener('change', this._onSysMQ);
       },
 
       proto: {
-        /** 顶栏入口：改 hash 切页（不整页刷新）。hashOf 负责带上部署前缀（开发 / · Pages /mosaic/） */
+        /** 顶栏入口：站内路径交给 ofa 路由；同页不发起导航（ofa 对同一页不发 router-change） */
         openEntry(path) {
-          /* 目标就是当前这一页就别发起导航：改 hash 也是一次导航，ofa 同样不发 router-change，
-             加载条又会卡住（首页 hash 为空时点「首页」就是这条：地址变了、页面没换）。 */
           if (route() === path) return;
-          location.hash = hashOf(path);
+          goto(path);
         },
 
         /** 正文带：页面上唯一的滚动容器，住在外壳自己的 shadow root 里；滚动是原生属性（scrollTo / scrollTop），走 .ele */
@@ -218,7 +187,8 @@
           /* 从当前 URL 现算：路由 store 可能晚一拍，而标题不能让上一次导航的 node 残留 */
           const hit = locate(route());
           const node = hit?.node;
-          const name = node?.zh ? node.zh + ' ' + node.label : node?.label;
+          /* label 已是「中文（English）」：还原成标题用的「中文 English」 */
+          const name = node?.label?.replace('（', ' ').replace('）', '') ?? null;
           const inComponents = hit?.entry?.label === COMPONENT_SECTION;
           const next = inComponents && name ? name + ' - Mosaic' : SITE_TITLE;
           if (document.title !== next) document.title = next;
@@ -238,8 +208,10 @@
           this.shadow.$('.doc-menu')?.hide?.();
         },
 
-        /** 点菜单项：落主题 → 存起来 → 收起菜单（菜单不像 select 会自己收，得手动关） */
-        pickTheme(mode) {
+        /** 行点击统一走 navigate：detail.key 就是主题值；拦掉跳转，落主题 → 存起来 → 收起菜单 */
+        pickTheme(event) {
+          event.preventDefault();
+          const mode = event.detail?.key;
           this.applyTheme(THEMES.includes(mode) ? mode : 'auto');
           try {
             localStorage.setItem(THEME_KEY, this.theme);
@@ -524,7 +496,7 @@
         <doc-search></doc-search>
       </div>
 
-      <!-- 右侧一组控件：仓库入口 + 主题切换 + 窄屏菜单。GitHub 是**外链**（不用 olink / hashOf） -->
+      <!-- 右侧一组控件：仓库入口 + 主题切换 + 窄屏菜单。GitHub 是**外链**（不走站内路由） -->
       <div class="doc-top-actions">
         <a
           class="doc-github"
@@ -536,41 +508,29 @@
           <mc-icon name="github"></mc-icon>
         </a>
 
-        <!-- 主题切换：项目自己的下拉**菜单**。当前主题挂在菜单项的 data-current 上 ——
-             mc-menu-item 会把它镜像成 [data-current] 换底色加粗（复用「当前页」那套状态机）。placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
+        <!-- 主题切换：属性式 mc-menu-item（没有插槽），点击统一收 navigate 事件，key 就是主题值。
+             placement 用 bottom-end：这颗控件在顶栏最右边，左对齐会顶出视口。 -->
         <mc-dropdown
           trigger="click"
           placement="bottom-end"
           on:open="menuOpen = true"
-          on:close="menuOpen = false">
-          <!-- 触发元素用项目自己的 mc-button（inline 形态）：样式归组件 -->
+          on:close="menuOpen = false"
+          on:navigate="pickTheme($event)">
           <mc-button slot="trigger" inline>
             <span>{{themeLabel}}</span>
           </mc-button>
-          <mc-menu-item>
-            <button
-              type="button"
-              attr:data-current="theme === 'auto' ? 'true' : null"
-              on:click="pickTheme('auto')">
-              自动
-            </button>
-          </mc-menu-item>
-          <mc-menu-item>
-            <button
-              type="button"
-              attr:data-current="theme === 'light' ? 'true' : null"
-              on:click="pickTheme('light')">
-              亮色
-            </button>
-          </mc-menu-item>
-          <mc-menu-item>
-            <button
-              type="button"
-              attr:data-current="theme === 'dark' ? 'true' : null"
-              on:click="pickTheme('dark')">
-              暗色
-            </button>
-          </mc-menu-item>
+          <mc-menu-item
+            key="auto"
+            label="自动"
+            attr:current="theme === 'auto' ? '' : null"></mc-menu-item>
+          <mc-menu-item
+            key="light"
+            label="亮色"
+            attr:current="theme === 'light' ? '' : null"></mc-menu-item>
+          <mc-menu-item
+            key="dark"
+            label="暗色"
+            attr:current="theme === 'dark' ? '' : null"></mc-menu-item>
         </mc-dropdown>
 
         <!-- 窄屏的菜单入口：一颗图标按钮 + 浮层（宽屏时左栏常驻，这颗按钮由 CSS 收起来）。o-if 只看窄屏 ——

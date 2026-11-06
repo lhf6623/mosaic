@@ -136,10 +136,10 @@
   <script>
     /* 开合原生浮层时浏览器可能顺手滚一下页面（火狐实测，同 mc-popover / mc-select） */
     import { attachFloatingScrollGuard } from '../../packages/boot/scroll-pin.js';
-    import { PAGES, displayName } from '../site-map.js';
-    import { hashOf, route } from '../routes.js';
+    import { PAGES } from '../site-map.js';
+    import { goto, route } from '../routes.js';
 
-    /** 一个词在某一档上的得分（0 = 没匹配上）；档位差决定结果顺序：名字 > 中文名 > 路径 / 分区 > 摘要 */
+    /** 一个词在某一档上的得分（0 = 没匹配上）；档位差决定结果顺序：名字 > 中文名 > 路径 / 分区 */
     const fieldScore = (page, term) => {
       const label = page.label.toLowerCase();
       const zh = page.zh ?? '';
@@ -150,7 +150,6 @@
       if (zh.includes(term)) return 50;
       if (page.path.toLowerCase().includes(term)) return 30;
       if (page.section.toLowerCase().includes(term)) return 20;
-      if ((page.summary ?? '').toLowerCase().includes(term)) return 10;
       return 0;
     };
 
@@ -271,7 +270,7 @@
 
           this.results = hits.map(({ page }) => ({
             path: page.path,
-            label: displayName(page),
+            label: page.label,
             section: page.section,
             active: false,
           }));
@@ -305,7 +304,7 @@
         pick(path) {
           this.clear();
           if (route() === path) return;
-          location.hash = hashOf(path);
+          goto(path);
         },
 
         /** 回到干净状态。清输入走 mc-input 的宿主 property —— 直接改内部 input 的话，× 的显隐会留在那儿 */

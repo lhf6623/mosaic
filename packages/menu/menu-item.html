@@ -4,7 +4,7 @@
   <style>
     /* 1. 宿主 = 整行。⚠️ --mc-menu-* 不能在这里写默认值，会盖掉容器继承来的通道（同 mc-collapse-item）。
        ⚠️ 只在右边留 padding：左边缩进走 text-indent（见下），两侧都留会变成「缩进 + 内边距」双份；
-       但右边这一层不能省 —— 插槽元素铺的是内容盒，只靠 text-indent 的话右边没有留白，
+       但右边这一层不能省 —— 内置控件铺的是内容盒，只靠 text-indent 的话右边没有留白，
        而宿主的内边距会计入固有宽度，面板按内容自适应时就靠它补齐对称。 */
     :host {
       position: relative;
@@ -40,9 +40,8 @@
     }
 
     /* 3. 状态。
-       · data-open：本行的浮层子菜单正开着（指针已经进浮层，行不再 :hover）—— 用悬停那套观感把
-         「这条分支是当前展开的」留在行上。写在 data-current 之前，当前项优先级更高。
-       · data-current / data-disabled：脚本把状态镜像到这里 —— ::slotted() 优先级不够，宿主才稳定 */
+       · data-open：本行的浮层子菜单正开着（指针已经进浮层，行不再 :hover）。
+       · data-current / data-disabled：脚本按宿主属性镜像到这里，CSS 只从宿主上选 */
     :host([data-open]) {
       background-color: rgb(
         var(
@@ -93,16 +92,15 @@
       user-select: none;
     }
 
-    /* 5. 插槽元素 = 铺满整行的交互层，**走正常流**：绝对定位（inset:0）不参与固有宽度计算，外面那个容器
-       （如 mc-dropdown 的面板）就永远量不到标签有多宽。这里只写祖先 shadow 树没声明过的属性；
-       shadow-base 的 button reset 声明过的（padding / background / cursor）写在它上面一律不生效 */
-    ::slotted(a),
-    ::slotted(button),
+    /* 5. 内置控件 = 铺满整行的交互层，**走正常流**：绝对定位（inset:0）不参与固有宽度计算，
+       外面那个容器（如 mc-dropdown 的面板）就永远量不到标签有多宽 */
     .mc-control {
       display: block;
       box-sizing: border-box;
-      /* 100% + pad-x：宿主右边那一层 padding 要一起铺到，整行才是可点区（100% 只到内容盒右沿） */
-      width: calc(100% + var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))));
+      /* max-content 让行宽跟着标签走（dropdown 面板按内容自适应）；min-width 再铺满固定宽度的菜单，
+         并把宿主右边那层 padding 一起铺上，整行都是可点区 */
+      width: max-content;
+      min-width: calc(100% + var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))));
       height: 100%;
       overflow: hidden;
       white-space: nowrap;
@@ -121,15 +119,13 @@
     }
 
     /* 焦点环用 ring 令牌，不用 currentColor（P16）；画在铺满整行的交互层上 */
-    ::slotted(a:focus-visible),
-    ::slotted(button:focus-visible),
     .mc-control:focus-visible {
       outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
       outline-offset: -2px;
     }
 
-    /* 6. 图标：绝对定位在行首、pointer-events: none —— 交互层仍然铺满整行，点图标命中的是插槽里的
-       <a> / <button>。图标本体是 mc-icon（name 语法与它一致，内置零请求、查不到才远程取） */
+    /* 6. 图标：绝对定位在行首、pointer-events: none —— 交互层仍然铺满整行，点图标命中的是内置
+       控件。图标本体是 mc-icon（name 语法与它一致，内置零请求、查不到才远程取） */
     .mc-item-icon {
       display: none;
       position: absolute;
@@ -147,9 +143,7 @@
     :host([icon]) .mc-item-icon {
       display: flex;
     }
-    /* 有图标时文字让开：缩进 = 左内边距 + 图标 + 间距（插槽元素自己那份 text-indent 要盖掉） */
-    :host([icon]) ::slotted(a),
-    :host([icon]) ::slotted(button),
+    /* 有图标时文字让开：缩进 = 左内边距 + 图标 + 间距 */
     :host([icon]) .mc-control {
       text-indent: calc(
         var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
@@ -173,10 +167,9 @@
       inset-inline-end: 0;
       justify-content: center;
     }
-    :host([data-collapsed]) ::slotted(a),
-    :host([data-collapsed]) ::slotted(button),
     :host([data-collapsed]) .mc-control {
       width: 100%;
+      min-width: 100%;
       color: transparent;
       text-indent: 0;
     }
@@ -187,6 +180,9 @@
     /* 8. 内置行（模板渲染）：控件在 shadow 里，普通类规则就够；和 ::slotted 共用上面那套行盒子 */
     o-if {
       display: contents;
+    }
+    .mc-group-label {
+      display: block;
     }
     .mc-control {
       appearance: none;
@@ -248,6 +244,9 @@
   </style>
 
   <span class="mc-item-icon"><mc-icon :name="icon"></mc-icon></span>
+  <o-if :value="groupRow">
+    <span class="mc-group-label">{{labelText}}</span>
+  </o-if>
   <o-if :value="built">
     <o-if :value="expandable">
       <button class="mc-control mc-control--parent" type="button" attr:disabled="disabled">
@@ -269,7 +268,6 @@
       </a>
     </o-if>
   </o-if>
-  <slot></slot>
 
   <script>
     import { withOptions } from '../boot/options.js';
@@ -284,12 +282,12 @@
 
       return withOptions({
         tag: 'mc-menu-item',
-        slots: { default: {} },
 
         // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
-          /* 内置行被点击：可取消（preventDefault 后原生 / ofa 的跳转都不发生） */
-          navigate: { detail: ['href', 'resolved'], cancelable: true },
+          /* 内置行被点击：可取消（preventDefault 后原生 / ofa 的跳转都不发生）；
+             载荷带这一行的 key 与 meta，宿主不必再回查 options */
+          navigate: { detail: ['href', 'resolved', 'key', 'meta'], cancelable: true },
         },
 
         attrs: {
@@ -298,10 +296,10 @@
           // 图标名，语法同 mc-icon 的 name。⚠️ 默认也必须是 null：ofa 会把 '' 反射成宿主属性，
           // 于是 :host([icon]) 对每一行都成立、所有行都白留一份图标缩进（实测踩过）
           icon: null,
-          /* 内置行：插槽里不写控件时，组件按这几个属性自己造 <a> / <button>。
+          /* 行的内容全部由属性给：组件按这几个属性在 shadow 里造 <a> / <button>（或分组标题的纯文字）。
              href 照普通链接的写法写（相对应用根 / 绝对路径 / 完整 URL 都行）：
              ofa 应用内会渲染成 olink 形态交给 ofa 导航，普通 HTML 里原样输出、浏览器原生跳转
-             （见 proto.resolveLink）。要自备控件就照旧往插槽里写 <a> / <button>（那条路优先级更高）。 */
+             （见 proto.resolveLink）。 */
           label: null,
           href: null,
           current: null,
@@ -311,6 +309,7 @@
         data: {
           /* 内置行模型：模板只认这几个字段，脚本只负责从宿主属性推导 */
           built: false,
+          groupRow: false,
           expandable: false,
           labelText: '',
           caret: CARET_CLOSED,
@@ -324,14 +323,6 @@
         },
 
         attached() {
-          this._onSlotChange = () => {
-            this.bindChild();
-            this.syncModel();
-          };
-          this._onChildChange = () => this.applyState();
-          this.$slots.onChange(this._onSlotChange);
-          // data-current 是运行时切来切去的，属性一变就得重新镜像
-          this._observer = new MutationObserver(this._onChildChange);
           /* 内置行的模型属性变了要重算模板；数据驱动的项在挂载前就把这些属性写好了 */
           this._modelObserver = new MutationObserver(() => this.syncModel());
           this._modelObserver.observe(this.ele, {
@@ -343,7 +334,6 @@
               'disabled',
               'data-expandable',
               'data-expanded',
-              // 链接属性：行上一变就转给内置控件
               'target',
               'rel',
               'title',
@@ -351,15 +341,12 @@
               'icon',
             ],
           });
-
-          this.bindChild();
-          // 压缩态来自最近的 mc-menu（数据驱动的行现在生成在它的 shadow 里）
+          // 压缩态来自最近的 mc-menu（数据驱动的行生成在它的 shadow 里）
           this.bindMenu();
           this.syncModel();
         },
 
         detached() {
-          this._observer?.disconnect();
           this._modelObserver?.disconnect();
           this._menuObserver?.disconnect();
         },
@@ -367,31 +354,15 @@
         proto: {
           /* ---------- 内置行：宿主属性 → 模板模型 ---------- */
 
-          /** 插槽里有没有使用者写的东西（内置控件在 shadow 里，不算插槽内容） */
-          hasContent() {
-            const nodes = this.$slots.node('default')?.ele?.assignedNodes({ flatten: true }) ?? [];
-            return nodes.some(
-              (node) =>
-                node.nodeType === 1 || (node.nodeType === 3 && node.textContent.trim() !== ''),
-            );
-          },
-
-          /** 走内置行吗：有非空 label、不是分组行、插槽里也没东西 */
-          wantsBuilt() {
-            return (
-              (this.ele.getAttribute('label') ?? '') !== '' &&
-              !this.ele.hasAttribute('group') &&
-              !this.hasContent()
-            );
-          },
-
           /** 宿主属性 → 模板模型（标签 / 箭头 / 链接控件都由模板渲染，脚本不造节点） */
           syncModel() {
-            const built = this.wantsBuilt();
+            const group = this.ele.hasAttribute('group');
+            const built = !group && (this.ele.getAttribute('label') ?? '') !== '';
             const expandable = this.ele.hasAttribute('data-expandable');
             const label = this.ele.getAttribute('label') ?? '';
             const disabled = this.ele.hasAttribute('disabled');
             this.built = built;
+            this.groupRow = group;
             this.expandable = expandable;
             this.labelText = label;
             this.caret = this.ele.hasAttribute('data-expanded') ? CARET_OPEN : CARET_CLOSED;
@@ -426,55 +397,26 @@
             };
           },
 
-          /** 内置 <a> 的点击：先给宿主一个可取消的 navigate 事件（埋点 / 接管跳转），
-              之后的导航归 ofa（应用内）或浏览器（普通 HTML）—— 本函数不自己跳转 */
+          /** 内置行被点击：先给宿主一个可取消的 navigate 事件（埋点 / 接管跳转），
+              之后的导航归 ofa（应用内）或浏览器（普通 HTML）—— 本函数不自己跳转。
+              没有 href 的行（按钮型用法）也发这个事件，宿主 preventDefault 即可接管点击 */
           onLinkClick(event) {
-            if (!this.linkHref) return;
             /* $emit 走 cancelable 的 CustomEvent：宿主 preventDefault → dispatchEvent 返回 false →
-               把原生 / ofa 的导航一起掐掉。data.href 是写出来的原值，resolved 是解析后的最终地址 */
+               把原生 / ofa 的导航一起掐掉。href 是数据里的原值，resolved 是解析后的最终地址；
+               key / meta 由容器以 property 挂在行上，组件不解释 meta */
             const allowed = this.$emit('navigate', {
               href: this.ele.getAttribute('href'),
               resolved: this.linkOrigin ?? this.linkHref,
+              key: this.ele.rowKey ?? this.ele.getAttribute('key') ?? null,
+              meta: this.ele.meta ?? null,
             });
             if (!allowed) event.preventDefault();
           },
 
-          /* ---------- 插槽那条路：使用者自备 <a> / <button> ---------- */
-
-          /** 插槽里那个原生交互元素（一行只放一个）；没有 a/button 就退化成第一个元素 */
-          interactive() {
-            const items = this.$slots.elements('default');
-            return items.find((el) => el.matches('a, button')) ?? items[0] ?? null;
-          },
-
-          /** 盯住当前那个交互元素的属性，并立刻重新镜像一次状态 */
-          bindChild() {
-            this._observer?.disconnect();
-            const el = this.interactive();
-            if (el) {
-              this._observer.observe(el, {
-                attributes: true,
-                attributeFilter: ['data-current', 'data-disabled', 'disabled'],
-              });
-            }
-            this.applyState();
-          },
-
-          /** 状态 → 宿主上的 data-* 钩子（CSS 只能从宿主上选它）：内置行读宿主自己的 current / disabled，
-              插槽那条路读使用者元素上的 data-current / disabled（两处只有这一个出口） */
+          /** 状态 → 宿主上的 data-* 钩子（CSS 只能从宿主上选它） */
           applyState() {
-            if (this.built) {
-              this.mirror('data-current', this.ele.hasAttribute('current'));
-              this.mirror('data-disabled', this.ele.hasAttribute('disabled'));
-              return;
-            }
-            const el = this.interactive();
-            const current = !!el && el.hasAttribute('data-current');
-            const disabled =
-              !!el && (el.hasAttribute('disabled') || el.hasAttribute('data-disabled'));
-
-            this.mirror('data-current', current);
-            this.mirror('data-disabled', disabled);
+            this.mirror('data-current', this.ele.hasAttribute('current'));
+            this.mirror('data-disabled', this.ele.hasAttribute('disabled'));
           },
 
           /** 只在真的变了的时候写宿主 —— 否则每次属性变动都白触发一轮样式重算 */

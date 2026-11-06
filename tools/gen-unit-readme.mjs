@@ -22,7 +22,7 @@ const NEIGHBORS = {
     "内部 `await load('../icon/icon.html')`：左侧图形跟着 `color` 变，所以只引 `mc-alert` 的使用者会连带取一次 `icon.html`。",
   ],
   breadcrumb: [
-    '与 [`mc-menu`](../menu/) 同一条理由：**交互元素由使用者写在插槽里**，组件不造链接 —— 站内链接要经 ofa 的 `olink` 带部署前缀，而 `olink` 只作用于页面模板（light DOM）里的元素。',
+    '与 [`mc-menu`](../menu/) 同一条理由：**交互元素由使用者写在插槽里**，行内容与站内链接都由组件属性 / 数据驱动，跳转交给 ofa 路由，而 `olink` 只作用于页面模板（light DOM）里的元素。',
   ],
   button: [
     '消费 [`mc-icon`](../icon/)：槽里的图标字号走 `--mc-button-icon-size`（比按钮文字大一档）、颜色强制跟随按钮文字色 —— 按钮内部的 `mc-icon` **自己的 `color` 属性会被压掉**。',
@@ -60,11 +60,13 @@ const HAND_END = '<!-- hand:end -->';
 
 /* 单元清单从 site-map 派生，不在这里硬编码 —— 加组件只要往 site-map 挂一条 type: 'component' 的节点，
    跑一次脚本就有（否则 forgotten 一次就是一份缺失的 README）。 */
-const SLUGS = flat.filter((n) => n.type === 'component' && n.path).map((n) => n.path.split('/')[1]);
+const SLUGS = flat
+  .filter((n) => n.meta?.type === 'component' && n.href)
+  .map((n) => n.href.split('/')[1]);
 
 for (const slug of SLUGS) {
   const dir = `packages/${slug}`;
-  const node = flat.find((n) => (n.path ?? '').startsWith(`packages/${slug}/`));
+  const node = flat.find((n) => (n.href ?? '').startsWith(`packages/${slug}/`));
   if (!node) throw new Error(`site-map.js 里没有 ${slug}`);
 
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -147,8 +149,6 @@ for (const slug of SLUGS) {
 > 并放**不进文档页**的东西（令牌 / 实现约束 / 刻意不做的）—— 那些是改代码的人才要看的。
 
 **状态**：已实现 · 标签 \`${tag}\` · 目录 \`${dir}/\`
-
-${node.summary ?? ''}
 
 ## 单元里有什么
 

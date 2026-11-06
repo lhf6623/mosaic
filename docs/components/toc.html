@@ -12,16 +12,6 @@
       --mc-menu-item-color: var(--mc-color-fg);
     }
 
-    mc-menu-item[data-level='deep'] {
-      --mc-menu-pad-x: calc(var(--mc-space-3) + var(--mc-space-2));
-      --mc-menu-item-color: var(--mc-color-fg-muted);
-    }
-
-    /* 换节留白：上一项是子项、这一项是节标题（o-fill 把条目铺成平铺兄弟，相邻选择器认得出来） */
-    mc-menu-item[data-level='deep'] + mc-menu-item:not([data-level]) {
-      margin-top: var(--mc-space-3);
-    }
-
     /* 滚动归 mc-scroll-bar（同 nav）：宿主 fixed + height:100%，右栏比一屏长时在这一层滚 */
     mc-scroll-bar {
       height: 100%;
@@ -33,20 +23,14 @@
     }
   </style>
 
-  <!-- 条子走组件默认的 hover；不写标题行：右栏贴着顶栏，表头只是占地方 -->
+  <!-- 目录就是一份 options：key = 标题 id、current 也用它；业务数据（heading）放 meta，
+       行在 mc-menu 的 shadow 里，层级外观只能走 attrs.style，点击统一收 navigate 事件 -->
   <mc-scroll-bar label="本页目录">
-    <mc-menu size="sm">
-      <o-fill :value="rows" fill-key="id">
-        <mc-menu-item attr:data-level="$data.deep ? 'deep' : null">
-          <a
-            attr:href="'#' + $data.id"
-            attr:data-toc-id="$data.id"
-            attr:data-current="$data.current">
-            {{$data.label}}
-          </a>
-        </mc-menu-item>
-      </o-fill>
-    </mc-menu>
+    <mc-menu
+      size="sm"
+      :options="rows"
+      attr:current="activeId"
+      on:navigate="onNavigate($event)"></mc-menu>
   </mc-scroll-bar>
 
   <script>
@@ -76,13 +60,9 @@
 
     export default () => ({
       tag: 'doc-toc',
-      data: { rows: [] },
+      data: { rows: [], activeId: '' },
 
       ready() {
-        /* 行是 o-fill 渲染的：点击委托到自己的 shadow 根，一个监听管住所有条目，重建条目不用重绑 */
-        this._onClick = (event) => this.onItemClick(event);
-        this.shadow.on('click', this._onClick);
-
         this._observer = new MutationObserver((records) => this.onMutate(records));
 
         this._onSlotChange = () => this.scheduleRebuild();
@@ -123,7 +103,6 @@
         for (const type of ['wheel', 'touchstart', 'keydown']) {
           window.removeEventListener(type, this._onUserScroll);
         }
-        this.shadow.off('click', this._onClick);
       },
 
       proto: {
@@ -184,12 +163,24 @@
             return { heading, id: heading.id, deep: Number(heading.tagName.slice(1)) > 2 };
           });
 
-          this.rows = this._entries.map((entry) => ({
-            id: entry.id,
-            label: entry.heading.textContent.trim(),
-            deep: entry.deep,
-            current: null,
-          }));
+          /* 外观（缩进 / 弱色 / 换节留白）写进行上的 attrs.style：行在 mc-menu 的 shadow 里，
+             本组件的 CSS 够不到它；heading 引用与 id 放 meta，navigate 事件原样带回来 */
+          this.rows = this._entries.map((entry, index) => {
+            const prev = this._entries[index - 1];
+            const style = [];
+            if (entry.deep) {
+              style.push('--mc-menu-pad-x: calc(var(--mc-space-3) + var(--mc-space-2))');
+              style.push('--mc-menu-item-color: var(--mc-color-fg-muted)');
+            } else if (prev?.deep) {
+              style.push('margin-top: var(--mc-space-3)');
+            }
+            return {
+              key: entry.id,
+              label: entry.heading.textContent.trim(),
+              meta: { id: entry.id, heading: entry.heading },
+              attrs: style.length ? { style: style.join('; ') } : null,
+            };
+          });
 
           // 一次性动作：盯住当前页、找到滚动容器并挂上 scroll-spy（容器是外壳的 .doc-main，宿主层保留原生监听）
           this.bindContent(root);
@@ -216,10 +207,9 @@
           return window;
         },
 
-        /** 地址栏 hash 不归我们管，所以只滚不跳 */
-        onItemClick(event) {
-          const a = event.target?.closest?.('a');
-          const entry = a && this._entries.find((e) => e.id === a.dataset.tocId);
+        /** 目录项没有 href：navigate 只当「行被点」用，key 就是标题 id，meta 里带着 heading */
+        onNavigate(event) {
+          const entry = this._entries?.find((e) => e.id === event.detail?.key);
           if (!entry) return;
 
           event.preventDefault();
@@ -230,12 +220,9 @@
           entry.heading.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
         },
 
-        /** 把「当前项」写进数据（渲染交给模板），只写真正变了的那一两行 */
+        /** 当前项 = 容器上的一个属性（key），不再往数据里塞状态 */
         applyActive(id) {
-          for (const row of this.rows) {
-            const next = row.id === id ? 'location' : null;
-            if (row.current !== next) row.current = next;
-          }
+          if (this.activeId !== id) this.activeId = id;
         },
 
         /** 滚动位置 → 当前项；位置每次现量，演示区抽屉开合不用额外通知 */

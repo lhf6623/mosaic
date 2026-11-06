@@ -3,8 +3,8 @@
  * 跑法：node tests/smoke.mjs icon（需先 pnpm dev）
  *
  * ⚠️ 两条实测过的坑写在这里，别把它们当成"多余的小心"：
- *   · 本地命中判定靠 getComputedStyle().maskImage —— 所以「本地图标必须真的渲染出来」这件事
- *     本身就是被测对象（第 1 条）；
+ *   · 本地命中靠生成器产出的名字清单查表，但「类名挂上后 mask 真的渲染出来」仍是
+ *     被测对象（第 1 条断言量的是 getComputedStyle().maskImage）；
  *   · 图标规则落在 mosaic.icons 层，层顺序一旦没声明就会被追加到 utilities 之后，
  *     `.mc-icon-*.text-primary` 会变成黑色（第 5 条守的就是这个，实测过的反面教材）。
  */
@@ -315,9 +315,8 @@ export default async function run({ page, visit, check }) {
   );
   await page.evaluate(() => document.getElementById('icon-size-probe')?.remove());
   /* ------------------------------------------------------------------ *
-   * 运行时改名：图形槽的类名是模板绑定（attr:class），改名的同一拍 ofa 会异步重渲染；
-   * 探针若复用图形槽，探针类名会被盖回去，本地图标误判成「没有」→ 白跑一次远程。
-   * 图标页的演示已经把内置名几乎都探过（LOCAL 有缓存），所以另起一页从零开始。
+   * 运行时改名：每拍重新查内置名字清单挂类名，不该白跑一次远程。
+   * 另起一页从零开始，才能把「这次访问发了几个远程请求」量干净。
    * ------------------------------------------------------------------ */
   await visit(page, `/index.html?icon-runtime=${Date.now()}#/docs/pages/home.html`);
   await page.waitForFunction(() => !!customElements.get('mc-icon'), { timeout: 8000 }).catch(() => {});

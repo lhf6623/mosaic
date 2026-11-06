@@ -1,527 +1,410 @@
-/* 站点唯一数据源：**有哪些页面 / 组件**、它们的层级与顺序 —— 也就是导航本身。一棵树，**结构即菜单**：children 的层级就是左栏的分组与缩进，label 就是显示名。
- * 有 children → 分组 / 分区；有 path → 有页面、可点；没有 path → 待建。分区自己可以没有落地页，顶栏入口落到子树第一页（firstPageOf）；order 同层唯一、显示顺序由它说了算，hidden 只管展示、子树上继承。
- * 字段：label 显示名 / zh 中文名（只有组件补）/ order / path / children / hidden / summary / type ——
- * type 只写在叶子上：`component`（组件单元）/ `page`（站点页）；分组看 children，「已实现 / 待建」看有没有 path。
- * ⚠️ 页内目录（h2/h3）**不在这里**：它是内容派生的、每页都不同，由 <doc-toc> 扫标题生成。
+/* 站点唯一数据源：**就是 mc-menu 的 options 树**，不再有「导航节点 → options」的中间翻译。
+ * key = `docs:*` 的层级英文标识（逐级用 : 拼，整棵树唯一；容器 current 就写它）；label = 显示名；
+ * href = 普通站内路径（路由定位、搜索跳转、工具索引都读它）；
+ * meta = 站点自己的业务数据（path / type / zh），组件不解释；**数组顺序就是显示顺序**。
+ * 顶层分区没有 type → menu 当可开合的 parent（窄屏「全部菜单」用）；二级分组写 type: 'group' → 左栏常显。
+ * ⚠️ 页内目录（h2/h3）不在这里：由 <doc-toc> 扫标题生成。
  */
 
 /**
- * 树上的一个节点。字段全可选：分组没有 path，叶子没有 children —— 「是什么」由字段有无决定，不另设 kind。
- * @typedef {object} NavNode
- * @property {number} order 同层显示顺序，显示顺序只由它说了算
+ * 树上的一个节点 = 一条 menu option
+ * @typedef {object} MenuOption
+ * @property {string} key 整棵树唯一的 `docs:*` 层级英文标识
  * @property {string} label 显示名
- * @property {string} [zh] 中文名，只有组件补
- * @property {string} [path] 仓库根相对路径；有它才算「有页面」
- * @property {'component' | 'page'} [type] 只写在叶子上
- * @property {string} [summary] 卡片 / 页头的一句话
- * @property {boolean} [hidden] 只管展示，子树上继承
- * @property {NavNode[]} [children] 有它就是分组 / 分区
+ * @property {string} [href] 站内路径 / 完整 URL
+ * @property {'group'} [type] 二级分组标题
+ * @property {MenuOption[]} [children] 子菜单
+ * @property {object} [attrs] 行上的 HTML 属性
+ * @property {{ type?: 'component' | 'page', zh?: string }} [meta]
+ *            站点业务数据，组件不解释；没有业务数据的分组 / 分区不写这个字段
  */
 
-/** @type {NavNode[]} */
+/** @type {MenuOption[]} */
 export const SITE = [
-  { order: 10, type: 'page', label: '首页', path: 'docs/pages/home.html' },
+  { key: 'docs:home', label: '首页', href: 'docs/pages/home.html', meta: { type: 'page' } },
   {
-    order: 20,
+    key: 'docs:docs',
     label: '文档',
     children: [
       {
-        order: 10,
+        key: 'docs:docs:intro',
+        type: 'group',
         label: '介绍',
         children: [
           {
-            order: 10,
-            type: 'page',
+            key: 'docs:docs:intro:intro',
             label: 'Mosaic UI',
-            path: 'docs/pages/intro.html',
-            summary: '这个库是什么、用什么写的、有多少组件。',
+            href: 'docs/pages/intro.html',
+            meta: { type: 'page' },
           },
         ],
       },
       {
-        order: 20,
+        key: 'docs:docs:quickstart',
+        type: 'group',
         label: '快速上手',
         children: [
           {
-            order: 10,
-            type: 'page',
+            key: 'docs:docs:quickstart:install',
             label: '安装',
-            path: 'docs/pages/install.html',
-            summary: '不需要 npm 与打包器：最小用法、引组件的方式、自托管与大陆访问。',
+            href: 'docs/pages/install.html',
+            meta: { type: 'page' },
           },
           {
-            order: 15,
-            type: 'page',
+            key: 'docs:docs:quickstart:controlled',
             label: '受控与非受控',
-            path: 'docs/pages/controlled.html',
-            summary:
-              '表单的值从哪来：数据在你手里（控件绑 sync:value），还是在控件里（default-value + 提交取快照）。',
+            href: 'docs/pages/controlled.html',
+            meta: { type: 'page' },
           },
           {
-            order: 20,
-            type: 'page',
+            key: 'docs:docs:quickstart:platforms',
             label: '支持的平台',
-            path: 'docs/pages/platforms.html',
-            summary: '取决于浏览器有没有那几样原生能力：ES module、自定义元素、popover、锚点定位。',
+            href: 'docs/pages/platforms.html',
+            meta: { type: 'page' },
           },
           {
-            order: 30,
-            type: 'page',
+            key: 'docs:docs:quickstart:faq',
             label: '常见问题',
-            path: 'docs/pages/faq.html',
-            summary: '组件没渲染、改了没生效、有结构没样式、工具类不生效这类「装上了却没效果」。',
+            href: 'docs/pages/faq.html',
+            meta: { type: 'page' },
           },
         ],
       },
       {
-        order: 30,
+        key: 'docs:docs:guide',
+        type: 'group',
         label: '指南',
         children: [
           {
-            order: 10,
-            type: 'page',
+            key: 'docs:docs:guide:theme',
             label: '调整主题',
-            path: 'docs/pages/theme.html',
-            summary: '亮色 / 暗色两态，以及覆盖令牌换肤。',
+            href: 'docs/pages/theme.html',
+            meta: { type: 'page' },
           },
           {
-            order: 20,
-            type: 'page',
+            key: 'docs:docs:guide:component-theme',
             label: '单个组件主题适配',
-            path: 'docs/pages/component-theme.html',
-            summary: '只给某一块换色：color 属性、实例上覆盖令牌、data-tone 子树。',
+            href: 'docs/pages/component-theme.html',
+            meta: { type: 'page' },
           },
           {
-            order: 30,
-            type: 'page',
+            key: 'docs:docs:guide:style-conflicts',
             label: '样式冲突',
-            path: 'docs/pages/style-conflicts.html',
-            summary: '组件样式不外溢、::part() 怎么改内部结构，以及怎么反过来盖掉库的默认样式。',
+            href: 'docs/pages/style-conflicts.html',
+            meta: { type: 'page' },
           },
         ],
       },
     ],
   },
   {
-    order: 30,
+    key: 'docs:component',
     label: '组件',
     children: [
       {
-        order: 10,
+        key: 'docs:component:base',
+        type: 'group',
         label: '基础',
-        summary: '最先会用到的基础单元：色彩令牌、按钮、图标',
         children: [
           {
-            order: 10,
-            type: 'page',
+            key: 'docs:component:base:color',
             label: '色彩',
-            path: 'packages/color/page.html',
-            summary:
-              '色彩与设计令牌：色板由 OKLCH 生成（6 色族 × 11 档），语义令牌每族只留一档，构建期强制跑 WCAG 对比度自检。',
+            href: 'packages/color/page.html',
+            meta: { type: 'page' },
           },
           {
-            order: 20,
-            label: 'Button',
-            zh: '按钮',
-            path: 'packages/button/page.html',
-            type: 'component',
-            summary:
-              '按钮。语义色 × 外观样式两个正交维度，6 色 × 3 外观 = 18 种组合；另有行内文字形态（inline）。',
+            key: 'docs:component:base:button',
+            label: '按钮（Button）',
+            href: 'packages/button/page.html',
+            meta: { type: 'component', zh: '按钮' },
           },
           {
-            order: 30,
-            label: 'Icon',
-            zh: '图标',
-            path: 'packages/icon/page.html',
-            type: 'component',
-            summary:
-              '图标。先查内置、查不到再远程取一次；颜色继承 currentColor、尺寸跟随 font-size，取不到也只留一个不跳版的空位。',
+            key: 'docs:component:base:icon',
+            label: '图标（Icon）',
+            href: 'packages/icon/page.html',
+            meta: { type: 'component', zh: '图标' },
           },
         ],
       },
       {
-        order: 20,
+        key: 'docs:component:display',
+        type: 'group',
         label: '数据展示',
-        summary: '把内容摆出来：卡片、标签、徽标、表格与代码',
         children: [
           {
-            order: 10,
-            label: 'Card',
-            zh: '卡片',
-            path: 'packages/card/page.html',
-            type: 'component',
-            summary:
-              '卡片容器。有底色 / 只有描边两种，可再悬停浮起；头尾结构 + 内边距档位；不做交互，可点的是你写在卡内那个元素。',
+            key: 'docs:component:display:card',
+            label: '卡片（Card）',
+            href: 'packages/card/page.html',
+            meta: { type: 'component', zh: '卡片' },
           },
           {
-            order: 20,
-            label: 'Tag',
-            zh: '标签',
-            path: 'packages/tag/page.html',
-            type: 'component',
-            summary:
-              '分类 / 状态标签。语义色 × 浅底 / 实心 / 描边三个维度，可选可关（checkable / closable）。',
+            key: 'docs:component:display:tag',
+            label: '标签（Tag）',
+            href: 'packages/tag/page.html',
+            meta: { type: 'component', zh: '标签' },
           },
           {
-            order: 30,
-            label: 'Badge',
-            zh: '徽标',
-            path: 'packages/badge/page.html',
-            type: 'component',
-            summary: '徽标。挂在容器（按钮、头像…）的角上，也支持独立使用；圆点与数值上限都有。',
+            key: 'docs:component:display:badge',
+            label: '徽标（Badge）',
+            href: 'packages/badge/page.html',
+            meta: { type: 'component', zh: '徽标' },
           },
           {
-            order: 35,
-            label: 'Avatar',
-            zh: '头像',
-            path: 'packages/avatar/page.html',
-            type: 'component',
-            summary:
-              '头像。有图显示图，没图 / 加载失败落到首字母或自定义兜底；尺寸、圆角与兜底色可配。',
+            key: 'docs:component:display:avatar',
+            label: '头像（Avatar）',
+            href: 'packages/avatar/page.html',
+            meta: { type: 'component', zh: '头像' },
           },
           {
-            order: 38,
-            label: 'Image',
-            zh: '图像',
-            path: 'packages/image/page.html',
-            type: 'component',
-            summary:
-              '图像。一个图框：填充方式、圆角、宽高比可配，点开看大图；图片组里预览能左右切；失败落到 alt 或插槽。',
+            key: 'docs:component:display:image',
+            label: '图像（Image）',
+            href: 'packages/image/page.html',
+            meta: { type: 'component', zh: '图像' },
           },
           {
-            order: 40,
-            label: 'Table',
-            zh: '表格',
-            path: 'packages/table/page.html',
-            type: 'component',
-            summary:
-              '数据表格。columns / data 用 property 传（对象数组；绑定通道落点不稳定，不要依赖）。',
+            key: 'docs:component:display:table',
+            label: '表格（Table）',
+            href: 'packages/table/page.html',
+            meta: { type: 'component', zh: '表格' },
           },
           {
-            order: 50,
-            label: 'Code',
-            zh: '代码',
-            path: 'packages/code/page.html',
-            type: 'component',
-            summary:
-              '代码展示。配色用 highlight.js 官方主题、按需懒加载，失败即降级为纯文本；行号 / 折行 / 限高滚动开箱可用。',
+            key: 'docs:component:display:code',
+            label: '代码（Code）',
+            href: 'packages/code/page.html',
+            meta: { type: 'component', zh: '代码' },
           },
           {
-            order: 55,
-            label: 'QR Code',
-            zh: '二维码',
-            path: 'packages/qrcode/page.html',
-            type: 'component',
-            summary:
-              '二维码。文本按 UTF-8 编码、版本自动选；四档纠错、自定义配色与静区、中间图案，canvas / svg 两种渲染。',
+            key: 'docs:component:display:qrcode',
+            label: '二维码（QR Code）',
+            href: 'packages/qrcode/page.html',
+            meta: { type: 'component', zh: '二维码' },
           },
         ],
       },
       {
-        order: 30,
+        key: 'docs:component:nav',
+        type: 'group',
         label: '导航',
-        summary: '在页面与层级之间移动：菜单、面包屑、标签页、分页',
         children: [
           {
-            order: 10,
-            label: 'Menu',
-            zh: '菜单',
-            path: 'packages/menu/page.html',
-            type: 'component',
-            summary:
-              '数据驱动的垂直菜单：给 options 传对象数组，分组 / 图标 / 层级缩进 / 二级菜单都由容器渲染；可压缩成图标栏（子菜单浮层弹出），也可以开手风琴。',
+            key: 'docs:component:nav:menu',
+            label: '菜单（Menu）',
+            href: 'packages/menu/page.html',
+            meta: { type: 'component', zh: '菜单' },
           },
           {
-            order: 20,
-            label: 'Breadcrumb',
-            zh: '面包屑',
-            path: 'packages/breadcrumb/page.html',
-            type: 'component',
-            summary:
-              '面包屑。容器 + 每一级两个标签；一级里的链接由使用者写在插槽里，当前页写 current，组件不造链接。',
+            key: 'docs:component:nav:breadcrumb',
+            label: '面包屑（Breadcrumb）',
+            href: 'packages/breadcrumb/page.html',
+            meta: { type: 'component', zh: '面包屑' },
           },
           {
-            order: 30,
-            label: 'Tabs',
-            zh: '标签页',
-            path: 'packages/tabs/page.html',
-            type: 'component',
-            summary: '标签页。',
+            key: 'docs:component:nav:tabs',
+            label: '标签页（Tabs）',
+            href: 'packages/tabs/page.html',
+            meta: { type: 'component', zh: '标签页' },
           },
           {
-            order: 40,
-            label: 'Pagination',
-            zh: '分页',
-            path: 'packages/pagination/page.html',
-            type: 'component',
-            summary:
-              '分页。给总条数与每页条数，渲染页码条；页数多了折叠成省略号，可选「跳至某页」输入跳转与「每页 N 条」选择器，各块的出现与先后由 blocks 数组控制，翻页发 change。',
+            key: 'docs:component:nav:pagination',
+            label: '分页（Pagination）',
+            href: 'packages/pagination/page.html',
+            meta: { type: 'component', zh: '分页' },
           },
         ],
       },
       {
-        order: 40,
+        key: 'docs:component:form',
+        type: 'group',
         label: '表单',
-        summary: '收集与校验输入：输入框、选择、开关与表单容器',
         children: [
           {
-            order: 10,
-            label: 'Input',
-            zh: '输入框',
-            path: 'packages/input/page.html',
-            type: 'component',
-            summary: '单行输入框。可清除、前后缀插槽。',
+            key: 'docs:component:form:input',
+            label: '输入框（Input）',
+            href: 'packages/input/page.html',
+            meta: { type: 'component', zh: '输入框' },
           },
           {
-            order: 20,
-            label: 'Textarea',
-            zh: '多行输入',
-            path: 'packages/textarea/page.html',
-            type: 'component',
-            summary: '多行输入框。支持自动增高与字数统计。',
+            key: 'docs:component:form:textarea',
+            label: '多行输入（Textarea）',
+            href: 'packages/textarea/page.html',
+            meta: { type: 'component', zh: '多行输入' },
           },
           {
-            order: 25,
-            label: 'Code Editor',
-            zh: '代码编辑',
-            path: 'packages/code-editor/page.html',
-            type: 'component',
-            summary:
-              '代码编辑器。轻量 HTML / JS / CSS 编辑：语法高亮 + 行号，值按表单控件那套读（value / input / change）；CodeMirror 随组件懒加载，失败降级成普通文本框。',
+            key: 'docs:component:form:code-editor',
+            label: '代码编辑（Code Editor）',
+            href: 'packages/code-editor/page.html',
+            meta: { type: 'component', zh: '代码编辑' },
           },
           {
-            order: 30,
-            label: 'Checkbox',
-            zh: '复选框',
-            path: 'packages/checkbox/page.html',
-            type: 'component',
-            summary: '复选框。支持半选态。',
+            key: 'docs:component:form:checkbox',
+            label: '复选框（Checkbox）',
+            href: 'packages/checkbox/page.html',
+            meta: { type: 'component', zh: '复选框' },
           },
           {
-            order: 40,
-            label: 'Radio',
-            zh: '单选按钮',
-            path: 'packages/radio/page.html',
-            type: 'component',
-            summary:
-              '单选按钮组。容器 mc-radio-group 管互斥 / 方向 / 尺寸与 change 事件，子项 mc-radio 是一格。',
+            key: 'docs:component:form:radio',
+            label: '单选按钮（Radio）',
+            href: 'packages/radio/page.html',
+            meta: { type: 'component', zh: '单选按钮' },
           },
           {
-            order: 50,
-            label: 'Switch',
-            zh: '开关',
-            path: 'packages/switch/page.html',
-            type: 'component',
-            summary: '开关。',
+            key: 'docs:component:form:switch',
+            label: '开关（Switch）',
+            href: 'packages/switch/page.html',
+            meta: { type: 'component', zh: '开关' },
           },
           {
-            order: 55,
-            label: 'Slider',
-            zh: '滑动选择',
-            path: 'packages/slider/page.html',
-            type: 'component',
-            summary:
-              '滑动选择。在一段连续区间里拖一个值：原生 range 承载键盘与拖拽，轨道 / 填充 / 滑块自绘并开放 part；区间、步长与语义色都可配。',
+            key: 'docs:component:form:slider',
+            label: '滑动选择（Slider）',
+            href: 'packages/slider/page.html',
+            meta: { type: 'component', zh: '滑动选择' },
           },
           {
-            order: 57,
-            label: 'Rate',
-            zh: '评分',
-            path: 'packages/rate/page.html',
-            type: 'component',
-            summary:
-              '评分。一排星，点第几颗就是几分；支持半星、自定义颗数与语义色。原生 range 只管键盘与焦点，指针交互按星星真实几何换算。',
+            key: 'docs:component:form:rate',
+            label: '评分（Rate）',
+            href: 'packages/rate/page.html',
+            meta: { type: 'component', zh: '评分' },
           },
           {
-            order: 58,
-            label: 'Tree Select',
-            zh: '树型选择',
-            path: 'packages/tree-select/page.html',
-            type: 'component',
-            summary:
-              '树型选择。数据驱动的一棵单选树：触发框 + 浮层面板，层级缩进、展开 / 收起、键盘导航与 clearable；禁用的父级可展开但整支不可选。',
+            key: 'docs:component:form:tree-select',
+            label: '树型选择（Tree Select）',
+            href: 'packages/tree-select/page.html',
+            meta: { type: 'component', zh: '树型选择' },
           },
           {
-            order: 60,
-            label: 'Select',
-            zh: '下拉选择',
-            path: 'packages/select/page.html',
-            type: 'component',
-            summary: '下拉选择。最复杂的一个：浮层定位 + 键盘导航 + 点击外部判定。',
+            key: 'docs:component:form:select',
+            label: '下拉选择（Select）',
+            href: 'packages/select/page.html',
+            meta: { type: 'component', zh: '下拉选择' },
           },
           {
-            order: 65,
-            label: 'Date Picker',
-            zh: '日期选择',
-            path: 'packages/date-picker/page.html',
-            type: 'component',
-            summary:
-              '日期选择。日 / 周 / 月 / 年四种粒度 × 单选 / 多选 / 范围三种模式；三段可配格式化，min / max 限制可选范围。',
+            key: 'docs:component:form:date-picker',
+            label: '日期选择（Date Picker）',
+            href: 'packages/date-picker/page.html',
+            meta: { type: 'component', zh: '日期选择' },
           },
           {
-            order: 70,
-            label: 'Form',
-            zh: '表单',
-            path: 'packages/form/page.html',
-            type: 'component',
-            summary: '表单容器：把提交 / 重置 / 取值 / 校验从使用者手里收上来。',
+            key: 'docs:component:form:form',
+            label: '表单（Form）',
+            href: 'packages/form/page.html',
+            meta: { type: 'component', zh: '表单' },
           },
         ],
       },
       {
-        order: 50,
+        key: 'docs:component:feedback',
+        type: 'group',
         label: '反馈',
-        summary: '告诉使用者正在发生什么：提示、消息、进度、加载与空态',
         children: [
           {
-            order: 10,
-            label: 'Alert',
-            zh: '提示条',
-            path: 'packages/alert/page.html',
-            type: 'component',
-            summary: '页内提示条。可关闭，带标题与描述。',
+            key: 'docs:component:feedback:alert',
+            label: '提示条（Alert）',
+            href: 'packages/alert/page.html',
+            meta: { type: 'component', zh: '提示条' },
           },
           {
-            order: 20,
-            label: 'Message',
-            zh: '消息条',
-            path: 'packages/message/page.html',
-            // 命令式：入口是 message() 这个函数，容器标签由模块自己创建，使用者不用写标签
-            type: 'component',
-            summary: '命令式消息条：从顶部落下来一条，几秒后自己走；同 key 更新不叠加。',
+            key: 'docs:component:feedback:message',
+            label: '消息条（Message）',
+            href: 'packages/message/page.html',
+            meta: { type: 'component', zh: '消息条' },
           },
           {
-            order: 30,
-            label: 'Progress',
-            zh: '进度条',
-            path: 'packages/progress/page.html',
-            type: 'component',
-            summary: '进度条。支持不确定态。',
+            key: 'docs:component:feedback:progress',
+            label: '进度条（Progress）',
+            href: 'packages/progress/page.html',
+            meta: { type: 'component', zh: '进度条' },
           },
           {
-            order: 40,
-            label: 'Loading Bar',
-            zh: '加载条',
-            path: 'packages/loading-bar/page.html',
-            type: 'component',
-            summary:
-              '加载条。state 一个入口（idle / loading / done / error）：在跑就缓慢爬升（到不了 100%），收尾先滑到 100% 再淡出，成功与出错同一条路、只差色；默认钉在视口顶部，也可放进容器；不吃指针。',
+            key: 'docs:component:feedback:loading-bar',
+            label: '加载条（Loading Bar）',
+            href: 'packages/loading-bar/page.html',
+            meta: { type: 'component', zh: '加载条' },
           },
           {
-            order: 50,
-            label: 'Spinner',
-            zh: '加载指示',
-            path: 'packages/spinner/page.html',
-            type: 'component',
-            summary: '加载指示。跟随当前文字色与字号。',
+            key: 'docs:component:feedback:spinner',
+            label: '加载指示（Spinner）',
+            href: 'packages/spinner/page.html',
+            meta: { type: 'component', zh: '加载指示' },
           },
           {
-            order: 60,
-            label: 'Skeleton',
-            zh: '骨架屏',
-            path: 'packages/skeleton/page.html',
-            type: 'component',
-            summary:
-              '骨架屏：加载时先把内容的位置占住。矩形 / 文本行 / 圆形三档形状，宽高、底色与扫光都可配；减弱动效下自动关掉扫光。',
+            key: 'docs:component:feedback:skeleton',
+            label: '骨架屏（Skeleton）',
+            href: 'packages/skeleton/page.html',
+            meta: { type: 'component', zh: '骨架屏' },
           },
           {
-            order: 70,
-            label: 'Empty',
-            zh: '空态',
-            path: 'packages/empty/page.html',
-            type: 'component',
-            summary:
-              '空态。没有内容可显示时的一块占位：内置图形 + 一行文案 + 可选操作区，三档尺寸。',
+            key: 'docs:component:feedback:empty',
+            label: '空态（Empty）',
+            href: 'packages/empty/page.html',
+            meta: { type: 'component', zh: '空态' },
           },
         ],
       },
       {
-        order: 60,
+        key: 'docs:component:overlay',
+        type: 'group',
         label: '浮层',
-        summary: '浮在页面上方的一层：弹出层、对话框、下拉菜单、提示气泡',
         children: [
           {
-            order: 10,
-            label: 'Popover',
-            zh: '浮层',
-            path: 'packages/popover/page.html',
-            type: 'component',
-            summary: '通用浮层：锚在触发元素上，原生 popover + CSS 锚点定位，贴边自动翻转。',
+            key: 'docs:component:overlay:popover',
+            label: '浮层（Popover）',
+            href: 'packages/popover/page.html',
+            meta: { type: 'component', zh: '浮层' },
           },
           {
-            order: 20,
-            label: 'Dialog',
-            zh: '对话框',
-            path: 'packages/dialog/page.html',
-            type: 'component',
-            summary: '对话框。遮罩、焦点陷阱、Esc 关闭。',
+            key: 'docs:component:overlay:dialog',
+            label: '对话框（Dialog）',
+            href: 'packages/dialog/page.html',
+            meta: { type: 'component', zh: '对话框' },
           },
           {
-            order: 30,
-            label: 'Dropdown',
-            zh: '下拉菜单',
-            path: 'packages/dropdown/page.html',
-            type: 'component',
-            summary: '下拉菜单。',
+            key: 'docs:component:overlay:dropdown',
+            label: '下拉菜单（Dropdown）',
+            href: 'packages/dropdown/page.html',
+            meta: { type: 'component', zh: '下拉菜单' },
           },
           {
-            order: 40,
-            label: 'Tooltip',
-            zh: '提示气泡',
-            path: 'packages/tooltip/page.html',
-            type: 'component',
-            summary: '提示气泡。',
+            key: 'docs:component:overlay:tooltip',
+            label: '提示气泡（Tooltip）',
+            href: 'packages/tooltip/page.html',
+            meta: { type: 'component', zh: '提示气泡' },
           },
         ],
       },
       {
-        order: 70,
+        key: 'docs:component:layout',
+        type: 'group',
         label: '布局',
-        summary: '安排空间与结构：栅格、间距、分割线、折叠面板、滚动条',
         children: [
           {
-            order: 10,
-            label: 'Grid',
-            zh: '栅格',
-            path: 'packages/grid/page.html',
-            type: 'component',
-            summary: '栅格。',
+            key: 'docs:component:layout:grid',
+            label: '栅格（Grid）',
+            href: 'packages/grid/page.html',
+            meta: { type: 'component', zh: '栅格' },
           },
           {
-            order: 20,
-            label: 'Space',
-            zh: '间距',
-            path: 'packages/space/page.html',
-            type: 'component',
-            summary:
-              '间距。横向 / 纵向排列一组元素，间距支持三档令牌或数字；另有主轴分布、交叉轴对齐、反向、换行与撑满。',
+            key: 'docs:component:layout:space',
+            label: '间距（Space）',
+            href: 'packages/space/page.html',
+            meta: { type: 'component', zh: '间距' },
           },
           {
-            order: 30,
-            label: 'Divider',
-            zh: '分割线',
-            path: 'packages/divider/page.html',
-            type: 'component',
-            summary:
-              '分割线。水平 / 竖直两个方向，线上可放一段文字（位置可调）；线型、留白与线色都能配。',
+            key: 'docs:component:layout:divider',
+            label: '分割线（Divider）',
+            href: 'packages/divider/page.html',
+            meta: { type: 'component', zh: '分割线' },
           },
           {
-            order: 40,
-            label: 'Collapse',
-            zh: '折叠面板',
-            path: 'packages/collapse/page.html',
-            type: 'component',
-            summary:
-              '折叠面板。容器 + 子项，可选互斥；开合语义直接交给原生 details/summary，键盘不用自己写。',
+            key: 'docs:component:layout:collapse',
+            label: '折叠面板（Collapse）',
+            href: 'packages/collapse/page.html',
+            meta: { type: 'component', zh: '折叠面板' },
           },
           {
-            order: 50,
-            label: 'Scroll Bar',
-            zh: '滚动条',
-            path: 'packages/scroll-bar/page.html',
-            type: 'component',
-            summary:
-              '滚动条。自带覆盖式滚动条（跟着主题走），滚动本身仍是原生的：键盘、触屏惯性、锚点都照旧。',
+            key: 'docs:component:layout:scroll-bar',
+            label: '滚动条（Scroll Bar）',
+            href: 'packages/scroll-bar/page.html',
+            meta: { type: 'component', zh: '滚动条' },
           },
         ],
       },
@@ -529,62 +412,37 @@ export const SITE = [
   },
 ];
 
-/* ------------------------------------------------------------------ 排序 */
-
-/**
- * @param {NavNode} a
- * @param {NavNode} b
- * @returns {number}
- */
-const byOrder = (a, b) => a.order - b.order;
-
-/**
- * 递归按 order 排好；children 也换成排好序的新数组（SITE 原样留着，对账测试要看它）
- * @param {NavNode[]} nodes
- * @returns {NavNode[]}
- */
-const sortTree = (nodes) =>
-  [...nodes]
-    .sort(byOrder)
-    .map((node) => (node.children ? { ...node, children: sortTree(node.children) } : { ...node }));
-
-/** 排好序的完整树（含 hidden）：渲染、定位都用它 */
-export const NAV = sortTree(SITE);
-
 /* ------------------------------------------------------------------ 结构与查询 */
 
 /**
- * @param {NavNode} node
- * @returns {node is NavNode & { children: NavNode[] }}
+ * @param {MenuOption} node
+ * @returns {node is MenuOption & { children: MenuOption[] }}
  */
 const hasChildren = (node) => Array.isArray(node.children);
 
 /**
  * 有没有自己的文档页。**唯一**的实现状态判断：菜单 / 卡片 / 面包屑 / 翻页都用它
- * @param {NavNode} node
- * @returns {node is NavNode & { path: string }}
+ * @param {MenuOption} node
+ * @returns {node is MenuOption & { href: string }}
  */
-export const hasPage = (node) => typeof node.path === 'string';
+export const hasPage = (node) => typeof node.href === 'string';
 
 /**
  * 组件目录名（`packages/<目录>/page.html` 的第二段）。测试拼套件 / 演示路径要用
- * @param {NavNode & { path: string }} node 必须是叶子（有页面），分组没有目录名
+ * @param {MenuOption} node 必须是叶子（有页面），分组没有目录名
  * @returns {string}
  */
-export const slugOf = (node) => node.path.split('/')[1];
+export const slugOf = (node) => node.href?.split('/')[1] ?? '';
 
-/** 未实现的组件不给死链，指到规范里的接口定义（外链，不走 hash 路由） */
-export const SPEC_URL = 'https://github.com/lhf6623/mosaic/blob/main/packages/README.md';
+/** 顶栏一级入口 = SITE 的顶层节点（就是数组里的那几条） */
+export const TOPBAR = SITE;
 
-/** 顶栏一级入口。顶层没有祖先，所以这里的 hidden 不需要继承 */
-export const TOPBAR = NAV.filter((entry) => entry.hidden !== true);
-
-/* 子树里第一个有页面的条目（按左栏顺序，跳过 hidden）—— 分区自己没落地页时，顶栏入口落到这里。
- * ⚠️ **不能**把子节点的 path 直接抄到分区上：那会造出重复路由，而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
+/* 子树里第一个有页面的条目（按数组顺序）—— 分区自己没落地页时，顶栏入口落到这里。
+ * ⚠️ **不能**把子节点的落地页地址直接抄到分区上：那会造出重复路由，而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
  */
 /**
- * @param {NavNode} node
- * @returns {NavNode | null}
+ * @param {MenuOption} node
+ * @returns {MenuOption | null}
  */
 export function firstPageOf(node) {
   if (hasPage(node)) return node;
@@ -595,39 +453,17 @@ export function firstPageOf(node) {
   return null;
 }
 
-/** 过滤 hidden（沿树继承）；隐藏后空掉的分组整条去掉 */
 /**
- * @param {NavNode[]} nodes
- * @param {boolean} [inherited]
- * @returns {NavNode[]}
+ * 左栏要渲染的子节点：就是该分区的 children
+ * @param {MenuOption} [entry]
+ * @returns {MenuOption[]}
  */
-function prune(nodes, inherited = false) {
-  /** @type {NavNode[]} */
-  const out = [];
-  for (const node of nodes) {
-    const hidden = inherited || node.hidden === true;
-    if (hidden) continue;
-    if (!hasChildren(node)) {
-      out.push(node);
-      continue;
-    }
-    const children = prune(node.children, hidden);
-    if (children.length) out.push({ ...node, children });
-  }
-  return out;
-}
+export const menuOf = (entry) => entry?.children ?? [];
 
 /**
- * 左栏要渲染的子节点：hidden 已剔除、隐藏后空掉的分组不出现
- * @param {NavNode} [entry]
- * @returns {NavNode[]}
- */
-export const menuOf = (entry) => prune(entry?.children ?? []);
-
-/**
- * 按树序走一遍（含 hidden）
- * @param {NavNode[]} nodes
- * @param {(node: NavNode) => void} visit
+ * 按树序走一遍
+ * @param {MenuOption[]} nodes
+ * @param {(node: MenuOption) => void} visit
  */
 function walk(nodes, visit) {
   for (const node of nodes) {
@@ -636,52 +472,42 @@ function walk(nodes, visit) {
   }
 }
 
-/** **工具面**：所有已实现的组件（含 hidden）—— 冒烟套件入口、文档页检查都用它 */
+/** **工具面**：所有已实现的组件 —— 冒烟套件入口、文档页检查都用它 */
 export const READY = (() => {
-  /** @type {NavNode[]} */
+  /** @type {object[]} */
   const out = [];
-  walk(NAV, (node) => {
-    if (node.type === 'component' && hasPage(node)) out.push(node);
+  walk(SITE, (node) => {
+    if (node.meta?.type === 'component' && hasPage(node))
+      out.push({ ...node, ...node.meta, path: node.href });
   });
   return out;
 })();
 
-/**
- * 菜单显示名：分组只写组名，组件写「按钮（Button）」，其余原样 label。
- * 左栏（docs/components/nav.html）与顶栏搜索（docs/components/search.html）共用 —— 同一个东西在两处得叫同一个名字。
- * @param {NavNode} node
- * @returns {string}
- */
-export const displayName = (node) => {
-  if (node.children) return node.label;
-  return node.zh ? `${node.zh}（${node.label}）` : node.label;
-};
-
 /** **工具面**：搜索索引 —— 全部可导航的页面（站点页 + 组件），按菜单顺序，带分区标签链。
- *  「整个菜单都搜得到」由它保证：与 NAV 同一棵树、hidden 沿树继承，所以搜到的集合 = 菜单里点得到的集合。
+ *  「整个菜单都搜得到」由它保证：与 SITE 同一棵树，所以搜到的集合 = 菜单里点得到的集合。
  *  分区链（如「组件 · 表单」）在结果行里当副标题，用来分清同名 / 同类的落点。 */
 export const PAGES = (() => {
-  /** @type {(NavNode & { path: string; section: string })[]} */
+  /** @type {object[]} */
   const out = [];
-  /** @param {NavNode[]} nodes @param {string[]} trail */
+  /** @param {MenuOption[]} nodes @param {string[]} trail */
   const collect = (nodes, trail) => {
     for (const node of nodes) {
-      if (node.hidden === true) continue;
       if (node.children) collect(node.children, [...trail, node.label]);
-      else if (hasPage(node)) out.push({ ...node, section: trail.join(' · ') });
+      else if (hasPage(node))
+        out.push({ ...node, ...node.meta, path: node.href, section: trail.join(' · ') });
     }
   };
-  collect(NAV, []);
+  collect(SITE, []);
   return out;
 })();
 
-/** 当前路由落在哪一支：`{ entry, node, hidden }`。**隐藏页也能命中** —— 顶栏得知道该点亮谁 */
+/** 当前路由落在哪一支：`{ entry, node }` —— 顶栏靠它认「命中了哪一支」 */
 /**
  * @param {string} route 仓库根相对路径
- * @returns {{ entry: NavNode, node: NavNode, hidden: boolean } | null}
+ * @returns {{ entry: MenuOption, node: MenuOption } | null}
  */
 export function locate(route) {
-  for (const entry of NAV) {
+  for (const entry of SITE) {
     const hit = findIn(entry, route);
     if (hit) return { entry, ...hit };
   }
@@ -689,17 +515,14 @@ export function locate(route) {
 }
 
 /**
- * @param {NavNode} node
+ * @param {MenuOption} node
  * @param {string} route
- * @param {boolean} [hidden]
- * @returns {{ node: NavNode, hidden: boolean } | null}
+ * @returns {{ node: MenuOption } | null}
  */
-function findIn(node, route, hidden = false) {
-  const isHidden = hidden || node.hidden === true;
-  if (node.path === route) return { node, hidden: isHidden };
-
+function findIn(node, route) {
+  if (node.href === route) return { node };
   for (const child of node.children ?? []) {
-    const hit = findIn(child, route, isHidden);
+    const hit = findIn(child, route);
     if (hit) return hit;
   }
   return null;
