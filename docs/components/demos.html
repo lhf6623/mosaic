@@ -1,11 +1,5 @@
-<!--
-  <doc-demos> —— 组件文档页「例子」区的容器：宽屏按列流式排、窄屏一列。
-  只算视觉位置（left / top），不搬 DOM —— 右栏目录、焦点顺序、锚点仍按页面源码顺序。
-  ⚠️ 不用 transform 定位：它会给 demo 里的 popover / dropdown 建 containing block，浮层会贴错位置。
--->
 <template component>
   <style>
-    /* 默认 inline；宽屏时子项绝对定位，宿主高度由 JS 按最长一列写 */
     :host {
       display: block;
       position: relative;
@@ -16,7 +10,6 @@
   <slot></slot>
 
   <script>
-    /** 分列阈值：按宿主可用宽度（1080p 正文约 1356 → 两列各 668） */
     const TWO_COLS = 1320;
     const THREE_COLS = 2300;
     const GAP_FALLBACK = 20;
@@ -30,7 +23,6 @@
 
         this._raf = 0;
         this._ro = new ResizeObserver(() => this.schedule());
-        /* 宿主宽度 → 列数；子项高度 → 位置（编辑器展开 / 字体、图片加载） */
         this._ro.observe(this.ele);
         for (const el of this._items) this._ro.observe(el);
         this.schedule();
@@ -42,7 +34,6 @@
       },
 
       proto: {
-        /** rAF 合并：展开编辑器 / 拖窗口时 ResizeObserver 会连发很多次 */
         schedule() {
           if (this._raf) return;
           this._raf = requestAnimationFrame(() => {
@@ -51,7 +42,6 @@
           });
         },
 
-        /** --doc-demos-gap 可能是 px 或 rem，换算成数字 */
         gapPx() {
           const raw = getComputedStyle(this.ele).getPropertyValue('--doc-demos-gap').trim();
           const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
@@ -67,10 +57,8 @@
 
           const gap = this.gapPx();
           const allowed = width >= THREE_COLS ? 3 : width >= TWO_COLS ? 2 : 1;
-          /* 子项比列数少时收列：只有一条还分两列，右列会空着 */
           const cols = Math.min(allowed, items.length);
 
-          /* 单列 = 普通文档流：清掉内联定位交回 CSS（无 JS 时也是这个样） */
           if (cols === 1) {
             for (const el of items) {
               for (const prop of ['position', 'left', 'top', 'width', 'margin', 'box-sizing']) {
@@ -84,7 +72,6 @@
 
           const itemWidth = (width - (cols - 1) * gap) / cols;
 
-          /* 先统一宽度再读高度：写-读分两批，少几次强制 reflow */
           for (const el of items) {
             el.style.position = 'absolute';
             el.style.width = `${itemWidth}px`;
@@ -93,8 +80,6 @@
           }
           const heights = items.map((el) => el.offsetHeight);
 
-          /* 分列：最短列优先（等高时按轮转顺序）。下一块总去当前最矮的列 —— 一块特别高的 demo
-             不会把一列撑爆、另一列底部空一大片；列内顺序即目录顺序，视觉顺序也不会被打乱 */
           const colHeights = new Array(cols).fill(0);
           items.forEach((el, i) => {
             const preferred = i % cols;

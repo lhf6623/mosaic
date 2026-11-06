@@ -2,9 +2,6 @@
   <link rel="stylesheet" href="../content.css" />
 
   <style>
-    /* 首页 = 一块方块场（<doc-block-field>）+ 中间的身份与两个入口。
-       视差、方块、颜色全归组件，这一页只管「放在哪、中间留多大」（docs/README.md §二）。 */
-
     .hero {
       position: relative;
       min-height: calc(100vh - var(--doc-topbar, 3.5rem));
@@ -29,7 +26,6 @@
       font-size: clamp(2.5rem, 6vw, 5rem);
       line-height: 0.94;
       font-weight: var(--mc-weight-semibold);
-      /* 宽度轴：Archivo 是可变字体，字标拉宽一档就有自己的声音（同外壳的品牌字标） */
       font-variation-settings: 'wdth' 112;
       letter-spacing: -0.038em;
       color: rgb(var(--mc-color-fg));
@@ -44,7 +40,6 @@
     }
   </style>
 
-  <!-- 方块场是站点组件（docs/components/）；入口是项目自己的按钮 -->
   <l-m src="../components/block-field.html"></l-m>
   <l-m src="../../packages/button/button.html"></l-m>
 
@@ -66,8 +61,6 @@
     import { goto } from '../routes.js';
     import { TOPBAR, firstPageOf } from '../site-map.js';
 
-    /* 「浏览组件」落到组件分区的第一个页面。分区自己可能没有落地页（「组件」就是），
-       landing 的算法与外壳顶栏同一套（docs/layout.html），这里不抄第二份路径。 */
     const componentsEntry = TOPBAR.find((entry) => entry.label === '组件');
     const BROWSE_PATH =
       (componentsEntry && (componentsEntry.href ?? firstPageOf(componentsEntry)?.href)) ??

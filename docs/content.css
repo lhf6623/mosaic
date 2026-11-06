@@ -1,12 +1,3 @@
-/* ============================================================================
- * 文档站 —— 所有页面共用的正文样式；每个页面模块自己 <link>（文档级 <link> 进不了 shadow root）。
- * 只有一个使用者的样式住那个页面 / 组件；共用正文块放这里（加规则前先问：是不是只有一个页面在用）。
- * 写法规范（布局归属 / 行内样式 / 组件清单）住 docs/README.md。
- * ========================================================================== */
-
-/* ---------- 正文 ---------- */
-
-/* 正文宽度**不设上限**（视口多宽就多宽），内边距留给页面自己；宽度下限由承载它的那一层负责（组件页在中栏，单列页面由窗口决定）。 */
 .doc-body {
   padding: var(--mc-space-8) var(--mc-space-8) var(--mc-space-16);
 }
@@ -50,8 +41,6 @@
   color: rgb(var(--mc-color-fg-muted));
 }
 
-/* 正文用**前景色**、不用 fg-muted：16px 中文长段落压在 muted 上读起来发灰。
-   muted 留给真正的次要信息（导语、提示、表格单元格）。 */
 .doc-body p,
 .doc-body li {
   color: rgb(var(--mc-color-fg));
@@ -80,13 +69,9 @@
   font-size: 0.9em;
 }
 
-/* ---------- 代码块：mc-code 组件自带边框/行号/复制/高亮，文档这边只管间距 ---------- */
-
 .doc-body mc-code {
   margin-block: var(--mc-space-4);
 }
-
-/* ---------- 提示条 ---------- */
 
 .doc-note {
   margin: var(--mc-space-4) 0;
@@ -107,14 +92,6 @@
   background-color: rgb(var(--mc-color-warning-subtle));
 }
 
-/* ---------- 演示区 ---------- */
-
-/* 一个演示区的段落顺序固定（标题 → 说明 → 可编辑示例），但**说明是可选的**：一眼看得明白的例子不写，
- * 写了就必须在示例之前。标题取词规则见 packages/README.md §二；本组只服务组件文档页。
- * 示例本身的样式（预览 / 编辑抽屉 / 编辑器）住在 <doc-example> 的 shadow root 里，这里只管卡片外壳。 */
-
-/* 演示区容器是 <doc-demos>（宽屏分列在组件脚本里算）；这里只留 demo 卡片外壳样式。 */
-
 .doc-demo {
   margin: var(--mc-space-5) 0;
   padding: var(--mc-space-5);
@@ -127,20 +104,14 @@
   margin-top: 0;
 }
 
-/* 新版 <doc-example> 把 h3 / .doc-hint 放在自己的 slot 里（同一行或有间距），
-   不再直接挂在 .doc-demo 下；槽内容仍是页面 shadow 里的节点，右栏目录照旧扫得到。 */
 .doc-demo doc-example h3 {
   margin: 0;
 }
 
-/* 说明在演示区里是**导语**（紧跟标题），自带一段下边距与活样例分开 ——
- * `.doc-hint` 的公共样式配的是「跟在框尾」的场合（「色彩」页那种），别混用。 */
 .doc-demo > .doc-hint,
 .doc-demo doc-example .doc-hint {
   margin: 0 0 var(--mc-space-4);
 }
-
-/* ---------- 表格 ---------- */
 
 .doc-table {
   width: 100%;
@@ -171,8 +142,6 @@
   border-bottom: 0;
 }
 
-/* ---------- 参考区里的代码块 ----------
- * `<doc-spec>` 渲染规范 md 时围栏代码落成 <pre class="doc-pre">（见 docs/lib/md-spec.mjs），它在页面 light DOM、拿不到 mc-code 的外观，这里补一份同口径的壳（等宽字体、surface 底、边框圆角与横向滚动，不做配色）。 */
 .doc-pre {
   margin: var(--mc-space-4) 0;
   padding: var(--mc-space-4);
@@ -191,12 +160,6 @@
   font-size: inherit;
 }
 
-/* ---------- 组件里的东西：样式不在这里 ----------
- * 色板 / 组件卡片（docs/components/ 下）自带 shadow root，内部样式住在各自的 <style> 里；左栏（nav）只暴露宿主，宿主级的定位 / 间距仍留在本文件。 */
-
-/* ---------- 组件页头部 ----------
- * 页面自己的头部元素（h1 / .doc-lead）。 */
-
 .doc-body h1 code {
   font-size: 0.62em;
   vertical-align: middle;
@@ -206,21 +169,14 @@
   color: rgb(var(--mc-color-fg-muted));
 }
 
-/* 页面 shadow 里的 <l-m> 是加载占位，不能占位（P13） */
 l-m {
   display: none;
 }
 
-/* 标题要避开顶栏：目录项点击走 scrollIntoView，锚点位置就靠这条 */
 .doc-body h2,
 .doc-body h3 {
   scroll-margin-top: calc(var(--doc-topbar, 3.5rem) + var(--mc-space-4));
 }
-
-/* ---------- 两栏与中栏留位：样式在分区布局页里 ----------
- * <doc-nav> / <doc-toc> 的宿主定位、.doc-split / .doc-content 的留位与两条断点都住在 docs/doc-layout.html 的 <style> 里（与页面模块的 <link> 同处一个 shadow root，作用域一样）。 */
-
-/* ---------- 窄屏：正文自己的内边距（两栏怎么收，见上面那条指路牌） ---------- */
 
 @media (max-width: 52rem) {
   .doc-body {

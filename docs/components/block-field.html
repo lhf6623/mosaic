@@ -1,8 +1,3 @@
-<!--
-  <doc-block-field> —— 一层「方块场」：四层方块跟随鼠标位移做视差背景（首页 `.hero` 拿它当底）。
-  自己铺满宿主（`position: absolute; inset: 0`），页面只要给它一个定位祖先。
-  ⚠️ 方块运行时随机撒、直接建 DOM：纯装饰，视差每帧改 transform，走 o-fill 反而多一层。
--->
 <template component>
   <style>
     :host {
@@ -10,7 +5,6 @@
       inset: 0;
       display: block;
       overflow: hidden;
-      /* 装饰层：不吃指针，也不进 Tab 序列（全是 div，本来也聚焦不到） */
       pointer-events: none;
     }
 
@@ -93,15 +87,12 @@
   <script>
     const COLORS = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
 
-    /** 每层的方块数：最远那层最多，逐层 -1（远层密、近层疏） */
     const DEFAULT_COUNT = 9;
 
-    /** 中心禁区的半径（比例）——「中间要空一些」 */
     const DEFAULT_HOLE = 0.3;
 
     const DEFAULT_SPAN = 1;
 
-    /** 四周留一圈：方块以自身中心定位，不留边距的话大块会被视口切掉半截 */
     const PAD = 0.07;
 
     const inHole = (x, y, hole) => {
@@ -110,7 +101,6 @@
       return dx * dx + dy * dy < 1;
     };
 
-    /** 掷一个避开中心禁区、也不贴边的坐标（试满 40 次就认了，免得死循环） */
     function scatter(hole) {
       for (let i = 0; i < 40; i++) {
         const x = PAD + Math.random() * (1 - 2 * PAD);
@@ -127,11 +117,9 @@
 
       ready() {
         const ele = this.ele;
-        /* 四层 .layer 是模板里写死的静态结构：引用走 this.shadow.all，造方块才是本组件的行为层例外（见文件头） */
         const layers = this.shadow.all('.layer').map((layer) => layer.ele);
         if (!layers.length) return;
 
-        /* ⚠️ 读属性走 getAttribute：ready() 这一刻 ofa 还没把 attrs 铺进 this */
         const count = Number(ele.getAttribute('count')) || DEFAULT_COUNT;
         const hole = Number(ele.getAttribute('hole')) || DEFAULT_HOLE;
         const span = Number(ele.getAttribute('span')) || DEFAULT_SPAN;
@@ -143,7 +131,6 @@
             const block = document.createElement('div');
 
             block.className = 'block';
-            /* 小的多、大的少：三次方让大块偶尔才出现，免得画面被几块大色块占满 */
             const size = 1 + Math.random() ** 3 * 5.5;
             block.dataset.kind = Math.random() < 0.45 ? 'line' : 'fill';
             block.dataset.c = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -184,7 +171,6 @@
         this._raf = requestAnimationFrame(this._frame);
       },
 
-      /* 挂在 window 上的监听必须摘干净：组件被换掉时留着就是泄漏（站点规范 §七） */
       detached() {
         if (this._onMove) window.removeEventListener('pointermove', this._onMove);
         if (this._raf) cancelAnimationFrame(this._raf);

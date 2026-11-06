@@ -23,7 +23,6 @@
       data: { form: { user: { name: '' }, agree: false } },
       proto: {
         save() {
-          /* 受控：this.form 已经是最新的，直接交给接口 */
           fetch('/api', { method: 'POST', body: JSON.stringify(this.form) });
         },
       },

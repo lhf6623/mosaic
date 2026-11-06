@@ -1,23 +1,15 @@
-/**
- * adopt-styles.js —— 文档站样式注入器（站点资产）：把页面级样式表 adopt 进 shadow root。
- * ⚠️ 补丁必须在任何 shadow root 建起来之前装好（模块顶层执行），index.html 里排在 ofa.js 之后。
- */
-
 const HERE = new URL('.', import.meta.url);
 
-/** 顺序有讲究：mosaic.css 顶部的 @layer 层序声明钉死整个层顺序；shadow-base.css 绝不能 <link> 到宿主页面。 */
 const SHEETS = ['../packages/boot/mosaic.css', '../packages/boot/shadow-base.css'].map(
   (f) => new URL(f, HERE).href,
 );
 
 /**
- * 已加载的样式表；null 表示还在路上或加载失败
  * @type {CSSStyleSheet[] | null}
  */
 let loaded = null;
 
 /**
- * 样式表就绪之前创建的 shadow root，先收着，稍后补 adopt
  * @type {Set<ShadowRoot>}
  */
 const pending = new Set();
@@ -53,10 +45,8 @@ async function loadSheet(url) {
 }
 
 try {
-  // 命中页面里 <link href="mosaic.css"> 建立的 HTTP 缓存，不会第二次下载
   loaded = await Promise.all(SHEETS.map(loadSheet));
 } catch (err) {
-  // 刻意不 rethrow：样式加载失败不该让整页崩掉，只是退化为"有颜色无排布"
   console.error(
     '[mosaic] 样式表加载失败，组件将退化为"有颜色无排布"：\n' +
       '        文档站的工具类不会生效，请检查 docs/adopt-styles.js 与 packages/boot/mosaic.css 的路径。',
@@ -68,10 +58,8 @@ if (loaded) {
   for (const root of pending) adopt(root);
   pending.clear();
 
-  // 补扫：补丁装上之前就创建好的 shadow root。querySelectorAll 不跨边界，只能递归
   /** @param {Element | ShadowRoot} node */
   const walk = (node) => {
-    // ShadowRoot 自己没有 shadowRoot —— 只有 Element 那条路要看它
     const sr = node instanceof ShadowRoot ? null : node.shadowRoot;
     if (sr) {
       adopt(sr);

@@ -1,27 +1,15 @@
-<!--
-  <doc-nav> —— 文档站左栏二级菜单（`full` 模式给窄屏浮层的「全部菜单」）。
-  整包数据直接来自 site-map.js 的 SITE（**本身就是 options**，没有翻译层）；行由组件渲染在 shadow 里。
-  条目样式不要指望本组件的 <style>，行外观由组件自己的状态属性决定。
-  ⚠️ 路由变化整包换 options，但 mc-menu 按 key 复用行：同分区切页只更新 current，不重建
-  —— 改这里请手验。滚动只在**首次显示**时居中一次（等到行渲染完、位置落定为止）；之后换页 / 重新展开都不再改 scrollTop。
--->
 <template component>
   <style>
-    /* 高度接满宿主（宽屏那栏 fixed + 100%，解得开）；窄屏浮层宿主 auto 高时退回 auto，
-       由下面 viewport 的 max-height 封顶。⚠️ max-height 不能挂宿主 —— 否则 viewport 的 100% 解不开，菜单会顶出浮层。 */
     mc-scroll-bar {
       height: 100%;
     }
 
-    /* 两条都挂 viewport，不挂宿主：max-height 是窄屏浮层的「最高到哪」（宽屏不传 = none）；
-       padding-inline 是 gutter（挂宿主会把条子一起推离栏边，浮层那份外壳把它设成 0）。 */
     mc-scroll-bar::part(viewport) {
       max-height: var(--doc-nav-max-height, none);
       padding-inline: var(--doc-scroll-pad-x, var(--mc-space-5));
     }
   </style>
 
-  <!-- 条子走组件默认的 hover：菜单是拿来读的，常驻一条会压在条目背景上 -->
   <mc-scroll-bar label="站点菜单">
     <mc-menu id="nav-menu" attr:current="currentKey" :options="menuOptions"></mc-menu>
   </mc-scroll-bar>
@@ -31,35 +19,28 @@
     import { onRouteChange, routeState } from '../state/route.js';
 
     export default () => ({
-      /* ⚠️ 必须显式写 tag：不写时 ofa 按文件名推断标签名，文件一改名 / 挪目录就注册失败（P40） */
       tag: 'doc-nav',
 
-      /* :options 绑定直接吃 SITE 的 options 子树；当前项传命中节点的 key，走 attr:current */
       data: { menuOptions: [], currentKey: '' },
 
       ready() {
         this._menu = this.shadow.$('#nav-menu');
-        /* 点当前页就拦掉：直接比命中节点的 key，不用回查 href / meta，也不必在外壳挂兜底 */
         this._onNavigate = (event) => {
           if (event.detail?.key === routeState().node?.key) event.preventDefault();
         };
         this._menu.ele.addEventListener('navigate', this._onNavigate);
         this._bar = this.shadow.$('mc-scroll-bar');
-        /* full = 外壳在标记上写死的 <doc-nav full>，读一次就够 */
         this._full = this.ele.hasAttribute('full');
         if (this._full) this._menu.attr('accordion', '');
-        /* 只居中一次：左栏挂载即有高度；全量浮层要等第一次展开（0 → 有高度）再补 */
         this._centered = false;
         this._vpRo = new ResizeObserver(([entry]) => {
           if (entry.contentRect.height > 0) this.centerInitial();
         });
         this._vpRo.observe(this.ele);
-        /* 路由信号统一来自 state/route.js，这里只订阅 */
         this._unwatch = onRouteChange(() => this.renderRows());
         this.renderRows();
       },
 
-      // 组件随切页建毁，退订必须在 detached 里做，否则旧实例还会改新菜单
       detached() {
         this._unwatch?.();
         this._menu?.ele.removeEventListener('navigate', this._onNavigate);
@@ -69,23 +50,17 @@
       },
 
       proto: {
-        /* ⚠️ 不能叫 sync：ofa 的组件实例上已经有这个名字，注册时整个 proto 方法会被丢掉 */
         renderRows() {
-          /* ⚠️ 别再调一次 locate()：routeState() 里已经是算好的 entry / node */
           const { node, entry } = routeState();
-          /* current 传命中节点的 key；站内路径留在 href，不再当身份用 */
           this.currentKey = node?.key ?? '';
           this.menuOptions = this._full ? TOPBAR : entry ? menuOf(entry) : [];
-          /* 首次显示（或首帧行还没渲染出来）才居中；之后的换页只更新 current */
           this.centerInitial();
         },
 
-        /** 这一栏真正的滚动视口：滚的是 mc-scroll-bar 里的 viewport，宿主 <doc-nav> 自己不滚 */
         viewport() {
           return this._bar?.shadow?.$('[part="viewport"]') ?? null;
         },
 
-        /** 当前条可能在嵌套 mc-menu 的 shadow 里（full 模式的整棵树），逐层找 */
         currentRow() {
           const seen = new Set();
           const walk = (root) => {
@@ -103,8 +78,6 @@
           return walk(this._menu?.ele?.shadowRoot ?? null);
         },
 
-        /** 首次显示前先等 load：刷新时浏览器会恢复上一个 scrollTop，落得比 ready 晚；
-            在 load 前居中会被它盖掉，于是每次刷新停在不同的位置 */
         centerInitial() {
           if (this._centered || this._centerQueued || this._centering) return;
           this._centerQueued = true;
@@ -123,21 +96,13 @@
           }
         },
 
-        /** 唯一写 scrollTop 的地方：首次显示时把当前条滚到栏内竖直中间（首尾撞边界时退化成「保证可见」）。
-            ⚠️ 行由 mc-menu 的 o-fill **分批**渲染：当前条已经存在，不代表它后面的行都已经落进来。
-            这时 scrollHeight 还短，居中目标会被浏览器夹到「当前底部」，写进去的位置就偏高 ——
-            刷新时缓存是热的、渲染跑得快，最容易撞上（首访反而常常已经渲染完）。
-            所以目标超出当前可滚范围时先只等高度稳定，稳定后仍超范围才认定真的是边界行；
-            写进去之后还要连续两帧复核，防上方内容（字体 / 分组行）晚到把当前条顶偏。 */
         runCenterRetry() {
           if (this._centered) return;
           cancelAnimationFrame(this._centerRaf);
           this._centering = true;
           let tries = 0;
-          /* 内容高度连续几帧没变 = o-fill 这一批已经渲染完（或本来就没有更多行） */
           let lastMax = -1;
           let stable = 0;
-          /* 位置连续几帧都还对得上 = 居中真的落定，不是被夹住的临时值 */
           let settled = 0;
           const finish = () => {
             this._centered = true;
@@ -156,7 +121,6 @@
             }
             const view = viewport.ele;
             const box = view.getBoundingClientRect();
-            /* 浮层关着（高度 0）不重试：等 ResizeObserver 第一次展开 */
             if (box.height === 0) {
               this._centering = false;
               return;
@@ -167,11 +131,9 @@
               retry();
               return;
             }
-            /* 当前条中心在内容坐标系里的位置（与 scrollTop 无关），相对视口中心的偏移就是要滚的量 */
             const max = view.scrollHeight - view.clientHeight;
             const want = target.top - box.top + view.scrollTop + target.height / 2 - box.height / 2;
             if (want > max + 0.5) {
-              /* 目标超出当前可滚范围：后面的行还在长，或当前条本来就在末尾。 */
               stable = max === lastMax ? stable + 1 : 0;
               lastMax = max;
               settled = 0;

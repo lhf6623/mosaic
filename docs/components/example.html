@@ -1,18 +1,3 @@
-<!--
-  <doc-example> —— 组件文档页的可编辑示例：组件页的每个演示都用它；配了 plain-src 的演示还能切普通例子。
-  要点：
-    · 标题 / 说明由页面通过 slot 放进同一行，操作按钮在标题右侧；
-    · 编辑器显示文件原文（含 <template component> 外壳），不再剥掉外壳；
-    · 代码区收起时「运行 / 重新运行」跟着收起（没有可运行的编辑），只留复制与代码入口；
-    · 代码区有「ofa.js 例子 / 普通例子」两个视图，默认 ofa.js；
-      普通例子是完整 HTML 页，用 iframe 跑（CDN 地址预览时映射到本地文件）；
-      切换视图即用当前草稿跑一遍预览，「运行 / 重新运行」随时可重跑；
-      切换器用 mc-tabs 的 segmented + no-panel 档 —— 与工具栏的 mc-button 一起在 docs/layout.html 站点级注册。
-  ⚠️ h3 / .doc-hint 仍必须写在页面里（doc-toc 只扫页面 shadow root），这里只负责排版。
-  ⚠️ 预览是运行时按文件内容造的节点，模板写不出来 —— 见 docs/README §十的站点例外；
-      集中在 renderLive()，那里注明了原因。编辑器本身是框架组件 <mc-code-editor>（站点级注册），
-      这里是模板节点，不再由脚本挂载。
--->
 <template component>
   <style>
     :host {
@@ -36,10 +21,7 @@
       margin-left: auto;
     }
 
-    /* 四个操作按钮用 mc-button（ghost + sm）：28px 方块、accent 跟文字色，
-       运行按钮单独给主色 —— 只覆盖组件的 accent 槽，不另写一套按钮外观 */
     .actions mc-button {
-      /* 色槽是通道三元组（组件里是 rgb(var(--mc-button-accent))），不要包 rgb() */
       --mc-button-accent: var(--mc-color-fg-muted);
       width: 28px;
       padding-inline: 0;
@@ -57,19 +39,15 @@
       --mc-button-accent: var(--mc-color-danger);
     }
 
-    /* 收起代码区时没有可运行的编辑：运行 / 重新运行跟着收起，只留复制与代码两个入口
-       （与旧演示组件同一口径；mc-button 自己的 :host 是 inline-flex，这里得显式 display: none） */
     .actions mc-button[hidden] {
       display: none;
     }
 
-    /* ── 预览 ── */
     .live {
       min-height: 2rem;
       margin-top: var(--mc-space-4);
     }
 
-    /* 普通例子跑在 iframe 里：高度由 JS 按内容写（见 fitFrame） */
     .frame {
       display: block;
       width: 100%;
@@ -85,7 +63,6 @@
       line-height: var(--mc-text-sm-lh);
     }
 
-    /* ── 代码区（点代码图标才展开）── */
     .panel {
       margin-top: var(--mc-space-4);
       padding-top: var(--mc-space-3);
@@ -96,13 +73,10 @@
       display: none;
     }
 
-    /* 视图切换器就是 mc-tabs 的 segmented 档 + no-panel（样式在组件里，站点不再抄一份） */
     .envs {
       margin-bottom: var(--mc-space-3);
     }
 
-    /* 撑满整行：segmented 轨道在 mc-tabs 里默认收缩到内容宽（分段切换器本来的样子），
-       这里用 part 穿透放宽 —— 轨道铺满、两颗 mc-tab 平分，按钮跟着拉宽 */
     .envs::part(list) {
       display: flex;
       flex: 1;
@@ -207,11 +181,9 @@
 
     const COPY_FEEDBACK_MS = 3000;
 
-    /* 示例源里的 CDN 前缀：预览时换成站点根目录，没打 tag 的版本也能跑本地文件 */
     const CDN_RE =
       /https:\/\/(?:cdn|fastly|gcore|testingcf)\.jsdelivr\.net\/gh\/lhf6623\/mosaic@[^/]+\//g;
 
-    /* 主题信号全页只盯一份：实例集合 + 一个观察者。编辑器自己跟 color-scheme，这里只管普通例子的 iframe */
     const themeTargets = new Set();
     let themeObserver;
     let themeMq;
@@ -224,13 +196,11 @@
       themeTargets.add(target);
       if (!themeObserver) {
         themeObserver = new MutationObserver(syncAllTheme);
-        /* 主题写在文档根上，MutationObserver 是全局观察（docs/README §十：全局监听保留原生并注明原因） */
         themeObserver.observe(document.documentElement, {
           attributes: true,
           attributeFilter: ['data-theme', 'class', 'style'],
         });
         themeMq = window.matchMedia?.('(prefers-color-scheme: dark)');
-        /* MediaQueryList 不是元素，只能原生监听 */
         themeMq?.addEventListener?.('change', syncAllTheme);
       }
       target.syncFrameTheme();
@@ -246,17 +216,13 @@
     };
 
     export default () => ({
-      /* ⚠️ 显式 tag：不写按文件名推断，文件一改名就注册失败（P40） */
       tag: 'doc-example',
 
       attrs: {
-        /* ofa.js 例子文件地址；ofa 编译页面时已把相对地址改写成绝对地址 */
         src: '',
-        /* 普通 HTML 例子地址，相对**页面文件**解析（页面写 ./demos/x-plain.html 即可） */
         plainSrc: '',
       },
 
-      /* 模板里引用的键必须先声明（技能：未声明键直接 ReferenceError，整块 render 中断） */
       data: {
         env: 'ofa', // 当前代码视图
         codeOpen: false, // 代码区是否展开
@@ -278,7 +244,6 @@
 
       ready() {
         this._live = this.shadow.$('.live');
-        /* 编辑器是模板里的框架组件；属性通道在它升级前也安全（早写 property 会被自己的属性遮住） */
         this._editorEl = this.shadow.$('.editor')?.ele ?? null;
         this._envTabs = this.shadow.$('.envs')?.ele ?? null; // 模式切换器（mc-tabs）
 
@@ -304,7 +269,6 @@
       },
 
       proto: {
-        /** 读两个源文件的原文；ofa 源一定读，普通源读不到就只保留 ofa 视图 */
         async loadSources() {
           const src = String(this.src ?? '').trim();
           if (!src) return;
@@ -369,11 +333,6 @@
           }
         },
 
-        /**
-         * 预览的**唯一入口**：点「运行」/「重新运行」、切换代码视图或首次加载走这里。
-         * ⚠️ 站点例外（docs/README §十）：预览节点要按运行时编译结果 / iframe 创建，模板写不出来；
-         * 其余可见结构仍然走模板。
-         */
         async renderLive() {
           if (this.env === 'plain' && this._sources.plain) {
             this.renderPlain(this._drafts.plain);
@@ -382,7 +341,6 @@
           await this.renderOfa(this._drafts.ofa);
         },
 
-        /** renderLive 的 ofa 分支：compileDemo 的 tag 只有运行时才知道 */
         async renderOfa(text) {
           const seq = ++this._runSeq;
           let tag;
@@ -406,9 +364,7 @@
           this.hideError();
         },
 
-        /** renderLive 的普通例子分支：这是完整 HTML 文档，只能 iframe 隔离，模板写不出来 */
         renderPlain(text) {
-          /* 作废可能在飞的 ofa 编译 */
           this._runSeq += 1;
           this.teardownFrame();
           this._live.ele.replaceChildren();
@@ -417,13 +373,10 @@
           frame.className = 'frame';
           frame.title = '普通 HTML 示例预览';
           frame.setAttribute('part', 'preview');
-          /* 先写 srcdoc 再挂进页面：避免先触发一次 about:blank 的 load，把 once 监听吃掉 */
           frame.srcdoc = this.previewHtml(text);
           this._frame = frame;
           this._live.ele.append(frame);
-          /* 用 shadow.$ 的 ofa 包装对象绑一次性 load（技能：元素用 .on()/.one()，不用原生 addEventListener） */
           this.shadow.$('.frame').one('load', () => this.onFrameLoad(frame));
-          /* 组件升级 / 字体加载会让 body 从「未定义元素的高度」变成真实高度，补几拍兜底 */
           this._frameTimers = [100, 400, 1200].map((ms) =>
             setTimeout(() => {
               if (this._frame === frame) this.fitFrame();
@@ -433,14 +386,11 @@
           this.hideError();
         },
 
-        /** 示例里的 CDN 地址映射到站点根目录：没打 tag 也能跑本地文件 */
         previewHtml(text) {
           const siteRoot = new URL('.', document.baseURI).href;
           let html = String(text ?? '').replace(CDN_RE, siteRoot);
           if (!/<html\b/i.test(html)) return html;
 
-          /* 预览专用：普通例子不一定引 mosaic.css；iframe 里补一份，才能跟文档站的亮 / 暗主题。
-             源文件自己引了也不冲突（同一份样式表，浏览器只取一次）。 */
           const theme = this.previewTheme();
           html = html.replace(/<html\b([^>]*)>/i, (match, attrs) => {
             const cleaned = attrs.replace(/\sdata-theme="[^"]*"/i, '');
@@ -456,7 +406,6 @@
           return html;
         },
 
-        /** 文档站当前主题（普通 iframe 预览跟它走） */
         previewTheme() {
           return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
         },
@@ -467,9 +416,7 @@
           try {
             const doc = frame.contentDocument;
             if (doc?.documentElement) doc.documentElement.dataset.theme = this.previewTheme();
-          } catch {
-            /* srcdoc 同源；拿不到时保持创建时的主题 */
-          }
+          } catch {}
         },
 
         onFrameLoad(frame) {
@@ -479,7 +426,6 @@
           try {
             const doc = frame.contentDocument;
             if (!doc?.body) return;
-            /* 用 iframe 自己的 ResizeObserver：父窗口的实例观察另一个文档的节点不会触发 */
             const FrameResizeObserver = doc.defaultView?.ResizeObserver;
             this._frameRo?.disconnect();
             if (FrameResizeObserver) {
@@ -487,9 +433,7 @@
               this._frameRo.observe(doc.body);
             }
             doc.fonts?.ready?.then(() => this.fitFrame());
-          } catch {
-            /* srcdoc 同源；真拿不到文档时保留默认高度 */
-          }
+          } catch {}
         },
 
         fitFrame() {
@@ -503,8 +447,6 @@
           }
           const body = doc?.body;
           if (!body) return;
-          /* 用 body 的内容高 + 上下 margin：documentElement.scrollHeight 至少是 iframe 当前视口高，
-             内容比默认 150px 矮时会量出一个偏大的值 */
           const style = doc.defaultView?.getComputedStyle(body);
           const margin =
             (parseFloat(style?.marginTop ?? '') || 0) +
@@ -531,7 +473,6 @@
           await this.renderLive();
         },
 
-        /** 输入事件里已经把 _drafts 更新了；这里只负责把值铺回组件（属性通道在组件升级前也安全） */
         setEditorValue(text) {
           this._editorEl?.setAttribute('value', text ?? '');
         },
@@ -546,14 +487,12 @@
           this._drafts[this.env] = event.data.value;
         },
 
-        /** 编辑器不吞 Ctrl/Cmd+Enter：这里接「运行」 */
         onEditorKeydown(event) {
           if (!(event.ctrlKey || event.metaKey) || event.key !== 'Enter') return;
           event.preventDefault();
           this.run();
         },
 
-        /** 重新运行 = 丢掉编辑、回到文件原文再跑一遍 */
         async rerun() {
           if (!this._sources.ofa) return;
           this._drafts = {
@@ -575,7 +514,6 @@
             area.value = text;
             area.style.position = 'fixed';
             area.style.opacity = '0';
-            /* 剪贴板失败时的全局降级：临时 textarea 挂 body，用完即删 */
             document.body.append(area);
             area.select();
             try {
@@ -609,13 +547,11 @@
           return 'copy';
         },
 
-        /** 代码图标：图标本身不切换，只开 / 合代码区（编辑器首次可见时才由它自己加载 CM） */
         toggleCode() {
           this.codeOpen = !this.codeOpen;
           if (this.codeOpen) this.setEditorValue(this._drafts[this.env]);
         },
 
-        /** 切代码视图：换编辑器文本，预览跟着用当前视图的草稿跑一遍（与「运行」同一入口） */
         setEnv(env) {
           if (env === this.env) return;
           this.env = env;
@@ -624,7 +560,6 @@
           if (this._sources.ofa) this.renderLive();
         },
 
-        /** mc-tabs 的值是运行时 property（不反射属性）：脚本把视图拨回去时，切换器跟着回位 */
         syncEnvTabs() {
           const tabs = this._envTabs;
           if (!tabs || !('value' in tabs)) return; // 还没升级：首屏默认就选 ofa，不会错

@@ -1,16 +1,6 @@
-/**
- * demo-runtime.mjs —— 组件文档页「可编辑示例」的运行时编译（站点内部工具，不随组件发布）。
- * 用 ofa 的公开 API `$.register` 注册临时组件：把 demo 原文拆成 temp + 配置、换 tag 注册，不需要服务器 / iframe。
- * 加载器平常替我们做的三件事自己做：① 去掉 `<template component>` 外壳；② script 的相对 import 改成绝对
- * （blob 没有目录）；③ 标记里的相对 href / src / url() 按 demo 文件地址重写。
- * ⚠️ demos/*.html 是唯一源，编辑器预览编译的是同一份文本。
- */
-
-/** 同一 URL 的源码只取一次（页面里可能既被示例加载、又被编辑器读） */
 const textByUrl = new Map();
 
 /**
- * 取 demo 文件原文（带缓存）。
  * @param {string} url 绝对地址
  * @returns {Promise<string>}
  */
@@ -28,7 +18,6 @@ export function loadDemoText(url) {
 }
 
 /**
- * 去公共缩进：和 mc-code 同一套口径（制表符按两个空格算）
  * @param {string} text
  * @returns {string}
  */
@@ -50,7 +39,6 @@ function dedent(text) {
 
 const OPEN_TAG = /<template\s+component[^>]*>/i;
 const CLOSE_TAG = '</template>';
-/** 收尾的 <script> 块：demo 约定「一个脚本、放在最后」（235 个 demo 全量核对过） */
 const TRAILING_SCRIPT = /\n[ \t]*<script>([\s\S]*?)<\/script>[ \t]*$/;
 
 /**
@@ -61,12 +49,6 @@ const TRAILING_SCRIPT = /\n[ \t]*<script>([\s\S]*?)<\/script>[ \t]*$/;
  */
 
 /**
- * 把 demo 源码拆成「编辑器文本」与「编译用标记 / 脚本」。
- *
- * 两种入参都要认：
- *   · demo 文件原文（带 `<template component>` 外壳）—— 打开抽屉时从文件读到的；
- *   · 外壳内部的源码（编辑器里的当前文本）—— 「运行」时拿到的，外壳已经去掉。
- * 不认第二种就会一运行就报「找不到 <template component> 外壳」。
  * @param {string} text
  * @returns {DemoSource}
  */
@@ -89,22 +71,12 @@ export function parseDemoSource(text) {
 }
 
 /**
- * 相对地址才算「要重写」；协议地址 / 协议相对地址 / 纯锚点原样保留
  * @param {string | null} value
  * @returns {boolean}
  */
 const isRelativeUrl = (value) =>
   typeof value === 'string' && value !== '' && !/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(value);
 
-/**
- * demo 源里可用的站内别名：`@doc/` → 站点根，`@pkg/` → packages/。
- *
- * ⚠️ 这是**编译器自己的展开**，不是 ofa 的 `$.config({ alias })`：demo 脚本被塞进 blob 再 `import()`，
- * 走浏览器原生解析，ofa 的别名拦截点不在那条链路上（docs/README §十）。所以两边各管各的，
- * 写法一致是刻意的，实现不能合并。
- *
- * 值按**站点根**（document.baseURI）解析，子路径部署（GitHub Pages 的 /mosaic/）自动带前缀。
- */
 const ALIASES = [
   ['@doc/', 'docs/'],
   ['@pkg/', 'packages/'],
@@ -132,7 +104,6 @@ const resolveAlias = (value) => {
  * @returns {string}
  */
 const toAbsolute = (value, baseUrl) => {
-  /* `@` 开头只可能是别名：没命中就大声失败，别让它落到「按 demo 目录拼」那条路变成静默 404 */
   if (typeof value === 'string' && value.startsWith('@')) {
     const aliased = resolveAlias(value);
     if (aliased) return aliased;
@@ -149,8 +120,6 @@ const toAbsolute = (value, baseUrl) => {
 };
 
 /**
- * script 里的相对 import 改成绝对地址（静态 import / export … from / 动态 import）。
- * 只认 import / export 语句里的 from 与裸 import —— 普通字符串不动。
  * @param {string} code
  * @param {string} baseUrl demo 文件的绝对地址
  * @returns {string}
@@ -168,8 +137,6 @@ export function rebaseImports(code, baseUrl) {
 }
 
 /**
- * 标记里的相对 href / src 与 <style> 里的 url() 按 demo 文件地址重写
- * （面包屑、下拉、mc-code 的 src 等 10 多个 demo 用到）。
  * @param {string} markup
  * @param {string} baseUrl
  * @returns {string}
@@ -202,14 +169,12 @@ export function rebaseMarkup(markup, baseUrl) {
 
 let tagSeq = 0;
 
-/** 每次运行都换一个新 tag：自定义元素不能重复注册，旧实例留在注册表里无妨 */
 export function nextDemoTag() {
   tagSeq += 1;
   return `demo-live-${tagSeq}`;
 }
 
 /**
- * 合法自定义元素名（小写、以字母开头、必须带连字符）
  * @param {unknown} value
  * @returns {boolean}
  */
@@ -217,14 +182,7 @@ const isCustomTag = (value) =>
   typeof value === 'string' && /^[a-z][a-z0-9]*-[a-z0-9-]+$/.test(value);
 
 /**
- * 把 demo 源码编译成组件并注册，返回可直接 createElement 的 tag。
- *
- * `reuseTag = true`（初始预览用）保留 demo 文件自己声明的标签（如 `demo-alert-colors`）：
- * 测试按这个标签查页面里的演示，SPA 间来回换页时标签已经注册过、直接复用定义即可。
- * 编辑后的预览一律换新标签（自定义元素不能重复注册）。
- *
  * @param {{ text: string, url: string, reuseTag?: boolean }} options
- *   text = 编辑器里的源码 / 文件内部源码，url = demo 文件地址
  * @returns {Promise<string>}
  */
 export async function compileDemo({ text, url, reuseTag = false }) {
@@ -250,7 +208,6 @@ export async function compileDemo({ text, url, reuseTag = false }) {
   }
 
   const tag = reuseTag && isCustomTag(config.tag) ? config.tag : nextDemoTag();
-  /* 换页回来时同一个 demo 标签已经注册过（自定义元素不能重复注册）：直接复用那个定义 */
   if (customElements.get(tag)) return tag;
 
   const ofa = /** @type {any} */ (globalThis).$;

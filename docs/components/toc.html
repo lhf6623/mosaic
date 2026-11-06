@@ -1,30 +1,18 @@
-<!--
-  <doc-toc> —— 组件文档页右栏的「本页目录」：扫当前子页面 shadow root 里的 h2 / h3（h2 = 节，h3 = 缩进一档）。
-  ⚠️ 目录项不用 `#id` 锚点（hash 归 ofa 路由器），点击一律 preventDefault + 程序化滚动；scroll-spy 盯外壳的 `.doc-main`，滚到底单独收尾到最后一项。
-  ⚠️ 这一栏自己滚（mc-scroll-bar）；scroller() 从父元素往上找正文带，栏内滚动不会被误认成「正文的滚动容器」。
--->
 <template component>
   <style>
-    /* 两级大纲：h2 = 节（正常前景色），h3 = 子项（缩进一档 + 弱一档颜色）。
-       ⚠️ 条目单行 + overflow: hidden，缩进实打实吃掉可点宽度 —— 改栏宽 / 缩进量 / 演示名要一起量。 */
     mc-menu {
-      /* 走 mc-menu 的色槽通道；:host 默认值优先级低于外部声明，所以这里写得进 */
       --mc-menu-item-color: var(--mc-color-fg);
     }
 
-    /* 滚动归 mc-scroll-bar（同 nav）：宿主 fixed + height:100%，右栏比一屏长时在这一层滚 */
     mc-scroll-bar {
       height: 100%;
     }
 
-    /* gutter 挂 viewport 不挂宿主：宿主 padding 会把条子一起推离栏边；本栏按最长标题反算，用 space-4 */
     mc-scroll-bar::part(viewport) {
       padding-inline: var(--doc-scroll-pad-x, var(--mc-space-4));
     }
   </style>
 
-  <!-- 目录就是一份 options：key = 标题 id、current 也用它；业务数据（heading）放 meta，
-       行在 mc-menu 的 shadow 里，层级外观只能走 attrs.style，点击统一收 navigate 事件 -->
   <mc-scroll-bar label="本页目录">
     <mc-menu
       size="sm"
@@ -34,16 +22,13 @@
   </mc-scroll-bar>
 
   <script>
-    /** 收进目录的层级：h1 是页名；列全、不按标题名过滤（滤掉「例子」会把演示顶成小节） */
     const HEADINGS = 'h2, h3';
 
-    /** 当前项判定带：顶部往下这么高，最后一个过线标题算当前（点目录后标题落在 scroll-margin-top ≈72px，判定线不能太靠上） */
     const ACTIVE_BAND_RATIO = 0.3;
     const ACTIVE_BAND_MAX = 240;
 
     const REBUILD_DEBOUNCE = 150;
 
-    /** 标题文案 → id（CJK 原样保留；去空白与标点，重复的加序号） */
     function slugify(text, taken) {
       const base =
         text
@@ -69,8 +54,6 @@
         this._onScroll = () => this.syncActive();
         this._onResize = () => this.syncActive();
 
-        /* 点目录后先锁定当前项、暂不交还 scroll-spy（判定带 240px，点短节时下一节会抢）；用户一滚就交还。
-           滚动发生在外壳的 .doc-main 上，事件到不了本组件的 shadow，只能挂 window（全局监听保留原生） */
         this._onUserScroll = () => {
           if (!this._pinned) return;
           this._pinned = null;
@@ -84,7 +67,6 @@
       attached() {
         window.addEventListener('resize', this._onResize);
 
-        /* 内容（子页面、异步示例）会晚到：先补几拍，之后交给 slotchange + observer */
         let tries = 0;
         const settle = () => {
           if (this.rebuild() || ++tries >= 10) return;
@@ -106,7 +88,6 @@
       },
 
       proto: {
-        /** 自己重建目录造成的变动不算「页面内容变了」，否则自激 */
         onMutate(records) {
           if (records.every((r) => r.target === this.ele || this.ele.contains(r.target))) return;
           this.scheduleRebuild();
@@ -117,16 +98,11 @@
           this._rebuildTimer = setTimeout(() => this.rebuild(), REBUILD_DEBOUNCE);
         },
 
-        /** 当前展示中的子页面（被 <slot> 投影进来的 o-page） */
         contentRoot() {
-          /* slot 在**布局页的 shadow** 里（本组件就住在那层 shadow）：this.root 是宿主根节点的 ofa 包装，
-             取引用走它的 $()；slot 本身仍要原生对象（assignedElements 是原生接口）。 */
           const slot = this.root?.$('slot')?.ele;
-          /* 跨组件 shadow，只能原生：被投影 o-page 的 shadowRoot 是别的组件的根 */
           return slot?.assignedElements().find((el) => el.tagName === 'O-PAGE')?.shadowRoot ?? null;
         },
 
-        /** 盯住当前页：换页靠 slotchange，页内渲染靠 observer（slot 在布局页的 shadow 里，用 ofa 包装的 on / off 订阅） */
         bindContent(root) {
           const slot = this.root?.$('slot');
           if (slot && slot !== this._slot) {
@@ -141,7 +117,6 @@
           }
         },
 
-        /** 扫标题 → 更新数据（模板负责渲染）；返回是否建成（没标题时由 settle 再试） */
         rebuild() {
           const root = this.contentRoot();
           if (!root) return false;
@@ -149,7 +124,6 @@
           const headings = [...root.querySelectorAll(HEADINGS)].filter((h) => h.textContent.trim());
           if (!headings.length) return false;
 
-          // 标题没变就别碰 DOM：重建会换掉正在点击 / 正在滚动的节点
           const signature = headings.map((h) => h.textContent.trim()).join('|');
           if (this._signature === signature) return true;
           this._signature = signature;
@@ -163,8 +137,6 @@
             return { heading, id: heading.id, deep: Number(heading.tagName.slice(1)) > 2 };
           });
 
-          /* 外观（缩进 / 弱色 / 换节留白）写进行上的 attrs.style：行在 mc-menu 的 shadow 里，
-             本组件的 CSS 够不到它；heading 引用与 id 放 meta，navigate 事件原样带回来 */
           this.rows = this._entries.map((entry, index) => {
             const prev = this._entries[index - 1];
             const style = [];
@@ -182,18 +154,14 @@
             };
           });
 
-          // 一次性动作：盯住当前页、找到滚动容器并挂上 scroll-spy（容器是外壳的 .doc-main，宿主层保留原生监听）
           this.bindContent(root);
           this._scroller ??= this.scroller();
           this._scroller?.addEventListener('scroll', this._onScroll, { passive: true });
 
-          /* 条目异步渲染：先同步切一次高亮，剩下的交给 ready() 里盯子页面 shadow root 的观察者 */
           this.syncActive();
           return true;
         },
 
-        /* 滚动容器：外壳的 .doc-main（页面上唯一的滚动容器）。⚠️ 必须走扁平树（先看 assignedSlot）：
-           子页面是外壳 <slot> 投影进来的，只看 parentElement / host 会绕过去；找不到元素级滚动祖先时退回 window。 */
         scroller() {
           let node =
             this.ele.assignedSlot ?? this.ele.parentElement ?? this.ele.getRootNode()?.host ?? null;
@@ -207,7 +175,6 @@
           return window;
         },
 
-        /** 目录项没有 href：navigate 只当「行被点」用，key 就是标题 id，meta 里带着 heading */
         onNavigate(event) {
           const entry = this._entries?.find((e) => e.id === event.detail?.key);
           if (!entry) return;
@@ -220,25 +187,20 @@
           entry.heading.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
         },
 
-        /** 当前项 = 容器上的一个属性（key），不再往数据里塞状态 */
         applyActive(id) {
           if (this.activeId !== id) this.activeId = id;
         },
 
-        /** 滚动位置 → 当前项；位置每次现量，演示区抽屉开合不用额外通知 */
         syncActive() {
           if (this._pinned) return; // 刚点过目录项：等用户自己滚了再交还
           if (!this._entries || !this._scroller) return;
 
           const scroller = this._scroller;
-          // 窗口滚动时视口就是滚动区（window 没有 getBoundingClientRect）
           const viewport = scroller === window;
           const box = viewport
             ? { top: 0, height: window.innerHeight }
             : scroller.getBoundingClientRect();
 
-          /* 滚到底认最后一项收尾（判定带只有顶部 30%，页尾那几节够不着）。
-             ⚠️ 「滚不动的一屏」（内容比视口还矮）不算到底：那时整页都在眼前，该亮第一项。 */
           const overflow = viewport
             ? document.documentElement.scrollHeight - window.innerHeight
             : scroller.scrollHeight - scroller.clientHeight;
@@ -259,7 +221,6 @@
             if (entry.heading.getBoundingClientRect().top <= line) active = entry;
           }
 
-          /* 高亮 = 改数据（渲染交给模板）：只写真正变了的行，也顺带解决首次 rebuild 时条目还没渲染的时序 */
           this.applyActive(active?.id);
         },
       },

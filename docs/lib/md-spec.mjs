@@ -1,13 +1,5 @@
-/**
- * docs/lib/md-spec.mjs —— 组件 API 规范 md 的受限子集解析器：只认 h2/h3、管道表、列表、段落、围栏代码。
- * 两条边界：第一个独占一行的 `---` 之上不渲染；只渲染白名单四节（属性 / 事件 / 插槽 / part），其余丢弃。
- * 跑单测：`node tests/lib/md-spec.test.mjs`
- */
-
-/** 渲染进页面的节名（顺序即页面参考区顺序，与 packages/page-spec.md §一 一致） */
 export const SECTIONS = ['属性', '事件', '插槽', 'part'];
 
-/** 仓库在 GitHub 上的浏览前缀（md 里的相对链接按 md 自身 URL 解析后指到这里） */
 export const GITHUB_BLOB = 'https://github.com/lhf6623/mosaic/blob/main';
 
 const RE_H2 = /^##\s+(.+?)\s*$/;
@@ -22,23 +14,17 @@ const escapeHtml = (text) =>
   String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /**
- * md 里的相对链接 → 站点上点得开的链接。
- * md 住在组件单元里（`packages/<slug>/api.md`），它指向仓库内其它文件的相对链接在站点上是
- * 404 —— 仓库外的读者该去 GitHub 看那份源文件（与 docs/pages/specs.html 同一口径）。
  * @param {unknown} href
  * @param {string} [baseUrl] md 自身的 URL（解析相对链接要用）
  * @returns {string}
  */
 export function resolveLink(href, baseUrl) {
   const raw = String(href ?? '').trim();
-  // 绝对链接 / 锚点 / 站内的根相对路径：原样
   if (!raw || /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('#') || raw.startsWith('/')) {
     return raw;
   }
   if (!/\.md([#?].*)?$/i.test(raw) || !baseUrl) return raw;
   try {
-    // Pages 部署在 /mosaic 子路径下（node tools/serve.mjs --prefix /mosaic），
-    // 仓库里的相对路径不带这层前缀
     const path = new URL(raw, baseUrl).pathname.replace(/^\/mosaic\//, '/');
     return GITHUB_BLOB + path;
   } catch {
@@ -47,14 +33,12 @@ export function resolveLink(href, baseUrl) {
 }
 
 /**
- * 行内：先整体转义，再认 `code` / 链接 / 粗体 —— 顺序反了会让 `<mc-button>` 变成真标签
  * @param {unknown} text
  * @param {string} [baseUrl]
  * @returns {string}
  */
 export function inline(text, baseUrl = '') {
   let out = escapeHtml(text);
-  // 行内 code 最先认：里面的 * 不该被当强调
   out = out.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
   out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) => {
     const url = resolveLink(href, baseUrl);
@@ -65,8 +49,6 @@ export function inline(text, baseUrl = '') {
 }
 
 /**
- * `| a | b |` → ['a', 'b']（首尾的竖线不算单元格）。
- * 支持 GFM 的转义竖线 `\|`：单元格里的 TS 联合类型（`'sm' \| 'md'`）不会被拆成两格。
  * @param {string} line
  * @returns {string[]}
  */
@@ -118,18 +100,15 @@ function renderTable(rows, baseUrl) {
 }
 
 /**
- * md 全文 → 参考区 HTML。
  * @param {unknown} text
  * @param {{ baseUrl?: string }} [options]
  * @returns {{ html: string, sections: string[], skipped: string[] }}
- *   `sections` = 渲染出来的节名（按出现顺序）；`skipped` = 被白名单挡下的节名（调试用）。
  */
 export function parseSpecMd(text, { baseUrl = '' } = {}) {
   const lines = String(text ?? '')
     .replace(/\r\n?/g, '\n')
     .split('\n');
 
-  // ① 第一个 --- 之上：开场白（用法片段，不渲染）
   let start = lines.findIndex((line) => RE_HR.test(line));
   start = start < 0 ? 0 : start + 1;
 
@@ -137,7 +116,6 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
   const sections = [];
   const skipped = [];
   /**
-   * 当前节名；null = 不在白名单节里（内容丢弃）
    * @type {string | null}
    */
   let current = null;
@@ -174,7 +152,6 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
   for (let k = start; k < lines.length; k++) {
     const line = lines[k];
 
-    // 围栏代码块：整块原样收（公开区不该有，但收着比吞掉强）
     if (RE_FENCE.test(line)) {
       if (fence === null) {
         flush();
@@ -236,7 +213,6 @@ export function parseSpecMd(text, { baseUrl = '' } = {}) {
     }
     if (list.length) flush();
 
-    // 引用块 / 普通行一律当段落（md 的 `>` 前缀去掉）
     para.push(line.replace(/^\s*>\s?/, ''));
   }
 

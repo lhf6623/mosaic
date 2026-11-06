@@ -1,8 +1,3 @@
-/* ============================================================================
- * 文档站 —— 文档级样式：视口契约 + 页面高度链（外壳在 layout.html 的 shadow root 里）。刻意不分层。
- * 滚动模型：只有外壳的正文带 `.doc-main` 在滚（`body{height:100%;overflow:hidden}`）；左右两栏 fixed，不占文档流。
- * ========================================================================== */
-
 *,
 ::before,
 ::after {
@@ -15,21 +10,17 @@ body {
   padding: 0;
 }
 
-/* 站点字体是文档站资产，不随组件发布；拉丁走 Archivo，中文走系统栈（CJK webfont 太大，与免安装调性冲突） */
 :root {
   --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* 框架底色（顶栏 + 两栏共用）：亮色纯白，层次靠边框；暗色在下面沉到纯黑 */
   --doc-frame-bg: #fff;
 }
 
-/* 暗色反过来：框架沉到纯黑，正文是 surface（neutral-900），层次来自明度差而不是描边 */
 :root[data-theme='dark'] {
   --doc-frame-bg: #000;
 }
 
-/* 一屏钉死：顶栏一行 + 正文带一行（正文带的滚动条因此从顶栏下面开始，不会伸进头部） */
 html {
   height: 100%;
 }
@@ -47,7 +38,6 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* ⚠️ o-router 自带 :host{overflow:hidden}，长页面会被它静默截断（滚动不再上传）；o-app / o-page 同理，一律不当滚动容器。 */
 o-router,
 o-app,
 o-page {

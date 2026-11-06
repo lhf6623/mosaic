@@ -1,21 +1,15 @@
-<!-- <doc-spec> —— 组件文档页的参考区：把组件单元自己的 api.md 渲染进页面，用法 `<doc-spec src="./api.md">`（src 按页面文件解析，ofa 编译时已改写成绝对 URL）。
-     ⚠️ 渲染进 light DOM 而非自己的 shadow root：<doc-toc> 收标题不下钻嵌套组件的 shadow root，进 shadow 会让参考区那几节从目录里静默消失。
-     ⚠️ 渲染范围由 docs/lib/md-spec.mjs 的白名单决定（属性 / 事件 / 插槽 / part），这里不做二次过滤；失败只降级、不抛。 -->
 <template component>
   <style>
-    /* 自定义元素默认 inline，不写会塌 */
     :host {
       display: block;
     }
   </style>
 
-  <!-- light DOM 的渲染结果投影在这里显示（不塞 shadow root，理由见文件头） -->
   <slot></slot>
 
   <script>
     import { parseSpecMd } from '../lib/md-spec.mjs';
 
-    /** 按 URL 缓存：同一份 md 在页面上被引用多次只取一次 */
     const textByUrl = new Map();
     let warned = false;
 
@@ -36,11 +30,9 @@
       tag: 'doc-spec',
 
       attrs: {
-        // 规范 md 的地址，按写它的那个页面文件解析
         src: '',
       },
 
-      // ofa 初始化会把 watch 都用默认值触发一遍（P5），统一走 `_mounted` 守卫
       watch: {
         src() {
           this.onAttrChange();
@@ -53,7 +45,6 @@
           this.load();
         },
 
-        /** 取 md → 解析 → 写进 light DOM。src 变了或组件已卸载就丢弃过期结果 */
         async load() {
           const src = String(this.src ?? '').trim();
           if (!src) return;

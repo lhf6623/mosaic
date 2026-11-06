@@ -1,13 +1,4 @@
-/* 站点唯一数据源：**就是 mc-menu 的 options 树**，不再有「导航节点 → options」的中间翻译。
- * key = `docs:*` 的层级英文标识（逐级用 : 拼，整棵树唯一；容器 current 就写它）；label = 显示名；
- * href = 普通站内路径（路由定位、搜索跳转、工具索引都读它）；
- * meta = 站点自己的业务数据（path / type / zh），组件不解释；**数组顺序就是显示顺序**。
- * 顶层分区没有 type → menu 当可开合的 parent（窄屏「全部菜单」用）；二级分组写 type: 'group' → 左栏常显。
- * ⚠️ 页内目录（h2/h3）不在这里：由 <doc-toc> 扫标题生成。
- */
-
 /**
- * 树上的一个节点 = 一条 menu option
  * @typedef {object} MenuOption
  * @property {string} key 整棵树唯一的 `docs:*` 层级英文标识
  * @property {string} label 显示名
@@ -16,7 +7,6 @@
  * @property {MenuOption[]} [children] 子菜单
  * @property {object} [attrs] 行上的 HTML 属性
  * @property {{ type?: 'component' | 'page', zh?: string }} [meta]
- *            站点业务数据，组件不解释；没有业务数据的分组 / 分区不写这个字段
  */
 
 /** @type {MenuOption[]} */
@@ -412,8 +402,6 @@ export const SITE = [
   },
 ];
 
-/* ------------------------------------------------------------------ 结构与查询 */
-
 /**
  * @param {MenuOption} node
  * @returns {node is MenuOption & { children: MenuOption[] }}
@@ -421,25 +409,19 @@ export const SITE = [
 const hasChildren = (node) => Array.isArray(node.children);
 
 /**
- * 有没有自己的文档页。**唯一**的实现状态判断：菜单 / 卡片 / 面包屑 / 翻页都用它
  * @param {MenuOption} node
  * @returns {node is MenuOption & { href: string }}
  */
 export const hasPage = (node) => typeof node.href === 'string';
 
 /**
- * 组件目录名（`packages/<目录>/page.html` 的第二段）。测试拼套件 / 演示路径要用
  * @param {MenuOption} node 必须是叶子（有页面），分组没有目录名
  * @returns {string}
  */
 export const slugOf = (node) => node.href?.split('/')[1] ?? '';
 
-/** 顶栏一级入口 = SITE 的顶层节点（就是数组里的那几条） */
 export const TOPBAR = SITE;
 
-/* 子树里第一个有页面的条目（按数组顺序）—— 分区自己没落地页时，顶栏入口落到这里。
- * ⚠️ **不能**把子节点的落地页地址直接抄到分区上：那会造出重复路由，而且顶栏高亮靠 locate() 认「命中了哪一支」，抄了就分不清是分区还是那一页。
- */
 /**
  * @param {MenuOption} node
  * @returns {MenuOption | null}
@@ -454,14 +436,12 @@ export function firstPageOf(node) {
 }
 
 /**
- * 左栏要渲染的子节点：就是该分区的 children
  * @param {MenuOption} [entry]
  * @returns {MenuOption[]}
  */
 export const menuOf = (entry) => entry?.children ?? [];
 
 /**
- * 按树序走一遍
  * @param {MenuOption[]} nodes
  * @param {(node: MenuOption) => void} visit
  */
@@ -472,7 +452,6 @@ function walk(nodes, visit) {
   }
 }
 
-/** **工具面**：所有已实现的组件 —— 冒烟套件入口、文档页检查都用它 */
 export const READY = (() => {
   /** @type {object[]} */
   const out = [];
@@ -483,9 +462,6 @@ export const READY = (() => {
   return out;
 })();
 
-/** **工具面**：搜索索引 —— 全部可导航的页面（站点页 + 组件），按菜单顺序，带分区标签链。
- *  「整个菜单都搜得到」由它保证：与 SITE 同一棵树，所以搜到的集合 = 菜单里点得到的集合。
- *  分区链（如「组件 · 表单」）在结果行里当副标题，用来分清同名 / 同类的落点。 */
 export const PAGES = (() => {
   /** @type {object[]} */
   const out = [];
@@ -501,7 +477,6 @@ export const PAGES = (() => {
   return out;
 })();
 
-/** 当前路由落在哪一支：`{ entry, node }` —— 顶栏靠它认「命中了哪一支」 */
 /**
  * @param {string} route 仓库根相对路径
  * @returns {{ entry: MenuOption, node: MenuOption } | null}
