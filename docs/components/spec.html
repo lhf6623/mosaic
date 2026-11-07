@@ -8,7 +8,7 @@
   <slot></slot>
 
   <script>
-    import { parseSpecMd } from '../lib/md-spec.mjs';
+    import { parseSpecMd, SECTIONS } from '../lib/md-spec.mjs';
 
     const textByUrl = new Map();
     let warned = false;
@@ -39,6 +39,17 @@
         },
       },
 
+      ready() {
+        this._sections = [];
+        this.ele.setAttribute('data-state', 'loading');
+        this._mounted = true;
+        this.load();
+      },
+
+      detached() {
+        this._mounted = false;
+      },
+
       proto: {
         onAttrChange() {
           if (!this._mounted) return;
@@ -64,7 +75,7 @@
             const { html, sections } = parseSpecMd(text, { baseUrl: url });
             if (!sections.length) {
               console.warn(
-                `[mosaic] doc-spec: ${url} 里没有可渲染的节（属性 / 方法 / 事件 / 配置 / 插槽 / part），参考区为空`,
+                `[mosaic] doc-spec: ${url} 里没有可渲染的节（${SECTIONS.join(' / ')}），参考区为空`,
               );
             }
             this._sections = sections;
@@ -82,17 +93,6 @@
             }
           }
         },
-      },
-
-      ready() {
-        this._sections = [];
-        this.ele.setAttribute('data-state', 'loading');
-        this._mounted = true;
-        this.load();
-      },
-
-      detached() {
-        this._mounted = false;
       },
     });
   </script>

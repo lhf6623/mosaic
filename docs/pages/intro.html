@@ -44,16 +44,7 @@
     </p>
   </div>
   <script>
-    import { SITE } from '../site-map.js';
-
-    const components = [];
-    const collect = (nodes) => {
-      for (const node of nodes) {
-        if (node.meta?.type === 'component' && node.href) components.push(node);
-        if (node.children) collect(node.children);
-      }
-    };
-    collect(SITE);
+    import { READY, SITE } from '../site-map.js';
 
     const categories = SITE.find((node) => node.label === '组件')?.children ?? [];
 
@@ -64,7 +55,7 @@
 
     export default () => ({
       data: {
-        componentCount: components.length,
+        componentCount: READY.length,
         categoryCount,
         categoryLabels: categories.map((node) => node.label).join('、'),
       },

@@ -108,7 +108,7 @@
             class="row"
             type="button"
             attr:data-active="$data.active"
-            attr:data-path="$data.path">
+            on:click="$host.pick($data.path)">
             <span class="row-label">{{$data.label}}</span>
             <span class="row-section">{{$data.section}}</span>
           </button>
@@ -147,16 +147,11 @@
         this._panel = this.shadow.$('#panel');
         this._list = this.shadow.$('#list');
 
-        this._onListClick = (event) => {
-          const path = event.target?.closest?.('[data-path]')?.dataset?.path;
-          if (path) this.pick(path);
-        };
-        this._list.on('click', this._onListClick);
-
         this._popoverOk = typeof this._panel?.ele?.showPopover === 'function';
         if (this._popoverOk)
           this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panel.ele);
 
+        /* 点外部关闭：面板在 top layer 里，捕获阶段才收得到落在任何组件 shadow 里的 pointerdown */
         this._onDocPointerDown = (event) => {
           if (!this.isOpen()) return;
           const path = event.composedPath();
@@ -178,7 +173,6 @@
         document.removeEventListener('pointerdown', this._onDocPointerDown, true);
         document.removeEventListener('keydown', this._onDocKeydown);
         this._scrollGuard?.dispose();
-        this._list?.off('click', this._onListClick);
       },
 
       proto: {

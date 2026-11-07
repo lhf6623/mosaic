@@ -48,6 +48,7 @@
       margin-top: var(--mc-space-4);
     }
 
+    /* .frame 由 lib/plain-preview.mjs 建出来的 iframe 挂上；这里只管它长什么样 */
     .frame {
       display: block;
       width: 100%;
@@ -178,42 +179,10 @@
 
   <script>
     import { compileDemo, loadDemoText } from '../lib/demo-runtime.mjs';
+    import { createPlainPreview } from '../lib/plain-preview.mjs';
+    import { onThemeChange } from '../lib/theme.mjs';
 
     const COPY_FEEDBACK_MS = 3000;
-
-    const CDN_RE =
-      /https:\/\/(?:cdn|fastly|gcore|testingcf)\.jsdelivr\.net\/gh\/lhf6623\/mosaic@[^/]+\//g;
-
-    const themeTargets = new Set();
-    let themeObserver;
-    let themeMq;
-
-    const syncAllTheme = () => {
-      for (const target of themeTargets) target.syncFrameTheme();
-    };
-
-    const watchTheme = (target) => {
-      themeTargets.add(target);
-      if (!themeObserver) {
-        themeObserver = new MutationObserver(syncAllTheme);
-        themeObserver.observe(document.documentElement, {
-          attributes: true,
-          attributeFilter: ['data-theme', 'class', 'style'],
-        });
-        themeMq = window.matchMedia?.('(prefers-color-scheme: dark)');
-        themeMq?.addEventListener?.('change', syncAllTheme);
-      }
-      target.syncFrameTheme();
-    };
-
-    const unwatchTheme = (target) => {
-      themeTargets.delete(target);
-      if (themeTargets.size) return;
-      themeObserver?.disconnect();
-      themeObserver = undefined;
-      themeMq?.removeEventListener?.('change', syncAllTheme);
-      themeMq = undefined;
-    };
 
     export default () => ({
       tag: 'doc-example',
@@ -252,10 +221,9 @@
         this._runSeq = 0;
         this._loadToken = 0;
         this._firstCompile = true;
-        this._frame = undefined;
-        this._frameRo = undefined;
+        this._preview = createPlainPreview(this._live.ele);
+        this._untheme = onThemeChange(() => this._preview.syncTheme());
 
-        watchTheme(this);
         this._mounted = true;
         if (String(this.src ?? '').trim()) this.loadSources();
       },
@@ -263,8 +231,8 @@
       detached() {
         this._mounted = false;
         clearTimeout(this._copyTimer);
-        unwatchTheme(this);
-        this.teardownFrame();
+        this._untheme?.();
+        this._preview?.dispose();
         this._editorEl = null;
       },
 
@@ -358,7 +326,7 @@
           }
           if (seq !== this._runSeq || !this._mounted) return;
           this._firstCompile = false;
-          this.teardownFrame();
+          this._preview.dispose();
           this._live.ele.replaceChildren(document.createElement(tag));
           this.previewError = '';
           this.hideError();
@@ -366,101 +334,9 @@
 
         renderPlain(text) {
           this._runSeq += 1;
-          this.teardownFrame();
-          this._live.ele.replaceChildren();
-
-          const frame = document.createElement('iframe');
-          frame.className = 'frame';
-          frame.title = '普通 HTML 示例预览';
-          frame.setAttribute('part', 'preview');
-          frame.srcdoc = this.previewHtml(text);
-          this._frame = frame;
-          this._live.ele.append(frame);
-          this.shadow.$('.frame').one('load', () => this.onFrameLoad(frame));
-          this._frameTimers = [100, 400, 1200].map((ms) =>
-            setTimeout(() => {
-              if (this._frame === frame) this.fitFrame();
-            }, ms),
-          );
+          this._preview.render(text);
           this.previewError = '';
           this.hideError();
-        },
-
-        previewHtml(text) {
-          const siteRoot = new URL('.', document.baseURI).href;
-          let html = String(text ?? '').replace(CDN_RE, siteRoot);
-          if (!/<html\b/i.test(html)) return html;
-
-          const theme = this.previewTheme();
-          html = html.replace(/<html\b([^>]*)>/i, (match, attrs) => {
-            const cleaned = attrs.replace(/\sdata-theme="[^"]*"/i, '');
-            return '<html' + cleaned + ' data-theme="' + theme + '">';
-          });
-          const bridge =
-            '<link rel="stylesheet" href="' +
-            siteRoot +
-            'packages/boot/mosaic.css" />\n' +
-            '    <style>html { background: rgb(var(--mc-color-surface)); }</style>';
-          if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, bridge + '\n  </head>');
-          else html = bridge + html;
-          return html;
-        },
-
-        previewTheme() {
-          return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
-        },
-
-        syncFrameTheme() {
-          const frame = this._frame;
-          if (!frame) return;
-          try {
-            const doc = frame.contentDocument;
-            if (doc?.documentElement) doc.documentElement.dataset.theme = this.previewTheme();
-          } catch {}
-        },
-
-        onFrameLoad(frame) {
-          if (frame !== this._frame) return;
-          this.syncFrameTheme();
-          this.fitFrame();
-          try {
-            const doc = frame.contentDocument;
-            if (!doc?.body) return;
-            const FrameResizeObserver = doc.defaultView?.ResizeObserver;
-            this._frameRo?.disconnect();
-            if (FrameResizeObserver) {
-              this._frameRo = new FrameResizeObserver(() => this.fitFrame());
-              this._frameRo.observe(doc.body);
-            }
-            doc.fonts?.ready?.then(() => this.fitFrame());
-          } catch {}
-        },
-
-        fitFrame() {
-          const frame = this._frame;
-          if (!frame) return;
-          let doc;
-          try {
-            doc = frame.contentDocument;
-          } catch {
-            return;
-          }
-          const body = doc?.body;
-          if (!body) return;
-          const style = doc.defaultView?.getComputedStyle(body);
-          const margin =
-            (parseFloat(style?.marginTop ?? '') || 0) +
-            (parseFloat(style?.marginBottom ?? '') || 0);
-          const height = Math.ceil(body.scrollHeight + margin);
-          if (height > 0) frame.style.height = height + 'px';
-        },
-
-        teardownFrame() {
-          this._frameRo?.disconnect();
-          this._frameRo = undefined;
-          for (const timer of this._frameTimers ?? []) clearTimeout(timer);
-          this._frameTimers = undefined;
-          this._frame = undefined;
         },
 
         showPreviewError(error) {

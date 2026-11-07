@@ -1,3 +1,12 @@
+/* 文档站自带的字体：@font-face 与「接进框架字体令牌」都收在这一份里。
+   只覆盖站点自己的 --mc-font-*；框架默认（token-defaults.css）仍是 system-ui ——
+   使用者的页面引组件不该因为文档站的字库多出一次网络请求。 */
+
+:root {
+  --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 @font-face {
   font-family: 'Archivo';
   font-style: normal;

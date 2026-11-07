@@ -65,18 +65,18 @@
       outline-offset: 1px;
     }
 
-    :host([data-nav-hidden]) doc-nav {
+    .doc-split[data-nav-hidden] doc-nav {
       transform: translateX(-100%);
     }
 
-    :host([data-nav-hidden]) .doc-nav-handle {
+    .doc-split[data-nav-hidden] .doc-nav-handle {
       left: 0;
       transform: none;
       border-left: 0;
       border-radius: 0 var(--mc-radius-md) var(--mc-radius-md) 0;
     }
 
-    :host([data-nav-hidden]) .doc-split > .doc-content {
+    .doc-split[data-nav-hidden] > .doc-content {
       padding-left: 0;
     }
 
@@ -116,8 +116,8 @@
       }
     }
   </style>
-  <div class="doc-split">
-    <doc-nav></doc-nav>
+  <div class="doc-split" attr:data-nav-hidden="navHidden">
+    <doc-nav attr:inert="navHidden"></doc-nav>
 
     <div class="doc-content">
       <slot></slot>
@@ -125,45 +125,32 @@
 
     <doc-toc></doc-toc>
 
-    <button type="button" class="doc-nav-handle" title="隐藏左侧菜单">
-      <mc-icon name="chevron-left"></mc-icon>
+    <button
+      type="button"
+      class="doc-nav-handle"
+      attr:title="navHidden ? '显示左侧菜单' : '隐藏左侧菜单'"
+      on:click="toggleNav()">
+      <mc-icon attr:name="navHidden ? 'chevron-right' : 'chevron-left'"></mc-icon>
     </button>
   </div>
 
   <script>
     export const parent = './layout.html';
 
+    /* 收起状态只在内存：模块级 → 换页后保持，刷新复位（不写 localStorage） */
     let navHidden = false;
 
     export default () => ({
-      data: {},
+      data: { navHidden: false },
 
       ready() {
-        this._nav = this.shadow.$('doc-nav')?.ele ?? null;
-        this._handle$ = this.shadow.$('.doc-nav-handle');
-        this._handle = this._handle$?.ele ?? null;
-        this._icon = this.shadow.$('mc-icon')?.ele ?? null;
-        this._onToggle = () => this.toggleNav();
-        this._handle$?.on('click', this._onToggle);
-        this.applyNavState();
-      },
-
-      detached() {
-        this._handle$?.off('click', this._onToggle);
+        this.navHidden = navHidden; // 模块级那份是真相，data 只是模板的镜像
       },
 
       proto: {
         toggleNav() {
           navHidden = !navHidden;
-          this.applyNavState();
-        },
-
-        applyNavState() {
-          this.ele.toggleAttribute('data-nav-hidden', navHidden);
-          this._nav?.toggleAttribute('inert', navHidden);
-          if (!this._handle) return;
-          this._handle.title = navHidden ? '显示左侧菜单' : '隐藏左侧菜单';
-          this._icon?.setAttribute('name', navHidden ? 'chevron-right' : 'chevron-left');
+          this.navHidden = navHidden;
         },
       },
     });

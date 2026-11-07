@@ -1,46 +1,24 @@
 <template page>
   <script>
+    import { applyTheme, storedTheme, THEME_LABELS } from './lib/theme.mjs';
+    import { forwardWheel } from './lib/scroll.mjs';
     import { goto, route } from './routes.js';
     import { TOPBAR, firstPageOf } from './site-map.js';
     import { onRouteChange, routeState } from './state/route.js';
 
-    const THEME_KEY = 'mosaic-doc-theme';
-    const THEMES = ['auto', 'light', 'dark'];
-
     const SITE_TITLE = document.title;
 
     const COMPONENT_SECTION = '组件';
-
-    const storedTheme = () => {
-      try {
-        const v = localStorage.getItem(THEME_KEY);
-        if (THEMES.includes(v)) return v;
-      } catch {}
-      return 'auto';
-    };
-
-    const THEME_LABELS = { auto: '自动', light: '亮色', dark: '暗色' };
 
     const initialTheme = () => {
       const theme = storedTheme();
       return { theme, themeLabel: THEME_LABELS[theme] };
     };
 
-    const WHEEL_LINE = 16;
-
-    function wheelPixels(event) {
-      if (event.deltaMode === 1) return event.deltaY * WHEEL_LINE;
-      if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
-      return event.deltaY;
-    }
-
     export default () => ({
       data: {
         ...initialTheme(),
-        menuOpen: false,
-        narrowMenuOpen: false,
         narrow: false,
-        showMenu: false,
         links: [],
       },
 
@@ -53,28 +31,14 @@
         this.narrow = this._mq.matches;
         this._onMQ = (event) => {
           this.narrow = event.matches;
-          this.syncShowMenu();
         };
         this._mq.addEventListener('change', this._onMQ);
 
-        this._sysMQ = window.matchMedia('(prefers-color-scheme: dark)');
-        this._onSysMQ = () => {
-          if (this.theme === 'auto') this.applyTheme('auto');
-        };
-        this._sysMQ.addEventListener('change', this._onSysMQ);
-
         this.syncTopNav();
-        this.syncShowMenu();
 
-        this._onWheel = (event) => this.forwardWheel(event);
+        /* 滚轮转发：要 preventDefault 挡掉被吞掉的那一次，只能挂 document 且 passive: false */
+        this._onWheel = (event) => forwardWheel(event, this.mainScroller());
         document.addEventListener('wheel', this._onWheel, { passive: false });
-
-        this._topNav = this.shadow.$('.doc-top-nav');
-        this._onTopNavClick = (event) => {
-          const path = event.target?.closest?.('mc-button')?.dataset?.path;
-          if (path) this.openEntry(path);
-        };
-        this._topNav?.on('click', this._onTopNavClick);
 
         this._unwatch = onRouteChange((next) => {
           this.syncTopNav(next);
@@ -89,9 +53,7 @@
       detached() {
         this._unwatch?.();
         document.removeEventListener('wheel', this._onWheel);
-        this._topNav?.off('click', this._onTopNavClick);
         this._mq?.removeEventListener('change', this._onMQ);
-        this._sysMQ?.removeEventListener('change', this._onSysMQ);
       },
 
       proto: {
@@ -106,33 +68,6 @@
 
         resetScroll() {
           this.mainScroller()?.scrollTo({ top: 0 });
-        },
-
-        scrollViewportOf(host) {
-          return $(host)?.shadow?.$('mc-scroll-bar')?.shadow?.$('[part="viewport"]')?.ele ?? null;
-        },
-
-        forwardWheel(event) {
-          if (!event.deltaY || event.ctrlKey || event.metaKey) return;
-
-          const host = event
-            .composedPath()
-            .find((node) => node instanceof Element && node.matches?.('doc-nav, doc-toc'));
-          if (!host) return;
-
-          const viewport = this.scrollViewportOf(host);
-          if (!viewport) return;
-
-          const down = event.deltaY > 0;
-          const atTop = viewport.scrollTop <= 0;
-          const atBottom = viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 1;
-          if ((down && !atBottom) || (!down && !atTop)) return;
-
-          const scroller = this.mainScroller();
-          if (!scroller) return;
-
-          event.preventDefault(); // 拦掉「被吞掉的那一次」，改由我们转发
-          scroller.scrollTop += wheelPixels(event);
         },
 
         syncTopNav(state = routeState()) {
@@ -150,35 +85,17 @@
           if (document.title !== next) document.title = next;
         },
 
-        syncShowMenu() {
-          this.showMenu = this.narrow;
-        },
-
         hideNarrowMenu() {
           this.shadow.$('.doc-menu')?.hide?.();
         },
 
         pickTheme(event) {
           event.preventDefault();
-          const mode = event.detail?.key;
-          this.applyTheme(THEMES.includes(mode) ? mode : 'auto');
-          try {
-            localStorage.setItem(THEME_KEY, this.theme);
-          } catch {}
+          this.theme = applyTheme(event.detail?.key);
+          this.themeLabel = THEME_LABELS[this.theme];
+          /* 选完自己收起：navigate 只是「这一行被点了」，组件不会替使用者关面板 */
           const menu = this.shadow.$('mc-dropdown')?.ele;
           if (menu) menu.open = false;
-        },
-
-        applyTheme(mode) {
-          document.documentElement.dataset.theme =
-            mode === 'auto'
-              ? window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-              : mode;
-
-          this.theme = mode;
-          this.themeLabel = THEME_LABELS[mode];
         },
       },
     });
@@ -363,7 +280,10 @@
       <div class="doc-top-main">
         <nav class="doc-top-nav">
           <o-fill :value="links" fill-key="path">
-            <mc-button inline attr:data-current="$data.current" attr:data-path="$data.path">
+            <mc-button
+              inline
+              attr:data-current="$data.current"
+              on:click="$host.openEntry($data.path)">
               {{$data.label}}
             </mc-button>
           </o-fill>
@@ -382,12 +302,7 @@
           <mc-icon name="github"></mc-icon>
         </a>
 
-        <mc-dropdown
-          trigger="click"
-          placement="bottom-end"
-          on:open="menuOpen = true"
-          on:close="menuOpen = false"
-          on:navigate="pickTheme($event)">
+        <mc-dropdown trigger="click" placement="bottom-end" on:navigate="pickTheme($event)">
           <mc-button slot="trigger" inline>
             <span>{{themeLabel}}</span>
           </mc-button>
@@ -405,12 +320,8 @@
             attr:current="theme === 'dark' ? '' : null"></mc-menu-item>
         </mc-dropdown>
 
-        <o-if :value="showMenu">
-          <mc-popover
-            class="doc-menu"
-            placement="bottom-end"
-            on:open="narrowMenuOpen = true"
-            on:close="narrowMenuOpen = false">
+        <o-if :value="narrow">
+          <mc-popover class="doc-menu" placement="bottom-end">
             <mc-button class="doc-menu-btn" inline icon="menu"></mc-button>
             <div slot="panel" class="doc-menu-panel">
               <doc-nav full></doc-nav>

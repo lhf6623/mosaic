@@ -64,14 +64,15 @@
 
 ## 四、单一来源
 
-| 事实                       | 唯一来源                                              |
-| -------------------------- | ----------------------------------------------------- |
-| hash 地址（含部署前缀）    | `docs/routes.js` 的 `goto()` / `route()`              |
-| 导航树、顶栏入口、分区     | `docs/site-map.js`                                    |
-| 原始色阶色值               | 运行时读 `packages/color/tokens.css`（`doc-palette`） |
-| 组件参考表                 | 各单元的 `api.md`（`doc-spec` 渲染，页面不手抄）      |
-| 示例里的 CDN 版本号        | `docs/lib/version.mjs`（改完跑 `pnpm versions`）      |
-| 顶栏搜索的候选（整个菜单） | `docs/site-map.js` 的 `PAGES`（菜单点得到 = 搜得到）  |
+| 事实                       | 唯一来源                                               |
+| -------------------------- | ------------------------------------------------------ |
+| hash 地址（含部署前缀）    | `docs/routes.js` 的 `goto()` / `route()`               |
+| 导航树、顶栏入口、分区     | `docs/site-map.js`                                     |
+| 原始色阶色值               | 运行时读 `packages/color/tokens.css`（`doc-palette`）  |
+| 组件参考表                 | 各单元的 `api.md`（`doc-spec` 渲染，页面不手抄）       |
+| 示例里的 CDN 版本号        | `docs/lib/version.mjs`（改完跑 `pnpm versions`）       |
+| 顶栏搜索的候选（整个菜单） | `docs/site-map.js` 的 `PAGES`（菜单点得到 = 搜得到）   |
+| 主题偏好与 `data-theme`    | `docs/lib/theme.mjs`（`theme-boot.js` 只管首帧那一刷） |
 
 ## 五、站点组件
 
@@ -105,7 +106,7 @@ docs/
   doc-layout.html       分区布局（三栏）
   shell.css             文档级样式：视口契约 + 高度链
   content.css           站点页 / 组件文档页共用的正文样式
-  theme-boot.js         首帧主题（head 里的同步脚本）
+  theme-boot.js         首帧主题（head 里的同步脚本；运行时那份在 lib/theme.mjs）
   adopt-styles.js       样式注入补丁（把工具类与令牌 adopt 进 shadow root）
   routes.js             hash 地址 ↔ 仓库相对路径
   site-map.js           导航数据（顶栏 / 左栏 / 状态）
@@ -113,7 +114,8 @@ docs/
   components/           站点组件（见上一节）
   pages/                站点页（清单与分组见 site-map.js）
   snippets/             可复制的片段（quick-start.html 等）
-  lib/                  站点内部工具（版本源 / md-spec 渲染器 / 示例运行时编译）
+  lib/                  站点内部工具，一域一文件：theme / scroll / version / md-spec
+                        / demo-runtime（示例编译）/ plain-preview（普通例子 iframe）
 ```
 
 ## 七、最少代码：抽组件的阈值
@@ -121,6 +123,9 @@ docs/
 - 同一段标记、样式或脚本重复 **≥3 次**才抽组件或模块；不足 3 次不抽 —— 注册、`tag`、生命周期
   都是成本。
 - 抽出来的组件必须自带样式（shadow root）与清理（`detached()` 里摘监听）。
+- **一个文件一个域**：不属于这个文件的域就别留在里面 —— 主题（`lib/theme.mjs`）、侧栏滚轮
+  （`lib/scroll.mjs`）、普通例子 iframe（`lib/plain-preview.mjs`）都是这么拆出去的；
+  页面 / 组件只留自己那份交互，其余的 import 进来。
 - **注释从简**：只在非显然的地方写一句「为什么」，其余不写；站点约定只认这份文件。
 
 ## 八、键盘基线
@@ -159,6 +164,9 @@ docs/
   `packages/code-editor/` 里（见 `packages/README.md` §1.9）。
 - **指令只属于 ofa 模板**：`{{}}` 只放文本节点；HTML 属性 / 布尔属性用 `attr:`（不用 `:disabled` /
   `:checked`）；组件属性用 `:` / `sync:`；类用 `class:`；样式用 `:style.`。
+- **点击也走模板**：行内点击写 `on:click="方法(…)"`（`o-fill` 内用 `$host.`，根级直写方法名），
+  别在行上铺 `data-*` 再在 `ready()` 里挂一层委托监听 —— 那会多出一份「谁在响应点击」的
+  第二真相，且 `detached()` 里还得配一次 `off`。
 - **列表与条件**：`o-fill`（有唯一键带 `fill-key`）+ `o-if`；`o-fill` 内用 `$data` / `$index` /
   `$host`，文本插值里不写 `&&`。
 - **模板引用的键先声明**在 `data` / `attrs`（给安全默认值）；`attrs` 与 `data` 不同名；`proto`

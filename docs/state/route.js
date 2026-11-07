@@ -17,9 +17,7 @@ let tracking = false;
 /** @type {Set<(next: RouteState) => void>} */
 const subscribers = new Set();
 
-/**
- * @returns {RouteState}
- */
+/** 读一次当前地址 → 导航树里的入口与节点 @returns {RouteState} */
 function read() {
   const path = route();
   const hit = locate(path);
@@ -30,15 +28,13 @@ function read() {
   };
 }
 
-/** @returns {RouteState} */
+/** 建 store（唯一一份响应式路由状态） @returns {RouteState} */
 function create() {
   store = $.stanz({ ...SHAPE, ...read() });
   return store;
 }
 
-/**
- * @returns {RouteState}
- */
+/** @returns {RouteState} */
 export function routeState() {
   const state = store ?? create();
   startRouteTracking();

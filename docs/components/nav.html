@@ -11,7 +11,11 @@
   </style>
 
   <mc-scroll-bar label="站点菜单">
-    <mc-menu id="nav-menu" attr:current="currentKey" :options="menuOptions"></mc-menu>
+    <mc-menu
+      id="nav-menu"
+      attr:current="currentKey"
+      :options="menuOptions"
+      attr:accordion="full"></mc-menu>
   </mc-scroll-bar>
 
   <script>
@@ -21,17 +25,17 @@
     export default () => ({
       tag: 'doc-nav',
 
-      data: { menuOptions: [], currentKey: '' },
+      /* full 由外壳在窄屏浮层里写（`<doc-nav full>`）：整棵树 + 手风琴 */
+      data: { menuOptions: [], currentKey: '', full: false },
 
       ready() {
+        this.full = this.ele.hasAttribute('full');
         this._menu = this.shadow.$('#nav-menu');
         this._onNavigate = (event) => {
           if (event.detail?.key === routeState().node?.key) event.preventDefault();
         };
-        this._menu.ele.addEventListener('navigate', this._onNavigate);
+        this._menu.on('navigate', this._onNavigate);
         this._bar = this.shadow.$('mc-scroll-bar');
-        this._full = this.ele.hasAttribute('full');
-        if (this._full) this._menu.attr('accordion', '');
         this._centered = false;
         this._vpRo = new ResizeObserver(([entry]) => {
           if (entry.contentRect.height > 0) this.centerInitial();
@@ -43,7 +47,7 @@
 
       detached() {
         this._unwatch?.();
-        this._menu?.ele.removeEventListener('navigate', this._onNavigate);
+        this._menu?.off('navigate', this._onNavigate);
         this._vpRo?.disconnect();
         cancelAnimationFrame(this._centerRaf);
         if (this._onLoad) window.removeEventListener('load', this._onLoad);
@@ -53,7 +57,7 @@
         renderRows() {
           const { node, entry } = routeState();
           this.currentKey = node?.key ?? '';
-          this.menuOptions = this._full ? TOPBAR : entry ? menuOf(entry) : [];
+          this.menuOptions = this.full ? TOPBAR : entry ? menuOf(entry) : [];
           this.centerInitial();
         },
 

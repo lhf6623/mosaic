@@ -11,9 +11,6 @@ body {
 }
 
 :root {
-  --mc-font-sans: 'Archivo', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  --mc-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-
   --doc-frame-bg: #fff;
 }
 
