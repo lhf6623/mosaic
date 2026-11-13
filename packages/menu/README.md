@@ -63,6 +63,15 @@ doc-nav 同一分区切页时 47 行原地复用。
 ⚠️ **浮层里的每一级把 level 归零**：第二、三级是各自独立的一列，层级已经由「弹出来」表达了，
 再叠一档缩进只会在行左边白留一块（没有 `icon` 的行尤其明显）。
 
+⚠️ **内联子菜单跟父菜单同宽**（`:host([data-inline])` = `width: 0; min-width: 100%`）：子菜单是
+flex column 的 item，它自己的 `max-content` 会参与父容器的宽度计算 —— 菜单宽度 auto 时（挂在 flex /
+行内布局里、使用者没写 `width`，文档页「压缩」演示就是这种写法），每展开一级，子项的缩进与标签就把
+整栏撑宽一档，点两层宽两次。`width: 0` 把它的 max-content 贡献清零、`min-width: 100%` 再从父容器
+拿回宽度，于是整栏宽度只由**最上面那一层**决定；深层长标签交给行自己的 `text-overflow: ellipsis`
+收口。浮层那一支不设这个属性 —— 它是独立的一列，宽度必须由内容定。
+（模板多打一个 `data-inline` 而不是用 `:host([data-level]:not([data-flyout]))`：ofa 的样式作用域
+不支持 `:host()` 里嵌函数式伪类，同 `mc-menu-item` 把状态镜像成 `data-current` 那条路。）
+
 **容器通道要往下复制**：嵌套的 `mc-menu` 也是本组件，它 `:host` 上的同名令牌默认值会盖掉从外层
 继承来的值（使用者在**根**上写的 `style="--mc-menu-pad-x: …"` 就是继承来的那一路）——
 所以建嵌套实例时把解析后的通道复制成它的内联样式（`copyChannel()`，见代码里的 `CHANNEL`）。
@@ -171,11 +180,15 @@ mc-menu-item — 菜单项（配合 mc-menu 使用）
 内容走。改成正常流之后，宿主**左侧**不能有内边距（会和 `text-indent` 叠成双份缩进），
 **右侧**那层则要保留、并让控件的宽度补上它（见上）。
 
-⚠️ 父级行（`<button>`）是唯一的例外：它在 flex 里放「文字 + 箭头」，`text-indent` 对布局不生效，
-缩进与图标让位改走两条 CSS（`menu-item.html` 的 `.mc-control--parent`）：`padding-inline-start`
-（含图标宽 + 间距）负责让位，`text-indent` 则必须**显式归零**。后者不是保险 —— `text-indent` 是继承属性，
-「有图标时文字让开」那条（`:host([icon]) .mc-control`）优先级更高，会把让位量写到按钮上再被行里的
-`.mc-control-label` 继承一份，于是「图标 + 文字 + 箭头」三者齐全时文字被推两次（曾踩过）。
+⚠️ 有了 `width: max-content` 就必须再给一条 `max-width: calc(100% + pad-x)`：只写 max-content 时，
+标签比栏宽的行会把**交互层**画到菜单外面（固定宽度的侧栏里直接压住旁边的页面内容 ——
+`overflow: hidden` 裁的是控件内部，裁不了控件自身）。加上限之后行宽恒等于菜单宽度、越界的文字走
+`text-overflow: ellipsis`；「另一条路」不受影响 —— `mc-dropdown` 的面板是 shrink-to-fit，
+包含块宽度也依赖内容，百分比在这里退化成 `auto`，宽度照旧跟着标签走。
+
+⚠️ 父级行（`<button>`）是唯一的例外：它在 flex 里放「文字 + 箭头」，缩进与图标让位都走
+`padding-inline-start`（`menu-item.html` 的 `.mc-control--parent`），`text-indent` 则必须**显式归零**
+—— 它是继承属性，不归零的话行里的 `.mc-control-label` 会再吃一份基础缩进，文字被推两次。
 
 状态 → 宿主上的 `data-current` / `data-disabled` 只有一个出口（`applyState()`）：读宿主自己的
 `current` / `disabled` 镜像过去。镜像到宿主是因为宿主没法用 `:has()` 看 shadow 里的孩子
@@ -188,8 +201,19 @@ mc-menu-item — 菜单项（配合 mc-menu 使用）
 换来的是图标名语法与 `mc-icon` 完全一致（内置零请求、查不到才远程取一次）。
 
 图标在 shadow 里绝对定位在行首 + `pointer-events: none`，**不占点击区**：交互层仍然铺满整行的
-`<a>` / `<button>`，点图标命中的是它。有 `icon` 时文字缩进要多让出「图标宽 + 间距」，
-所以图标与文字都按同一份 `基础内边距 + level × 步长` 起算。
+`<a>` / `<button>`，点图标命中的是它。图标与文字都按同一份「基础内边距 + level × 步长」起算，
+文字再多让出一格图标位（`--mc-item-icon-col`，见下一段）。
+
+**图标位按「这一层」算，不按行算**（`demos/nested.html` 是同层混排的例子）：`buildRows()` 摊开一层时
+先看 `some(option.icon)`，成立就把 `--mc-item-icon-col: 1` 内联写到这一层每一行上，菜单项拿它把缩进补上
+「图标宽 + 间距」。所以同一层里没写 `icon` 的行也留出同样的宽度，**文字与同层文字对齐**，而不是各自
+从行首起算。判定只能在容器这侧做 —— 行的 shadow 里看不见兄弟的 `icon` 属性；层内一行都不带 `icon`
+就整层不留位（白留一格只会让缩进虚涨，和浮层里把 level 归零同一条理由）。
+
+图标本身仍然绝对定位在「基础内边距 + level × 步长」处（`inset-inline-start` 不含那一格）——
+图标是图标位的起点，文字让开的是它的宽度。「有图标才留位」这条在组件里留了一份
+（`:host([icon]) { --mc-item-icon-col: 1 }`），给**独立使用**的行兜底：`mc-dropdown` / `mc-popover`
+的面板行没有容器下发，且面板宽度跟着内容走，整层都没图标时白留一格反而撑宽。
 
 `collapsed` 住在容器上，但**样式必须落在菜单项自己的 shadow 里** —— 容器的选择器够不到另一个
 shadow root 的子项（和尺寸通道同一条边界）。做法是沿用 `data-current` 那条路：菜单项

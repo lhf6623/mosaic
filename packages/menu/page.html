@@ -5,6 +5,8 @@
     <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./menu.html"></l-m>
     <l-m src="./menu-item.html"></l-m>
+    <!-- 「压缩」演示里的开关：外壳没注册它，页面自己带上 -->
+    <l-m src="../switch/switch.html"></l-m>
     <h1>
       Menu
       <code>mc-menu</code>
@@ -28,6 +30,11 @@
       <section class="doc-demo">
         <doc-example src="./demos/nested.html">
           <h3 slot="title">缩进</h3>
+          <p class="doc-hint" slot="hint">
+            每深一级多一档缩进。图标位按这一层算 —— 同层里有一行带
+            <code>icon</code>
+            时，整层都留出那一格，没写的行文字照样与同层对齐。
+          </p>
         </doc-example>
       </section>
 

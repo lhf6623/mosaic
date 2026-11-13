@@ -3,7 +3,8 @@
 
   <script>
     /* children 逐级渲染：每深一级缩进一档（--mc-menu-indent-step），父级行是开合开关、不导航。
-       层级由容器自己算，使用者的数据里没有 level 这种字段。 */
+       层级由容器自己算，使用者的数据里没有 level 这种字段。
+       同一层里有 icon 与没 icon 的行可以混排：不写 icon 的行不留图标位，文字直接从图标位起算。 */
     const OPTIONS = [
       { key: 'basic', label: '基础', icon: 'menu', href: 'packages/button/page.html' },
       {
@@ -19,8 +20,12 @@
             children: [
               { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
               { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
+              /* 没有 icon 的叶子行 */
+              { key: 'components/form/switch', label: '开关', href: 'packages/switch/page.html' },
             ],
           },
+          /* 没有 icon 的叶子行 */
+          { key: 'components/card', label: '卡片', href: 'packages/card/page.html' },
         ],
       },
       { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },

@@ -14,11 +14,18 @@
       height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
       padding-inline-end: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
       border-radius: var(--mc-menu-radius, var(--mc-radius-md, var(--mc-def-radius-md)));
-      /* 左边缩进 = 基础内边距 + 层级 × 每级缩进量。--mc-item-level 由容器按行内联写死（它是实例数据，
-         不是通道），所以这里只消费、不声明默认值 —— 声明了会盖掉容器继承来的通道（见文件头）。 */
+      /* 左边缩进 = 基础内边距 + 层级 × 每级缩进量 + 图标位。--mc-item-level 由容器按行内联写死（它是实例数据，
+         不是通道），所以这里只消费、不声明默认值 —— 声明了会盖掉容器继承来的通道（见文件头）。
+         --mc-item-icon-col 同理由容器按**层**下发：这一层有任一行带 icon 就写 1，整层每行都留出图标位，
+         没有 icon 的行文字才和同层的文字对齐（行自己看不见兄弟的 icon 属性，只能由容器算）。 */
       text-indent: calc(
         var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
-          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4))))
+          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))) +
+          var(--mc-item-icon-col, 0) *
+          (
+            var(--mc-menu-icon-size, 1.25em) +
+              var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
+          )
       );
       line-height: var(--mc-menu-item-h, var(--mc-control-h-md, var(--mc-def-control-h-md)));
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
@@ -101,15 +108,24 @@
          并把宿主右边那层 padding 一起铺上，整行都是可点区 */
       width: max-content;
       min-width: calc(100% + var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))));
+      /* 上限 = 整行：标签比栏宽时长标签截断成 …，不许画到菜单外面（菜单是固定宽度时，max-content
+         会一路溢出到栏外压住旁边的页面内容）。dropdown 面板是 shrink-to-fit —— 包含块宽度也依赖
+         内容，百分比在这里退化成 auto，宽度照旧跟着标签走。 */
+      max-width: calc(100% + var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))));
       height: 100%;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
       /* ⚠️ 不能只靠宿主继承：UA 给 <button> 写死了 text-indent:0，只有作者声明压得住；它同时是固有宽度的一部分。
-         同一份「层级缩进」计算要在这里再写一遍（继承值会被 UA 的 text-indent:0 顶掉） */
+         同一份「层级缩进 + 图标位」计算要在这里再写一遍（继承值会被 UA 的 text-indent:0 顶掉） */
       text-indent: calc(
         var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
-          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4))))
+          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))) +
+          var(--mc-item-icon-col, 0) *
+          (
+            var(--mc-menu-icon-size, 1.25em) +
+              var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
+          )
       );
       /* ⚠️ 不能省：<button> 的 UA 默认 text-align:center，缩进的文字会被居中 */
       text-align: start;
@@ -143,17 +159,11 @@
     :host([icon]) .mc-item-icon {
       display: flex;
     }
-    /* 有图标时文字让开：缩进 = 左内边距 + 图标 + 间距 */
-    :host([icon]) .mc-control {
-      text-indent: calc(
-        var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
-          var(
-            --mc-item-step,
-            var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))
-          ) +
-          var(--mc-menu-icon-size, 1.25em) +
-          var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
-      );
+    /* 本行自带图标 = 必然占图标位，文字让开（缩进里的 --mc-item-icon-col 取 1）。
+       写在这里而不是逐条改 text-indent：容器下发的那份是内联样式，天然优先，两条来路只会都等于 1；
+       独立使用（dropdown / popover 的面板行）没有容器，这里就是唯一来源。 */
+    :host([icon]) {
+      --mc-item-icon-col: 1;
     }
 
     /* 7. 压缩态（容器上的 collapsed → 脚本镜像到宿主 data-collapsed，同 data-current 那条路）：
@@ -207,25 +217,16 @@
       gap: var(--mc-space-2, var(--mc-def-space-2));
       padding-inline-start: calc(
         var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
-          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4))))
+          var(--mc-item-step, var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))) +
+          var(--mc-item-icon-col, 0) *
+          (
+            var(--mc-menu-icon-size, 1.25em) +
+              var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
+          )
       );
       padding-inline-end: var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
-      text-indent: 0;
-    }
-    :host([icon]) .mc-control--parent {
-      padding-inline-start: calc(
-        var(--mc-menu-pad-x, var(--mc-space-4, var(--mc-def-space-4))) + var(--mc-item-level, 0) *
-          var(
-            --mc-item-step,
-            var(--mc-menu-indent-step, var(--mc-space-4, var(--mc-def-space-4)))
-          ) +
-          var(--mc-menu-icon-size, 1.25em) +
-          var(--mc-menu-icon-gap, var(--mc-space-2, var(--mc-def-space-2)))
-      );
-      /* ⚠️ 父级行的 text-indent 必须在这里**再归零一次**：上面「有图标时文字让开」那条
-         （:host([icon]) .mc-control）优先级更高，会把图标让位那份 text-indent 写到按钮上。
-         flex 里 text-indent 不参与布局，但它是继承属性 —— 行里的 .mc-control-label 会再吃一份，
-         文字就被推两次（图标 + 文字 + 箭头三者齐全时才看得出来）。这里的缩进只由 padding 承担。 */
+      /* flex 里 text-indent 不参与布局，但它是继承属性：不归零的话行里的 .mc-control-label
+         会再吃一份基础缩进，文字被推两次。这里的缩进只由 padding 承担。 */
       text-indent: 0;
     }
     .mc-control-label {

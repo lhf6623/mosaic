@@ -1,17 +1,26 @@
 <template component>
-  <mc-space block wrap-items align="start">
-    <mc-button on:click="toggle()">{{collapsed ? '展开' : '压缩'}}</mc-button>
+  <!-- 外框：模拟真实侧栏那一档宽度 —— 最宽 240px，容器更窄时跟着收（宽度自适应，不写死）。
+       菜单撑满它，压缩态再由容器自己收回方形 -->
+  <div style="max-width: 240px">
+    <mc-space direction="vertical" block>
+      <!-- 开关：打开 = 压缩态（checked 是受控值，change 里回写演示的 data） -->
+      <mc-switch
+        style="align-self: start"
+        attr:checked="collapsed ? '' : null"
+        on:change="collapsed = $event.data.checked">压缩</mc-switch>
 
-    <mc-menu
-      id="collapsed-menu"
-      current="home"
-      attr:collapsed="collapsed ? '' : null"
-      :options="menuOptions"></mc-menu>
-  </mc-space>
+      <mc-menu
+        id="collapsed-menu"
+        current="home"
+        attr:collapsed="collapsed ? '' : null"
+        :options="menuOptions"></mc-menu>
+    </mc-space>
+  </div>
 
   <script>
     /* 压缩态：整栏收成方形，项上只留 icon、分组标题整行折掉；有子菜单的行鼠标移入（或键盘聚焦）
-       后弹出浮层。⚠️ 不要在压缩态那份菜单上写死 width —— 行内宽度会压过 --mc-menu-collapsed-w */
+       后弹出浮层。⚠️ 不要在压缩态那份菜单上写死 width（含 width: 100%）—— 行内宽度会压过
+       --mc-menu-collapsed-w；展开态靠父级是块级布局自然撑满，压缩态由容器自己收回方形。 */
     const OPTIONS = [
       { key: 'group-nav', type: 'group', label: '导航' },
       { key: 'home', label: '首页', icon: 'menu', href: 'packages/menu/page.html' },
@@ -40,12 +49,6 @@
       tag: 'demo-menu-collapsed',
 
       data: { collapsed: false, menuOptions: OPTIONS },
-
-      proto: {
-        toggle() {
-          this.collapsed = !this.collapsed;
-        },
-      },
     });
   </script>
 </template>

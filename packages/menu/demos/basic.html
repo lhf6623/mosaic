@@ -1,11 +1,12 @@
 <template component>
-  <mc-menu id="options-menu" current="settings" :options="menuOptions" style="width: 13rem"></mc-menu>
+  <mc-menu id="options-menu" current="components/action" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
     /* href 照普通链接的写法写（按 document.baseURI 解析）；在 o-app 里站内链接自动交给
        ofa 路由，不在就原生跳转，两种环境不用写任何属性。attrs = 行上的额外属性
        （target / rel / title 转给内置 <a>，其余落在行上给 JS 钩子 / 行内样式）
-       当前项在容器上（current="settings"，也收 href）：数据里不存高亮 / 展开这类状态 */
+       当前项在容器上，写的是子菜单里动作项的 key：那一行高亮，它所在的分支开场自动展开；
+       数据里不存高亮 / 展开这类状态 */
     const OPTIONS = [
       { key: 'group-nav', type: 'group', label: '导航' },
       {
@@ -17,6 +18,8 @@
           { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
           { key: 'components/icon', label: '图标', icon: 'star', href: 'packages/icon/page.html' },
           { key: 'components/collapse', label: '折叠面板', icon: 'folder', href: 'packages/collapse/page.html' },
+          /* 子菜单里同样可以有按钮型行：没有 href 就不跳转，点击只发 navigate */
+          { key: 'components/action', label: '动作项', icon: 'edit' },
         ],
       },
       { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
@@ -43,7 +46,7 @@
       ready() {
         const menu = this.shadow.$('#options-menu');
         menu?.on('navigate', (event) => {
-          if (event.detail.key === 'action') menu.ele.setAttribute('current', 'action');
+          if (!event.detail.href) menu.ele.setAttribute('current', event.detail.key);
         });
       },
     });

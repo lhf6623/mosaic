@@ -10,7 +10,7 @@
   <body>
     <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/menu/menu.html"></l-m>
 
-    <mc-menu id="options-menu" current="settings" style="width: 13rem"></mc-menu>
+    <mc-menu id="options-menu" current="components/action" style="width: 13rem"></mc-menu>
 
     <script>
       /* options 是对象数组，用 property 传；href 照普通链接的写法写 —— 普通页面里就是原生跳转 */
@@ -25,6 +25,8 @@
             { key: 'components/button', label: '按钮', icon: 'plus', href: '#' },
             { key: 'components/icon', label: '图标', icon: 'star', href: '#' },
             { key: 'components/collapse', label: '折叠面板', icon: 'folder', href: '#' },
+            /* 子菜单里同样可以有按钮型行：没有 href 就不跳转，点击只发 navigate */
+            { key: 'components/action', label: '动作项', icon: 'edit' },
           ],
         },
         { key: 'settings', label: '设置', icon: 'settings', href: '#' },
@@ -44,7 +46,7 @@
 
       /* 动作项（没有 href，渲染成 <button>）点完不跳转：把容器上的 current 指到它的 key，高亮跟着走 */
       menu.addEventListener('navigate', (event) => {
-        if (event.detail.key === 'action') menu.setAttribute('current', 'action');
+        if (!event.detail.href) menu.setAttribute('current', event.detail.key);
       });
 
       customElements.whenDefined('mc-menu').then(() => {

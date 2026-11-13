@@ -144,6 +144,13 @@ export default async function run({ page, visit, check }) {
 
       const before = rows(menu);
       const subHiddenBefore = sub()?.hasAttribute('hidden') ?? null;
+      /* current 指到子菜单里的动作项：分支开场自动展开，命中落在子项上（顶层没有行命中） */
+      const subCurrentBefore = sub() ? rows(sub()).map((o) => o.current) : null;
+
+      /* 演示初始就是展开的（current 命中子项），先点一下收起，再点展开 */
+      window.__menuControl(parent()).closest('button').click();
+      await wait(250);
+      const closed = { hidden: sub()?.hasAttribute('hidden') ?? null, caret: caret() };
 
       window.__menuControl(parent()).closest('button').click();
       await wait(250);
@@ -154,10 +161,6 @@ export default async function run({ page, visit, check }) {
         caret: caret(),
         indent: textIndent(sub()),
       };
-
-      window.__menuControl(parent()).closest('button').click();
-      await wait(250);
-      const closed = { hidden: sub()?.hasAttribute('hidden') ?? null, caret: caret() };
 
       /* 运行时换一份数据：容器自己生成的那些项整体换掉（直接走 property，不依赖演示里的按钮） */
       menu.options = [
@@ -184,7 +187,7 @@ export default async function run({ page, visit, check }) {
       const afterClear = window.__deepAll('mc-menu-item', attrMenu).length;
       attrMenu.remove();
 
-      return { before, subHiddenBefore, opened, closed, afterAdd, attrItems, afterClear };
+      return { before, subHiddenBefore, subCurrentBefore, opened, closed, afterAdd, attrItems, afterClear };
     });
 
     /** 动作项（按钮型行）：点击不跳转，只把容器 current 指过去 —— 演示里就是这么接的 */
@@ -203,8 +206,8 @@ export default async function run({ page, visit, check }) {
       window.__menuControl(row).click();
       await wait(250);
       const after = { current: pick(), hash: location.hash, currentAttr: menu.getAttribute('current') };
-      /* 还原成演示初始的「设置」：后面的 reuse 用例按它做基线 */
-      menu.setAttribute('current', 'settings');
+      /* 还原成演示初始的「子菜单动作项」：后面的 reuse 用例按它做基线 */
+      menu.setAttribute('current', 'components/action');
       await wait(150);
       return { before, after, hashBefore, restored: menu.getAttribute('current') };
     });
@@ -227,7 +230,7 @@ export default async function run({ page, visit, check }) {
         }
       });
       mo.observe(menu, { childList: true });
-      /* 只换当前项：数据一个字都不动，命中的行按 key 认（演示初始 current 是「设置」，这里换到「ofa.js」） */
+      /* 只换当前项：数据一个字都不动，命中的行按 key 认（演示初始 current 在子菜单动作项上，这里换到「ofa.js」） */
       const targetKey = menu.options.find((option) => option.label === 'ofa.js')?.key ?? '';
       menu.setAttribute('current', targetKey);
       await wait(200);
@@ -256,7 +259,8 @@ export default async function run({ page, visit, check }) {
         reuse.removed === 0 &&
         reuse.afterCurrent.filter(Boolean).length === 1 &&
         reuse.beforeLabels[2] === '设置' &&
-        reuse.beforeCurrent[2] === true &&
+        /* current 在子菜单的动作项上：顶层没有行命中（复用不依赖命中位置） */
+        reuse.beforeCurrent.every((c) => !c) &&
         reuse.afterCurrent[2] === false &&
         reuse.afterLabels[5] === 'ofa.js' &&
         reuse.afterCurrent[5] === true,
@@ -294,7 +298,107 @@ export default async function run({ page, visit, check }) {
           textIndent(rowByLabel(sub, '按钮')),
           textIndent(rowByLabel(sub2, '输入框')),
         ],
+        /* 同层里没写 icon 的行也留出图标位：文字与同层文字对齐，不是各自从行首起算 */
+        noIcon: [textIndent(rowByLabel(sub, '卡片')), textIndent(rowByLabel(sub2, '开关'))],
       };
+    });
+
+    /** 长标签：行的交互层不许比菜单宽（固定宽度时截断成 …，不能画到栏外压住旁边的页面） */
+    const overflow = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const menu = document.createElement('mc-menu');
+      menu.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:14rem';
+      document.body.append(menu);
+      await wait(200);
+      menu.options = [
+        {
+          key: 'long-parent',
+          label: '长标签父级行长标签父级行长标签父级行',
+          icon: 'file',
+          children: [
+            { key: 'long-child', label: '长标签子项长标签子项长标签子项长标签子项', href: '#long' },
+          ],
+        },
+      ];
+      await wait(400);
+      window.__menuControl(window.__menuRows(menu)[0]).closest('button').click();
+      await wait(400);
+      const control = (row) => window.__menuControl(row).closest('a, button');
+      const pick = (row) => ({
+        rowW: Math.round(row.getBoundingClientRect().width),
+        ctlW: Math.round(control(row).getBoundingClientRect().width),
+        scrollW: control(row).scrollWidth,
+      });
+      const out = {
+        menuW: Math.round(menu.getBoundingClientRect().width),
+        parent: pick(window.__menuRows(menu)[0]),
+        child: {
+          ...pick(window.__menuRows(window.__menuSubs(menu)[0])[0]),
+          ellipsis: getComputedStyle(
+            window.__menuControl(window.__menuRows(window.__menuSubs(menu)[0])[0]).closest('a, button'),
+          ).textOverflow,
+        },
+      };
+      menu.remove();
+      return out;
+    });
+
+    /** 没写宽度的菜单：展开子项不许把整栏撑宽（内联子菜单跟父菜单同宽） */
+    const stableWidth = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const rows = (m) => [...m.shadowRoot.querySelectorAll('.mc-node mc-menu-item')];
+      const subs = (m) => [...m.shadowRoot.querySelectorAll('.mc-node mc-menu')];
+      const label = (row) => row.getAttribute('label') ?? '';
+      const click = (row) => row.shadowRoot.querySelector('button').click();
+      /* 宽度 auto 的菜单挂在 flex 容器里 = 宽度由内容决定（文档页「压缩」演示就是这种写法） */
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;display:flex';
+      document.body.append(wrap);
+      const menu = document.createElement('mc-menu');
+      wrap.append(menu);
+      await wait(200);
+      menu.options = [
+        { key: 'stable-home', label: '首页', icon: 'menu', href: '#home' },
+        {
+          key: 'stable-parent',
+          label: '组件',
+          icon: 'file',
+          children: [
+            { key: 'stable-leaf', label: '按钮', icon: 'file', href: '#a1' },
+            {
+              key: 'stable-form',
+              label: '表单',
+              icon: 'settings',
+              children: [{ key: 'stable-input', label: '输入框', icon: 'edit', href: '#a2x' }],
+            },
+          ],
+        },
+      ];
+      await wait(400);
+      const W = (el) => Math.round(el.getBoundingClientRect().width);
+      const start = W(menu);
+      click(rows(menu).find((row) => label(row) === '组件'));
+      await wait(300);
+      const level1 = W(menu);
+      const sub1 = subs(menu)[0];
+      click(rows(sub1).find((row) => label(row) === '表单'));
+      await wait(300);
+      const level2 = W(menu);
+      const sub2 = subs(sub1)[0];
+      const out = {
+        start,
+        level1,
+        level2,
+        sub1: W(sub1),
+        sub2: sub2 ? W(sub2) : null,
+        /* 缩进照旧：子项还是比父级深一档（同宽不等于不缩进） */
+        levels: [
+          rows(sub1)[0].style.getPropertyValue('--mc-item-level'),
+          rows(sub2)[0].style.getPropertyValue('--mc-item-level'),
+        ],
+      };
+      wrap.remove();
+      return out;
     });
 
     /** 内置行（内部通道）：options 落到行上后由菜单项自己造 <a>；禁用的行不给 href、缩进照旧 */
@@ -392,8 +496,13 @@ export default async function run({ page, visit, check }) {
 
     const icons = await page.evaluate(() => {
       const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
+      /* 只采顶层行（--mc-item-level 0）：缩进断言 38–46 是按顶层口径写的，
+         子菜单展开后 level-1 行是 58，混进来会误报 */
       const items = [...window.__deepAll('mc-menu-item', box)].filter(
-        (i) => i.hasAttribute('icon') && i.getBoundingClientRect().width > 0,
+        (i) =>
+          i.hasAttribute('icon') &&
+          i.style.getPropertyValue('--mc-item-level') === '0' &&
+          i.getBoundingClientRect().width > 0,
       );
       const rect = (el) => el.getBoundingClientRect();
       const textRect = (el) => {
@@ -489,11 +598,13 @@ export default async function run({ page, visit, check }) {
       return out;
     });
 
-    /** 压缩态：按钮切属性；项只留 icon、分组标题折掉；再点展开恢复 */
+    /** 压缩态：演示里的开关切属性；项只留 icon、分组标题折掉；再关掉恢复 */
     const collapsedState = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const box = window.__deepAll('demo-menu-collapsed')[0].shadowRoot;
       const menu = () => box.querySelector('#collapsed-menu');
+      /* 开关是自定义元素，宿主 click 不进 shadow —— 点它内部那个原生 label（真实命中同一套） */
+      const toggleSwitch = () => box.querySelector('mc-switch').shadowRoot.querySelector('label').click();
       const groupRow = () => window.__menuRows(menu()).find((row) => row.hasAttribute('group'));
       const firstRow = () => window.__menuRows(menu()).find((row) => !row.hasAttribute('group'));
       /* 父级行（有子菜单）：压缩后文字与箭头都要收掉，整行仍是 36 的方块 */
@@ -526,10 +637,10 @@ export default async function run({ page, visit, check }) {
         };
       };
       const expanded = sample();
-      box.querySelector('mc-button').click();
+      toggleSwitch();
       await wait(350);
       const compressed = sample();
-      box.querySelector('mc-button').click();
+      toggleSwitch();
       await wait(350);
       return { expanded, compressed, restored: sample() };
     });
@@ -541,7 +652,7 @@ export default async function run({ page, visit, check }) {
       return { parentLabel: window.__menuText(window.__menuRows(box.querySelector('#collapsed-menu'))[2]) };
     });
     // 压缩
-    await page.locator('demo-menu-collapsed mc-button').first().click();
+    await page.locator('demo-menu-collapsed mc-switch').first().click();
     await page.waitForTimeout(350);
     const parentRowLocator = page.locator('demo-menu-collapsed mc-menu .mc-node mc-menu-item').nth(2);
     await parentRowLocator.hover();
@@ -618,11 +729,11 @@ export default async function run({ page, visit, check }) {
         openRows: window.__deepAll('mc-menu-item[data-open]', menu).length,
       };
     });
-    await page.locator('demo-menu-collapsed mc-button').first().click(); // 先切回展开态，后面的键盘用例从干净状态起
+    await page.locator('demo-menu-collapsed mc-switch').first().click(); // 先切回展开态，后面的键盘用例从干净状态起
     await page.waitForTimeout(350);
 
     /** 键盘 / 失焦：压缩态下聚焦父级行也弹层，Esc 关；点外部关 */
-    await page.locator('demo-menu-collapsed mc-button').first().click();
+    await page.locator('demo-menu-collapsed mc-switch').first().click();
     await page.waitForTimeout(350);
     await page.locator('demo-menu-collapsed mc-menu .mc-node mc-menu-item button').nth(0).focus();
     await page.waitForTimeout(500);
@@ -651,7 +762,7 @@ export default async function run({ page, visit, check }) {
       return f ? f.matches(':popover-open') : null;
     });
     // 回到展开态，别把状态留给后面的断言
-    await page.locator('demo-menu-collapsed mc-button').first().click();
+    await page.locator('demo-menu-collapsed mc-switch').first().click();
     await page.waitForTimeout(350);
 
     /** 禁用：数据里写 disabled —— 镜像到宿主、压暗、不给 href；当前行（标签路径命中的那个）镜像成 data-current */
@@ -786,6 +897,8 @@ export default async function run({ page, visit, check }) {
       options,
       actionRow,
       indent,
+      overflow,
+      stableWidth,
       built,
       accordion,
       icons,
@@ -1108,7 +1221,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '数据驱动：分组 / 图标 / 当前 / 禁用 / href / attrs（外链）/ 父子行各就各位，children 默认收起',
+    '数据驱动：分组 / 图标 / 当前 / 禁用 / href / attrs（外链）/ 父子行各就各位，current 命中子项、所在分支自动展开',
     JSON.stringify(menu.options.before.map((o) => [o.group, o.label])) ===
       JSON.stringify([
         [true, '导航'],
@@ -1118,7 +1231,11 @@ export default async function run({ page, visit, check }) {
         [false, '动作项'],
         [false, 'ofa.js'],
       ]) &&
-      menu.options.before[2].current === true &&
+      /* current="components/action"：顶层没有行命中，命中落在子菜单的动作项上，分支开场就是展开的 */
+      menu.options.before.every((o) => !o.current) &&
+      menu.options.subCurrentBefore[0] === false &&
+      menu.options.subCurrentBefore[3] === true &&
+      menu.options.subHiddenBefore === false &&
       menu.options.before[2].icon === 'settings' &&
       menu.options.before[2].href.endsWith('/packages/color/page.html') &&
       menu.options.before[2].level === '0' &&
@@ -1134,8 +1251,7 @@ export default async function run({ page, visit, check }) {
       menu.options.before[5].href === 'https://ofajs.com' &&
       menu.options.before[5].target === '_blank' &&
       menu.options.before[5].rel === 'noreferrer' &&
-      menu.options.before[5].title === '外链：新窗口打开' &&
-      menu.options.subHiddenBefore === true,
+      menu.options.before[5].title === '外链：新窗口打开',
     JSON.stringify(menu.options.before),
   );
 
@@ -1143,19 +1259,21 @@ export default async function run({ page, visit, check }) {
     '动作项：按钮型行点击不跳转，只把 current 指过去（高亮跟着走，可还原）',
     menu.actionRow !== null &&
       menu.actionRow.before.tag === 'BUTTON' &&
-      JSON.stringify(menu.actionRow.before.current) === JSON.stringify(['设置']) &&
+      JSON.stringify(menu.actionRow.before.current) === JSON.stringify([]) &&
       JSON.stringify(menu.actionRow.after.current) === JSON.stringify(['动作项']) &&
       menu.actionRow.after.currentAttr === 'action' &&
       menu.actionRow.after.hash === menu.actionRow.hashBefore &&
-      menu.actionRow.restored === 'settings',
+      menu.actionRow.restored === 'components/action',
     JSON.stringify(menu.actionRow),
   );
 
   check(
     '内联开合：点父级行展开子菜单（箭头翻向 + data-expanded + 子项缩进一档），再点收起',
     menu.options.opened.hidden === false &&
-      JSON.stringify(menu.options.opened.labels) === JSON.stringify(['按钮', '图标', '折叠面板']) &&
-      menu.options.opened.hrefs.every((h) => h && h.includes('/packages/')) &&
+      JSON.stringify(menu.options.opened.labels) === JSON.stringify(['按钮', '图标', '折叠面板', '动作项']) &&
+      menu.options.opened.hrefs.slice(0, 3).every((h) => h && h.includes('/packages/')) &&
+      /* 子菜单里的按钮型行（动作项）没有 href */
+      menu.options.opened.hrefs[3] === null &&
       menu.options.opened.caret.name === 'chevron-down' &&
       menu.options.opened.caret.expanded === true &&
       menu.options.opened.indent === 58 &&
@@ -1166,10 +1284,34 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '缩进：children 逐级 +16px（行都带 icon：42 / 58 / 74），层级是容器算的、进了 --mc-item-level',
+    '缩进：children 逐级 +16px（行都带 icon：42 / 58 / 74），层级是容器算的、进了 --mc-item-level；同层没写 icon 的行留出图标位、与同层文字对齐',
     JSON.stringify(menu.indent.levels) === JSON.stringify(['0', '1', '2']) &&
-      JSON.stringify(menu.indent.indents) === JSON.stringify([42, 58, 74]),
+      JSON.stringify(menu.indent.indents) === JSON.stringify([42, 58, 74]) &&
+      JSON.stringify(menu.indent.noIcon) === JSON.stringify([58, 74]),
     JSON.stringify(menu.indent),
+  );
+
+  check(
+    '长标签不画出栏外：固定宽度的菜单里行宽 = 菜单宽、叶子文字截断成 …，父级行的箭头没被挤出去',
+    menu.overflow.menuW === 224 &&
+      menu.overflow.parent.rowW === 224 &&
+      menu.overflow.parent.ctlW === 224 &&
+      menu.overflow.parent.scrollW === 224 &&
+      menu.overflow.child.rowW === 224 &&
+      menu.overflow.child.ctlW === 224 &&
+      menu.overflow.child.scrollW > 224 &&
+      menu.overflow.child.ellipsis === 'ellipsis',
+    JSON.stringify(menu.overflow),
+  );
+
+  check(
+    '没写宽度的菜单展开子项不变宽：内联子菜单跟父菜单同宽（层级缩进照旧）',
+    menu.stableWidth.start === menu.stableWidth.level1 &&
+      menu.stableWidth.level1 === menu.stableWidth.level2 &&
+      menu.stableWidth.sub1 === menu.stableWidth.level2 &&
+      menu.stableWidth.sub2 === menu.stableWidth.level2 &&
+      JSON.stringify(menu.stableWidth.levels) === JSON.stringify(['1', '2']),
+    JSON.stringify(menu.stableWidth),
   );
 
   check(
