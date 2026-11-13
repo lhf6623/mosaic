@@ -541,7 +541,6 @@
       "packages/menu/demos/customize.html",
       "packages/menu/demos/expanded.html",
       "packages/menu/demos/groups.html",
-      "packages/menu/demos/icon.html",
       "packages/menu/demos/nested.html",
       "packages/menu/demos/part.html",
       "packages/menu/demos/size.html",
@@ -5070,9 +5069,6 @@
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/groups.html": [
-      "packages/menu/test/menu.test.mjs"
-    ],
-    "packages/menu/demos/icon.html": [
       "packages/menu/test/menu.test.mjs"
     ],
     "packages/menu/demos/nested.html": [
