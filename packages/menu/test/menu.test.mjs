@@ -159,8 +159,11 @@ export default async function run({ page, visit, check }) {
       await wait(250);
       const closed = { hidden: sub()?.hasAttribute('hidden') ?? null, caret: caret() };
 
-      /* 运行时换一份数据：容器自己生成的那些项整体换掉 */
-      box.querySelector('mc-button').click();
+      /* 运行时换一份数据：容器自己生成的那些项整体换掉（直接走 property，不依赖演示里的按钮） */
+      menu.options = [
+        ...menu.options,
+        { key: 'dynamic-1', label: '动态项 1', icon: 'star', href: 'packages/tag/page.html' },
+      ];
       await wait(250);
       const afterAdd = rows(menu);
 
@@ -184,6 +187,28 @@ export default async function run({ page, visit, check }) {
       return { before, subHiddenBefore, opened, closed, afterAdd, attrItems, afterClear };
     });
 
+    /** 动作项（按钮型行）：点击不跳转，只把容器 current 指过去 —— 演示里就是这么接的 */
+    const actionRow = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
+      const menu = box.querySelector('#options-menu');
+      const rows = () => [...window.__menuRows(menu)];
+      const pick = () =>
+        rows()
+          .filter((row) => row.hasAttribute('data-current'))
+          .map((row) => window.__menuText(row));
+      const row = rows().find((item) => window.__menuText(item) === '动作项');
+      const hashBefore = location.hash;
+      const before = { current: pick(), tag: window.__menuControl(row)?.tagName ?? null };
+      window.__menuControl(row).click();
+      await wait(250);
+      const after = { current: pick(), hash: location.hash, currentAttr: menu.getAttribute('current') };
+      /* 还原成演示初始的「设置」：后面的 reuse 用例按它做基线 */
+      menu.setAttribute('current', 'settings');
+      await wait(150);
+      return { before, after, hashBefore, restored: menu.getAttribute('current') };
+    });
+
     /** key 复用：同一份菜单换当前项（容器属性 current），行 / 子菜单节点不重建、也不移动 */
     const reuse = await page.evaluate(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -202,8 +227,8 @@ export default async function run({ page, visit, check }) {
         }
       });
       mo.observe(menu, { childList: true });
-      /* 只换当前项：数据一个字都不动，命中的行按 href 认（这里取「设置」那一行的 href） */
-      const targetKey = menu.options.find((option) => option.label === '设置')?.key ?? '';
+      /* 只换当前项：数据一个字都不动，命中的行按 key 认（演示初始 current 是「设置」，这里换到「ofa.js」） */
+      const targetKey = menu.options.find((option) => option.label === 'ofa.js')?.key ?? '';
       menu.setAttribute('current', targetKey);
       await wait(200);
       mo.disconnect();
@@ -230,8 +255,11 @@ export default async function run({ page, visit, check }) {
         reuse.added === 0 &&
         reuse.removed === 0 &&
         reuse.afterCurrent.filter(Boolean).length === 1 &&
-        reuse.beforeCurrent[0] === true &&
-        reuse.afterCurrent[0] === false,
+        reuse.beforeLabels[2] === '设置' &&
+        reuse.beforeCurrent[2] === true &&
+        reuse.afterCurrent[2] === false &&
+        reuse.afterLabels[5] === 'ofa.js' &&
+        reuse.afterCurrent[5] === true,
       JSON.stringify(reuse),
     );
 
@@ -345,9 +373,13 @@ export default async function run({ page, visit, check }) {
     await page
       .waitForFunction(
         () => {
-          const box = window.__deepAll('demo-menu-icon')[0]?.shadowRoot;
+          const box = window.__deepAll('demo-menu-basic')[0]?.shadowRoot;
           if (!box) return false;
-          return [...window.__deepAll('mc-menu-item', box)].every((i) => {
+          /* 图标现在散布在所有演示里：取基础演示中带 icon 且可见的行（收起的分支量不到宽度） */
+          const rows = [...window.__deepAll('mc-menu-item', box)].filter(
+            (i) => i.hasAttribute('icon') && i.getBoundingClientRect().width > 0,
+          );
+          return rows.length > 0 && rows.every((i) => {
             const glyph = i.shadowRoot
               ?.querySelector('.mc-item-icon mc-icon')
               ?.shadowRoot?.querySelector('.mc-glyph');
@@ -359,8 +391,10 @@ export default async function run({ page, visit, check }) {
       .catch(() => {});
 
     const icons = await page.evaluate(() => {
-      const box = window.__deepAll('demo-menu-icon')[0].shadowRoot;
-      const items = [...window.__deepAll('mc-menu-item', box)];
+      const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
+      const items = [...window.__deepAll('mc-menu-item', box)].filter(
+        (i) => i.hasAttribute('icon') && i.getBoundingClientRect().width > 0,
+      );
       const rect = (el) => el.getBoundingClientRect();
       const textRect = (el) => {
         const r = document.createRange();
@@ -447,7 +481,8 @@ export default async function run({ page, visit, check }) {
           textRect(window.__menuControl(parentRow).closest('button')).left - parentRow.getBoundingClientRect().left,
         ),
         childIndent: Math.round(
-          textRect(window.__menuControl(childRow).closest('a')).left - childRow.getBoundingClientRect().left,
+          textRect(window.__menuControl(childRow).closest('a, button')).left -
+            childRow.getBoundingClientRect().left,
         ),
       };
       host.remove();
@@ -482,8 +517,8 @@ export default async function run({ page, visit, check }) {
           flag: menu().hasAttribute('collapsed'),
           width: Math.round(menu().getBoundingClientRect().width),
           rowW: Math.round(row.getBoundingClientRect().width),
-          overlayW: Math.round(window.__menuControl(row).closest('a').getBoundingClientRect().width),
-          labelColor: getComputedStyle(window.__menuControl(row).closest('a')).color,
+          overlayW: Math.round(window.__menuControl(row).closest('a, button').getBoundingClientRect().width),
+          labelColor: getComputedStyle(window.__menuControl(row).closest('a, button')).color,
           iconDisplay: getComputedStyle(row.shadowRoot.querySelector('.mc-item-icon')).display,
           groupDisplay: groupRow() ? getComputedStyle(groupRow()).display : null,
           flyouts: window.__menuFlyouts(menu()).length,
@@ -664,7 +699,7 @@ export default async function run({ page, visit, check }) {
       const rows = [...window.__menuRows(menu)];
       const group = rows.find((r) => r.hasAttribute('group'));
       const child = rows.find((r) => !r.hasAttribute('group'));
-      const indent = () => Math.round(textRect(window.__menuControl(child).closest('a')).left - rect(child).left);
+      const indent = () => Math.round(textRect(window.__menuControl(child).closest('a, button')).left - rect(child).left);
       /* 分组子项的缩进走自己那一档：改 collapsible 的逐级步长不该动它 */
       const ownIndent = indent();
       menu.style.setProperty('--mc-menu-indent-step', '60px');
@@ -749,6 +784,7 @@ export default async function run({ page, visit, check }) {
       priority,
       basic,
       options,
+      actionRow,
       indent,
       built,
       accordion,
@@ -1051,24 +1087,49 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(menu.basic),
   );
 
+  /** 分组标题：模板渲染后文字被包在 o-if 里，不能被 o-if 自带的 16px / 深色掰走 */
+  const groupLabel = await page.evaluate(() => {
+    const box = window.__deepAll('demo-menu-basic')[0].shadowRoot;
+    const row = window.__deepAll('mc-menu-item[group]', box)[0];
+    const label = row?.shadowRoot?.querySelector('.mc-group-label');
+    if (!row || !label) return null;
+    const host = getComputedStyle(row);
+    const text = getComputedStyle(label);
+    return { hostFontSize: host.fontSize, fontSize: text.fontSize, hostColor: host.color, color: text.color };
+  });
+
+  check(
+    '分组标题：o-if 不吞字号与颜色（文字与宿主一致，不是 16px 深色）',
+    !!groupLabel &&
+      groupLabel.fontSize === groupLabel.hostFontSize &&
+      groupLabel.color === groupLabel.hostColor &&
+      groupLabel.fontSize !== '16px',
+    JSON.stringify(groupLabel),
+  );
+
   check(
     '数据驱动：分组 / 图标 / 当前 / 禁用 / href / attrs（外链）/ 父子行各就各位，children 默认收起',
     JSON.stringify(menu.options.before.map((o) => [o.group, o.label])) ===
       JSON.stringify([
-        [false, '首页'],
         [true, '导航'],
         [false, '组件'],
         [false, '设置'],
         [false, '禁用项'],
+        [false, '动作项'],
         [false, 'ofa.js'],
       ]) &&
-      menu.options.before[0].current === true &&
-      menu.options.before[0].icon === 'menu' &&
-      menu.options.before[0].href.endsWith('/packages/menu/page.html') &&
-      menu.options.before[0].level === '0' &&
-      menu.options.before[2].href === null &&
-      menu.options.before[2].tag === 'BUTTON' &&
-      menu.options.before[4].disabled === true &&
+      menu.options.before[2].current === true &&
+      menu.options.before[2].icon === 'settings' &&
+      menu.options.before[2].href.endsWith('/packages/color/page.html') &&
+      menu.options.before[2].level === '0' &&
+      menu.options.before[1].href === null &&
+      menu.options.before[1].tag === 'BUTTON' &&
+      menu.options.before[3].disabled === true &&
+      menu.options.before[3].tag === 'BUTTON' &&
+      /* 没有 href 的叶子行是真按钮：键盘可达、点击只发 navigate 不跳转 */
+      menu.options.before[4].tag === 'BUTTON' &&
+      menu.options.before[4].href === null &&
+      menu.options.before[4].icon === 'plus' &&
       /* attrs 里的链接属性落到了内置 <a> 上（data-* 留在行上，这里不查） */
       menu.options.before[5].href === 'https://ofajs.com' &&
       menu.options.before[5].target === '_blank' &&
@@ -1079,13 +1140,25 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
+    '动作项：按钮型行点击不跳转，只把 current 指过去（高亮跟着走，可还原）',
+    menu.actionRow !== null &&
+      menu.actionRow.before.tag === 'BUTTON' &&
+      JSON.stringify(menu.actionRow.before.current) === JSON.stringify(['设置']) &&
+      JSON.stringify(menu.actionRow.after.current) === JSON.stringify(['动作项']) &&
+      menu.actionRow.after.currentAttr === 'action' &&
+      menu.actionRow.after.hash === menu.actionRow.hashBefore &&
+      menu.actionRow.restored === 'settings',
+    JSON.stringify(menu.actionRow),
+  );
+
+  check(
     '内联开合：点父级行展开子菜单（箭头翻向 + data-expanded + 子项缩进一档），再点收起',
     menu.options.opened.hidden === false &&
       JSON.stringify(menu.options.opened.labels) === JSON.stringify(['按钮', '图标', '折叠面板']) &&
       menu.options.opened.hrefs.every((h) => h && h.includes('/packages/')) &&
       menu.options.opened.caret.name === 'chevron-down' &&
       menu.options.opened.caret.expanded === true &&
-      menu.options.opened.indent === 32 &&
+      menu.options.opened.indent === 58 &&
       menu.options.closed.hidden === true &&
       menu.options.closed.caret.name === 'chevron-right' &&
       menu.options.closed.caret.expanded === false,
@@ -1093,14 +1166,14 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '缩进：children 逐级 +16px（16 / 32 / 48），层级是容器算的、进了 --mc-item-level',
+    '缩进：children 逐级 +16px（行都带 icon：42 / 58 / 74），层级是容器算的、进了 --mc-item-level',
     JSON.stringify(menu.indent.levels) === JSON.stringify(['0', '1', '2']) &&
-      JSON.stringify(menu.indent.indents) === JSON.stringify([16, 32, 48]),
+      JSON.stringify(menu.indent.indents) === JSON.stringify([42, 58, 74]),
     JSON.stringify(menu.indent),
   );
 
   check(
-    '内置行：自己造 <a>（禁用不给 href、current / disabled 镜像到宿主、缩进 16）；attrs 的链接属性落到 <a>、data-* 留在行上',
+    '内置行：有 href 造 <a>、禁用 / 没有 href 造 <button>（current / disabled 镜像到宿主、缩进 16）；attrs 的链接属性落到 <a>、data-* 留在行上',
     menu.built.length === 4 &&
       menu.built[0].tag === 'A' &&
       menu.built[0].href === '#/built-current.html' &&
@@ -1112,6 +1185,7 @@ export default async function run({ page, visit, check }) {
       menu.built[2].href === null &&
       menu.built[2].disabled === true &&
       menu.built[2].current === false &&
+      menu.built[2].tag === 'BUTTON' &&
       menu.built[3].href === 'https://example.com' &&
       menu.built[3].target === '_blank' &&
       menu.built[3].rel === 'noreferrer' &&
@@ -1142,6 +1216,7 @@ export default async function run({ page, visit, check }) {
 
   check(
     '图标：icon 落在行首、pointer-events:none，整行照旧铺满且可点（文字让开图标）',
+    menu.icons.length >= 5 &&
     menu.icons.every(
       (i) =>
         i.display === 'flex' &&
@@ -1227,7 +1302,7 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    '第三列浮层：同一套面板外观、行不再叠层级缩进（无 icon 也是 16px），两层一起收起',
+    '第三列浮层：同一套面板外观、行不再叠层级缩进（带 icon 也是 42px），两层一起收起',
     menu.flyoutDeep &&
       menu.flyoutDeep.open === true &&
       menu.flyoutDeep.dataOpen === true &&
@@ -1236,9 +1311,9 @@ export default async function run({ page, visit, check }) {
       parseFloat(menu.flyoutDeep.border) === 1 &&
       parseFloat(menu.flyoutDeep.radius) >= 4 &&
       menu.flyoutDeep.labels.join() === '输入框,下拉选择' &&
-      /* 浮层每一列都是 level 0：缩进只剩基础内边距 16px，不能再叠 32/48 */
+      /* 浮层每一列都是 level 0：缩进只剩基础内边距 + 图标让位（42px），不能再叠 58/74 */
       menu.flyoutDeep.rows.length === 2 &&
-      menu.flyoutDeep.rows.every((r) => r.level === '0' && r.indent === 16) &&
+      menu.flyoutDeep.rows.every((r) => r.level === '0' && r.indent === 42) &&
       menu.flyoutClosed.f1 === false &&
       menu.flyoutClosed.f2 === false &&
       menu.flyoutClosed.openRows === 0,
@@ -1265,14 +1340,14 @@ export default async function run({ page, visit, check }) {
 
 
   check(
-    '禁用项不响应悬停；分组标题鼠标穿透；分组子项常显、缩进走自己那档 28px（改 collapsible 步长不影响它）',
+    '禁用项不响应悬停；分组标题鼠标穿透；分组子项常显、缩进走自己那档 54px（改 collapsible 步长不影响它）',
     menu.hoverDisabled.bg === 'rgba(0, 0, 0, 0)' &&
       menu.groups.pointer === 'none' &&
       menu.groups.groupTag === null &&
       menu.groups.childLevel === '1' &&
       menu.groups.childStep.includes('--mc-menu-group-indent') &&
-      menu.groups.childIndent === 28 &&
-      menu.groups.afterStepOverride === 28 &&
+      menu.groups.childIndent === 54 &&
+      menu.groups.afterStepOverride === 54 &&
       menu.groups.childExpandable === false &&
       menu.groups.nestedMenus === 0,
     JSON.stringify({ hover: menu.hoverDisabled, group: menu.groups }),
@@ -1304,10 +1379,10 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(menu.priority),
   );
 
-  /* 跳转：ofa 应用内内置 <a> 渲染成 olink 形态（hash 地址 + origin-href + olink），
+  /* 跳转：菜单在 o-app 子树里时，站内链接自动渲染成 olink 形态（hash 地址 + origin-href + olink），
      点击走 ofa 的 SPA 导航（地址栏换 hash、不整刷）；navigate 事件可取消 —— 取消就不跳。
-     外链与 # 锚点不吃这一套（原样 href、无 olink）。
-     ⚠️ 菜单要挂进文档页里（o-app 的子树）：直接 append 到 body 上没有应用上下文，href 会按普通链接原生跳转 */
+     外链与 # 锚点恒原样输出。组件探测环境，使用者不写任何属性。
+     ⚠️ 菜单要挂进文档页里（o-app 的子树）：ofa 的 olink 代理处理器挂在组件 shadow root 上 */
   const navigation = await page.evaluate(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const host = window.__deepAll('demo-menu-basic')[0];
@@ -1330,6 +1405,20 @@ export default async function run({ page, visit, check }) {
       };
     };
     const rows = [shape(0), shape(1), shape(2)];
+
+    /* o-app 外（直接挂在 body 上）：站内链接原样输出、不补 olink —— 同一行数据两种环境两种形态 */
+    const nativeMenu = document.createElement('mc-menu');
+    nativeMenu.options = [{ key: 'raw', label: '原生', href: 'packages/button/page.html' }];
+    document.body.append(nativeMenu);
+    await wait(300);
+    const nativeA = window.__menuControl(window.__menuRows(nativeMenu)[0]);
+    const nativeShape = {
+      href: nativeA?.getAttribute('href') ?? null,
+      olink: nativeA?.hasAttribute('olink') ?? null,
+      origin: nativeA?.getAttribute('origin-href') ?? null,
+    };
+    nativeMenu.remove();
+
     const events = [];
     const onNav = (e) => {
       events.push({ ...e.detail });
@@ -1350,11 +1439,11 @@ export default async function run({ page, visit, check }) {
     await wait(600);
     const hashRestored = location.hash;
     menu.remove();
-    return { rows, events, hashBefore, hashAfterCancel, hashAfterAllow, hashRestored };
+    return { rows, nativeShape, events, hashBefore, hashAfterCancel, hashAfterAllow, hashRestored };
   });
 
   check(
-    '跳转：应用内内置 <a> 渲染成 olink 形态（hash 地址 + origin-href）；外链 / 锚点原样输出',
+    '跳转：o-app 内站内链接渲染成 olink 形态（hash 地址 + origin-href）；外链 / 锚点原样输出',
     navigation.rows[0].olink === true &&
       navigation.rows[0].href.endsWith('#/packages/button/page.html') &&
       navigation.rows[0].origin.endsWith('/packages/button/page.html') &&
@@ -1365,6 +1454,14 @@ export default async function run({ page, visit, check }) {
       navigation.rows[2].olink === false &&
       navigation.rows[2].href === '#part',
     JSON.stringify(navigation.rows),
+  );
+
+  check(
+    '跳转：o-app 外（挂在 body 上）站内链接原样输出、不补 olink / origin-href',
+    navigation.nativeShape.href === 'packages/button/page.html' &&
+      navigation.nativeShape.olink === false &&
+      navigation.nativeShape.origin === null,
+    JSON.stringify(navigation.nativeShape),
   );
 
   check(

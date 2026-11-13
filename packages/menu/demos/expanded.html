@@ -11,23 +11,25 @@
        只让「当前项所在的那一支」开着时，这个属性可以不写 —— 组件会把 current 命中的祖先自动摊开
        （见「当前项」那个演示）。这里两个都写：既整棵摊开，当前项在第二层子菜单里也照样高亮。 */
     const OPTIONS = [
-      { key: 'basic', label: '基础', href: 'packages/button/page.html' },
+      { key: 'basic', label: '基础', icon: 'menu', href: 'packages/button/page.html' },
       {
         key: 'components',
         label: '组件',
+        icon: 'file',
         children: [
-          { key: 'components/button', label: '按钮', href: 'packages/button/page.html' },
+          { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
           {
             key: 'components/form',
             label: '表单',
+            icon: 'settings',
             children: [
-              { key: 'components/form/input', label: '输入框', href: 'packages/input/page.html' },
-              { key: 'components/form/select', label: '下拉选择', href: 'packages/select/page.html' },
+              { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
+              { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
             ],
           },
         ],
       },
-      { key: 'settings', label: '设置', href: 'packages/color/page.html' },
+      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
     ];
 
     export default async () => ({

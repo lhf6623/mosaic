@@ -180,6 +180,10 @@
     /* 8. 内置行（模板渲染）：控件在 shadow 里，普通类规则就够；和 ::slotted 共用上面那套行盒子 */
     o-if {
       display: contents;
+      /* o-if 自带的 :host 字体是 16px / 深色，会盖掉行宿主上的字号与颜色 —— 分组标题的
+         12px / 浅灰就是这么被吞掉的。这里让内容继承宿主，内置控件自己再按菜单字号落回来 */
+      font-size: inherit;
+      color: inherit;
     }
     .mc-group-label {
       display: block;
@@ -188,7 +192,7 @@
       appearance: none;
       background: none;
       border: 0;
-      /* o-if 自带的 :host 字体是 16/24，会把内置控件从菜单行的 14/36 上掰走；
+      /* 内置控件不能只靠继承：UA 给 <button> 的字体 / 行高另有默认值，
          这里显式按行高 / 菜单字号落回来，叶子 <a> 的单行文字才垂直居中 */
       font-family: inherit;
       font-size: var(--mc-menu-font, var(--mc-text-sm, var(--mc-def-text-sm)));
@@ -255,17 +259,30 @@
       </button>
     </o-if>
     <o-if :value="!expandable">
-      <a
-        class="mc-control"
-        attr:href="linkHref"
-        attr:olink="linkOlink"
-        attr:origin-href="linkOrigin"
-        attr:target="linkTarget"
-        attr:rel="linkRel"
-        attr:title="linkTitle"
-        on:click="onLinkClick($event)">
-        {{labelText}}
-      </a>
+      <o-if :value="linkHref">
+        <a
+          class="mc-control"
+          attr:href="linkHref"
+          attr:olink="linkOlink"
+          attr:origin-href="linkOrigin"
+          attr:target="linkTarget"
+          attr:rel="linkRel"
+          attr:title="linkTitle"
+          on:click="onLinkClick($event)">
+          {{labelText}}
+        </a>
+      </o-if>
+      <o-if :value="!linkHref">
+        <!-- 没有 href 的叶子行是真按钮（不是空锚点）：键盘可达，点击只发 navigate、不跳转 -->
+        <button
+          class="mc-control"
+          type="button"
+          attr:disabled="disabled"
+          attr:title="linkTitle"
+          on:click="onLinkClick($event)">
+          {{labelText}}
+        </button>
+      </o-if>
     </o-if>
   </o-if>
 
@@ -279,6 +296,19 @@
       /* 父级行的开合箭头贴行尾：两个内置图标，方向看宿主上的 data-expanded */
       const CARET_CLOSED = 'chevron-right';
       const CARET_OPEN = 'chevron-down';
+
+      /** 沿 composed 树向上找最近的 o-app（closest 不跨 shadow 边界，逐级借 getRootNode().host
+          翻上去）。在 o-app 里 = 站内链接交给 ofa 路由；不在 = 原生跳转。环境是应用的事实，
+          不是菜单的属性，所以由组件探测、使用者只写 href。 */
+      const inRouterApp = (el) => {
+        let node = el;
+        while (node) {
+          if (node.closest('o-app')) return true;
+          const root = node.getRootNode();
+          node = root instanceof ShadowRoot ? root.host : null;
+        }
+        return false;
+      };
 
       return withOptions({
         tag: 'mc-menu-item',
@@ -297,9 +327,8 @@
           // 于是 :host([icon]) 对每一行都成立、所有行都白留一份图标缩进（实测踩过）
           icon: null,
           /* 行的内容全部由属性给：组件按这几个属性在 shadow 里造 <a> / <button>（或分组标题的纯文字）。
-             href 照普通链接的写法写（相对应用根 / 绝对路径 / 完整 URL 都行）：
-             ofa 应用内会渲染成 olink 形态交给 ofa 导航，普通 HTML 里原样输出、浏览器原生跳转
-             （见 proto.resolveLink）。 */
+             href 照普通链接的写法写（相对当前文档 / 绝对路径 / 完整 URL 都行）。
+             站内链接是否走 ofa 路由由组件按「最近祖先有没有 o-app」自行决定（见 proto.resolveLink）。 */
           label: null,
           href: null,
           current: null,
@@ -314,9 +343,11 @@
           labelText: '',
           caret: CARET_CLOSED,
           linkHref: null,
-          /* ofa 应用内才渲染出 olink / origin-href（见 resolveLink） */
+          /* 在 o-app 里才渲染出 olink / origin-href（见 resolveLink） */
           linkOlink: null,
           linkOrigin: null,
+          /* navigate 的 resolved 载荷：恒为绝对地址，不随链接模式变化 */
+          linkResolved: null,
           linkTarget: null,
           linkRel: null,
           linkTitle: null,
@@ -372,41 +403,45 @@
             this.linkHref = link.href;
             this.linkOlink = link.olink;
             this.linkOrigin = link.origin;
+            this.linkResolved = link.resolved;
             this.linkTarget = this.ele.getAttribute('target');
             this.linkRel = this.ele.getAttribute('rel');
             this.linkTitle = this.ele.getAttribute('title');
             this.applyState();
           },
 
-          /** href 按环境解析出渲染形态：
+          /** href 解析出渲染形态。是否走 ofa 路由由组件探测：最近祖先（含跨 shadow）有 o-app
+              就按路由形态渲染，否则原样输出交给浏览器。
               · 页内锚点（# 开头）与跨域链接：原样输出，永远走原生行为；
-              · ofa 应用内（composedPath 上找得到 o-app）：渲染成 olink 形态 —— href 改写成地址栏的
-                hash 形态（与路由 pushState / 手写 olink 一致，新标签页、复制链接可用），原地址记
-                origin-href，点击由 ofa 挂在 shadow root 上的 olink 处理器接管（preventDefault + goto）；
-              · 普通 HTML（没有 o-app）：原样输出，浏览器原生跳转。 */
+              · o-app 内：渲染成 olink 形态 —— href 改写成地址栏的 hash 形态
+                （与手写 olink 一致，新标签页、复制链接可用），原地址记 origin-href，
+                点击由 ofa 挂在 shadow root 上的 olink 处理器接管（preventDefault + goto）；
+              · o-app 外：原样输出，浏览器原生跳转。
+              resolved 恒为解析后的绝对地址，与是否路由无关，navigate 的载荷只认它。 */
           resolveLink(href) {
-            const plain = { href, olink: null, origin: null };
-            if (!href || href.startsWith('#')) return plain;
+            const plain = (resolved) => ({ href, olink: null, origin: null, resolved });
+            if (!href || href.startsWith('#')) return plain(href ?? null);
             const resolved = new URL(href, document.baseURI);
-            if (resolved.origin !== location.origin) return plain;
-            if (!$(this.ele).app) return plain;
+            if (resolved.origin !== location.origin) return plain(resolved.href);
+            if (!inRouterApp(this.ele)) return plain(resolved.href);
             return {
               href: `${location.origin}${location.pathname}#${resolved.pathname}${resolved.search}`,
               olink: '',
               origin: resolved.href,
+              resolved: resolved.href,
             };
           },
 
           /** 内置行被点击：先给宿主一个可取消的 navigate 事件（埋点 / 接管跳转），
-              之后的导航归 ofa（应用内）或浏览器（普通 HTML）—— 本函数不自己跳转。
-              没有 href 的行（按钮型用法）也发这个事件，宿主 preventDefault 即可接管点击 */
+              之后的导航归 ofa（o-app 内）或浏览器（o-app 外）—— 本函数不自己跳转。
+              没有 href 的行渲染成 <button>（按钮型用法），点击只发这个事件 */
           onLinkClick(event) {
             /* $emit 走 cancelable 的 CustomEvent：宿主 preventDefault → dispatchEvent 返回 false →
-               把原生 / ofa 的导航一起掐掉。href 是数据里的原值，resolved 是解析后的最终地址；
+               把原生 / ofa 的导航一起掐掉。href 是数据里的原值，resolved 是解析后的绝对地址；
                key / meta 由容器以 property 挂在行上，组件不解释 meta */
             const allowed = this.$emit('navigate', {
               href: this.ele.getAttribute('href'),
-              resolved: this.linkOrigin ?? this.linkHref,
+              resolved: this.linkResolved,
               key: this.ele.rowKey ?? this.ele.getAttribute('key') ?? null,
               meta: this.ele.meta ?? null,
             });

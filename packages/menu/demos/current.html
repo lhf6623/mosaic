@@ -20,24 +20,26 @@
        路由变化时只改这一个属性（下面几个按钮就是在改它）：行按 key 原地复用，不重建。
        禁用在数据里（disabled）：禁用的行不给 href（点不动、也进不了焦点顺序）。 */
     const OPTIONS = [
-      { key: 'basic', label: '基础', href: 'packages/menu/page.html' },
+      { key: 'basic', label: '基础', icon: 'menu', href: 'packages/menu/page.html' },
       {
         key: 'components',
         label: '组件',
+        icon: 'file',
         children: [
-          { key: 'components/button', label: '按钮', href: 'packages/button/page.html' },
+          { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
           {
             key: 'components/form',
             label: '表单',
+            icon: 'settings',
             children: [
-              { key: 'components/form/input', label: '输入框', href: 'packages/input/page.html' },
-              { key: 'components/form/select', label: '下拉选择', href: 'packages/select/page.html' },
+              { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
+              { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
             ],
           },
         ],
       },
-      { key: 'settings', label: '设置', href: 'packages/color/page.html' },
-      { key: 'disabled', label: '禁用项', disabled: true },
+      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
+      { key: 'disabled', label: '禁用项', icon: 'lock', disabled: true },
     ];
 
     export default async () => ({

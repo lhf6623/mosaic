@@ -17,7 +17,7 @@
 | `menu-item.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`      | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`         | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`         | 13 个演示（页面用可编辑示例读**同一份文件**）                                 |
+| `demos/`         | 12 个演示（页面用可编辑示例读**同一份文件**）                                 |
 | `test/`          | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -106,14 +106,20 @@ JSON 属性通道与那个专属 MutationObserver 已删掉。property 通过 `O
 （HTML 属性：`target` / `rel` / `title` 转给内置 `<a>`，`style` 留在行上）/ **`meta`（业务数据）**，
 分组用 `type: 'group'`，子菜单用 `children`（同形状的数组，递归，子项同样要写 `key`）。
 
-**href 照普通链接的写法写**（相对**应用根**的路径、绝对路径、完整 URL 都行），数据里不存 `#/…` 这种
-地址栏形态 —— 那是运行时的渲染结果，不是数据。跳转方式由菜单项按环境决定（`resolveLink()`）：
-ofa 应用内（composedPath 上找得到 `o-app`）渲染成 **olink 形态**（href 改写成地址栏的 hash 形态 +
-`origin-href` 记原地址 + `olink` 属性），点击由 ofa 挂在每个组件 shadow root 上的代理处理器接管
-（preventDefault + `app.goto`，与手写 olink 完全同一条路）；普通 HTML 里 href 原样输出，浏览器原生跳转。
-页内锚点（`#` 开头）与跨域链接永远原生。点击派发可取消的 `navigate` 事件
-（`event.detail = { href, resolved, key, meta }`），宿主 preventDefault 即接管；没有 `href` 的行
-也发这个事件，可当按钮用（文档站的主题切换 / 右栏目录就是这么接的）。
+**href 照普通链接的写法写**（相对当前文档 / 绝对路径 / 完整 URL 都行），数据里不存 `#/…` 这种
+地址栏形态 —— 那是运行时的渲染结果，不是数据。**跳转方式由组件探测环境决定，使用者不写任何属性**：
+沿 composed 树向上找最近的 `o-app`（`closest` 不跨 shadow 边界，逐级借 `getRootNode().host` 翻上去，
+见 `menu-item.html` 的 `inRouterApp`）—— 在 o-app 里，站内链接渲染成 **olink 形态**（href 改写成
+地址栏的 hash 形态 + `origin-href` 记原地址 + `olink` 属性），点击由 ofa 挂在每个组件 shadow root
+上的代理处理器接管（preventDefault + `app.goto`，与手写 olink 完全同一条路）；不在就原样输出 href、
+浏览器原生跳转。环境是应用的事实，不是菜单的属性 —— 显式声明（`link-mode`）要每一处人肉记得写，
+漏一处就是静默整页刷新，探测失败模式与之相同但只此一处、可测试。
+页内锚点（`#` 开头）与跨域链接恒走原生，探测对它们无感。
+点击派发可取消的 `navigate` 事件（`event.detail = { href, resolved, key, meta }`），
+其中 `resolved` 是解析后的地址（站内 / 外链为绝对地址、页内锚点保持原值；由 `linkResolved` 承载，
+与是否路由无关）；宿主 preventDefault 即接管；
+没有 `href` 的行渲染成 `<button>`（按钮型），也发这个事件 —— 只发事件不跳转
+（文档站的主题切换 / 右栏目录就是这么接的）。
 
 `children` 有两种落法：**普通行**带 `children` → 父级是开合开关、子菜单折叠；**分组行**
 （`type: 'group'`）带 `children` → 标题不可交互、组内条目**常显**并缩进一档（`doc-nav` 的左栏
@@ -138,13 +144,16 @@ ofa 应用内（composedPath 上找得到 `o-app`）渲染成 **olink 形态**�
 mc-menu-item — 菜单项（配合 mc-menu 使用）
 
 **只有一条路**：行内容全部由宿主属性给，`mc-menu-item` 在自己的 shadow root 里造控件 ——
-有 `label` 且不是 `group` 时造 `<a>`（带内部 `data-expandable` 造父级 `<button>` + 箭头），
-`group` 行渲染纯文字。图标、状态镜像、链接属性（`target` / `rel` / `title`）都从宿主属性读。
+有 `label` 且不是 `group` 时：有 `href` 造 `<a>`、没有 `href` 造 `<button type="button">`
+（按钮型，键盘可达、点击只发 `navigate`；`disabled` 的叶子行也是 `<button>`）；
+带内部 `data-expandable` 造父级 `<button>` + 箭头，`group` 行渲染纯文字。
+图标、状态镜像、链接属性（`target` / `rel` / `title`）都从宿主属性读。
 独立使用（dropdown / popover 的面板行）也是同一套，只是 `key` 从行上的 `key` 属性读，
 `navigate` 事件的 `detail.key` 带出去。
 
-内置 `<a>` 的导航不用自己实现：ofa 给每个组件的 shadow root 挂了 olink 代理点击处理器
-（`initLink`），渲染时补 `olink` + `origin-href`，点击就走进 `app.goto()`（见 `resolveLink()`）。
+内置 `<a>` 的导航不用自己实现：行在 o-app 里时渲染补 `olink` + `origin-href`（由 `resolveLink()`
+按 `inRouterApp` 探测决定），ofa 给每个组件的 shadow root 挂的代理点击处理器（`initLink`）
+就把它接进 `app.goto()`；探测不到 o-app 就不补这两个属性，浏览器原生跳转。
 
 ⚠️ 行的视觉全在**宿主**上，控件只当铺满整行的交互层（正常流 + `width/height: 100%`）。
 控件在同一个 shadow root 里，类规则能直接压住 UA 的 button 默认样式，只有一套样式。
