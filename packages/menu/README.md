@@ -17,7 +17,7 @@
 | `menu-item.html` | 同族子标签，随本体一起引入                                                    |
 | `page.html`      | **入口二**：文档站加载（注册在 [`docs/site-map.js`](../../docs/site-map.js)） |
 | `api.md`         | 接口规范 —— 由 `<doc-spec>` 渲染进页面参考区                                  |
-| `demos/`         | 12 个演示（页面用可编辑示例读**同一份文件**）                                 |
+| `demos/`         | 15 个演示（页面用可编辑示例读**同一份文件**）                                 |
 | `test/`          | 组件自己的冒烟套件（1 个文件）                                                |
 
 只有两个东西对外：**本体（使用者 CDN 引入）** 与 **`page.html`（文档站加载）**；其余是单元内部资产。
@@ -138,8 +138,10 @@ JSON 属性通道与那个专属 MutationObserver 已删掉。property 通过 `O
 **当前项 / 默认展开都是属性，不是数据** —— 它们是「外部世界现在在哪」的状态：
 
 - `current="…"`：值就是**命中行的 key**。`resolveCurrent()` 递归找到那个 key，记下它祖先 parent
-  的 key 集合；行的 `current` 用 `key === target.key` 判，`currentBranch` 用 `target.parents.has(key)` 判，
-  所以命中的那一支自动展开、且**只会亮一行**。对不上就是没有当前项。
+  的 key 集合；行的 `current` 用 `key === target.key` 判，`currentBranch` 用 `target.parents.has(key)` 判。
+  **整条路径都亮，但只有一块当前项底色**：命中行是唯一的 `current`（底色 + 强调色 + 加粗），
+  路径上的父级行是 `currentBranch`（只换强调色 + 加粗，不铺底色）—— 一列里同时出现几块选中底色
+  反而读不出位置。分支同时自动展开；对不上就是没有当前项。
 - **换当前项只「补开」命中的那一支**：`buildRows(items, { keepOpen })` 在只换 `current`
   （或重新赋同 key 的 `options`）时按 key 把上一份展开态带过来；收人只有手动点父级行与 `accordion`。
 - `expanded`：每个父级行开场就展开（整棵摊开）。
@@ -274,6 +276,8 @@ MutationObserver 盯 `collapsed`，镜像成宿主上的 `data-collapsed`，CSS 
 - `mc-dropdown` / `mc-popover` 复用 `mc-menu-item` 当面板行：它们写 `label` / `href` / `key` 属性，
   点击统一收 `navigate` 事件，不再往行里塞原生 `<a>` / `<button>`。
 - `mc-dropdown` 复用 `mc-menu-item` 当面板里那些行，所以菜单项的 API（`group` / `icon` / 宿主钩子）不能随手改。
+- 与 [`mc-route-guard`](../route-guard/)：应用层挂一次即可让菜单里指向当前路由的 `olink` 点击
+  不重进当前页；菜单本体不依赖它，也不自己判断路由。演示「跳转链接」里带了一个当前页链接作为例子。
 
 <!-- hand:end -->
 

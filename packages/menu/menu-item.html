@@ -58,6 +58,15 @@
       );
       color: rgb(var(--mc-menu-item-color-hover, var(--mc-color-fg, var(--mc-def-color-fg))));
     }
+    /* 当前分支：命中行所在路径上的父级行（容器按 current 算出来，镜像成这个内部属性）。
+       只换强调色 + 字重，**不铺底色** —— 底色是「命中行」独占的，一列里同时出现几块当前项底色
+       会把当前位置读糊；父级行只换字色就够看出整条路径。 */
+    :host([data-current-branch]) {
+      color: rgb(
+        var(--mc-menu-item-color-current, var(--mc-color-primary, var(--mc-def-color-primary)))
+      );
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
     :host([data-current]) {
       background-color: rgb(
         var(

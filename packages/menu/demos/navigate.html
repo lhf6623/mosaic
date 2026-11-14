@@ -1,0 +1,33 @@
+<template component>
+  <mc-route-guard></mc-route-guard>
+
+  <mc-menu
+    id="navigate-menu"
+    current="current"
+    :options="menuOptions"
+    style="width: 14rem"></mc-menu>
+
+  <script>
+    /* 这个演示放行 navigate：站内链接真的换页（在 o-app 里走 ofa 路由），外链按 attrs 新窗口打开。
+       但指向当前页的那一项由 mc-route-guard 拦下，不会重进当前页。
+       其他演示都 preventDefault，点了只换当前项、不离开本页。 */
+    const OPTIONS = [
+      { key: 'current', label: '当前页（不重进）', icon: 'menu', href: 'packages/menu/page.html' },
+      { key: 'button', label: '按钮文档', icon: 'plus', href: 'packages/button/page.html' },
+      { key: 'input', label: '输入框文档', icon: 'edit', href: 'packages/input/page.html' },
+      { key: 'select', label: '下拉选择文档', icon: 'check', href: 'packages/select/page.html' },
+      {
+        key: 'ofajs',
+        label: 'ofa.js（新窗口）',
+        icon: 'external',
+        href: 'https://ofajs.com',
+        attrs: { target: '_blank', rel: 'noreferrer' },
+      },
+    ];
+
+    export default async () => ({
+      tag: 'demo-menu-navigate',
+      data: { menuOptions: OPTIONS },
+    });
+  </script>
+</template>

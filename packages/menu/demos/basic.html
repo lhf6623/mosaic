@@ -41,12 +41,13 @@
       /* 对象数组走 data + :options（ofa 模板口径） */
       data: { menuOptions: OPTIONS },
 
-      /* 动作项（没有 href，渲染成 <button>）点完不跳转：把容器上的 current 指到它的 key，
-         高亮跟着走 —— 按钮型行自己决定「点了算什么状态」 */
+      /* 演示统一不跳转：点任何行都只把 current 指到它的 key（高亮跟着走）；
+         真正的跳转见「跳转链接」演示 —— 那个演示才放行 navigate */
       ready() {
         const menu = this.shadow.$('#options-menu');
         menu?.on('navigate', (event) => {
-          if (!event.detail.href) menu.ele.setAttribute('current', event.detail.key);
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
         });
       },
     });

@@ -8,33 +8,50 @@
 
   <script>
     /* 默认展开是容器上的一个布尔属性：整棵摊开，每一级父级行开场就是展开的（数据里没有展开状态）。
-       只让「当前项所在的那一支」开着时，这个属性可以不写 —— 组件会把 current 命中的祖先自动摊开
-       （见「当前项」那个演示）。这里两个都写：既整棵摊开，当前项在第二层子菜单里也照样高亮。 */
+       内容按「文档树」来配：指南 / 组件（表单下面还有两层）—— 打开页面时整条分支都摊开。 */
     const OPTIONS = [
-      { key: 'basic', label: '基础', icon: 'menu', href: 'packages/button/page.html' },
+      {
+        key: 'guide',
+        label: '指南',
+        icon: 'file',
+        children: [
+          { key: 'guide/start', label: '快速开始', icon: 'play', href: 'packages/menu/page.html' },
+          { key: 'guide/install', label: '安装', icon: 'download' },
+          { key: 'guide/config', label: '配置', icon: 'settings' },
+        ],
+      },
       {
         key: 'components',
         label: '组件',
-        icon: 'file',
+        icon: 'folder',
         children: [
-          { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
           {
             key: 'components/form',
             label: '表单',
-            icon: 'settings',
+            icon: 'edit',
             children: [
-              { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
-              { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
+              { key: 'components/form/input', label: '输入框', icon: 'edit' },
+              { key: 'components/form/select', label: '下拉选择', icon: 'check' },
             ],
           },
+          { key: 'components/table', label: '表格', icon: 'table' },
         ],
       },
-      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
+      { key: 'api', label: 'API', icon: 'code' },
     ];
 
     export default async () => ({
       tag: 'demo-menu-expanded',
       data: { menuOptions: OPTIONS },
+
+      ready() {
+        const menu = this.shadow.$('#expanded-menu');
+        menu?.on('navigate', (event) => {
+          /* 演示统一不跳转：点任何行只换当前项，真正的跳转见「跳转链接」演示 */
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
+        });
+      },
     });
   </script>
 </template>

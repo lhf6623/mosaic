@@ -19,36 +19,54 @@
 
   <script>
     /* 压缩态：整栏收成方形，项上只留 icon、分组标题整行折掉；有子菜单的行鼠标移入（或键盘聚焦）
-       后弹出浮层。⚠️ 不要在压缩态那份菜单上写死 width（含 width: 100%）—— 行内宽度会压过
+       后弹出浮层。内容按「工作台图标栏」来配：首页 / 项目 / 团队 / 设置，项目下面还有一层归档。
+       ⚠️ 不要在压缩态那份菜单上写死 width（含 width: 100%）—— 行内宽度会压过
        --mc-menu-collapsed-w；展开态靠父级是块级布局自然撑满，压缩态由容器自己收回方形。 */
     const OPTIONS = [
-      { key: 'group-nav', type: 'group', label: '导航' },
+      { key: 'group-workspace', type: 'group', label: '工作台' },
       { key: 'home', label: '首页', icon: 'menu', href: 'packages/menu/page.html' },
       {
-        key: 'components',
-        label: '组件',
-        icon: 'file',
+        key: 'projects',
+        label: '项目',
+        icon: 'folder',
         children: [
-          { key: 'components/button', label: '按钮', icon: 'file', href: 'packages/button/page.html' },
-          { key: 'components/icon', label: '图标', icon: 'star', href: 'packages/icon/page.html' },
+          { key: 'projects/active', label: '进行中', icon: 'play' },
           {
-            key: 'components/form',
-            label: '表单',
-            icon: 'settings',
+            key: 'projects/archive',
+            label: '已归档',
+            icon: 'folder',
             children: [
-              { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
-              { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
+              { key: 'projects/archive/2025', label: '2025', icon: 'calendar' },
+              { key: 'projects/archive/2024', label: '2024', icon: 'calendar' },
             ],
           },
         ],
       },
-      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
+      {
+        key: 'team',
+        label: '团队',
+        icon: 'user',
+        children: [
+          { key: 'team/members', label: '成员', icon: 'user' },
+          { key: 'team/roles', label: '角色', icon: 'lock' },
+        ],
+      },
+      { key: 'settings', label: '设置', icon: 'settings' },
     ];
 
     export default async () => ({
       tag: 'demo-menu-collapsed',
 
       data: { collapsed: false, menuOptions: OPTIONS },
+
+      ready() {
+        const menu = this.shadow.$('#collapsed-menu');
+        menu?.on('navigate', (event) => {
+          /* 演示统一不跳转：点任何行只换当前项，真正的跳转见「跳转链接」演示 */
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
+        });
+      },
     });
   </script>
 </template>

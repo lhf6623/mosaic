@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/menu/menu.html"></l-m>
+
+    <mc-menu id="navigate-menu" style="width: 14rem"></mc-menu>
+
+    <script>
+      /* 普通页面没有 o-app 路由：站内链接就是整页跳转；外链按 attrs 新窗口打开。
+         预览跑在 srcdoc 里（baseURI 指向文档站），单独打开本文件时 baseURI 指向 demos/，
+         所以先按运行环境找到仓库根，再拼站内页面地址。 */
+      const preview = location.protocol === 'about:';
+      const site = new URL(preview ? './' : '../../../', document.baseURI);
+      const page = (path) => new URL(path, site).href;
+
+      const OPTIONS = [
+        {
+          key: 'button',
+          label: '按钮（普通例子）',
+          icon: 'plus',
+          href: page('packages/button/demos/basic-plain.html'),
+        },
+        {
+          key: 'input',
+          label: '输入框（普通例子）',
+          icon: 'edit',
+          href: page('packages/input/demos/basic-plain.html'),
+        },
+        {
+          key: 'ofajs',
+          label: 'ofa.js（新窗口）',
+          icon: 'external',
+          href: 'https://ofajs.com',
+          attrs: { target: '_blank', rel: 'noreferrer' },
+        },
+      ];
+
+      const menu = document.getElementById('navigate-menu');
+      customElements.whenDefined('mc-menu').then(() => {
+        menu.options = OPTIONS;
+      });
+    </script>
+  </body>
+</html>

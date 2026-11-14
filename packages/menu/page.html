@@ -5,6 +5,8 @@
     <!-- 例子 = demos/*.html（可单独打开、单独测）；页面用 <doc-example src> 读同一份源 -->
     <l-m src="./menu.html"></l-m>
     <l-m src="./menu-item.html"></l-m>
+    <!-- 「跳转链接」演示里的当前路由守卫：菜单本体不依赖它，演示自己带 -->
+    <l-m src="../route-guard/route-guard.html"></l-m>
     <!-- 「压缩」演示里的开关：外壳没注册它，页面自己带上 -->
     <l-m src="../switch/switch.html"></l-m>
     <h1>
@@ -24,6 +26,21 @@
       <section class="doc-demo">
         <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
           <h3 slot="title">基本用法</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/navigate.html" plain-src="./demos/navigate-plain.html">
+          <h3 slot="title">跳转链接</h3>
+          <p class="doc-hint" slot="hint">
+            这个例子放行
+            <code>navigate</code>
+            ：站内链接真的换页（浏览器后退可回来），外链按
+            <code>attrs</code>
+            新窗口打开。指向当前页的那一项由
+            <code>mc-route-guard</code>
+            拦下，不会重进；其他例子的点击都只换当前项，不离开本页。
+          </p>
         </doc-example>
       </section>
 
@@ -79,10 +96,9 @@
           <p class="doc-hint" slot="hint">
             <code>current</code>
             写命中行的
-            <code>href</code>
-            或 label
-            路径：那一行高亮，它所在的分支开场就展开；右侧按钮改这一个属性。换当前项只「补开」命中的那一支，
-            已经摊开的分支不会收（只有
+            <code>key</code>
+            ：那一行高亮，路径上的父级也换强调色，分支开场就展开；右侧按钮改这一个属性。换当前项只「补开」
+            命中的那一支，已经摊开的分支不会收（只有
             <code>accordion</code>
             下才收同层别的分支）。
           </p>
@@ -90,7 +106,7 @@
       </section>
 
       <section class="doc-demo">
-        <doc-example src="./demos/events.html">
+        <doc-example src="./demos/events.html" plain-src="./demos/events-plain.html">
           <h3 slot="title">事件回调</h3>
           <p class="doc-hint" slot="hint">
             <code>navigate</code>

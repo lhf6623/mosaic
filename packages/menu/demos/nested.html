@@ -2,38 +2,62 @@
   <mc-menu id="nested-menu" :options="menuOptions" style="width: 14rem"></mc-menu>
 
   <script>
-    /* children 逐级渲染：每深一级缩进一档（--mc-menu-indent-step），父级行是开合开关、不导航。
+    /* 文件树：children 逐级渲染，每深一级缩进一档（--mc-menu-indent-step），父级行是开合开关、不导航。
        层级由容器自己算，使用者的数据里没有 level 这种字段。
-       同一层里有 icon 与没 icon 的行可以混排：不写 icon 的行不留图标位，文字直接从图标位起算。 */
+       同一层里有 icon 与没 icon 的行混排：没写 icon 的行文字照样与同层对齐。 */
     const OPTIONS = [
-      { key: 'basic', label: '基础', icon: 'menu', href: 'packages/button/page.html' },
       {
-        key: 'components',
-        label: '组件',
-        icon: 'file',
+        key: 'src',
+        label: 'src',
+        icon: 'folder',
         children: [
-          { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
           {
-            key: 'components/form',
-            label: '表单',
-            icon: 'settings',
+            key: 'src/components',
+            label: 'components',
+            icon: 'folder',
             children: [
-              { key: 'components/form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
-              { key: 'components/form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
-              /* 没有 icon 的叶子行 */
-              { key: 'components/form/switch', label: '开关', href: 'packages/switch/page.html' },
+              { key: 'src/components/button', label: 'button.ts', icon: 'file' },
+              { key: 'src/components/input', label: 'input.ts', icon: 'file' },
+              { key: 'src/components/table', label: 'table.ts', icon: 'file' },
+              { key: 'src/components/index', label: 'index.ts' },
             ],
           },
-          /* 没有 icon 的叶子行 */
-          { key: 'components/card', label: '卡片', href: 'packages/card/page.html' },
+          {
+            key: 'src/tokens',
+            label: 'tokens',
+            icon: 'folder',
+            children: [
+              { key: 'src/tokens/color', label: 'color.css' },
+              { key: 'src/tokens/spacing', label: 'spacing.css' },
+            ],
+          },
+          { key: 'src/main', label: 'main.ts' },
         ],
       },
-      { key: 'settings', label: '设置', icon: 'settings', href: 'packages/color/page.html' },
+      {
+        key: 'docs',
+        label: 'docs',
+        icon: 'folder',
+        children: [
+          { key: 'docs/guide', label: 'guide.md' },
+          { key: 'docs/faq', label: 'faq.md' },
+        ],
+      },
+      { key: 'readme', label: 'README.md', href: 'packages/menu/page.html' },
     ];
 
     export default async () => ({
       tag: 'demo-menu-nested',
       data: { menuOptions: OPTIONS },
+
+      ready() {
+        const menu = this.shadow.$('#nested-menu');
+        menu?.on('navigate', (event) => {
+          /* 演示统一不跳转：点任何行只换当前项，真正的跳转见「跳转链接」演示 */
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
+        });
+      },
     });
   </script>
 </template>

@@ -44,9 +44,11 @@
 
       const menu = document.getElementById('options-menu');
 
-      /* 动作项（没有 href，渲染成 <button>）点完不跳转：把容器上的 current 指到它的 key，高亮跟着走 */
+      /* 演示统一不跳转：点任何行都只把 current 指到它的 key（高亮跟着走）；
+         真正的跳转见「跳转链接」演示 —— 那个演示才放行 navigate */
       menu.addEventListener('navigate', (event) => {
-        if (!event.detail.href) menu.setAttribute('current', event.detail.key);
+        event.preventDefault();
+        menu.setAttribute('current', event.detail.key);
       });
 
       customElements.whenDefined('mc-menu').then(() => {

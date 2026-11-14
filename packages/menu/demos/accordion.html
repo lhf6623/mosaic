@@ -2,40 +2,51 @@
   <mc-menu accordion id="accordion-menu" :options="menuOptions" style="width: 13rem"></mc-menu>
 
   <script>
-    /* accordion 写在容器上：同一层只保留一个展开的分支 —— 点第二个父级，第一个自己收起来 */
+    /* accordion 写在容器上：同一层只保留一个展开的分支 —— 点第二个父级，第一个自己收起来。
+       内容按「设置页分区」来配：账户安全 / 通知 / 数据，最后一项是去帮助文档的链接。 */
     const OPTIONS = [
       {
-        key: 'components',
-        label: '组件',
-        icon: 'file',
+        key: 'security',
+        label: '账户与安全',
+        icon: 'lock',
         children: [
-          { key: 'components/button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
-          { key: 'components/icon', label: '图标', icon: 'star', href: 'packages/icon/page.html' },
+          { key: 'security/password', label: '修改密码', icon: 'edit' },
+          { key: 'security/2fa', label: '双因素认证', icon: 'lock' },
         ],
       },
       {
-        key: 'form',
-        label: '表单',
-        icon: 'settings',
+        key: 'notifications',
+        label: '通知设置',
+        icon: 'bell',
         children: [
-          { key: 'form/input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
-          { key: 'form/select', label: '下拉选择', icon: 'check', href: 'packages/select/page.html' },
+          { key: 'notifications/email', label: '邮件通知', icon: 'file' },
+          { key: 'notifications/desktop', label: '桌面通知', icon: 'bell' },
         ],
       },
       {
-        key: 'layout',
-        label: '布局',
-        icon: 'menu',
+        key: 'data',
+        label: '数据管理',
+        icon: 'folder',
         children: [
-          { key: 'layout/grid', label: '栅格', icon: 'table', href: 'packages/grid/page.html' },
-          { key: 'layout/collapse', label: '折叠面板', icon: 'folder', href: 'packages/collapse/page.html' },
+          { key: 'data/export', label: '导出数据', icon: 'download' },
+          { key: 'data/delete', label: '删除账户', icon: 'trash' },
         ],
       },
+      { key: 'help', label: '帮助文档', icon: 'help', href: 'packages/menu/page.html' },
     ];
 
     export default async () => ({
       tag: 'demo-menu-accordion',
       data: { menuOptions: OPTIONS },
+
+      ready() {
+        const menu = this.shadow.$('#accordion-menu');
+        menu?.on('navigate', (event) => {
+          /* 演示统一不跳转：点任何行只换当前项，真正的跳转见「跳转链接」演示 */
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
+        });
+      },
     });
   </script>
 </template>

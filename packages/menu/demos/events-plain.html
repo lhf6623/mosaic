@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+  <body>
+    <l-m src="https://cdn.jsdelivr.net/gh/lhf6623/mosaic@0.1.0/packages/menu/menu.html"></l-m>
+
+    <mc-menu id="events-menu" style="width: 14rem"></mc-menu>
+
+    <p class="mt-3 text-sm text-muted">
+      最近一次事件：<strong id="last">（还没点过）</strong>
+    </p>
+
+    <script>
+      /* 与 ofa 版同一个演示：navigate 在行上触发、冒泡 + composed，挂在容器上能收全部行；
+         按钮型行没有 href，靠 meta 带业务动作；链接行有 href，但这里同样被拦下。 */
+      const OPTIONS = [
+        { key: 'create', label: '新建项目', icon: 'plus', meta: { action: 'create' } },
+        { key: 'import-data', label: '导入数据', icon: 'upload', meta: { action: 'import' } },
+        { key: 'export', label: '导出报表', icon: 'download', meta: { action: 'export' } },
+        { key: 'docs', label: '查看文档', icon: 'link', href: 'packages/menu/page.html' },
+      ];
+
+      const menu = document.getElementById('events-menu');
+      const last = document.getElementById('last');
+
+      menu.addEventListener('navigate', (event) => {
+        const meta = event.detail.meta ? ` · meta=${JSON.stringify(event.detail.meta)}` : '';
+        last.textContent = `${event.detail.key} · href=${event.detail.href ?? '—'}${meta}`;
+        menu.setAttribute('current', event.detail.key);
+        event.preventDefault();
+      });
+
+      customElements.whenDefined('mc-menu').then(() => {
+        menu.options = OPTIONS;
+      });
+    </script>
+  </body>
+</html>

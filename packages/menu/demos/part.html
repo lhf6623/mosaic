@@ -15,12 +15,22 @@
   <script>
     const OPTIONS = [
       { key: 'gap', label: '项间距被拉开', icon: 'menu', href: 'packages/menu/page.html' },
-      { key: 'all', label: '整列的行距都变了', icon: 'file', href: 'packages/button/page.html' },
+      { key: 'all', label: '整列的行距都变了', icon: 'file' },
+      { key: 'back', label: '回到文档', icon: 'link', href: 'packages/menu/page.html' },
     ];
 
     export default async () => ({
       tag: 'demo-menu-part',
       data: { menuOptions: OPTIONS },
+
+      ready() {
+        const menu = this.shadow.$('#part-menu');
+        menu?.on('navigate', (event) => {
+          /* 演示统一不跳转：点任何行只换当前项，真正的跳转见「跳转链接」演示 */
+          event.preventDefault();
+          menu.ele.setAttribute('current', event.detail.key);
+        });
+      },
     });
   </script>
 </template>

@@ -12,19 +12,23 @@
 
       data: {
         menuOptions: [
-          { key: 'button', label: '按钮', icon: 'plus', href: 'packages/button/page.html' },
-          { key: 'input', label: '输入框', icon: 'edit', href: 'packages/input/page.html' },
-          { key: 'tag', label: '标签', icon: 'star', href: 'packages/tag/page.html' },
+          { key: 'create', label: '新建项目', icon: 'plus', meta: { action: 'create' } },
+          { key: 'import-data', label: '导入数据', icon: 'upload', meta: { action: 'import' } },
+          { key: 'export', label: '导出报表', icon: 'download', meta: { action: 'export' } },
+          { key: 'docs', label: '查看文档', icon: 'link', href: 'packages/menu/page.html' },
         ],
         last: '（还没点过）',
       },
 
       /* navigate 在行上触发、冒泡 + composed，挂在容器上能收全部行；载荷在 event.detail。
          这个演示把跳转拦下来（preventDefault）—— 不然一点就 SPA 切页，日志看不到。
-         不拦时：在 o-app 里走 ofa 路由（olink 形态），否则原生跳转 */
+         按钮型行没有 href，靠 meta 带业务动作；链接行仍然有 href，但同样被拦下。 */
       ready() {
-        this.shadow.$('#events-menu')?.ele.addEventListener('navigate', (event) => {
-          this.last = `href=${event.detail.href}，已拦截未跳转`;
+        const menu = this.shadow.$('#events-menu');
+        menu?.on('navigate', (event) => {
+          const meta = event.detail.meta ? ` · meta=${JSON.stringify(event.detail.meta)}` : '';
+          this.last = `${event.detail.key} · href=${event.detail.href ?? '—'}${meta}`;
+          menu.ele.setAttribute('current', event.detail.key);
           event.preventDefault();
         });
       },
