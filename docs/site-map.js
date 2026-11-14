@@ -183,6 +183,12 @@ export const SITE = [
             meta: { type: 'component', zh: '菜单' },
           },
           {
+            key: 'docs:component:nav:route-guard',
+            label: '路由守卫（Route Guard）',
+            href: 'packages/route-guard/page.html',
+            meta: { type: 'component', zh: '路由守卫' },
+          },
+          {
             key: 'docs:component:nav:breadcrumb',
             label: '面包屑（Breadcrumb）',
             href: 'packages/breadcrumb/page.html',

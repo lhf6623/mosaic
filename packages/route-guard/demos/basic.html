@@ -1,0 +1,44 @@
+<template component>
+  <mc-route-guard
+    attr:disabled="disabled ? '' : null"
+    on:same-route="onSameRoute($event)"></mc-route-guard>
+
+  <mc-menu
+    id="guard-menu"
+    current="current"
+    :options="menuOptions"
+    style="width: 16rem"></mc-menu>
+
+  <p>
+    <a id="forced" olink olink-force href="@pkg/route-guard/page.html">
+      当前页链接（olink-force 跳过守卫）
+    </a>
+  </p>
+
+  <mc-switch attr:checked="disabled ? '' : null" on:change="disabled = $event.data.checked">
+    停用守卫
+  </mc-switch>
+
+  <p class="mt-3 text-sm text-muted">
+    最近一次 same-route：<strong>{{last}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-route-guard-basic',
+      data: {
+        disabled: false,
+        last: '（还没点过）',
+        menuOptions: [
+          { key: 'current', label: '当前页（守卫会拦）', icon: 'lock', href: 'packages/route-guard/page.html' },
+          { key: 'other', label: '按钮文档（正常跳转）', icon: 'arrow-right', href: 'packages/button/page.html' },
+        ],
+      },
+      proto: {
+        onSameRoute(event) {
+          this.last = `${event.detail.href} → ${event.detail.src}`;
+        },
+      },
+    });
+  </script>
+</template>

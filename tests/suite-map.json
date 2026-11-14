@@ -2501,6 +2501,83 @@
       "packages/switch/switch.html",
       "packages/tabs/tab.html",
       "packages/tabs/tabs.html"
+    ],
+    "packages/route-guard/test/route-guard.test.mjs": [
+      "app-config.js",
+      "docs/adopt-styles.js",
+      "docs/components/demos.html",
+      "docs/components/example.html",
+      "docs/components/nav.html",
+      "docs/components/palette.html",
+      "docs/components/search.html",
+      "docs/components/spec.html",
+      "docs/components/toc.html",
+      "docs/content.css",
+      "docs/doc-layout.html",
+      "docs/favicon.svg",
+      "docs/fonts/archivo-var-latin.woff2",
+      "docs/fonts/fonts.css",
+      "docs/fonts/plex-400-latin.woff2",
+      "docs/fonts/plex-500-latin.woff2",
+      "docs/layout.html",
+      "docs/lib/demo-runtime.mjs",
+      "docs/lib/md-spec.mjs",
+      "docs/lib/plain-preview.mjs",
+      "docs/lib/scroll.mjs",
+      "docs/lib/theme.mjs",
+      "docs/routes.js",
+      "docs/shell.css",
+      "docs/site-map.js",
+      "docs/state/route.js",
+      "docs/theme-boot.js",
+      "index.html",
+      "packages/boot/color-attr.js",
+      "packages/boot/color-math.js",
+      "packages/boot/component-base.css",
+      "packages/boot/mosaic.css",
+      "packages/boot/options.js",
+      "packages/boot/overflow-tip.js",
+      "packages/boot/scroll-pin.js",
+      "packages/boot/shadow-base.css",
+      "packages/button/api.md",
+      "packages/button/button.html",
+      "packages/button/demos/basic-plain.html",
+      "packages/button/demos/basic.html",
+      "packages/button/demos/block.html",
+      "packages/button/demos/hex.html",
+      "packages/button/demos/icons.html",
+      "packages/button/demos/inline.html",
+      "packages/button/demos/override.html",
+      "packages/button/demos/sizes.html",
+      "packages/button/demos/states-plain.html",
+      "packages/button/demos/states.html",
+      "packages/button/demos/type-plain.html",
+      "packages/button/demos/type.html",
+      "packages/button/demos/variants.html",
+      "packages/button/page.html",
+      "packages/code-editor/code-editor.html",
+      "packages/code/code.html",
+      "packages/collapse/collapse-item.html",
+      "packages/collapse/collapse.html",
+      "packages/dropdown/dropdown.html",
+      "packages/icon/icon.html",
+      "packages/icon/icons.generated.css",
+      "packages/icon/icons.generated.names.js",
+      "packages/input/input.html",
+      "packages/loading-bar/loading-bar.js",
+      "packages/menu/menu-item.html",
+      "packages/menu/menu.html",
+      "packages/popover/popover.html",
+      "packages/route-guard/api.md",
+      "packages/route-guard/demos/basic.html",
+      "packages/route-guard/page.html",
+      "packages/route-guard/route-guard.html",
+      "packages/route-guard/test/route-guard.test.mjs",
+      "packages/scroll-bar/scroll-bar.html",
+      "packages/space/space.html",
+      "packages/switch/switch.html",
+      "packages/tabs/tab.html",
+      "packages/tabs/tabs.html"
     ]
   },
   "byFile": {
@@ -2533,6 +2610,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2576,6 +2654,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2616,6 +2695,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2627,6 +2707,7 @@
     "docs/components/example.html": [
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "docs/components/nav.html": [
@@ -2658,6 +2739,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2701,6 +2783,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2785,6 +2868,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2828,6 +2912,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2871,6 +2956,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2914,6 +3000,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2957,6 +3044,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -2985,6 +3073,7 @@
       "packages/popover/test/popover.test.mjs",
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3022,6 +3111,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3065,6 +3155,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3108,6 +3199,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3150,6 +3242,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3192,6 +3285,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3235,6 +3329,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3278,6 +3373,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3291,6 +3387,15 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "docs/lib/plain-preview.mjs": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "docs/lib/scroll.mjs": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "docs/lib/theme.mjs": [
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "docs/pages/component-theme.html": [
       "packages/code/test/code.test.mjs"
@@ -3335,6 +3440,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3378,6 +3484,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3421,6 +3528,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3467,6 +3575,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3510,6 +3619,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3553,6 +3663,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3713,6 +3824,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3756,6 +3868,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3799,6 +3912,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3812,21 +3926,6 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
-    ],
-    "packages/boot/options.js": [
-      "packages/alert/test/alert.test.mjs",
-      "packages/breadcrumb/test/breadcrumb.test.mjs",
-      "packages/button/test/button.test.mjs",
-      "packages/card/test/card.test.mjs",
-      "packages/code-editor/test/code-editor.test.mjs",
-      "packages/icon/test/icon.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs",
-      "packages/menu/test/menu.test.mjs",
-      "packages/popover/test/popover.test.mjs",
-      "packages/qrcode/test/qrcode.test.mjs",
-      "packages/scroll-bar/test/scroll-bar.test.mjs",
-      "packages/tabs/test/tabs.test.mjs",
-      "packages/tag/test/tag.test.mjs"
     ],
     "packages/boot/mosaic.css": [
       "packages/alert/test/alert.test.mjs",
@@ -3857,6 +3956,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3871,6 +3971,22 @@
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
     ],
+    "packages/boot/options.js": [
+      "packages/alert/test/alert.test.mjs",
+      "packages/breadcrumb/test/breadcrumb.test.mjs",
+      "packages/button/test/button.test.mjs",
+      "packages/card/test/card.test.mjs",
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/icon/test/icon.test.mjs",
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/menu/test/menu.test.mjs",
+      "packages/popover/test/popover.test.mjs",
+      "packages/qrcode/test/qrcode.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
+      "packages/scroll-bar/test/scroll-bar.test.mjs",
+      "packages/tabs/test/tabs.test.mjs",
+      "packages/tag/test/tag.test.mjs"
+    ],
     "packages/boot/overflow-tip.js": [
       "packages/alert/test/alert.test.mjs",
       "packages/breadcrumb/test/breadcrumb.test.mjs",
@@ -3884,6 +4000,7 @@
       "packages/menu/test/menu.test.mjs",
       "packages/popover/test/popover.test.mjs",
       "packages/qrcode/test/qrcode.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/tabs/test/tabs.test.mjs",
@@ -3919,6 +4036,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -3962,6 +4080,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4010,7 +4129,8 @@
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/button.html": [
       "packages/badge/test/badge.test.mjs",
@@ -4030,6 +4150,7 @@
       "packages/menu/test/menu.test.mjs",
       "packages/message/test/message.test.mjs",
       "packages/popover/test/popover.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/space/test/space.test.mjs",
       "packages/table/test/table.test.mjs",
@@ -4039,79 +4160,93 @@
     ],
     "packages/button/demos/basic-plain.html": [
       "packages/button/test/button.test.mjs",
-      "packages/code-editor/test/code-editor.test.mjs"
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/basic.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/block.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/hex.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/icons.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/inline.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/override.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/sizes.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/states-plain.html": [
-      "packages/code-editor/test/code-editor.test.mjs"
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/states.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/type-plain.html": [
-      "packages/code-editor/test/code-editor.test.mjs"
+      "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/type.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/demos/variants.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/page.html": [
       "packages/breadcrumb/test/breadcrumb.test.mjs",
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
-      "packages/loading-bar/test/loading-bar.test.mjs"
+      "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/button/test/button.test.mjs": [
       "packages/button/test/button.test.mjs"
@@ -4193,6 +4328,7 @@
     ],
     "packages/code-editor/code-editor.html": [
       "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/code-editor/demos/auto-resize.html": [
@@ -4287,6 +4423,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4372,6 +4509,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4415,6 +4553,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4629,6 +4768,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4829,6 +4969,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4872,6 +5013,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -4885,6 +5027,9 @@
       "packages/textarea/test/textarea.test.mjs",
       "packages/tooltip/test/tooltip.test.mjs",
       "packages/tree-select/test/tree-select.test.mjs"
+    ],
+    "packages/icon/icons.generated.names.js": [
+      "packages/route-guard/test/route-guard.test.mjs"
     ],
     "packages/icon/page.html": [
       "packages/icon/test/icon.test.mjs"
@@ -4957,6 +5102,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5030,6 +5176,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5115,6 +5262,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5158,6 +5306,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5311,6 +5460,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5478,6 +5628,21 @@
     "packages/rate/test/rate.test.mjs": [
       "packages/rate/test/rate.test.mjs"
     ],
+    "packages/route-guard/api.md": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "packages/route-guard/demos/basic.html": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "packages/route-guard/page.html": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "packages/route-guard/route-guard.html": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
+    "packages/route-guard/test/route-guard.test.mjs": [
+      "packages/route-guard/test/route-guard.test.mjs"
+    ],
     "packages/scroll-bar/api.md": [
       "packages/scroll-bar/test/scroll-bar.test.mjs"
     ],
@@ -5528,6 +5693,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5709,6 +5875,7 @@
       "packages/qrcode/test/qrcode.test.mjs",
       "packages/radio/test/radio.test.mjs",
       "packages/rate/test/rate.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/scroll-bar/test/scroll-bar.test.mjs",
       "packages/select/test/select.test.mjs",
       "packages/skeleton/test/skeleton.test.mjs",
@@ -5803,6 +5970,7 @@
       "packages/code-editor/test/code-editor.test.mjs",
       "packages/form/test/form.test.mjs",
       "packages/loading-bar/test/loading-bar.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/switch/test/switch.test.mjs"
     ],
     "packages/switch/test/switch.test.mjs": [
@@ -5886,11 +6054,13 @@
     "packages/tabs/tab.html": [
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/tabs.html": [
       "packages/button/test/button.test.mjs",
       "packages/code-editor/test/code-editor.test.mjs",
+      "packages/route-guard/test/route-guard.test.mjs",
       "packages/tabs/test/tabs.test.mjs"
     ],
     "packages/tabs/test/tabs.test.mjs": [

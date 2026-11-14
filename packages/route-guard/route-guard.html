@@ -1,0 +1,93 @@
+<!-- mc-route-guard — 在 ofa.js 的 o-app 里拦住「点击当前路由」的 olink，避免重新进入当前页；设计取舍见 README.md。 -->
+<template component>
+  <style>
+    /* 不可见：不生成盒子，挂在布局里不影响排版 */
+    :host {
+      display: contents;
+    }
+  </style>
+
+  <script>
+    import { withOptions } from '../boot/options.js';
+
+    /** 页面 src 的归一化比较键：忽略尾部斜杠，但保留 query / hash（页内锚点不能被当成当前路由）。 */
+    const routeKey = (value) => {
+      if (!value) return '';
+      try {
+        const url = new URL(value, document.baseURI);
+        const path = url.pathname.replace(/\/+$/, '') || '/';
+        return url.origin + path + url.search + url.hash;
+      } catch {
+        return '';
+      }
+    };
+
+    export default async () =>
+      withOptions({
+        tag: 'mc-route-guard',
+
+        emits: {
+          /* 同路由点击被拦下之后发；href 是目标绝对地址，src 是当前页面 src。
+             事件本身不负责取消 —— 导航已经在捕获阶段被 preventDefault 了。 */
+          'same-route': { detail: ['href', 'src'] },
+        },
+
+        attrs: {
+          // 停用守卫：存在时不拦同路由点击（本来就没有值，布尔属性）
+          disabled: null,
+        },
+
+        attached() {
+          this._onClick = (event) => this.handleClick(event);
+          window.addEventListener('click', this._onClick, true);
+        },
+
+        detached() {
+          window.removeEventListener('click', this._onClick, true);
+          this._onClick = null;
+        },
+
+        proto: {
+          /** 捕获阶段处理 click：在 ofa 的 olink 代理（shadow root 上）之前跑，preventDefault 才能生效。 */
+          handleClick(event) {
+            if (!this._onClick || this.ele.hasAttribute('disabled')) return;
+            if (event.defaultPrevented) return;
+            /* 只拦无修饰的左键：修饰键 / 新窗口 / 下载都交回浏览器 */
+            if (event.button !== 0) return;
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+            const path = event.composedPath?.() ?? [];
+            const anchor = path.find(
+              (node) => node?.localName === 'a' && node.hasAttribute?.('olink'),
+            );
+            if (!anchor) return;
+            if (anchor.hasAttribute('olink-force') || anchor.hasAttribute('download')) return;
+            const target = anchor.getAttribute('target');
+            if (target && target !== '_self') return;
+
+            const rawHref = anchor.getAttribute('href') || '';
+            /* 页内锚点（#xxx）不是路由跳转，别把滚动也拦掉 */
+            if (rawHref.startsWith('#')) return;
+
+            const appEl = path.find((node) => node?.localName === 'o-app');
+            const api = globalThis.$;
+            const app = appEl && typeof api === 'function' ? api(appEl) : null;
+            const current = app?.current?.src;
+            const href = anchor.getAttribute('origin-href') || rawHref;
+            /* 拿不到 app / 当前页 / 目标地址时一律不拦，避免把正常点击误伤 */
+            if (!current || !href) return;
+
+            const targetUrl = routeKey(href);
+            const currentUrl = routeKey(current);
+            if (!targetUrl || targetUrl !== currentUrl) return;
+
+            event.preventDefault();
+            this.$emit('same-route', {
+              href: new URL(href, document.baseURI).href,
+              src: new URL(current, document.baseURI).href,
+            });
+          },
+        },
+      });
+  </script>
+</template>

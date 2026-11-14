@@ -381,6 +381,7 @@ slots: {
 | [Code](./code/api.md)                 | `mc-code`                              | `code/`        | ✅ 已实现 |
 | [Collapse](./collapse/api.md)         | `mc-collapse` / `mc-collapse-item`     | `collapse/`    | ✅ 已实现 |
 | [Menu](./menu/api.md)                 | `mc-menu` / `mc-menu-item`             | `menu/`        | ✅ 已实现 |
+| [Route Guard](./route-guard/api.md)   | `mc-route-guard`                       | `route-guard/` | ✅ 已实现 |
 | [Breadcrumb](./breadcrumb/api.md)     | `mc-breadcrumb` / `mc-breadcrumb-item` | `breadcrumb/`  | ✅ 已实现 |
 | [Icon](./icon/api.md)                 | `mc-icon`                              | `icon/`        | ✅ 已实现 |
 | [Card](./card/api.md)                 | `mc-card`                              | `card/`        | ✅ 已实现 |
