@@ -32,26 +32,12 @@
       <section class="doc-demo">
         <doc-example src="./demos/navigate.html" plain-src="./demos/navigate-plain.html">
           <h3 slot="title">跳转链接</h3>
-          <p class="doc-hint" slot="hint">
-            这个例子放行
-            <code>navigate</code>
-            ：站内链接真的换页（浏览器后退可回来），外链按
-            <code>attrs</code>
-            新窗口打开。指向当前页的那一项由
-            <code>mc-route-guard</code>
-            拦下，不会重进；其他例子的点击都只换当前项，不离开本页。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/nested.html">
           <h3 slot="title">缩进</h3>
-          <p class="doc-hint" slot="hint">
-            每深一级多一档缩进。图标位按这一层算 —— 同层里有一行带
-            <code>icon</code>
-            时，整层都留出那一格，没写的行文字照样与同层对齐。
-          </p>
         </doc-example>
       </section>
 
@@ -70,11 +56,6 @@
       <section class="doc-demo">
         <doc-example src="./demos/collapsed.html">
           <h3 slot="title">压缩</h3>
-          <p class="doc-hint" slot="hint">
-            浮层按
-            <kbd>Esc</kbd>
-            关；点外面也会收起。
-          </p>
         </doc-example>
       </section>
 
@@ -93,27 +74,12 @@
       <section class="doc-demo">
         <doc-example src="./demos/current.html">
           <h3 slot="title">当前项与禁用</h3>
-          <p class="doc-hint" slot="hint">
-            <code>current</code>
-            写命中行的
-            <code>key</code>
-            ：那一行高亮，路径上的父级也换强调色，分支开场就展开；右侧按钮改这一个属性。换当前项只「补开」
-            命中的那一支，已经摊开的分支不会收（只有
-            <code>accordion</code>
-            下才收同层别的分支）。
-          </p>
         </doc-example>
       </section>
 
       <section class="doc-demo">
         <doc-example src="./demos/events.html" plain-src="./demos/events-plain.html">
           <h3 slot="title">事件回调</h3>
-          <p class="doc-hint" slot="hint">
-            <code>navigate</code>
-            在行上触发、冒泡到容器；这个演示用
-            <code>preventDefault()</code>
-            把跳转拦下来，日志才留在页面上。
-          </p>
         </doc-example>
       </section>
 
@@ -126,13 +92,6 @@
       <section class="doc-demo">
         <doc-example src="./demos/part.html">
           <h3 slot="title">内部样式</h3>
-          <p class="doc-hint" slot="hint">
-            shadow 里的结构默认改不动：只有标了
-            <code>part</code>
-            的节点，才能从外面用
-            <code>::part(名字)</code>
-            改样式。
-          </p>
         </doc-example>
       </section>
     </doc-demos>

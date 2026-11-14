@@ -13,11 +13,9 @@
     <p class="doc-lead">
       在 ofa.js 的
       <code>o-app</code>
-      里，拦住「点击当前路由」的
+      里拦住指向当前路由的
       <code>olink</code>
-      链接：不重新进入当前页，只发
-      <code>same-route</code>
-      事件。
+      点击，不重进当前页。
     </p>
 
     <h2>例子</h2>
@@ -26,13 +24,6 @@
       <section class="doc-demo">
         <doc-example src="./demos/basic.html">
           <h3 slot="title">事件回调</h3>
-          <p class="doc-hint" slot="hint">
-            当前页链接被拦下、只发
-            <code>same-route</code>
-            ；另一个页面正常跳转；
-            <code>olink-force</code>
-            可强制跳过；开关可以整体停用守卫。
-          </p>
         </doc-example>
       </section>
     </doc-demos>
