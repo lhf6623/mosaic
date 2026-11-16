@@ -1,0 +1,414 @@
+<!-- mc-drawer — 侧滑抽屉（遮罩 + 贴着视口一边的面板 + 焦点陷阱）；设计取舍见 README.md。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <link rel="stylesheet" href="../icon/icons.generated.css" />
+  <style>
+    /* 1. 宿主 + 令牌默认值。视觉全在 top layer 的面板里，宿主 display: contents 不占 flex gap */
+    :host {
+      display: contents;
+
+      --mc-drawer-panel-width: 26rem;
+      --mc-drawer-panel-bg: var(--mc-color-surface-raised, var(--mc-def-color-surface-raised));
+      --mc-drawer-panel-border: var(--mc-color-border-strong, var(--mc-def-color-border-strong));
+      --mc-drawer-panel-pad: var(--mc-space-6, var(--mc-def-space-6));
+      --mc-drawer-overlay-bg: var(--mc-color-overlay, var(--mc-def-color-overlay));
+      --mc-drawer-overlay-alpha: var(--mc-color-overlay-alpha, var(--mc-def-color-overlay-alpha));
+      --mc-drawer-gap: var(--mc-space-4, var(--mc-def-space-4));
+      --mc-drawer-space: var(--mc-space-6, var(--mc-def-space-6));
+    }
+
+    /* 2. 尺寸三档：只改面板宽度（默认 md 写在 1 区） */
+    :host([size='sm']) {
+      --mc-drawer-panel-width: 20rem;
+    }
+    :host([size='lg']) {
+      --mc-drawer-panel-width: 34rem;
+    }
+
+    /* 3. 浮层本体（popover）：整块是一个 popover 才进 top layer。
+       ⚠️ display 不能写在基类上（作者样式压得过 UA 的 [popover]:not(:popover-open){display:none}）；
+       ⚠️ width/height 必须显式 auto，否则 inset:0 铺不满视口；⚠️ 背景必须显式透明。 */
+    .mc-root {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: auto;
+      height: auto;
+      box-sizing: border-box;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      background-color: transparent;
+    }
+    .mc-root:popover-open {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .mc-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgb(var(--mc-drawer-overlay-bg) / var(--mc-drawer-overlay-alpha));
+    }
+
+    /* 4. 面板：贴右（默认）/ 贴左，占满高；只改一侧圆角与内边距，不居中 */
+    .mc-panel {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      width: min(var(--mc-drawer-panel-width), 100vw);
+      height: 100%;
+      overflow: hidden;
+      border-inline-start: 1px solid rgb(var(--mc-drawer-panel-border));
+      background-color: rgb(var(--mc-drawer-panel-bg));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      box-shadow: var(--mc-shadow-overlay, var(--mc-def-shadow-overlay));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: var(--mc-text-sm-lh, var(--mc-def-text-sm-lh));
+      animation: mc-drawer-in var(--mc-duration-base, 0.2s) var(--mc-ease-standard, ease-out);
+    }
+    .mc-root[data-placement='right'] .mc-panel {
+      margin-inline-start: auto;
+    }
+    .mc-root[data-placement='left'] .mc-panel {
+      margin-inline-end: auto;
+      border-inline-start: 0;
+      border-inline-end: 1px solid rgb(var(--mc-drawer-panel-border));
+      animation-name: mc-drawer-in-left;
+    }
+
+    @keyframes mc-drawer-in {
+      from {
+        transform: translateX(100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+    @keyframes mc-drawer-in-left {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mc-panel {
+        animation: none;
+      }
+    }
+
+    .mc-panel:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: -2px;
+    }
+
+    /* 5. 内部元素：空头部 / 空底部不占内边距，显隐靠宿主上的 data-has-* */
+    .mc-header {
+      display: none;
+      align-items: center;
+      gap: var(--mc-drawer-gap);
+      padding: var(--mc-drawer-panel-pad);
+      padding-bottom: var(--mc-space-3, var(--mc-def-space-3));
+      border-bottom: 1px solid rgb(var(--mc-drawer-panel-border));
+      font-size: var(--mc-text-lg, var(--mc-def-text-lg));
+      line-height: var(--mc-text-lg-lh, var(--mc-def-text-lg-lh));
+      font-weight: var(--mc-weight-semibold, var(--mc-def-weight-semibold));
+    }
+    :host([data-has-header]) .mc-header {
+      display: flex;
+    }
+    .mc-heading {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .mc-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      padding: var(--mc-drawer-panel-pad);
+      overflow-wrap: anywhere;
+    }
+    :host([data-has-header]) .mc-body {
+      padding-top: var(--mc-space-3, var(--mc-def-space-3));
+    }
+
+    .mc-footer {
+      display: none;
+      flex: none;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--mc-drawer-gap);
+      padding: var(--mc-drawer-panel-pad);
+      padding-top: var(--mc-space-3, var(--mc-def-space-3));
+      border-top: 1px solid rgb(var(--mc-drawer-panel-border));
+    }
+    :host([data-has-footer]) .mc-footer {
+      display: flex;
+    }
+
+    .mc-close {
+      display: none;
+      flex: none;
+      box-sizing: border-box;
+      width: var(--mc-space-8, var(--mc-def-space-8));
+      height: var(--mc-space-8, var(--mc-def-space-8));
+      margin-inline-start: auto;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-full, var(--mc-def-radius-full));
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-muted, var(--mc-def-color-fg-muted)));
+      font-size: var(--mc-text-base, var(--mc-def-text-base));
+      line-height: 1;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+    :host([closable]) .mc-close {
+      display: inline-flex;
+    }
+    .mc-close:hover {
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.08);
+    }
+    .mc-close:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+  </style>
+
+  <!-- 遮罩 + 面板 = 一个 popover（进 top layer）。popover="manual"：不被 light dismiss 关，Esc / 点遮罩 / × 三条路径脚本接。 -->
+  <div class="mc-root" popover="manual" attr:data-placement="placement" on:click="onRootClick">
+    <div class="mc-overlay" part="overlay"></div>
+
+    <div class="mc-panel" part="panel" tabindex="-1">
+      <div class="mc-header" part="header">
+        <div class="mc-heading"><slot name="header">{{heading}}</slot></div>
+        <button class="mc-close" type="button" on:click="closeDrawer()">
+          <span class="mc-icon-close"></span>
+        </button>
+      </div>
+      <div class="mc-body" part="body"><slot></slot></div>
+      <div class="mc-footer" part="footer"><slot name="footer"></slot></div>
+    </div>
+  </div>
+
+  <script>
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    import { withOptions } from '../boot/options.js';
+
+    /* 行为层例外（模板表达不了，集中在本文件）：
+       · 原生 popover 的 showPopover / hidePopover 与 top layer；
+       · 焦点陷阱：打开时焦点进面板、Esc / Tab 循环、关闭归还触发点；
+       · 插槽内容判定与可聚焦元素遍历 —— 内容在 light DOM / 嵌套 shadow root 里，模板查询够不到。 */
+
+    const FOCUSABLE =
+      'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])';
+
+    const flatFocusables = (root) => {
+      const out = [];
+      const visit = (el) => {
+        if (el.localName === 'slot') {
+          for (const node of el.assignedElements({ flatten: true })) visit(node);
+          return;
+        }
+        if (el.matches(FOCUSABLE) && el.getClientRects().length > 0) out.push(el);
+        if (el.shadowRoot) {
+          for (const node of el.shadowRoot.children) visit(node);
+          return;
+        }
+        for (const node of el.children) visit(node);
+      };
+      for (const node of root.children) visit(node);
+      return out;
+    };
+
+    const deepActive = () => {
+      let el = document.activeElement;
+      while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
+      return el;
+    };
+
+    export default () =>
+      withOptions({
+        tag: 'mc-drawer',
+        slots: { header: {}, default: {}, footer: { reflect: 'footer' } },
+
+        emits: {
+          open: {},
+          close: {},
+        },
+
+        attrs: {
+          open: null,
+          heading: '',
+          placement: 'right',
+          closable: null,
+          maskClosable: null,
+          size: 'md',
+        },
+
+        data: {
+          mounted: false,
+        },
+
+        ready() {
+          Object.defineProperty(this.ele, 'open', {
+            configurable: true,
+            get: () => this.ele.hasAttribute('open'),
+            set: (value) => {
+              if (value) this.ele.setAttribute('open', '');
+              else this.ele.removeAttribute('open');
+              this.syncOpen();
+            },
+          });
+
+          this._onKeydown = (event) => this.onKeydown(event);
+          document.addEventListener('keydown', this._onKeydown, true);
+
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this.panelRoot);
+          this.popoverOk = typeof this.panelRoot?.showPopover === 'function';
+          this.mounted = true;
+          if (this.ele.isConnected) this.syncOpen();
+        },
+
+        attached() {
+          this.$slots.onChange(() => this.applyState());
+          this.applyState();
+          this.syncOpen();
+        },
+
+        detached() {
+          document.removeEventListener('keydown', this._onKeydown, true);
+          this._scrollGuard?.dispose();
+        },
+
+        watch: {
+          open() {
+            if (this._openWatchInit === undefined) {
+              this._openWatchInit = true;
+              return;
+            }
+            this.syncOpen();
+          },
+          heading() {
+            if (this._headingWatchInit === undefined) {
+              this._headingWatchInit = true;
+              return;
+            }
+            this.applyState();
+          },
+          closable() {
+            if (this._closableWatchInit === undefined) {
+              this._closableWatchInit = true;
+              return;
+            }
+            this.applyState();
+          },
+        },
+
+        proto: {
+          get panelRoot() {
+            return this.shadow.$('.mc-root')?.ele;
+          },
+
+          get panelEl() {
+            return this.shadow.$('.mc-panel')?.ele;
+          },
+
+          syncOpen() {
+            if (!this.mounted || !this.popoverOk || !this.ele.isConnected) return;
+            const shouldOpen = this.ele.hasAttribute('open');
+            const isOpen = this.panelRoot.matches(':popover-open');
+            if (shouldOpen && !isOpen) {
+              this._returnFocus = deepActive();
+              this._scrollGuard.run(() => this.panelRoot.showPopover());
+              this.focusIntoPanel();
+              this.$emit('open');
+            } else if (!shouldOpen && isOpen) {
+              this._scrollGuard.run(() => this.panelRoot.hidePopover());
+              this.restoreFocus();
+              this.$emit('close');
+            }
+          },
+
+          focusIntoPanel() {
+            (this.focusables()[0] ?? this.panelEl).focus({ preventScroll: true });
+          },
+
+          focusables() {
+            return flatFocusables(this.panelEl);
+          },
+
+          restoreFocus() {
+            const target = this._returnFocus;
+            this._returnFocus = null;
+            if (target?.isConnected) target.focus({ preventScroll: true });
+          },
+
+          onKeydown(event) {
+            if (!this.popoverOk || !this.panelRoot.matches(':popover-open')) return;
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              this.closeDrawer();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+            const items = this.focusables();
+            const index = items.indexOf(deepActive());
+            if (index < 0) {
+              event.preventDefault();
+              (items[0] ?? this.panelEl).focus({ preventScroll: true });
+              return;
+            }
+            const step = event.shiftKey ? -1 : 1;
+            event.preventDefault();
+            items[(index + step + items.length) % items.length].focus({ preventScroll: true });
+          },
+
+          /** 点遮罩关闭。⚠️ 跨 shadow 判「点在哪」必须走 composedPath */
+          onRootClick(event) {
+            const path = event.composedPath();
+            if (!path.includes(this.ele)) return;
+            if (path.includes(this.panelEl)) return;
+            if (this.ele.hasAttribute('mask-closable')) this.closeDrawer();
+          },
+
+          openDrawer() {
+            if (!this.ele.hasAttribute('open')) this.ele.setAttribute('open', '');
+            this.syncOpen();
+          },
+
+          closeDrawer() {
+            if (this.ele.hasAttribute('open')) this.ele.removeAttribute('open');
+            this.syncOpen();
+          },
+
+          applyState() {
+            this.mirror(
+              'data-has-header',
+              this.$slots.has('header') ||
+                this.headingText() !== '' ||
+                this.ele.hasAttribute('closable'),
+            );
+          },
+
+          headingText() {
+            return (this.ele.getAttribute('heading') ?? '').trim();
+          },
+
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
+        },
+      });
+  </script>
+</template>

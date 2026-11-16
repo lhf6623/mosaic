@@ -1,0 +1,38 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="openDrawer()">用 property 打开</mc-button>
+    <mc-drawer id="drawer" heading="受控开关" on:close="sync()">
+      <p>直接写 <code>drawer.open = true</code>，与属性通道等价。</p>
+      <mc-button slot="footer" on:click="closeDrawer()">关闭</mc-button>
+    </mc-drawer>
+  </mc-space>
+
+  <p class="mt-3 text-sm text-muted">
+    当前 open：<strong>{{open}}</strong>
+  </p>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-controlled',
+
+      data: { open: false },
+
+      proto: {
+        drawer() {
+          return this.shadow.$('#drawer')?.ele;
+        },
+        openDrawer() {
+          this.drawer().open = true;
+          this.sync();
+        },
+        closeDrawer() {
+          this.drawer().open = false;
+          this.sync();
+        },
+        sync() {
+          this.open = this.drawer()?.open ?? false;
+        },
+      },
+    });
+  </script>
+</template>

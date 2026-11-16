@@ -1,0 +1,29 @@
+<template component>
+  <!-- row-key：默认取 id；这张表用 row-key="no" 把主键换成编号（选中 / scrollTo 都按它算） -->
+  <mc-data-grid id="grid" row-key="no"></mc-data-grid>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-data-grid-basic',
+
+      data: {},
+
+      /* columns / data 是对象数组，走 property：绑定通道落点不稳定（首屏可能给对象、SPA 导航是 JSON 文本）。
+         这里在 ready() 里赋给本组件里的 grid；组件之外就是 $('#grid').ele.columns = [...]。 */
+      ready() {
+        const grid = this.shadow.$('#grid')?.ele;
+        grid.columns = [
+          { key: 'no', title: '编号', width: '140px' },
+          { key: 'customer', title: '客户' },
+          { key: 'amount', title: '金额', align: 'right' },
+          { key: 'owner', title: '负责人' },
+        ];
+        grid.data = [
+          { no: 'RSK-0001', customer: '华东金属', amount: '¥12,800.00', owner: '陈立' },
+          { no: 'RSK-0002', customer: '远洋物流', amount: '¥14,175.50', owner: '周敏' },
+          { no: 'RSK-0003', customer: '中盛建材', amount: '¥15,551.00', owner: '李航' },
+        ];
+      },
+    });
+  </script>
+</template>

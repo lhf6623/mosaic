@@ -158,6 +158,12 @@ export const SITE = [
             meta: { type: 'component', zh: '表格' },
           },
           {
+            key: 'docs:component:display:data-grid',
+            label: '数据网格（Data Grid）',
+            href: 'packages/data-grid/page.html',
+            meta: { type: 'component', zh: '数据网格' },
+          },
+          {
             key: 'docs:component:display:code',
             label: '代码（Code）',
             href: 'packages/code/page.html',
@@ -352,6 +358,12 @@ export const SITE = [
             label: '对话框（Dialog）',
             href: 'packages/dialog/page.html',
             meta: { type: 'component', zh: '对话框' },
+          },
+          {
+            key: 'docs:component:overlay:drawer',
+            label: '抽屉（Drawer）',
+            href: 'packages/drawer/page.html',
+            meta: { type: 'component', zh: '抽屉' },
           },
           {
             key: 'docs:component:overlay:dropdown',

@@ -1,0 +1,46 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <span class="text-sm text-muted">
+      五个事件：select-change / sort-change / cell-click / cell-dblclick / cell-action（点「编辑」按钮）
+    </span>
+    <mc-data-grid
+      id="grid"
+      selectable
+      sortable
+      style="height: 240px"
+      on:select-change="log('select', $event)"
+      on:sort-change="log('sort', $event)"
+      on:cell-click="log('click', $event)"
+      on:cell-dblclick="log('dblclick', $event)"
+      on:cell-action="log('action', $event)"></mc-data-grid>
+    <span class="text-sm text-muted">最近事件：{{last}}</span>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-data-grid-events',
+
+      data: { last: '（还没有事件）' },
+
+      ready() {
+        const grid = this.shadow.$('#grid')?.ele;
+        grid.columns = [
+          { key: 'no', title: '编号', sortable: true },
+          { key: 'customer', title: '客户' },
+          { key: 'ops', title: '操作' },
+        ];
+        grid.data = [
+          { id: 1, no: 'IMP-0001', customer: '华东金属', cells: { ops: '<button data-action="edit">编辑</button>' } },
+          { id: 2, no: 'IMP-0002', customer: '远洋物流', cells: { ops: '<button data-action="edit">编辑</button>' } },
+        ];
+      },
+
+      proto: {
+        log(name, event) {
+          const data = event.data ?? event.detail ?? {};
+          this.last = name + ' · ' + JSON.stringify(data).slice(0, 80);
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,18 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="open = true">富标题 + 底部</mc-button>
+    <mc-drawer attr:open="open ? '' : null" closable on:close="open = false">
+      <span slot="header" class="text-lg font-semibold">委托单详情 · EDI26100028</span>
+      <p>header 插槽换成富标题（状态标签 / 单号 / 按钮都行）；footer 插槽放操作区。</p>
+      <mc-button slot="footer" variant="outline" on:click="open = false">取消</mc-button>
+      <mc-button slot="footer" on:click="open = false">保存</mc-button>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-slots',
+
+      data: { open: false },
+    });
+  </script>
+</template>

@@ -1,0 +1,16 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="open = true">打开抽屉</mc-button>
+    <mc-drawer heading="委托单详情" closable attr:open="open ? '' : null" on:close="open = false">
+      <p>抽屉从右侧滑出，正文可以放任意内容；点 × / 按 Esc 关闭。</p>
+      <mc-button slot="footer" variant="outline" on:click="open = false">关闭</mc-button>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-basic',
+
+      data: { open: false },
+    });
+  </script>
+</template>

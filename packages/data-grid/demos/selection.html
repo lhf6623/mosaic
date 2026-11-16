@@ -1,0 +1,46 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button size="sm" on:click="selectAll()">全选</mc-button>
+    <mc-button size="sm" variant="outline" on:click="clearAll()">清空</mc-button>
+    <span class="text-sm text-muted">选中 {{selected.length}} 行</span>
+  </mc-space>
+
+  <mc-data-grid id="grid" selectable style="height: 260px" on:select-change="onSelectChange($event)"></mc-data-grid>
+
+  <script>
+    const ROWS = Array.from({ length: 8 }, (_, index) => ({
+      id: index + 1,
+      no: 'RSK-00' + (index + 1),
+      customer: ['华东金属', '远洋物流', '中盛建材'][index % 3],
+    }));
+
+    export default async () => ({
+      tag: 'demo-data-grid-selection',
+
+      data: { selected: ['2'] },
+
+      ready() {
+        const grid = this.shadow.$('#grid')?.ele;
+        grid.columns = [
+          { key: 'no', title: '编号' },
+          { key: 'customer', title: '客户' },
+        ];
+        grid.data = ROWS;
+        /* selected 是纯 property 通道：写它不发事件（受控语义），这里开场预选第二行 */
+        grid.selected = this.selected;
+      },
+
+      proto: {
+        onSelectChange(event) {
+          this.selected = event.data.selected;
+        },
+        selectAll() {
+          this.shadow.$('#grid')?.ele.selectAll();
+        },
+        clearAll() {
+          this.shadow.$('#grid')?.ele.clearSelection();
+        },
+      },
+    });
+  </script>
+</template>

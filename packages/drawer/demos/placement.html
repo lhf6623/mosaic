@@ -1,0 +1,24 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="right = true">右侧</mc-button>
+    <mc-button on:click="left = true">左侧</mc-button>
+    <mc-drawer
+      heading="右侧抽屉（默认）"
+      placement="right"
+      closable
+      attr:open="right ? '' : null"
+      on:close="right = false">
+      <p>默认贴右边。</p>
+    </mc-drawer>
+    <mc-drawer heading="左侧抽屉" placement="left" closable attr:open="left ? '' : null" on:close="left = false">
+      <p>placement="left" 贴左边，边框与进场方向都镜像。</p>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-placement',
+
+      data: { right: false, left: false },
+    });
+  </script>
+</template>

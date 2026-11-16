@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mc-data-grid · 普通 HTML</title>
+    <link rel="stylesheet" href="../../../packages/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <l-m src="../data-grid.html"></l-m>
+    <mc-data-grid id="grid" selectable style="height: 260px"></mc-data-grid>
+
+    <script type="module">
+      await customElements.whenDefined('mc-data-grid');
+      const grid = document.querySelector('#grid');
+      grid.columns = [
+        { key: 'no', title: '编号' },
+        { key: 'customer', title: '客户' },
+        { key: 'amount', title: '金额', align: 'right' },
+      ];
+      grid.data = [
+        { id: 1, no: 'RSK-0001', customer: '华东金属', amount: '¥12,800.00' },
+        { id: 2, no: 'RSK-0002', customer: '远洋物流', amount: '¥14,175.50' },
+      ];
+      grid.addEventListener('select-change', (event) => {
+        console.log('selected', event.data.selected);
+      });
+    </script>
+  </body>
+</html>

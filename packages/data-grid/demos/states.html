@@ -1,0 +1,42 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <span class="text-sm text-muted">空态：empty-text 兜底文案（empty 插槽可覆盖）</span>
+    <mc-data-grid id="empty" empty-text="还没有数据，先导入一批"></mc-data-grid>
+
+    <span class="text-sm text-muted">empty 插槽：整块换掉兜底文案</span>
+    <mc-data-grid id="empty-slot">
+      <mc-space block class="p-3" slot="empty">这里放自己的空态插画 / 引导按钮</mc-space>
+    </mc-data-grid>
+
+    <span class="text-sm text-muted">加载态：loading 属性，loading 插槽换内容</span>
+    <mc-data-grid id="loading" loading>
+      <mc-space block class="p-3" slot="loading">正在同步委托单…</mc-space>
+    </mc-data-grid>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-data-grid-states',
+
+      data: {},
+
+      ready() {
+        const columns = [
+          { key: 'no', title: '编号' },
+          { key: 'customer', title: '客户' },
+        ];
+        const empty = this.shadow.$('#empty')?.ele;
+        empty.columns = columns;
+        empty.data = [];
+
+        const emptySlot = this.shadow.$('#empty-slot')?.ele;
+        emptySlot.columns = columns;
+        emptySlot.data = [];
+
+        const loading = this.shadow.$('#loading')?.ele;
+        loading.columns = columns;
+        loading.data = [];
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,48 @@
+<template component>
+  <mc-space direction="vertical" block>
+    <span class="text-sm text-muted">固定高度 + 表头吸顶；列宽 / 右对齐 / 三态排序（只发事件）</span>
+    <mc-data-grid
+      id="grid"
+      sortable
+      striped
+      bordered
+      size="sm"
+      max-height="220px"
+      on:sort-change="onSort($event)"></mc-data-grid>
+    <span class="text-sm text-muted">最近排序：{{sortText}}</span>
+  </mc-space>
+
+  <script>
+    const COLUMNS = [
+      { key: 'no', title: '编号', width: '120px' },
+      { key: 'customer', title: '客户', sortable: true },
+      { key: 'amount', title: '金额', align: 'right', sortable: true },
+      { key: 'date', title: '日期' },
+    ];
+
+    export default async () => ({
+      tag: 'demo-data-grid-layout',
+
+      data: { sortText: '（未排序）' },
+
+      ready() {
+        const grid = this.shadow.$('#grid')?.ele;
+        grid.columns = COLUMNS;
+        grid.data = Array.from({ length: 40 }, (_, index) => ({
+          id: index + 1,
+          no: 'IMP-' + String(index + 1).padStart(4, '0'),
+          customer: ['华东金属', '远洋物流', '中盛建材'][index % 3],
+          amount: '¥' + (10000 + index * 13.5).toFixed(2),
+          date: '2026-11-' + String((index % 28) + 1).padStart(2, '0'),
+        }));
+      },
+
+      proto: {
+        onSort(event) {
+          const { key, order } = event.data;
+          this.sortText = order ? key + ' ' + order : '（未排序）';
+        },
+      },
+    });
+  </script>
+</template>

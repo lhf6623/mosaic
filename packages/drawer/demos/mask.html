@@ -1,0 +1,24 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="closable = true">点遮罩关闭</mc-button>
+    <mc-button on:click="plain = true">点遮罩不关闭</mc-button>
+    <mc-drawer
+      heading="mask-closable"
+      mask-closable
+      closable
+      attr:open="closable ? '' : null"
+      on:close="closable = false">
+      <p>写了 <code>mask-closable</code>：点遮罩会关（Esc / × 也关）。</p>
+    </mc-drawer>
+    <mc-drawer heading="没有 mask-closable" closable attr:open="plain ? '' : null" on:close="plain = false">
+      <p>没写 <code>mask-closable</code>：点遮罩不关，防误触；Esc 与 × 仍然关。</p>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-mask',
+
+      data: { closable: false, plain: false },
+    });
+  </script>
+</template>

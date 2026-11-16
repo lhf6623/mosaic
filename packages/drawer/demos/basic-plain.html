@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mc-drawer · 普通 HTML</title>
+    <script src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs" type="module"></script>
+    <l-m src="../drawer.html"></l-m>
+    <l-m src="../../button/button.html"></l-m>
+  </head>
+  <body>
+    <mc-button id="open">打开抽屉</mc-button>
+    <mc-drawer id="drawer" heading="委托单详情" size="lg" closable mask-closable>
+      <p>普通 HTML 里没有模板绑定：用属性与 property 控制开关。</p>
+    </mc-drawer>
+    <script type="module">
+      await customElements.whenDefined('mc-drawer');
+      const drawer = document.getElementById('drawer');
+      document.getElementById('open').addEventListener('click', () => {
+        drawer.open = true;
+      });
+      drawer.addEventListener('close', () => {
+        drawer.open = false;
+      });
+    </script>
+  </body>
+</html>

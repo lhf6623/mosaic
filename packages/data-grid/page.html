@@ -1,0 +1,93 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <div class="doc-body">
+    <l-m src="./data-grid.html"></l-m>
+    <h1>
+      Data Grid
+      <code>mc-data-grid</code>
+    </h1>
+    <p class="doc-lead">ERP 列表页的数据网格：固定高度 + 表头吸顶、复选、三态排序、行内动作。</p>
+
+    <h2>例子</h2>
+
+    <doc-demos>
+      <section class="doc-demo">
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            <code>columns</code>
+            决定表头与列宽，
+            <code>data</code>
+            是行数组；两者都用 property 传（属性通道只作 JSON 初始值）。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/selection.html">
+          <h3 slot="title">选择与批量</h3>
+          <p class="doc-hint" slot="hint">
+            <code>selectable</code>
+            出复选列；选中集在
+            <code>selected</code>
+            property 里（受控），勾选只发
+            <code>select-change</code>
+            ，写回不触发事件。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/layout.html">
+          <h3 slot="title">排序与外观</h3>
+          <p class="doc-hint" slot="hint">
+            排序只维护表头状态并发
+            <code>sort-change</code>
+            ，数据重排交给业务层；高度给
+            <code>height</code>
+            或
+            <code>max-height</code>
+            时表头自动吸顶。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/states.html">
+          <h3 slot="title">空态与加载</h3>
+          <p class="doc-hint" slot="hint">
+            空态兜底文案是
+            <code>empty-text</code>
+            ，
+            <code>empty</code>
+            插槽可整块换掉；加载态用
+            <code>loading</code>
+            属性 +
+            <code>loading</code>
+            插槽。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">
+            行内按钮写
+            <code>data-action</code>
+            ，点它发
+            <code>cell-action</code>
+            ；单元格点击 / 双击各自有事件，载荷里带行、列与原始鼠标事件。
+          </p>
+        </doc-example>
+      </section>
+    </doc-demos>
+
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

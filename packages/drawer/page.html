@@ -1,0 +1,93 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <div class="doc-body">
+    <l-m src="./drawer.html"></l-m>
+    <h1>
+      Drawer
+      <code>mc-drawer</code>
+    </h1>
+    <p class="doc-lead">
+      侧滑抽屉：遮罩 + 贴边面板，打开时焦点锁在面板内，关闭后归还给打开它的元素。
+    </p>
+
+    <h2>例子</h2>
+
+    <doc-demos>
+      <section class="doc-demo">
+        <doc-example src="./demos/basic.html" plain-src="./demos/basic-plain.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            需要原生
+            <code>popover</code>
+            （Chrome 125+ / Safari 17+ / Firefox 125+）：没有它的浏览器上面板不会出现，也不报错。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/placement.html">
+          <h3 slot="title">贴边方向</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/controlled.html">
+          <h3 slot="title">受控开关</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/mask.html">
+          <h3 slot="title">遮罩</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/sizes.html">
+          <h3 slot="title">尺寸</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/slots.html">
+          <h3 slot="title">富标题</h3>
+          <p class="doc-hint" slot="hint">
+            标题属性叫
+            <code>heading</code>
+            ，不叫
+            <code>title</code>
+            （后者会弹原生 tooltip，与
+            <code>mc-alert</code>
+            一致）。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">内部样式</h3>
+          <p class="doc-hint" slot="hint">
+            shadow 里的结构默认改不动：只有标了
+            <code>part</code>
+            的节点，才能从外面用
+            <code>::part(名字)</code>
+            改样式。
+          </p>
+        </doc-example>
+      </section>
+    </doc-demos>
+
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    export const parent = '../../docs/doc-layout.html';
+
+    export default () => ({ data: {} });
+  </script>
+</template>

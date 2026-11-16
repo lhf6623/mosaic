@@ -1,0 +1,23 @@
+<template component>
+  <mc-space block wrap-items>
+    <mc-button on:click="sm = true">sm</mc-button>
+    <mc-button on:click="md = true">md</mc-button>
+    <mc-button on:click="lg = true">lg</mc-button>
+    <mc-drawer size="sm" heading="sm · 20rem" closable attr:open="sm ? '' : null" on:close="sm = false">
+      <p>适合短信息。</p>
+    </mc-drawer>
+    <mc-drawer size="md" heading="md · 26rem（默认）" closable attr:open="md ? '' : null" on:close="md = false">
+      <p>适合详情。</p>
+    </mc-drawer>
+    <mc-drawer size="lg" heading="lg · 34rem" closable attr:open="lg ? '' : null" on:close="lg = false">
+      <p>适合带表格 / 多段的编辑表单。</p>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-sizes',
+
+      data: { sm: false, md: false, lg: false },
+    });
+  </script>
+</template>

@@ -1,0 +1,34 @@
+<template component>
+  <style>
+    mc-drawer::part(panel) {
+      background-color: #f6f7ff;
+    }
+    mc-drawer::part(header) {
+      border-bottom-style: dashed;
+    }
+    mc-drawer::part(body) {
+      padding-inline: 1.5rem;
+    }
+    mc-drawer::part(footer) {
+      background-color: #eef0ff;
+    }
+    mc-drawer::part(overlay) {
+      backdrop-filter: blur(2px);
+    }
+  </style>
+
+  <mc-space block wrap-items>
+    <mc-button on:click="open = true">改内部样式</mc-button>
+    <mc-drawer heading="::part 定制" closable attr:open="open ? '' : null" on:close="open = false">
+      <p>overlay / panel / header / body / footer 五个 part 都能从外面改。</p>
+      <mc-button slot="footer" variant="outline" on:click="open = false">关闭</mc-button>
+    </mc-drawer>
+  </mc-space>
+  <script>
+    export default async () => ({
+      tag: 'demo-drawer-part',
+
+      data: { open: false },
+    });
+  </script>
+</template>

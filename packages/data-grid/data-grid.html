@@ -1,0 +1,599 @@
+<!-- mc-data-grid — ERP 列表页数据网格 v0（列 / 行 / 复选 / 三态排序 / 行内动作）；设计取舍见 README.md。这份文件经 CDN 直发，注释算体积。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    /* 1. 宿主 + 色槽默认值（L3 组件令牌默认引用 L2 语义令牌，按实例 style 覆盖） */
+    :host {
+      display: block;
+      box-sizing: border-box;
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-data-grid-font, var(--mc-text-sm, var(--mc-def-text-sm)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      --mc-data-grid-font: var(--mc-text-sm, var(--mc-def-text-sm));
+      --mc-data-grid-border: var(--mc-color-border, var(--mc-def-color-border));
+      --mc-data-grid-head-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-data-grid-head-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
+      --mc-data-grid-stripe-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      --mc-data-grid-hover-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+    }
+
+    /* 2. 尺寸三档：只动字号与内边距（默认 md 写在上面） */
+    :host([size='sm']) {
+      --mc-data-grid-font: var(--mc-text-xs, var(--mc-def-text-xs));
+      --mc-data-grid-pad-x: var(--mc-space-3, var(--mc-def-space-3));
+      --mc-data-grid-pad-y: var(--mc-space-1, var(--mc-def-space-1));
+    }
+    :host([size='lg']) {
+      --mc-data-grid-font: var(--mc-text-base, var(--mc-def-text-base));
+      --mc-data-grid-pad-x: var(--mc-space-5, var(--mc-def-space-5));
+      --mc-data-grid-pad-y: var(--mc-space-3, var(--mc-def-space-3));
+    }
+
+    /* 3. 外框 / 滚动容器：height / max-height 由属性给；没有就按内容长 */
+    .mc-wrap {
+      position: relative;
+      box-sizing: border-box;
+      /* 宿主 style="height"（或 height 属性）时填满宿主、内部滚动；宿主高度 auto 时按内容长 */
+      height: 100%;
+      overflow: auto;
+      border: 1px solid transparent;
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+    }
+    :host([bordered]) .mc-wrap {
+      border-color: rgb(var(--mc-data-grid-border));
+    }
+
+    .mc-table {
+      width: 100%;
+      border-spacing: 0;
+      text-align: left;
+    }
+
+    .mc-table th,
+    .mc-table td {
+      padding: var(--mc-data-grid-pad-y, var(--mc-space-2, var(--mc-def-space-2)))
+        var(--mc-data-grid-pad-x, var(--mc-space-4, var(--mc-def-space-4)));
+      border-bottom: 1px solid rgb(var(--mc-data-grid-border));
+      white-space: nowrap;
+    }
+
+    .mc-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: rgb(var(--mc-data-grid-head-bg));
+      color: rgb(var(--mc-data-grid-head-fg));
+      font-weight: var(--mc-weight-medium, var(--mc-def-weight-medium));
+    }
+
+    :host([striped]) .mc-table tbody tr:nth-child(even) td {
+      background-color: rgb(var(--mc-data-grid-stripe-bg));
+    }
+
+    .mc-table tbody tr:hover td {
+      background-color: rgb(var(--mc-data-grid-hover-bg));
+    }
+
+    /* 4. 对齐：列上的 align 落到表头与单元格（表头文案也一起对齐） */
+    .mc-table [data-align='right'] {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .mc-table [data-align='center'] {
+      text-align: center;
+    }
+
+    /* 5. 选择列：只有 selectable 才出现（表头 / 行 HTML 在脚本里按属性生成） */
+    .mc-select {
+      width: 40px;
+      padding-inline: var(--mc-space-2, var(--mc-def-space-2));
+    }
+    .mc-select input {
+      margin: 0;
+      vertical-align: middle;
+      accent-color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
+    }
+
+    /* 6. 排序：表头按钮是键盘落点；只有列声明 sortable + 宿主开 sortable 才可点 */
+    .mc-sort {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-1, var(--mc-def-space-1));
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: inherit;
+      text-align: inherit;
+      cursor: default;
+    }
+    :host([sortable]) th[data-sortable] .mc-sort {
+      cursor: pointer;
+    }
+    :host([sortable]) th[data-sortable] .mc-sort:hover {
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+    .mc-sort:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+      border-radius: var(--mc-radius-sm, 0.25rem);
+    }
+    .mc-sort-icon::before {
+      content: '';
+      display: inline-block;
+      width: 0.5em;
+      height: 0.5em;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-15%);
+      opacity: 0.35;
+    }
+    th[data-sort='asc'] .mc-sort-icon::before {
+      transform: rotate(-135deg) translateY(-15%);
+      opacity: 1;
+    }
+    th[data-sort='desc'] .mc-sort-icon::before {
+      opacity: 1;
+    }
+
+    /* 7. 空态 / 加载态：表格下面一条状态行 */
+    .mc-state {
+      display: none;
+      padding: var(--mc-space-6, var(--mc-def-space-6)) var(--mc-space-4, var(--mc-def-space-4));
+      color: rgb(var(--mc-color-fg-subtle, var(--mc-def-color-fg-subtle)));
+      text-align: center;
+    }
+    .mc-state[data-visible] {
+      display: block;
+    }
+  </style>
+
+  <div
+    class="mc-wrap"
+    :style.height="height"
+    :style.maxHeight="maxHeight"
+    on:click="onWrapClick($event)"
+    on:dblclick="onWrapDblClick($event)"
+    on:change="onWrapChange($event)">
+    <table class="mc-table">
+      <thead>
+        <tr :html="headHtml"></tr>
+      </thead>
+      <tbody :html="bodyHtml"></tbody>
+    </table>
+
+    <div class="mc-state mc-empty" attr:data-visible="isEmpty ? '' : null">
+      <slot name="empty">{{emptyText}}</slot>
+    </div>
+    <div class="mc-state mc-loading" attr:data-visible="loading !== null ? '' : null">
+      <slot name="loading">加载中…</slot>
+    </div>
+  </div>
+
+  <script>
+    import { withOptions } from '../boot/options.js';
+
+    /** :html 是 HTML 通道，不转义 —— 文本单元格与属性值都自己转义 */
+    const escapeHtml = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    /**
+     * 行 / 表头用「整段 HTML 字符串」渲染，而不是 o-fill 逐行 + reactive 行数组：
+     * ofa 在**组件上下文**里给数组属性（行对象超过 3 个键时必现）包 stanz 会抛
+     * 「设置属性值 rows 出错」（mc-table 也复现）。整段字符串是原始值通道，不经过那层包装。
+     */
+    export default async () =>
+      withOptions({
+        tag: 'mc-data-grid',
+
+        emits: {
+          'select-change': { data: ['selected'] },
+          'sort-change': { data: ['key', 'order'] },
+          'cell-click': { detail: true },
+          'cell-dblclick': { detail: true },
+          'cell-action': { detail: true },
+        },
+
+        attrs: {
+          /* 对象数组：属性通道只作初始值 / JSON 兼容，运行时推荐 property（同 mc-table） */
+          columns: null,
+          /* 行主键字段：默认 id */
+          rowKey: 'id',
+          sortable: null,
+          selectable: null,
+          striped: null,
+          bordered: null,
+          size: 'md',
+          loading: null,
+          emptyText: '暂无数据',
+          /* 滚动容器高度：任意 CSS 长度；只给 max-height 时表格按内容长、超出才滚 */
+          height: '',
+          maxHeight: '',
+        },
+
+        /* ⚠️ 只放原始值：行 / 列的渲染结果都是字符串，不要再把对象数组放进 data（见文件头） */
+        data: {
+          headHtml: '',
+          bodyHtml: '',
+          isEmpty: true,
+        },
+
+        ready() {
+          this._wrap = this.shadow.$('.mc-wrap');
+          this._cols = [];
+          this._rows = [];
+          this._selectedKeys = [];
+          this._sortKey = '';
+          this._sortOrder = '';
+
+          const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
+          this._presetColumns = hasOwn('columns') ? this.ele.columns : undefined;
+          this._presetData = hasOwn('data') ? this.ele.data : undefined;
+          this._presetSelected = hasOwn('selected') ? this.ele.selected : undefined;
+
+          /* 对象属性走宿主 accessor → 组件内部 plain 字段（不进 ofa 数据通道） */
+          Object.defineProperty(this.ele, 'columns', {
+            configurable: true,
+            get: () => this._cols,
+            set: (value) => {
+              this._propColumns = true;
+              this.applyColumns(value);
+            },
+          });
+          Object.defineProperty(this.ele, 'data', {
+            configurable: true,
+            get: () => this._rows,
+            set: (value) => {
+              this._propData = true;
+              this.applyData(value);
+            },
+          });
+          Object.defineProperty(this.ele, 'selected', {
+            configurable: true,
+            get: () => [...this._selectedKeys],
+            set: (value) => this.setSelected(value),
+          });
+
+          for (const name of ['clearSelection', 'selectAll', 'scrollTo', 'reload']) {
+            Object.defineProperty(this.ele, name, {
+              configurable: true,
+              value: (...args) => this[name](...args),
+            });
+          }
+
+          this._mounted = true; // 之后的 watch 才算真变化（P5）
+        },
+
+        attached() {
+          if (!this._applied) {
+            this._applied = true;
+            /* 顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
+            if (this.ele.hasAttribute('columns'))
+              this.applyColumns(this.ele.getAttribute('columns'));
+            if (this.ele.hasAttribute('data')) this.applyData(this.ele.getAttribute('data'));
+            if (this.ele.hasAttribute('selected'))
+              this.setSelected(this.ele.getAttribute('selected'));
+            if (this._presetColumns !== undefined) {
+              this._propColumns = true;
+              this.applyColumns(this._presetColumns);
+            }
+            if (this._presetData !== undefined) {
+              this._propData = true;
+              this.applyData(this._presetData);
+            }
+            if (this._presetSelected !== undefined) this.setSelected(this._presetSelected);
+          }
+
+          /* data 没进 attrs（保留名），属性通道自己听；我们从不写这个属性，不会自激 */
+          this._attrMo = new MutationObserver(() => {
+            if (this._propData) return;
+            this.applyData(this.ele.getAttribute('data'));
+          });
+          this._attrMo.observe(this.ele, { attributes: true, attributeFilter: ['data'] });
+
+          this.applyEmpty();
+          this.queueSyncSelection();
+        },
+
+        detached() {
+          this._attrMo?.disconnect();
+        },
+
+        watch: {
+          columns(value) {
+            if (!this._mounted || this._propColumns) return;
+            this.applyColumns(value);
+          },
+          selectable() {
+            if (!this._mounted) return;
+            this.renderHead();
+            this.renderBody();
+          },
+          rowKey() {
+            if (!this._mounted) return;
+            this.applyData(this._lastRows);
+          },
+          loading() {
+            this.applyEmpty();
+          },
+        },
+
+        proto: {
+          /** 属性文本 / 数组 / null → 数组（属性通道 JSON 兼容；首屏绑定可能直接给数组） */
+          toArray(value) {
+            if (value == null) return [];
+            if (typeof value === 'string') {
+              const text = value.trim();
+              if (!text) return [];
+              try {
+                const parsed = JSON.parse(text);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            }
+            return Array.isArray(value) ? value : [];
+          },
+
+          /** 列定义 → 内部 cols（plain），并重渲染表头 / 行（单元格结构跟列走） */
+          applyColumns(value) {
+            this._lastColumns = value;
+            this._cols = this.toArray(value)
+              .filter((col) => col && typeof col === 'object')
+              .map((col) => ({
+                key: String(col.key ?? ''),
+                title: col.title == null ? String(col.key ?? '') : String(col.title),
+                width: col.width == null ? '' : String(col.width),
+                align: col.align === 'right' || col.align === 'center' ? col.align : 'left',
+                sortable: col.sortable === true,
+              }));
+            this.renderHead();
+            this.renderBody();
+          },
+
+          /** 行数据 → 内部 rows（plain），并重渲染行 HTML */
+          applyData(value) {
+            this._lastRows = value;
+            const keyName = this.ele.getAttribute('row-key') || 'id';
+            this._rows = this.toArray(value).map((row, index) => {
+              if (!row || typeof row !== 'object') return { rowKey: String(index) };
+              return { ...row, rowKey: String(row.rowKey ?? row[keyName] ?? index) };
+            });
+            this.renderBody();
+            this.applyEmpty();
+            this.queueSyncSelection();
+          },
+
+          applyEmpty() {
+            this.isEmpty = this._rows.length === 0 && this.loading === null;
+          },
+
+          /** 表头整段 HTML：选择列（可选）+ 每列一个排序按钮（键盘可达） */
+          renderHead() {
+            let html = '';
+            if (this.ele.hasAttribute('selectable')) {
+              html +=
+                '<th class="mc-select" scope="col"><input type="checkbox" data-select-all aria-label="全选"></th>';
+            }
+            for (const column of this._cols) {
+              const sortable = this.ele.hasAttribute('sortable') && column.sortable;
+              const sort = this._sortKey === column.key ? this._sortOrder : '';
+              const attrs = [
+                'scope="col"',
+                'data-align="' + column.align + '"',
+                sortable ? 'data-sortable=""' : '',
+                sort ? 'data-sort="' + sort + '"' : '',
+                column.width ? 'style="width: ' + escapeHtml(column.width) + '"' : '',
+              ]
+                .filter(Boolean)
+                .join(' ');
+              html +=
+                '<th ' +
+                attrs +
+                '><button class="mc-sort" type="button" data-sort-key="' +
+                escapeHtml(column.key) +
+                '"><span>' +
+                escapeHtml(column.title) +
+                '</span><span class="mc-sort-icon"></span></button></th>';
+            }
+            this.headHtml = html;
+          },
+
+          /** 行整段 HTML：选择格 + 按 cols 顺序的单元格（row.cells[列 key] 优先，原文不转义） */
+          renderBody() {
+            const keys = new Set(this._selectedKeys);
+            const selectable = this.ele.hasAttribute('selectable');
+            let html = '';
+            for (const row of this._rows) {
+              html += '<tr data-row-key="' + escapeHtml(row.rowKey) + '">';
+              if (selectable) {
+                html +=
+                  '<td class="mc-select"><input type="checkbox" data-pick="' +
+                  escapeHtml(row.rowKey) +
+                  '"' +
+                  (keys.has(row.rowKey) ? ' checked' : '') +
+                  '></td>';
+              }
+              for (const column of this._cols) {
+                const raw = row.cells?.[column.key];
+                const content = typeof raw === 'string' ? raw : escapeHtml(row[column.key]);
+                html +=
+                  '<td data-col="' +
+                  escapeHtml(column.key) +
+                  '" data-align="' +
+                  column.align +
+                  '">' +
+                  content +
+                  '</td>';
+              }
+              html += '</tr>';
+            }
+            this.bodyHtml = html;
+            this.isEmpty = this._rows.length === 0 && this.loading === null;
+          },
+
+          setSelected(value) {
+            this._selectedKeys = this.toArray(value).map((key) => String(key));
+            this.queueSyncSelection();
+          },
+
+          queueSyncSelection() {
+            if (this._syncRaf) cancelAnimationFrame(this._syncRaf);
+            this._syncRaf = requestAnimationFrame(() => {
+              this._syncRaf = 0;
+              this.syncSelection();
+            });
+          },
+
+          /** 选中态以 property 为真相；只同步 DOM 复选框与表头全选，不重算行 HTML */
+          syncSelection() {
+            if (!this.shadow?.all) return;
+            const keys = new Set(this._selectedKeys);
+            for (const box of this.shadow.all('tbody input[data-pick]') ?? []) {
+              const el = box.ele ?? box;
+              el.checked = keys.has(el.getAttribute('data-pick'));
+            }
+            const head = this.shadow.$('[data-select-all]');
+            if (!head) return;
+            const total = this._rows.length;
+            const picked = this._rows.filter((row) => keys.has(row.rowKey)).length;
+            head.ele.checked = total > 0 && picked === total;
+            head.ele.indeterminate = picked > 0 && picked < total;
+          },
+
+          /** 行 / 单元格坐标：从事件目标往上找 <tr> / <td>（都在本 shadow 内） */
+          cellOf(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return null;
+            const tr = target.closest('tbody tr');
+            if (!tr) return null;
+            const rowKey = tr.getAttribute('data-row-key');
+            const row = this._rows.find((item) => item.rowKey === rowKey);
+            if (!row) return null;
+            const td = target.closest('td');
+            const columnKey = td?.getAttribute('data-col') ?? '';
+            const column = this._cols.find((item) => item.key === columnKey) ?? null;
+            return { row, rowKey, column, columnKey, td };
+          },
+
+          onWrapClick(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            /* 表头排序按钮 */
+            const sortButton = target.closest('[data-sort-key]');
+            if (sortButton) {
+              this.onSort(sortButton.getAttribute('data-sort-key'));
+              return;
+            }
+            const cell = this.cellOf(event);
+            if (!cell) return;
+            const actionEl = target.closest('[data-action]');
+            if (actionEl) {
+              this.$emit('cell-action', {
+                rowKey: cell.rowKey,
+                columnKey: cell.columnKey,
+                action: actionEl.getAttribute('data-action'),
+                row: cell.row,
+                column: cell.column,
+                event,
+              });
+              return;
+            }
+            if (target instanceof HTMLInputElement) return;
+            if (!cell.td) return;
+            this.$emit('cell-click', {
+              rowKey: cell.rowKey,
+              columnKey: cell.columnKey,
+              row: cell.row,
+              column: cell.column,
+              event,
+            });
+          },
+
+          onWrapDblClick(event) {
+            const cell = this.cellOf(event);
+            if (!cell?.td) return;
+            this.$emit('cell-dblclick', {
+              rowKey: cell.rowKey,
+              columnKey: cell.columnKey,
+              row: cell.row,
+              column: cell.column,
+              event,
+            });
+          },
+
+          /** 选择：行内复选框 / 表头全选（change 不穿 shadow，监听挂在本 shadow 的容器上） */
+          onWrapChange(event) {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') return;
+            const pick = target.getAttribute('data-pick');
+            const all = target.hasAttribute('data-select-all');
+            if (pick === null && !all) return;
+
+            if (all) {
+              this.selectAll(target.checked);
+              return;
+            }
+            const keys = new Set(this._selectedKeys);
+            if (target.checked) keys.add(pick);
+            else keys.delete(pick);
+            this._selectedKeys = [...keys];
+            this.syncSelection();
+            this.$emit('select-change', { selected: [...this._selectedKeys] });
+          },
+
+          onSort(key) {
+            if (!this.ele.hasAttribute('sortable')) return;
+            const column = this._cols.find((item) => item.key === key && item.sortable);
+            if (!column) return;
+            const order =
+              this._sortKey !== key
+                ? 'asc'
+                : this._sortOrder === 'asc'
+                  ? 'desc'
+                  : this._sortOrder === 'desc'
+                    ? ''
+                    : 'asc';
+            this._sortKey = order ? key : '';
+            this._sortOrder = order;
+            this.renderHead();
+            this.$emit('sort-change', { key, order: order || null });
+          },
+
+          /** 表头上那一列当前的排序态（模板 / 外部读） */
+          orderOf(column) {
+            return this._sortKey === column.key ? this._sortOrder : '';
+          },
+
+          selectAll(checked = true) {
+            this._selectedKeys = checked ? this._rows.map((row) => row.rowKey) : [];
+            this.syncSelection();
+            this.$emit('select-change', { selected: [...this._selectedKeys] });
+          },
+
+          clearSelection() {
+            this.selectAll(false);
+          },
+
+          scrollTo(rowKey) {
+            const rows = this.shadow.all('tbody tr') ?? [];
+            const target = rows.find(
+              (el) => (el.ele ?? el).getAttribute('data-row-key') === String(rowKey),
+            );
+            target?.ele?.scrollIntoView({ block: 'nearest' });
+          },
+
+          /** 按最近一次输入重渲染（外部改了行对象字段时用） */
+          reload() {
+            this.applyColumns(this._lastColumns ?? [...this._cols]);
+            this.applyData(this._lastRows ?? [...this._rows]);
+          },
+        },
+      });
+  </script>
+</template>
