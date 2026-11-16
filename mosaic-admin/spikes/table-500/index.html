@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:," />
+    <title>spike · 500 行 sticky 表格</title>
+    <link rel="stylesheet" href="../../vendor/mosaic/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: var(--mc-font-sans);
+      }
+
+      h2 {
+        margin: 12px 0 6px;
+        font-size: 14px;
+      }
+
+      .box {
+        height: 420px;
+        overflow: auto;
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: 6px;
+        background: rgb(var(--mc-color-surface));
+        contain: strict;
+      }
+
+      /* 变体 A：table + sticky thead */
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      .table th,
+      .table td {
+        padding: 6px 8px;
+        border-bottom: 1px solid rgb(var(--mc-color-border));
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgb(var(--mc-color-surface-sunken));
+      }
+
+      /* 变体 B：div grid + sticky 头 */
+      .grid-head,
+      .grid-row {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+      }
+
+      .grid-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgb(var(--mc-color-surface-sunken));
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .grid-head > span,
+      .grid-row > span {
+        padding: 6px 8px;
+        border-bottom: 1px solid rgb(var(--mc-color-border));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .grid-row {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>变体 A：&lt;table&gt; + position: sticky 表头（500 行 × 8 列）</h2>
+    <div class="box" id="box-table">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>编号</th>
+            <th>客户</th>
+            <th>状态</th>
+            <th>金额</th>
+            <th>负责人</th>
+            <th>日期</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="body-table"></tbody>
+      </table>
+    </div>
+
+    <h2>变体 B：div grid + sticky 头（同样 500 行 × 8 列）</h2>
+    <div class="box" id="box-grid">
+      <div class="grid-head">
+        <span>编号</span>
+        <span>客户</span>
+        <span>状态</span>
+        <span>金额</span>
+        <span>负责人</span>
+        <span>日期</span>
+        <span>备注</span>
+        <span>操作</span>
+      </div>
+      <div id="rows-grid"></div>
+    </div>
+
+    <script>
+      window.__spike = { checks: [], metrics: {}, errors: [], done: false };
+    </script>
+
+    <script type="module">
+      const spike = window.__spike;
+      const HEAD = ['编号', '客户', '状态', '金额', '负责人', '日期', '备注', '操作'];
+      const CUSTOMERS = ['华东金属', '远洋物流', '中盛建材', '恒信电子', '北辰能源'];
+      const STATUSES = ['待处理', '处理中', '已解除'];
+      const OWNERS = ['陈立', '周敏', '李航', '王岚'];
+      const ROWS = Array.from({ length: 500 }, (_, index) => [
+        'IMP-' + String(index + 1).padStart(5, '0'),
+        CUSTOMERS[index % CUSTOMERS.length],
+        STATUSES[index % STATUSES.length],
+        '¥' + (10000 + index * 13.5).toLocaleString('zh-CN', { minimumFractionDigits: 2 }),
+        OWNERS[index % OWNERS.length],
+        '2026-11-' + String((index % 28) + 1).padStart(2, '0'),
+        '第 ' + (index % 9) + ' 批',
+        '详情 / 编辑',
+      ]);
+
+      const frames = (count = 2) =>
+        new Promise((resolve) => {
+          let left = count;
+          const step = () => {
+            left -= 1;
+            if (left <= 0) resolve();
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+
+      const scrollStats = async (box) => {
+        box.scrollTop = 0;
+        const deltas = [];
+        let last = performance.now();
+        await new Promise((resolve) => {
+          let index = 0;
+          const step = () => {
+            const now = performance.now();
+            deltas.push(now - last);
+            last = now;
+            box.scrollTop += 10;
+            index += 1;
+            if (index >= 90) resolve();
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+        const sorted = [...deltas].sort((a, b) => a - b);
+        const avg = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
+        return {
+          fps: Number((1000 / avg).toFixed(1)),
+          p95ms: Number(sorted[Math.floor(sorted.length * 0.95)].toFixed(1)),
+          longFrames: deltas.filter((value) => value > 32).length,
+          maxMs: Number(Math.max(...deltas).toFixed(1)),
+        };
+      };
+
+      const stickyOk = async (box, head) => {
+        box.scrollTop = 240;
+        await frames(2);
+        const headTop = head.getBoundingClientRect().top;
+        const boxTop = box.getBoundingClientRect().top;
+        return { stuck: Math.abs(headTop - boxTop) <= 1, headTop, boxTop };
+      };
+
+      (async () => {
+        try {
+          /* 变体 A */
+          const boxTable = document.getElementById('box-table');
+          const body = document.getElementById('body-table');
+          const tableStart = performance.now();
+          body.innerHTML = ROWS.map(
+            (row) => '<tr>' + row.map((cell) => '<td>' + cell + '</td>').join('') + '</tr>',
+          ).join('');
+          await frames(2);
+          spike.metrics.renderTableMs = Number((performance.now() - tableStart).toFixed(1));
+          const tableSticky = await stickyOk(boxTable, boxTable.querySelector('thead th'));
+
+          /* 变体 B */
+          const boxGrid = document.getElementById('box-grid');
+          const rowsGrid = document.getElementById('rows-grid');
+          const gridStart = performance.now();
+          rowsGrid.innerHTML = ROWS.map(
+            (row) =>
+              '<div class="grid-row">' +
+              row.map((cell) => '<span>' + cell + '</span>').join('') +
+              '</div>',
+          ).join('');
+          await frames(2);
+          spike.metrics.renderGridMs = Number((performance.now() - gridStart).toFixed(1));
+          const gridSticky = await stickyOk(boxGrid, boxGrid.querySelector('.grid-head'));
+
+          spike.metrics.tableScroll = await scrollStats(boxTable);
+          spike.metrics.gridScroll = await scrollStats(boxGrid);
+
+          spike.checks.push({
+            name: 'table 变体 sticky 表头生效',
+            ok: tableSticky.stuck,
+            detail: '表头 top=' + tableSticky.headTop + ' 容器 top=' + tableSticky.boxTop,
+          });
+          spike.checks.push({
+            name: 'div grid 变体 sticky 头生效',
+            ok: gridSticky.stuck,
+            detail: '表头 top=' + gridSticky.headTop + ' 容器 top=' + gridSticky.boxTop,
+          });
+          spike.checks.push({
+            name: 'table 500 行渲染 < 1200ms',
+            ok: spike.metrics.renderTableMs < 1200,
+            detail: spike.metrics.renderTableMs + 'ms',
+          });
+          spike.checks.push({
+            name: 'div 500 行渲染 < 1200ms',
+            ok: spike.metrics.renderGridMs < 1200,
+            detail: spike.metrics.renderGridMs + 'ms',
+          });
+          spike.checks.push({
+            name: '两个变体滚动没有 >200ms 的长帧',
+            ok: spike.metrics.tableScroll.maxMs < 200 && spike.metrics.gridScroll.maxMs < 200,
+            detail:
+              'max ' +
+              spike.metrics.tableScroll.maxMs +
+              ' / ' +
+              spike.metrics.gridScroll.maxMs +
+              'ms',
+          });
+        } catch (error) {
+          spike.errors.push(String(error && error.stack ? error.stack : error));
+        } finally {
+          spike.done = true;
+        }
+      })();
+    </script>
+  </body>
+</html>

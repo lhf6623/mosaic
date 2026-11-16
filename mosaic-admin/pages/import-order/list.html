@@ -1,0 +1,119 @@
+<!-- page: {"label":"委托单列表","group":"委托","order":30} -->
+<template page>
+  <link rel="stylesheet" href="../../styles/page.css" />
+  <l-m src="../../components/erp-page.html"></l-m>
+  <l-m src="../../vendor/mosaic/tag/tag.html"></l-m>
+  <l-m src="../../components/order-detail-drawer.html"></l-m>
+  <l-m src="../../components/order-form-drawer.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+  </style>
+
+  <erp-page
+    id="page"
+    on:search="onSearch($event)"
+    on:action="onAction($event)"
+    on:page-change="onPageChange($event)"
+    on:select-change="onSelectChange($event)"
+    on:cell-action="onCellAction($event)"
+    on:cell-click="onCellClick($event)"></erp-page>
+
+  <order-detail-drawer id="detail"></order-detail-drawer>
+  <order-form-drawer id="form"></order-form-drawer>
+
+  <script>
+    import { PAGE_SIZE } from '../../config.js';
+    import { getOrderImportPage } from '../../shared/api/order-import.js';
+    import { importOrderPageSchema } from '../../shared/modules/import-order/schema.js';
+    import { loadImportOrderRowMapper } from '../../shared/modules/import-order/cell.js';
+    import {
+      importOrderFooter,
+      importOrderQuery,
+    } from '../../shared/modules/import-order/logic.js';
+
+    export default async () => ({
+      data: { selected: [], total: 0, lastAction: '（还没有操作）' },
+
+      ready() {
+        this.init();
+      },
+
+      proto: {
+        async init() {
+          await customElements.whenDefined('erp-page');
+          await customElements.whenDefined('order-detail-drawer');
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          this._page = this.shadow.$('#page').ele;
+          this._page.schema = importOrderPageSchema;
+          this.shadow.$('#form').ele.addEventListener('saved', () => this.load(1));
+          this._search = {};
+          this._rows = await loadImportOrderRowMapper();
+          await this.load(1);
+        },
+
+        async load(page) {
+          this._page.setLoading(true);
+          this._page.setError('');
+          try {
+            const data = await getOrderImportPage(importOrderQuery(this._search, page, PAGE_SIZE));
+            const rows = data?.records ?? [];
+            this.total = Number(data?.total ?? rows.length);
+            this._page.setRows(this._rows(rows));
+            this._page.setPage({
+              current: Number(data?.current ?? page),
+              pageSize: Number(data?.size ?? PAGE_SIZE),
+              total: this.total,
+            });
+            this.updateFooter();
+          } catch (error) {
+            this._page.setRows([]);
+            this._page.setError('加载失败：' + error.message);
+          } finally {
+            this._page.setLoading(false);
+          }
+        },
+
+        updateFooter() {
+          this._page.footer = importOrderFooter(this);
+        },
+
+        onSearch(event) {
+          this._search = event.data.values;
+          this.load(1);
+        },
+
+        onPageChange(event) {
+          this.load(event.data.current);
+        },
+
+        onSelectChange(event) {
+          this.selected = event.data.selected;
+          this.updateFooter();
+        },
+
+        onCellAction(event) {
+          this.lastAction = '行内动作 ' + event.detail.action;
+          this.updateFooter();
+          if (event.detail.action === 'edit') this.shadow.$('#form').ele.show(event.detail.rowKey);
+        },
+
+        onCellClick(event) {
+          this.shadow.$('#detail').ele.show(event.detail.rowKey);
+        },
+
+        onAction(event) {
+          const action = event.data.action;
+          if (action === 'export') this.lastAction = '导出已选 ' + this.selected.length + ' 条';
+          else if (action === 'clear') {
+            this._page.clearSelection();
+            this.lastAction = '已清空选择';
+          }
+          this.updateFooter();
+        },
+      },
+    });
+  </script>
+</template>

@@ -24,6 +24,8 @@ packages/icon/icons.generated.names.js
 packages/icon/icons.license.txt
 packages/boot/mosaic.css
 packages/boot/component-base.css
+# mosaic-admin 的页面注册表是生成物（tools/page-registry.mjs），格式化会让产物和生成器漂移（check:app 逐字节对账）。
+mosaic-admin/pages.registry.js
 
 # 测试代码：里面大量是对齐过的期望值 / 断言数据，重排后反而更难读，
 # 而且它们只被测试运行，不影响对外风格。
@@ -36,6 +38,9 @@ packages/*/test/
 # 编辑器的 HTML 格式化器照旧重排，而这里的内容经不起一次手滑（一次全仓格式化挂掉 code 套件 4 条）。
 # 代价：这些 demo 的 <script> 与属性折行得手写保持风格。
 packages/*/demos/*.html
+
+# mosaic-admin 的第三方 UMD 副本（crypto-js 等）：压缩产物原样 vendor，不格式化。
+mosaic-admin/vendor/lib/
 
 # 第三方只读资产：原样 vendor（CodeMirror 压缩产物 + LICENSE），格式化只会上游分叉
 packages/code-editor/vendor/

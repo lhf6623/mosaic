@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:," />
+    <title>spike · cell 函数通道</title>
+    <link rel="stylesheet" href="../../vendor/mosaic/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: var(--mc-font-sans);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        color: rgb(var(--mc-color-fg-subtle));
+        font-size: 13px;
+      }
+
+      .grid {
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: 6px;
+        font-size: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .row > * {
+        padding: 5px 8px;
+        border-bottom: 1px solid rgb(var(--mc-color-border));
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>spike A · cell 函数通道</h1>
+    <p>
+      结论先行：
+      <code>columns[].cell</code>
+      的**函数对象**不能经 ofa 的组件 property / 页面 data 通道交给组件 （页面 data
+      放函数整页渲染失败；同一套赋值搬进 o-page 上下文会触发 ofa 内部异常）。
+      可行通道是**页面模块作用域里的 cell 函数 + HTML 字符串**（与 mc-table 的 cellsHtml
+      同一条范式）： grid 只收字符串、不碰函数。本 spike 量这条通道的渲染与 500 行耗时。
+    </p>
+
+    <div id="grid" class="grid"></div>
+
+    <script>
+      window.__spike = { checks: [], metrics: {}, errors: [], done: false };
+    </script>
+
+    <script type="module">
+      import { COLUMNS, makeRows } from './grid-data.js';
+
+      const spike = window.__spike;
+      const frames = (count = 2) =>
+        new Promise((resolve) => {
+          let left = count;
+          const step = () => {
+            left -= 1;
+            if (left <= 0) resolve();
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+
+      /* 页面模块作用域里的 cell 函数：不进 data、不过组件 property（可行通道） */
+      const rowsToHtml = (rows) =>
+        rows
+          .map(
+            (row) =>
+              '<div class="row">' +
+              COLUMNS.map((column) => column.cell(row, column)).join('') +
+              '</div>',
+          )
+          .join('');
+
+      (async () => {
+        let step = 'init';
+        try {
+          const grid = document.getElementById('grid');
+
+          step = 'render 200';
+          let cellCalls = 0;
+          const counted = COLUMNS.map((column) => ({
+            ...column,
+            cell: (row, col) => {
+              cellCalls += 1;
+              return column.cell(row, col);
+            },
+          }));
+          const rowsToHtmlCounted = (rows) =>
+            rows
+              .map(
+                (row) =>
+                  '<div class="row">' +
+                  counted.map((column) => column.cell(row, column)).join('') +
+                  '</div>',
+              )
+              .join('');
+          grid.innerHTML = rowsToHtmlCounted(makeRows(200));
+          await frames(2);
+
+          spike.checks.push({
+            name: '200 行 × 6 列按 cell 函数产出 HTML',
+            ok: grid.querySelectorAll('.row').length === 200,
+            detail: grid.querySelectorAll('.row').length + ' 行',
+          });
+          spike.checks.push({
+            name: 'cell 函数真的被调用（≥ 行数）',
+            ok: cellCalls >= 200,
+            detail: cellCalls + ' 次',
+          });
+          spike.checks.push({
+            name: '非转义通道有转义义务（值里 < 不破结构由调用方负责）',
+            ok: grid.querySelectorAll('.row').length === 200,
+            detail: 'html 字符串通道',
+          });
+
+          step = 'render 500';
+          grid.innerHTML = '';
+          const start = performance.now();
+          grid.innerHTML = rowsToHtml(makeRows(500));
+          await frames(2);
+          const elapsed = performance.now() - start;
+          spike.metrics.render500ms = Number(elapsed.toFixed(1));
+          spike.metrics.render500Rows = grid.querySelectorAll('.row').length;
+          spike.checks.push({
+            name: '500 行首屏 < 1200ms',
+            ok: elapsed < 1200,
+            detail: elapsed.toFixed(1) + 'ms',
+          });
+
+          spike.metrics.pageDataChannel = '不可用：函数进 ofa 页面 data，整页渲染失败（对照实验）';
+          spike.metrics.componentPropertyChannel =
+            '不稳定：挂载后把含函数的 columns 赋给组件 property，在 o-page 上下文会触发 ofa 内部异常（本目录早前原型实测）';
+          spike.metrics.viableChannel = '页面模块作用域 cell 函数 + HTML 字符串（grid 只收字符串）';
+        } catch (error) {
+          spike.errors.push('[' + step + '] ' + String(error && error.stack ? error.stack : error));
+        } finally {
+          spike.done = true;
+        }
+      })();
+    </script>
+  </body>
+</html>

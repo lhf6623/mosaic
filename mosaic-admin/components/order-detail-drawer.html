@@ -1,0 +1,307 @@
+<!-- erp 详情抽屉：mc-drawer + 要点 + 明细表 + 审批时间轴（v0 只读；数据来自旧仓真接口）。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/drawer/drawer.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    .head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-2);
+    }
+
+    .head-title {
+      font-size: var(--mc-text-lg);
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .head-sub {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+    }
+
+    .section {
+      margin-block-start: var(--mc-space-5, 1.25rem);
+    }
+
+    .section:first-child {
+      margin-block-start: 0;
+    }
+
+    .section-title {
+      margin: 0 0 var(--mc-space-3);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+      gap: var(--mc-space-3) var(--mc-space-4);
+    }
+
+    .fact-label {
+      display: block;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .fact-value {
+      display: block;
+      margin-block-start: 2px;
+      color: rgb(var(--mc-color-fg));
+      font-size: var(--mc-text-sm);
+      overflow-wrap: anywhere;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--mc-text-sm);
+      white-space: nowrap;
+    }
+
+    th,
+    td {
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+      text-align: start;
+    }
+
+    th {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg-muted));
+      font-weight: var(--mc-weight-medium, 500);
+    }
+
+    tr:last-child td {
+      border-block-end: 0;
+    }
+
+    .num {
+      text-align: end;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timeline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-inline-start: var(--mc-space-5);
+      padding-block-end: var(--mc-space-3);
+      border-inline-start: 2px solid rgb(var(--mc-color-border));
+      margin-inline-start: 0.4rem;
+    }
+
+    .timeline-item:last-child {
+      padding-block-end: 0;
+      border-inline-start-color: transparent;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: -0.4rem;
+      inset-block-start: 0.35rem;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+      background-color: rgb(var(--mc-color-primary));
+    }
+
+    .timeline-who {
+      color: rgb(var(--mc-color-fg));
+      font-size: var(--mc-text-sm);
+    }
+
+    .timeline-time {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .state {
+      padding: var(--mc-space-4) 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      text-align: center;
+    }
+
+    .state[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <mc-drawer
+    id="drawer"
+    size="lg"
+    closable
+    mask-closable
+    attr:open="open ? '' : null"
+    on:close="open = false">
+    <span slot="header" class="head">
+      <span class="head-title">委托单详情</span>
+      <span class="head-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
+    </span>
+    <div :html="bodyHtml"></div>
+    <mc-button slot="footer" variant="outline" on:click="open = false">关闭</mc-button>
+  </mc-drawer>
+
+  <script>
+    import {
+      getOrderImportAuditList,
+      getOrderImportDetail,
+      getOrderImportDetailPage,
+    } from '../shared/api/order-import.js';
+    import { getDict, dictMap } from '../shared/api/dicts.js';
+    import { formatMoney } from '../shared/format.js';
+
+    const esc = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const fact = (label, value) =>
+      '<div class="fact"><span class="fact-label">' +
+      esc(label) +
+      '</span><span class="fact-value">' +
+      (esc(value) || '—') +
+      '</span></div>';
+
+    export default async () => ({
+      tag: 'order-detail-drawer',
+
+      data: { open: false, headingSub: '', bodyHtml: '<p class="state">加载中…</p>' },
+
+      ready() {
+        this._dicts = null;
+        Object.defineProperty(this.ele, 'show', {
+          configurable: true,
+          value: (orderId) => this.openDetail(orderId),
+        });
+      },
+
+      proto: {
+        async openDetail(orderId) {
+          this.open = true;
+          this.headingSub = '';
+          this.bodyHtml = '<p class="state">加载中…</p>';
+          try {
+            const [detail, lines, audits, orderDict, auditDict] = await Promise.all([
+              getOrderImportDetail(orderId),
+              getOrderImportDetailPage({ orderId, current: 1, size: 200 }),
+              getOrderImportAuditList(orderId).catch(() => []),
+              getDict('order_import_process_status'),
+              getDict('audit_status'),
+            ]);
+            const orderStatus = dictMap(orderDict).get(String(detail.orderStatus));
+            const auditStatus = dictMap(auditDict).get(String(detail.auditStatus));
+            this.headingSub =
+              detail.entrustNo + ' · ' + (orderStatus?.label ?? detail.orderStatus ?? '');
+            this.bodyHtml = this.render(detail, lines?.records ?? [], audits ?? [], auditStatus);
+          } catch (error) {
+            this.bodyHtml =
+              '<p class="state" data-error>' + esc('加载失败：' + error.message) + '</p>';
+          }
+        },
+
+        render(detail, lines, audits, auditStatus) {
+          const facts = [
+            fact('客户名称', detail.customerName),
+            fact('委托方', detail.principalName),
+            fact('供应商', detail.supplierName),
+            fact('订单编号', detail.orderNo),
+            fact('订单日期', detail.orderDate),
+            fact('审核状态', auditStatus?.label ?? detail.auditStatus),
+            fact('业务员', detail.saleManName),
+            fact('跟单员', detail.tradeManName),
+            fact('币种', detail.currencyName),
+            fact('总金额', formatMoney(detail.totalMoney)),
+          ].join('');
+
+          const lineRows = lines
+            .map(
+              (line) =>
+                '<tr><td>' +
+                esc(line.productNo) +
+                '</td><td>' +
+                esc(line.productName) +
+                '</td><td>' +
+                esc(line.productModel) +
+                '</td><td class="num">' +
+                esc(line.qty) +
+                '</td><td class="num">' +
+                esc(formatMoney(line.price)) +
+                '</td><td class="num">' +
+                esc(formatMoney(line.totalMoney)) +
+                '</td><td>' +
+                esc(line.customsCode) +
+                '</td></tr>',
+            )
+            .join('');
+
+          const lineHtml = lines.length
+            ? '<div class="table-wrap"><table><thead><tr><th>商品编号</th><th>品名</th><th>型号</th>' +
+              '<th class="num">数量</th><th class="num">单价</th><th class="num">金额</th><th>报关编码</th>' +
+              '</tr></thead><tbody>' +
+              lineRows +
+              '</tbody></table></div>'
+            : '<p class="state">没有明细行</p>';
+
+          const auditHtml = audits.length
+            ? '<ul class="timeline">' +
+              audits
+                .map((audit) => {
+                  const who = audit.realName
+                    ? [].concat(audit.realName).filter(Boolean).join(' / ')
+                    : audit.type === 'start'
+                      ? '发起人'
+                      : '待处理';
+                  const task = audit.taskName ? esc(audit.taskName) + ' · ' : '';
+                  return (
+                    '<li class="timeline-item"><div class="timeline-who">' +
+                    task +
+                    esc(who) +
+                    '</div><div class="timeline-time">' +
+                    esc(audit.time ?? '待处理') +
+                    '</div></li>'
+                  );
+                })
+                .join('') +
+              '</ul>'
+            : '<p class="state">没有审批记录</p>';
+
+          return (
+            '<section class="section"><h3 class="section-title">要点</h3><div class="facts">' +
+            facts +
+            '</div></section>' +
+            '<section class="section"><h3 class="section-title">明细（' +
+            lines.length +
+            ' 行）</h3>' +
+            lineHtml +
+            '</section>' +
+            '<section class="section"><h3 class="section-title">审批记录</h3>' +
+            auditHtml +
+            '</section>'
+          );
+        },
+      },
+    });
+  </script>
+</template>

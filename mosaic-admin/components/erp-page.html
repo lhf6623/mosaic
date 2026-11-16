@@ -1,0 +1,403 @@
+<!-- erp-page — 列表页壳（G2）：schema 驱动搜索区 / 工具栏 / mc-data-grid，页面只接线。
+     为什么搜索区与工具栏用 HTML 字符串 + 事件委托：组件上下文里把多键对象数组放进 ofa 响应式数据会炸
+     （见 packages/data-grid/README.md「设计取舍」）；字符串是原始值通道，稳。
+     单元格函数也不经过这里：业务模块先把 rows 加工成带 cells 的行，再 setRows() 交给本组件。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+
+  <l-m src="../vendor/mosaic/input/input.html"></l-m>
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+  <l-m src="../vendor/mosaic/data-grid/data-grid.html"></l-m>
+  <l-m src="../vendor/mosaic/pagination/pagination.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    :host {
+      display: block;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-4);
+      padding: var(--mc-space-6);
+      max-width: 96rem;
+      box-sizing: border-box;
+    }
+
+    .page-head {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-1);
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: var(--mc-text-2xl);
+      font-weight: var(--mc-weight-semibold);
+      letter-spacing: -0.01em;
+    }
+
+    .page-hint {
+      margin: 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+      line-height: 1.6;
+    }
+
+    .search {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--mc-space-3);
+    }
+
+    .search-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-1);
+      min-width: 10rem;
+    }
+
+    .search-label {
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+
+    .search-field mc-input,
+    .search-field mc-select {
+      width: 100%;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-3);
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mc-space-3);
+    }
+
+    .footer mc-pagination {
+      margin-inline-start: auto;
+    }
+
+    .error-text {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <section class="page">
+    <header class="page-head">
+      <h1 class="page-title">{{title}}</h1>
+      <p class="page-hint" attr:data-visible="hint ? '' : null">{{hint}}</p>
+    </header>
+
+    <div class="search" id="search" :html="searchHtml"></div>
+
+    <div class="toolbar" id="toolbar" :html="toolbarHtml"></div>
+
+    <mc-data-grid
+      id="grid"
+      selectable
+      sortable
+      height="520px"
+      attr:loading="gridLoading ? '' : null"
+      on:select-change="forwardSelect($event)"
+      on:sort-change="forwardSort($event)"
+      on:cell-click="forwardClick($event)"
+      on:cell-dblclick="forwardDblClick($event)"
+      on:cell-action="forwardAction($event)"></mc-data-grid>
+
+    <div class="footer">
+      <p class="page-hint error-text" attr:data-visible="errorText ? '' : null">{{errorText}}</p>
+      <p class="page-hint" attr:data-visible="footerText ? '' : null">{{footerText}}</p>
+      <mc-pagination
+        id="pager"
+        size="sm"
+        attr:data-visible="pagerVisible ? '' : null"
+        on:change="onPageChange($event)"></mc-pagination>
+    </div>
+  </section>
+
+  <script>
+    import { can } from '../shared/perm.js';
+
+    const escapeHtml = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    export default async () => ({
+      tag: 'erp-page',
+
+      attrs: {
+        title: '',
+        hint: '',
+      },
+
+      data: {
+        searchHtml: '',
+        toolbarHtml: '',
+        footerText: '',
+        errorText: '',
+        pagerVisible: false,
+        gridLoading: false,
+      },
+
+      ready() {
+        this._schema = { search: [], toolbar: [], columns: [] };
+        this._fields = [];
+        this._rows = [];
+        this._presetSchema = Object.prototype.hasOwnProperty.call(this.ele, 'schema')
+          ? this.ele.schema
+          : undefined;
+
+        this._page = this.shadow.$('.page');
+        this._search = this.shadow.$('#search');
+        this._toolbar = this.shadow.$('#toolbar');
+        this._grid = this.shadow.$('#grid');
+
+        /* 页面通过 property 传 schema（对象，不进 data）；setRows 也挂宿主，页面直接调 */
+        Object.defineProperty(this.ele, 'schema', {
+          configurable: true,
+          get: () => this._schema,
+          set: (value) => this.applySchema(value),
+        });
+        Object.defineProperty(this.ele, 'setRows', {
+          configurable: true,
+          value: (rows) => this.setRows(rows),
+        });
+        Object.defineProperty(this.ele, 'getSelected', {
+          configurable: true,
+          value: () => this._grid?.ele?.selected ?? [],
+        });
+        Object.defineProperty(this.ele, 'clearSelection', {
+          configurable: true,
+          value: () => this._grid?.ele?.clearSelection?.(),
+        });
+        Object.defineProperty(this.ele, 'footer', {
+          configurable: true,
+          get: () => this.footerText,
+          set: (value) => {
+            this.footerText = String(value ?? '');
+          },
+        });
+        Object.defineProperty(this.ele, 'setPage', {
+          configurable: true,
+          value: (pageInfo) => this.setPage(pageInfo),
+        });
+        Object.defineProperty(this.ele, 'setLoading', {
+          configurable: true,
+          value: (loading) => {
+            this.gridLoading = Boolean(loading);
+          },
+        });
+        Object.defineProperty(this.ele, 'setError', {
+          configurable: true,
+          value: (message) => {
+            this.errorText = String(message ?? '');
+            this.gridLoading = false;
+          },
+        });
+
+        this._onPermissions = () => this.renderToolbar();
+        window.addEventListener('admin-permissions-change', this._onPermissions);
+
+        this._search.ele.addEventListener('input', (event) => this.onSearchInput(event));
+        this._search.ele.addEventListener('change', (event) => this.onSearchInput(event));
+        this._search.ele.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') this.emitSearch();
+        });
+        this._toolbar.ele.addEventListener('click', (event) => {
+          const button =
+            event.target instanceof Element ? event.target.closest('[data-action]') : null;
+          if (!button) return;
+          const action = button.getAttribute('data-action');
+          /* 查询 / 重置是壳自己的动作，其余才上抛给页面 */
+          if (action === 'search' || action === 'reset') {
+            this.onToolbarAction(action);
+            return;
+          }
+          this.emitData('action', { action });
+        });
+      },
+
+      attached() {
+        this._mounted = true;
+        if (this._presetSchema !== undefined) {
+          this.applySchema(this._presetSchema);
+          this._presetSchema = undefined;
+        } else {
+          this.applySchema(this._schema);
+        }
+        this.setRows(this._rows);
+      },
+
+      detached() {
+        window.removeEventListener('admin-permissions-change', this._onPermissions);
+      },
+
+      proto: {
+        /** data 通道：与库组件同形（$event.data.*），冒泡 + composed 穿 shadow */
+        emitData(name, data) {
+          this.emit(name, { data, bubbles: true, composed: true });
+        },
+        /** detail 通道：不可序列化载荷（行对象 / 原始事件）走 CustomEvent */
+        emitDetail(name, detail) {
+          this.ele.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+        },
+
+        /** schema → 标题 / 搜索区 / 工具栏 / 列（对象存 plain 字段，渲染成字符串进 data） */
+        applySchema(schema) {
+          this._schema = schema ?? { search: [], toolbar: [], columns: [] };
+          this._fields = (this._schema.search ?? []).map((field) => ({
+            key: String(field.key ?? ''),
+            label: String(field.label ?? ''),
+            type: field.type === 'select' ? 'select' : 'input',
+            placeholder: String(field.placeholder ?? ''),
+            options: Array.isArray(field.options) ? field.options : [],
+          }));
+
+          this.title = this._schema.title ?? this.title;
+          this.hint = this._schema.hint ?? this.hint;
+
+          this.renderSearch();
+          this.renderToolbar();
+          this._grid?.ele && (this._grid.ele.columns = this._schema.columns ?? []);
+        },
+
+        renderSearch() {
+          let html = '';
+          /* v0 只支持 input：mc-select 的选项是**轻 DOM 的 mc-option**，动态渲染的挂载时序不可靠，
+             等「动态 options」通道定下来再补 select 搜索项（见 README「刻意不做」）。 */
+          for (const field of this._fields) {
+            if (field.type !== 'input') continue;
+            html +=
+              '<div class="search-field"><span class="search-label">' +
+              escapeHtml(field.label) +
+              '</span><mc-input data-field="' +
+              escapeHtml(field.key) +
+              '" placeholder="' +
+              escapeHtml(field.placeholder || field.label) +
+              '" style="width: 12rem"></mc-input></div>';
+          }
+          this.searchHtml = html;
+        },
+
+        renderToolbar() {
+          const buttons = (this._schema.toolbar ?? []).filter(
+            (button) => !button.permission || can(button.permission),
+          );
+          let html = '';
+          if (this._fields.length) {
+            html +=
+              '<mc-button data-action="search">查询</mc-button>' +
+              '<mc-button data-action="reset" variant="outline">重置</mc-button>';
+          }
+          for (const button of buttons) {
+            html +=
+              '<mc-button data-action="' +
+              escapeHtml(button.action) +
+              '"' +
+              (button.variant ? ' variant="' + escapeHtml(button.variant) + '"' : '') +
+              '>' +
+              escapeHtml(button.label ?? button.action) +
+              '</mc-button>';
+          }
+          this.toolbarHtml = html;
+        },
+
+        /** 行数据：页面把 cells 加工好后交进来（函数不经过组件） */
+        setRows(rows) {
+          this._rows = Array.isArray(rows) ? rows : [];
+          if (this._grid?.ele) this._grid.ele.data = this._rows;
+        },
+
+        /** 分页：页大小 / 页码 / 总数交给 mc-pagination（runtime 通道：total 属性 + current property） */
+        setPage({ current = 1, pageSize = 20, total = 0 } = {}) {
+          const pager = this._pager?.ele ?? this.shadow.$('#pager')?.ele;
+          if (!pager) return;
+          this._pager = { ele: pager };
+          /* total / page-size 是 attrs 通道：写属性才触发组件 watch；current 是 runtime property */
+          pager.setAttribute('total', String(Number(total)));
+          pager.setAttribute('page-size', String(Number(pageSize)));
+          pager.current = Number(current);
+          this.pagerVisible = Number(total) > Number(pageSize);
+        },
+
+        onPageChange(event) {
+          this.emitData('page-change', event.data);
+        },
+
+        /** 搜索区当前值：input / select 都按 data-field 读 */
+        searchValues() {
+          const values = {};
+          for (const field of this._fields) {
+            const control = this.shadow.$(`[data-field="${field.key}"]`);
+            if (!control) continue;
+            values[field.key] = control.ele?.value ?? '';
+          }
+          return values;
+        },
+
+        emitSearch() {
+          this.emitData('search', { values: this.searchValues() });
+        },
+
+        resetSearch() {
+          for (const field of this._fields) {
+            const control = this.shadow.$(`[data-field="${field.key}"]`);
+            if (control?.ele) control.ele.value = '';
+          }
+          this.emitSearch();
+        },
+
+        onSearchInput(event) {
+          const action =
+            event.target instanceof Element ? event.target.closest('[data-action]') : null;
+          if (action) return; // 查询 / 重置按钮由工具栏委托负责
+          if (event.type === 'change' && event.target instanceof Element) this.emitSearch();
+        },
+
+        onToolbarAction(action) {
+          if (action === 'search') {
+            this.emitSearch();
+            return;
+          }
+          if (action === 'reset') {
+            this.resetSearch();
+          }
+        },
+
+        /* 子组件事件原样上抛：data 通道带载荷键，detail 通道整块转发（与 data-grid 一致） */
+        forwardSelect(event) {
+          this.emitData('select-change', event.data);
+        },
+        forwardSort(event) {
+          this.emitData('sort-change', event.data);
+        },
+        forwardClick(event) {
+          this.emitDetail('cell-click', event.detail);
+        },
+        forwardDblClick(event) {
+          this.emitDetail('cell-dblclick', event.detail);
+        },
+        forwardAction(event) {
+          this.emitDetail('cell-action', event.detail);
+        },
+      },
+    });
+  </script>
+</template>

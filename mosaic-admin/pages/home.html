@@ -1,0 +1,57 @@
+<!-- page: {"label":"工作台","group":"概览","order":10} -->
+<template page>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+  </style>
+
+  <section class="page">
+    <header class="page-head">
+      <h1 class="page-title">Mosaic Admin 探针</h1>
+      <p class="page-hint">
+        已接旧仓开发环境真实接口：登录（OAuth2 密码模式）+ 用户列表 + 委托单列表（真实数据 / 分页 /
+        字典翻译）。
+      </p>
+    </header>
+
+    <div class="tiles">
+      <article class="tile">
+        <h2>用户列表</h2>
+        <p>简单列表切片（真接口）：/admin/user/page，搜索 + 分页。</p>
+        <a href="#/pages/system/user/list.html">
+          <mc-button inline variant="outline">打开</mc-button>
+        </a>
+      </article>
+
+      <article class="tile">
+        <h2>委托单列表</h2>
+        <p>重列表切片（真接口）：/api/orderImport/page，207 条真实委托单。</p>
+        <a href="#/pages/import-order/list.html">
+          <mc-button inline variant="outline">打开</mc-button>
+        </a>
+      </article>
+
+      <article class="tile">
+        <h2>三个 spike</h2>
+        <p>
+          cell 函数通道 / 500 行 sticky / 标签页状态保持 —— 结论见 docs/mc-grid-contract.md； 跑法
+          `pnpm spike:admin`。
+        </p>
+      </article>
+    </div>
+
+    <p class="page-hint">版本 {{version}}</p>
+  </section>
+
+  <script>
+    import { APP_VERSION } from '../config.js';
+
+    export default async () => ({
+      data: { version: APP_VERSION },
+    });
+  </script>
+</template>

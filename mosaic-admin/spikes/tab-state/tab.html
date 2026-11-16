@@ -1,0 +1,30 @@
+<!-- spike C 的标签页：输入框 + 计数器，两者都是“切走再切回应该还在”的状态 -->
+<template page>
+  <style>
+    :host {
+      display: block;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+  </style>
+
+  <h3>标签 {{tabNo}}</h3>
+  <p>
+    <input placeholder="随便输点" />
+    <button on:click="count++">+1</button>
+    <span>
+      点击次数：
+      <b data-count>{{count}}</b>
+    </span>
+  </p>
+
+  <script>
+    export default async ({ query }) => ({
+      /* index 是 $.fn 上的保留名，换个前缀避开（ofa 的 data 键禁止与内置冲突） */
+      data: { tabNo: query.i ?? '?', count: 0 },
+    });
+  </script>
+</template>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:," />
+    <title>spike · 标签页状态保持</title>
+    <link rel="stylesheet" href="../../vendor/mosaic/boot/mosaic.css" />
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: var(--mc-font-sans);
+      }
+
+      .tab {
+        display: none;
+        border: 1px solid rgb(var(--mc-color-border));
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .tab[data-active] {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>spike C：10 个标签页常驻，来回切 10 次看状态与内存</h2>
+    <div id="tabs"></div>
+
+    <script>
+      window.__spike = { checks: [], metrics: {}, errors: [], done: false };
+    </script>
+
+    <script type="module">
+      const spike = window.__spike;
+      const frames = (count = 2) =>
+        new Promise((resolve) => {
+          let left = count;
+          const step = () => {
+            left -= 1;
+            if (left <= 0) resolve();
+            else requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+
+      const TAB_COUNT = 10;
+
+      /** 给某一页写状态：输入框（原生 DOM 值）+ 点两次计数按钮（ofa data 状态） */
+      const writeState = (pageEl, index) => {
+        const root = pageEl.shadowRoot;
+        const input = root.querySelector('input');
+        input.value = 'tab-' + index;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        const button = root.querySelector('button');
+        button.click();
+        button.click();
+      };
+
+      const readState = (pageEl) => {
+        const root = pageEl.shadowRoot;
+        return {
+          value: root.querySelector('input').value,
+          count: root.querySelector('[data-count]').textContent.trim(),
+        };
+      };
+
+      (async () => {
+        try {
+          await customElements.whenDefined('o-page');
+          const host = document.getElementById('tabs');
+          const heapBefore = performance.memory?.usedJSHeapSize ?? 0;
+
+          /* 1) 一次性挂 10 个常驻页面（不销毁、只切显隐） */
+          const mountStart = performance.now();
+          const tabs = [];
+          for (let index = 0; index < TAB_COUNT; index += 1) {
+            const wrap = document.createElement('div');
+            wrap.className = 'tab';
+            const pageEl = document.createElement('o-page');
+            const loaded = new Promise((resolve) =>
+              pageEl.addEventListener('page-loaded', resolve, { once: true }),
+            );
+            pageEl.setAttribute('src', './tab.html?i=' + index);
+            wrap.append(pageEl);
+            host.append(wrap);
+            await loaded;
+            tabs.push({ wrap, pageEl, index });
+          }
+          spike.metrics.mount10Ms = Number((performance.now() - mountStart).toFixed(1));
+
+          spike.checks.push({
+            name: '10 个标签页常驻挂载成功',
+            ok:
+              tabs.length === TAB_COUNT &&
+              tabs.every((tab) => tab.pageEl.shadowRoot?.querySelector('input')),
+            detail: tabs.length + ' 个',
+          });
+
+          /* 2) 每页写自己的状态，再全部隐藏 → 全部显示，读回来 */
+          for (const tab of tabs) writeState(tab.pageEl, tab.index);
+          for (const tab of tabs) tab.wrap.removeAttribute('data-active');
+          await frames(2);
+          tabs[0].wrap.setAttribute('data-active', '');
+
+          const states = tabs.map((tab) => ({ index: tab.index, ...readState(tab.pageEl) }));
+          const retained = states.every(
+            (state) => state.value === 'tab-' + state.index && state.count === '2',
+          );
+          spike.checks.push({
+            name: '显隐切换后 DOM 输入值与组件状态都保持',
+            ok: retained,
+            detail: JSON.stringify(states.slice(0, 3)) + ' …',
+          });
+
+          /* 3) 来回切 10 次：只改 active 标记，不重建页面 */
+          const switchStart = performance.now();
+          let toggleTotal = 0;
+          for (let round = 0; round < TAB_COUNT; round += 1) {
+            const toggleStart = performance.now();
+            for (const tab of tabs) tab.wrap.removeAttribute('data-active');
+            tabs[round].wrap.setAttribute('data-active', '');
+            toggleTotal += performance.now() - toggleStart;
+            await frames(1);
+          }
+          const switchMs = (performance.now() - switchStart) / TAB_COUNT;
+          const toggleMs = toggleTotal / TAB_COUNT;
+          spike.metrics.switchAvgMs = Number(switchMs.toFixed(2));
+          spike.metrics.toggleAvgMs = Number(toggleMs.toFixed(2));
+          spike.checks.push({
+            name: '切换一次平均 < 50ms（含 1 帧等待）',
+            ok: switchMs < 50,
+            detail: switchMs.toFixed(2) + 'ms',
+          });
+          spike.checks.push({
+            name: '同步切换（只改 data-active）< 5ms',
+            ok: toggleMs < 5,
+            detail: toggleMs.toFixed(2) + 'ms',
+          });
+
+          /* 4) 内存：10 个实例的堆增量（没有强制 GC，只作量级参考） */
+          const heapAfter = performance.memory?.usedJSHeapSize ?? 0;
+          spike.metrics.heapDeltaMB = Number(((heapAfter - heapBefore) / 1024 / 1024).toFixed(2));
+          spike.metrics.heapPerPageMB = Number((spike.metrics.heapDeltaMB / TAB_COUNT).toFixed(2));
+
+          /* 5) 切回来状态没有丢 */
+          const finalStates = tabs.map((tab) => ({ index: tab.index, ...readState(tab.pageEl) }));
+          spike.checks.push({
+            name: '10 次切换后状态仍未丢',
+            ok: finalStates.every(
+              (state) => state.value === 'tab-' + state.index && state.count === '2',
+            ),
+            detail: 'tab-0=' + JSON.stringify(finalStates[0]),
+          });
+        } catch (error) {
+          spike.errors.push(String(error && error.stack ? error.stack : error));
+        } finally {
+          spike.done = true;
+        }
+      })();
+    </script>
+  </body>
+</html>

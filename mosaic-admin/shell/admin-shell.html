@@ -1,0 +1,820 @@
+<!-- 应用外壳（G2）：顶栏（品牌 / 面包屑 / 全局搜索 / 主题）+ 侧栏菜单 + 多标签页（上限 + 右键菜单）+ 常驻页面容器。
+     为什么自建路由、不用 o-app：o-app 只复用同 src 的父页面，leaf 导航后会被销毁，多标签页状态必丢（P0 spike C）。
+     这里每个标签一个常驻 <o-page>，切走只 display:none。 -->
+<template component>
+  <l-m src="../vendor/mosaic/menu/menu.html"></l-m>
+  <l-m src="../vendor/mosaic/menu/menu-item.html"></l-m>
+  <l-m src="../vendor/mosaic/icon/icon.html"></l-m>
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+  <l-m src="../vendor/mosaic/input/input.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    :host {
+      display: block;
+      height: 100%;
+    }
+
+    .shell {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: calc(var(--mc-z-sticky, 10) + 1);
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-4);
+      flex: none;
+      height: 3.5rem;
+      padding-inline: var(--mc-space-5);
+      border-bottom: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .brand {
+      flex: none;
+      font-size: var(--mc-text-base);
+      font-weight: var(--mc-weight-semibold);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      margin-inline-start: var(--mc-space-1);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-weight: var(--mc-weight-medium);
+    }
+
+    .crumb {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      min-width: 0;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+
+    .crumb-sep {
+      color: rgb(var(--mc-color-fg-subtle));
+    }
+
+    .crumb-label {
+      color: rgb(var(--mc-color-fg));
+      font-weight: var(--mc-weight-medium);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-3);
+      margin-inline-start: auto;
+      flex: none;
+    }
+
+    /* 全局搜索：输入框 + 下拉结果（页面清单来自注册表，搜的是 label / group / path） */
+    .search {
+      position: relative;
+      flex: none;
+      width: 12rem;
+    }
+
+    .search-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + var(--mc-space-2));
+      right: 0;
+      width: 20rem;
+      max-height: 22rem;
+      overflow-y: auto;
+      padding: var(--mc-space-1);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface));
+      box-shadow: var(--mc-shadow-panel);
+      z-index: calc(var(--mc-z-sticky, 10) + 2);
+    }
+    .search-panel[data-open] {
+      display: block;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border-radius: var(--mc-radius-sm);
+      cursor: pointer;
+    }
+    .search-row:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+    }
+    .search-row[data-active] {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      color: rgb(var(--mc-color-primary));
+    }
+
+    .search-label {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .search-group {
+      margin-inline-start: auto;
+      flex: none;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .search-empty {
+      display: none;
+      padding: var(--mc-space-3);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+    }
+    .search-empty[data-open] {
+      display: block;
+    }
+
+    .user {
+      display: none;
+      align-items: center;
+      gap: var(--mc-space-2);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+    }
+    .user[data-visible] {
+      display: inline-flex;
+    }
+
+    .user-name {
+      max-width: 8rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .logout {
+      padding: 0 var(--mc-space-2);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-sm, 0.25rem);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: var(--mc-text-xs, 0.75rem);
+      line-height: 1.8;
+      cursor: pointer;
+    }
+    .logout:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-1);
+      height: var(--mc-control-h-sm, 28px);
+      padding-inline: var(--mc-space-2);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg-muted));
+      font: inherit;
+      font-size: var(--mc-text-xs, 0.75rem);
+      cursor: pointer;
+    }
+
+    .theme-toggle:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .version {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .body {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .sidebar {
+      flex: none;
+      width: 14rem;
+      box-sizing: border-box;
+      padding: var(--mc-space-3);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border-inline-end: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .sidebar mc-menu {
+      --mc-menu-pad-x: var(--mc-space-3);
+    }
+
+    .workbench {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      background-color: rgb(var(--mc-color-bg));
+    }
+
+    /* 标签条：可横向滚动，超宽不把外壳撑开 */
+    .tabs {
+      display: flex;
+      flex: none;
+      align-items: stretch;
+      gap: var(--mc-space-1);
+      padding: var(--mc-space-2) var(--mc-space-3) 0;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      border-bottom: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface-sunken));
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      flex: none;
+      height: var(--mc-control-h-sm, 28px);
+      max-width: 12rem;
+      padding-inline: var(--mc-space-3);
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-start-start-radius: var(--mc-radius-md);
+      border-start-end-radius: var(--mc-radius-md);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tab:hover {
+      background-color: rgb(var(--mc-color-surface));
+      color: rgb(var(--mc-color-fg));
+    }
+
+    .tab[data-active] {
+      border-color: rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-bg));
+      color: rgb(var(--mc-color-fg));
+      font-weight: var(--mc-weight-medium);
+    }
+
+    .tab-label {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .tab-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      width: 1.125rem;
+      height: 1.125rem;
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm, 0.25rem);
+      background: transparent;
+      color: inherit;
+      font-size: 0.875rem;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.55;
+    }
+
+    .tab-close:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+      opacity: 1;
+    }
+
+    /* 标签右键菜单 */
+    .tab-menu {
+      display: none;
+      position: fixed;
+      z-index: calc(var(--mc-z-sticky, 10) + 3);
+      min-width: 9rem;
+      padding: var(--mc-space-1);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      background-color: rgb(var(--mc-color-surface));
+      box-shadow: var(--mc-shadow-panel);
+    }
+    .tab-menu[data-open] {
+      display: block;
+    }
+
+    .tab-menu button {
+      display: block;
+      width: 100%;
+      padding: var(--mc-space-2) var(--mc-space-3);
+      border: 0;
+      border-radius: var(--mc-radius-sm);
+      background: transparent;
+      color: rgb(var(--mc-color-fg));
+      font: inherit;
+      font-size: var(--mc-text-sm);
+      text-align: start;
+      cursor: pointer;
+    }
+    .tab-menu button:hover {
+      background-color: rgb(var(--mc-color-surface-sunken));
+    }
+    .tab-menu button:disabled {
+      color: rgb(var(--mc-color-fg-subtle));
+      cursor: not-allowed;
+    }
+
+    /* 每个标签一页，各自滚动：切走只隐藏，滚动位置也一起留着 */
+    .views {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .view {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .view[data-active] {
+      display: block;
+    }
+
+    .view o-page {
+      display: block;
+      width: 100%;
+    }
+
+    .loading {
+      padding: var(--mc-space-6);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+    }
+  </style>
+
+  <div class="shell">
+    <header class="topbar">
+      <span class="brand">
+        Mosaic
+        <span class="brand-sub">Admin</span>
+      </span>
+      <span class="crumb">
+        <span>{{group}}</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-label">{{pageLabel}}</span>
+      </span>
+      <span class="actions">
+        <div class="search">
+          <mc-input
+            id="search"
+            size="sm"
+            placeholder="搜索页面"
+            on:input="onSearchInput($event)"
+            on:keydown="onSearchKey($event)"
+            on:focus="onSearchFocus()"
+            on:blur="onSearchBlur()"></mc-input>
+          <div class="search-panel" attr:data-open="searchOpen ? '' : null">
+            <o-fill :value="searchResults" fill-key="file">
+              <div
+                class="search-row"
+                attr:data-active="$data.active ? '' : null"
+                on:click="$host.pickResult($data)">
+                <span class="search-label">{{$data.label}}</span>
+                <span class="search-group">{{$data.group}}</span>
+              </div>
+            </o-fill>
+            <div class="search-empty" attr:data-open="searchEmpty ? '' : null">没有匹配页面</div>
+          </div>
+        </div>
+        <span class="user" attr:data-visible="userName ? '' : null">
+          <span class="user-name">{{userName}}</span>
+          <button class="logout" type="button" on:click="logout()">退出</button>
+        </span>
+        <button class="theme-toggle" type="button" on:click="toggleTheme()">{{themeLabel}}</button>
+        <span class="version">{{version}}</span>
+      </span>
+    </header>
+
+    <div class="body">
+      <aside class="sidebar">
+        <mc-menu id="nav" attr:current="currentKey" :options="menuOptions"></mc-menu>
+      </aside>
+
+      <main class="workbench">
+        <div class="tabs">
+          <o-fill :value="tabs" fill-key="file">
+            <div
+              class="tab"
+              attr:data-active="$data.active ? '' : null"
+              on:click="$host.activate($data.file)"
+              on:contextmenu="$host.openTabMenu($event, $data.file)">
+              <span class="tab-label">{{$data.label}}</span>
+              <button
+                class="tab-close"
+                type="button"
+                attr:aria-label="'关闭 ' + $data.label"
+                on:click="$host.closeTab($event, $data.file)">
+                ×
+              </button>
+            </div>
+          </o-fill>
+        </div>
+
+        <div class="views" id="views"></div>
+      </main>
+    </div>
+  </div>
+
+  <div
+    class="tab-menu"
+    attr:data-open="tabMenuOpen ? '' : null"
+    :style.left="tabMenuX + 'px'"
+    :style.top="tabMenuY + 'px'">
+    <button type="button" on:click="menuCloseCurrent()">关闭</button>
+    <button type="button" on:click="menuCloseOthers()">关闭其他</button>
+    <button type="button" on:click="menuCloseRight()">关闭右侧</button>
+  </div>
+
+  <script>
+    import { APP_TITLE, APP_VERSION, LOGIN_ROUTE } from '../config.js';
+    import { MENU, PAGES } from '../pages.registry.js';
+    import { hasSession, readSession } from '../shared/http.js';
+    import { logout as logoutSession } from '../shared/auth.js';
+
+    const HOME = 'pages/home.html';
+    const LOGIN = LOGIN_ROUTE;
+    const REDIRECT_KEY = 'mosaic-admin-redirect';
+    const THEME_KEY = 'mosaic-admin-theme';
+    /** 标签上限：超了先关最久没激活的标签（当前标签与刚开的那个不关） */
+    const MAX_TABS = 12;
+
+    /** hash → 页面文件（admin 相对路径）；空 hash 回首页 */
+    const routeFile = () => {
+      const raw = location.hash.replace(/^#\/?/, '');
+      try {
+        return decodeURIComponent(raw) || HOME;
+      } catch {
+        return HOME;
+      }
+    };
+
+    export default async () => ({
+      data: {
+        version: APP_VERSION,
+        userName: '',
+        menuOptions: MENU,
+        tabs: [],
+        currentKey: '',
+        pageLabel: '',
+        group: '',
+        themeLabel: '',
+        /* 全局搜索 */
+        query: '',
+        searchResults: [],
+        searchOpen: false,
+        searchEmpty: false,
+        searchIndex: 0,
+        /* 标签右键菜单 */
+        tabMenuOpen: false,
+        tabMenuX: 0,
+        tabMenuY: 0,
+        tabMenuFile: '',
+      },
+
+      ready() {
+        this._pages = new Map();
+        this._recent = [];
+        this._views = this.shadow.$('#views').ele;
+        this._theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+        this.themeLabel = this._theme === 'dark' ? '亮色' : '暗色';
+
+        this._syncUser();
+        this._onAuthChange = () => {
+          this._syncUser();
+          this.syncRoute();
+        };
+        this._onAuthExpired = () => {
+          history.replaceState(null, '', '#/' + LOGIN);
+          this.syncRoute();
+        };
+        window.addEventListener('admin-auth-change', this._onAuthChange);
+        window.addEventListener('admin-auth-expired', this._onAuthExpired);
+
+        this._onHashChange = () => this.syncRoute();
+        window.addEventListener('hashchange', this._onHashChange);
+
+        this._onDocClick = () => this.closeTabMenu();
+        this._onDocKey = (event) => {
+          if (event.key === 'Escape') {
+            this.closeTabMenu();
+            this.closeSearch();
+          }
+        };
+        document.addEventListener('click', this._onDocClick);
+        document.addEventListener('keydown', this._onDocKey);
+
+        /* 首屏没有 hash 时补一个（replace，不额外压历史） */
+        if (!location.hash) history.replaceState(null, '', '#/' + routeFile());
+        this.syncRoute();
+      },
+
+      detached() {
+        window.removeEventListener('hashchange', this._onHashChange);
+        window.removeEventListener('admin-auth-change', this._onAuthChange);
+        window.removeEventListener('admin-auth-expired', this._onAuthExpired);
+        document.removeEventListener('click', this._onDocClick);
+        document.removeEventListener('keydown', this._onDocKey);
+        clearTimeout(this._searchTimer);
+        clearTimeout(this._tabMenuTimer);
+      },
+
+      proto: {
+        /* ---------- 路由 ---------- */
+
+        pageOf(file) {
+          return PAGES.find((page) => page.file === file) ?? null;
+        },
+
+        /** 当前登录用户在顶栏显示的字（昵称 / 用户名） */
+        _syncUser() {
+          const session = readSession();
+          this.userName = session?.user?.name || session?.username || '';
+        },
+
+        syncRoute() {
+          const file = routeFile();
+          /* 未登录：任何页面都先回登录页（把原目标记下来，登录后回跳） */
+          if (file !== LOGIN && !hasSession()) {
+            sessionStorage.setItem(REDIRECT_KEY, '#/' + file);
+            history.replaceState(null, '', '#/' + LOGIN);
+            this.open(this.pageOf(LOGIN));
+            return;
+          }
+          /* 已登录还停在登录页：直接回首页 */
+          if (file === LOGIN && hasSession()) {
+            history.replaceState(null, '', '#/' + HOME);
+            this.open(this.pageOf(HOME));
+            return;
+          }
+          /* 已经登录：登录页那个标签不留在标签条里 */
+          if (file !== LOGIN && this._pages.has(LOGIN)) this.removeTab(LOGIN);
+          const page = this.pageOf(file);
+          if (!page) {
+            console.warn('[admin] 未注册的页面：' + file);
+            return;
+          }
+          this.open(page);
+        },
+
+        logout() {
+          logoutSession();
+          this.userName = '';
+          location.hash = '#/' + LOGIN;
+        },
+
+        open(page) {
+          if (!this._pages.has(page.file)) this.mount(page);
+          this.activate(page.file, { fromRoute: true });
+        },
+
+        mount(page) {
+          const view = document.createElement('div');
+          view.className = 'view';
+
+          const oPage = document.createElement('o-page');
+          const loading = document.createElement('div');
+          loading.className = 'loading';
+          loading.textContent = '加载中…';
+          view.append(loading);
+
+          oPage.addEventListener('page-loaded', () => loading.remove(), { once: true });
+          /* o-page 的 src 初始化后不可变；用绝对地址，避免组件 shadow 里的相对解析歧义 */
+          oPage.setAttribute('src', new URL(page.file, document.baseURI).href);
+          view.append(oPage);
+          this._views.append(view);
+
+          this._pages.set(page.file, { view, oPage });
+          this.tabs = [...this.tabs, { file: page.file, label: page.label, active: false }];
+          this._recent.push(page.file);
+          this.trimTabs(page.file);
+        },
+
+        /** 标签上限：超了先关最久没激活的（当前 / 刚开的除外） */
+        trimTabs(keep) {
+          while (this.tabs.length > MAX_TABS) {
+            const victim = this._recent.find(
+              (file) => file !== keep && file !== this.tabs.find((tab) => tab.active)?.file,
+            );
+            if (!victim) break;
+            this.removeTab(victim);
+          }
+        },
+
+        activate(file, { fromRoute = false } = {}) {
+          const page = this.pageOf(file);
+          if (!page) return;
+
+          this.tabs = this.tabs.map((tab) => ({ ...tab, active: tab.file === file }));
+          for (const [key, entry] of this._pages) {
+            if (key === file) entry.view.setAttribute('data-active', '');
+            else entry.view.removeAttribute('data-active');
+          }
+
+          this._recent = this._recent.filter((item) => item !== file);
+          this._recent.push(file);
+
+          this.currentKey = file;
+          this.pageLabel = page.label;
+          this.group = page.group;
+          document.title = page.label + ' - ' + APP_TITLE;
+
+          if (!fromRoute && routeFile() !== file) location.hash = '#/' + file;
+
+          requestAnimationFrame(() => {
+            const activeTab = this.shadow.$('.tab[data-active]')?.ele;
+            activeTab?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          });
+        },
+
+        /** 销毁一个标签的页面实例（不负责导航） */
+        removeTab(file) {
+          const entry = this._pages.get(file);
+          if (!entry) return false;
+          entry.view.remove();
+          this._pages.delete(file);
+          this.tabs = this.tabs.filter((tab) => tab.file !== file);
+          this._recent = this._recent.filter((item) => item !== file);
+          return true;
+        },
+
+        closeTab(event, file) {
+          event?.stopPropagation();
+          const wasActive = this.tabs.find((tab) => tab.file === file)?.active;
+          const index = this.tabs.findIndex((tab) => tab.file === file);
+          if (!this.removeTab(file)) return;
+          if (!wasActive) return;
+          const next = this.tabs[Math.min(index, this.tabs.length - 1)] ?? null;
+          location.hash = '#/' + (next?.file ?? HOME);
+        },
+
+        /* ---------- 标签右键菜单 ---------- */
+
+        openTabMenu(event, file) {
+          event.preventDefault();
+          event.stopPropagation();
+          const rect = event.currentTarget.getBoundingClientRect();
+          this.tabMenuX = Math.round(rect.left);
+          this.tabMenuY = Math.round(rect.bottom + 4);
+          this.tabMenuFile = file;
+          this.tabMenuOpen = true;
+        },
+
+        closeTabMenu() {
+          if (this.tabMenuOpen) this.tabMenuOpen = false;
+        },
+
+        menuCloseCurrent() {
+          const file = this.tabMenuFile;
+          this.tabMenuOpen = false;
+          if (file) this.closeTab(null, file);
+        },
+
+        menuCloseOthers() {
+          const keep = this.tabMenuFile;
+          this.tabMenuOpen = false;
+          for (const tab of [...this.tabs]) {
+            if (tab.file !== keep) this.removeTab(tab.file);
+          }
+          if (keep) location.hash = '#/' + keep;
+        },
+
+        menuCloseRight() {
+          const keep = this.tabMenuFile;
+          const index = this.tabs.findIndex((tab) => tab.file === keep);
+          this.tabMenuOpen = false;
+          if (index < 0) return;
+          for (const tab of this.tabs.slice(index + 1)) this.removeTab(tab.file);
+          location.hash = '#/' + keep;
+        },
+
+        /* ---------- 全局搜索（页面清单来自注册表） ---------- */
+
+        onSearchFocus() {
+          if (this.query.trim()) this.runSearch();
+        },
+
+        onSearchBlur() {
+          /* 点结果时 blur 先发生：延迟关，让 click 走到 */
+          clearTimeout(this._searchTimer);
+          this._searchTimer = setTimeout(() => this.closeSearch(), 150);
+        },
+
+        onSearchInput(event) {
+          this.query = String(event.data?.value ?? '');
+          this.runSearch();
+        },
+
+        runSearch() {
+          const keyword = this.query.trim().toLowerCase();
+          if (!keyword) {
+            this.searchOpen = false;
+            this.searchResults = [];
+            this.searchEmpty = false;
+            return;
+          }
+          const hits = PAGES.filter(
+            (page) =>
+              !page.hidden &&
+              (page.label.toLowerCase().includes(keyword) ||
+                page.group.toLowerCase().includes(keyword) ||
+                page.file.toLowerCase().includes(keyword)),
+          )
+            .slice(0, 8)
+            .map((page, index) => ({
+              file: page.file,
+              label: page.label,
+              group: page.group,
+              active: index === 0,
+            }));
+          this.searchIndex = 0;
+          this.searchResults = hits;
+          this.searchEmpty = hits.length === 0;
+          this.searchOpen = true;
+        },
+
+        onSearchKey(event) {
+          if (!this.searchOpen) return;
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            this.closeSearch();
+            return;
+          }
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            this.pickResult(this.searchResults[this.searchIndex]);
+            return;
+          }
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            const step = event.key === 'ArrowDown' ? 1 : -1;
+            const total = this.searchResults.length;
+            if (!total) return;
+            this.searchIndex = (this.searchIndex + step + total) % total;
+            this.searchResults = this.searchResults.map((item, index) => ({
+              ...item,
+              active: index === this.searchIndex,
+            }));
+          }
+        },
+
+        pickResult(result) {
+          if (!result) return;
+          this.closeSearch();
+          this.shadow.$('#search')?.ele?.blur?.();
+          location.hash = '#/' + result.file;
+        },
+
+        closeSearch() {
+          this.searchOpen = false;
+          this.searchEmpty = false;
+        },
+
+        /* ---------- 主题 ---------- */
+
+        toggleTheme() {
+          this._theme = this._theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = this._theme;
+          this.themeLabel = this._theme === 'dark' ? '亮色' : '暗色';
+          try {
+            localStorage.setItem(THEME_KEY, this._theme);
+          } catch {
+            /* 隐私模式写不进：主题只在本次会话生效，不打断使用 */
+          }
+        },
+      },
+    });
+  </script>
+</template>

@@ -1,0 +1,121 @@
+/* 业务页共用样式：只放「页面骨架」这一层（页头 / 工具条 / 面板 / 表格 / 瓦片）。
+   更细的页面私有样式回各自页面的 <style>。
+   页面在 shadow root 里，这份样式表由页面 <link> 载入，不污染外壳。 */
+
+:host {
+  display: block;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-space-4);
+  padding: var(--mc-space-6);
+  max-width: 96rem;
+  box-sizing: border-box;
+}
+
+.page-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-space-1);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--mc-text-2xl);
+  font-weight: var(--mc-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.page-hint {
+  margin: 0;
+  color: rgb(var(--mc-color-fg-subtle));
+  font-size: var(--mc-text-sm);
+  line-height: 1.6;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mc-space-3);
+}
+
+.panel {
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+  overflow: auto;
+}
+
+.panel--empty {
+  padding: var(--mc-space-6);
+  color: rgb(var(--mc-color-fg-subtle));
+  font-size: var(--mc-text-sm);
+  line-height: 1.7;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--mc-text-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--mc-space-2) var(--mc-space-4);
+  border-bottom: 1px solid rgb(var(--mc-color-border));
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: rgb(var(--mc-color-surface-sunken));
+  color: rgb(var(--mc-color-fg-muted));
+  font-weight: var(--mc-weight-medium);
+}
+
+.table tbody tr:hover {
+  background-color: rgb(var(--mc-color-surface-sunken));
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--mc-font-mono);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--mc-space-4);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-space-2);
+  padding: var(--mc-space-4);
+  border: 1px solid rgb(var(--mc-color-border));
+  border-radius: var(--mc-radius-lg);
+  background-color: rgb(var(--mc-color-surface));
+}
+
+.tile h2 {
+  margin: 0;
+  font-size: var(--mc-text-base);
+  font-weight: var(--mc-weight-medium);
+}
+
+.tile p {
+  margin: 0;
+  color: rgb(var(--mc-color-fg-subtle));
+  font-size: var(--mc-text-sm);
+  line-height: 1.6;
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mosaic Admin</title>
+    <link rel="icon" href="./shell/favicon.svg" type="image/svg+xml" />
+
+    <!-- 首帧主题（head 里的同步脚本，防闪色）；偏好键与外壳里的 THEME_KEY 一致 -->
+    <script>
+      (function () {
+        var mode = 'light';
+        try {
+          var stored = localStorage.getItem('mosaic-admin-theme');
+          if (stored === 'dark' || stored === 'light') mode = stored;
+          else if (window.matchMedia('(prefers-color-scheme: dark)').matches) mode = 'dark';
+        } catch (error) {
+          /* 隐私模式读不到偏好：用亮色 */
+        }
+        document.documentElement.dataset.theme = mode;
+      })();
+    </script>
+
+    <!-- 库的唯一入口：vendor/mosaic（开发期是指向 packages/ 的链接，签出时换真实副本） -->
+    <link rel="stylesheet" href="./vendor/mosaic/boot/mosaic.css" />
+    <link rel="stylesheet" href="./shell/shell.css" />
+
+    <!-- 密码加密（AES-CFB）用的 UMD 副本：旧仓密码模式登录的既有权衡，版本与来源见 vendor/lib/README.md -->
+    <script src="./vendor/lib/crypto-js.min.js"></script>
+
+    <!-- ofa.js 从 CDN 取，和库的使用者完全一致：admin 自己不打包、不装依赖 -->
+    <script
+      src="https://cdn.jsdelivr.net/gh/ofajs/ofa.js@4.7.5/dist/ofa.min.mjs"
+      type="module"></script>
+  </head>
+
+  <body>
+    <!-- 只做引入：外壳（顶栏 / 侧栏 / 多标签页 / 路由）在 shell/admin-shell.html -->
+    <l-m src="./shell/admin-shell.html"></l-m>
+    <admin-shell></admin-shell>
+  </body>
+</html>

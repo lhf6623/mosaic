@@ -1,0 +1,129 @@
+<!-- erp 用户详情抽屉：mc-drawer + 用户字段 + 角色 / 岗位（行数据直接传入，不再请求）。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/drawer/drawer.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+      gap: var(--mc-space-3) var(--mc-space-4);
+    }
+
+    .fact-label {
+      display: block;
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .fact-value {
+      display: block;
+      margin-block-start: 2px;
+      color: rgb(var(--mc-color-fg));
+      font-size: var(--mc-text-sm);
+      overflow-wrap: anywhere;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--mc-space-2);
+      margin-block-start: var(--mc-space-3);
+    }
+
+    .chip {
+      padding: 2px var(--mc-space-2);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-full, 999px);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .section-title {
+      margin: 0 0 var(--mc-space-3);
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+      font-weight: var(--mc-weight-semibold);
+    }
+  </style>
+
+  <mc-drawer
+    id="drawer"
+    closable
+    mask-closable
+    attr:open="open ? '' : null"
+    on:close="open = false">
+    <span slot="header" class="head-title">用户详情</span>
+    <div :html="bodyHtml"></div>
+  </mc-drawer>
+
+  <script>
+    const esc = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const fact = (label, value) =>
+      '<div class="fact"><span class="fact-label">' +
+      esc(label) +
+      '</span><span class="fact-value">' +
+      (esc(value) || '—') +
+      '</span></div>';
+
+    const chips = (title, list, key) => {
+      const values = (list ?? []).map((item) => item?.[key]).filter(Boolean);
+      if (!values.length) return '';
+      return (
+        '<h3 class="section-title">' +
+        esc(title) +
+        '</h3><div class="chips">' +
+        values.map((value) => '<span class="chip">' + esc(value) + '</span>').join('') +
+        '</div>'
+      );
+    };
+
+    export default async () => ({
+      tag: 'user-detail-drawer',
+
+      data: { open: false, bodyHtml: '' },
+
+      ready() {
+        Object.defineProperty(this.ele, 'show', {
+          configurable: true,
+          value: (user) => this.openUser(user),
+        });
+      },
+
+      proto: {
+        openUser(user) {
+          this.open = true;
+          this.bodyHtml = this.render(user ?? {});
+        },
+
+        render(user) {
+          const sex = String(user.sex) === '1' ? '女' : String(user.sex) === '0' ? '男' : '—';
+          return (
+            '<div class="facts">' +
+            fact('用户名', user.username) +
+            fact('姓名', user.name) +
+            fact('部门', user.deptName) +
+            fact('手机号', user.phone) +
+            fact('邮箱', user.email) +
+            fact('性别', sex) +
+            fact('账号状态', String(user.lockFlag) === '0' ? '正常' : '锁定') +
+            fact('创建时间', user.createTime) +
+            '</div>' +
+            chips('角色', user.roleList, 'roleName') +
+            chips('岗位', user.postList, 'postName')
+          );
+        },
+      },
+    });
+  </script>
+</template>

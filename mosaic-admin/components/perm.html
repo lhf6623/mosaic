@@ -1,0 +1,60 @@
+<!-- erp-perm — 按钮级权限容器：有权限才渲染里面的东西。
+     权限码来自 shared/perm.js（页面只引用 PERM 常量，不写字面量）。 -->
+<template component>
+  <style>
+    /* display:contents：不引入额外盒子，按钮等子元素照旧按外面的布局排 */
+    :host {
+      display: contents;
+    }
+
+    :host([data-denied]) {
+      display: none;
+    }
+  </style>
+
+  <slot></slot>
+
+  <script>
+    import { can } from '../shared/perm.js';
+
+    export default async () => ({
+      tag: 'erp-perm',
+
+      attrs: { code: '' },
+
+      data: { allowed: true },
+
+      ready() {
+        this.allowed = can(this.code);
+      },
+
+      attached() {
+        this._mounted = true;
+        this.apply();
+        this._onPermissions = () => this.apply();
+        window.addEventListener('admin-permissions-change', this._onPermissions);
+      },
+
+      detached() {
+        this._mounted = false;
+        window.removeEventListener('admin-permissions-change', this._onPermissions);
+      },
+
+      watch: {
+        code() {
+          if (this._mounted) this.apply();
+        },
+      },
+
+      proto: {
+        /** 无权限时挂 data-denied 隐藏（CSS 的事，不删使用者的 DOM） */
+        apply() {
+          this.allowed = can(this.code);
+          if (!this._mounted) return;
+          if (this.allowed) this.ele.removeAttribute('data-denied');
+          else this.ele.setAttribute('data-denied', '');
+        },
+      },
+    });
+  </script>
+</template>

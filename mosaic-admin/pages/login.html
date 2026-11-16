@@ -1,0 +1,109 @@
+<!-- page: {"label":"登录","group":"概览","order":5,"hidden":true} -->
+<template page>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/input/input.html"></l-m>
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+
+  <link rel="stylesheet" href="../styles/login.css" />
+
+  <div class="login">
+    <form class="login-card" on:submit="onSubmit($event)">
+      <h1 class="login-title">Mosaic Admin</h1>
+      <p class="login-hint">用旧仓开发环境账号登录（OAuth2 密码模式，网关 {{gateway}}）。</p>
+
+      <div class="login-field">
+        <span class="login-label">用户名</span>
+        <mc-input
+          id="username"
+          placeholder="用户名"
+          on:keydown="onKeydown($event)"
+          on:input="onInput('username', $event)"></mc-input>
+      </div>
+
+      <div class="login-field">
+        <span class="login-label">密码</span>
+        <mc-input
+          id="password"
+          type="password"
+          placeholder="密码"
+          on:keydown="onKeydown($event)"
+          on:input="onInput('password', $event)"></mc-input>
+      </div>
+
+      <p class="login-error" attr:data-visible="error ? '' : null">{{error}}</p>
+
+      <mc-button attr:disabled="loading ? '' : null" on:click="submit()">{{submitLabel}}</mc-button>
+    </form>
+  </div>
+
+  <script>
+    import { HOME_ROUTE, API_BASE } from '../config.js';
+    import { login } from '../shared/auth.js';
+
+    const REDIRECT_KEY = 'mosaic-admin-redirect';
+    const NAME_KEY = 'mosaic-admin-username';
+
+    export default async () => ({
+      data: {
+        username: '',
+        password: '',
+        error: '',
+        loading: false,
+        submitLabel: '登录',
+        gateway: API_BASE.replace(/^https?:\/\//, ''),
+      },
+
+      ready() {
+        try {
+          this.username = localStorage.getItem(NAME_KEY) ?? '';
+        } catch {
+          this.username = '';
+        }
+        const remember = this.shadow.$('#username')?.ele;
+        if (this.username && remember) remember.value = this.username;
+      },
+
+      proto: {
+        onInput(field, event) {
+          this[field] = String(event.data?.value ?? '');
+        },
+
+        onKeydown(event) {
+          if (event.key === 'Enter') this.submit();
+        },
+
+        onSubmit(event) {
+          event?.preventDefault?.();
+          this.submit();
+        },
+
+        async submit() {
+          if (this.loading) return;
+          this.error = '';
+          if (!this.username.trim() || !this.password) {
+            this.error = '请输入用户名和密码';
+            return;
+          }
+          this.loading = true;
+          this.submitLabel = '登录中…';
+          try {
+            await login(this.username, this.password);
+            try {
+              localStorage.setItem(NAME_KEY, this.username.trim());
+            } catch {
+              /* 隐私模式写不进：不阻断登录 */
+            }
+            const redirect = sessionStorage.getItem(REDIRECT_KEY);
+            sessionStorage.removeItem(REDIRECT_KEY);
+            location.hash = redirect && redirect.startsWith('#/') ? redirect : '#/' + HOME_ROUTE;
+          } catch (error) {
+            this.error = error?.message ?? '登录失败';
+          } finally {
+            this.loading = false;
+            this.submitLabel = '登录';
+          }
+        },
+      },
+    });
+  </script>
+</template>

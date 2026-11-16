@@ -1,0 +1,16 @@
+/* 外壳的全局契约：只写两条 —— 视口高度链、正文底色。
+   页面自己的样式住各自 shadow root（页面 <style>），这里不往下写。 */
+
+html,
+body,
+admin-shell {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden; /* 整站只有标签页视图内部在滚 */
+  background-color: rgb(var(--mc-color-bg, 248 250 252));
+  color: rgb(var(--mc-color-fg, 23 29 41));
+  font-family: var(--mc-font-sans, system-ui, sans-serif);
+}

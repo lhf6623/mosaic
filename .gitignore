@@ -1,4 +1,7 @@
 node_modules/
+# mosaic-admin 开发期的 vendor/mosaic 是指向 packages/ 的本地链接（签出时换成真实副本）：
+# 它是生成物，由 mosaic-admin/tools/link-vendor.mjs 建，别提交。
+mosaic-admin/vendor/mosaic
 .DS_Store
 Thumbs.db
 *.log
