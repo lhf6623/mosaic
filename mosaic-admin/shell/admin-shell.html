@@ -7,6 +7,8 @@
   <l-m src="../vendor/mosaic/icon/icon.html"></l-m>
   <l-m src="../vendor/mosaic/button/button.html"></l-m>
   <l-m src="../vendor/mosaic/input/input.html"></l-m>
+  <l-m src="../vendor/mosaic/tabs/tabs.html"></l-m>
+  <l-m src="../vendor/mosaic/tabs/tab.html"></l-m>
 
   <style>
     l-m {
@@ -231,81 +233,20 @@
       background-color: rgb(var(--mc-color-bg));
     }
 
-    /* 标签条：可横向滚动，超宽不把外壳撑开 */
-    .tabs {
-      display: flex;
+    /* 页面标签条 = 库的 mc-tabs：极简下划线，尺寸/色槽全走 --mc-tabs-* 令牌 */
+    .workbench-tabs {
+      display: block;
       flex: none;
-      align-items: stretch;
-      gap: var(--mc-space-1);
-      padding: var(--mc-space-2) var(--mc-space-3) 0;
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      border-bottom: 1px solid rgb(var(--mc-color-border));
-      background-color: rgb(var(--mc-color-surface-sunken));
-      scrollbar-width: none;
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tab {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--mc-space-2);
-      flex: none;
-      height: var(--mc-control-h-sm, 28px);
-      max-width: 12rem;
-      padding-inline: var(--mc-space-3);
-      border: 1px solid transparent;
-      border-bottom: none;
-      border-start-start-radius: var(--mc-radius-md);
-      border-start-end-radius: var(--mc-radius-md);
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-sm);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .tab:hover {
+      padding-inline: var(--mc-space-4);
       background-color: rgb(var(--mc-color-surface));
-      color: rgb(var(--mc-color-fg));
-    }
-
-    .tab[data-active] {
-      border-color: rgb(var(--mc-color-border));
-      background-color: rgb(var(--mc-color-bg));
-      color: rgb(var(--mc-color-fg));
-      font-weight: var(--mc-weight-medium);
-    }
-
-    .tab-label {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .tab-close {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: none;
-      width: 1.125rem;
-      height: 1.125rem;
-      padding: 0;
-      border: 0;
-      border-radius: var(--mc-radius-sm, 0.25rem);
-      background: transparent;
-      color: inherit;
-      font-size: 0.875rem;
-      line-height: 1;
-      cursor: pointer;
-      opacity: 0.55;
-    }
-
-    .tab-close:hover {
-      background-color: rgb(var(--mc-color-surface-sunken));
-      opacity: 1;
+      --mc-tabs-tab-h: 2.5rem;
+      --mc-tabs-tab-radius: 0;
+      --mc-tabs-pad-x: var(--mc-space-3);
+      --mc-tabs-font: var(--mc-text-sm);
+      --mc-tabs-fg-selected: var(--mc-color-fg);
+      --mc-tabs-fg-hover: var(--mc-color-fg);
+      --mc-tabs-indicator: var(--mc-color-primary);
+      --mc-tabs-border: var(--mc-color-border);
     }
 
     /* 标签右键菜单 */
@@ -425,24 +366,14 @@
       </aside>
 
       <main class="workbench">
-        <div class="tabs">
-          <o-fill :value="tabs" fill-key="file">
-            <div
-              class="tab"
-              attr:data-active="$data.active ? '' : null"
-              on:click="$host.activate($data.file)"
-              on:contextmenu="$host.openTabMenu($event, $data.file)">
-              <span class="tab-label">{{$data.label}}</span>
-              <button
-                class="tab-close"
-                type="button"
-                attr:aria-label="'关闭 ' + $data.label"
-                on:click="$host.closeTab($event, $data.file)">
-                ×
-              </button>
-            </div>
-          </o-fill>
-        </div>
+        <mc-tabs
+          id="tabs"
+          class="workbench-tabs"
+          variant="line"
+          no-panel
+          on:change="onTabsChange($event)"
+          on:close="onTabsClose($event)"
+          on:contextmenu="onTabsContextMenu($event)"></mc-tabs>
 
         <div class="views" id="views"></div>
       </main>
@@ -655,10 +586,49 @@
 
           if (!fromRoute && routeFile() !== file) location.hash = '#/' + file;
 
-          requestAnimationFrame(() => {
-            const activeTab = this.shadow.$('.tab[data-active]')?.ele;
-            activeTab?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          this.syncTabs();
+        },
+
+        /** 把 tabs 数据同步给库组件（增量：能复用就复用，切页只改 value，不重建 DOM） */
+        syncTabs() {
+          const tabsEl = this.shadow.$('#tabs')?.ele;
+          if (!tabsEl) return;
+          const current = [...tabsEl.querySelectorAll('mc-tab')];
+          const byValue = new Map(current.map((item) => [item.getAttribute('value'), item]));
+          const next = this.tabs.map((tab) => {
+            let item = byValue.get(tab.file);
+            if (!item) {
+              item = document.createElement('mc-tab');
+              item.setAttribute('value', tab.file);
+              item.setAttribute('closable', '');
+            }
+            if (item.getAttribute('name') !== tab.label) item.setAttribute('name', tab.label);
+            return item;
           });
+          const unchanged =
+            current.length === next.length && current.every((item, index) => item === next[index]);
+          if (!unchanged) tabsEl.replaceChildren(...next);
+          tabsEl.value = this.currentKey;
+          requestAnimationFrame(() => {
+            const active = next.find((tab) => tab.getAttribute('value') === this.currentKey);
+            active?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          });
+        },
+
+        onTabsChange(event) {
+          const file = event.data?.value;
+          if (!file || file === this.currentKey) return;
+          this.activate(file);
+        },
+
+        onTabsClose(event) {
+          this.closeTab(null, event.data?.value);
+        },
+
+        onTabsContextMenu(event) {
+          const tab = event.composedPath().find((el) => el?.tagName === 'MC-TAB');
+          if (!tab) return;
+          this.openTabMenu(event, tab.getAttribute('value'), tab.getBoundingClientRect());
         },
 
         /** 销毁一个标签的页面实例（不负责导航） */
@@ -669,6 +639,7 @@
           this._pages.delete(file);
           this.tabs = this.tabs.filter((tab) => tab.file !== file);
           this._recent = this._recent.filter((item) => item !== file);
+          this.syncTabs();
           return true;
         },
 
@@ -684,10 +655,9 @@
 
         /* ---------- 标签右键菜单 ---------- */
 
-        openTabMenu(event, file) {
+        openTabMenu(event, file, rect) {
           event.preventDefault();
           event.stopPropagation();
-          const rect = event.currentTarget.getBoundingClientRect();
           this.tabMenuX = Math.round(rect.left);
           this.tabMenuY = Math.round(rect.bottom + 4);
           this.tabMenuFile = file;

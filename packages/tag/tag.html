@@ -94,6 +94,24 @@
       color: rgb(var(--mc-tag-accent));
       border-color: rgb(var(--mc-tag-accent));
     }
+    /* dot：无底无边，只剩「色点 + 文字」—— 密集表格的状态列（颜色只是辅助，文字仍承载语义） */
+    :host([variant='dot']) {
+      gap: var(--mc-space-2, var(--mc-def-space-2));
+      padding-inline: 0;
+      padding-block: 0;
+      border-color: transparent;
+      background-color: transparent;
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+    }
+    :host([variant='dot'])::before {
+      content: '';
+      flex: none;
+      width: 0.4375rem;
+      height: 0.4375rem;
+      border-radius: 50%;
+      background-color: rgb(var(--mc-tag-fill));
+      box-shadow: 0 0 0 1px rgb(var(--mc-color-border, var(--mc-def-color-border)));
+    }
 
     /* 4. 尺寸：只有字号与左右内边距两档变量，高度由行高撑（sm/md/lg = 26 / 30 / 34px） */
     :host([size='sm']) {

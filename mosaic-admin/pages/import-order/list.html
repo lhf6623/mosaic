@@ -12,84 +12,33 @@
 
   <erp-page
     id="page"
-    on:search="onSearch($event)"
+    :schema="schema"
+    :loader="loader"
     on:action="onAction($event)"
-    on:page-change="onPageChange($event)"
-    on:select-change="onSelectChange($event)"
     on:cell-action="onCellAction($event)"
     on:cell-dblclick="onRowDblClick($event)"></erp-page>
 
   <script>
-    import { PAGE_SIZE } from '../../config.js';
     import { getOrderImportPage } from '../../shared/api/order-import.js';
     import { importOrderPageSchema } from '../../shared/modules/import-order/schema.js';
     import { loadImportOrderRowMapper } from '../../shared/modules/import-order/cell.js';
-    import {
-      importOrderFooter,
-      importOrderQuery,
-    } from '../../shared/modules/import-order/logic.js';
+    import { importOrderQuery } from '../../shared/modules/import-order/logic.js';
+
+    let toRowsPromise;
+    const toRows = () => (toRowsPromise ??= loadImportOrderRowMapper());
 
     export default async () => ({
-      data: { selected: [], total: 0, lastAction: '（还没有操作）' },
-
-      ready() {
-        this.init();
-      },
+      data: { schema: importOrderPageSchema },
 
       proto: {
-        async init() {
-          await customElements.whenDefined('erp-page');
-          await new Promise((resolve) => requestAnimationFrame(resolve));
-          this._page = this.shadow.$('#page').ele;
-          this._page.schema = importOrderPageSchema;
-          window.addEventListener('admin-data-changed', (event) => {
-            if (event.detail?.module === 'import-order') this.load(1);
-          });
-          this._search = {};
-          this._rows = await loadImportOrderRowMapper();
-          await this.load(1);
-        },
-
-        async load(page) {
-          this._page.setLoading(true);
-          this._page.setError('');
-          try {
-            const data = await getOrderImportPage(
-              importOrderQuery(this._search, page, this._page.pageSize),
-            );
-            const rows = data?.records ?? [];
-            this.total = Number(data?.total ?? rows.length);
-            this._page.setRows(this._rows(rows));
-            this._page.setPage({
-              current: Number(data?.current ?? page),
-              pageSize: Number(data?.size ?? this._page.pageSize),
-              total: this.total,
-            });
-            this.updateFooter();
-          } catch (error) {
-            this._page.setRows([]);
-            this._page.setError('加载失败：' + error.message);
-          } finally {
-            this._page.setLoading(false);
-          }
-        },
-
-        updateFooter() {
-          this._page.footer = importOrderFooter(this);
-        },
-
-        onSearch(event) {
-          this._search = event.data.values;
-          this.load(1);
-        },
-
-        onPageChange(event) {
-          this.load(event.data.current);
-        },
-
-        onSelectChange(event) {
-          this.selected = event.data.selected;
-          this.updateFooter();
+        async loader({ current, pageSize, search }) {
+          const data = await getOrderImportPage(importOrderQuery(search, current, pageSize));
+          return {
+            rows: (await toRows())(data?.records ?? []),
+            total: Number(data?.total ?? 0),
+            current: Number(data?.current ?? current),
+            pageSize: Number(data?.size ?? pageSize),
+          };
         },
 
         onCellAction(event) {
@@ -104,13 +53,14 @@
         },
 
         onAction(event) {
+          const page = this.shadow.$('#page').ele;
           const action = event.data.action;
-          if (action === 'export') this.lastAction = '导出已选 ' + this.selected.length + ' 条';
+          if (action === 'export')
+            page.footerHint = '导出已选 ' + page.getSelected().length + ' 条';
           else if (action === 'clear') {
-            this._page.clearSelection();
-            this.lastAction = '已清空选择';
+            page.clearSelection();
+            page.footerHint = '已清空选择';
           }
-          this.updateFooter();
         },
       },
     });

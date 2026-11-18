@@ -37,7 +37,8 @@ const SHARED = [
   // （JSDoc 类型注释也算使用者的字节 —— 这次给 JS 加类型时的涨幅已经显式记在这里）
   { file: 'packages/boot/color-math.js', raw: 3 * 1024, gzip: 1.75 * 1024 },
   // 组件共用：color 收 hex 的接线器，接了它的组件才下
-  { file: 'packages/boot/color-attr.js', raw: 7.5 * 1024, gzip: 3.75 * 1024 },
+  // 2026-11-18：hex 通道加「浅底对比度自动校正 + 主题重算穿 open shadowRoot」，raw 上到 7.8KB
+  { file: 'packages/boot/color-attr.js', raw: 8 * 1024, gzip: 3.75 * 1024 },
   // 组件共用：声明 → 运行时出口（emits 的 $emit 派发 + slots 的 $slots / data-has-* 反射）；
   // 有事件或插槽判定的组件才下（声明住在组件定义里）
   // 2026-11 事件与插槽合流到 options.js：实测 12.4 / 4.9 KB（多出来的主要是 JSDoc 类型注释）

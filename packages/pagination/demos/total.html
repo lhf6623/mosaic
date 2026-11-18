@@ -1,0 +1,23 @@
+<template component>
+  <style>
+    mc-pagination::part(total) {
+      color: rgb(var(--mc-color-primary));
+    }
+  </style>
+
+  <mc-space direction="vertical" block>
+    <span class="text-sm text-muted">show-total：分页条里显示「共 N 条」</span>
+    <mc-pagination total="85" page-size="10" default-current="3" show-total></mc-pagination>
+
+    <span class="text-sm text-muted">blocks 里点名 total，可以自定义它和页码的先后</span>
+    <mc-pagination
+      total="85"
+      page-size="10"
+      default-current="3"
+      blocks='["total","prev","pages","next"]'></mc-pagination>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-pagination-total' });
+  </script>
+</template>

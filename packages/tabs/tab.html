@@ -44,7 +44,41 @@
       color: rgb(var(--mc-tabs-fg-selected, var(--mc-color-primary, var(--mc-def-color-primary))));
     }
 
-    /* 4. 禁用：光标留在宿主上（宿主写 pointer-events: none 会连 cursor 一起失效），按钮自己 disabled */
+    /* 4. 关闭按钮：只有 closable 才显示；和 base 是兄弟（button 里不能再套 button） */
+    .mc-close {
+      display: none;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      width: 1.125rem;
+      height: 1.125rem;
+      margin-inline: -0.25rem var(--mc-space-1, var(--mc-def-space-1));
+      padding: 0;
+      border: 0;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      background: transparent;
+      color: rgb(var(--mc-tabs-fg, var(--mc-color-fg-muted, var(--mc-def-color-fg-muted))));
+      font-size: 0.875rem;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.55;
+    }
+    :host([closable]) .mc-close {
+      display: inline-flex;
+    }
+    :host([closable]) .mc-base {
+      padding-inline-end: var(--mc-space-2, var(--mc-def-space-2));
+    }
+    .mc-close:hover {
+      background-color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.12);
+      opacity: 1;
+    }
+    .mc-close:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+
+    /* 5. 禁用：光标留在宿主上（宿主写 pointer-events: none 会连 cursor 一起失效），按钮自己 disabled */
     :host([disabled]) {
       opacity: 0.5;
       cursor: not-allowed;
@@ -57,19 +91,40 @@
   <button class="mc-base" part="base" type="button" attr:disabled="disabled !== null">
     {{name}}
   </button>
+  <button class="mc-close" part="close" type="button" aria-label="关闭" on:click="onClose($event)">
+    <span aria-hidden="true">×</span>
+  </button>
   <!-- 面板内容（默认插槽）：面板区在 mc-tabs 的 shadow 里，容器会把它搬过去；
        这里先接着 —— 未升级 / 单独使用时也不会漏到页面上 -->
   <div hidden><slot></slot></div>
 
   <script>
-    export default async () => ({
-      tag: 'mc-tab',
+    import { withOptions } from '../boot/options.js';
 
-      attrs: {
-        value: '',
-        name: '', // 标签文案；面板内容走默认插槽（由 mc-tabs 搬到面板区）
-        disabled: null, // 布尔默认值必须是 null（P1）
-      },
-    });
+    export default async () =>
+      withOptions({
+        tag: 'mc-tab',
+
+        // 关闭是标签自己的动作，事件冒泡给容器 / 页面，容器不代劳
+        emits: {
+          close: { data: ['value'] },
+        },
+
+        attrs: {
+          value: '',
+          name: '', // 标签文案；面板内容走默认插槽（由 mc-tabs 搬到面板区）
+          disabled: null, // 布尔默认值必须是 null（P1）
+          closable: null, // 布尔默认值必须是 null（P1）
+        },
+
+        proto: {
+          onClose(event) {
+            /* 关闭不是「选中」：先截住 click，别让容器把这一下当成切标签 */
+            event?.stopPropagation();
+            if (this.ele.hasAttribute('disabled')) return;
+            this.$emit('close', { value: this.ele.getAttribute('value') ?? '' });
+          },
+        },
+      });
   </script>
 </template>

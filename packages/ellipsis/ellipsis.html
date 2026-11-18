@@ -1,0 +1,310 @@
+<!-- mc-ellipsis — 长文本省略 + 可选中/复制的浮层；设计取舍见 README.md「设计取舍」。 -->
+<template component>
+  <link rel="stylesheet" href="../boot/component-base.css" />
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      --mc-ellipsis-offset: var(--mc-space-1, var(--mc-def-space-1));
+    }
+
+    /* 触发区：单行省略；truncation 由这里负责（宿主宽度跟单元格走） */
+    .mc-text {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      anchor-name: --mc-ellipsis-anchor;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      border-radius: var(--mc-radius-sm, var(--mc-def-radius-sm));
+      outline: none;
+    }
+    .mc-text:focus-visible {
+      outline: 2px solid rgb(var(--mc-color-ring, var(--mc-def-color-ring)));
+      outline-offset: 2px;
+    }
+
+    /* 浮层：可交互（pointer-events:auto）、文字可选中 */
+    .mc-panel {
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      box-sizing: border-box;
+      width: max-content;
+      max-width: min(26rem, calc(100vw - var(--mc-space-8, var(--mc-def-space-8))));
+      max-height: min(18rem, calc(100vh - var(--mc-space-8, var(--mc-def-space-8))));
+      overflow: auto;
+      padding: var(--mc-space-2, var(--mc-def-space-2)) var(--mc-space-3, var(--mc-def-space-3));
+      border: 0;
+      border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
+      background-color: rgb(var(--mc-color-surface-raised, var(--mc-def-color-surface-raised)));
+      color: rgb(var(--mc-color-fg, var(--mc-def-color-fg)));
+      font-family: var(--mc-font-sans, var(--mc-def-font-sans));
+      font-size: var(--mc-text-sm, var(--mc-def-text-sm));
+      line-height: 1.5;
+      box-shadow: var(--mc-shadow-panel, var(--mc-def-shadow-panel));
+      pointer-events: auto;
+      cursor: text;
+      user-select: text;
+      position-anchor: --mc-ellipsis-anchor;
+      position-try-fallbacks: flip-block, flip-inline;
+    }
+    .mc-full {
+      display: block;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      user-select: text;
+    }
+    .mc-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-block-start: var(--mc-space-1, var(--mc-def-space-1));
+    }
+    .mc-copy {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgb(var(--mc-color-primary, var(--mc-def-color-primary)));
+      font: inherit;
+      font-size: var(--mc-text-xs, var(--mc-def-text-xs));
+      cursor: pointer;
+    }
+    .mc-copy:hover {
+      text-decoration: underline;
+    }
+
+    /* 4 个方位；默认 bottom-start */
+    :host([placement='bottom-start']) .mc-panel {
+      top: anchor(bottom);
+      left: anchor(left);
+      margin-top: var(--mc-ellipsis-offset);
+    }
+    :host([placement='bottom']) .mc-panel {
+      top: anchor(bottom);
+      left: anchor(center);
+      translate: -50% 0;
+      margin-top: var(--mc-ellipsis-offset);
+    }
+    :host([placement='top-start']) .mc-panel {
+      bottom: anchor(top);
+      left: anchor(left);
+      margin-bottom: var(--mc-ellipsis-offset);
+    }
+    :host([placement='top']) .mc-panel {
+      bottom: anchor(top);
+      left: anchor(center);
+      translate: -50% 0;
+      margin-bottom: var(--mc-ellipsis-offset);
+    }
+  </style>
+
+  <span
+    class="mc-text"
+    part="text"
+    tabindex="0"
+    aria-haspopup="dialog"
+    on:mouseenter="onTextEnter()"
+    on:mouseleave="onTextLeave()"
+    on:focus="onTextFocus()"
+    on:blur="onTextBlur($event)"
+    on:click="onTextClick()"
+    on:keydown="onTextKeydown($event)"
+    on:dblclick="stopDblClick($event)">
+    <slot></slot>
+  </span>
+
+  <div
+    class="mc-panel"
+    part="panel"
+    popover="manual"
+    on:pointerenter="onPanelEnter()"
+    on:pointerleave="onPanelLeave()"
+    on:dblclick="stopDblClick($event)">
+    <span class="mc-full" part="full">{{fullText}}</span>
+    <span class="mc-actions">
+      <button class="mc-copy" part="copy" type="button" on:click="onCopy()">{{copyLabel}}</button>
+    </span>
+  </div>
+
+  <script>
+    import { attachFloatingScrollGuard } from '../boot/scroll-pin.js';
+    import { withOptions } from '../boot/options.js';
+
+    export default async () =>
+      withOptions({
+        tag: 'mc-ellipsis',
+
+        emits: {
+          copy: { data: ['text'] },
+        },
+
+        slots: { default: {} },
+
+        attrs: {
+          /* 可显式给文本（不传就读默认插槽的文本） */
+          text: null,
+          /* 浮层方位：bottom-start / bottom / top-start / top */
+          placement: 'bottom-start',
+          /* 文本没截断时也允许浮层（默认只在截断时弹） */
+          always: null,
+        },
+
+        data: {
+          fullText: '',
+          copyLabel: '复制',
+        },
+
+        ready() {
+          this._textEl = this.shadow.$('.mc-text')?.ele;
+          this._panelEl = this.shadow.$('.mc-panel')?.ele;
+          this._scrollGuard = attachFloatingScrollGuard(this.ele, this._panelEl);
+          this.popoverOk = typeof this._panelEl?.showPopover === 'function';
+          this._onPointerDown = (event) => this.onDocumentPointerDown(event);
+          window.addEventListener('pointerdown', this._onPointerDown, true);
+          this.refreshText();
+          this._fallbackTitle();
+        },
+
+        detached() {
+          clearTimeout(this._showTimer);
+          clearTimeout(this._hideTimer);
+          window.removeEventListener('pointerdown', this._onPointerDown, true);
+          this._scrollGuard?.dispose();
+        },
+
+        proto: {
+          /** 完整文本：text 属性优先，否则读默认插槽的纯文本 */
+          refreshText() {
+            const attr = this.ele.getAttribute('text');
+            const raw = attr != null && attr !== '' ? attr : this.ele.textContent;
+            this.fullText = String(raw ?? '')
+              .replace(/s+/g, ' ')
+              .trim();
+            this._fallbackTitle();
+            if (this.isOpen()) {
+              if (!this.isTruncated()) this.hidePanel();
+            }
+          },
+
+          /* 没有原生 popover 时退回原生 title，至少不丢信息（不可选中复制） */
+          _fallbackTitle() {
+            if (this.popoverOk) return;
+            if (this.fullText) this._textEl?.setAttribute('title', this.fullText);
+            else this._textEl?.removeAttribute('title');
+          },
+
+          isTruncated() {
+            return !!this._textEl && this._textEl.scrollWidth > this._textEl.clientWidth + 1;
+          },
+
+          canOpen() {
+            return this.ele.hasAttribute('always') || this.isTruncated();
+          },
+
+          isOpen() {
+            return !!this._panelEl && this._panelEl.matches(':popover-open');
+          },
+
+          scheduleShow() {
+            clearTimeout(this._showTimer);
+            this._showTimer = setTimeout(() => this.showPanel(), 60);
+          },
+
+          scheduleHide() {
+            clearTimeout(this._hideTimer);
+            clearTimeout(this._showTimer);
+            this._showTimer = 0;
+            this._hideTimer = setTimeout(() => this.hidePanel(), 180);
+          },
+
+          showPanel() {
+            if (!this.popoverOk || !this.ele.isConnected) return;
+            if (!this.canOpen()) return;
+            this.refreshText();
+            if (this.isOpen()) return;
+            this._scrollGuard.run(() => this._panelEl.showPopover());
+            this._textEl?.setAttribute('aria-expanded', 'true');
+          },
+
+          hidePanel() {
+            clearTimeout(this._hideTimer);
+            if (!this.isOpen()) return;
+            this._scrollGuard.run(() => this._panelEl.hidePopover());
+            this._textEl?.setAttribute('aria-expanded', 'false');
+          },
+
+          onTextEnter() {
+            clearTimeout(this._hideTimer);
+            this.scheduleShow();
+          },
+
+          onTextLeave() {
+            this.scheduleHide();
+          },
+
+          onPanelEnter() {
+            clearTimeout(this._hideTimer);
+          },
+
+          onPanelLeave() {
+            this.scheduleHide();
+          },
+
+          onTextFocus() {
+            this.scheduleShow();
+          },
+
+          onTextBlur(event) {
+            /* 焦点移进浮层（复制按钮）时保持打开 */
+            const next = event && event.relatedTarget;
+            if (next && this._panelEl?.contains(next)) return;
+            this.scheduleHide();
+          },
+
+          /* 面板内双击选词不应冒到列表行（行双击通常是「打开详情」） */
+          stopDblClick(event) {
+            event.stopPropagation();
+          },
+
+          onTextClick() {
+            if (this.isOpen()) this.hidePanel();
+            else this.showPanel();
+          },
+
+          onTextKeydown(event) {
+            if (event.key === 'Escape' && this.isOpen()) {
+              event.stopPropagation();
+              this.hidePanel();
+              this._textEl?.focus();
+            }
+          },
+
+          onDocumentPointerDown(event) {
+            if (!this.isOpen()) return;
+            const path = event.composedPath();
+            if (path.includes(this.ele) || path.includes(this._panelEl)) return;
+            this.hidePanel();
+          },
+
+          async onCopy() {
+            if (!this.fullText) return;
+            try {
+              await navigator.clipboard.writeText(this.fullText);
+              this.copyLabel = '已复制';
+              clearTimeout(this._copyTimer);
+              this._copyTimer = setTimeout(() => (this.copyLabel = '复制'), 1200);
+              this.$emit('copy', { text: this.fullText });
+            } catch (error) {
+              /* 剪贴板不可用时保留可选中复制这条退路 */
+            }
+          },
+        },
+      });
+  </script>
+</template>

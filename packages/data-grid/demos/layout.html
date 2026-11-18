@@ -10,9 +10,25 @@
       max-height="220px"
       on:sort-change="onSort($event)"></mc-data-grid>
     <span class="text-sm text-muted">最近排序：{{sortText}}</span>
+    <span class="text-sm text-muted">冻结列：横向滚动时左侧（复选框 + 编号）与右侧（操作）保持可见</span>
+    <mc-data-grid
+      id="fixed-grid"
+      selectable
+      style="max-width: 420px"
+      max-height="220px"
+      summary-label="合计"></mc-data-grid>
   </mc-space>
 
   <script>
+    const FIXED_COLUMNS = [
+      { key: 'no', title: '编号', width: '90px', fixed: 'left' },
+      { key: 'customer', title: '客户', width: '150px' },
+      { key: 'amount', title: '金额', width: '110px', align: 'right' },
+      { key: 'date', title: '日期', width: '110px' },
+      { key: 'owner', title: '负责人', width: '100px' },
+      { key: 'ops', title: '操作', width: '80px', fixed: 'right' },
+    ];
+
     const COLUMNS = [
       { key: 'no', title: '编号', width: '120px' },
       { key: 'customer', title: '客户', sortable: true },
@@ -26,6 +42,19 @@
       data: { sortText: '（未排序）' },
 
       ready() {
+        const fixedGrid = this.shadow.$('#fixed-grid')?.ele;
+        fixedGrid.columns = FIXED_COLUMNS;
+        fixedGrid.summary = { amount: '合计 ¥12,345.00' };
+        fixedGrid.data = Array.from({ length: 40 }, (_, index) => ({
+          id: index + 1,
+          no: 'IMP-' + String(index + 1).padStart(4, '0'),
+          customer: ['华东金属', '远洋物流', '中盛建材'][index % 3],
+          amount: '¥' + (10000 + index * 13.5).toFixed(2),
+          date: '2026-11-' + String((index % 28) + 1).padStart(2, '0'),
+          owner: '负责人 ' + ((index % 3) + 1),
+          ops: '编辑',
+        }));
+
         const grid = this.shadow.$('#grid')?.ele;
         grid.columns = COLUMNS;
         grid.data = Array.from({ length: 40 }, (_, index) => ({

@@ -23,6 +23,29 @@ ERP 列表页的数据网格：固定高度 + 表头吸顶、复选 / 全选、�
 
 ## 设计取舍
 
+### 布局模型（渲染与布局分离）
+
+每张表固定四个 zone：`thead.mc-head`（吸顶）/ `tbody.mc-body`（数据行，只有它能响应 hover / 选中 / 行事件）/
+`tbody.mc-layout-spacer`（**只做布局**：内容不足时把合计行顶到滚动区底部；`aria-hidden` + `pointer-events:none`）/
+`tfoot.mc-summary`（合计行，sticky 在滚动区底部）。
+列宽全部声明时表格用 `table-layout: fixed`（列宽 = 配置值，长文本交给 `mc-ellipsis`，不会被内容撑宽）；
+`renderPanes()` 只产 HTML；`runLayout()` 一次性做「容器宽度 → 各 zone 高度 → spacer 高度 → fit 状态 → 冻结阴影」，
+不再让渲染/测量/交互互相渗透。内容装得下时给 `.mc-wrap` 加 `data-fit-y` 把纵向 overflow 锁成 hidden，
+避免浏览器舍入/缩放导致的 1px 滚动条；容器尺寸变化由 ResizeObserver 重新跑 layout。
+
+**合计行由页面算、库只渲染**：库不懂业务格式（金额/千分位/币种），所以 `summary` 收的是
+「列 key → 展示字符串」，页面负责求和与格式化。非空时渲染表内 `tfoot` 合计行：与列严格对齐、首列显示 `summary-label`（默认「合计」），
+`tfoot td` sticky 在滚动区底部（分页条上方）。
+
+**冻结列是列上的 `fixed: 'left' | 'right'`，不是宿主开关**：需要哪几列冻结是数据形状的一部分，
+和列宽一起写在列定义里最直接。只支持首/尾连续列 —— 中间冻结要处理两侧滚动遮罩，先不做；
+冻结单元格必须有背景（否则透出滚过的内容），背景色跟着 surface / head-bg / stripe / hover 令牌走；
+**左右各一个容器**：冻结列不是逐单元格 sticky，而是把「左固定 / 中间可滚 / 右固定」渲染成三张同源表格，
+左、右各装进自己的 sticky 容器（`.mc-pane-left` / `.mc-pane-right`），中间是主表；三张表由脚本逐行同步高度。
+**不画分隔竖线**（两条硬线在列表两侧很抢眼）；改成容器自己的软阴影，且只在滚动条离开该侧边界后才出现：
+贴左不显示左阴影、贴右不显示右阴影。阴影是容器层级的效果，不是盖在表格上的浮层，也不遮挡滚动内容。
+复选框列在存在冻结列时自动并入左侧组，省掉一个「复选框也固定」的开关。
+
 **为什么叫 data-grid 而不是 grid**：`mc-grid` 已经是布局栅格（[`../grid/`](../grid/)）的标签。
 数据网格只能换 slug / tag；`mc-data-grid` 是本仓的取法。
 
@@ -30,8 +53,8 @@ ERP 列表页的数据网格：固定高度 + 表头吸顶、复选 / 全选、�
 固定表头 / 行内动作是另一类能力，硬塞进去会把 table 的契约撑爆。两者共存：
 简单展示用 table，ERP 列表用 data-grid。
 
-**单元格为什么只收 HTML 字符串、不收函数**：探针工程实测，函数对象经 ofa 的数据通道
-（页面 `data` / 组件 property）在 `<o-page>` 上下文会触发框架内部异常；同理，组件上下文里给子组件赋
+**单元格为什么只收 HTML 字符串、不收函数**：探针工程实测，函数对象作为 `data` 值、或经模板
+绑定传到子组件，在 `<o-page>` 上下文会触发框架内部异常（函数放 `proto` / 事件回调则正常）；同理，组件上下文里给子组件赋
 「行对象键数 ≥ 4」的数组也会炸（`mc-table` 原版同样复现）。本组件因此只收 JSON 兼容数据：
 文本列直接取值、要自定义 HTML 的行给 `cells`（列 key → 字符串），且行 / 表头整段走 HTML 字符串渲染，
 **组件不碰函数、也不让行数组进 ofa 响应式数据**。
@@ -53,15 +76,17 @@ foster-parent 搬到表格外（`mc-table` 同一条）。所以 o-fill 先写�
 
 ## 令牌
 
-| 令牌                          | 默认                            | 作用                      |
-| ----------------------------- | ------------------------------- | ------------------------- |
-| `--mc-data-grid-font`         | `--mc-text-sm`                  | 正文字号（size 三档会改） |
-| `--mc-data-grid-border`       | `--mc-color-border`             | 单元格横线与外框          |
-| `--mc-data-grid-head-bg`      | `--mc-color-surface-sunken`     | 吸顶表头底色              |
-| `--mc-data-grid-head-fg`      | `--mc-color-fg-muted`           | 表头文字                  |
-| `--mc-data-grid-stripe-bg`    | `--mc-color-surface-sunken`     | 斑马纹底色                |
-| `--mc-data-grid-hover-bg`     | `--mc-color-surface-sunken`     | 行悬停底色                |
-| `--mc-data-grid-pad-x` / `-y` | `--mc-space-4` / `--mc-space-2` | 单元格左右 / 上下内边距   |
+| 令牌                          | 默认                             | 作用                         |
+| ----------------------------- | -------------------------------- | ---------------------------- |
+| `--mc-data-grid-font`         | `--mc-text-sm`                   | 正文字号（size 三档会改）    |
+| `--mc-data-grid-border`       | `--mc-color-border`              | 单元格横线与外框             |
+| `--mc-data-grid-head-bg`      | `--mc-color-surface-sunken`      | 吸顶表头底色                 |
+| `--mc-data-grid-head-fg`      | `--mc-color-fg-muted`            | 表头文字                     |
+| `--mc-data-grid-stripe-bg`    | `--mc-color-surface-sunken`      | 斑马纹底色                   |
+| `--mc-data-grid-hover-bg`     | `--mc-color-surface-sunken`      | 行悬停底色                   |
+| `--mc-data-grid-pad-x` / `-y` | `--mc-space-4` / `--mc-space-2`  | 单元格左右 / 上下内边距      |
+| `--mc-data-grid-fixed-shadow` | `rgb(var(--mc-color-fg) / 0.26)` | 冻结列滚动的软阴影（不是线） |
+| `--mc-data-grid-summary-bg`   | `--mc-color-surface-sunken`      | 合计行底色                   |
 
 ## 相邻单元
 

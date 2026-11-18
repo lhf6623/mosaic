@@ -377,6 +377,12 @@ export const SITE = [
             href: 'packages/tooltip/page.html',
             meta: { type: 'component', zh: '提示气泡' },
           },
+          {
+            key: 'docs:component:overlay:ellipsis',
+            label: '长文本省略（Ellipsis）',
+            href: 'packages/ellipsis/page.html',
+            meta: { type: 'component', zh: '长文本省略' },
+          },
         ],
       },
       {

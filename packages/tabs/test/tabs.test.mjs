@@ -184,7 +184,7 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ---------- 真实点击：切到 a，change 只在这时发 ---------- */
-  await page.locator('#p-tab-a button').click();
+  await page.locator('#p-tab-a [part="base"]').click();
   await page.waitForFunction(() => document.querySelector('#p-tabs').value === 'a', {
     timeout: 3000,
   }).catch(() => {});
@@ -246,7 +246,7 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ---------- 键盘：方向键移动并激活，跳过禁用项，Home / End 到头尾 ---------- */
-  await page.locator('#p-tab-b button').focus();
+  await page.locator('#p-tab-b [part="base"]').focus();
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(() => document.querySelector('#p-tabs').value === 'a', {
     timeout: 3000,
@@ -753,6 +753,42 @@ export default async function run({ page, visit, check }) {
   );
 
   /* ---------- 收摊 ---------- */
+  /* ---------- closable：× 只给可关闭项，点击发 close（带 value），容器不替页面做决定 ---------- */
+  const closeProbe = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.id = 'tabs-close-probe';
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;background:#fff;padding:8px';
+    host.innerHTML =
+      '<mc-tabs id="pc" default-value="a">' +
+      '<mc-tab value="a" name="A">A</mc-tab>' +
+      '<mc-tab value="b" name="B" closable>B</mc-tab>' +
+      '</mc-tabs>';
+    document.body.append(host);
+    const events = [];
+    host.addEventListener('close', (event) => events.push(event.data?.value));
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 200)));
+    const tabs = host.querySelector('#pc');
+    const tabB = host.querySelector('mc-tab[value="b"]');
+    const close = tabB.shadowRoot.querySelector('[part="close"]');
+    const plainClose = host.querySelector('mc-tab[value="a"]').shadowRoot.querySelector('[part="close"]');
+    const visible = getComputedStyle(close).display;
+    const plainVisible = getComputedStyle(plainClose).display;
+    close.click();
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    const out = { visible, plainVisible, events, value: tabs.value, selected: tabB.hasAttribute('selected') };
+    host.remove();
+    return out;
+  });
+  check(
+    'closable：只有 closable 项显示 ×；点击发 close（value 正确），激活项不被容器改动',
+    closeProbe.visible !== 'none' &&
+      closeProbe.plainVisible === 'none' &&
+      JSON.stringify(closeProbe.events) === JSON.stringify(['b']) &&
+      closeProbe.value === 'a' &&
+      closeProbe.selected === false,
+    JSON.stringify(closeProbe),
+  );
+
   await page.evaluate(() => document.getElementById('tabs-probe')?.remove());
   page.off('response', onResponse);
   page.off('pageerror', onError);

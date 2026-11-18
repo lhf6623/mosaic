@@ -1,0 +1,16 @@
+<template component>
+  <mc-space direction="vertical" block style="max-width: 320px">
+    <span class="text-sm text-muted">点浮层里的「复制」，copy 事件会带出完整文本</span>
+    <div style="width: 170px; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); padding: var(--mc-space-2) var(--mc-space-3)">
+      <mc-ellipsis on:copy="lastCopy = $event.data.text">这是一段会被截断的长文本，用来演示 copy 事件</mc-ellipsis>
+    </div>
+    <p class="text-sm text-muted">最近一次 copy：<strong>{{lastCopy}}</strong></p>
+  </mc-space>
+
+  <script>
+    export default async () => ({
+      tag: 'demo-ellipsis-events',
+      data: { lastCopy: '（还没复制）' },
+    });
+  </script>
+</template>

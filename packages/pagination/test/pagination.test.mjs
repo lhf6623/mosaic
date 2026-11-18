@@ -43,6 +43,8 @@ export default async function run({ page, visit, check }) {
       <mc-pagination id="p-size-md" total="30" page-size="10" blocks='["prev","pages","next"]'></mc-pagination>
       <mc-pagination id="p-size-lg" total="30" page-size="10" size="lg" blocks='["prev","pages","next"]'></mc-pagination>
       <mc-pagination id="p-default" total="85" page-size="10"></mc-pagination>
+    <mc-pagination id="p-total" total="85" page-size="10" show-total></mc-pagination>
+    <mc-pagination id="p-total-blocks" total="85" page-size="10" blocks='["total","prev","pages","next"]'></mc-pagination>
       <mc-pagination id="p-slots" total="85" page-size="10" blocks='["prefix","prev","pages","next","suffix"]'>
         <span id="p-prefix" slot="prefix">共 85 条</span>
         <span id="p-suffix" slot="suffix">每页 10 条</span>
@@ -702,7 +704,32 @@ export default async function run({ page, visit, check }) {
     el.remove();
     return result;
   });
+    const totalText = await page.evaluate(() => {
+    const read = (id) => {
+      const el = document.getElementById(id);
+      const total = el.shadowRoot.querySelector('.mc-total');
+      const pages = el.shadowRoot.querySelector('[data-block="pages"]');
+      return {
+        display: getComputedStyle(total).display,
+        text: total.textContent.trim(),
+        totalLeft: Math.round(total.getBoundingClientRect().left),
+        pagesLeft: pages ? Math.round(pages.getBoundingClientRect().left) : null,
+      };
+    };
+    return { shortcut: read('p-total'), blocks: read('p-total-blocks') };
+  });
   check(
+    '「共 N 条」是分页的信息块：show-total 与 blocks 两种方式都能显示，且排在页码前',
+    totalText.shortcut.display !== 'none' &&
+      totalText.shortcut.text === '共 85 条' &&
+      totalText.shortcut.totalLeft < totalText.shortcut.pagesLeft &&
+      totalText.blocks.display !== 'none' &&
+      totalText.blocks.text === '共 85 条' &&
+      totalText.blocks.totalLeft < totalText.blocks.pagesLeft,
+    JSON.stringify(totalText),
+  );
+
+check(
     'blocks：挂载前赋 property 也认；与 sizer 布尔并存时只认数组（选择器不显示）并 warn',
     blocksPreset.flag === 'pages' &&
       blocksPreset.sizerWidth === 0 &&

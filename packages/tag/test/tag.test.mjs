@@ -797,4 +797,37 @@ export default async function run({ page, visit, check }) {
       tag.runtime.cursorAfterAttr === 'pointer',
     JSON.stringify(tag.runtime),
   );
+
+  /* variant="dot"：无底无边框，只有「色点 + 文字」 */
+  const dot = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.id = 'tag-dot-probe';
+    host.innerHTML = '<mc-tag variant="dot" color="#1E90FF">待审批</mc-tag>';
+    document.body.append(host);
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 150)));
+    const el = host.querySelector('mc-tag');
+    const cs = getComputedStyle(el);
+    const dotStyle = getComputedStyle(el, '::before');
+    const out = {
+      bg: cs.backgroundColor,
+      borderColor: cs.borderTopColor,
+      color: cs.color,
+      padInline: cs.paddingLeft,
+      dotBg: dotStyle.backgroundColor,
+      dotSize: dotStyle.width + ' x ' + dotStyle.height,
+      text: el.textContent.trim(),
+    };
+    host.remove();
+    return out;
+  });
+  check(
+    'variant="dot"：无底无边框、只留色点 + 文字（点色 = color，文字走常规前景色）',
+    dot.bg === 'rgba(0, 0, 0, 0)' &&
+      dot.borderColor === 'rgba(0, 0, 0, 0)' &&
+      dot.dotBg === 'rgb(30, 144, 255)' &&
+      dot.dotSize === '7px x 7px' &&
+      dot.text === '待审批',
+    JSON.stringify(dot),
+  );
+
 }

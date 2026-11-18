@@ -243,5 +243,222 @@ export default async function run({ page, visit, check }) {
     JSON.stringify(iconDisplay),
   );
 
+  /* 冻结列 = 左右两个独立容器（三张同源表格），阴影由容器投，滚动状态控制显隐 */
+  const fixedProbe = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;background:#fff;padding:8px';
+    host.innerHTML = '<mc-data-grid id="p-fixed" selectable style="width:360px;height:160px"></mc-data-grid>';
+    document.body.append(host);
+    const grid = host.querySelector('#p-fixed');
+    grid.columns = [
+      { key: 'no', title: 'No', width: '80px', fixed: 'left' },
+      { key: 'name', title: 'Name', width: '160px' },
+      { key: 'amount', title: 'Amount', width: '120px', align: 'right' },
+      { key: 'ops', title: 'Ops', width: '70px', fixed: 'right' },
+    ];
+    grid.data = Array.from({ length: 5 }, (_, index) => ({
+      id: index + 1,
+      no: 'P-' + index,
+      name: '名称-' + index + ' ' + '长文本'.repeat(24),
+      amount: index * 10,
+      ops: '编辑',
+    }));
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 250)));
+    const root = grid.shadowRoot;
+    const wrap = root.querySelector('.mc-wrap');
+    const left = root.querySelector('.mc-pane-left');
+    const main = root.querySelector('.mc-pane-main');
+    const right = root.querySelector('.mc-pane-right');
+    const box = (el) => el.getBoundingClientRect();
+    const rect = (el) => ({ l: Math.round(box(el).left), r: Math.round(box(el).right) });
+    const headers = (pane) =>
+      pane ? [...pane.querySelectorAll('thead th')].map((th) => th.textContent.trim()) : [];
+    const snapshot = () => ({
+      attrs: {
+        left: grid.hasAttribute('data-fixed-shadow-left'),
+        right: grid.hasAttribute('data-fixed-shadow-right'),
+      },
+      leftRect: rect(left),
+      rightRect: rect(right),
+      wrapRect: rect(wrap),
+      leftShadow: getComputedStyle(left).boxShadow,
+      rightShadow: getComputedStyle(right).boxShadow,
+    });
+    const max = wrap.scrollWidth - wrap.clientWidth;
+    const start = snapshot();
+    wrap.scrollLeft = Math.round(max / 2);
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 80)));
+    const middle = snapshot();
+    wrap.scrollLeft = max;
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 80)));
+    const end = snapshot();
+    const lists = [left, main, right].filter(Boolean).map((pane) => [...pane.querySelectorAll('tbody tr')]);
+    const count = Math.max(...lists.map((rows) => rows.length));
+    let rowsAligned = true;
+    for (let index = 0; index < count; index += 1) {
+      const heights = lists.map((rows) => rows[index]?.offsetHeight ?? 0);
+      if (new Set(heights).size > 1) rowsAligned = false;
+    }
+    const out = {
+      panes: { left: !!left, main: !!main, right: !!right },
+      headers: { left: headers(left), main: headers(main), right: headers(right) },
+      overflow: max,
+      start,
+      middle,
+      end,
+      rowsAligned,
+      overlays: root.querySelectorAll('.mc-fixed-shadow').length,
+    };
+    host.remove();
+    return out;
+  });
+  check(
+    '冻结列 = 左右两个容器：左（复选框+固定列）/ 中间 / 右，三表逐行等高，容器阴影随滚动显隐',
+    fixedProbe.panes.left &&
+      fixedProbe.panes.main &&
+      fixedProbe.panes.right &&
+      JSON.stringify(fixedProbe.headers.left) === JSON.stringify(['', 'No']) &&
+      JSON.stringify(fixedProbe.headers.right) === JSON.stringify(['Ops']) &&
+      fixedProbe.headers.main.includes('Name') &&
+      fixedProbe.overflow > 0 &&
+      fixedProbe.rowsAligned &&
+      fixedProbe.overlays === 0 &&
+      fixedProbe.start.attrs.left === false &&
+      fixedProbe.start.attrs.right === true &&
+      fixedProbe.start.leftShadow === 'none' &&
+      fixedProbe.start.rightShadow !== 'none' &&
+      fixedProbe.middle.attrs.left === true &&
+      fixedProbe.middle.attrs.right === true &&
+      fixedProbe.end.attrs.left === true &&
+      fixedProbe.end.attrs.right === false &&
+      fixedProbe.end.rightShadow === 'none' &&
+      fixedProbe.end.leftShadow !== 'none' &&
+      Math.abs(fixedProbe.start.leftRect.l - fixedProbe.start.wrapRect.l) <= 1 &&
+      Math.abs(fixedProbe.end.leftRect.l - fixedProbe.end.wrapRect.l) <= 1 &&
+      Math.abs(fixedProbe.start.rightRect.r - fixedProbe.start.wrapRect.r) <= 1,
+    JSON.stringify(fixedProbe),
+  );
+
+  /* 合计行：表内 tfoot，与列表列对齐；sticky 在滚动区底部；当前页数据由页面求和后传入 */
+  const summaryProbe = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;background:#fff;padding:8px';
+    host.innerHTML =
+      '<mc-data-grid id="p-summary" style="width:420px;height:140px"></mc-data-grid>';
+    document.body.append(host);
+    const grid = host.querySelector('#p-summary');
+    grid.columns = [
+      { key: 'name', title: '名称', width: '160px' },
+      { key: 'amount', title: '金额', width: '120px', align: 'right' },
+    ];
+    grid.data = [
+      { id: 1, name: '一', amount: 10 },
+      { id: 2, name: '二', amount: 20 },
+    ];
+    grid.summary = { amount: '¥30.00' };
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 200)));
+    const root = grid.shadowRoot;
+    const foot = root.querySelector('tfoot tr.mc-summary-row');
+    const headers = root.querySelectorAll('thead th');
+    const out = {
+      hasFoot: !!foot,
+      label: foot?.querySelector('[data-summary-label]')?.textContent.trim() ?? null,
+      value: foot?.querySelector('[data-summary="amount"]')?.textContent.trim() ?? null,
+      cells: foot ? foot.children.length : 0,
+      headers: headers.length,
+      position: foot ? getComputedStyle(foot.children[0]).position : null,
+      bar: root.querySelectorAll('.mc-summary-bar').length,
+      spacer: root.querySelectorAll('tbody.mc-layout-spacer').length,
+    };
+    grid.summary = {};
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 120)));
+    out.afterClear = !!root.querySelector('tfoot tr');
+    host.remove();
+    return out;
+  });
+  check(
+    '合计行：表内 tfoot 与列对齐（首列「合计」、金额列显示值），sticky 在底部，清空后消失',
+    summaryProbe.hasFoot &&
+      summaryProbe.label === '合计' &&
+      summaryProbe.value === '¥30.00' &&
+      summaryProbe.cells === summaryProbe.headers &&
+      summaryProbe.position === 'sticky' &&
+      summaryProbe.bar === 0 &&
+      summaryProbe.spacer === 1 &&
+      summaryProbe.afterClear === false,
+    JSON.stringify(summaryProbe),
+  );
+
+  /* 布局矩阵：短内容（spacer 顶底）/ 长内容（spacer=0、合计 sticky）/ hover 只认数据行 */
+  const layoutProbe = await page.evaluate(async () => {
+    const build = async ({ height, rows }) => {
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;background:#fff;padding:8px';
+      host.innerHTML =
+        '<mc-data-grid style="width:420px;height:' + height + 'px"></mc-data-grid>';
+      document.body.append(host);
+      const grid = host.querySelector('mc-data-grid');
+      grid.columns = [
+        { key: 'no', title: 'No', width: '80px' },
+        { key: 'amount', title: 'Amount', width: '120px', align: 'right' },
+      ];
+      grid.data = Array.from({ length: rows }, (_, index) => ({
+        id: index + 1,
+        no: 'P-' + index,
+        amount: index * 10,
+      }));
+      grid.summary = { amount: '¥' + rows * 10 + '.00' };
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 220)));
+      const root = grid.shadowRoot;
+      const wrap = root.querySelector('.mc-wrap');
+      const panes = root.querySelector('.mc-panes');
+      const summaryTd = root.querySelector('tfoot.mc-summary td[data-summary="amount"]');
+      const spacerTd = root.querySelector('tbody.mc-layout-spacer td');
+      const dataRows = root.querySelectorAll('tbody.mc-body tr');
+      const rect = (el) => {
+        const box = el.getBoundingClientRect();
+        return { top: Math.round(box.top), bottom: Math.round(box.bottom) };
+      };
+      const out = {
+        dataRows: dataRows.length,
+        spacerHeight: spacerTd ? Math.round(spacerTd.getBoundingClientRect().height) : 0,
+        summaryBottom: rect(summaryTd).bottom,
+        wrapBottom: Math.round(wrap.getBoundingClientRect().bottom),
+        wrapperContent: panes.offsetHeight,
+        wrapClient: wrap.clientHeight,
+        scrollHeight: wrap.scrollHeight,
+        fitY: wrap.hasAttribute('data-fit-y'),
+      };
+      /* hover：数据行触发 data-hover，spacer 不触发 */
+      dataRows[0]?.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+      out.dataHover = root.querySelectorAll('tbody.mc-body tr[data-hover]').length;
+      spacerTd?.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+      out.afterSpacerHover = root.querySelectorAll('tr[data-hover]').length;
+      host.remove();
+      return out;
+    };
+    return {
+      short: await build({ height: 320, rows: 3 }),
+      long: await build({ height: 200, rows: 20 }),
+    };
+  });
+  check(
+    '布局矩阵：内容不足时 spacer 顶住合计行且不响应 hover；内容超出时 spacer=0、合计 sticky 在底部',
+    layoutProbe.short.dataRows === 3 &&
+      layoutProbe.short.spacerHeight > 0 &&
+      Math.abs(layoutProbe.short.summaryBottom - layoutProbe.short.wrapBottom) <= 2 &&
+      layoutProbe.short.fitY === true &&
+      layoutProbe.short.dataHover === 1 &&
+      layoutProbe.short.afterSpacerHover === 0 &&
+      layoutProbe.long.dataRows === 20 &&
+      layoutProbe.long.spacerHeight === 0 &&
+      Math.abs(layoutProbe.long.summaryBottom - layoutProbe.long.wrapBottom) <= 2 &&
+      layoutProbe.long.fitY === false &&
+      layoutProbe.long.dataHover === 1 &&
+      layoutProbe.long.afterSpacerHover === 0 &&
+      layoutProbe.long.scrollHeight > layoutProbe.long.wrapClient,
+    JSON.stringify(layoutProbe),
+  );
+
   check('全程无 pageerror / console 错误', problems.length === 0, problems.slice(0, 3).join(' | '));
 }

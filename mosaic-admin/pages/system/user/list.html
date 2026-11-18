@@ -12,67 +12,34 @@
 
   <erp-page
     id="page"
-    on:search="onSearch($event)"
-    on:page-change="onPageChange($event)"
+    :schema="schema"
+    :loader="loader"
     on:cell-action="onCellAction($event)"></erp-page>
 
   <user-detail-drawer id="detail"></user-detail-drawer>
 
   <script>
-    import { PAGE_SIZE } from '../../../config.js';
     import { getUserPage } from '../../../shared/api/user.js';
     import { getDict, dictMap } from '../../../shared/api/dicts.js';
     import { userPageSchema } from '../../../shared/modules/system/user/schema.js';
     import { userGridRows } from '../../../shared/modules/system/user/cell.js';
     import { userQuery } from '../../../shared/modules/system/user/logic.js';
 
-    export default async () => ({
-      data: {},
+    let sexMapPromise;
+    const sexMap = () => (sexMapPromise ??= getDict('sex').then(dictMap));
 
-      ready() {
-        this.init();
-      },
+    export default async () => ({
+      data: { schema: userPageSchema },
 
       proto: {
-        async init() {
-          await customElements.whenDefined('erp-page');
-          await customElements.whenDefined('user-detail-drawer');
-          await new Promise((resolve) => requestAnimationFrame(resolve));
-          this._page = this.shadow.$('#page').ele;
-          this._page.schema = userPageSchema;
-          this._search = {};
-          this._sexMap = dictMap(await getDict('sex'));
-          await this.load(1);
-        },
-
-        async load(page) {
-          this._page.setLoading(true);
-          this._page.setError('');
-          try {
-            const data = await getUserPage(userQuery(this._search, page, this._page.pageSize));
-            const rows = data?.records ?? [];
-            this._page.setRows(userGridRows(rows, this._sexMap));
-            this._page.setPage({
-              current: Number(data?.current ?? page),
-              pageSize: Number(data?.size ?? this._page.pageSize),
-              total: Number(data?.total ?? rows.length),
-            });
-            this._page.footer = '共 ' + Number(data?.total ?? rows.length) + ' 条';
-          } catch (error) {
-            this._page.setRows([]);
-            this._page.setError('加载失败：' + error.message);
-          } finally {
-            this._page.setLoading(false);
-          }
-        },
-
-        onSearch(event) {
-          this._search = event.data.values;
-          this.load(1);
-        },
-
-        onPageChange(event) {
-          this.load(event.data.current);
+        async loader({ current, pageSize, search }) {
+          const data = await getUserPage(userQuery(search, current, pageSize));
+          return {
+            rows: userGridRows(data?.records ?? [], await sexMap()),
+            total: Number(data?.total ?? 0),
+            current: Number(data?.current ?? current),
+            pageSize: Number(data?.size ?? pageSize),
+          };
         },
 
         onCellAction(event) {

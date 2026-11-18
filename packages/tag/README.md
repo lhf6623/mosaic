@@ -78,6 +78,9 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 
 - 与 [`mc-badge`](../badge/) 的分工：badge 是「挂在别的元素上」的徽标（计数、圆点、本就不交互），tag 是「内容本身」的标签 —— 它才有关闭与选中。
 
+**新增 `variant="dot"`**：无底无边框，只剩「7px 色点 + 文字」——密集表格一行多个状态时，
+chip 会变成一墙彩色块；点色取 `color`（hex 也行），文字走常规前景色，语义仍由文字承载。
+
 **`color` 也收 hex**（`<mc-tag color="#1a7f5a">`）：六个语义名仍走 CSS，hex 走
 [`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-tag-fill` / `-on-fill` / `-accent` /
 `-subtle-fill`。**浅底的强调色会按 WCAG 自动调明度**：在浅底上不足 4.5:1 就向黑微调（暗色主题下向白提亮），

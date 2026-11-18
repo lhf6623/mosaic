@@ -4,7 +4,9 @@
   <style>
     /* 1. 宿主 + 色槽默认值（L3 组件令牌默认引用 L2 语义令牌，按实例 style 覆盖） */
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      position: relative;
       box-sizing: border-box;
       font-family: var(--mc-font-sans, var(--mc-def-font-sans));
       font-size: var(--mc-data-grid-font, var(--mc-text-sm, var(--mc-def-text-sm)));
@@ -15,6 +17,10 @@
       --mc-data-grid-head-fg: var(--mc-color-fg-muted, var(--mc-def-color-fg-muted));
       --mc-data-grid-stripe-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
       --mc-data-grid-hover-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
+      /* 冻结列「浮起一层」的软阴影：只有横向可滚、且该侧还有被卷走的内容时才出现 */
+      --mc-data-grid-fixed-shadow: rgb(var(--mc-color-fg, var(--mc-def-color-fg)) / 0.26);
+      /* 合计行底色：和普通行区分开，又不抢状态色 */
+      --mc-data-grid-summary-bg: var(--mc-color-surface-sunken, var(--mc-def-color-surface-sunken));
     }
 
     /* 2. 尺寸三档：只动字号与内边距（默认 md 写在上面） */
@@ -33,8 +39,9 @@
     .mc-wrap {
       position: relative;
       box-sizing: border-box;
-      /* 宿主 style="height"（或 height 属性）时填满宿主、内部滚动；宿主高度 auto 时按内容长 */
-      height: 100%;
+      /* 宿主给高度时填满剩余空间、内部滚动；宿主高度 auto 时按内容长 */
+      flex: 1 1 auto;
+      min-height: 0;
       overflow: auto;
       border: 1px solid transparent;
       border-radius: var(--mc-radius-md, var(--mc-def-radius-md));
@@ -42,11 +49,22 @@
     :host([bordered]) .mc-wrap {
       border-color: rgb(var(--mc-data-grid-border));
     }
+    /* layout pass 判定内容不超高时，纵向不滚（避免 ±1px 亚像素差出现滚动条） */
+    .mc-wrap[data-fit-y] {
+      overflow-y: hidden;
+    }
 
     .mc-table {
       width: 100%;
       border-spacing: 0;
       text-align: left;
+    }
+    /* 列宽全部声明时用 fixed 布局：列宽 = 配置值，单元格内容不许把表撑宽（长文本交给 mc-ellipsis） */
+    .mc-table.mc-table-fixed {
+      table-layout: fixed;
+    }
+    .mc-table.mc-table-fixed td {
+      overflow: hidden;
     }
 
     .mc-table th,
@@ -70,11 +88,70 @@
       background-color: rgb(var(--mc-data-grid-stripe-bg));
     }
 
-    .mc-table tbody tr:hover td {
+    /* 只有数据行响应 hover（spacer / 合计行不参与） */
+    .mc-table tbody.mc-body tr:hover td {
       background-color: rgb(var(--mc-data-grid-hover-bg));
     }
 
-    /* 4. 对齐：列上的 align 落到表头与单元格（表头文案也一起对齐） */
+    /* 4. 冻结列 = 左右各一个容器（三张同源表格：左固定 / 中间可滚 / 右固定） */
+    .mc-panes {
+      display: flex;
+      align-items: flex-start;
+      width: max-content;
+      min-width: 100%;
+    }
+    .mc-pane {
+      flex: none;
+      background-color: rgb(var(--mc-color-surface));
+    }
+    .mc-pane-left {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+    }
+    .mc-pane-right {
+      position: sticky;
+      right: 0;
+      z-index: 3;
+    }
+    :host([data-fixed-shadow-left]) .mc-pane-left {
+      box-shadow: 12px 0 16px -14px var(--mc-data-grid-fixed-shadow);
+    }
+    :host([data-fixed-shadow-right]) .mc-pane-right {
+      box-shadow: -12px 0 16px -14px var(--mc-data-grid-fixed-shadow);
+    }
+    .mc-table tbody.mc-body tr[data-hover] td {
+      background-color: rgb(var(--mc-data-grid-hover-bg));
+    }
+    /* 合计行（独立 zone）：表内最后一行，列严格对齐；sticky 在滚动区底部（横向滚动条上方） */
+    .mc-table tfoot.mc-summary td {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background-color: rgb(var(--mc-data-grid-summary-bg));
+      border-block-start: 1px solid rgb(var(--mc-data-grid-border));
+      font-weight: var(--mc-weight-semibold, var(--mc-def-weight-semibold));
+      font-variant-numeric: tabular-nums;
+    }
+    .mc-pane-left .mc-table tfoot.mc-summary td,
+    .mc-pane-right .mc-table tfoot.mc-summary td {
+      z-index: 4;
+    }
+    :host([striped]) .mc-table tfoot.mc-summary td {
+      background-color: rgb(var(--mc-data-grid-summary-bg));
+    }
+    /* layout 占位 zone：内容不足时把合计行顶到滚动区底部；不可交互、不参与 hover/选中 */
+    .mc-table tbody.mc-layout-spacer {
+      pointer-events: none;
+    }
+    .mc-table tbody.mc-layout-spacer td {
+      height: 0;
+      padding: 0;
+      border: 0;
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    /* 5. 对齐：列上的 align 落到表头与单元格（表头文案也一起对齐） */
     .mc-table [data-align='right'] {
       text-align: right;
       font-variant-numeric: tabular-nums;
@@ -159,13 +236,10 @@
     :style.maxHeight="maxHeight"
     on:click="onWrapClick($event)"
     on:dblclick="onWrapDblClick($event)"
-    on:change="onWrapChange($event)">
-    <table class="mc-table">
-      <thead>
-        <tr :html="headHtml"></tr>
-      </thead>
-      <tbody :html="bodyHtml"></tbody>
-    </table>
+    on:change="onWrapChange($event)"
+    on:pointerover="onHoverRow($event)"
+    on:pointerleave="onHoverRowEnd()">
+    <div class="mc-panes" :html="panesHtml"></div>
 
     <div class="mc-state mc-empty" attr:data-visible="isEmpty ? '' : null">
       <slot name="empty">{{emptyText}}</slot>
@@ -215,6 +289,9 @@
           size: 'md',
           loading: null,
           emptyText: '暂无数据',
+          /* 合计行：属性通道只作 JSON 初始值，运行时推荐 property（同 columns / data） */
+          summary: null,
+          summaryLabel: '合计',
           /* 滚动容器高度：任意 CSS 长度；只给 max-height 时表格按内容长、超出才滚 */
           height: '',
           maxHeight: '',
@@ -222,8 +299,7 @@
 
         /* ⚠️ 只放原始值：行 / 列的渲染结果都是字符串，不要再把对象数组放进 data（见文件头） */
         data: {
-          headHtml: '',
-          bodyHtml: '',
+          panesHtml: '',
           isEmpty: true,
         },
 
@@ -234,11 +310,13 @@
           this._selectedKeys = [];
           this._sortKey = '';
           this._sortOrder = '';
+          this._summary = {};
 
           const hasOwn = (key) => Object.prototype.hasOwnProperty.call(this.ele, key);
           this._presetColumns = hasOwn('columns') ? this.ele.columns : undefined;
           this._presetData = hasOwn('data') ? this.ele.data : undefined;
           this._presetSelected = hasOwn('selected') ? this.ele.selected : undefined;
+          this._presetSummary = hasOwn('summary') ? this.ele.summary : undefined;
 
           /* 对象属性走宿主 accessor → 组件内部 plain 字段（不进 ofa 数据通道） */
           Object.defineProperty(this.ele, 'columns', {
@@ -257,6 +335,11 @@
               this.applyData(value);
             },
           });
+          Object.defineProperty(this.ele, 'summary', {
+            configurable: true,
+            get: () => this._summary,
+            set: (value) => this.applySummary(value),
+          });
           Object.defineProperty(this.ele, 'selected', {
             configurable: true,
             get: () => [...this._selectedKeys],
@@ -274,12 +357,25 @@
         },
 
         attached() {
+          this._onWrapScroll = () => this.updateFixedShadow();
+          this._wrap?.ele?.addEventListener('scroll', this._onWrapScroll, { passive: true });
+          if (typeof ResizeObserver !== 'undefined' && this._wrap?.ele) {
+            this._layoutRo = new ResizeObserver(() => this.scheduleLayout());
+            this._layoutRo.observe(this._wrap.ele);
+          }
           if (!this._applied) {
             this._applied = true;
             /* 顺序 = 属性（JSON 兼容）→ 挂载前赋的 property（property 赢） */
             if (this.ele.hasAttribute('columns'))
               this.applyColumns(this.ele.getAttribute('columns'));
             if (this.ele.hasAttribute('data')) this.applyData(this.ele.getAttribute('data'));
+            if (this.ele.hasAttribute('summary')) {
+              try {
+                this.applySummary(JSON.parse(this.ele.getAttribute('summary') ?? '{}'));
+              } catch {
+                this.applySummary({});
+              }
+            }
             if (this.ele.hasAttribute('selected'))
               this.setSelected(this.ele.getAttribute('selected'));
             if (this._presetColumns !== undefined) {
@@ -291,6 +387,7 @@
               this.applyData(this._presetData);
             }
             if (this._presetSelected !== undefined) this.setSelected(this._presetSelected);
+            if (this._presetSummary !== undefined) this.applySummary(this._presetSummary);
           }
 
           /* data 没进 attrs（保留名），属性通道自己听；我们从不写这个属性，不会自激 */
@@ -306,6 +403,9 @@
 
         detached() {
           this._attrMo?.disconnect();
+          this._wrap?.ele?.removeEventListener('scroll', this._onWrapScroll);
+          this._layoutRo?.disconnect();
+          if (this._layoutRaf) cancelAnimationFrame(this._layoutRaf);
         },
 
         watch: {
@@ -315,8 +415,7 @@
           },
           selectable() {
             if (!this._mounted) return;
-            this.renderHead();
-            this.renderBody();
+            this.renderPanes();
           },
           rowKey() {
             if (!this._mounted) return;
@@ -355,9 +454,9 @@
                 width: col.width == null ? '' : String(col.width),
                 align: col.align === 'right' || col.align === 'center' ? col.align : 'left',
                 sortable: col.sortable === true,
+                fixed: col.fixed === 'left' || col.fixed === 'right' ? col.fixed : '',
               }));
-            this.renderHead();
-            this.renderBody();
+            this.renderPanes();
           },
 
           /** 行数据 → 内部 rows（plain），并重渲染行 HTML */
@@ -368,24 +467,35 @@
               if (!row || typeof row !== 'object') return { rowKey: String(index) };
               return { ...row, rowKey: String(row.rowKey ?? row[keyName] ?? index) };
             });
-            this.renderBody();
+            this.renderPanes();
             this.applyEmpty();
             this.queueSyncSelection();
+          },
+
+          /** 合计行：页面算好「列 key → 展示字符串」传进来；库只负责渲染与 sticky，不碰业务格式 */
+          /** 合计行：页面算好「列 key → 展示字符串」传进来；库渲染成表内对齐的 tfoot 行 */
+          applySummary(value) {
+            this._summary =
+              value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : {};
+            this.renderPanes();
           },
 
           applyEmpty() {
             this.isEmpty = this._rows.length === 0 && this.loading === null;
           },
 
-          /** 表头整段 HTML：选择列（可选）+ 每列一个排序按钮（键盘可达） */
-          renderHead() {
-            let html = '';
-            if (this.ele.hasAttribute('selectable')) {
-              html +=
-                '<th class="mc-select" scope="col"><input type="checkbox" data-select-all aria-label="全选"></th>';
-            }
-            for (const column of this._cols) {
-              const sortable = this.ele.hasAttribute('sortable') && column.sortable;
+          /** 渲染三张同源表格：左固定 / 中间 / 右固定，各装进自己的容器；无冻结列时退回单表 */
+          renderPanes() {
+            const selectable = this.ele.hasAttribute('selectable');
+            const leftCols = this._cols.filter((column) => column.fixed === 'left');
+            const rightCols = this._cols.filter((column) => column.fixed === 'right');
+            const mainCols = this._cols.filter((column) => !column.fixed);
+            const hasFixed = leftCols.length > 0 || rightCols.length > 0;
+            const keys = new Set(this._selectedKeys);
+            const hostSortable = this.ele.hasAttribute('sortable');
+
+            const headCell = (column) => {
+              const sortable = hostSortable && column.sortable;
               const sort = this._sortKey === column.key ? this._sortOrder : '';
               const attrs = [
                 'scope="col"',
@@ -396,49 +506,261 @@
               ]
                 .filter(Boolean)
                 .join(' ');
-              html +=
+              return (
                 '<th ' +
                 attrs +
                 '><button class="mc-sort" type="button" data-sort-key="' +
                 escapeHtml(column.key) +
                 '"><span>' +
                 escapeHtml(column.title) +
-                '</span><span class="mc-sort-icon"></span></button></th>';
+                '</span><span class="mc-sort-icon"></span></button></th>'
+              );
+            };
+            const headRow = (columns, withCheckbox) => {
+              let cells = withCheckbox
+                ? '<th class="mc-select" scope="col"><input type="checkbox" data-select-all aria-label="全选"></th>'
+                : '';
+              for (const column of columns) cells += headCell(column);
+              return '<tr>' + cells + '</tr>';
+            };
+            const cellHtml = (row, column) => {
+              const raw = row.cells?.[column.key];
+              const content = typeof raw === 'string' ? raw : escapeHtml(row[column.key]);
+              return (
+                '<td data-col="' +
+                escapeHtml(column.key) +
+                '" data-align="' +
+                column.align +
+                '">' +
+                content +
+                '</td>'
+              );
+            };
+            const bodyRows = (columns, withCheckbox) => {
+              let html = '';
+              for (const row of this._rows) {
+                html += '<tr data-row-key="' + escapeHtml(row.rowKey) + '">';
+                if (withCheckbox) {
+                  html +=
+                    '<td class="mc-select"><input type="checkbox" data-pick="' +
+                    escapeHtml(row.rowKey) +
+                    '"' +
+                    (keys.has(row.rowKey) ? ' checked' : '') +
+                    '></td>';
+                }
+                for (const column of columns) html += cellHtml(row, column);
+                html += '</tr>';
+              }
+              return html;
+            };
+            /* 合计 zone：整张表的「第一列」放标签，其余列按 key 取展示值；空格占位保证列对齐 */
+            const summary = this._summary && typeof this._summary === 'object' ? this._summary : {};
+            const hasSummary = Object.keys(summary).length > 0;
+            const firstKey = this._cols[0]?.key;
+            const summaryLabel = String(this.summaryLabel ?? '合计');
+            const summaryCell = (column) => {
+              if (column.key === firstKey) {
+                return '<td data-summary-label="">' + escapeHtml(summaryLabel) + '</td>';
+              }
+              const value = summary[column.key];
+              if (value == null || value === '') return '<td></td>';
+              return (
+                '<td data-summary="' +
+                escapeHtml(column.key) +
+                '">' +
+                escapeHtml(String(value)) +
+                '</td>'
+              );
+            };
+            /**
+             * 一张表 = 四个 zone：
+             * thead.mc-head（吸顶）/ tbody.mc-body（数据行）/ tbody.mc-layout-spacer（仅布局）/
+             * tfoot.mc-summary（合计）。-spacer 不属于数据行，不参与 hover / 选中 / 行事件。
+             */
+            const table = (columns, checkbox = false) => {
+              const fixed = columns.length > 0 && columns.every((column) => column.width);
+              const count = (checkbox ? 1 : 0) + columns.length;
+              const spacer = hasSummary
+                ? '<tbody class="mc-layout-spacer" aria-hidden="true"><tr><td colspan="' +
+                  count +
+                  '"></td></tr></tbody>'
+                : '';
+              let summaryCells = checkbox ? '<td class="mc-select"></td>' : '';
+              for (const column of columns) summaryCells += summaryCell(column);
+              return (
+                '<table class="mc-table' +
+                (fixed ? ' mc-table-fixed' : '') +
+                '"><thead class="mc-head">' +
+                headRow(columns, checkbox) +
+                '</thead><tbody class="mc-body">' +
+                bodyRows(columns, checkbox) +
+                '</tbody>' +
+                spacer +
+                (hasSummary
+                  ? '<tfoot class="mc-summary"><tr class="mc-summary-row">' +
+                    summaryCells +
+                    '</tr></tfoot>'
+                  : '') +
+                '</table>'
+              );
+            };
+
+            this._hasFixed = hasFixed;
+            this._hasLeftPane = hasFixed && leftCols.length > 0;
+            this._hasRightPane = hasFixed && rightCols.length > 0;
+            let html = '';
+            if (!hasFixed) {
+              html =
+                '<div class="mc-pane mc-pane-main">' + table(this._cols, selectable) + '</div>';
+            } else {
+              if (this._hasLeftPane) {
+                html +=
+                  '<div class="mc-pane mc-pane-left">' + table(leftCols, selectable) + '</div>';
+              }
+              html +=
+                '<div class="mc-pane mc-pane-main">' +
+                table(mainCols, selectable && !this._hasLeftPane) +
+                '</div>';
+              if (this._hasRightPane) {
+                html += '<div class="mc-pane mc-pane-right">' + table(rightCols) + '</div>';
+              }
             }
-            this.headHtml = html;
+            this.panesHtml = html;
+            this.isEmpty = this._rows.length === 0 && this.loading === null;
+            this.scheduleLayout();
           },
 
-          /** 行整段 HTML：选择格 + 按 cols 顺序的单元格（row.cells[列 key] 优先，原文不转义） */
-          renderBody() {
-            const keys = new Set(this._selectedKeys);
-            const selectable = this.ele.hasAttribute('selectable');
-            let html = '';
-            for (const row of this._rows) {
-              html += '<tr data-row-key="' + escapeHtml(row.rowKey) + '">';
-              if (selectable) {
-                html +=
-                  '<td class="mc-select"><input type="checkbox" data-pick="' +
-                  escapeHtml(row.rowKey) +
-                  '"' +
-                  (keys.has(row.rowKey) ? ' checked' : '') +
-                  '></td>';
-              }
-              for (const column of this._cols) {
-                const raw = row.cells?.[column.key];
-                const content = typeof raw === 'string' ? raw : escapeHtml(row[column.key]);
-                html +=
-                  '<td data-col="' +
-                  escapeHtml(column.key) +
-                  '" data-align="' +
-                  column.align +
-                  '">' +
-                  content +
-                  '</td>';
-              }
-              html += '</tr>';
+          scheduleLayout() {
+            if (this._layoutRaf) cancelAnimationFrame(this._layoutRaf);
+            this._layoutRaf = requestAnimationFrame(() => {
+              this._layoutRaf = 0;
+              this.runLayout();
+            });
+          },
+
+          /** layout pass：宽度 → 表头/数据/合计 zone 高度 → layout 占位 → 冻结阴影（只做布局，不碰渲染） */
+          runLayout() {
+            if (!this.shadow?.all) return;
+            const panesEl = this.shadow.$('.mc-panes')?.ele;
+            if (!panesEl) return;
+            const wrap = this._wrap?.ele;
+            const panes = {
+              left: panesEl.querySelector('.mc-pane-left'),
+              main: panesEl.querySelector('.mc-pane-main'),
+              right: panesEl.querySelector('.mc-pane-right'),
+            };
+            const tables = [...panesEl.querySelectorAll('table.mc-table')];
+            if (!tables.length) return;
+            this.layoutPaneWidths({ panes, tables, wrap });
+            this.layoutZoneHeights({ tables });
+            this.layoutSpacer({ panesEl, tables, wrap });
+            this.updateFitState({ panesEl, wrap });
+            this.updateFixedShadow();
+          },
+
+          /** 左右容器按内容定宽、中间吃掉剩余；三张表都拉伸到容器宽 */
+          layoutPaneWidths({ panes, tables, wrap }) {
+            for (const pane of [panes.left, panes.main, panes.right]) {
+              if (pane) pane.style.width = '';
             }
-            this.bodyHtml = html;
-            this.isEmpty = this._rows.length === 0 && this.loading === null;
+            for (const table of tables) table.style.width = 'auto';
+            const available = wrap ? wrap.clientWidth - 2 : 0;
+            const measure = (pane) => (pane ? pane.querySelector('table').offsetWidth : 0);
+            const leftWidth = measure(panes.left);
+            const rightWidth = measure(panes.right);
+            const mainWidth = measure(panes.main);
+            if (panes.left) panes.left.style.width = leftWidth + 'px';
+            if (panes.right) panes.right.style.width = rightWidth + 'px';
+            if (panes.main) {
+              panes.main.style.width =
+                Math.max(mainWidth, available - leftWidth - rightWidth) + 'px';
+            }
+            for (const table of tables) table.style.width = '100%';
+          },
+
+          /** zone 高度对齐：表头（跨表）、数据行逐行、合计行；spacer 不参与 */
+          layoutZoneHeights({ tables }) {
+            const syncRows = (rows) => {
+              const max = rows.reduce((height, row) => Math.max(height, row.offsetHeight), 0);
+              for (const row of rows) row.style.height = max + 'px';
+            };
+            syncRows(
+              tables.map((table) => table.querySelector('thead.mc-head tr')).filter(Boolean),
+            );
+            const bodyRows = tables.map((table) => [...table.querySelectorAll('tbody.mc-body tr')]);
+            const count = bodyRows.reduce((max, rows) => Math.max(max, rows.length), 0);
+            for (let index = 0; index < count; index += 1) {
+              syncRows(bodyRows.map((rows) => rows[index]).filter(Boolean));
+            }
+            const summaryRows = tables
+              .map((table) => table.querySelector('tfoot.mc-summary tr'))
+              .filter(Boolean);
+            if (summaryRows.length) syncRows(summaryRows);
+          },
+
+          /** 内容不足时，用独立的 layout-spacer 把合计行顶到滚动区底部；spacer 不可交互 */
+          layoutSpacer({ panesEl, tables, wrap }) {
+            const spacers = tables
+              .map((table) => table.querySelector('tbody.mc-layout-spacer td'))
+              .filter(Boolean);
+            if (!spacers.length) return;
+            for (const cell of spacers) cell.style.height = '0px';
+            const viewport = wrap ? wrap.clientHeight : 0;
+            const contentHeight = panesEl.offsetHeight;
+            if (viewport <= contentHeight) return;
+            const delta = viewport - contentHeight;
+            for (const cell of spacers) cell.style.height = delta + 'px';
+          },
+
+          /** 行悬停跨三张表同步：只认数据行（mc-body tr），spacer / 合计行不参与 */
+          onHoverRow(event) {
+            const target = event.target;
+            const tr =
+              target && typeof target.closest === 'function'
+                ? target.closest('tbody.mc-body tr')
+                : null;
+            const key = tr?.getAttribute('data-row-key') ?? '';
+            if (key === this._hoverKey) return;
+            this._hoverKey = key;
+            const panesEl = this.shadow.$('.mc-panes')?.ele;
+            if (!panesEl) return;
+            for (const row of panesEl.querySelectorAll('tbody.mc-body tr')) {
+              if (key && row.getAttribute('data-row-key') === key)
+                row.setAttribute('data-hover', '');
+              else row.removeAttribute('data-hover');
+            }
+          },
+
+          onHoverRowEnd() {
+            this._hoverKey = '';
+            const panesEl = this.shadow.$('.mc-panes')?.ele;
+            if (!panesEl) return;
+            for (const row of panesEl.querySelectorAll('tbody.mc-body tr[data-hover]')) {
+              row.removeAttribute('data-hover');
+            }
+          },
+
+          /** 内容是否装得下：装得下就锁纵向 overflow，避免浏览器舍入/缩放产生滚动条 */
+          updateFitState({ panesEl, wrap }) {
+            if (!wrap) return;
+            const fits = panesEl.offsetHeight <= wrap.clientHeight;
+            wrap.toggleAttribute('data-fit-y', fits);
+          },
+
+          /** 冻结容器阴影只跟随滚动状态：贴左不显示左阴影、贴右不显示右阴影 */
+          updateFixedShadow() {
+            const wrap = this._wrap?.ele;
+            if (!wrap) return;
+            const max = wrap.scrollWidth - wrap.clientWidth;
+            const canScroll = this._hasFixed === true && max > 1;
+            this.ele.toggleAttribute(
+              'data-fixed-shadow-left',
+              canScroll && this._hasLeftPane === true && wrap.scrollLeft > 1,
+            );
+            this.ele.toggleAttribute(
+              'data-fixed-shadow-right',
+              canScroll && this._hasRightPane === true && max - wrap.scrollLeft > 1,
+            );
           },
 
           setSelected(value) {
@@ -565,7 +887,7 @@
                     : 'asc';
             this._sortKey = order ? key : '';
             this._sortOrder = order;
-            this.renderHead();
+            this.renderPanes();
             this.$emit('sort-change', { key, order: order || null });
           },
 

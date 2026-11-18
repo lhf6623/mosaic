@@ -1,0 +1,46 @@
+<template page>
+  <link rel="stylesheet" href="../../docs/content.css" />
+  <div class="doc-body">
+    <l-m src="./ellipsis.html"></l-m>
+    <h1>
+      Ellipsis
+      <code>mc-ellipsis</code>
+    </h1>
+    <p class="doc-lead">
+      长文本单行省略；截断时浮出完整内容，浮层文字可选中、可复制（带复制按钮）。
+    </p>
+
+    <h2>例子</h2>
+
+    <doc-demos>
+      <section class="doc-demo">
+        <doc-example src="./demos/basic.html">
+          <h3 slot="title">基本用法</h3>
+          <p class="doc-hint" slot="hint">
+            需要原生 popover 与 CSS 锚点定位（Chrome 125+ / Safari 17+ / Firefox 125+）；
+            没有时退回原生 title。
+          </p>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/part.html">
+          <h3 slot="title">浮层内部样式</h3>
+        </doc-example>
+      </section>
+
+      <section class="doc-demo">
+        <doc-example src="./demos/events.html">
+          <h3 slot="title">事件回调</h3>
+          <p class="doc-hint" slot="hint">复制成功后发 copy，载荷是完整文本。</p>
+        </doc-example>
+      </section>
+    </doc-demos>
+
+    <doc-spec src="./api.md"></doc-spec>
+  </div>
+  <script>
+    export const parent = '../../docs/doc-layout.html';
+    export default () => ({ data: {} });
+  </script>
+</template>

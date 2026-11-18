@@ -1,0 +1,19 @@
+<template component>
+  <mc-space direction="vertical" block style="max-width: 260px">
+    <span class="text-sm text-muted">text 属性 + copy 事件：{{lastCopy}} </span>
+    <span class="text-sm text-muted">截断时 hover / 聚焦 / 点击浮出全文</span>
+    <div style="width: 160px; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); padding: var(--mc-space-2) var(--mc-space-3)">
+      <mc-ellipsis text="深圳美高创新科技股份有限公司（华东区）" on:copy="lastCopy = $event.data.text"></mc-ellipsis>
+    </div>
+    <div style="width: 160px; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); padding: var(--mc-space-2) var(--mc-space-3)">
+      <mc-ellipsis placement="top-start">这是一段很长很长很长的备注，用来演示省略号与可选中复制的浮层</mc-ellipsis>
+    </div>
+    <div style="width: 240px; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); padding: var(--mc-space-2) var(--mc-space-3)">
+      <mc-ellipsis>没截断的短文本不会弹浮层</mc-ellipsis>
+    </div>
+  </mc-space>
+
+  <script>
+    export default async () => ({ tag: 'demo-ellipsis-basic', data: { lastCopy: '（未复制）' } });
+  </script>
+</template>

@@ -414,6 +414,7 @@ slots: {
 | [Drawer](./drawer/api.md)             | `mc-drawer`                            | `drawer/`      | ✅ 已实现 |
 | [Dropdown](./dropdown/api.md)         | `mc-dropdown` / `mc-menu-item`         | `dropdown/`    | ✅ 已实现 |
 | [Tooltip](./tooltip/api.md)           | `mc-tooltip`                           | `tooltip/`     | ✅ 已实现 |
+| [Ellipsis](./ellipsis/api.md)         | `mc-ellipsis`                          | `ellipsis/`    | ✅ 已实现 |
 | [Tabs](./tabs/api.md)                 | `mc-tabs` / `mc-tab`                   | `tabs/`        | ✅ 已实现 |
 | [Table](./table/api.md)               | `mc-table`                             | `table/`       | ✅ 已实现 |
 | [Data Grid](./data-grid/api.md)       | `mc-data-grid`                         | `data-grid/`   | ✅ 已实现 |

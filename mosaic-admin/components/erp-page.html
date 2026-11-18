@@ -8,6 +8,7 @@
   <l-m src="../vendor/mosaic/input/input.html"></l-m>
   <l-m src="../vendor/mosaic/button/button.html"></l-m>
   <l-m src="../vendor/mosaic/data-grid/data-grid.html"></l-m>
+  <l-m src="../vendor/mosaic/ellipsis/ellipsis.html"></l-m>
   <l-m src="../vendor/mosaic/pagination/pagination.html"></l-m>
 
   <style>
@@ -21,26 +22,26 @@
     }
 
     /* 满高 flex：工具栏与页脚固定，只有网格内部滚动（外层 .view 不再出滚动条） */
-    .page {
+    /* 显式覆盖：不要吃 page.css 通用 .page 的 padding/gap/max-width */
+    .list-page {
       display: flex;
       flex-direction: column;
       height: 100%;
       min-height: 0;
-      padding: var(--mc-space-4);
+      padding: 0;
+      gap: 0;
+      max-width: none;
       box-sizing: border-box;
     }
 
-    /* 一块白面板包住工具栏 / 表格 / 页脚，把「灰底 + 斑马纹 + 灰表头」的灰收掉 */
-    .panel {
+    /* 极简：内容白底铺满，不用卡片投影/外框；层级只靠一条条细分隔线与字重 */
+    .list-panel {
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      border: 1px solid rgb(var(--mc-color-border));
-      border-radius: var(--mc-radius-lg);
       background-color: rgb(var(--mc-color-surface));
-      box-shadow: var(--mc-shadow-panel);
     }
 
     .toolbar {
@@ -70,21 +71,25 @@
       display: flex;
       flex: 1 1 auto;
       min-height: 0;
+      /* 列多时让网格自己横向滚动：flex 子项不设 min-width:0 会把宿主撑宽、被面板裁掉 */
+      min-width: 0;
+      overflow: hidden;
     }
 
     .grid-wrap mc-data-grid {
       flex: 1 1 auto;
+      min-width: 0;
       min-height: 0;
       height: 100%;
     }
 
+    /* 页脚只留一条紧凑行：分页器 28px + 上下 4px */
     .footer {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--mc-space-3);
-      min-height: 2.75rem;
-      padding: var(--mc-space-2) var(--mc-space-4);
+      padding: var(--mc-space-1) var(--mc-space-4);
       border-block-start: 1px solid rgb(var(--mc-color-border));
       background-color: rgb(var(--mc-color-surface));
     }
@@ -112,8 +117,8 @@
     }
   </style>
 
-  <section class="page">
-    <div class="panel">
+  <section class="list-page">
+    <div class="list-panel">
       <div class="toolbar">
         <div class="filters" id="search" :html="searchHtml"></div>
         <div class="actions" id="toolbar" :html="toolbarHtml"></div>
@@ -142,6 +147,7 @@
           id="pager"
           size="sm"
           sizer
+          show-total
           page-sizes="10,20,50,100"
           attr:data-visible="pagerVisible ? '' : null"
           on:change="onPageChange($event)"></mc-pagination>
@@ -151,6 +157,7 @@
 
   <script>
     import { can } from '../shared/perm.js';
+    import { formatMoney } from '../shared/format.js';
 
     const escapeHtml = (value) =>
       String(value ?? '')
@@ -161,6 +168,11 @@
 
     export default async () => ({
       tag: 'erp-page',
+      /* 模板 :schema / :loader 的落点是组件参数；声明出来才收得到 */
+      attr: {
+        schema: null,
+        loader: null,
+      },
 
       data: {
         searchHtml: '',
@@ -172,15 +184,36 @@
         selectedCount: 0,
       },
 
+      watch: {
+        schema(value) {
+          if (!this._mounted) return;
+          this.applySchema(value);
+          this.startLoad();
+        },
+        loader(value) {
+          if (!this._mounted) return;
+          this._loader = typeof value === 'function' ? value : null;
+          this.startLoad();
+        },
+      },
+
       ready() {
         this._schema = { search: [], toolbar: [], columns: [] };
         this._fields = [];
         this._rows = [];
+        this._loader = null;
+        this._searchValues = {};
+        this._current = 1;
+        this._pageSize = 20;
+        this._loadToken = 0;
+        this._loaded = false;
+        this._schemaApplied = false;
+        this._footerHint = '';
         this._presetSchema = Object.prototype.hasOwnProperty.call(this.ele, 'schema')
           ? this.ele.schema
           : undefined;
 
-        this._page = this.shadow.$('.page');
+        this._page = this.shadow.$('.list-page');
         this._search = this.shadow.$('#search');
         this._toolbar = this.shadow.$('#toolbar');
         this._grid = this.shadow.$('#grid');
@@ -189,11 +222,52 @@
         Object.defineProperty(this.ele, 'schema', {
           configurable: true,
           get: () => this._schema,
-          set: (value) => this.applySchema(value),
+          set: (value) => {
+            this.applySchema(value);
+            this.startLoad();
+          },
+        });
+        /* loader 必须声明 accessor：模板 :loader="loader" 绑到没有 accessor 的属性会被静默丢掉 */
+        Object.defineProperty(this.ele, 'loader', {
+          configurable: true,
+          get: () => this._loader,
+          set: (loader) => {
+            this._loader = typeof loader === 'function' ? loader : null;
+            this.startLoad();
+          },
         });
         Object.defineProperty(this.ele, 'setRows', {
           configurable: true,
           value: (rows) => this.setRows(rows),
+        });
+        /* 查询 / 分页 / 加载都归组件：页面只交 schema + loader，首查也由这里触发 */
+        Object.defineProperty(this.ele, 'setLoader', {
+          configurable: true,
+          value: (loader) => {
+            this._loader = typeof loader === 'function' ? loader : null;
+            this.startLoad();
+          },
+        });
+        /* 一步到位：页面只写一次 mount({ schema, loader })，首查在挂载后自动发生 */
+        Object.defineProperty(this.ele, 'mount', {
+          configurable: true,
+          value: ({ schema, loader } = {}) => {
+            if (schema) this.applySchema(schema);
+            this._loader = typeof loader === 'function' ? loader : null;
+            this.startLoad();
+          },
+        });
+        Object.defineProperty(this.ele, 'reload', {
+          configurable: true,
+          value: () => this.load(),
+        });
+        Object.defineProperty(this.ele, 'footerHint', {
+          configurable: true,
+          get: () => this._footerHint,
+          set: (value) => {
+            this._footerHint = String(value ?? '');
+            this.renderFooter();
+          },
         });
         Object.defineProperty(this.ele, 'getSelected', {
           configurable: true,
@@ -201,7 +275,12 @@
         });
         Object.defineProperty(this.ele, 'clearSelection', {
           configurable: true,
-          value: () => this._grid?.ele?.clearSelection?.(),
+          value: () => {
+            this._grid?.ele?.clearSelection?.();
+            this.selectedCount = 0;
+            this.renderToolbar();
+            this.renderFooter();
+          },
         });
         Object.defineProperty(this.ele, 'footer', {
           configurable: true,
@@ -234,6 +313,13 @@
 
         this._onPermissions = () => this.renderToolbar();
         window.addEventListener('admin-permissions-change', this._onPermissions);
+        this._onDataChanged = (event) => {
+          const targets = this._schema?.reloadOn;
+          if (!targets) return;
+          const list = Array.isArray(targets) ? targets : [targets];
+          if (list.includes(event.detail?.module)) this.load();
+        };
+        window.addEventListener('admin-data-changed', this._onDataChanged);
 
         this._search.ele.addEventListener('input', (event) => this.onSearchInput(event));
         this._search.ele.addEventListener('change', (event) => this.onSearchInput(event));
@@ -253,10 +339,13 @@
           this.applySchema(this._schema);
         }
         this.setRows(this._rows);
+        this.applyBoundConfig();
+        this.startLoad();
       },
 
       detached() {
         window.removeEventListener('admin-permissions-change', this._onPermissions);
+        window.removeEventListener('admin-data-changed', this._onDataChanged);
       },
 
       proto: {
@@ -287,7 +376,9 @@
                 key: '__index',
                 title: String(this._schema.indexColumn.title ?? '序号'),
                 width: String(this._schema.indexColumn.width ?? '64px'),
-                align: this._schema.indexColumn.align ?? 'right',
+                align: this._schema.indexColumn.align ?? 'center',
+                /* 序号跟着复选框一起冻结在左侧 */
+                fixed: this._schema.indexColumn.fixed ?? 'left',
               }
             : null;
           this._hasIndex = Boolean(indexColumn);
@@ -295,6 +386,7 @@
             (this._grid.ele.columns = indexColumn
               ? [indexColumn, ...(this._schema.columns ?? [])]
               : (this._schema.columns ?? []));
+          this._schemaApplied = true;
         },
 
         renderSearch() {
@@ -349,6 +441,7 @@
           if (!this._grid?.ele) return;
           if (!this._hasIndex) {
             this._grid.ele.data = this._rows;
+            this.applySummary();
             return;
           }
           const base = (Number(this._current ?? 1) - 1) * Number(this._pageSize ?? 20);
@@ -356,6 +449,27 @@
             ...row,
             __index: base + index + 1,
           }));
+          this.applySummary();
+        },
+
+        /** 底部合计：schema 列上的 sum 配置（{ field, format }）决定哪列求和、怎么展示 */
+        applySummary() {
+          const grid = this._grid?.ele;
+          if (!grid) return;
+          const summary = {};
+          for (const column of this._schema?.columns ?? []) {
+            const spec = column.sum;
+            if (!spec) continue;
+            const field = typeof spec === 'string' ? spec : spec.field;
+            const format = typeof spec === 'object' ? spec.format : undefined;
+            if (!field) continue;
+            const total = this._rows.reduce((acc, row) => {
+              const amount = Number(row[field]);
+              return Number.isFinite(amount) ? acc + amount : acc;
+            }, 0);
+            summary[column.key] = format === 'money' ? formatMoney(total) : String(total);
+          }
+          grid.summary = summary;
         },
 
         /** 分页：页大小 / 页码 / 总数交给 mc-pagination（runtime 通道：total 属性 + current property） */
@@ -379,7 +493,73 @@
           /* 改每页条数就回第 1 页；只翻页就按新页码 */
           const page = pageSize !== this._pageSize ? 1 : current;
           this._pageSize = pageSize;
+          this._current = page;
           this.emitData('page-change', { current: page, pageSize });
+          if (this._loader) this.load();
+        },
+
+        /** 模板 :schema / :loader 绑定的参数（组件 data 通道）→ 内部配置 */
+        applyBoundConfig() {
+          if (this.schema) this.applySchema(this.schema);
+          if (typeof this.loader === 'function') this._loader = this.loader;
+          this.startLoad();
+        },
+
+        /** 首查只跑一次：schema + loader 都到齐后触发 */
+        startLoad() {
+          if (!this._loader || !this._schemaApplied || this._loaded) return;
+          this._loaded = true;
+          this.load();
+        },
+
+        /** 唯一加载入口：loader 结果 → rows / total / 分页；token 防旧请求覆盖新结果 */
+        async load() {
+          if (typeof this._loader !== 'function') return;
+          const token = ++this._loadToken;
+          const current = Number(this._current ?? 1);
+          const pageSize = Number(this._pageSize ?? 20);
+          this.gridLoading = true;
+          this.errorText = '';
+          try {
+            const result = await this._loader({
+              current,
+              pageSize,
+              search: { ...this._searchValues },
+            });
+            if (token !== this._loadToken) return;
+            const rows = Array.isArray(result?.rows) ? result.rows : [];
+            const total = Number(result?.total ?? rows.length);
+            const nextCurrent = Number(result?.current ?? current);
+            const nextSize = Number(result?.pageSize ?? result?.size ?? pageSize);
+            this._current = nextCurrent;
+            this._pageSize = nextSize;
+            this.setRows(rows);
+            this.setPage({ current: nextCurrent, pageSize: nextSize, total });
+            this.renderFooter();
+            this.emitData('load', { current: nextCurrent, pageSize: nextSize, total });
+          } catch (error) {
+            if (token !== this._loadToken) return;
+            this.setRows([]);
+            this.setError('加载失败：' + error.message);
+          } finally {
+            if (token === this._loadToken) this.gridLoading = false;
+          }
+        },
+
+        /** 页脚：选中数 + 最近动作（页面只写 footerHint），没有就整行隐藏 */
+        renderFooter() {
+          const parts = [];
+          if (this.selectedCount) parts.push('已选 ' + this.selectedCount + ' 条');
+          if (this._footerHint) parts.push(this._footerHint);
+          this.footerText = parts.join(' · ');
+        },
+
+        /** 查询：记下搜索值、回第 1 页、交给 loader */
+        runSearch() {
+          this._searchValues = this.searchValues();
+          this._current = 1;
+          this.emitData('search', { values: this._searchValues });
+          if (this._loader) this.load();
         },
 
         /** 搜索区当前值：input / select 都按 data-field 读 */
@@ -394,7 +574,7 @@
         },
 
         emitSearch() {
-          this.emitData('search', { values: this.searchValues() });
+          this.runSearch();
         },
 
         resetSearch() {
@@ -402,11 +582,14 @@
             const control = this.shadow.$(`[data-field="${field.key}"]`);
             if (control?.ele) control.ele.value = '';
           }
-          this.emitSearch();
+          this._searchValues = {};
+          this._current = 1;
+          this.emitData('search', { values: {} });
+          if (this._loader) this.load();
         },
 
         onSearchInput(event) {
-          if (event.type === 'change' && event.target instanceof Element) this.emitSearch();
+          if (event.type === 'change' && event.target instanceof Element) this.runSearch();
         },
 
         /** 查询 / 重置是壳的动作，其余 data-action 上抛给页面 */
@@ -430,6 +613,7 @@
         forwardSelect(event) {
           this.selectedCount = (event.data?.selected ?? []).length;
           this.renderToolbar();
+          this.renderFooter();
           this.emitData('select-change', event.data);
         },
         forwardClick(event) {

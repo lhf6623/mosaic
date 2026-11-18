@@ -1,12 +1,17 @@
 <template component>
   <mc-space direction="vertical" block>
-    <mc-tabs default-value="a" on:change="picked = $event.data.value">
+    <mc-tabs default-value="a" on:change="picked = $event.data.value" on:close="closed = $event.data.value">
       <mc-tab value="a" name="标签 A">切到 B 时，下面那行会变成 b。</mc-tab>
       <mc-tab value="b" name="标签 B">切回 A 时又会变回 a。</mc-tab>
+      <mc-tab value="c" name="可关闭 C" closable>点 × 只发 close，关不关由页面决定。</mc-tab>
     </mc-tabs>
     <p class="text-sm text-muted">
       最近一次 change：
       <strong>{{picked}}</strong>
+    </p>
+    <p class="text-sm text-muted">
+      最近一次 close：
+      <strong>{{closed}}</strong>
     </p>
   </mc-space>
 
@@ -14,7 +19,7 @@
     export default async () => ({
       tag: 'demo-tabs-events',
 
-      data: { picked: 'a' },
+      data: { picked: 'a', closed: '—' },
 
       /* 只在激活项真的变了时发；property 写入不算 */
     });

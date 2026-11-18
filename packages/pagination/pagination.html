@@ -33,6 +33,7 @@
       /* @internal：blocks 数组按位次写进来的排序值，不是使用者的覆盖点。
          不写 blocks 时全为 0（相等 → flex 按 DOM 顺序排），等于零改动。 */
       --mc-pagination-o-prefix: 0; /* @internal */
+      --mc-pagination-o-total: 0; /* @internal */
       --mc-pagination-o-prev: 0; /* @internal */
       --mc-pagination-o-pages: 0; /* @internal */
       --mc-pagination-o-next: 0; /* @internal */
@@ -110,6 +111,20 @@
       )
       .mc-list {
       display: none;
+    }
+
+    /* 4.3 总数：`共 N 条` 是分页自己的信息块（show-total / blocks 里的 total） */
+    .mc-total {
+      order: var(--mc-pagination-o-total);
+      display: none;
+      align-items: center;
+      color: rgb(var(--mc-pagination-fg));
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    :host(:not([data-blocks])[show-total]) .mc-total,
+    :host([data-blocks~='total']) .mc-total {
+      display: inline-flex;
     }
 
     /* 5. 按钮：页码 / 上一页 / 下一页是同一颗，尺寸只由 --mc-pagination-h 决定 */
@@ -267,6 +282,8 @@
 
   <slot name="prefix"></slot>
 
+  <span class="mc-total" part="total">{{totalText}}</span>
+
   <ul class="mc-list" part="list">
     <li class="mc-cell" data-block="prev">
       <button
@@ -350,7 +367,7 @@
 
     /* blocks 的合法键：位置就是显示顺序，没列出来的块不渲染。
        prev / pages / next 共用一个 <ul>，整条参与外层排序（见 README「块顺序与显隐」）。 */
-    const BLOCKS = ['prefix', 'prev', 'pages', 'next', 'sizer', 'jumper', 'suffix'];
+    const BLOCKS = ['prefix', 'total', 'prev', 'pages', 'next', 'sizer', 'jumper', 'suffix'];
     const PAGER_BLOCKS = ['prev', 'pages', 'next'];
 
     export default async () =>
@@ -375,6 +392,8 @@
           jumper: null,
           // 打开「每页 __ 条」选择器（原生 <select>）；候选项由 page-sizes 给
           sizer: null,
+          /* 显示「共 N 条」信息块；给了 blocks 时以数组为准 */
+          showTotal: null,
           pageSizes: '10,20,50,100',
           /* 块清单（数组）。attrs 里只放**属性文本 / 绑定通道的初值**，运行时推荐 property：
              规范化后的数组住 data.blockList —— 规范化结果绝不写回 attrs 键，否则会被 ofa 再序列化成文本（同 mc-table 的 columns） */
@@ -389,6 +408,7 @@
           /* 块清单：null = 没配过（只有页码主体，sizer / jumper 两个布尔各追加一块）。
               对象数组放 data，property / JSON 属性两条通道见 ready 与 attached */
           blockList: null,
+          totalText: '共 0 条',
         },
 
         ready() {
@@ -566,6 +586,7 @@
           resolveBlocks() {
             if (this.blockList) return this.blockList;
             const list = ['pages'];
+            if (this.ele.hasAttribute('show-total')) list.unshift('total');
             if (this.ele.hasAttribute('sizer')) list.push('sizer');
             if (this.ele.hasAttribute('jumper')) list.push('jumper');
             return list;
@@ -581,14 +602,24 @@
             if (!this._attached) return;
             const list = this.resolveBlocks();
             const host = this.ele;
-            const signature = list.join(' ') + '|' + host.hasAttribute('jumper');
+            const signature =
+              list.join(' ') +
+              '|' +
+              host.hasAttribute('jumper') +
+              '|' +
+              host.hasAttribute('show-total');
             if (signature === this._blocksSignature) return;
             this._blocksSignature = signature;
 
-            if (this.blockList && (host.hasAttribute('jumper') || host.hasAttribute('sizer'))) {
+            if (
+              this.blockList &&
+              (host.hasAttribute('jumper') ||
+                host.hasAttribute('sizer') ||
+                host.hasAttribute('show-total'))
+            ) {
               this.warnOnce(
                 'blocks-vs-bool',
-                'blocks 已给出：jumper / sizer 两个布尔被忽略，块在不在只看数组',
+                'blocks 已给出：jumper / sizer / show-total 三个快捷布尔被忽略，块在不在只看数组',
               );
             }
 
@@ -690,6 +721,7 @@
             this.pages = this.pageItems(current);
             this.atFirst = current <= 1;
             this.atLast = current >= this.pageCount();
+            this.totalText = '共 ' + this.totalValue() + ' 条';
             this.syncJump(false);
             this.syncSizer();
             this.applyBlocks();

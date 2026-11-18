@@ -1,0 +1,25 @@
+<template component>
+  <style>
+    mc-ellipsis::part(text) {
+      color: rgb(var(--mc-color-primary));
+    }
+    mc-ellipsis::part(panel) {
+      background-color: rgb(var(--mc-color-primary-subtle));
+      border-radius: var(--mc-radius-lg);
+    }
+    mc-ellipsis::part(full) {
+      font-weight: var(--mc-weight-semibold);
+    }
+    mc-ellipsis::part(copy) {
+      font-weight: var(--mc-weight-semibold);
+    }
+  </style>
+
+  <div style="width: 180px; border: 1px solid rgb(var(--mc-color-border)); border-radius: var(--mc-radius-md); padding: var(--mc-space-2) var(--mc-space-3)">
+    <mc-ellipsis always>always：文本没截断也允许弹层，并可以 ::part(panel) 改样式</mc-ellipsis>
+  </div>
+
+  <script>
+    export default async () => ({ tag: 'demo-ellipsis-part' });
+  </script>
+</template>

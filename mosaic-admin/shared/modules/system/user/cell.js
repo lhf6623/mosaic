@@ -1,6 +1,6 @@
 /** 用户列表 · 行加工：sex 字典码 → 中文；用户名是唯一「查看详情」入口（行单击不触发）。 */
 const linkStyle =
-  'padding:0;border:0;background:none;color:rgb(var(--mc-color-primary));font:inherit;cursor:pointer;text-decoration:none;font-weight:600';
+  'padding:0;border:0;background:none;color:rgb(var(--mc-color-primary));font:inherit;cursor:pointer;text-decoration:none;font-weight:500';
 
 export const userGridRows = (rows, sexMap) =>
   rows.map((row) => ({
