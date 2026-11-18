@@ -50,6 +50,14 @@
           invalid: { data: ['fields'] },
         },
 
+        /* 对外命令式 API：声明见这里，宿主上的方法由 withOptions 统一挂载 */
+        expose: {
+          validate: { desc: '全量校验，Promise<boolean>；异步规则会 await' },
+          getValue: { desc: '按字段名汇总当前值' },
+          submit: { desc: '校验通过发 submit，失败发 invalid' },
+          clearValidate: { desc: '清指定字段（字符串 / 数组）或全部字段的校验状态' },
+        },
+
         attrs: {
           /* 校验规则：属性写法是 JSON 文本（同 mc-table 的 columns），运行时对象（带 validator 函数）用 property。
            ⚠️ 模板里的 `:rules="某对象"` 落点**不稳定**：首屏直出时 ofa 可能把对象直接赋给 property（函数还在），
@@ -62,13 +70,6 @@
         },
 
         ready() {
-          /* 命令式入口挂在**宿主元素**上（同 mc-input 的 value / mc-radio 的 syncGroupState）：
-           proto 里那些是组件内部用的，外面调不到 —— 使用者写的是 form.validate() */
-          for (const name of ['validate', 'getValue', 'submit', 'clearValidate']) {
-            /* ⚠️ 参数要透传：clearValidate('b') 是"只清 b"，写成 () => this[name]() 会把参数吃掉（全清） */
-            this.expose(name, (...args) => this[name](...args));
-          }
-
           /* rules 的 property 通道收成访问器：赋值时重算一次必填星号（ofa 观察不到 expando） */
           this._rules = this.ele.rules;
           Object.defineProperty(this.ele, 'rules', {
@@ -129,11 +130,6 @@
         },
 
         proto: {
-          /** 把内部方法挂成宿主元素上的 DOM 方法 */
-          expose(name, fn) {
-            Object.defineProperty(this.ele, name, { configurable: true, value: fn });
-          },
-
           /* ---------- 值：谁是控件、怎么读 ---------- */
 
           /** 值载体：轻 DOM 里真的有 value / checked 的元素（原生 input / select / textarea 与库里的控件都算）。

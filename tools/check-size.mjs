@@ -41,8 +41,8 @@ const SHARED = [
   { file: 'packages/boot/color-attr.js', raw: 8 * 1024, gzip: 3.75 * 1024 },
   // 组件共用：声明 → 运行时出口（emits 的 $emit 派发 + slots 的 $slots / data-has-* 反射）；
   // 有事件或插槽判定的组件才下（声明住在组件定义里）
-  // 2026-11 事件与插槽合流到 options.js：实测 12.4 / 4.9 KB（多出来的主要是 JSDoc 类型注释）
-  { file: 'packages/boot/options.js', raw: 13 * 1024, gzip: 5.25 * 1024 },
+  // 2026-11 事件 / 插槽 / 对外方法合流到 options.js：实测 14.8 / 5.4 KB（主要是 JSDoc 与 expose 校验/挂载）
+  { file: 'packages/boot/options.js', raw: 15.5 * 1024, gzip: 5.75 * 1024 },
   // 按需引入：整段子树要任意色才下；数学已抽到 color-math.js
   { file: 'packages/boot/tone.js', raw: 10.5 * 1024, gzip: 5.0 * 1024 },
   // 已被 mosaic.css 包含，单列为了盯住令牌的增长

@@ -277,6 +277,14 @@
           'cell-action': { detail: true },
         },
 
+        /* 对外命令式 API：声明见这里，宿主上的方法由 withOptions 统一挂载 */
+        expose: {
+          clearSelection: { desc: '清空选择（会发 select-change）' },
+          selectAll: { desc: '全选 / 取消全选；参数 checked，默认 true' },
+          scrollTo: { desc: '滚动到指定 rowKey 所在行' },
+          reload: { desc: '按最近一次 columns / data 重新渲染' },
+        },
+
         attrs: {
           /* 对象数组：属性通道只作初始值 / JSON 兼容，运行时推荐 property（同 mc-table） */
           columns: null,
@@ -345,13 +353,6 @@
             get: () => [...this._selectedKeys],
             set: (value) => this.setSelected(value),
           });
-
-          for (const name of ['clearSelection', 'selectAll', 'scrollTo', 'reload']) {
-            Object.defineProperty(this.ele, name, {
-              configurable: true,
-              value: (...args) => this[name](...args),
-            });
-          }
 
           this._mounted = true; // 之后的 watch 才算真变化（P5）
         },

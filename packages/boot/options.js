@@ -1,14 +1,16 @@
 /**
- * options.js —— 组件对外契约（事件 / 插槽）的声明与统一出口。
+ * options.js —— 组件对外契约（事件 / 插槽 / 对外方法）的声明与统一出口。
  *
- * 组件定义包一层 `withOptions({...})`，顶部两块声明决定运行时行为：
+ * 组件定义包一层 `withOptions({...})`，顶部三块声明决定运行时行为：
  *   emits.*  data / detail / native 三通道（载荷进 $event.data 或 $event.detail）
  *            默认 bubbles + composed；cancelable 只对 CustomEvent 通道有意义
  *   slots.*  public 插槽名；`reflect: 'x'` 让它自动维护宿主上的 data-has-x
+ *   expose.* 对外命令式方法；声明即挂到宿主，组件里不再手写 Object.defineProperty
  *
  * 出口全挂在 proto 上（ofa 只把 config.proto 挂到实例，放顶层会被忽略）：
  *   this.$emit(name, payload)  唯一派发口；未声明的事件名直接抛错
- *   this.$options              { emits, slots } 的冻结快照（声明即事实，只读）
+ *   this.$options              { emits, slots, expose } 的冻结快照（声明即事实，只读）
+ *   this.$expose                expose 的冻结快照（名字与 desc）
  *   this.$slots.names          public 槽名，默认槽叫 'default'
  *   this.$slots.has(name)      该槽有没有分到内容（元素即内容，纯空白文本不算）
  *   this.$slots.nodes(name)    assignedNodes()：元素 / 文本 / 注释都在里面
@@ -39,6 +41,11 @@ const SLOT_NAME = /^[a-z][a-z0-9-]*$/;
 /**
  * @typedef {object} SlotSpec
  * @property {string} [reflect] 有内容时往宿主写 data-has-<reflect>；不写 = 只接线不反射
+ */
+
+/**
+ * @typedef {object} ExposeSpec
+ * @property {string} [desc] 一句话说明；供 README / api.md 对账与使用者阅读
  */
 
 /**
@@ -74,6 +81,46 @@ function assertEmits(emits) {
   }
 }
 
+/**
+ * 暴露给外部的方法：必须是 proto 上的函数，名字用小写驼峰，且不能撞 ofa / 内置保留名。
+ * @param {Record<string, any>} expose
+ * @param {Record<string, any>} proto
+ */
+function assertExpose(expose, proto) {
+  if (!expose || typeof expose !== 'object' || Array.isArray(expose))
+    throw new Error('expose：声明值要是对象，键 = 对外方法名');
+  const NAME = /^[a-z][A-Za-z0-9]*$/;
+  const RESERVED = new Set([
+    '$emit',
+    '$options',
+    '$slots',
+    '$expose',
+    'back',
+    'goto',
+    'replace',
+    'src',
+    'pageAnime',
+    'pageIsReady',
+    'on',
+    'off',
+    'emit',
+    '$',
+    'text',
+    'html',
+    'css',
+    'data',
+  ]);
+  for (const [name, meta] of Object.entries(expose)) {
+    if (!NAME.test(name)) throw new Error(`expose.${name}：方法名要用小写驼峰`);
+    if (RESERVED.has(name)) throw new Error(`expose.${name}：与 ofa / 内置保留名冲突`);
+    if (typeof proto[name] !== 'function') throw new Error(`expose.${name}：proto 里没有同名函数`);
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta))
+      throw new Error(`expose.${name}：声明值要是对象 —— 无说明写 {}`);
+    for (const key of Object.keys(meta)) {
+      if (key !== 'desc') throw new Error(`expose.${name}：未知键 ${key}（只认 desc）`);
+    }
+  }
+}
 /** @param {Record<string, any>} slots */
 function assertSlots(slots) {
   for (const [name, meta] of Object.entries(slots)) {
@@ -104,16 +151,19 @@ const selectorOf = (name) => (name === DEFAULT_SLOT ? 'slot:not([name])' : `slot
 export function withOptions(config) {
   const emits = /** @type {Record<string, EmitSpec>} */ (config.emits ?? {});
   const slots = /** @type {Record<string, SlotSpec>} */ (config.slots ?? {});
+  const expose = /** @type {Record<string, ExposeSpec>} */ (config.expose ?? {});
   const slotNames = Object.keys(slots);
+  const exposeNames = Object.keys(expose);
 
   // ofa 只把 config.proto 挂到实例上；三个出口都必须进 proto
   const proto = config.proto ?? {};
-  for (const key of ['$emit', '$options', '$slots'])
+  for (const key of ['$emit', '$options', '$slots', '$expose'])
     if (config[key] || Object.hasOwn(proto, key))
       throw new Error(`组件已定义 ${key}：withOptions 会覆盖它`);
 
   assertEmits(emits);
   assertSlots(slots);
+  assertExpose(expose, proto);
 
   /* ---------- 事件：声明即通道 ---------- */
 
@@ -236,11 +286,27 @@ export function withOptions(config) {
     state.mounted = false;
   }
 
+  /**
+   * 声明过的对外方法 → 宿主元素上的命令式 API（ofa 不代理组件 proto，外部只能这样调）。
+   * @param {any} host
+   */
+  function mountExpose(host) {
+    for (const name of exposeNames) {
+      if (Object.prototype.hasOwnProperty.call(host.ele, name))
+        throw new Error(`expose.${name}：宿主上已有同名属性，不能再挂`);
+      Object.defineProperty(host.ele, name, {
+        configurable: true,
+        enumerable: false,
+        value: /** @type {(...args: any[]) => any} */ ((...args) => host[name](...args)),
+      });
+    }
+  }
   /* ---------- 挂到 proto ---------- */
 
   const snapshot = deepFreeze({
     emits: Object.fromEntries(Object.entries(emits).map(([k, v]) => [k, { ...v }])),
     slots: Object.fromEntries(slotNames.map((n) => [n, { ...slots[n] }])),
+    expose: Object.fromEntries(exposeNames.map((n) => [n, { ...expose[n] }])),
   });
 
   // ⚠️ 不能 spread proto：proto 里有依赖 this 的 getter（如 popover 的 panel），
@@ -253,6 +319,11 @@ export function withOptions(config) {
   });
   Object.defineProperty(mergedProto, '$options', {
     value: snapshot,
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(mergedProto, '$expose', {
+    value: snapshot.expose,
     configurable: true,
     writable: true,
   });
@@ -299,12 +370,13 @@ export function withOptions(config) {
 
   /** @type {Record<string, any>} */
   const wrapped = { ...config, proto: mergedProto };
-  if (slotNames.length) {
-    // 组合而非覆盖：组件自己的钩子照常跑，我们的活排在前面（解析 / 订阅要先于组件读状态）
+  if (slotNames.length || exposeNames.length) {
+    // 组合而非覆盖：组件自己的钩子照常跑，我们的活排在前面（解析 / 订阅 / 挂 API 先于组件读状态）
     const { ready, attached, detached } = config;
     /** @this {any} @param {any[]} args */
     const callReady = function (...args) {
-      refsOf(this);
+      if (slotNames.length) refsOf(this);
+      if (exposeNames.length) mountExpose(this);
       return ready?.apply(this, args);
     };
     /** @this {any} @param {any[]} args */
@@ -318,8 +390,10 @@ export function withOptions(config) {
       return detached?.apply(this, args);
     };
     wrapped.ready = callReady;
-    wrapped.attached = callAttached;
-    wrapped.detached = callDetached;
+    if (slotNames.length) {
+      wrapped.attached = callAttached;
+      wrapped.detached = callDetached;
+    }
   }
   return wrapped;
 }

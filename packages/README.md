@@ -218,7 +218,7 @@ item.open = true; // 组件提供了访问器时同样可以
 所以 `api.md` 的「事件」表**只列组件自己发的那些**（`change` / `input` / `open` / `close`…）；
 原生事件不列 —— 列了就是第二份事实，还得跟浏览器对齐。
 
-**组件作者怎么发**：组件定义包一层 `withOptions(...)`，顶部两块声明 —— `emits`（事件）与 `slots`（插槽，见 1.6）
+**组件作者怎么发**：组件定义包一层 `withOptions(...)`，顶部三块声明 —— `emits`（事件）、`slots`（插槽，见 1.6）、`expose`（对外方法，见 1.6.1）
 都挂在同一个对象上，声明即唯一事实源：
 
 ```js
@@ -281,9 +281,10 @@ slots: {
 ```
 
 - 默认槽的键写 `default`（模板里是无 `name` 的 `<slot>`，api.md 里写「（默认）」）。
-- **出口都在实例上**：`this.$options`（`{ emits, slots }` 的冻结快照）、`this.$slots.names` /
+- **出口都在实例上**：`this.$options`（`{ emits, slots, expose }` 的冻结快照）、`this.$slots.names` /
   `has(name)` / `nodes(name)` / `elements(name)` / `node(name)` / `onChange(fn)`（`fn` 收到变化的槽名）。
   订阅由声明统一接线，`detached` 自动退订 —— 组件里不再手写 `this._slots = [...]` 与 `.on/.off`。
+- `expose` 的出口是 `this.$expose`；宿主上的方法由 `ready` 统一挂载，方法体仍是 `proto` 实现。
 - **`reflect` 只做一对一的「有内容 → `data-has-<名>`」**。组合判定（`mc-alert` 的 title 还要算
   `heading` 属性、`mc-card` 的 header 还认 suffix、`mc-image` 的 fallback 是两级槽的并集）
   反射表达不了，继续在组件里 `this.mirror(...)`。
@@ -291,6 +292,42 @@ slots: {
   `reflect` 写了但 CSS 里没有 `:host([data-has-<名>]`、以及组件里还在手写
   `shadow.$('slot…')` / `shadow.all('slot')`，都会被拦。声明与 api.md 的取舍：**说明文字只写在
   api.md**（Reference 的唯一手写源），声明里只有名字与 `reflect`。
+
+### 1.6.1 对外方法（expose）
+
+组件里的 `proto` 方法默认**只有组件自己能用**。外部（页面 / 另一个组件）要调，就在 `withOptions` 的
+`expose` 里声明；声明即挂载，组件里不再手写 `Object.defineProperty(this.ele, ...)`。
+
+```js
+withOptions({
+  tag: 'mc-data-grid',
+  expose: {
+    reload: { desc: '按最近一次 columns / data 重新渲染' },
+    clearSelection: { desc: '清空选择（会发 select-change）' },
+  },
+  proto: {
+    reload() {
+      /* … */
+    },
+    clearSelection() {
+      /* … */
+    },
+  },
+});
+// 外部：document.querySelector('mc-data-grid').reload()
+```
+
+| 规则   | 说明                                                                                   |
+| ------ | -------------------------------------------------------------------------------------- |
+| 名字   | 小写驼峰；避开 ofa / 内置保留名（`back` / `goto` / `src` / `on` / `emit` / `data` 等） |
+| 方法   | `expose` 的键必须是 `proto` 上的函数，装载时校验，写错直接抛错                         |
+| 参数   | 包装会透传参数（`clearValidate("b")` 不会变成全清）                                    |
+| 响应式 | **不**进入 ofa 响应式系统；状态变化仍写 `data` / `watch`                               |
+
+- `this.$options.expose` / `this.$expose`：冻结快照（名字与 `desc`），与 `emits` / `slots` 同一套读法。
+- 只暴露**命令式方法**；`open` / `value` 这类受控 property 继续走 `attrs` / `data` + `watch`。
+- 守卫（下一阶段）：`expose-calls` —— 组件里手写 `Object.defineProperty(this.ele, 方法名, …)`
+  而未在 `expose` 声明、声明了但 `proto` 没有、`api.md`「方法」表对不上，都会被拦。
 
 ### 1.7 `part` 命名
 

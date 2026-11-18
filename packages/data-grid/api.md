@@ -82,16 +82,22 @@
 
 ## 事件
 
-| 名称                  | 类型                                                                                                                                  | 说明                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `select-change`       | `(event: Event & { data: { selected: string[] } }) => void`                                                                           | 勾选 / 全选 / `clearSelection()` 后触发；`data.selected` 是最新的行 key 数组        |
-| `sort-change`         | `(event: Event & { data: { key: string, order: 'asc' \| 'desc' \| null } }) => void`                                                  | 表头排序态变化；`order` 为 `null` 表示取消排序；**组件不重排数据**，排序在数据层做  |
-| `cell-click`          | `(event: CustomEvent<{ rowKey: string, columnKey: string, row: object, column: object, event: MouseEvent }>) => void`                 | 点数据单元格触发（点复选框不触发）；`event` 是原始鼠标事件                          |
-| `cell-dblclick`       | `(event: CustomEvent<{ rowKey: string, columnKey: string, row: object, column: object, event: MouseEvent }>) => void`                 | 双击数据单元格触发                                                                  |
-| `cell-action`         | `(event: CustomEvent<{ rowKey: string, columnKey: string, action: string, row: object, column: object, event: MouseEvent }>) => void` | 点带 `data-action` 的元素触发：`action` 是那个属性的值（如 `edit`），行内按钮走这条 |
-| `clearSelection()`    | `() => void`                                                                                                                          | 清空选中（会发 `select-change`）                                                    |
-| `selectAll(checked?)` | `(checked?: boolean) => void`                                                                                                         | 全选 / 清空（默认全选），会发 `select-change`                                       |
-| `scrollTo(rowKey)`    | `(rowKey: string) => void`                                                                                                            | 把某一行滚进可视区（固定高度表格里用）                                              |
+| 名称            | 类型                                                                                                                                  | 说明                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `select-change` | `(event: Event & { data: { selected: string[] } }) => void`                                                                           | 勾选 / 全选 / `clearSelection()` 后触发；`data.selected` 是最新的行 key 数组        |
+| `sort-change`   | `(event: Event & { data: { key: string, order: 'asc' \| 'desc' \| null } }) => void`                                                  | 表头排序态变化；`order` 为 `null` 表示取消排序；**组件不重排数据**，排序在数据层做  |
+| `cell-click`    | `(event: CustomEvent<{ rowKey: string, columnKey: string, row: object, column: object, event: MouseEvent }>) => void`                 | 点数据单元格触发（点复选框不触发）；`event` 是原始鼠标事件                          |
+| `cell-dblclick` | `(event: CustomEvent<{ rowKey: string, columnKey: string, row: object, column: object, event: MouseEvent }>) => void`                 | 双击数据单元格触发                                                                  |
+| `cell-action`   | `(event: CustomEvent<{ rowKey: string, columnKey: string, action: string, row: object, column: object, event: MouseEvent }>) => void` | 点带 `data-action` 的元素触发：`action` 是那个属性的值（如 `edit`），行内按钮走这条 |
+
+## 方法
+
+| 名称                  | 签名                          | 说明                                          |
+| --------------------- | ----------------------------- | --------------------------------------------- |
+| `clearSelection()`    | `() => void`                  | 清空选中（会发 `select-change`）              |
+| `selectAll(checked?)` | `(checked?: boolean) => void` | 全选 / 清空（默认全选），会发 `select-change` |
+| `scrollTo(rowKey)`    | `(rowKey: string) => void`    | 把某一行滚进可视区（固定高度表格里用）        |
+| `reload()`            | `() => void`                  | 按最近一次 columns / data 重新渲染            |
 
 ## 插槽
 
