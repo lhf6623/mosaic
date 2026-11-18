@@ -3,8 +3,6 @@
   <link rel="stylesheet" href="../../styles/page.css" />
   <l-m src="../../components/erp-page.html"></l-m>
   <l-m src="../../vendor/mosaic/tag/tag.html"></l-m>
-  <l-m src="../../components/order-detail-drawer.html"></l-m>
-  <l-m src="../../components/order-form-drawer.html"></l-m>
 
   <style>
     l-m {
@@ -19,10 +17,7 @@
     on:page-change="onPageChange($event)"
     on:select-change="onSelectChange($event)"
     on:cell-action="onCellAction($event)"
-    on:cell-click="onCellClick($event)"></erp-page>
-
-  <order-detail-drawer id="detail"></order-detail-drawer>
-  <order-form-drawer id="form"></order-form-drawer>
+    on:cell-dblclick="onRowDblClick($event)"></erp-page>
 
   <script>
     import { PAGE_SIZE } from '../../config.js';
@@ -44,11 +39,12 @@
       proto: {
         async init() {
           await customElements.whenDefined('erp-page');
-          await customElements.whenDefined('order-detail-drawer');
           await new Promise((resolve) => requestAnimationFrame(resolve));
           this._page = this.shadow.$('#page').ele;
           this._page.schema = importOrderPageSchema;
-          this.shadow.$('#form').ele.addEventListener('saved', () => this.load(1));
+          window.addEventListener('admin-data-changed', (event) => {
+            if (event.detail?.module === 'import-order') this.load(1);
+          });
           this._search = {};
           this._rows = await loadImportOrderRowMapper();
           await this.load(1);
@@ -58,13 +54,15 @@
           this._page.setLoading(true);
           this._page.setError('');
           try {
-            const data = await getOrderImportPage(importOrderQuery(this._search, page, PAGE_SIZE));
+            const data = await getOrderImportPage(
+              importOrderQuery(this._search, page, this._page.pageSize),
+            );
             const rows = data?.records ?? [];
             this.total = Number(data?.total ?? rows.length);
             this._page.setRows(this._rows(rows));
             this._page.setPage({
               current: Number(data?.current ?? page),
-              pageSize: Number(data?.size ?? PAGE_SIZE),
+              pageSize: Number(data?.size ?? this._page.pageSize),
               total: this.total,
             });
             this.updateFooter();
@@ -95,13 +93,14 @@
         },
 
         onCellAction(event) {
-          this.lastAction = '行内动作 ' + event.detail.action;
-          this.updateFooter();
-          if (event.detail.action === 'edit') this.shadow.$('#form').ele.show(event.detail.rowKey);
+          if (event.detail.action === 'edit') {
+            location.hash = '#/pages/import-order/edit.html?id=' + event.detail.rowKey;
+          }
         },
 
-        onCellClick(event) {
-          this.shadow.$('#detail').ele.show(event.detail.rowKey);
+        /* 行单击不导航（防误触）；链接列自己跳，行双击是明确意图 */
+        onRowDblClick(event) {
+          location.hash = '#/pages/import-order/detail.html?id=' + event.detail.rowKey;
         },
 
         onAction(event) {

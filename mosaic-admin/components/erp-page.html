@@ -1,7 +1,7 @@
-<!-- erp-page — 列表页壳（G2）：schema 驱动搜索区 / 工具栏 / mc-data-grid，页面只接线。
-     为什么搜索区与工具栏用 HTML 字符串 + 事件委托：组件上下文里把多键对象数组放进 ofa 响应式数据会炸
-     （见 packages/data-grid/README.md「设计取舍」）；字符串是原始值通道，稳。
-     单元格函数也不经过这里：业务模块先把 rows 加工成带 cells 的行，再 setRows() 交给本组件。 -->
+<!-- erp-page — 列表页壳：schema 驱动的「一条工具栏 + 撑满高度的网格 + 分页」。
+     去掉页面大标题 / 说明行：标题由外壳（面包屑 + 标签）表达，列表页只留操作。
+     搜索区与工具栏用 HTML 字符串 + 事件委托：多键对象数组不进 ofa 响应式数据（见 data-grid README）。
+     单元格函数不经过这里：业务模块先把 rows 加工成带 cells 的行，再 setRows()。 -->
 <template component>
   <link rel="stylesheet" href="../styles/page.css" />
 
@@ -17,28 +17,83 @@
 
     :host {
       display: block;
+      height: 100%;
     }
 
+    /* 满高 flex：工具栏与页脚固定，只有网格内部滚动（外层 .view 不再出滚动条） */
     .page {
       display: flex;
       flex-direction: column;
-      gap: var(--mc-space-4);
-      padding: var(--mc-space-6);
-      max-width: 96rem;
+      height: 100%;
+      min-height: 0;
+      padding: var(--mc-space-4);
       box-sizing: border-box;
     }
 
-    .page-head {
+    /* 一块白面板包住工具栏 / 表格 / 页脚，把「灰底 + 斑马纹 + 灰表头」的灰收掉 */
+    .panel {
       display: flex;
       flex-direction: column;
-      gap: var(--mc-space-1);
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+      box-shadow: var(--mc-shadow-panel);
     }
 
-    .page-title {
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mc-space-3);
+      padding: var(--mc-space-3) var(--mc-space-4);
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .filters,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-2);
+    }
+
+    .filters mc-input {
+      width: 11rem;
+    }
+
+    .grid-wrap {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .grid-wrap mc-data-grid {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-3);
+      min-height: 2.75rem;
+      padding: var(--mc-space-2) var(--mc-space-4);
+      border-block-start: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .footer-text {
       margin: 0;
-      font-size: var(--mc-text-2xl);
-      font-weight: var(--mc-weight-semibold);
-      letter-spacing: -0.01em;
+      color: rgb(var(--mc-color-fg-muted));
+      font-size: var(--mc-text-sm);
+      font-variant-numeric: tabular-nums;
     }
 
     .page-hint {
@@ -46,45 +101,6 @@
       color: rgb(var(--mc-color-fg-subtle));
       font-size: var(--mc-text-sm);
       line-height: 1.6;
-    }
-
-    .search {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      gap: var(--mc-space-3);
-    }
-
-    .search-field {
-      display: flex;
-      flex-direction: column;
-      gap: var(--mc-space-1);
-      min-width: 10rem;
-    }
-
-    .search-label {
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-sm);
-    }
-
-    .search-field mc-input,
-    .search-field mc-select {
-      width: 100%;
-    }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--mc-space-3);
-    }
-
-    .footer {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--mc-space-3);
     }
 
     .footer mc-pagination {
@@ -97,35 +113,39 @@
   </style>
 
   <section class="page">
-    <header class="page-head">
-      <h1 class="page-title">{{title}}</h1>
-      <p class="page-hint" attr:data-visible="hint ? '' : null">{{hint}}</p>
-    </header>
+    <div class="panel">
+      <div class="toolbar">
+        <div class="filters" id="search" :html="searchHtml"></div>
+        <div class="actions" id="toolbar" :html="toolbarHtml"></div>
+      </div>
 
-    <div class="search" id="search" :html="searchHtml"></div>
+      <div class="grid-wrap">
+        <mc-data-grid
+          id="grid"
+          selectable
+          style="
+            --mc-data-grid-head-bg: var(--mc-color-surface);
+            --mc-data-grid-head-fg: var(--mc-color-fg-subtle);
+            --mc-data-grid-hover-bg: var(--mc-color-primary-subtle);
+            --mc-data-grid-pad-x: var(--mc-space-3);
+          "
+          on:select-change="forwardSelect($event)"
+          on:cell-click="forwardClick($event)"
+          on:cell-dblclick="forwardDblClick($event)"
+          on:cell-action="forwardAction($event)"></mc-data-grid>
+      </div>
 
-    <div class="toolbar" id="toolbar" :html="toolbarHtml"></div>
-
-    <mc-data-grid
-      id="grid"
-      selectable
-      sortable
-      height="520px"
-      attr:loading="gridLoading ? '' : null"
-      on:select-change="forwardSelect($event)"
-      on:sort-change="forwardSort($event)"
-      on:cell-click="forwardClick($event)"
-      on:cell-dblclick="forwardDblClick($event)"
-      on:cell-action="forwardAction($event)"></mc-data-grid>
-
-    <div class="footer">
-      <p class="page-hint error-text" attr:data-visible="errorText ? '' : null">{{errorText}}</p>
-      <p class="page-hint" attr:data-visible="footerText ? '' : null">{{footerText}}</p>
-      <mc-pagination
-        id="pager"
-        size="sm"
-        attr:data-visible="pagerVisible ? '' : null"
-        on:change="onPageChange($event)"></mc-pagination>
+      <div class="footer">
+        <p class="page-hint error-text" attr:data-visible="errorText ? '' : null">{{errorText}}</p>
+        <p class="footer-text" attr:data-visible="footerText ? '' : null">{{footerText}}</p>
+        <mc-pagination
+          id="pager"
+          size="sm"
+          sizer
+          page-sizes="10,20,50,100"
+          attr:data-visible="pagerVisible ? '' : null"
+          on:change="onPageChange($event)"></mc-pagination>
+      </div>
     </div>
   </section>
 
@@ -142,11 +162,6 @@
     export default async () => ({
       tag: 'erp-page',
 
-      attrs: {
-        title: '',
-        hint: '',
-      },
-
       data: {
         searchHtml: '',
         toolbarHtml: '',
@@ -154,6 +169,7 @@
         errorText: '',
         pagerVisible: false,
         gridLoading: false,
+        selectedCount: 0,
       },
 
       ready() {
@@ -194,6 +210,10 @@
             this.footerText = String(value ?? '');
           },
         });
+        Object.defineProperty(this.ele, 'pageSize', {
+          configurable: true,
+          get: () => this._pageSize ?? 20,
+        });
         Object.defineProperty(this.ele, 'setPage', {
           configurable: true,
           value: (pageInfo) => this.setPage(pageInfo),
@@ -220,18 +240,8 @@
         this._search.ele.addEventListener('keydown', (event) => {
           if (event.key === 'Enter') this.emitSearch();
         });
-        this._toolbar.ele.addEventListener('click', (event) => {
-          const button =
-            event.target instanceof Element ? event.target.closest('[data-action]') : null;
-          if (!button) return;
-          const action = button.getAttribute('data-action');
-          /* 查询 / 重置是壳自己的动作，其余才上抛给页面 */
-          if (action === 'search' || action === 'reset') {
-            this.onToolbarAction(action);
-            return;
-          }
-          this.emitData('action', { action });
-        });
+        this._search.ele.addEventListener('click', (event) => this.onButtonClick(event));
+        this._toolbar.ele.addEventListener('click', (event) => this.onButtonClick(event));
       },
 
       attached() {
@@ -259,7 +269,7 @@
           this.ele.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
         },
 
-        /** schema → 标题 / 搜索区 / 工具栏 / 列（对象存 plain 字段，渲染成字符串进 data） */
+        /** schema → 搜索项 / 工具栏 / 列（对象存 plain 字段，渲染成字符串进 data） */
         applySchema(schema) {
           this._schema = schema ?? { search: [], toolbar: [], columns: [] };
           this._fields = (this._schema.search ?? []).map((field) => ({
@@ -270,12 +280,21 @@
             options: Array.isArray(field.options) ? field.options : [],
           }));
 
-          this.title = this._schema.title ?? this.title;
-          this.hint = this._schema.hint ?? this.hint;
-
           this.renderSearch();
           this.renderToolbar();
-          this._grid?.ele && (this._grid.ele.columns = this._schema.columns ?? []);
+          const indexColumn = this._schema.indexColumn
+            ? {
+                key: '__index',
+                title: String(this._schema.indexColumn.title ?? '序号'),
+                width: String(this._schema.indexColumn.width ?? '64px'),
+                align: this._schema.indexColumn.align ?? 'right',
+              }
+            : null;
+          this._hasIndex = Boolean(indexColumn);
+          this._grid?.ele &&
+            (this._grid.ele.columns = indexColumn
+              ? [indexColumn, ...(this._schema.columns ?? [])]
+              : (this._schema.columns ?? []));
         },
 
         renderSearch() {
@@ -285,13 +304,16 @@
           for (const field of this._fields) {
             if (field.type !== 'input') continue;
             html +=
-              '<div class="search-field"><span class="search-label">' +
-              escapeHtml(field.label) +
-              '</span><mc-input data-field="' +
+              '<mc-input data-field="' +
               escapeHtml(field.key) +
               '" placeholder="' +
               escapeHtml(field.placeholder || field.label) +
-              '" style="width: 12rem"></mc-input></div>';
+              '"></mc-input>';
+          }
+          if (this._fields.length) {
+            html +=
+              '<mc-button data-action="search">查询</mc-button>' +
+              '<mc-button data-action="reset" variant="outline">重置</mc-button>';
           }
           this.searchHtml = html;
         },
@@ -301,17 +323,14 @@
             (button) => !button.permission || can(button.permission),
           );
           let html = '';
-          if (this._fields.length) {
-            html +=
-              '<mc-button data-action="search">查询</mc-button>' +
-              '<mc-button data-action="reset" variant="outline">重置</mc-button>';
-          }
           for (const button of buttons) {
+            const disabled = button.requiresSelection && this.selectedCount === 0;
             html +=
               '<mc-button data-action="' +
               escapeHtml(button.action) +
               '"' +
               (button.variant ? ' variant="' + escapeHtml(button.variant) + '"' : '') +
+              (disabled ? ' disabled' : '') +
               '>' +
               escapeHtml(button.label ?? button.action) +
               '</mc-button>';
@@ -322,7 +341,21 @@
         /** 行数据：页面把 cells 加工好后交进来（函数不经过组件） */
         setRows(rows) {
           this._rows = Array.isArray(rows) ? rows : [];
-          if (this._grid?.ele) this._grid.ele.data = this._rows;
+          this.renderRows();
+        },
+
+        /** 序号按「页码 × 每页条数」算全局值；其他列原样，cells 不动 */
+        renderRows() {
+          if (!this._grid?.ele) return;
+          if (!this._hasIndex) {
+            this._grid.ele.data = this._rows;
+            return;
+          }
+          const base = (Number(this._current ?? 1) - 1) * Number(this._pageSize ?? 20);
+          this._grid.ele.data = this._rows.map((row, index) => ({
+            ...row,
+            __index: base + index + 1,
+          }));
         },
 
         /** 分页：页大小 / 页码 / 总数交给 mc-pagination（runtime 通道：total 属性 + current property） */
@@ -330,15 +363,23 @@
           const pager = this._pager?.ele ?? this.shadow.$('#pager')?.ele;
           if (!pager) return;
           this._pager = { ele: pager };
-          /* total / page-size 是 attrs 通道：写属性才触发组件 watch；current 是 runtime property */
           pager.setAttribute('total', String(Number(total)));
           pager.setAttribute('page-size', String(Number(pageSize)));
           pager.current = Number(current);
-          this.pagerVisible = Number(total) > Number(pageSize);
+          this._current = Number(current);
+          this._pageSize = Number(pageSize);
+          this.renderRows();
+          /* 单页也要显示：条数选择器在里面，藏了就没法改每页条数 */
+          this.pagerVisible = true;
         },
 
         onPageChange(event) {
-          this.emitData('page-change', event.data);
+          const current = Number(event.data?.current ?? 1);
+          const pageSize = Number(event.data?.pageSize ?? this._pageSize ?? 20);
+          /* 改每页条数就回第 1 页；只翻页就按新页码 */
+          const page = pageSize !== this._pageSize ? 1 : current;
+          this._pageSize = pageSize;
+          this.emitData('page-change', { current: page, pageSize });
         },
 
         /** 搜索区当前值：input / select 都按 data-field 读 */
@@ -365,28 +406,31 @@
         },
 
         onSearchInput(event) {
-          const action =
-            event.target instanceof Element ? event.target.closest('[data-action]') : null;
-          if (action) return; // 查询 / 重置按钮由工具栏委托负责
           if (event.type === 'change' && event.target instanceof Element) this.emitSearch();
         },
 
-        onToolbarAction(action) {
+        /** 查询 / 重置是壳的动作，其余 data-action 上抛给页面 */
+        onButtonClick(event) {
+          const button =
+            event.target instanceof Element ? event.target.closest('[data-action]') : null;
+          if (!button) return;
+          const action = button.getAttribute('data-action');
           if (action === 'search') {
             this.emitSearch();
             return;
           }
           if (action === 'reset') {
             this.resetSearch();
+            return;
           }
+          this.emitData('action', { action });
         },
 
         /* 子组件事件原样上抛：data 通道带载荷键，detail 通道整块转发（与 data-grid 一致） */
         forwardSelect(event) {
+          this.selectedCount = (event.data?.selected ?? []).length;
+          this.renderToolbar();
           this.emitData('select-change', event.data);
-        },
-        forwardSort(event) {
-          this.emitData('sort-change', event.data);
         },
         forwardClick(event) {
           this.emitDetail('cell-click', event.detail);

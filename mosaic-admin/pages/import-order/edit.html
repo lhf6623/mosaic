@@ -1,0 +1,46 @@
+<!-- page: {"label":"编辑委托单","group":"委托","order":31,"hidden":true} -->
+<template page>
+  <link rel="stylesheet" href="../../styles/page.css" />
+  <l-m src="../../components/order-edit.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+  </style>
+
+  <order-edit id="editor"></order-edit>
+
+  <script>
+    export default async () => ({
+      data: {},
+
+      ready() {
+        this.init();
+        window.addEventListener('hashchange', () => this.resync());
+      },
+
+      proto: {
+        orderId() {
+          return new URLSearchParams(location.hash.split('?')[1] ?? '').get('id') ?? '';
+        },
+
+        async init() {
+          await customElements.whenDefined('order-edit');
+          this._id = this.orderId();
+          if (this._id) this.shadow.$('#editor').ele.load(this._id);
+        },
+
+        resync() {
+          const id = this.orderId();
+          if (!id) return;
+          const editor = this.shadow.$('#editor')?.ele;
+          if (id !== this._id || !editor?.isDirty?.()) {
+            this._id = id;
+            this.init();
+          }
+        },
+      },
+    });
+  </script>
+</template>

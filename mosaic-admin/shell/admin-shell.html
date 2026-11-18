@@ -366,6 +366,7 @@
     .view o-page {
       display: block;
       width: 100%;
+      height: 100%;
     }
 
     .loading {
@@ -473,7 +474,8 @@
 
     /** hash → 页面文件（admin 相对路径）；空 hash 回首页 */
     const routeFile = () => {
-      const raw = location.hash.replace(/^#\/?/, '');
+      /* hash 路由可带查询串（如 '#/pages/import-order/edit.html?id=…'），匹配注册表时只取文件段 */
+      const raw = location.hash.replace(/^#\/?/, '').split('?')[0];
       try {
         return decodeURIComponent(raw) || HOME;
       } catch {

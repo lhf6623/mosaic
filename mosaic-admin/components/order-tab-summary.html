@@ -1,57 +1,45 @@
-<!-- erp 详情抽屉：mc-drawer + 要点 + 明细表 + 审批时间轴（v0 只读；数据来自旧仓真接口）。 -->
+<!-- 关联 Tab · 订单详情（原详情页四节，作为「详情」下的第一个子页签内容）。 -->
 <template component>
   <link rel="stylesheet" href="../styles/page.css" />
-  <l-m src="../vendor/mosaic/drawer/drawer.html"></l-m>
-
   <style>
-    l-m {
-      display: none;
-    }
-
-    .head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--mc-space-2);
-    }
-
-    .head-title {
-      font-size: var(--mc-text-lg);
-      font-weight: var(--mc-weight-semibold);
-    }
-
-    .head-sub {
-      color: rgb(var(--mc-color-fg-subtle));
-      font-size: var(--mc-text-sm);
-    }
-
     .section {
-      margin-block-start: var(--mc-space-5, 1.25rem);
+      margin-block-start: var(--mc-space-4);
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
     }
-
     .section:first-child {
       margin-block-start: 0;
     }
-
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: var(--mc-space-2);
+      padding: var(--mc-space-3) var(--mc-space-4);
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+    }
     .section-title {
-      margin: 0 0 var(--mc-space-3);
-      color: rgb(var(--mc-color-fg-muted));
-      font-size: var(--mc-text-sm);
+      margin: 0;
+      font-size: var(--mc-text-base);
       font-weight: var(--mc-weight-semibold);
     }
-
+    .section-hint {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+    .section-body {
+      padding: var(--mc-space-4);
+    }
     .facts {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
       gap: var(--mc-space-3) var(--mc-space-4);
     }
-
     .fact-label {
       display: block;
       color: rgb(var(--mc-color-fg-subtle));
       font-size: var(--mc-text-xs, 0.75rem);
     }
-
     .fact-value {
       display: block;
       margin-block-start: 2px;
@@ -59,48 +47,40 @@
       font-size: var(--mc-text-sm);
       overflow-wrap: anywhere;
     }
-
     .table-wrap {
       overflow-x: auto;
       border: 1px solid rgb(var(--mc-color-border));
       border-radius: var(--mc-radius-md);
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: var(--mc-text-sm);
       white-space: nowrap;
     }
-
     th,
     td {
       padding: var(--mc-space-2) var(--mc-space-3);
       border-block-end: 1px solid rgb(var(--mc-color-border));
       text-align: start;
     }
-
     th {
       background-color: rgb(var(--mc-color-surface-sunken));
       color: rgb(var(--mc-color-fg-muted));
       font-weight: var(--mc-weight-medium, 500);
     }
-
     tr:last-child td {
       border-block-end: 0;
     }
-
     .num {
       text-align: end;
       font-variant-numeric: tabular-nums;
     }
-
     .timeline {
       margin: 0;
       padding: 0;
       list-style: none;
     }
-
     .timeline-item {
       position: relative;
       padding-inline-start: var(--mc-space-5);
@@ -108,12 +88,10 @@
       border-inline-start: 2px solid rgb(var(--mc-color-border));
       margin-inline-start: 0.4rem;
     }
-
     .timeline-item:last-child {
       padding-block-end: 0;
       border-inline-start-color: transparent;
     }
-
     .timeline-item::before {
       content: '';
       position: absolute;
@@ -124,42 +102,25 @@
       border-radius: 50%;
       background-color: rgb(var(--mc-color-primary));
     }
-
     .timeline-who {
       color: rgb(var(--mc-color-fg));
       font-size: var(--mc-text-sm);
     }
-
     .timeline-time {
       color: rgb(var(--mc-color-fg-subtle));
       font-size: var(--mc-text-xs, 0.75rem);
     }
-
     .state {
       padding: var(--mc-space-4) 0;
       color: rgb(var(--mc-color-fg-subtle));
       text-align: center;
     }
-
     .state[data-error] {
       color: rgb(var(--mc-color-danger));
     }
   </style>
 
-  <mc-drawer
-    id="drawer"
-    size="lg"
-    closable
-    mask-closable
-    attr:open="open ? '' : null"
-    on:close="open = false">
-    <span slot="header" class="head">
-      <span class="head-title">委托单详情</span>
-      <span class="head-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
-    </span>
-    <div :html="bodyHtml"></div>
-    <mc-button slot="footer" variant="outline" on:click="open = false">关闭</mc-button>
-  </mc-drawer>
+  <div :html="bodyHtml"></div>
 
   <script>
     import {
@@ -176,66 +137,92 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-
     const fact = (label, value) =>
       '<div class="fact"><span class="fact-label">' +
       esc(label) +
       '</span><span class="fact-value">' +
       (esc(value) || '—') +
       '</span></div>';
+    const section = (title, hint, body) =>
+      '<section class="section"><div class="section-head"><h2 class="section-title">' +
+      esc(title) +
+      '</h2>' +
+      (hint ? '<span class="section-hint">' + esc(hint) + '</span>' : '') +
+      '</div><div class="section-body">' +
+      body +
+      '</div></section>';
 
     export default async () => ({
-      tag: 'order-detail-drawer',
-
-      data: { open: false, headingSub: '', bodyHtml: '<p class="state">加载中…</p>' },
-
+      tag: 'order-tab-summary',
+      attrs: { orderId: '' },
+      data: { bodyHtml: '<p class="state">加载中…</p>' },
       ready() {
-        this._dicts = null;
-        Object.defineProperty(this.ele, 'show', {
+        Object.defineProperty(this.ele, 'load', {
           configurable: true,
-          value: (orderId) => this.openDetail(orderId),
+          value: (orderId) => this.load(orderId),
         });
       },
-
       proto: {
-        async openDetail(orderId) {
-          this.open = true;
-          this.headingSub = '';
+        async load(orderId) {
+          if (orderId) this.ele.orderId = orderId;
           this.bodyHtml = '<p class="state">加载中…</p>';
           try {
             const [detail, lines, audits, orderDict, auditDict] = await Promise.all([
               getOrderImportDetail(orderId),
-              getOrderImportDetailPage({ orderId, current: 1, size: 200 }),
+              getOrderImportDetailPage({ orderId, current: 1, size: 500 }),
               getOrderImportAuditList(orderId).catch(() => []),
               getDict('order_import_process_status'),
               getDict('audit_status'),
             ]);
             const orderStatus = dictMap(orderDict).get(String(detail.orderStatus));
             const auditStatus = dictMap(auditDict).get(String(detail.auditStatus));
-            this.headingSub =
-              detail.entrustNo + ' · ' + (orderStatus?.label ?? detail.orderStatus ?? '');
-            this.bodyHtml = this.render(detail, lines?.records ?? [], audits ?? [], auditStatus);
+            this.bodyHtml = this.render(
+              detail,
+              lines?.records ?? [],
+              audits ?? [],
+              orderStatus,
+              auditStatus,
+            );
           } catch (error) {
             this.bodyHtml =
               '<p class="state" data-error>' + esc('加载失败：' + error.message) + '</p>';
           }
         },
-
-        render(detail, lines, audits, auditStatus) {
-          const facts = [
-            fact('客户名称', detail.customerName),
-            fact('委托方', detail.principalName),
-            fact('供应商', detail.supplierName),
-            fact('订单编号', detail.orderNo),
-            fact('订单日期', detail.orderDate),
-            fact('审核状态', auditStatus?.label ?? detail.auditStatus),
-            fact('业务员', detail.saleManName),
-            fact('跟单员', detail.tradeManName),
-            fact('币种', detail.currencyName),
-            fact('总金额', formatMoney(detail.totalMoney)),
-          ].join('');
-
-          const lineRows = lines
+        render(detail, lines, audits, orderStatus, auditStatus) {
+          const tips = section(
+            '要点',
+            '',
+            '<div class="facts">' +
+              fact('客户名称', detail.customerName) +
+              fact('委托方', detail.principalName) +
+              fact('供应商', detail.supplierName) +
+              fact('订单编号', detail.orderNo) +
+              fact('订单日期', detail.orderDate) +
+              fact('订单状态', orderStatus?.label ?? detail.orderStatus) +
+              fact('审核状态', auditStatus?.label ?? detail.auditStatus) +
+              fact('业务员', detail.saleManName) +
+              fact('跟单员', detail.tradeManName) +
+              fact('币种', detail.currencyName) +
+              fact('总金额', formatMoney(detail.totalMoney)) +
+              '</div>',
+          );
+          const trade = section(
+            '贸易 / 报关',
+            '旧仓是折叠区，一屏放不下',
+            '<div class="facts">' +
+              fact('成交方式', detail.incoterms) +
+              fact('包装类型', detail.packageType) +
+              fact('贸易方式', detail.tradeModeName ?? detail.tradeMode) +
+              fact('抬头方式', detail.declareTitle) +
+              fact('申报地海关', detail.customMaster) +
+              fact('境内收发货人', detail.tradeName) +
+              fact('境外发货人', detail.overseasConsignorEname) +
+              fact('入境口岸', detail.entyPort) +
+              fact('运输方式', detail.trafMode) +
+              fact('贸易国', detail.tradeCountry) +
+              '</div>',
+          );
+          const rows = lines
             .map(
               (line) =>
                 '<tr><td>' +
@@ -255,15 +242,13 @@
                 '</td></tr>',
             )
             .join('');
-
           const lineHtml = lines.length
             ? '<div class="table-wrap"><table><thead><tr><th>商品编号</th><th>品名</th><th>型号</th>' +
               '<th class="num">数量</th><th class="num">单价</th><th class="num">金额</th><th>报关编码</th>' +
               '</tr></thead><tbody>' +
-              lineRows +
+              rows +
               '</tbody></table></div>'
             : '<p class="state">没有明细行</p>';
-
           const auditHtml = audits.length
             ? '<ul class="timeline">' +
               audits
@@ -286,19 +271,11 @@
                 .join('') +
               '</ul>'
             : '<p class="state">没有审批记录</p>';
-
           return (
-            '<section class="section"><h3 class="section-title">要点</h3><div class="facts">' +
-            facts +
-            '</div></section>' +
-            '<section class="section"><h3 class="section-title">明细（' +
-            lines.length +
-            ' 行）</h3>' +
-            lineHtml +
-            '</section>' +
-            '<section class="section"><h3 class="section-title">审批记录</h3>' +
-            auditHtml +
-            '</section>'
+            tips +
+            trade +
+            section('订单明细', '共 ' + lines.length + ' 行', lineHtml) +
+            section('审批记录', '', auditHtml)
           );
         },
       },

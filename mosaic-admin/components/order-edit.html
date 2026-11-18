@@ -1,0 +1,467 @@
+<!-- 委托单编辑 · 整页表单壳：基本信息（两栏）+ 明细子表 + 配送子表 + 常驻动作条。决策见 docs/form-shell-decision.md。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/form/form.html"></l-m>
+  <l-m src="../vendor/mosaic/form/form-item.html"></l-m>
+  <l-m src="../vendor/mosaic/input/input.html"></l-m>
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+  <l-m src="../vendor/mosaic/data-grid/data-grid.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    .editor {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-4);
+      max-width: 68rem;
+      margin-inline: auto;
+      padding-block-end: var(--mc-space-6);
+    }
+
+    /* 顶部动作条：滚动时常驻，保存永远够得着 */
+    .editor-bar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-3);
+      padding: var(--mc-space-3) 0;
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-bg));
+    }
+
+    .bar-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .bar-title {
+      font-size: var(--mc-text-xl);
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .bar-sub {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+    }
+
+    .status {
+      font-size: var(--mc-text-sm);
+    }
+
+    .status[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+
+    .status[data-ok] {
+      color: rgb(var(--mc-color-success, 22 163 74));
+    }
+
+    .section {
+      border: 1px solid rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      background-color: rgb(var(--mc-color-surface));
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-2);
+      padding: var(--mc-space-3) var(--mc-space-4);
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: var(--mc-text-base);
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .section-hint {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-xs, 0.75rem);
+    }
+
+    .section-actions {
+      margin-inline-start: auto;
+      display: flex;
+      gap: var(--mc-space-2);
+    }
+
+    .section-body {
+      padding: var(--mc-space-4);
+    }
+
+    /* 两栏字段网格：字段多时不用一路往下滚 */
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--mc-space-6);
+    }
+
+    @media (max-width: 760px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .subgrids {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--mc-space-4);
+    }
+
+    @media (max-width: 900px) {
+      .subgrids {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .empty-panel {
+      padding: var(--mc-space-6);
+      border: 1px dashed rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-md);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+      text-align: center;
+    }
+  </style>
+
+  <div class="editor">
+    <div class="editor-bar">
+      <mc-button size="sm" variant="outline" on:click="back()">← 返回列表</mc-button>
+      <div class="bar-main">
+        <span class="bar-title">{{title}}</span>
+        <span class="bar-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
+      </div>
+      <span
+        class="status"
+        attr:data-error="statusError ? '' : null"
+        attr:data-ok="statusOk ? '' : null">
+        {{status}}
+      </span>
+      <mc-button variant="outline" on:click="back()">取消</mc-button>
+      <mc-button attr:disabled="saving ? '' : null" on:click="save()">{{saveLabel}}</mc-button>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">基本信息</h2>
+        <span class="section-hint">只读字段来自接口原值；保存回写 /api/orderImport/update</span>
+      </div>
+      <div class="section-body">
+        <mc-form id="form" on:submit="onSubmit($event)" on:invalid="onInvalid($event)">
+          <div class="field-grid">
+            <mc-form-item label="客户名称" name="customerName">
+              <mc-input id="f-customerName" readonly></mc-input>
+            </mc-form-item>
+            <mc-form-item label="委托单号" name="entrustNo">
+              <mc-input id="f-entrustNo" placeholder="EDI + 8 位数字"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="订单编号" name="orderNo">
+              <mc-input id="f-orderNo"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="订单日期" name="orderDate">
+              <mc-input id="f-orderDate" type="date"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="服务协议号" name="cusContractNo">
+              <mc-input id="f-cusContractNo"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="客户合同号" name="customerContractNo">
+              <mc-input id="f-customerContractNo"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="供应商名称" name="supplierName">
+              <mc-input id="f-supplierName"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="业务名称" name="saleManName">
+              <mc-input id="f-saleManName"></mc-input>
+            </mc-form-item>
+            <mc-form-item label="报关币别" name="currencyName">
+              <mc-input id="f-currencyName" readonly></mc-input>
+            </mc-form-item>
+            <mc-form-item label="报关总价" name="totalMoney">
+              <mc-input id="f-totalMoney" type="number"></mc-input>
+            </mc-form-item>
+          </div>
+        </mc-form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">订单明细</h2>
+        <span class="section-hint">共 {{lineCount}} 行 · 行内删除只改本地，保存后生效</span>
+        <div class="section-actions">
+          <mc-button
+            size="sm"
+            variant="outline"
+            attr:disabled=""
+            title="待 mc-data-grid 可编辑模式">
+            添加明细
+          </mc-button>
+        </div>
+      </div>
+      <div class="section-body">
+        <mc-data-grid
+          id="lines"
+          row-key="id"
+          height="320px"
+          empty-text="没有明细行"
+          on:cell-action="onLineAction($event)"></mc-data-grid>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">配送信息</h2>
+        <span class="section-hint">提货 / 送货两个子表（旧仓由 get 接口的 VOList 给出）</span>
+      </div>
+      <div class="section-body">
+        <div class="subgrids">
+          <div class="empty-panel" attr:data-visible="takeCount === 0 ? '' : null">
+            暂无提货数据
+          </div>
+          <div class="empty-panel" attr:data-visible="sendCount === 0 ? '' : null">
+            暂无送货数据
+          </div>
+          <mc-data-grid
+            id="take"
+            row-key="id"
+            height="220px"
+            attr:data-visible="takeCount > 0 ? '' : null"></mc-data-grid>
+          <mc-data-grid
+            id="send"
+            row-key="id"
+            height="220px"
+            attr:data-visible="sendCount > 0 ? '' : null"></mc-data-grid>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    import {
+      getOrderImportDetail,
+      getOrderImportDetailPage,
+      updateOrderImport,
+    } from '../shared/api/order-import.js';
+    import { formatMoney } from '../shared/format.js';
+
+    const FIELD_IDS = [
+      'customerName',
+      'entrustNo',
+      'orderNo',
+      'orderDate',
+      'cusContractNo',
+      'customerContractNo',
+      'supplierName',
+      'saleManName',
+      'currencyName',
+      'totalMoney',
+    ];
+
+    const LINE_COLUMNS = [
+      { key: 'productNo', title: '商品编号', width: '140px' },
+      { key: 'productName', title: '品名' },
+      { key: 'productModel', title: '型号', width: '120px' },
+      { key: 'qty', title: '数量', width: '80px', align: 'right' },
+      { key: 'priceLabel', title: '单价', width: '110px', align: 'right' },
+      { key: 'totalMoneyLabel', title: '金额', width: '120px', align: 'right' },
+      { key: 'customsCode', title: '报关编码', width: '120px' },
+      { key: 'ops', title: '操作', width: '80px' },
+    ];
+
+    export default async () => ({
+      tag: 'order-edit',
+
+      data: {
+        title: '编辑委托单',
+        headingSub: '',
+        status: '',
+        statusError: false,
+        statusOk: false,
+        saving: false,
+        saveLabel: '保存',
+        lineCount: 0,
+        takeCount: 0,
+        sendCount: 0,
+      },
+
+      ready() {
+        this._detail = null;
+        this._lines = [];
+        this._dirty = false;
+        Object.defineProperty(this.ele, 'load', {
+          configurable: true,
+          value: (orderId) => this.load(orderId),
+        });
+        Object.defineProperty(this.ele, 'isDirty', {
+          configurable: true,
+          value: () => this._dirty,
+        });
+        customElements.whenDefined('mc-form').then(() => this.applyRules());
+      },
+
+      proto: {
+        form() {
+          return this.shadow.$('#form')?.ele;
+        },
+
+        field(name) {
+          return this.shadow.$('#f-' + name)?.ele;
+        },
+
+        grid(id) {
+          return this.shadow.$('#' + id)?.ele;
+        },
+
+        /** 校验规则：带 validator 的函数只能走 property 通道 */
+        applyRules() {
+          const form = this.form();
+          if (!form) return;
+          form.rules = {
+            entrustNo: [
+              { required: true, message: '委托单号必填', trigger: ['blur', 'input'] },
+              {
+                trigger: ['blur', 'input'],
+                validator: (_rule, value) =>
+                  /^EDI\d{8}$/.test(String(value ?? '').trim())
+                    ? ''
+                    : '委托单号应以 EDI 开头 + 8 位数字',
+              },
+            ],
+            orderNo: [{ required: true, message: '订单编号必填' }],
+            orderDate: [{ required: true, message: '订单日期必填' }],
+            totalMoney: [
+              { required: true, message: '报关总价必填' },
+              {
+                validator: (_rule, value) =>
+                  Number(value) > 0 ? '' : '报关总价必须是大于 0 的数字',
+              },
+            ],
+          };
+        },
+
+        async load(orderId) {
+          this._dirty = false;
+          this.status = '';
+          this.statusError = false;
+          this.statusOk = false;
+          try {
+            const detail = await getOrderImportDetail(orderId);
+            this._detail = detail;
+            this.headingSub = detail.entrustNo + ' · ' + (detail.customerName ?? '');
+            const nested =
+              Array.isArray(detail.orderImportDetailVOList) && detail.orderImportDetailVOList.length
+                ? detail.orderImportDetailVOList
+                : ((await getOrderImportDetailPage({ orderId, current: 1, size: 500 }))?.records ??
+                  []);
+            this._lines = nested;
+            this.lineCount = nested.length;
+            this.takeCount = (detail.orderDeliveryTakeVOList ?? []).length;
+            this.sendCount = (detail.orderDeliverySendVOList ?? []).length;
+            this.form()?.clearValidate();
+            requestAnimationFrame(() => {
+              for (const name of FIELD_IDS) {
+                const control = this.field(name);
+                if (control) control.value = String(detail[name] ?? '');
+              }
+              this.renderLines();
+            });
+          } catch (error) {
+            this.status = '加载失败：' + error.message;
+            this.statusError = true;
+          }
+        },
+
+        renderLines() {
+          const grid = this.grid('lines');
+          if (!grid) return;
+          grid.columns = LINE_COLUMNS;
+          grid.data = this._lines.map((line) => ({
+            ...line,
+            priceLabel: formatMoney(line.price),
+            totalMoneyLabel: formatMoney(line.totalMoney),
+            cells: {
+              ops: '<button type="button" data-action="remove-line" style="padding:0;border:0;background:none;color:rgb(var(--mc-color-danger));font:inherit;cursor:pointer">删除</button>',
+            },
+          }));
+        },
+
+        onLineAction(event) {
+          if (event.detail.action !== 'remove-line') return;
+          this._lines = this._lines.filter(
+            (line) => String(line.id) !== String(event.detail.rowKey),
+          );
+          this._dirty = true;
+          this.lineCount = this._lines.length;
+          this.renderLines();
+          this.status = '已删除 1 行（保存后生效）';
+          this.statusOk = false;
+          this.statusError = false;
+        },
+
+        onInvalid(event) {
+          this.statusError = true;
+          this.statusOk = false;
+          this.status = '请先修正标红字段：' + (event.data.fields ?? []).join('、');
+        },
+
+        onSubmit(event) {
+          this.doSave(event.data.value ?? {});
+        },
+
+        save() {
+          this.form()?.submit();
+        },
+
+        async doSave(values) {
+          const payload = {
+            ...this._detail,
+            ...values,
+            totalMoney: Number(values.totalMoney),
+            orderImportDetailDTOList: this._lines.map((line) => ({ ...line, id: line.id || 0 })),
+            orderDeliveryTakeDTOList: [],
+            orderDeliverySendDTOList: [],
+          };
+          this.saving = true;
+          this.saveLabel = '保存中…';
+          this.status = '';
+          this.statusError = false;
+          this.statusOk = false;
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          try {
+            await updateOrderImport(payload);
+            this.status = '保存成功（已回写旧仓 dev 接口）';
+            this.statusOk = true;
+            this._dirty = false;
+            window.dispatchEvent(
+              new CustomEvent('admin-data-changed', { detail: { module: 'import-order' } }),
+            );
+          } catch (error) {
+            this.status = '保存失败：' + error.message;
+            this.statusError = true;
+          } finally {
+            this.saving = false;
+            this.saveLabel = '保存';
+          }
+        },
+
+        back() {
+          /* 取消 = 丢弃本地改动：清脏标记，再进同一单会重新从服务端拉 */
+          this._dirty = false;
+          location.hash = '#/pages/import-order/list.html';
+        },
+      },
+    });
+  </script>
+</template>

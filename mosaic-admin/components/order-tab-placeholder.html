@@ -1,0 +1,41 @@
+<!-- 关联 Tab 占位：菜单里有、Mosaic 侧还没接入的模块页面。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <style>
+    .placeholder {
+      padding: var(--mc-space-8, 2rem);
+      border: 1px dashed rgb(var(--mc-color-border));
+      border-radius: var(--mc-radius-lg);
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+      line-height: 1.8;
+    }
+    .placeholder strong {
+      color: rgb(var(--mc-color-fg));
+    }
+    code {
+      font-family: var(--mc-font-mono, monospace);
+      font-size: var(--mc-text-xs, 0.75rem);
+      overflow-wrap: anywhere;
+    }
+  </style>
+
+  <div class="placeholder">
+    <strong>{{label}}</strong>
+    <p>这个 Tab 在旧仓由其它模块的页面组件提供，Mosaic 侧尚未接入。</p>
+    <p>
+      旧组件：
+      <code>{{componentPath}}</code>
+      · 单号 id：
+      <code>{{orderId}}</code>
+    </p>
+  </div>
+</template>
+
+<script>
+  export default async () => ({
+    tag: 'order-tab-placeholder',
+    attrs: { label: '', componentPath: '', orderId: '' },
+    data: {},
+  });
+</script>

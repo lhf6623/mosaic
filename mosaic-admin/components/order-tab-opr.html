@@ -1,0 +1,72 @@
+<!-- 关联 Tab · 操作日志（真接口 /admin/operateLog/page；type=order_import）。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/data-grid/data-grid.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+    .state {
+      padding: var(--mc-space-6) 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      text-align: center;
+      font-size: var(--mc-text-sm);
+    }
+    .state[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <mc-data-grid id="grid" row-key="id" height="360px" empty-text="暂无操作日志"></mc-data-grid>
+  <p class="state" attr:data-error="error ? '' : null" attr:data-visible="error ? '' : null">
+    {{error}}
+  </p>
+
+  <script>
+    import { get } from '../shared/http.js';
+    import { OPERATE_TYPE } from '../shared/modules/import-order/detail-tabs.js';
+
+    const COLUMNS = [
+      { key: 'subType', title: '操作', width: '140px' },
+      { key: 'action', title: '内容' },
+      { key: 'traceId', title: '链路追踪 ID', width: '240px' },
+      { key: 'createByName', title: '操作人', width: '100px' },
+      { key: 'createTime', title: '时间', width: '170px' },
+    ];
+
+    export default async () => ({
+      tag: 'order-tab-opr',
+      attrs: { orderId: '' },
+      data: { error: '' },
+      ready() {
+        Object.defineProperty(this.ele, 'load', {
+          configurable: true,
+          value: (orderId) => this.load(orderId),
+        });
+      },
+      proto: {
+        async load(orderId) {
+          /* ⚠️ 不能只靠宿主属性：先记在实例上，请求时用它（属性通道可能还没反射） */
+          this._orderId = orderId || this.ele.getAttribute('order-id') || '';
+          const grid = this.shadow.$('#grid')?.ele;
+          if (!grid) return;
+          grid.columns = COLUMNS;
+          this.error = '';
+          try {
+            const data = await get('/admin/operateLog/page', {
+              current: 1,
+              size: 100,
+              bizId: this._orderId,
+              type: OPERATE_TYPE,
+            });
+            grid.data = data?.records ?? [];
+          } catch (error) {
+            grid.data = [];
+            this.error = '加载失败：' + error.message;
+          }
+        },
+      },
+    });
+  </script>
+</template>

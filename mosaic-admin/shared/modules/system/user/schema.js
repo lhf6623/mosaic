@@ -1,6 +1,6 @@
 /** 用户列表 · 页面 schema（真接口：/admin/user/page） */
 export const userColumns = [
-  { key: 'username', title: '用户名', width: '140px', sortable: true },
+  { key: 'username', title: '用户名', width: '140px' },
   { key: 'name', title: '姓名', width: '100px' },
   { key: 'deptName', title: '部门' },
   { key: 'phone', title: '手机号', width: '130px' },
@@ -9,8 +9,7 @@ export const userColumns = [
 ];
 
 export const userPageSchema = {
-  title: '用户列表',
-  hint: '简单列表切片（真接口）：/admin/user/page，搜索 + 分页取真实数据。',
+  indexColumn: { title: '序号', width: '56px' },
   search: [
     { key: 'username', label: '用户名', type: 'input' },
     { key: 'name', label: '姓名', type: 'input' },

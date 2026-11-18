@@ -1,0 +1,77 @@
+<!-- 关联 Tab · 附件（真接口 /admin/sys-file/page；旧仓按 fileModule 中文 label 存）。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/data-grid/data-grid.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+    .state {
+      padding: var(--mc-space-6) 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      text-align: center;
+      font-size: var(--mc-text-sm);
+    }
+    .state[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <mc-data-grid id="grid" row-key="id" height="360px" empty-text="暂无附件"></mc-data-grid>
+  <p class="state" attr:data-error="error ? '' : null" attr:data-visible="error ? '' : null">
+    {{error}}
+  </p>
+
+  <script>
+    import { get } from '../shared/http.js';
+    import { ANNEX_FILE_MODULE } from '../shared/modules/import-order/detail-tabs.js';
+
+    const COLUMNS = [
+      { key: 'type', title: '附件类型', width: '120px' },
+      { key: 'original', title: '附件名称' },
+      { key: 'sizeLabel', title: '大小', width: '90px', align: 'right' },
+      { key: 'remark', title: '备注', width: '160px' },
+      { key: 'createByName', title: '上传人', width: '100px' },
+      { key: 'createTime', title: '上传时间', width: '170px' },
+    ];
+
+    export default async () => ({
+      tag: 'order-tab-annex',
+      attrs: { orderId: '' },
+      data: { error: '' },
+      ready() {
+        Object.defineProperty(this.ele, 'load', {
+          configurable: true,
+          value: (orderId) => this.load(orderId),
+        });
+      },
+      proto: {
+        async load(orderId) {
+          /* ⚠️ 不能只靠宿主属性：先记在实例上，请求时用它（属性通道可能还没反射） */
+          this._orderId = orderId || this.ele.getAttribute('order-id') || '';
+          const grid = this.shadow.$('#grid')?.ele;
+          if (!grid) return;
+          grid.columns = COLUMNS;
+          this.error = '';
+          try {
+            const data = await get('/admin/sys-file/page', {
+              current: 1,
+              size: 100,
+              bizId: this._orderId,
+              fileModule: ANNEX_FILE_MODULE,
+            });
+            const rows = (data?.records ?? []).map((row) => ({
+              ...row,
+              sizeLabel: row.fileSize ? Math.ceil(Number(row.fileSize) / 1024) + ' kb' : '—',
+            }));
+            grid.data = rows;
+          } catch (error) {
+            grid.data = [];
+            this.error = '加载失败：' + error.message;
+          }
+        },
+      },
+    });
+  </script>
+</template>

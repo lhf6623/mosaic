@@ -14,7 +14,7 @@
     id="page"
     on:search="onSearch($event)"
     on:page-change="onPageChange($event)"
-    on:cell-click="onCellClick($event)"></erp-page>
+    on:cell-action="onCellAction($event)"></erp-page>
 
   <user-detail-drawer id="detail"></user-detail-drawer>
 
@@ -49,12 +49,12 @@
           this._page.setLoading(true);
           this._page.setError('');
           try {
-            const data = await getUserPage(userQuery(this._search, page, PAGE_SIZE));
+            const data = await getUserPage(userQuery(this._search, page, this._page.pageSize));
             const rows = data?.records ?? [];
             this._page.setRows(userGridRows(rows, this._sexMap));
             this._page.setPage({
               current: Number(data?.current ?? page),
-              pageSize: Number(data?.size ?? PAGE_SIZE),
+              pageSize: Number(data?.size ?? this._page.pageSize),
               total: Number(data?.total ?? rows.length),
             });
             this._page.footer = '共 ' + Number(data?.total ?? rows.length) + ' 条';
@@ -75,8 +75,8 @@
           this.load(event.data.current);
         },
 
-        onCellClick(event) {
-          this.shadow.$('#detail').ele.show(event.detail.row);
+        onCellAction(event) {
+          if (event.detail.action === 'detail') this.shadow.$('#detail').ele.show(event.detail.row);
         },
       },
     });

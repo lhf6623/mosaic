@@ -66,6 +66,17 @@
 
 > ⚠️ **仓库里不存任何账号密码**：登录页由使用者现场输入；开发账号仅本机使用。换环境改 `config.js` 一处即可。
 
+## 交互约定
+
+- **列表行单击不导航**：进入详情的明确入口是「链接列」（委托单号 / 用户名，可复制、可中键新标签）或**行双击**；
+  复选框、行内「编辑」等按钮各走各的事件，不会因为点一下就跳页。
+- 详情页关联 Tab 支持深链：`?id=…&tab=<菜单id>`。
+- 列表页：白面板卡片（工具栏/表格/页脚一块），去斑马纹、表头与面板同底，数据层加重（单号/金额 600 字重）；
+  无大标题/说明行，表头不排序（纯展示），一条工具栏（筛选 + 查询/重置 + 业务动作）+ flex:1 网格 + 固定单行页脚；
+  **只有网格内部滚动**（外壳不出滚动条，分页始终在视口内）；首列「序号」（按分页偏移算全局值），
+  页脚带「每页 10/20/50/100 条」选择器，
+  「批量导出 / 清空选择」未选行时禁用；操作列保证一屏可见（长文本省略 + title）。
+
 ## 本地怎么跑
 
 ```bash
@@ -90,7 +101,7 @@ mosaic-admin/
 ├─ vendor/mosaic            # 链接 → ../../../packages（git 忽略）
 ├─ vendor/lib/              # 第三方 UMD（P0 为空，README 已立规矩）
 ├─ shell/                   # admin-shell.html（外壳：路由 / 标签页 / 搜索 / 主题）/ shell.css / favicon.svg
-├─ components/              # erp-page（列表页壳）/ 两个详情抽屉 / erp-perm（按钮级权限容器）
+├─ components/              # erp-page / order-edit / order-detail（Tab 壳）/ order-tab-*（各关联页签）/ user-detail-drawer
 ├─ pages/                   # home / risk / import-order（一个页面一个 .html，首行是元信息）
 ├─ shared/                  # 纯 JS：http / auth / perm / api / format / modules
 ├─ styles/page.css          # 业务页共用样式（页头 / 工具条 / 面板 / 表格 / 瓦片）

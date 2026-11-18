@@ -1,0 +1,127 @@
+<!-- 关联 Tab · 详情（二级 Tab 容器）：菜单里的「详情」节点 children 就是这些子页签。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/tabs/tabs.html"></l-m>
+  <l-m src="../vendor/mosaic/tabs/tab.html"></l-m>
+  <l-m src="./order-tab-summary.html"></l-m>
+  <l-m src="./order-tab-placeholder.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+    .panel {
+      padding-block-start: var(--mc-space-3);
+    }
+    .state {
+      padding: var(--mc-space-6) 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      text-align: center;
+      font-size: var(--mc-text-sm);
+    }
+    .state[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <mc-tabs id="tabs" no-panel on:change="onChange($event)"></mc-tabs>
+  <div id="panel" class="panel"></div>
+  <p class="state" attr:data-error="error ? '' : null" attr:data-visible="error ? '' : null">
+    {{error}}
+  </p>
+
+  <script>
+    import { getUserTabs } from '../shared/api/menu.js';
+    import {
+      DETAIL_MENU_ID,
+      resolveTabComponent,
+    } from '../shared/modules/import-order/detail-tabs.js';
+    import { can } from '../shared/perm.js';
+
+    const esc = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    export default async () => ({
+      tag: 'order-tab-details',
+      attrs: { orderId: '' },
+      data: { error: '' },
+      ready() {
+        this._instances = new Map();
+        this._active = '';
+        Object.defineProperty(this.ele, 'load', {
+          configurable: true,
+          value: (orderId) => this.load(orderId),
+        });
+      },
+      proto: {
+        currentOrderId() {
+          return (
+            this._orderId || new URLSearchParams(location.hash.split('?')[1] ?? '').get('id') || ''
+          );
+        },
+
+        async load(orderId) {
+          this._orderId = orderId || this.currentOrderId();
+          this._instances.clear();
+          this.shadow.$('#panel').ele.innerHTML = '';
+          this.error = '';
+          try {
+            const tabs = (await getUserTabs(DETAIL_MENU_ID)).filter(
+              (tab) => !tab.permission || can(tab.permission),
+            );
+            if (!tabs.length) {
+              this.error = '当前账号没有可见的详情子页签';
+              return;
+            }
+            this._tabs = tabs;
+            this.shadow.$('#tabs').ele.innerHTML = tabs
+              .map(
+                (tab) =>
+                  '<mc-tab value="' + esc(tab.id) + '" name="' + esc(tab.name) + '"></mc-tab>',
+              )
+              .join('');
+            this.activate(tabs[0]);
+          } catch (error) {
+            this.error = '加载页签失败：' + error.message;
+          }
+        },
+
+        activate(tab) {
+          if (!tab) return;
+          this._active = String(tab.id);
+          this.shadow.$('#tabs').ele.value = this._active;
+          for (const el of this.shadow.$('#panel').ele.children) el.style.display = 'none';
+          const cached = this._instances.get(this._active);
+          if (cached) {
+            cached.style.display = '';
+            return;
+          }
+          const mapping = resolveTabComponent(tab.componentPath);
+          const tag = mapping?.tag ?? 'order-tab-placeholder';
+          const el = document.createElement(tag);
+          if (!mapping) {
+            el.setAttribute('label', tab.name ?? '');
+            el.setAttribute('component-path', tab.componentPath ?? '');
+            el.setAttribute('order-id', this._orderId);
+          }
+          this.shadow.$('#panel').ele.append(el);
+          this._instances.set(this._active, el);
+          customElements.whenDefined(tag).then(() => {
+            if (!mapping) return;
+            if (typeof el.load === 'function') el.load(this.currentOrderId());
+          });
+        },
+
+        onChange(event) {
+          const key = String(event.data?.value ?? '');
+          const tab = (this._tabs ?? []).find((item) => String(item.id) === key);
+          this.activate(tab);
+        },
+      },
+    });
+  </script>
+</template>

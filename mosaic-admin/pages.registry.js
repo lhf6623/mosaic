@@ -25,11 +25,25 @@ export const PAGES = [
     "hidden": false
   },
   {
+    "file": "pages/import-order/detail.html",
+    "label": "委托单详情",
+    "group": "委托",
+    "order": 30,
+    "hidden": true
+  },
+  {
     "file": "pages/import-order/list.html",
     "label": "委托单列表",
     "group": "委托",
     "order": 30,
     "hidden": false
+  },
+  {
+    "file": "pages/import-order/edit.html",
+    "label": "编辑委托单",
+    "group": "委托",
+    "order": 31,
+    "hidden": true
   }
 ];
 

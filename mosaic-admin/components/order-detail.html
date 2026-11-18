@@ -1,0 +1,231 @@
+<!-- 委托单详情 · 整页壳：关联 Tab（菜单配置驱动：详情 / 报关单 / 入库单 / 附件 / 操作日志…），懒挂载 + 常驻。 -->
+<template component>
+  <link rel="stylesheet" href="../styles/page.css" />
+  <l-m src="../vendor/mosaic/button/button.html"></l-m>
+  <l-m src="../vendor/mosaic/tabs/tabs.html"></l-m>
+  <l-m src="../vendor/mosaic/tabs/tab.html"></l-m>
+  <l-m src="./order-tab-details.html"></l-m>
+  <l-m src="./order-tab-annex.html"></l-m>
+  <l-m src="./order-tab-opr.html"></l-m>
+  <l-m src="./order-tab-placeholder.html"></l-m>
+
+  <style>
+    l-m {
+      display: none;
+    }
+
+    .detail {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mc-space-4);
+      max-width: 72rem;
+      margin-inline: auto;
+      padding-block-end: var(--mc-space-6);
+    }
+
+    .detail-bar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--mc-space-3);
+      padding: var(--mc-space-3) 0;
+      border-block-end: 1px solid rgb(var(--mc-color-border));
+      background-color: rgb(var(--mc-color-bg));
+    }
+
+    .bar-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .bar-title {
+      font-size: var(--mc-text-xl);
+      font-weight: var(--mc-weight-semibold);
+    }
+
+    .bar-sub {
+      color: rgb(var(--mc-color-fg-subtle));
+      font-size: var(--mc-text-sm);
+    }
+
+    .panel {
+      padding-block-start: var(--mc-space-3);
+    }
+
+    .state {
+      padding: var(--mc-space-6) 0;
+      color: rgb(var(--mc-color-fg-subtle));
+      text-align: center;
+      font-size: var(--mc-text-sm);
+    }
+
+    .state[data-error] {
+      color: rgb(var(--mc-color-danger));
+    }
+  </style>
+
+  <div class="detail">
+    <div class="detail-bar">
+      <mc-button size="sm" variant="outline" on:click="back()">← 返回列表</mc-button>
+      <div class="bar-main">
+        <span class="bar-title">委托单详情</span>
+        <span class="bar-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
+      </div>
+      <mc-button attr:disabled="canEdit ? null : ''" on:click="edit()">编辑</mc-button>
+    </div>
+
+    <mc-tabs id="tabs" no-panel on:change="onTabChange($event)"></mc-tabs>
+    <div id="panel" class="panel"></div>
+    <p class="state" attr:data-error="error ? '' : null" attr:data-visible="error ? '' : null">
+      {{error}}
+    </p>
+  </div>
+
+  <script>
+    import { getUserTabs } from '../shared/api/menu.js';
+    import { getOrderImportDetail } from '../shared/api/order-import.js';
+    import {
+      RELATED_MENU_ID,
+      resolveTabComponent,
+    } from '../shared/modules/import-order/detail-tabs.js';
+    import { PERM, can } from '../shared/perm.js';
+
+    const esc = (value) =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const TAB_PATH = 'pages/import-order/detail.html';
+
+    export default async () => ({
+      tag: 'order-detail',
+
+      data: {
+        headingSub: '',
+        canEdit: can(PERM.importEdit),
+        error: '',
+      },
+
+      ready() {
+        this._orderId = '';
+        this._instances = new Map();
+        this._active = '';
+        Object.defineProperty(this.ele, 'load', {
+          configurable: true,
+          value: (orderId) => this.load(orderId),
+        });
+        window.addEventListener('admin-permissions-change', () => {
+          this.canEdit = can(PERM.importEdit);
+        });
+      },
+
+      proto: {
+        tabsEl() {
+          return this.shadow.$('#tabs')?.ele;
+        },
+
+        panelEl() {
+          return this.shadow.$('#panel')?.ele;
+        },
+
+        /** 当前单号：优先用 load() 传进来的，其次从 hash 的 ?id= 兜底 */
+        currentOrderId() {
+          return (
+            this._orderId || new URLSearchParams(location.hash.split('?')[1] ?? '').get('id') || ''
+          );
+        },
+
+        async load(orderId) {
+          this._orderId = orderId || this.currentOrderId();
+          this._instances.clear();
+          this.panelEl().innerHTML = '';
+          this.error = '';
+          try {
+            const [detail, tabs] = await Promise.all([
+              getOrderImportDetail(orderId),
+              getUserTabs(RELATED_MENU_ID),
+            ]);
+            this.headingSub = [detail.entrustNo, detail.customerName].filter(Boolean).join(' · ');
+            const visible = tabs.filter((tab) => !tab.permission || can(tab.permission));
+            if (!visible.length) {
+              this.error = '当前账号没有可见的关联页签';
+              return;
+            }
+            this._tabs = visible;
+            this.tabsEl().innerHTML = visible
+              .map(
+                (tab) =>
+                  '<mc-tab value="' + esc(tab.id) + '" name="' + esc(tab.name) + '"></mc-tab>',
+              )
+              .join('');
+            const wanted = new URLSearchParams(location.hash.split('?')[1] ?? '').get('tab');
+            const active = visible.find((tab) => String(tab.id) === wanted) ?? visible[0];
+            this.activate(active);
+          } catch (error) {
+            this.error = '加载详情失败：' + error.message;
+          }
+        },
+
+        activate(tab) {
+          if (!tab) return;
+          this._active = String(tab.id);
+          this.tabsEl().value = this._active;
+          for (const el of this.panelEl().children) el.style.display = 'none';
+          const cached = this._instances.get(this._active);
+          if (cached) {
+            cached.style.display = '';
+            return;
+          }
+          const mapping = resolveTabComponent(tab.componentPath);
+          const tag = mapping?.tag ?? 'order-tab-placeholder';
+          const el = document.createElement(tag);
+          if (!mapping) {
+            el.setAttribute('label', tab.name ?? '');
+            el.setAttribute('component-path', tab.componentPath ?? '');
+            el.setAttribute('order-id', this._orderId);
+          }
+          this.panelEl().append(el);
+          this._instances.set(this._active, el);
+          customElements.whenDefined(tag).then(() => {
+            if (mapping && typeof el.load === 'function') el.load(this.currentOrderId());
+          });
+        },
+
+        onTabChange(event) {
+          const key = String(event.data?.value ?? '');
+          const tab = (this._tabs ?? []).find((item) => String(item.id) === key);
+          if (!tab) return;
+          this.activate(tab);
+          history.replaceState(
+            null,
+            '',
+            '#/' +
+              TAB_PATH +
+              '?id=' +
+              encodeURIComponent(this._orderId) +
+              '&tab=' +
+              encodeURIComponent(key),
+          );
+        },
+
+        back() {
+          location.hash = '#/pages/import-order/list.html';
+        },
+
+        edit() {
+          if (this.canEdit && this._orderId) {
+            location.hash = '#/pages/import-order/edit.html?id=' + this._orderId;
+          }
+        },
+      },
+    });
+  </script>
+</template>

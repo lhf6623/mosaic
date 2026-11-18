@@ -28,7 +28,7 @@ export const LOGIN_ROUTE = 'pages/login.html';
 export const HOME_ROUTE = 'pages/home.html';
 
 /** 列表默认每页条数 */
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 20;
 
 /**
  * 当前用户的权限码：null = 不限（未登录 / 探针默认全部放行）。
