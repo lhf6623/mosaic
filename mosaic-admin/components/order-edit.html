@@ -138,7 +138,7 @@
 
   <div class="editor">
     <div class="editor-bar">
-      <mc-button size="sm" variant="outline" on:click="back()">← 返回列表</mc-button>
+      <mc-button size="sm" variant="outline" on:click="goBack()">← 返回列表</mc-button>
       <div class="bar-main">
         <span class="bar-title">{{title}}</span>
         <span class="bar-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
@@ -149,7 +149,7 @@
         attr:data-ok="statusOk ? '' : null">
         {{status}}
       </span>
-      <mc-button variant="outline" on:click="back()">取消</mc-button>
+      <mc-button variant="outline" on:click="goBack()">取消</mc-button>
       <mc-button attr:disabled="saving ? '' : null" on:click="save()">{{saveLabel}}</mc-button>
     </div>
 
@@ -456,7 +456,7 @@
           }
         },
 
-        back() {
+        goBack() {
           /* 取消 = 丢弃本地改动：清脏标记，再进同一单会重新从服务端拉 */
           this._dirty = false;
           location.hash = '#/pages/import-order/list.html';

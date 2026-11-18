@@ -100,7 +100,7 @@
   装得下时网格会锁纵向滚动（`data-fit-y`），只有横向滚动条。
 - 列表页一律用 `components/erp-page.html`：schema / cell / logic 放 `shared/modules/<域>/<模块>/`，
   **页面直接声明 `:schema` / `:loader`**：schema 放 `data`（纯对象），loader 是 `proto` 方法，
-  模板写成 `:schema="schema" :loader="loader"`。`erp-page` 用 `attr: { schema, loader }` 声明参数、
+  模板写成 `:schema="schema" :loader="loader"`。`erp-page` 用 `attrs: { schema, loader }` 声明参数、
   在 attached / watch 里接住（这个声明是必需的，否则模板绑定会静默丢掉）。查询 / 重置 / 翻页 /
   每页条数 / 首查 / 加载态 / 错误 / 合计 / 选中页脚都归 `erp-page`，页面不再自己串 API、不再
   `load(1)`、不再监听 search / page-change / select-change。数据保存后广播
@@ -149,10 +149,9 @@
 
 ## 已知的框架级阻断项（2026-11-16 实测）
 
-- **函数对象不能进 ofa 的数据通道**：页面 `data` 放函数会让整页渲染失败；把含函数的 `columns`
-  赋给组件 property，在 `<o-page>` 上下文会触发 ofa 内部 `设置属性值 rows 出错`
-  （普通 HTML 宿主里能跑，mc-table 原版也正常）。所以 `mc-grid` 契约只收字符串 / 名字，
-  单元格 HTML 由业务模块的纯函数产出（见 `docs/mc-grid-contract.md` §1）。
+- **函数不要作为 `data` 的值**：页面 / 组件 `data` 里放函数（哪怕不绑定）会让 ofa 加载失败。
+  `proto` 方法可以经模板 `:prop="方法名"` 传给子组件，但子组件必须在配置里 `attrs: { prop: null }`
+  声明接收参数，否则绑定会被静默丢弃。函数值放 `data` 仍然不行，loader 这类放 `proto`。
 - **多标签页不能靠 o-app 换 leaf**：o-app 只复用同 src 的父页面，leaf 会被销毁；
   状态保持要常驻 `<o-page>` + 只切显隐（spike C 实测 0.11MB/页）—— 已按此实现，别再引 o-app 回来。
 

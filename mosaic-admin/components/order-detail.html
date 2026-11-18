@@ -72,7 +72,7 @@
 
   <div class="detail">
     <div class="detail-bar">
-      <mc-button size="sm" variant="outline" on:click="back()">← 返回列表</mc-button>
+      <mc-button size="sm" variant="outline" on:click="goBack()">← 返回列表</mc-button>
       <div class="bar-main">
         <span class="bar-title">委托单详情</span>
         <span class="bar-sub" attr:data-visible="headingSub ? '' : null">{{headingSub}}</span>
@@ -216,7 +216,7 @@
           );
         },
 
-        back() {
+        goBack() {
           location.hash = '#/pages/import-order/list.html';
         },
 
