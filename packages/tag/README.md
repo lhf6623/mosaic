@@ -80,8 +80,9 @@ closable 只发 close，**不自己删 DOM** —— 组件不改使用者的 DOM
 
 **`color` 也收 hex**（`<mc-tag color="#1a7f5a">`）：六个语义名仍走 CSS，hex 走
 [`../boot/color-attr.js`](../boot/color-attr.js) —— 填 `--mc-tag-fill` / `-on-fill` / `-accent` /
-`-subtle-fill`（浅底档按当前主题混，切主题会重算）。文字色按 WCAG 自动给；**极浅的牌子色在浅底上会读不清**
-（`#fff000` 1.16:1），接线器会就此发一条 `[mosaic]` 警告。只收 hex，非 hex 一条警告、不写槽。
+`-subtle-fill`。**浅底的强调色会按 WCAG 自动调明度**：在浅底上不足 4.5:1 就向黑微调（暗色主题下向白提亮），
+保留色相，不再要求使用者换颜色；`#1E90FF` 这类亮色会被压深到可读。主题切换会重算，且观察器**穿进 shadow DOM**
+—— 表格单元格里的 tag 也跟着换。只收 hex，非 hex 一条警告、不写槽。
 <!-- hand:end -->
 
 ## 改这个单元之前

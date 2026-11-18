@@ -11,10 +11,19 @@
  *
  * 三条边界：① 写的是宿主内联 style，会盖过 `:host` 默认值与使用者写的同名令牌（只清自己写的）；
  * ② 宿主 style 只能在 `attached()` 之后写（构造期写会抛 `NotSupportedError`，P31），
- * `watch` 首次触发恰在构造期、由 `change()` 跳过（P5）；③ hex 不随主题翻转。
+ * `watch` 首次触发恰在构造期、由 `change()` 跳过（P5）；③ hex 的 fill / on-fill 不随主题翻转；subtle-fill 与 accent（浅底文字色）按主题重算。
  */
 
-import { contrast, mix, parseHex, readToken, readableOn, triple, warnOnce } from './color-math.js';
+import {
+  contrast,
+  luminance,
+  mix,
+  parseHex,
+  readToken,
+  readableOn,
+  triple,
+  warnOnce,
+} from './color-math.js';
 
 /** 六个语义名：和 `packages/README.md` 的 color 维度一致 */
 const SEMANTIC = ['primary', 'info', 'success', 'warning', 'danger', 'neutral'];
@@ -54,8 +63,18 @@ function ensureThemeWatcher() {
   if (themeWatcher) return;
   themeWatcher = true;
   const reapply = () => {
-    /** @type {NodeListOf<HTMLElement>} 宿主都是自定义元素 —— querySelectorAll 默认给 Element，而它写不了内联 style */
-    const hosts = document.querySelectorAll('[color]');
+    /** 宿主可能渲染在 shadow DOM 里（表格单元格、弹层内容）—— querySelectorAll 不穿 shadow，必须递归收 */
+    /** @type {HTMLElement[]} */
+    const hosts = [];
+    /** @param {ParentNode} root */
+    const collect = (root) => {
+      for (const el of root.querySelectorAll('*')) {
+        if (!(el instanceof HTMLElement)) continue;
+        if (el.hasAttribute('color')) hosts.push(el);
+        if (el.shadowRoot) collect(el.shadowRoot);
+      }
+    };
+    collect(document.documentElement);
     for (const el of hosts) {
       const config = configs.get(el.tagName.toLowerCase());
       if (config) apply(el, el.getAttribute('color'), config);
@@ -124,23 +143,38 @@ function apply(host, raw, config) {
   const slot = (name) => `--mc-${config.slug}-${name}`;
   write(host, slot('fill'), triple(rgb));
   write(host, slot('on-fill'), triple(readableOn(rgb)));
-  if (config.slots.includes('accent')) write(host, slot('accent'), triple(rgb));
-  if (config.slots.includes('subtle-fill')) {
-    const surface = readToken('--mc-color-surface');
-    /* 样式表还没就位：浅底这一档留给下一次主题重算，其余槽照常 */
-    if (surface) {
-      const subtle = mix(rgb, surface, 0.9);
-      write(host, slot('subtle-fill'), triple(subtle));
-      /* 浅底变体的强调色仍是品牌色本身，极浅的牌子色会读不清 —— 语义色有构建期门禁，字面量没有 */
-      const ratio = contrast(rgb, subtle);
-      if (ratio < 4.5)
-        warnOnce(
-          `${host.tagName}:${value}:subtle`,
-          `[mosaic] ${host.tagName.toLowerCase()} 的 color="${value}" 在浅底上只有 ${ratio.toFixed(2)}:1（< 4.5）—— ` +
-            '换个中等明度的颜色，或这个组件用实心外观',
-        );
-    }
+  const subtle = config.slots.includes('subtle-fill') ? updateSubtle(host, rgb, slot) : null;
+  if (config.slots.includes('accent')) {
+    write(host, slot('accent'), triple(subtle ? subtle.accent : rgb));
   }
+}
+
+/**
+ * 浅底档：底色按当前主题与 surface 混出来；强调色向黑/白微调，直到在浅底上 ≥ 4.5:1。
+ * 保留品牌色的色相（只调明度），比「让使用者换个颜色」现实；深色主题下向白走。
+ * @param {HTMLElement} host
+ * @param {number[]} rgb
+ * @param {(name: string) => string} slot
+ * @returns {{ accent: number[] } | null}
+ */
+function updateSubtle(host, rgb, slot) {
+  const surface = readToken('--mc-color-surface');
+  /* 样式表还没就位：浅底这一档留给下一次主题重算 */
+  if (!surface) return null;
+  const subtle = mix(rgb, surface, 0.9);
+  write(host, slot('subtle-fill'), triple(subtle));
+  const darker = luminance(surface) > 0.5;
+  let accent = rgb;
+  for (let i = 0; i < 24 && contrast(accent, subtle) < 4.5; i += 1) {
+    accent = mix(accent, darker ? [0, 0, 0] : [255, 255, 255], 0.12);
+  }
+  const ratio = contrast(accent, subtle);
+  if (ratio < 4.5)
+    warnOnce(
+      `${host.tagName}:${triple(rgb)}:subtle`,
+      `[mosaic] ${host.tagName.toLowerCase()} 的 color="${triple(rgb)}" 在浅底上仍只有 ${ratio.toFixed(2)}:1（< 4.5）`,
+    );
+  return { accent };
 }
 
 /**

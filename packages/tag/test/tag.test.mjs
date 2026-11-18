@@ -4,6 +4,18 @@
  * selected 覆盖 variant、disabled 归零、运行时 property（el.selected）与 P31 动态创建
  */
 
+/** WCAG 对比度（测试侧独立算，别复用被测实现） */
+const lin = (v) => {
+  const x = v / 255;
+  return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+};
+const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+const contrast = (a, b) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+const triple = (text) => text.split(',').map(Number);
+
 export default async function run({ page, visit, check }) {
   const tag = await (async () => {
     const failed = [];
@@ -536,9 +548,9 @@ export default async function run({ page, visit, check }) {
   );
 
   check(
-    'color 收 hex（tag）：浅底 = 按主题混出的 -subtle-fill，文字/描边是品牌色本身；实心档同理',
+    'color 收 hex（tag）：浅底 = 按主题混出的 -subtle-fill，强调色自动校正到 ≥4.5:1（色相不变、只调明度）；实心档底色是原色',
     tag.hexColors.subtle.bg === tag.hexColors.subtle.subtleToken &&
-      tag.hexColors.subtle.fg === '26,127,90' &&
+      contrast(triple(tag.hexColors.subtle.fg), triple(tag.hexColors.subtle.subtleToken)) >= 4.5 &&
       tag.hexColors.solid.bg === '26,127,90' &&
       tag.hexColors.solid.fg === '255,255,255',
     JSON.stringify(tag.hexColors),
@@ -555,6 +567,33 @@ export default async function run({ page, visit, check }) {
       tag.tone.partial.bg === tag.tokens.primarySubtle &&
       tag.tone.partial.fg === 'rgb(255, 240, 0)',
     JSON.stringify({ ...tag.tone, 主题浅底: tag.tokens.primarySubtle }),
+  );
+
+  /* hex 色在 shadow DOM 里也要随主题重算：表格单元格里的 mc-tag 就是这条路径（P?? 主题观察器穿 shadow） */
+  const shadowTheme = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML = '<mc-tag color="#1a7f5a">shadow 里的 hex</mc-tag>';
+    const tagEl = shadow.querySelector('mc-tag');
+    const read = () => tagEl.getAttribute('style') ?? '';
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const before = read();
+    const html = document.documentElement;
+    const saved = html.getAttribute('data-theme');
+    html.setAttribute('data-theme', saved === 'dark' ? 'light' : 'dark');
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const after = read();
+    if (saved === null) html.removeAttribute('data-theme');
+    else html.setAttribute('data-theme', saved);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    host.remove();
+    return { before, after };
+  });
+  check(
+    'hex 色在 shadow DOM 里也随主题重算（主题观察器必须穿 shadow）',
+    shadowTheme.before.includes('--mc-tag-subtle-fill') && shadowTheme.before !== shadowTheme.after,
+    JSON.stringify(shadowTheme),
   );
 
   check(
