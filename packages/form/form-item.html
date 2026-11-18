@@ -72,135 +72,136 @@
   </div>
 
   <script>
-    export default async () => ({
-      tag: 'mc-form-item',
+    import { withOptions } from '../boot/options.js';
 
-      attrs: {
-        // 标签文案（必填星号由 required 带出来，不用自己写）；没有标签也没有星号时这一列不占位
-        label: '',
-        // 字段名：不写就取内部控件自己的 name。校验规则在 mc-form.rules 上，这一层只负责显示
-        name: '',
-        // 必填的声明式简写：等价于规则表最前面一条 { required: true }；布尔默认值必须是 null（P1）
-        required: null,
-        /* 这一行的规则：属性写法是 **JSON 文本**（`规则 | 规则[]`），运行时对象走 property `item.rules = …`；
+    export default async () =>
+      withOptions({
+        tag: 'mc-form-item',
+
+        expose: {
+          control: { desc: '→ mc-form：这一行认领的控件元素' },
+          showError: { desc: '→ mc-form：写错误文案并标红' },
+          clearError: { desc: '→ mc-form：收起错误状态' },
+        },
+        attrs: {
+          // 标签文案（必填星号由 required 带出来，不用自己写）；没有标签也没有星号时这一列不占位
+          label: '',
+          // 字段名：不写就取内部控件自己的 name。校验规则在 mc-form.rules 上，这一层只负责显示
+          name: '',
+          // 必填的声明式简写：等价于规则表最前面一条 { required: true }；布尔默认值必须是 null（P1）
+          required: null,
+          /* 这一行的规则：属性写法是 **JSON 文本**（`规则 | 规则[]`），运行时对象走 property `item.rules = …`；
            两个通道都写时属性在前。⚠️ `:rules="对象"` 的落点不稳定（首屏直出可能直接赋对象、
            SPA 导航可能序列化成文本），带 validator 函数的只能走 property，别放进绑定对象 */
-        rules: null,
-      },
+          rules: null,
+        },
 
-      /* 这一行自己的状态：error 是错误文案（由 data 渲染），其余结论都在 syncState 里推出来 */
-      data: { error: '' },
+        /* 这一行自己的状态：error 是错误文案（由 data 渲染），其余结论都在 syncState 里推出来 */
+        data: { error: '' },
 
-      ready() {
-        /* 跨标签的那三个接口挂在**宿主元素**上（同 mc-radio 的 syncGroupState）：mc-form 拿的是元素，
-           proto 里的方法它调不到 */
-        for (const name of ['control', 'showError', 'clearError']) {
-          Object.defineProperty(this.ele, name, {
+        ready() {
+          /* rules 的 property 通道收成访问器：赋值时重算结论（ofa 观察不到 expando） */
+          this._rules = this.ele.rules;
+          Object.defineProperty(this.ele, 'rules', {
             configurable: true,
-            value: (...args) => this[name](...args),
+            get: () => this._rules,
+            set: (value) => {
+              this._rules = value;
+              this.syncState();
+            },
           });
-        }
+        },
 
-        /* rules 的 property 通道收成访问器：赋值时重算结论（ofa 观察不到 expando） */
-        this._rules = this.ele.rules;
-        Object.defineProperty(this.ele, 'rules', {
-          configurable: true,
-          get: () => this._rules,
-          set: (value) => {
-            this._rules = value;
+        attached() {
+          this._mounted = true; // 宿主属性只能在这之后写（P31）
+          this.syncState();
+        },
+
+        watch: {
+          // 首次触发落在构造期（P5）—— syncState 自带 _mounted 守卫
+          label() {
             this.syncState();
           },
-        });
-      },
+          required() {
+            this.syncState();
+          },
+          rules() {
+            this.syncState();
+          },
+          error() {
+            this.syncState();
+          },
+        },
 
-      attached() {
-        this._mounted = true; // 宿主属性只能在这之后写（P31）
-        this.syncState();
-      },
-
-      watch: {
-        // 首次触发落在构造期（P5）—— syncState 自带 _mounted 守卫
-        label() {
-          this.syncState();
-        },
-        required() {
-          this.syncState();
-        },
-        rules() {
-          this.syncState();
-        },
-        error() {
-          this.syncState();
-        },
-      },
-
-      proto: {
-        /** 这一行的控件 = 默认插槽里第一个「有值语义」的元素子节点（轻 DOM 直查，不伸手进别的 shadow root）。
+        proto: {
+          /** 这一行的控件 = 默认插槽里第一个「有值语义」的元素子节点（轻 DOM 直查，不伸手进别的 shadow root）。
             ⚠️ 使用者把控件包了一层（一排 checkbox）时往下找一个带 name 的 —— 否则 mc-form 找不到这一行的控件 */
-        control() {
-          const children = [...this.ele.children].filter(
-            (el) => !['script', 'template', 'style'].includes(el.localName),
-          );
-          const direct = children.find((el) => 'value' in el || 'checked' in el);
-          if (direct) return direct;
-          const nested = children.map((el) => el.querySelector?.('[name]')).find(Boolean);
-          return nested ?? children[0] ?? null;
-        },
+          control() {
+            const children = [...this.ele.children].filter(
+              (el) => !['script', 'template', 'style'].includes(el.localName),
+            );
+            const direct = children.find((el) => 'value' in el || 'checked' in el);
+            if (direct) return direct;
+            const nested = children.map((el) => el.querySelector?.('[name]')).find(Boolean);
+            return nested ?? children[0] ?? null;
+          },
 
-        /** 一个布尔属性的"值感知"读法：裸属性（=""/无值）算开；ofa 的绑定会把 false 写成 ="false"（属性还在，P32） */
-        boolOn(raw) {
-          return raw !== null && raw !== 'false';
-        },
+          /** 一个布尔属性的"值感知"读法：裸属性（=""/无值）算开；ofa 的绑定会把 false 写成 ="false"（属性还在，P32） */
+          boolOn(raw) {
+            return raw !== null && raw !== 'false';
+          },
 
-        /** 必填星号画不画：required 属性 / 这一行的 rules / 容器配的 required，任一命中就画 */
-        get star() {
-          return (
-            this.boolOn(this.ele.getAttribute('required')) ||
-            this.rulesRequire(this.rules) ||
-            this.rulesRequire(this._rules) ||
-            this.boolOn(this.ele.getAttribute('data-required'))
-          );
-        },
+          /** 必填星号画不画：required 属性 / 这一行的 rules / 容器配的 required，任一命中就画 */
+          get star() {
+            return (
+              this.boolOn(this.ele.getAttribute('required')) ||
+              this.rulesRequire(this.rules) ||
+              this.rulesRequire(this._rules) ||
+              this.boolOn(this.ele.getAttribute('data-required'))
+            );
+          },
 
-        /** 规则表（JSON 文本 / 对象 / 数组 / `{validator}` 的简写）里有没有 `required: true` */
-        rulesRequire(raw) {
-          if (!raw) return false;
-          let list = raw;
-          if (typeof raw === 'string') {
-            try {
-              list = JSON.parse(raw);
-            } catch {
-              return false;
+          /** 规则表（JSON 文本 / 对象 / 数组 / `{validator}` 的简写）里有没有 `required: true` */
+          rulesRequire(raw) {
+            if (!raw) return false;
+            let list = raw;
+            if (typeof raw === 'string') {
+              try {
+                list = JSON.parse(raw);
+              } catch {
+                return false;
+              }
             }
-          }
-          const rules = Array.isArray(list) ? list : [list];
-          return rules.some((rule) => !!rule && typeof rule === 'object' && rule.required === true);
-        },
+            const rules = Array.isArray(list) ? list : [list];
+            return rules.some(
+              (rule) => !!rule && typeof rule === 'object' && rule.required === true,
+            );
+          },
 
-        /** 把 data 推出来的结论镜像到宿主属性上（CSS 靠它显隐，P33）：标签列占不占位 / 星号 / 这一行有没有错 */
-        syncState() {
-          if (this._mounted !== true) return;
-          this.mirror('data-has-label', (this.label ?? '') !== '' || this.star);
-          this.mirror('data-required', this.star);
-          this.mirror('data-invalid', (this.error ?? '') !== '');
-        },
+          /** 把 data 推出来的结论镜像到宿主属性上（CSS 靠它显隐，P33）：标签列占不占位 / 星号 / 这一行有没有错 */
+          syncState() {
+            if (this._mounted !== true) return;
+            this.mirror('data-has-label', (this.label ?? '') !== '' || this.star);
+            this.mirror('data-required', this.star);
+            this.mirror('data-invalid', (this.error ?? '') !== '');
+          },
 
-        /** mc-form 校验失败时调它：只写数据，文案由模板 {{error}} 跟上（渲染在下一拍） */
-        showError(message) {
-          this.error = message;
-        },
+          /** mc-form 校验失败时调它：只写数据，文案由模板 {{error}} 跟上（渲染在下一拍） */
+          showError(message) {
+            this.error = message;
+          },
 
-        clearError() {
-          this.error = '';
-        },
+          clearError() {
+            this.error = '';
+          },
 
-        /** 只在真的变了时才写宿主 —— 否则每次校验都白触发一轮样式重算 */
-        mirror(name, on) {
-          if (on === this.ele.hasAttribute(name)) return;
-          if (on) this.ele.setAttribute(name, '');
-          else this.ele.removeAttribute(name);
+          /** 只在真的变了时才写宿主 —— 否则每次校验都白触发一轮样式重算 */
+          mirror(name, on) {
+            if (on === this.ele.hasAttribute(name)) return;
+            if (on) this.ele.setAttribute(name, '');
+            else this.ele.removeAttribute(name);
+          },
         },
-      },
-    });
+      });
   </script>
 </template>

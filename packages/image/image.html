@@ -128,6 +128,10 @@
     export default async () =>
       withOptions({
         tag: 'mc-image',
+
+        expose: {
+          open: { desc: '打开大图预览；参数 opener 用于关闭后归还焦点' },
+        },
         slots: { default: {}, fallback: {} },
 
         // 原生 <img> 的 load / error 冒不出 shadow，由组件带载荷重发
@@ -168,14 +172,6 @@
              注意力在宿主上，所以 keydown 只能挂宿主，挂不到 shadow 里的 img。 */
           this._onHostKeydown = (event) => this.onHostKeydown(event);
           this.ele.addEventListener('keydown', this._onHostKeydown);
-
-          /* 公开方法 open 挂到宿主上：ofa 不会把组件方法挂到元素上，得自己接
-             （同 mc-image-preview / mc-tabs 的 scrollByStep）。先存内部引用再覆盖，防止自激。 */
-          this._open = this.open.bind(this);
-          Object.defineProperty(this.ele, 'open', {
-            configurable: true,
-            value: (opener = null) => this._open(opener),
-          });
 
           this.applyImage();
           this.applyFallback();

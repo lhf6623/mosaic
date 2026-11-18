@@ -23,6 +23,11 @@
       withOptions({
         tag: 'mc-image-preview',
 
+        expose: {
+          open: { desc: '打开预览；参数 index / opener' },
+          close: { desc: '关闭预览' },
+        },
+
         // 与 mc-image 的预览事件同形：open 只在「打开那一刻」发，close 每条关闭路径都只发一次
         emits: {
           open: { data: ['src', 'index', 'total'] },
@@ -38,18 +43,6 @@
 
         attached() {
           this._live = true; // 宿主属性一律挂载后才写（P31）
-          /* 公开方法 open / close 要挂到宿主上：ofa 不会把组件方法挂到元素上，得自己接
-             （同 mc-tabs 的 scrollByStep）。先存内部引用再覆盖，万一 this 与 this.ele 是同一个代理也不会自激。 */
-          this._open = this.open.bind(this);
-          this._close = this.close.bind(this);
-          Object.defineProperty(this.ele, 'open', {
-            configurable: true,
-            value: (index = 0, opener = null) => this._open(index, opener),
-          });
-          Object.defineProperty(this.ele, 'close', {
-            configurable: true,
-            value: () => this._close(),
-          });
         },
 
         detached() {

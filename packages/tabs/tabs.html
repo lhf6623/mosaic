@@ -230,6 +230,10 @@
       withOptions({
         tag: 'mc-tabs',
 
+        expose: {
+          scrollByStep: { desc: '按方向滚动标签条（-1 / 1）' },
+        },
+
         // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['value'] },
@@ -267,14 +271,6 @@
           /* 左右滚动：点击走委托（见 handleClick），只认带 data-scroll 的元素 —— 内置箭头也带这个属性，
              所以「点箭头」和「点页面自己的按钮」是同一条路，没有第二套绑定 */
           this._scrollByStep = this.scrollByStep.bind(this);
-
-          /* 公开方法 scrollByStep(dir)：宿主 property，供外部按钮 / 下拉菜单调（ofa 不会把组件方法
-             挂到元素上，得自己接一下；和上面的 value 一样用 defineProperty）。先存内部引用再覆盖，
-             万一 this 与 this.ele 是同一个代理也不会自激 */
-          Object.defineProperty(this.ele, 'scrollByStep', {
-            configurable: true,
-            value: (dir) => this._scrollByStep(dir),
-          });
 
           /* 自定义导航内容替换默认箭头：slotchange 看 assignedNodes 写进 data（class:has-custom 绑定），
              不用 classList 直改 —— ofa 重渲染会按模板重写 class 串，直改的类会被抹掉 */
@@ -549,7 +545,7 @@
             this.canEnd = overflow && list.scrollLeft + list.clientWidth < list.scrollWidth - 1;
           },
 
-          /** 滚一屏的 80%（也对外暴露成宿主方法，见 ready 里的 defineProperty） */
+          /** 滚一屏的 80% */
           scrollByStep(dir) {
             const list = this._list;
             if (!list) return;

@@ -149,6 +149,10 @@
       withOptions({
         tag: 'mc-switch',
 
+        expose: {
+          formValue: { desc: '→ mc-form：单个开关的取值（返回字符串）' },
+        },
+
         // 本组件对外事件：声明即派发入口（见 boot/options.js）
         emits: {
           change: { data: ['checked'] },
@@ -178,12 +182,6 @@
               this.ele.toggleAttribute('checked', !!value);
               this.applyChecked();
             },
-          });
-
-          /* 跨标签的取值协议：mc-form 收集「单个开关」时调它（同 form-item 的 control / showError 那类宿主方法） */
-          Object.defineProperty(this.ele, 'formValue', {
-            configurable: true,
-            value: () => this.formValue(),
           });
 
           this.applyChecked();

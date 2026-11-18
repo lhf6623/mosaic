@@ -149,6 +149,14 @@
 | `open(index?, opener?)` | `(index?: number, opener?: Element \| null) => void`                               | 打开预览：`index` 从 0 起（越界夹到两端）；`opener` 是关闭后要还焦点的元素，不传就记住调用时的焦点 |
 | `close()`               | `() => void`                                                                       | 关掉当前预览（整页只有一层）                                                                       |
 
+## 方法
+
+| 名称                    | 签名                                                           | 说明                                                                           |
+| ----------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `open(opener?)`         | `(opener?: Element \| null) => void`                           | **mc-image**：打开这张图的大图预览；`opener` 用于关闭后归还焦点                |
+| `open(index?, opener?)` | `(index?: number, opener?: Element \| null) => object \| null` | **mc-image-group / mc-image-preview**：从指定索引打开预览，返回打开起点或 null |
+| `close()`               | `() => void`                                                   | **mc-image-preview**：关闭预览                                                 |
+
 ## 插槽
 
 ### mc-image

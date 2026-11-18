@@ -82,50 +82,49 @@
   <slot></slot>
 
   <script>
-    export default async () => ({
-      tag: 'mc-breadcrumb-item',
+    import { withOptions } from '../boot/options.js';
 
-      attrs: {
-        // 布尔属性默认值必须是 null，否则 <mc-breadcrumb-item current> 会被默认值冲掉（P1）
-        current: null,
-      },
+    export default async () =>
+      withOptions({
+        tag: 'mc-breadcrumb-item',
 
-      ready() {
-        /* 容器拿到的是元素、调不到 proto（同 mc-form-item 的 control）：分发通道挂宿主 */
-        Object.defineProperty(this.ele, 'setSeparator', {
-          configurable: true,
-          value: (nodes) => this.setSeparator(nodes),
-        });
-      },
-
-      attached() {
-        /* 比容器晚就绪时，容器那次分发没投到我 —— 报个到让它重投一次。
-           容器自己也会在 attached / slotchange 时推，两条路互为兜底，不靠定时器等 */
-        this._bar = this.ele.closest('mc-breadcrumb');
-        this._bar?.syncSeparators?.();
-      },
-
-      detached() {
-        /* 我被拿掉了（数据驱动的列表删掉一级）→ 新的第一级要让位，容器得重数一遍。
-           用 attached 里存下的引用：这时候已经在树外，closest 找不到容器了 */
-        this._bar?.syncSeparators?.();
-      },
-
-      proto: {
-        /** 容器投进来的分隔符：`null` = 这一级是第一级、不画；数组 = 画，空数组表示画文本那条。
-         *  有节点就克隆进盒子（`data-sep` 同时让文本 ::before 让位，见 CSS `:not(:empty)`） */
-        setSeparator(nodes) {
-          const box = this.shadow.$('.mc-sep')?.ele;
-          if (!box) return;
-          if (nodes === null) {
-            box.replaceChildren();
-            this.ele.removeAttribute('data-sep');
-            return;
-          }
-          box.replaceChildren(...nodes.map((node) => node.cloneNode(true)));
-          this.ele.setAttribute('data-sep', '');
+        expose: {
+          setSeparator: { desc: '容器分发给这一级的分隔符节点' },
         },
-      },
-    });
+
+        attrs: {
+          // 布尔属性默认值必须是 null，否则 <mc-breadcrumb-item current> 会被默认值冲掉（P1）
+          current: null,
+        },
+
+        attached() {
+          /* 比容器晚就绪时，容器那次分发没投到我 —— 报个到让它重投一次。
+           容器自己也会在 attached / slotchange 时推，两条路互为兜底，不靠定时器等 */
+          this._bar = this.ele.closest('mc-breadcrumb');
+          this._bar?.syncSeparators?.();
+        },
+
+        detached() {
+          /* 我被拿掉了（数据驱动的列表删掉一级）→ 新的第一级要让位，容器得重数一遍。
+           用 attached 里存下的引用：这时候已经在树外，closest 找不到容器了 */
+          this._bar?.syncSeparators?.();
+        },
+
+        proto: {
+          /** 容器投进来的分隔符：`null` = 这一级是第一级、不画；数组 = 画，空数组表示画文本那条。
+           *  有节点就克隆进盒子（`data-sep` 同时让文本 ::before 让位，见 CSS `:not(:empty)`） */
+          setSeparator(nodes) {
+            const box = this.shadow.$('.mc-sep')?.ele;
+            if (!box) return;
+            if (nodes === null) {
+              box.replaceChildren();
+              this.ele.removeAttribute('data-sep');
+              return;
+            }
+            box.replaceChildren(...nodes.map((node) => node.cloneNode(true)));
+            this.ele.setAttribute('data-sep', '');
+          },
+        },
+      });
   </script>
 </template>

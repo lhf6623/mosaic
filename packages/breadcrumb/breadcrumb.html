@@ -68,6 +68,10 @@
       withOptions({
         tag: 'mc-breadcrumb',
 
+        expose: {
+          syncSeparators: { desc: '重新把当前分隔符分发给各级' },
+        },
+
         attrs: {
           separator: '/',
         },
@@ -75,15 +79,6 @@
         /* separator 是**内容**槽（图标 / 富文本），文本分隔符走 separator 属性或令牌；
            声明 default 是为了级增删时也能收到 slotchange */
         slots: { separator: {}, default: {} },
-
-        ready() {
-          /* 级的就绪时刻不确定（容器与级是两个 <l-m>，并行加载）：把「重投一次」挂到宿主元素上，
-             让晚就绪的级自己来报到（同 mc-form-item 把跨标签接口挂宿主） */
-          Object.defineProperty(this.ele, 'syncSeparators', {
-            configurable: true,
-            value: () => this.distributeSeparator(),
-          });
-        },
 
         attached() {
           // 宿主属性一律等构造期结束再写（P31：ready 还太早，写宿主会抛 NotSupportedError）
@@ -107,6 +102,11 @@
         },
 
         proto: {
+          /** 对外入口：重新分发一次分隔符（级晚就绪时由级来报到） */
+          syncSeparators() {
+            this.distributeSeparator();
+          },
+
           /** separator → --mc-breadcrumb-sep-attr（content 兜底链第一段）。⚠️ 回默认值要删掉这个内部变量而不是写 '/'，
            *  否则写同一族变量会把「直接覆盖令牌」那条路堵死 */
           applySeparator() {

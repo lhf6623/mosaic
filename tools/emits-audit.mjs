@@ -145,14 +145,15 @@ export function auditComponent(file, text) {
   const problems = [];
   const declared = emitsSpec(text);
   const wired = /\bwithOptions\s*\(/.test(maskComments(text));
-  // 包装器现在管两半（emits + slots）：只写了 slots 的组件同样是合法用法
+  // 包装器现在管三块（emits + slots + expose）：只写 slots / expose 的组件同样是合法用法
   const hasSlotDecl = /\bslots\s*:\s*\{/.test(maskComments(text));
+  const hasExposeDecl = /\bexpose\s*:\s*\{/.test(maskComments(text));
   if (declared.size && !wired)
     problems.push(
       `${file}：声明了 emits，但组件定义没有用 withOptions(...) 包起来 —— 声明不会生效`,
     );
-  if (wired && !declared.size && !hasSlotDecl)
-    problems.push(`${file}：用了 withOptions(...) 却既没有 emits 也没有 slots 声明`);
+  if (wired && !declared.size && !hasSlotDecl && !hasExposeDecl)
+    problems.push(`${file}：用了 withOptions(...) 却既没有 emits / slots / expose 声明`);
 
   for (const raw of rawDispatches(text)) {
     problems.push(
@@ -402,6 +403,9 @@ export function auditSelfTest() {
     auditComponent('x.html', dead).some((p) => p.includes('死声明')),
     true,
   );
+
+  const exposeOnly = `export default async () => withOptions({ tag: 'x-demo', expose: { ping: {} }, proto: { ping() {} } });`;
+  eq('expose-only 合法组件', auditComponent('x.html', exposeOnly), []);
 
   const unwired = ok.replace('withOptions({', '({');
   eq(
