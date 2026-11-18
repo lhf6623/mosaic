@@ -11,6 +11,12 @@ import { componentSuites } from '../tests/lib/suites.mjs';
 import { emitsSpec, mdTables } from './doc-drift/lib/parse.mjs';
 import { auditComponent, auditDocs, auditSelfTest } from './emits-audit.mjs';
 import { auditComponent as auditSlots, auditSelfTest as slotSelfTest } from './slots-audit.mjs';
+import {
+  auditComponent as auditExpose,
+  auditDocs as auditExposeDocs,
+  auditSelfTest as exposeSelfTest,
+  exposeKeys,
+} from './expose-audit.mjs';
 
 /* ---------- 代码侧：从组件源码抽「接口事实」 ---------- */
 
@@ -683,6 +689,27 @@ const rules = [
               `其余写 \`position="static"\` 放进演示区（涉及 ${[...new Set(fixed)].join('、')}）`,
           );
         }
+      }
+    },
+  },
+  {
+    /* 对外方法只许声明在 withOptions.expose；声明 ↔ api.md「方法」表双向对账。 */
+    type: 'custom',
+    id: 'expose-calls',
+    title: '组件代码 · 对外方法声明与手写挂载（expose ↔ defineProperty / api.md）',
+    run: ({ io, components, problems }) => {
+      problems.push(...exposeSelfTest());
+      for (const c of components) {
+        const declared = new Set();
+        for (const file of c.facts.files) {
+          if (!file.endsWith('.html')) continue;
+          const text = io.read(file);
+          if (!/<template\s+component>/i.test(text)) continue;
+          for (const name of exposeKeys(text)) declared.add(name);
+          problems.push(...auditExpose(file, text));
+        }
+        const api = `packages/${c.slug}/api.md`;
+        if (io.exists(api)) problems.push(...auditExposeDocs(api, io.read(api), declared));
       }
     },
   },

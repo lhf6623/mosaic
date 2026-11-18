@@ -326,8 +326,8 @@ withOptions({
 
 - `this.$options.expose` / `this.$expose`：冻结快照（名字与 `desc`），与 `emits` / `slots` 同一套读法。
 - 只暴露**命令式方法**；`open` / `value` 这类受控 property 继续走 `attrs` / `data` + `watch`。
-- 守卫（下一阶段）：`expose-calls` —— 组件里手写 `Object.defineProperty(this.ele, 方法名, …)`
-  而未在 `expose` 声明、声明了但 `proto` 没有、`api.md`「方法」表对不上，都会被拦。
+- 守卫：`expose-calls` —— 组件里手写方法挂载、`expose` 名字与 `api.md`「方法」表对不上，
+  都会被 `pnpm check:docs` 拦；`expose` 的键必须是 `proto` 上的函数（装载时校验）。
 
 ### 1.7 `part` 命名
 

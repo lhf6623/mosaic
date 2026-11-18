@@ -242,6 +242,9 @@ export default {
 | `getValue()`             | `() => Record<string, unknown>` | **读成一个对象**：非受控用法的取值口（受控时数据本来就在你手里）；同名多个给数组、单个开关给布尔，禁用控件不算 |
 | `submit()`               | `() => Promise<void>`           | **主动提交一次**：过就发 `submit`、没过发 `invalid`（点 `type="submit"` 按钮、单行输入框里回车的也是它）       |
 | `clearValidate(fields?)` | `() => void`                    | **收起红框和文案**：不传 = 全收，给字段名或名字数组 = 只收这几个；也能用 `clear-validate` 事件触发             |
+| `control()`              | `() => Element \| null`         | **mc-form-item**：→ `mc-form`：这一行认领的控件元素                                                            |
+| `showError(message)`     | `(message: string) => void`     | **mc-form-item**：→ `mc-form`：写错误文案并标红                                                                |
+| `clearError()`           | `() => void`                    | **mc-form-item**：→ `mc-form`：收起错误状态                                                                    |
 
 ## 插槽
 
