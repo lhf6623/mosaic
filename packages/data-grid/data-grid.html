@@ -119,15 +119,19 @@
       outline-offset: 2px;
       border-radius: var(--mc-radius-sm, 0.25rem);
     }
+    /* 排序箭头只在可排序列上出现：宿主没开 sortable / 列没声明 sortable 时，表头就是纯文字 */
     .mc-sort-icon::before {
       content: '';
-      display: inline-block;
+      display: none;
       width: 0.5em;
       height: 0.5em;
       border-right: 1.5px solid currentColor;
       border-bottom: 1.5px solid currentColor;
       transform: rotate(45deg) translateY(-15%);
       opacity: 0.35;
+    }
+    :host([sortable]) th[data-sortable] .mc-sort-icon::before {
+      display: inline-block;
     }
     th[data-sort='asc'] .mc-sort-icon::before {
       transform: rotate(-135deg) translateY(-15%);

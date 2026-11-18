@@ -206,5 +206,42 @@ export default async function run({ page, visit, check }) {
   check('挂载前赋的 property 生效（P31）', probe.presetText === '预设', String(probe.presetText));
   check('属性 JSON 通道生效', probe.attrText === '来自属性', String(probe.attrText));
   check('500 行渲染 < 3000ms', probe.render500 < 3000, probe.render500 + 'ms');
+  /* 排序箭头只在「宿主 sortable + 列 sortable」时出现：列表页关掉排序后表头必须是纯文字 */
+  const iconDisplay = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;background:#fff';
+    const plainGrid = document.createElement('mc-data-grid');
+    plainGrid.columns = [
+      { key: 'a', title: 'A' },
+      { key: 'b', title: 'B', sortable: true },
+    ];
+    plainGrid.data = [{ a: 1, b: 2 }];
+    const sortGrid = document.createElement('mc-data-grid');
+    sortGrid.setAttribute('sortable', '');
+    sortGrid.columns = [{ key: 'b', title: 'B', sortable: true }];
+    sortGrid.data = [{ b: 2 }];
+    host.append(plainGrid, sortGrid);
+    document.body.append(host);
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 150)));
+    const icon = (grid, index) => {
+      const ths = [...grid.shadowRoot.querySelectorAll('thead th')];
+      return getComputedStyle(ths[index].querySelector('.mc-sort-icon'), '::before').display;
+    };
+    const out = {
+      plain: icon(plainGrid, 0),
+      sortableColWithoutHost: icon(plainGrid, 1),
+      sortableWithHost: icon(sortGrid, 0),
+    };
+    host.remove();
+    return out;
+  });
+  check(
+    '排序箭头只在「宿主 sortable + 列 sortable」时出现：普通表头 / 只声明列都不画箭头',
+    iconDisplay.plain === 'none' &&
+      iconDisplay.sortableColWithoutHost === 'none' &&
+      iconDisplay.sortableWithHost === 'inline-block',
+    JSON.stringify(iconDisplay),
+  );
+
   check('全程无 pageerror / console 错误', problems.length === 0, problems.slice(0, 3).join(' | '));
 }
